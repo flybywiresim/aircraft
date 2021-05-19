@@ -105,21 +105,6 @@ class CDUDirectToPage {
                 });
             };
         }
-        mcdu.setTemplate([
-            ["DIR TO"],
-            ["\xa0WAYPOINT", "DIST\xa0", "UTC"],
-            ["*[" + (directWaypointCell ? directWaypointCell : "\xa0\xa0\xa0\xa0\xa0") + "][color]cyan", "---", "----"],
-            ["\xa0F-PLN WPTS"],
-            [waypointsCell[0], "DIRECT TO[color]cyan"],
-            ["", "WITH\xa0"],
-            [waypointsCell[1], "ABEAM PTS[color]cyan"],
-            ["", "RADIAL IN\xa0"],
-            [waypointsCell[2], "[ ]°[color]cyan"],
-            ["", "RADIAL OUT\xa0"],
-            [waypointsCell[3], "[ ]°[color]cyan"],
-            [eraseLabel, insertLabel],
-            [waypointsCell[4], insertLine]
-        ]);
         let up = false;
         let down = false;
         if (wptsListIndex < totalWaypointsCount - 5) {
@@ -137,5 +122,20 @@ class CDUDirectToPage {
             down = true;
         }
         mcdu.setArrows(up, down, false ,false);
+        mcdu.setTemplate([
+            ["DIR TO"],
+            ["\xa0WAYPOINT", "DIST\xa0", "UTC"],
+            ["*[" + (directWaypointCell ? directWaypointCell : "\xa0\xa0\xa0\xa0\xa0") + "][color]cyan", "---", "----"],
+            ["\xa0F-PLN WPTS"],
+            [waypointsCell[0], "DIRECT TO[color]cyan"],
+            ["", "WITH\xa0"],
+            [waypointsCell[1], "ABEAM PTS[color]cyan"],
+            ["", "RADIAL IN\xa0"],
+            [waypointsCell[2], "[ ]°[color]cyan"],
+            ["", "RADIAL OUT\xa0"],
+            [waypointsCell[3], "[ ]°[color]cyan"],
+            [eraseLabel, insertLabel],
+            [waypointsCell[4], insertLine]
+        ]);
     }
 }

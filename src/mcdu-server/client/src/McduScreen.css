@@ -1,0 +1,171 @@
+@font-face {
+    font-family: "HoneywellMCDU";
+    src: url("HoneywellMCDU.ttf");
+}
+
+@font-face {
+    font-family: "HoneywellMCDUSmall";
+    src: url("HoneywellMCDUSmall.ttf");
+}
+
+.screen {
+    --displayBackground: rgba(13, 20, 35, 1);
+    --displaySeparator: #3c3c3c;
+    --displaySeparatorLight: #aaaaaa;
+
+    --displayWhite: #ffffff;
+    --displayGrey: #787878;
+    --displayDarkGrey: #b3b3b3;
+    --displayLightGrey: lightgray;
+    --displayAmber: #e68000;
+    --displayCyan: #00ffff;
+    --displayGreen: #00ff00;
+    --displayMagenta: #ff94ff;
+    --displayRed: #ff0000;
+    --displayYellow: #ffff00;
+
+    --mcduWhite: #ffffff;
+    --mcduLightGrey: #666666;
+    --mcduGrey: #787878;
+    --mcduGreen: #00ff00;
+    --mcduAmber: #ff9a00;
+    --mcduCyan: #00ffff;
+    --mcduYellow: #ffff00;
+    --mcduRed: #ff0000;
+    --mcduMagenta: #ff94ff;
+
+    --mcdu-font-size: calc(calc(0.053 * var(--screen-scale)) * var(--app-width));
+    --mcdu-line-height: calc(calc(0.058 * var(--screen-scale)) * var(--app-width));
+
+    font-family: "HoneywellMCDU", monospace;
+
+    margin: 0 !important;
+    font-size: var(--mcdu-font-size);
+    color: var(--displayWhite);
+    line-height: var(--mcdu-line-height);
+
+
+    position: relative;
+    width: calc(100% * var(--screen-scale));
+    left: 16.4%;
+    height: calc(var(--app-width) * var(--screen-scale));
+}
+
+.fullscreen .screen {
+  left: 0;
+  width: 100%;
+}
+
+.label {
+    margin: 0;
+    white-space: pre;
+    position: relative;
+}
+
+.label-left {
+    position: absolute;
+    left: 4.2%;
+    bottom: 0;
+    width: 100%;
+    text-align: left;
+}
+
+.label-right {
+    position: absolute;
+    right: 4.2%;
+    bottom: 0;
+    width: 100%;
+    text-align: right;
+}
+
+.label-center {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.line {
+    height: 5.5%;
+    margin: 0;
+    white-space: pre;
+}
+
+.line-left {
+    position: absolute;
+    left: 4.2%;
+    width: 100%;
+    text-align: left;
+}
+
+.line-right {
+    position: absolute;
+    right: 4.2%;
+    width: 100%;
+    text-align: right;
+}
+
+.line-center {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.white {
+    color: var(--mcduWhite);
+}
+
+.inop {
+    color: var(--mcduLightGrey);
+}
+
+.cyan {
+    color: var(--mcduCyan);
+}
+
+.yellow {
+    color: var(--mcduYellow);
+}
+
+.green {
+    color: var(--mcduGreen);
+}
+
+.amber {
+    color: var(--mcduAmber);
+}
+
+.red {
+    color: var(--mcduRed);
+}
+
+.magenta {
+    color: var(--mcduMagenta);
+}
+
+.small, .label, .s-text {
+    font-family: "HoneywellMCDUSmall", "HoneywellMCDU", monospace;
+}
+
+.arrow-vertical {
+    float: right;
+}
+
+.arrow-horizontal {
+    position: absolute;
+    right: 1%;
+    width: 100%;
+    text-align: right;
+}
+
+.left {
+    margin-left: 4%;
+    float: left;
+}
+
+.right {
+    margin-right: 6%;
+    float: right;
+}

@@ -206,6 +206,8 @@ class CDUInitPage {
             }
         };
 
+        mcdu.setArrows(false, false, true, true);
+
         mcdu.setTemplate([
             ["INIT"],
             ["\xa0CO RTE", "FROM/TO\xa0\xa0"],
@@ -221,8 +223,6 @@ class CDUInitPage {
             ["CRZ FL/TEMP", "GND TEMP"],
             [cruiseFlTemp, "---°[color]inop"],
         ]);
-
-        mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
             if (mcdu.isAnEngineOn()) {
@@ -639,6 +639,8 @@ class CDUInitPage {
             }
         }
 
+        mcdu.setArrows(false, false, true, true);
+
         mcdu.setTemplate([
             [initBTitle],
             ["TAXI", "ZFW/ZFWCG"],
@@ -654,8 +656,6 @@ class CDUInitPage {
             ["MIN DEST FOB", "EXTRA/\xa0TIME"],
             [minDestFob + minDestFobColor, extraWeightCell + extraTimeColor + "/" + extraTimeCell + "{end}" + extraColor],
         ]);
-
-        mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage1(mcdu);
