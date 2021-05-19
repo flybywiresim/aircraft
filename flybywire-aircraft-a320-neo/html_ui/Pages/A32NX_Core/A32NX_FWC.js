@@ -473,10 +473,12 @@ class A32NX_FWC {
             // AUTOTHRUST DISCONNECTED BY THROTTLE PUSH BUTTON or THRUST IDLE BY PILOT
             if (this.autothrustDisconnect === 1) {
                 SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_THROTTLE", "Bool", true);
+                SimVar.SetSimVarValue("L:A32NX_Master_Caution", "Bool", true);
 
                 // Stop warning when press Master Caution or pass 3 sec
                 if (this.cautionPressed || athrTimer === 0) {
                     SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_THROTTLE", "Bool", false);
+                    SimVar.SetSimVarValue("L:A32NX_Master_Caution", "Bool", false);
                     this.autothrustDisconnect = 2;
                 }
             } else {
@@ -515,9 +517,11 @@ class A32NX_FWC {
             // AUTOPILOT DISCONNECTED BY SIDESTICK
             if (this.autopilotDisconnect === 1) {
                 SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", true);
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
                 // Stop warning when press Master Warning or pass 3 sec
                 if (this.warningPressed || apTimer === 0) {
                     SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", false);
+                    SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                     this.autopilotDisconnect = 2;
                 }
             } else {
