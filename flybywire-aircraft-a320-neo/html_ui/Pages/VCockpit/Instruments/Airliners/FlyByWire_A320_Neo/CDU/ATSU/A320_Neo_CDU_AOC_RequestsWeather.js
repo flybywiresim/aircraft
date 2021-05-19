@@ -91,9 +91,13 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[5] = async () => {
+            const icaos = [store["arpt1"], store["arpt2"], store["arpt3"], store["arpt4"]];
+            if (icaos.every((current) => current === "")) {
+                mcdu.addNewMessage(NXFictionalMessages.noAirportSpecified);
+                return;
+            }
             store["sendStatus"] = "QUEUED";
             updateView();
-            const icaos = [store["arpt1"], store["arpt2"], store["arpt3"], store["arpt4"]];
             const lines = [];
             const newMessage = { "id": Date.now(), "type": reqTypes[store.reqID], "time": '00:00', "opened": null, "content": lines, };
             mcdu.clearUserInput();
