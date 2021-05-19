@@ -1,5 +1,5 @@
 {
-  "waypointLabelFontSize": 16,
+  "waypointLabelFontSize": 18,
   "waypointLabelFontFamily": "ECAMFontRegular",
   "waypointLabelColor": "black",
   "waypointLabelStrokeColor": "#black",
@@ -9,8 +9,8 @@
   "waypointLabelBackgroundStrokeColor": "black",
   "waypointLabelBackgroundStrokeWidth": 0,
   "waypointLabelBackgroundPadding": "5 5 5 5",
-  "waypointLabelDistanceX": 35,
-  "waypointLabelDistance": 5,
+  "waypointLabelDistanceX": 33,
+  "waypointLabelDistance": 10,
   "waypointIconSize": 22,
 
   "intersectionLabelColor": "#00ff00",
