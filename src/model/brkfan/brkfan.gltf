@@ -70,15 +70,7 @@
         { "buffer": 0, "byteLength": 468, "byteOffset": 3272, "target": 34963, "name": "BufferViewIndex" }
     ],
     "extensionsUsed": ["ASOBO_asset_optimized"],
-    "materials": [
-        {
-            "name": "TEXT",
-            "alphaMode": "BLEND",
-            "emissiveFactor": [4.953845977783203, 4.953845977783203, 4.953845977783203],
-            "pbrMetallicRoughness": { "baseColorFactor": [0.800000011920929, 0.800000011920929, 0.800000011920929, 1.0], "metallicFactor": 0.0, "roughnessFactor": 0.5 }
-        },
-        { "name": "INPUTS01" }
-    ],
+    "materials": [],
     "meshes": [
         {
             "primitives": [
