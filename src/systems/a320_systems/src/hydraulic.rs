@@ -943,7 +943,7 @@ impl A320PowerTransferUnitController {
                     && !self.nose_wheel_steering_pin_inserted.output()))
             && !ptu_inhibited;
 
-        // This is negative logic here. If no power, ptu is laways ON
+        // When there is no power, the PTU is always ON.
         self.should_enable = !self.is_powered || should_enable_if_powered;
     }
 
