@@ -65,6 +65,22 @@ pub(super) struct A320Hydraulic {
     lag_time_accumulator: Duration,
 }
 impl A320Hydraulic {
+    const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrentEssential;
+    const BLUE_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrent(1);
+
+    const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrent(2);
+    const YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentGndFltService;
+
+    const YELLOW_EDP_CONTROL_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
+    const YELLOW_EDP_CONTROL_POWER_BUS2: ElectricalBusType =
+        ElectricalBusType::DirectCurrentEssential;
+    const GREEN_EDP_CONTROL_POWER_BUS1: ElectricalBusType =
+        ElectricalBusType::DirectCurrentEssential;
+
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
@@ -129,7 +145,7 @@ impl A320Hydraulic {
             engine_driven_pump_1: EngineDrivenPump::new("GREEN"),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(
                 1,
-                vec![A320EngineDrivenPumpController::GREEN_EDP_POWER_BUS],
+                vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
             engine_driven_pump_2_pressure_switch: PressureSwitch::new(
@@ -140,19 +156,23 @@ impl A320Hydraulic {
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(
                 2,
                 vec![
-                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS1,
-                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS2,
+                    Self::YELLOW_EDP_CONTROL_POWER_BUS1,
+                    Self::YELLOW_EDP_CONTROL_POWER_BUS2,
                 ],
             ),
 
-            blue_electric_pump: ElectricPump::new("BLUE", ElectricalBusType::AlternatingCurrent(1)),
-            blue_electric_pump_controller: A320BlueElectricPumpController::new(),
+            blue_electric_pump: ElectricPump::new("BLUE", Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS),
+            blue_electric_pump_controller: A320BlueElectricPumpController::new(
+                Self::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
+            ),
 
             yellow_electric_pump: ElectricPump::new(
                 "YELLOW",
-                ElectricalBusType::AlternatingCurrentGndFltService,
+                Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
             ),
-            yellow_electric_pump_controller: A320YellowElectricPumpController::new(),
+            yellow_electric_pump_controller: A320YellowElectricPumpController::new(
+                Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+            ),
 
             forward_cargo_door: Door::new(5),
             aft_cargo_door: Door::new(3),
@@ -564,7 +584,7 @@ impl HydraulicLoopController for A320HydraulicLoopController {
 
 struct A320EngineDrivenPumpController {
     is_powered: bool,
-    powering_buses: Vec<ElectricalBusType>,
+    powered_by: Vec<ElectricalBusType>,
     engine_number: usize,
     engine_master_on_id: String,
     engine_master_on: bool,
@@ -575,16 +595,13 @@ struct A320EngineDrivenPumpController {
 }
 impl A320EngineDrivenPumpController {
     const MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT: f64 = 18.;
-    pub const YELLOW_EDP_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
-    pub const YELLOW_EDP_POWER_BUS2: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
-    pub const GREEN_EDP_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
     fn new(engine_number: usize, power_buses: Vec<ElectricalBusType>) -> Self {
         assert!(!power_buses.is_empty() && power_buses.len() <= 2);
 
         Self {
             is_powered: false,
-            powering_buses: power_buses,
+            powered_by: power_buses,
             engine_number,
             engine_master_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", engine_number),
             engine_master_on: false,
@@ -669,7 +686,7 @@ impl SimulationElement for A320EngineDrivenPumpController {
 
     fn receive_power(&mut self, supplied_power: &SuppliedPower) {
         self.is_powered = self
-            .powering_buses
+            .powered_by
             .iter()
             .any(|bus| supplied_power.potential_of(&bus).is_powered());
     }
@@ -677,7 +694,7 @@ impl SimulationElement for A320EngineDrivenPumpController {
 
 struct A320BlueElectricPumpController {
     is_powered: bool,
-    powering_bus: ElectricalBusType,
+    powered_by: ElectricalBusType,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
@@ -685,12 +702,11 @@ struct A320BlueElectricPumpController {
 }
 impl A320BlueElectricPumpController {
     const MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT: f64 = 18.;
-    const POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
-    fn new() -> Self {
+    fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             is_powered: false,
-            powering_bus: Self::POWER_BUS,
+            powered_by,
             should_pressurise: false,
             has_pressure_low_fault: false,
             is_pressure_low: true,
@@ -773,19 +789,19 @@ impl SimulationElement for A320BlueElectricPumpController {
     }
 
     fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = supplied_power.potential_of(&self.powering_bus).is_powered();
+        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered();
     }
 }
 
 impl Default for A320BlueElectricPumpController {
     fn default() -> Self {
-        Self::new()
+        Self::new(ElectricalBusType::DirectCurrentEssential)
     }
 }
 
 struct A320YellowElectricPumpController {
     is_powered: bool,
-    powering_bus: ElectricalBusType,
+    powered_by: ElectricalBusType,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
@@ -795,12 +811,10 @@ impl A320YellowElectricPumpController {
     const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
         Duration::from_secs(20);
 
-    const POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
-
-    fn new() -> Self {
+    fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             is_powered: false,
-            powering_bus: Self::POWER_BUS,
+            powered_by,
             should_pressurise: false,
             has_pressure_low_fault: false,
             is_pressure_low: true,
@@ -860,18 +874,18 @@ impl SimulationElement for A320YellowElectricPumpController {
     }
 
     fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = supplied_power.potential_of(&self.powering_bus).is_powered();
+        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered();
     }
 }
 impl Default for A320YellowElectricPumpController {
     fn default() -> Self {
-        Self::new()
+        Self::new(ElectricalBusType::DirectCurrent(2))
     }
 }
 
 struct A320PowerTransferUnitController {
     is_powered: bool,
-    powering_bus: ElectricalBusType,
+    powered_by: ElectricalBusType,
     should_enable: bool,
     should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate,
     nose_wheel_steering_pin_inserted: DelayedFalseLogicGate,
@@ -891,7 +905,7 @@ impl A320PowerTransferUnitController {
     fn new() -> Self {
         Self {
             is_powered: false,
-            powering_bus: Self::POWER_BUS,
+            powered_by: Self::POWER_BUS,
             should_enable: false,
             should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate::new(
                 Self::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
@@ -956,7 +970,7 @@ impl SimulationElement for A320PowerTransferUnitController {
     }
 
     fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = supplied_power.potential_of(&self.powering_bus).is_powered();
+        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered();
     }
 }
 
@@ -974,7 +988,6 @@ struct A320RamAirTurbineController {
 impl A320RamAirTurbineController {
     const POWER_BUS_SOLENOID_1: ElectricalBusType = ElectricalBusType::DirectCurrentHot(1);
     const POWER_BUS_SOLENOID_2: ElectricalBusType = ElectricalBusType::DirectCurrentHot(2);
-
     fn new() -> Self {
         Self {
             is_solenoid_1_powered: false,
@@ -1446,15 +1459,15 @@ mod tests {
             landing_gear: LandingGear,
 
             // Electric buses states to be able to kill them dynamically
-            is_ac_ground_service_alive: bool,
-            is_dc_ground_service_alive: bool,
-            is_ac_1_alive: bool,
-            is_ac_2_alive: bool,
-            is_dc_1_alive: bool,
-            is_dc_2_alive: bool,
-            is_dc_ess_alive: bool,
-            is_dc_hot_1_alive: bool,
-            is_dc_hot_2_alive: bool,
+            is_ac_ground_service_powered: bool,
+            is_dc_ground_service_powered: bool,
+            is_ac_1_powered: bool,
+            is_ac_2_powered: bool,
+            is_dc_1_powered: bool,
+            is_dc_2_powered: bool,
+            is_dc_ess_powered: bool,
+            is_dc_hot_1_powered: bool,
+            is_dc_hot_2_powered: bool,
         }
         impl A320HydraulicsTestAircraft {
             fn new() -> Self {
@@ -1466,15 +1479,15 @@ mod tests {
                     engine_fire_overhead: A320EngineFireOverheadPanel::new(),
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
-                    is_ac_ground_service_alive: true,
-                    is_dc_ground_service_alive: true,
-                    is_ac_1_alive: true,
-                    is_ac_2_alive: true,
-                    is_dc_1_alive: true,
-                    is_dc_2_alive: true,
-                    is_dc_ess_alive: true,
-                    is_dc_hot_1_alive: true,
-                    is_dc_hot_2_alive: true,
+                    is_ac_ground_service_powered: true,
+                    is_dc_ground_service_powered: true,
+                    is_ac_1_powered: true,
+                    is_ac_2_powered: true,
+                    is_dc_1_powered: true,
+                    is_dc_2_powered: true,
+                    is_dc_ess_powered: true,
+                    is_dc_hot_1_powered: true,
+                    is_dc_hot_2_powered: true,
                 }
             }
 
@@ -1526,25 +1539,25 @@ mod tests {
             }
 
             fn ac_bus_1_power_state(&mut self, bus_is_alive: bool) {
-                self.is_ac_1_alive = bus_is_alive;
+                self.is_ac_1_powered = bus_is_alive;
             }
             fn ac_bus_2_power_state(&mut self, bus_is_alive: bool) {
-                self.is_ac_2_alive = bus_is_alive;
+                self.is_ac_2_powered = bus_is_alive;
             }
 
             fn dc_ground_service_power_state(&mut self, bus_is_alive: bool) {
-                self.is_dc_ground_service_alive = bus_is_alive;
+                self.is_dc_ground_service_powered = bus_is_alive;
             }
 
             fn ac_ground_service_power_state(&mut self, bus_is_alive: bool) {
-                self.is_ac_ground_service_alive = bus_is_alive;
+                self.is_ac_ground_service_powered = bus_is_alive;
             }
 
             fn dc_bus_2_power_state(&mut self, bus_is_alive: bool) {
-                self.is_dc_2_alive = bus_is_alive;
+                self.is_dc_2_powered = bus_is_alive;
             }
             fn dc_ess_power_state(&mut self, bus_is_alive: bool) {
-                self.is_dc_ess_alive = bus_is_alive;
+                self.is_dc_ess_powered = bus_is_alive;
             }
         }
 
@@ -1576,7 +1589,7 @@ mod tests {
                 let mut supplied_power = SuppliedPower::new();
                 supplied_power.add(
                     ElectricalBusType::AlternatingCurrent(1),
-                    if self.is_ac_1_alive {
+                    if self.is_ac_1_powered {
                         Potential::single(
                             PotentialOrigin::EngineGenerator(1),
                             ElectricPotential::new::<volt>(115.),
@@ -1587,7 +1600,7 @@ mod tests {
                 );
                 supplied_power.add(
                     ElectricalBusType::AlternatingCurrent(2),
-                    if self.is_ac_2_alive {
+                    if self.is_ac_2_powered {
                         Potential::single(
                             PotentialOrigin::EngineGenerator(2),
                             ElectricPotential::new::<volt>(115.),
@@ -1598,7 +1611,7 @@ mod tests {
                 );
                 supplied_power.add(
                     ElectricalBusType::AlternatingCurrentGndFltService,
-                    if self.is_ac_ground_service_alive {
+                    if self.is_ac_ground_service_powered {
                         Potential::single(
                             PotentialOrigin::EngineGenerator(2),
                             ElectricPotential::new::<volt>(115.),
@@ -1609,7 +1622,7 @@ mod tests {
                 );
                 supplied_power.add(
                     ElectricalBusType::DirectCurrentGndFltService,
-                    if self.is_dc_ground_service_alive {
+                    if self.is_dc_ground_service_powered {
                         Potential::single(
                             PotentialOrigin::Battery(1),
                             ElectricPotential::new::<volt>(28.),
@@ -1620,7 +1633,7 @@ mod tests {
                 );
                 supplied_power.add(
                     ElectricalBusType::DirectCurrent(1),
-                    if self.is_dc_1_alive {
+                    if self.is_dc_1_powered {
                         Potential::single(
                             PotentialOrigin::Battery(1),
                             ElectricPotential::new::<volt>(28.),
@@ -1631,7 +1644,7 @@ mod tests {
                 );
                 supplied_power.add(
                     ElectricalBusType::DirectCurrent(2),
-                    if self.is_dc_2_alive {
+                    if self.is_dc_2_powered {
                         Potential::single(
                             PotentialOrigin::Battery(2),
                             ElectricPotential::new::<volt>(28.),
@@ -1642,7 +1655,7 @@ mod tests {
                 );
                 supplied_power.add(
                     ElectricalBusType::DirectCurrentEssential,
-                    if self.is_dc_ess_alive {
+                    if self.is_dc_ess_powered {
                         Potential::single(
                             PotentialOrigin::Battery(2),
                             ElectricPotential::new::<volt>(28.),
@@ -1653,7 +1666,7 @@ mod tests {
                 );
                 supplied_power.add(
                     ElectricalBusType::DirectCurrentHot(1),
-                    if self.is_dc_hot_1_alive {
+                    if self.is_dc_hot_1_powered {
                         Potential::single(
                             PotentialOrigin::Battery(1),
                             ElectricPotential::new::<volt>(28.),
@@ -1664,7 +1677,7 @@ mod tests {
                 );
                 supplied_power.add(
                     ElectricalBusType::DirectCurrentHot(2),
-                    if self.is_dc_hot_2_alive {
+                    if self.is_dc_hot_2_powered {
                         Potential::single(
                             PotentialOrigin::Battery(1),
                             ElectricPotential::new::<volt>(28.),
@@ -3782,7 +3795,9 @@ mod tests {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
-            let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            let mut blue_epump_controller = A320BlueElectricPumpController::new(
+                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
             blue_epump_controller.is_powered = true;
 
             let eng1_above_idle = false;
@@ -3819,7 +3834,9 @@ mod tests {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
-            let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            let mut blue_epump_controller = A320BlueElectricPumpController::new(
+                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
             blue_epump_controller.is_powered = true;
 
             let eng1_above_idle = false;
@@ -3866,7 +3883,9 @@ mod tests {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
-            let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            let mut blue_epump_controller = A320BlueElectricPumpController::new(
+                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
             blue_epump_controller.is_powered = true;
 
             let eng1_above_idle = true;
@@ -3899,7 +3918,9 @@ mod tests {
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            let mut blue_epump_controller = A320BlueElectricPumpController::new(
+                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
             blue_epump_controller.is_powered = true;
 
             let eng1_above_idle = false;
@@ -3934,7 +3955,9 @@ mod tests {
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            let mut blue_epump_controller = A320BlueElectricPumpController::new(
+                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
@@ -3960,7 +3983,9 @@ mod tests {
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
-            let mut yellow_epump_controller = A320YellowElectricPumpController::new();
+            let mut yellow_epump_controller = A320YellowElectricPumpController::new(
+                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
             yellow_epump_controller.is_powered = true;
 
             overhead_panel.yellow_epump_push_button.push_auto();
@@ -3984,7 +4009,9 @@ mod tests {
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
-            let mut yellow_epump_controller = A320YellowElectricPumpController::new();
+            let mut yellow_epump_controller = A320YellowElectricPumpController::new(
+                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
 
             // If unpowered no possible control of the pump
             yellow_epump_controller.is_powered = false;
@@ -3999,7 +4026,9 @@ mod tests {
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
-            let mut yellow_epump_controller = A320YellowElectricPumpController::new();
+            let mut yellow_epump_controller = A320YellowElectricPumpController::new(
+                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
             yellow_epump_controller.is_powered = true;
 
             overhead_panel.yellow_epump_push_button.push_auto();
@@ -4031,7 +4060,7 @@ mod tests {
 
             let mut edp1_controller = A320EngineDrivenPumpController::new(
                 1,
-                vec![A320EngineDrivenPumpController::GREEN_EDP_POWER_BUS],
+                vec![A320Hydraulic::GREEN_EDP_CONTROL_POWER_BUS1],
             );
             edp1_controller.is_powered = true;
 
@@ -4076,7 +4105,7 @@ mod tests {
 
             let mut edp1_controller = A320EngineDrivenPumpController::new(
                 1,
-                vec![A320EngineDrivenPumpController::GREEN_EDP_POWER_BUS],
+                vec![A320Hydraulic::GREEN_EDP_CONTROL_POWER_BUS1],
             );
             edp1_controller.is_powered = true;
             edp1_controller.engine_master_on = true;
@@ -4110,8 +4139,8 @@ mod tests {
             let mut edp2_controller = A320EngineDrivenPumpController::new(
                 2,
                 vec![
-                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS1,
-                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS2,
+                    A320Hydraulic::YELLOW_EDP_CONTROL_POWER_BUS1,
+                    A320Hydraulic::YELLOW_EDP_CONTROL_POWER_BUS2,
                 ],
             );
             edp2_controller.is_powered = true;
@@ -4157,8 +4186,8 @@ mod tests {
             let mut edp2_controller = A320EngineDrivenPumpController::new(
                 2,
                 vec![
-                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS1,
-                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS2,
+                    A320Hydraulic::YELLOW_EDP_CONTROL_POWER_BUS1,
+                    A320Hydraulic::YELLOW_EDP_CONTROL_POWER_BUS2,
                 ],
             );
             edp2_controller.is_powered = true;
