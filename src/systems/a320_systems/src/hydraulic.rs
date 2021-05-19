@@ -668,20 +668,10 @@ impl SimulationElement for A320EngineDrivenPumpController {
     }
 
     fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        if self.engine_number == 1 {
-            self.is_powered = supplied_power
-                .potential_of(&self.powering_buses[0])
-                .is_powered();
-        } else if self.engine_number == 2 {
-            self.is_powered = supplied_power
-                .potential_of(&self.powering_buses[0])
-                .is_powered()
-                || supplied_power
-                    .potential_of(&self.powering_buses[1])
-                    .is_powered();
-        } else {
-            panic!("The A320 only supports two engines.");
-        }
+        self.is_powered = self
+            .powering_buses
+            .iter()
+            .any(|bus| supplied_power.potential_of(&bus).is_powered());
     }
 }
 
