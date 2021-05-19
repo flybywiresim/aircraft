@@ -14,10 +14,15 @@ pub trait ApuStartContactorsController {
     fn should_close_start_contactors(&self) -> bool;
 }
 
-pub trait AuxiliaryPowerUnitElectrical: PotentialSource + ApuStartContactorsController {
+pub trait AuxiliaryPowerUnitElectrical:
+    PotentialSource + ApuStartContactorsController + ApuAvailable
+{
     fn start_motor_powered_by(&mut self, source: Potential);
-    fn is_available(&self) -> bool;
     fn output_within_normal_parameters(&self) -> bool;
+}
+
+pub trait ApuAvailable {
+    fn is_available(&self) -> bool;
 }
 
 pub trait EngineFirePushButtons {

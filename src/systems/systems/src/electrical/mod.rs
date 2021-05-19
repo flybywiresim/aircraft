@@ -11,7 +11,7 @@ mod transformer_rectifier;
 use std::{cmp::Ordering, fmt::Display, hash::Hash, time::Duration};
 
 pub use battery::Battery;
-pub use battery_charge_limiter::{BatteryChargeLimiter, BatteryChargeLimiterArguments};
+pub use battery_charge_limiter::BatteryChargeLimiter;
 pub use emergency_generator::EmergencyGenerator;
 pub use engine_generator::{
     EngineGenerator, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
@@ -33,9 +33,17 @@ pub trait ElectricalSystem {
     fn get_supplied_power(&self) -> SuppliedPower;
 }
 
+pub trait AlternatingCurrentElectricalSystem {
+    fn any_non_essential_bus_powered(&self) -> bool;
+}
+
 pub trait EngineGeneratorPushButtons {
     fn engine_gen_push_button_is_on(&self, number: usize) -> bool;
     fn idg_push_button_is_released(&self, number: usize) -> bool;
+}
+
+pub trait BatteryPushButtons {
+    fn bat_is_auto(&self, number: usize) -> bool;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -197,6 +205,10 @@ impl Default for Potential {
 /// origin of the potential. It can also be a conductor.
 pub trait PotentialSource {
     fn output(&self) -> Potential;
+
+    fn potential(&self) -> ElectricPotential {
+        self.output().raw()
+    }
 
     /// Indicates if the instance provides electric potential.
     fn is_powered(&self) -> bool {
@@ -476,10 +488,6 @@ pub trait ProvideLoad {
     fn load_normal(&self) -> bool;
 }
 
-pub trait AlternatingCurrentBusesState {
-    fn ac_buses_unpowered(&self) -> bool;
-}
-
 /// Determines if and for how long the aircraft is in an emergency electrical situation.
 pub struct EmergencyElectrical {
     is_active_for_duration: Duration,
@@ -491,12 +499,12 @@ impl EmergencyElectrical {
         }
     }
 
-    pub fn update<T: AlternatingCurrentBusesState>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
-        arguments: &T,
+        ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
     ) {
-        if arguments.ac_buses_unpowered()
+        if !ac_electrical_system.any_non_essential_bus_powered()
             && context.indicated_airspeed() > Velocity::new::<knot>(100.)
         {
             self.is_active_for_duration += context.delta();

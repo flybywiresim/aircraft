@@ -1,11 +1,13 @@
-use super::{A320ElectricalOverheadPanel, AlternatingCurrentState, DirectCurrentState};
+use super::{
+    A320AlternatingCurrentElectricalSystem, A320ElectricalOverheadPanel, DirectCurrentState,
+};
 #[cfg(test)]
 use systems::electrical::Potential;
 use systems::{
     electrical::{
-        consumption::SuppliedPower, Battery, BatteryChargeLimiter, BatteryChargeLimiterArguments,
-        Contactor, ElectricalBus, ElectricalBusType, EmergencyElectrical, EmergencyGenerator,
-        PotentialSource, PotentialTarget, StaticInverter,
+        consumption::SuppliedPower, Battery, BatteryChargeLimiter, Contactor, ElectricalBus,
+        ElectricalBusType, EmergencyElectrical, EmergencyGenerator, PotentialSource,
+        PotentialTarget, StaticInverter,
     },
     shared::{ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, LandingGearPosition},
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -55,10 +57,10 @@ impl A320DirectCurrentElectrical {
             dc_ess_shed_contactor: Contactor::new("8PH"),
             battery_1: Battery::full(1),
             battery_1_contactor: Contactor::new("6PB1"),
-            battery_1_charge_limiter: BatteryChargeLimiter::new("6PB1"),
+            battery_1_charge_limiter: BatteryChargeLimiter::new(1, "6PB1"),
             battery_2: Battery::full(2),
             battery_2_contactor: Contactor::new("6PB2"),
-            battery_2_charge_limiter: BatteryChargeLimiter::new("6PB2"),
+            battery_2_charge_limiter: BatteryChargeLimiter::new(2, "6PB2"),
             hot_bus_2_to_dc_ess_bus_contactor: Contactor::new("2XB2"),
             hot_bus_1_to_static_inv_contactor: Contactor::new("2XB1"),
             static_inverter: StaticInverter::new(),
@@ -81,7 +83,7 @@ impl A320DirectCurrentElectrical {
         &mut self,
         context: &UpdateContext,
         overhead: &A320ElectricalOverheadPanel,
-        ac_state: &impl AlternatingCurrentState,
+        ac_state: &impl A320AlternatingCurrentElectricalSystem,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &EmergencyGenerator,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
@@ -141,17 +143,14 @@ impl A320DirectCurrentElectrical {
         self.battery_1_charge_limiter.update(
             context,
             emergency_elec,
-            &BatteryChargeLimiterArguments::new(
-                ac_state.ac_bus_1_and_2_unpowered(),
-                &self.battery_1,
-                &self.dc_bat_bus,
-                apu_overhead.master_sw_is_on(),
-                apu_overhead.start_is_on(),
-                apu.is_available(),
-                overhead.bat_1_is_auto(),
-                landing_gear.is_up_and_locked(),
-                emergency_generator.is_powered(),
-            ),
+            emergency_generator,
+            &self.battery_1,
+            &self.dc_bat_bus,
+            landing_gear,
+            overhead,
+            apu,
+            apu_overhead,
+            ac_state,
         );
         self.battery_1_contactor
             .close_when(self.battery_1_charge_limiter.should_close_contactor());
@@ -159,17 +158,14 @@ impl A320DirectCurrentElectrical {
         self.battery_2_charge_limiter.update(
             context,
             emergency_elec,
-            &BatteryChargeLimiterArguments::new(
-                ac_state.ac_bus_1_and_2_unpowered(),
-                &self.battery_2,
-                &self.dc_bat_bus,
-                apu_overhead.master_sw_is_on(),
-                apu_overhead.start_is_on(),
-                apu.is_available(),
-                overhead.bat_2_is_auto(),
-                landing_gear.is_up_and_locked(),
-                emergency_generator.is_powered(),
-            ),
+            emergency_generator,
+            &self.battery_2,
+            &self.dc_bat_bus,
+            landing_gear,
+            overhead,
+            apu,
+            apu_overhead,
+            ac_state,
         );
         self.battery_2_contactor
             .close_when(self.battery_2_charge_limiter.should_close_contactor());
@@ -237,13 +233,13 @@ impl A320DirectCurrentElectrical {
 
     /// Determines if the 2XB contactors should be closed. 2XB are the two contactors
     /// which connect BAT2 to DC ESS BUS; and BAT 1 to the static inverter.
-    fn should_close_2xb_contactors<T: AlternatingCurrentState>(
+    fn should_close_2xb_contactors(
         &self,
         context: &UpdateContext,
         emergency_generator: &EmergencyGenerator,
-        ac_state: &T,
+        ac_state: &impl A320AlternatingCurrentElectricalSystem,
     ) -> bool {
-        ac_state.ac_bus_1_and_2_unpowered()
+        !ac_state.any_non_essential_bus_powered()
             && !emergency_generator.is_powered()
             && ((context.indicated_airspeed() < Velocity::new::<knot>(50.)
                 && self.batteries_connected_to_bat_bus())

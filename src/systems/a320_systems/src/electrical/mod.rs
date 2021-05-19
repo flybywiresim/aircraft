@@ -11,8 +11,9 @@ use self::{
 use systems::electrical::Potential;
 use systems::{
     electrical::{
-        consumption::SuppliedPower, ElectricalSystem, EmergencyElectrical, EmergencyGenerator,
-        EngineGeneratorPushButtons, ExternalPowerSource, StaticInverter, TransformerRectifier,
+        consumption::SuppliedPower, AlternatingCurrentElectricalSystem, BatteryPushButtons,
+        ElectricalSystem, EmergencyElectrical, EmergencyGenerator, EngineGeneratorPushButtons,
+        ExternalPowerSource, StaticInverter, TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
@@ -210,8 +211,7 @@ trait DirectCurrentState {
     fn static_inverter(&self) -> &StaticInverter;
 }
 
-trait AlternatingCurrentState {
-    fn ac_bus_1_and_2_unpowered(&self) -> bool;
+trait A320AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem {
     fn ac_bus_2_powered(&self) -> bool;
     fn tr_1_and_2_available(&self) -> bool;
     fn tr_1(&self) -> &TransformerRectifier;
@@ -220,8 +220,7 @@ trait AlternatingCurrentState {
 }
 
 pub(super) struct A320ElectricalOverheadPanel {
-    bat_1: AutoOffFaultPushButton,
-    bat_2: AutoOffFaultPushButton,
+    batteries: [AutoOffFaultPushButton; 2],
     idgs: [FaultReleasePushButton; 2],
     generators: [OnOffFaultPushButton; 2],
     apu_gen: OnOffFaultPushButton,
@@ -234,8 +233,10 @@ pub(super) struct A320ElectricalOverheadPanel {
 impl A320ElectricalOverheadPanel {
     pub fn new() -> A320ElectricalOverheadPanel {
         A320ElectricalOverheadPanel {
-            bat_1: AutoOffFaultPushButton::new_auto("ELEC_BAT_1"),
-            bat_2: AutoOffFaultPushButton::new_auto("ELEC_BAT_2"),
+            batteries: [
+                AutoOffFaultPushButton::new_auto("ELEC_BAT_1"),
+                AutoOffFaultPushButton::new_auto("ELEC_BAT_2"),
+            ],
             idgs: [
                 FaultReleasePushButton::new_in("ELEC_IDG_1"),
                 FaultReleasePushButton::new_in("ELEC_IDG_2"),
@@ -293,14 +294,6 @@ impl A320ElectricalOverheadPanel {
         self.ac_ess_feed.is_altn()
     }
 
-    fn bat_1_is_auto(&self) -> bool {
-        self.bat_1.is_auto()
-    }
-
-    fn bat_2_is_auto(&self) -> bool {
-        self.bat_2.is_auto()
-    }
-
     fn commercial_is_off(&self) -> bool {
         self.commercial.is_off()
     }
@@ -318,10 +311,16 @@ impl EngineGeneratorPushButtons for A320ElectricalOverheadPanel {
         self.idgs[number - 1].is_released()
     }
 }
+impl BatteryPushButtons for A320ElectricalOverheadPanel {
+    fn bat_is_auto(&self, number: usize) -> bool {
+        self.batteries[number - 1].is_auto()
+    }
+}
 impl SimulationElement for A320ElectricalOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.bat_1.accept(visitor);
-        self.bat_2.accept(visitor);
+        self.batteries.iter_mut().for_each(|bat| {
+            bat.accept(visitor);
+        });
         self.idgs.iter_mut().for_each(|idg| {
             idg.accept(visitor);
         });
@@ -410,7 +409,7 @@ mod a320_electrical_circuit_tests {
             ElectricalBusType, ExternalPowerSource, Potential, PotentialOrigin, PotentialSource,
             INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
-        shared::ApuStartContactorsController,
+        shared::{ApuAvailable, ApuStartContactorsController},
         simulation::{test::SimulationTestBed, Aircraft},
     };
     use uom::si::f64::*;
@@ -2082,11 +2081,12 @@ mod a320_electrical_circuit_tests {
             self.start_motor_powered_by = source;
         }
 
-        fn is_available(&self) -> bool {
+        fn output_within_normal_parameters(&self) -> bool {
             self.is_available
         }
-
-        fn output_within_normal_parameters(&self) -> bool {
+    }
+    impl ApuAvailable for TestApu {
+        fn is_available(&self) -> bool {
             self.is_available
         }
     }

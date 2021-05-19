@@ -1,11 +1,11 @@
 use super::{
-    A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel, AlternatingCurrentState,
-    DirectCurrentState,
+    A320AlternatingCurrentElectricalSystem, A320ElectricalOverheadPanel,
+    A320EmergencyElectricalOverheadPanel, DirectCurrentState,
 };
 use std::time::Duration;
 use systems::{
     electrical::{
-        consumption::SuppliedPower, AlternatingCurrentBusesState, Contactor, ElectricalBus,
+        consumption::SuppliedPower, AlternatingCurrentElectricalSystem, Contactor, ElectricalBus,
         ElectricalBusType, EmergencyGenerator, EngineGenerator, ExternalPowerSource, Potential,
         PotentialOrigin, PotentialSource, PotentialTarget, TransformerRectifier,
     },
@@ -127,7 +127,7 @@ impl A320AlternatingCurrentElectrical {
             .powered_by(&self.ac_ess_feed_contactors.electric_sources());
 
         self.emergency_gen_contactor.close_when(
-            self.ac_bus_1_and_2_unpowered()
+            !self.any_non_essential_bus_powered()
                 && emergency_generator.output_within_normal_parameters(),
         );
         self.emergency_gen_contactor.powered_by(emergency_generator);
@@ -232,7 +232,7 @@ impl A320AlternatingCurrentElectrical {
         context: &UpdateContext,
         emergency_generator: &EmergencyGenerator,
     ) -> bool {
-        self.ac_bus_1_and_2_unpowered()
+        !self.any_non_essential_bus_powered()
             && emergency_generator.is_unpowered()
             && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
     }
@@ -277,11 +277,7 @@ impl A320AlternatingCurrentElectrical {
         state.add_bus(&self.ac_gnd_flt_service_bus);
     }
 }
-impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
-    fn ac_bus_1_and_2_unpowered(&self) -> bool {
-        self.ac_bus_1.is_unpowered() && self.ac_bus_2.is_unpowered()
-    }
-
+impl A320AlternatingCurrentElectricalSystem for A320AlternatingCurrentElectrical {
     fn ac_bus_2_powered(&self) -> bool {
         self.ac_bus_2.is_powered()
     }
@@ -302,9 +298,9 @@ impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
         &self.tr_ess
     }
 }
-impl AlternatingCurrentBusesState for A320AlternatingCurrentElectrical {
-    fn ac_buses_unpowered(&self) -> bool {
-        self.ac_bus_1_and_2_unpowered()
+impl AlternatingCurrentElectricalSystem for A320AlternatingCurrentElectrical {
+    fn any_non_essential_bus_powered(&self) -> bool {
+        self.ac_bus_1.is_powered() || self.ac_bus_2.is_powered()
     }
 }
 impl SimulationElement for A320AlternatingCurrentElectrical {

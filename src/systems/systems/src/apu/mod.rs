@@ -6,7 +6,10 @@ use crate::{
     electrical::{Potential, PotentialSource, PotentialTarget, ProvideFrequency, ProvidePotential},
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
     pneumatic::{BleedAirValve, BleedAirValveState, Valve},
-    shared::{ApuMaster, ApuStart, ApuStartContactorsController, AuxiliaryPowerUnitElectrical},
+    shared::{
+        ApuAvailable, ApuMaster, ApuStart, ApuStartContactorsController,
+        AuxiliaryPowerUnitElectrical,
+    },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 #[cfg(test)]
@@ -166,12 +169,13 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnitElectrical for Auxilia
         self.start_motor.powered_by(&source);
     }
 
-    fn is_available(&self) -> bool {
-        self.ecb.is_available()
-    }
-
     fn output_within_normal_parameters(&self) -> bool {
         self.generator.output_within_normal_parameters()
+    }
+}
+impl<T: ApuGenerator, U: ApuStartMotor> ApuAvailable for AuxiliaryPowerUnit<T, U> {
+    fn is_available(&self) -> bool {
+        self.ecb.is_available()
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> ApuStartContactorsController for AuxiliaryPowerUnit<T, U> {

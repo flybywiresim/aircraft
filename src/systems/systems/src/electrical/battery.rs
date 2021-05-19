@@ -143,7 +143,7 @@ impl ProvidePotential for Battery {
 
     fn potential_normal(&self) -> bool {
         (ElectricPotential::new::<volt>(25.0)..=ElectricPotential::new::<volt>(31.0))
-            .contains(&self.potential())
+            .contains(&ProvidePotential::potential(self))
     }
 }
 impl SimulationElement for Battery {
