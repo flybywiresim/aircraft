@@ -100,7 +100,7 @@
         <DefaultTemplateParameters>
             <DEFAULT_NAME>Expedite</DEFAULT_NAME>
             <PLANE_PREFIX></PLANE_PREFIX>
-            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+            <TOOLTIPID>Expedite</TOOLTIPID>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>

@@ -71,6 +71,7 @@
                     1 (&gt;#TOGGLE_VAR#) #LEFT_SINGLE_CODE#
                     }
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
         </Component>
     </Template>
@@ -91,7 +92,7 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
 
             <Update Frequency = "10">
-                (#TOGGLE_VAR#) if#{
+                (#TOGGLE_VAR#) if{
                     (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
                 } els{
                     (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / - (#TOGGLE_VAR#) max (&gt;O:_ButtonAnimVar)
@@ -115,6 +116,7 @@
                         (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
                     } #LEFT_SINGLE_CODE#
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
         </Component>
     </Template>

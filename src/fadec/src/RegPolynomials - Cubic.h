@@ -5,10 +5,13 @@ class Polynomial {
 public:
 	double n2NX(double n2, double idleN2) {
 		double n2_out = 0;
-		double m = 0;
-		double b = 0;
-		double cutoff1 = 0;
-		double cutoff2 = 0;
+		//double m = 0;
+		//Sdouble b = 0;
+		double noise = 0;
+		double y0 = 1.049882, y1 = 1.073, y2 = 1.05266153, y3 = 1.000000;
+		double x0 = 60, x1 = 62.9, x2 = 64.7881559, x3 = idleN2;
+		double a = 0, b = 0, c = 0, d = 0;
+
 
 		if (n2 <= 10  ) {
 			n2_out = (0.001164088 * pow(n2, 4)) - (0.032581156 * pow(n2, 3)) + (0.329780857 * pow(n2, 2)) - (1.51026875 * n2) + 5.0000000;
@@ -23,23 +26,13 @@ public:
 			n2_out = (0.000015864 * pow(n2, 4)) - (0.003354284 * pow(n2, 3)) + (0.264180902 * pow(n2, 2)) - (9.184557684 * n2) + 120.000000000;
 		}
 		else {
-			cutoff1 = (60 + (idleN2 - 60) * 0.329268293);
-			cutoff2 = (60 + (idleN2 - 60) * 0.451219512);
+			a = (y0 * (n2 - x1) * (n2 - x2) * (n2 - x3)) / ((x0 - x1) * (x0 - x2) * (x0 - x3));
+			b = (y1 * (n2 - x0) * (n2 - x2) * (n2 - x3)) / ((x1 - x0) * (x1 - x2) * (x1 - x3));
+			c = (y2 * (n2 - x0) * (n2 - x1) * (n2 - x3)) / ((x2 - x0) * (x2 - x1) * (x2 - x3));
+			d = (y3 * (n2 - x0) * (n2 - x1) * (n2 - x2)) / ((x3 - x0) * (x3 - x1) * (x3 - x2));
 
-			if (n2 <= cutoff1) {
-				m = (((idleN2 / cutoff1) - 0.01) - 1.04988216 ) / (cutoff1 - 60);
-				b = 1.04988216 - (m * 60);
-			}
-			else if (n2 <= cutoff2) {
-				m = ((idleN2 / cutoff2) - ((idleN2 / cutoff1) - 0.01)) / (cutoff2 - cutoff1);
-				b = (idleN2 / cutoff2) - (m * cutoff2);
-			}
-			else {
-				m = (1 - (idleN2 / cutoff2)) / (idleN2 - cutoff2);
-				b = 1 - (m * idleN2);
-			}
+			n2_out = a + b + c + d;
 
-			n2_out = (n2 * m) + b;
 		}
 
 		n2_out = n2_out * n2;

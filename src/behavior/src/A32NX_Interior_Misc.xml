@@ -17,6 +17,7 @@
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
+            <NO_SEQ2 />
         </DefaultTemplateParameters>
 
         <Component ID="SWITCH_MP#DCDU_SIDE#_DIM" Node="SWITCH_MP#DCDU_SIDE#_DIM">
@@ -94,6 +95,7 @@
     <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
         <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
             <HTML_EVENT_ID>INOP</HTML_EVENT_ID>
+            <NO_SEQ2 />
         </UseTemplate>
     </Template>
 
@@ -301,21 +303,21 @@
     Template for console light switches
     -->
     <Template Name="FBW_LIGHTING_Switch_Console_Template">
-        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
-            <DIMMER/>
-            <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-            <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-            <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
-            <ANIMTIP_0>Set CONSOLE/FLOOR OFF</ANIMTIP_0>
-            <ANIMTIP_1>Set CONSOLE/FLOOR DIM</ANIMTIP_1>
-            <ANIMTIP_2>Set CONSOLE/FLOOR BRT</ANIMTIP_2>
-            <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
-            <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
-            <INVERT_ANIM>True</INVERT_ANIM>
-            <WWISE_EVENT>lswitch</WWISE_EVENT>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-        </UseTemplate>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <INVERT_ANIM />
+                <WWISE_EVENT>lswitch</WWISE_EVENT>
+                <ANIMTIP_0>Set Console/Floor light to off</ANIMTIP_0>
+                <ANIMTIP_1>Set Console/Floor light to dim</ANIMTIP_1>
+                <ANIMTIP_2>Set Console/Floor light to bright</ANIMTIP_2>
+                <CODE_POS_0>100 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_0>
+                <CODE_POS_1>50 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_1>
+                <CODE_POS_2>0 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_2>
+                <STATE0_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 100 ==</STATE0_TEST>
+                <STATE1_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 50 ==</STATE1_TEST>
+                <STATE2_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 ==</STATE2_TEST>
+            </UseTemplate>
+        </Component>
     </Template>
 
     <!--
@@ -584,6 +586,7 @@
         <Component ID="#CLICKZONE_NODE_ID#" Node="#CLICKZONE_NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>(L:XMLVAR_#NODE_ID#_HIDDEN) ! (&gt;L:XMLVAR_#NODE_ID#_HIDDEN)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
         </Component>
     </Template>
