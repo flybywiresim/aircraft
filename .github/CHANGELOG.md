@@ -72,6 +72,7 @@
 1. [AP] Fixed and improved mode transitions related to LAND modes - @aguther (Andreas Guther)
 1. [ENGINE] Adapt engine IDLE N1 based on environmental conditions - @Taz5150 (TazX [Z+2]#0405), @aguther (Andreas Guther)
 1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
+1. [ELEC] ENG FIRE push button deactivates IDG - @davidwalschots (David Walschots)
 1. [FWC] Add Additional Warnings(Autopilot & Autothrottle Disconnect / L/G NOT DOWN ) - @Kimbyeongjang (김병장#7165)
 
 ## 0.6.0
