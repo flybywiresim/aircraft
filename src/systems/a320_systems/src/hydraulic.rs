@@ -4112,6 +4112,37 @@ mod tests {
         }
 
         #[test]
+        fn controller_yellow_epump_can_operate_from_cargo_door_without_main_control_power_bus() {
+            let context = context(Duration::from_millis(100));
+
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+
+            let mut yellow_epump_controller = A320YellowElectricPumpController::new(
+                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+            );
+            yellow_epump_controller.receive_power(&test_supplied_power(
+                ElectricalBusType::DirectCurrent(2),
+                false,
+            ));
+
+            overhead_panel.yellow_epump_push_button.push_auto();
+            assert!(!yellow_epump_controller.should_pressurise());
+
+            let aft_door = non_moving_door(2);
+            let fwd_door = moving_door(1);
+            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
+
+            // Need to run again the receive power state as now cargo door is operated
+            yellow_epump_controller.receive_power(&test_supplied_power(
+                ElectricalBusType::DirectCurrent(2),
+                false,
+            ));
+            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
+
+            assert!(yellow_epump_controller.should_pressurise());
+        }
+
+        #[test]
         fn controller_engine_driven_pump1_overhead_button_logic_with_eng_on() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             let fire_overhead_panel = A320EngineFireOverheadPanel::new();
