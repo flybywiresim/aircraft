@@ -886,7 +886,11 @@ impl SimulationElement for A320YellowElectricPumpController {
     }
 
     fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered();
+        // Control of the pump is powered by dedicated bus OR manual operation of cargo door
+        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered()
+            || self
+                .should_activate_yellow_pump_for_cargo_door_operation
+                .output();
     }
 }
 impl Default for A320YellowElectricPumpController {
