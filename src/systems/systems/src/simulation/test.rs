@@ -60,8 +60,7 @@ impl SimulationTestBed {
     /// [`Aircraft`]: ../trait.Aircraft.html
     /// [`Simulation`]: ../struct.Simulation.html
     pub fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
-        let mut simulation = Simulation::new(aircraft, &mut self.reader_writer);
-        simulation.tick(self.delta);
+        Simulation::tick(self.delta, aircraft, &mut self.reader_writer);
     }
 
     /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing
@@ -341,23 +340,6 @@ impl SimulatorReaderWriter for TestReaderWriter {
             self.variables.insert(name.to_owned(), value);
         }
     }
-
-    fn update_brake_input_left(&mut self, _left_raw_val: u32) {}
-    fn update_brake_input_right(&mut self, _right_raw_val: u32) {}
-    fn get_brake_output_left(&mut self) -> u32 {
-        0
-    }
-    fn get_brake_output_right(&mut self) -> u32 {
-        0
-    }
-    fn receive_a_park_brake_event(&mut self) {}
-
-    fn set_brake_left_key_pressed(&mut self) {}
-
-    fn set_brake_right_key_pressed(&mut self) {}
-
-    fn update_keyboard_inputs(&mut self, _delta: &Duration) {}
-    fn reset_keyboard_events(&mut self) {}
 }
 
 impl Default for TestReaderWriter {

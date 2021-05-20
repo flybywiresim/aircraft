@@ -18,19 +18,6 @@ pub trait SimulatorReaderWriter {
     fn read(&mut self, name: &str) -> f64;
     /// Writes a variable with the given name to the simulator.
     fn write(&mut self, name: &str, value: f64);
-
-    fn update_brake_input_left(&mut self, left_raw_val: u32);
-    fn update_brake_input_right(&mut self, right_raw_val: u32);
-    fn get_brake_output_left(&mut self) -> u32;
-    fn get_brake_output_right(&mut self) -> u32;
-    fn receive_a_park_brake_event(&mut self);
-
-    fn set_brake_left_key_pressed(&mut self);
-
-    fn set_brake_right_key_pressed(&mut self);
-
-    fn update_keyboard_inputs(&mut self, delta: &Duration);
-    fn reset_keyboard_events(&mut self);
 }
 
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].
@@ -171,120 +158,75 @@ pub trait SimulationElementVisitor {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T);
 }
 
-/// Runs the aircraft simulation every time [`tick`] is called.
-/// This orchestrates the:
-/// 1. Reading of data from the simulator into the aircraft state.
-/// 2. Updating of the aircraft state for each tick.
-/// 3. Writing of aircraft state data to the simulator.
-///
-/// # Examples
-/// Basic usage is as follows:
-/// ```rust
-/// # use std::time::Duration;
-/// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation, UpdateContext};
-/// # use systems::electrical::consumption::SuppliedPower;
-/// # struct MyAircraft {}
-/// # impl MyAircraft {
-/// #     fn new() -> Self {
-/// #         Self {}
-/// #     }
-/// # }
-/// # impl Aircraft for MyAircraft {
-/// #     fn update_before_power_distribution(&mut self, context: &UpdateContext) {}
-/// #     fn update_after_power_distribution(&mut self, context: &UpdateContext) {}
-/// #     fn get_supplied_power(&mut self) -> SuppliedPower { SuppliedPower::new() }
-/// # }
-/// # impl SimulationElement for MyAircraft {}
-/// #
-/// # struct MySimulatorReaderWriter {}
-/// # impl MySimulatorReaderWriter {
-/// #     fn new() -> Self {
-/// #         Self {}
-/// #     }
-/// # }
-/// # impl SimulatorReaderWriter for MySimulatorReaderWriter {
-/// #     fn read(&mut self, name: &str) -> f64 { 0.0 }
-/// #     fn write(&mut self, name: &str, value: f64) { }
-/// # }
-/// // Create the Simulation only once.
-/// let mut aircraft = MyAircraft::new();
-/// let mut reader_writer = MySimulatorReaderWriter::new();
-/// let mut simulation = Simulation::new(&mut aircraft, &mut reader_writer);
-/// // For each frame, call the tick function.
-/// simulation.tick(Duration::from_millis(50));
-/// ```
-/// [`tick`]: #method.tick
-pub struct Simulation<'a, T: Aircraft, U: SimulatorReaderWriter> {
-    aircraft: &'a mut T,
-    simulator_read_writer: &'a mut U,
-}
-impl<'a, T: Aircraft, U: SimulatorReaderWriter> Simulation<'a, T, U> {
-    pub fn new(aircraft: &'a mut T, simulator_read_writer: &'a mut U) -> Self {
-        Simulation {
-            aircraft,
-            simulator_read_writer,
-        }
-    }
-
+pub struct Simulation {}
+impl Simulation {
     /// Execute a single run of the simulation using the specified `delta` duration
     /// as the amount of time that has passed since the previous run.
-    pub fn tick(&mut self, delta: Duration) {
-        let mut reader = SimulatorReader::new(self.simulator_read_writer);
+    ///
+    /// This orchestrates the:
+    /// 1. Reading of data from the simulator into the aircraft state.
+    /// 2. Updating of the aircraft state for each tick.
+    /// 3. Writing of aircraft state data to the simulator.
+    ///
+    /// # Examples
+    /// Basic usage is as follows:
+    /// ```rust
+    /// # use std::time::Duration;
+    /// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation, UpdateContext};
+    /// # use systems::electrical::consumption::SuppliedPower;
+    /// # struct MyAircraft {}
+    /// # impl MyAircraft {
+    /// #     fn new() -> Self {
+    /// #         Self {}
+    /// #     }
+    /// # }
+    /// # impl Aircraft for MyAircraft {
+    /// #     fn update_before_power_distribution(&mut self, context: &UpdateContext) {}
+    /// #     fn update_after_power_distribution(&mut self, context: &UpdateContext) {}
+    /// #     fn get_supplied_power(&mut self) -> SuppliedPower { SuppliedPower::new() }
+    /// # }
+    /// # impl SimulationElement for MyAircraft {}
+    /// #
+    /// # struct MySimulatorReaderWriter {}
+    /// # impl MySimulatorReaderWriter {
+    /// #     fn new() -> Self {
+    /// #         Self {}
+    /// #     }
+    /// # }
+    /// # impl SimulatorReaderWriter for MySimulatorReaderWriter {
+    /// #     fn read(&mut self, name: &str) -> f64 { 0.0 }
+    /// #     fn write(&mut self, name: &str, value: f64) { }
+    /// # }
+    /// let mut aircraft = MyAircraft::new();
+    /// let mut reader_writer = MySimulatorReaderWriter::new();
+    /// // For each frame, call the tick function.
+    /// Simulation::tick(Duration::from_millis(50), &mut aircraft, &mut reader_writer);
+    /// ```
+    /// [`tick`]: #method.tick
+    pub fn tick(
+        delta: Duration,
+        aircraft: &mut impl Aircraft,
+        simulator_reader_writer: &mut impl SimulatorReaderWriter,
+    ) {
+        let mut reader = SimulatorReader::new(simulator_reader_writer);
         let context = UpdateContext::from_reader(&mut reader, delta);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
-        self.aircraft.accept(&mut visitor);
+        aircraft.accept(&mut visitor);
 
-        self.aircraft.update_before_power_distribution(&context);
+        aircraft.update_before_power_distribution(&context);
 
-        let mut electric_power = ElectricPower::from(self.aircraft.get_supplied_power(), delta);
-        electric_power.distribute_to(self.aircraft);
+        let mut electric_power = ElectricPower::from(aircraft.get_supplied_power(), delta);
+        electric_power.distribute_to(aircraft);
 
-        self.aircraft.update_after_power_distribution(&context);
+        aircraft.update_after_power_distribution(&context);
 
-        electric_power.consume_in(self.aircraft);
-        electric_power.report_consumption_to(self.aircraft);
+        electric_power.consume_in(aircraft);
+        electric_power.report_consumption_to(aircraft);
 
-        let mut writer = SimulatorWriter::new(self.simulator_read_writer);
+        let mut writer = SimulatorWriter::new(simulator_reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
-        self.aircraft.accept(&mut visitor);
-    }
-
-    pub fn update_brake_input_left(&mut self, raw_left_val: u32) {
-        self.simulator_read_writer
-            .update_brake_input_left(raw_left_val);
-    }
-
-    pub fn update_brake_input_right(&mut self, raw_right_val: u32) {
-        self.simulator_read_writer
-            .update_brake_input_right(raw_right_val);
-    }
-
-    pub fn get_brake_output_left(&mut self) -> u32 {
-        self.simulator_read_writer.get_brake_output_left()
-    }
-
-    pub fn get_brake_output_right(&mut self) -> u32 {
-        self.simulator_read_writer.get_brake_output_right()
-    }
-
-    pub fn receive_a_park_brake_event(&mut self) {
-        self.simulator_read_writer.receive_a_park_brake_event();
-    }
-
-    pub fn set_brake_left_key_pressed(&mut self) {
-        self.simulator_read_writer.set_brake_left_key_pressed();
-    }
-
-    pub fn set_brake_right_key_pressed(&mut self) {
-        self.simulator_read_writer.set_brake_right_key_pressed();
-    }
-
-    pub fn update_keyboard_inputs(&mut self, delta: &Duration) {
-        self.simulator_read_writer.update_keyboard_inputs(delta);
-    }
-    pub fn reset_keyboard_events(&mut self) {
-        self.simulator_read_writer.reset_keyboard_events();
+        aircraft.accept(&mut visitor);
     }
 }
 

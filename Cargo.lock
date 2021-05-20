@@ -33,6 +33,7 @@ dependencies = [
  "a320_systems",
  "msfs",
  "systems",
+ "systems_wasm",
  "uom",
 ]
 
@@ -792,6 +793,15 @@ dependencies = [
  "num-derive",
  "num-traits",
  "rand",
+ "uom",
+]
+
+[[package]]
+name = "systems_wasm"
+version = "0.1.0"
+dependencies = [
+ "msfs",
+ "systems",
  "uom",
 ]
 
