@@ -472,7 +472,18 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
 
-        SimVar.SetSimVarValue("K:A32NX.ATHR_RESET_DISABLE", "number", 1);
+        // Start the check routine for system health and status
+        setInterval(() => {
+            if (this.currentFlightPhase === FmgcFlightPhases.CRUISE && !this._destDataChecked) {
+                const dest = this.flightPlanManager.getDestination();
+                if (dest && dest.liveDistanceTo < 180) {
+                    this._destDataChecked = true;
+                    this.checkDestData();
+                }
+            }
+        }, 15000);
+
+        this.rops = new A32NX_ROPS(this);
     }
 
     onUpdate(_deltaTime) {
@@ -509,6 +520,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.guidanceController) {
             this.guidanceController.update(_deltaTime);
         }
+
+        this.rops.update();
     }
 
     /**
