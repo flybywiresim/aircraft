@@ -81,6 +81,13 @@ impl A320Hydraulic {
     const GREEN_EDP_CONTROL_POWER_BUS1: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
 
+    const PTU_CONTROL_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentGndFltService;
+
+    const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrentHot(1);
+    const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrentHot(2);
+
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
@@ -179,10 +186,15 @@ impl A320Hydraulic {
             pushback_tug: PushbackTug::new(),
 
             ram_air_turbine: RamAirTurbine::new(),
-            ram_air_turbine_controller: A320RamAirTurbineController::new(),
+            ram_air_turbine_controller: A320RamAirTurbineController::new(
+                Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
+                Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
+            ),
 
             power_transfer_unit: PowerTransferUnit::new(),
-            power_transfer_unit_controller: A320PowerTransferUnitController::new(),
+            power_transfer_unit_controller: A320PowerTransferUnitController::new(
+                Self::PTU_CONTROL_POWER_BUS,
+            ),
 
             braking_circuit_norm: BrakeCircuit::new(
                 "NORM",
@@ -900,12 +912,10 @@ impl A320PowerTransferUnitController {
     const DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK: Duration =
         Duration::from_secs(15);
 
-    const POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentGndFltService;
-
-    fn new() -> Self {
+    fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             is_powered: false,
-            powered_by: Self::POWER_BUS,
+            powered_by,
             should_enable: false,
             should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate::new(
                 Self::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
@@ -986,15 +996,13 @@ struct A320RamAirTurbineController {
     eng_2_master_on: bool,
 }
 impl A320RamAirTurbineController {
-    const POWER_BUS_SOLENOID_1: ElectricalBusType = ElectricalBusType::DirectCurrentHot(1);
-    const POWER_BUS_SOLENOID_2: ElectricalBusType = ElectricalBusType::DirectCurrentHot(2);
-    fn new() -> Self {
+    fn new(solenoid_1_bus: ElectricalBusType, solenoid_2_bus: ElectricalBusType) -> Self {
         Self {
             is_solenoid_1_powered: false,
-            solenoid_1_bus: Self::POWER_BUS_SOLENOID_1,
+            solenoid_1_bus,
 
             is_solenoid_2_powered: false,
-            solenoid_2_bus: Self::POWER_BUS_SOLENOID_2,
+            solenoid_2_bus,
 
             should_deploy: false,
             eng_1_master_on: false,
@@ -4281,7 +4289,8 @@ mod tests {
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
-            let mut ptu_controller = A320PowerTransferUnitController::new();
+            let mut ptu_controller =
+                A320PowerTransferUnitController::new(ElectricalBusType::DirectCurrentGndFltService);
             ptu_controller.receive_power(&test_supplied_power(
                 ElectricalBusType::DirectCurrentGndFltService,
                 true,
@@ -4332,7 +4341,8 @@ mod tests {
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
-            let mut ptu_controller = A320PowerTransferUnitController::new();
+            let mut ptu_controller =
+                A320PowerTransferUnitController::new(ElectricalBusType::DirectCurrentGndFltService);
             ptu_controller.receive_power(&test_supplied_power(
                 ElectricalBusType::DirectCurrentGndFltService,
                 true,
