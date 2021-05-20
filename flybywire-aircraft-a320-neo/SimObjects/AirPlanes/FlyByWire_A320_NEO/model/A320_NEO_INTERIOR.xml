@@ -235,11 +235,9 @@
 
             <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
                 <NODE_ID>PUSH_THROTTLE_1</NODE_ID>
-                <ANIM_NAME>PUSH_THROTTLE_1</ANIM_NAME>
             </UseTemplate>
             <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
                 <NODE_ID>PUSH_THROTTLE_2</NODE_ID>
-                <ANIM_NAME>PUSH_THROTTLE_2</ANIM_NAME>
             </UseTemplate>
 
             <UseTemplate Name="FBW_HANDLING_Wheel_ElevatorTrim_Template">
@@ -3847,12 +3845,7 @@
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_OVERSPEED, Bool) 0 == (L:A32NX_LDG_NOT_DOWN, Bool) 0 == and if{
-                        0 (&gt;L:A32NX_MASTER_WARNING)
-                        1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
-                    } els{
-                        1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
-                    }
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
@@ -3898,12 +3891,7 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_OVERSPEED, Bool) 0 == (L:A32NX_LDG_NOT_DOWN, Bool) 0 == and if{
-                        0 (&gt;L:A32NX_MASTER_WARNING)
-                        1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
-                    } els{
-                        1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
-                    }
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)

@@ -118,7 +118,12 @@ class A32NX_FWC {
         SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
 
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN", "Bool")) {
+            const ldgWarning = SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool");
+            const overspeedWarning = SimVar.GetSimVarValue("L:A32NX_OVERSPEED", "Bool");
             this.warningPressed = true;
+            if (!ldgWarning && !overspeedWarning) {
+                SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
+            }
         } else {
             this.warningPressed = false;
         }
