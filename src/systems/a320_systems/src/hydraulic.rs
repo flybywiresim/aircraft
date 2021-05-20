@@ -1538,25 +1538,26 @@ mod tests {
                 self.hydraulics.is_yellow_pressurised()
             }
 
-            fn ac_bus_1_power_state(&mut self, bus_is_alive: bool) {
+            fn set_ac_bus_1_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_1_powered = bus_is_alive;
             }
-            fn ac_bus_2_power_state(&mut self, bus_is_alive: bool) {
+
+            fn set_ac_bus_2_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_2_powered = bus_is_alive;
             }
 
-            fn dc_ground_service_power_state(&mut self, bus_is_alive: bool) {
+            fn set_dc_ground_service_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ground_service_powered = bus_is_alive;
             }
 
-            fn ac_ground_service_power_state(&mut self, bus_is_alive: bool) {
+            fn set_ac_ground_service_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_ground_service_powered = bus_is_alive;
             }
 
-            fn dc_bus_2_power_state(&mut self, bus_is_alive: bool) {
+            fn set_dc_bus_2_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_2_powered = bus_is_alive;
             }
-            fn dc_ess_power_state(&mut self, bus_is_alive: bool) {
+            fn set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ess_powered = bus_is_alive;
             }
         }
@@ -2066,36 +2067,36 @@ mod tests {
             }
 
             fn ac_bus_1_lost(mut self) -> Self {
-                self.aircraft.ac_bus_1_power_state(false);
+                self.aircraft.set_ac_bus_1_is_powered(false);
                 self
             }
 
             fn ac_bus_2_lost(mut self) -> Self {
-                self.aircraft.ac_bus_2_power_state(false);
+                self.aircraft.set_ac_bus_2_is_powered(false);
                 self
             }
 
             fn dc_ground_service_lost(mut self) -> Self {
-                self.aircraft.dc_ground_service_power_state(false);
+                self.aircraft.set_dc_ground_service_is_powered(false);
                 self
             }
             fn dc_ground_service_avail(mut self) -> Self {
-                self.aircraft.dc_ground_service_power_state(true);
+                self.aircraft.set_dc_ground_service_is_powered(true);
                 self
             }
 
             fn ac_ground_service_lost(mut self) -> Self {
-                self.aircraft.ac_ground_service_power_state(false);
+                self.aircraft.set_ac_ground_service_is_powered(false);
                 self
             }
 
             fn dc_bus_2_lost(mut self) -> Self {
-                self.aircraft.dc_bus_2_power_state(false);
+                self.aircraft.set_dc_bus_2_is_powered(false);
                 self
             }
 
             fn dc_ess_lost(mut self) -> Self {
-                self.aircraft.dc_ess_power_state(false);
+                self.aircraft.set_dc_ess_is_powered(false);
                 self
             }
 
@@ -3032,21 +3033,21 @@ mod tests {
         }
 
         #[test]
-        fn yellow_edp_solenoid_unpowered() {
+        fn when_yellow_edp_solenoid_main_power_bus_unavailable_backup_bus_keeps_pump_in_unpressurised_state(
+        ) {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            // Starting eng 2
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(15));
 
             assert!(test_bed.is_yellow_pressurised());
 
-            // Stoping EDP
+            // Stoping EDP manually
             test_bed = test_bed
                 .set_yellow_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(15));
@@ -3059,6 +3060,28 @@ mod tests {
 
             // Yellow solenoid has backup power from DC ESS BUS
             assert!(!test_bed.is_yellow_pressurised());
+        }
+
+        #[test]
+        fn when_yellow_edp_solenoid_both_bus_unpowered_yellow_hydraulic_system_is_pressurised() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.is_yellow_pressurised());
+
+            // Stoping EDP manually
+            test_bed = test_bed
+                .set_yellow_ed_pump(false)
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(!test_bed.is_yellow_pressurised());
 
             test_bed = test_bed
                 .dc_ess_lost()
@@ -3069,21 +3092,20 @@ mod tests {
         }
 
         #[test]
-        fn green_edp_solenoid_unpowered() {
+        fn when_green_edp_solenoid_unpowered_yellow_hydraulic_system_is_pressurised() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            // Starting eng 1
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(15));
 
             assert!(test_bed.is_green_pressurised());
 
-            // Stoping EDP
+            // Stoping EDP manually
             test_bed = test_bed
                 .set_green_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(15));
