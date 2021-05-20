@@ -117,7 +117,7 @@ mod transformer_rectifier_tests {
             }
         }
 
-        fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T) {
+        fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
             self.test_bed.run_aircraft(aircraft);
         }
 

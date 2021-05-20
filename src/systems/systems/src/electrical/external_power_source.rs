@@ -108,7 +108,7 @@ mod external_power_source_tests {
                 .write_bool("EXTERNAL POWER AVAILABLE:1", false);
         }
 
-        fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T) {
+        fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
             self.test_bed.run_aircraft(aircraft);
         }
 

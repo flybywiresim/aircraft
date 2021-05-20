@@ -5,7 +5,7 @@ use super::{
 use crate::{
     electrical::PotentialSource,
     pneumatic::{BleedAirValveController, Valve},
-    shared::ApuStartContactorsController,
+    shared::{ApuMaster, ApuStart, ApuStartContactorsController},
     simulation::UpdateContext,
 };
 use std::time::Duration;
@@ -59,7 +59,7 @@ impl ElectronicControlBox {
         fire_overhead: &AuxiliaryPowerUnitFireOverheadPanel,
         apu_bleed_is_on: bool,
     ) {
-        self.master_is_on = overhead.master_is_on();
+        self.master_is_on = overhead.master_sw_is_on();
         self.start_is_on = overhead.start_is_on();
         self.bleed_is_on = apu_bleed_is_on;
         self.fire_button_is_released = fire_overhead.fire_button_is_released();
@@ -72,7 +72,7 @@ impl ElectronicControlBox {
         self.air_intake_flap_fully_open = air_intake_flap.is_fully_open();
     }
 
-    pub fn update_start_motor_state<T: PotentialSource>(&mut self, start_motor: &T) {
+    pub fn update_start_motor_state(&mut self, start_motor: &impl PotentialSource) {
         self.start_motor_is_powered = start_motor.is_powered();
 
         if self.should_close_start_contactors() && !self.start_motor_is_powered {
@@ -100,10 +100,10 @@ impl ElectronicControlBox {
         }
     }
 
-    pub fn update_bleed_air_valve_state<T: Valve>(
+    pub fn update_bleed_air_valve_state(
         &mut self,
         context: &UpdateContext,
-        bleed_air_valve: &T,
+        bleed_air_valve: &impl Valve,
     ) {
         if bleed_air_valve.is_open() {
             self.bleed_air_valve_last_open_time_ago = Duration::from_secs(0);
