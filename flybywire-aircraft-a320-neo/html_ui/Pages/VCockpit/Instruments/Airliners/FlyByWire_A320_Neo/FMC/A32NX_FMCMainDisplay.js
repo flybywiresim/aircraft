@@ -168,6 +168,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDist = undefined;
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
+        this.preSelectedClbSpeed = undefined;
+        this.preSelectedCrzSpeed = undefined;
+        this.preSelectedDesSpeed = undefined;
         this.managedSpeedTarget = NaN;
         this.managedSpeedTargetIsMach = false;
         this.managedSpeedLimit = 250;
@@ -184,6 +187,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendIsPilotEntered = false;
         this.managedSpeedDescendMach = .78;
         // this.managedSpeedDescendMachIsPilotEntered = false;
+        this.cruiseFlightLevelTimeOut = undefined;
     }
 
     Init() {
@@ -229,6 +233,9 @@ class FMCMainDisplay extends BaseAirliners {
 
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
+
+        SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+        SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
@@ -345,6 +352,9 @@ class FMCMainDisplay extends BaseAirliners {
                     CDUProgressPage.ShowPage(this);
                 }
 
+                /** Arm preselected speed/mach for next flight phase */
+                this.updatePreSelSpeedMach(this.preSelectedClbSpeed);
+
                 break;
             }
 
@@ -362,13 +372,15 @@ class FMCMainDisplay extends BaseAirliners {
                     CDUProgressPage.ShowPage(this);
                 }
 
-                let preSelectedClbSpeed = this.preSelectedClbSpeed;
-
-                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                    preSelectedClbSpeed = this.computedVgd;
+                /** Activate pre selected speed/mach */
+                if (_lastFlightPhase === FmgcFlightPhases.TAKEOFF) {
+                    this.activatePreSelSpeedMach(this.preSelectedClbSpeed);
                 }
 
                 SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
+
+                /** Arm preselected speed/mach for next flight phase */
+                this.updatePreSelSpeedMach(this.preSelectedCrzSpeed);
 
                 break;
             }
@@ -383,6 +395,14 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
 
+                /** Activate pre selected speed/mach */
+                if (_lastFlightPhase === FmgcFlightPhases.CLIMB) {
+                    this.activatePreSelSpeedMach(this.preSelectedCrzSpeed);
+                }
+
+                /** Arm preselected speed/mach for next flight phase */
+                this.updatePreSelSpeedMach(this.preSelectedDesSpeed);
+
                 break;
             }
 
@@ -396,6 +416,14 @@ class FMCMainDisplay extends BaseAirliners {
                 this.checkDestData();
 
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+
+                /** Activate pre selected speed/mach */
+                if (_lastFlightPhase === FmgcFlightPhases.CRUISE) {
+                    this.activatePreSelSpeedMach(this.preSelectedDesSpeed);
+                }
+
+                /** Clear pre selected speed/mach */
+                this.updatePreSelSpeedMach(undefined);
 
                 break;
             }
@@ -473,10 +501,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateManagedSpeed() {
-        if (!this.isAirspeedManaged()) {
-            return;
-        }
-
         let vPfd = 0;
         let isMach = false;
 
@@ -603,6 +627,10 @@ class FMCMainDisplay extends BaseAirliners {
             this.managedSpeedTargetIsMach = isMach;
         }
 
+        if (!this.isAirspeedManaged()) {
+            return;
+        }
+
         // Overspeed protection
         const Vtap = Math.min(this.managedSpeedTarget, SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number"));
 
@@ -610,6 +638,34 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", Vtap);
 
         Coherent.call("AP_SPD_VAR_SET", 0, Vtap);
+    }
+
+    activatePreSelSpeedMach(preSel) {
+        if (preSel) {
+            if (preSel < 1) {
+                SimVar.SetSimVarValue("H:A320_Neo_FCU_USE_PRE_SEL_MACH", "number", 1);
+            } else {
+                SimVar.SetSimVarValue("H:A320_Neo_FCU_USE_PRE_SEL_SPEED", "number", 1);
+            }
+        }
+    }
+
+    updatePreSelSpeedMach(preSel) {
+        // The timeout is required to create a delay for the current value to be read and the new one to be set
+        setTimeout(() => {
+            if (preSel) {
+                if (preSel > 1) {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", preSel);
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                } else {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", preSel);
+                }
+            } else {
+                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+            }
+        }, 200);
     }
 
     updateRadioNavState() {
@@ -1045,15 +1101,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
             this.flightPhaseManager.handleFcuAltKnobTurn();
-            if (this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
-                const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
-                if (this._activeCruiseFlightLevelDefaulToFcu || fcuFl >= this._cruiseFlightLevel) {
-                    this.cruiseFlightLevel = fcuFl;
-                    if (this.page.Current === this.page.ProgressPage) {
-                        CDUProgressPage.ShowPage(this);
-                    }
-                }
-            }
+            this._onTrySetCruiseFlightLevel();
         }
         if (_event === "AP_DEC_HEADING" || _event === "AP_INC_HEADING") {
             if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
@@ -1116,13 +1164,55 @@ class FMCMainDisplay extends BaseAirliners {
         const _targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
         if (
-            (this.currentFlightPhase === FmgcFlightPhases.CLIMB && _targetFl >= this.cruiseFlightLevel) ||
+            (this.currentFlightPhase === FmgcFlightPhases.CLIMB && _targetFl > this.cruiseFlightLevel) ||
             (this.currentFlightPhase === FmgcFlightPhases.CRUISE && _targetFl !== this.cruiseFlightLevel)
         ) {
             this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_targetFl * 100));
+            this.cruiseFlightLevel = _targetFl;
+            this._cruiseFlightLevel = _targetFl;
         }
-        this.cruiseFlightLevel = _targetFl;
-        this._cruiseFlightLevel = _targetFl;
+    }
+
+    /***
+     * Executed on every alt knob turn, checks whether or not the crz fl can be changed to the newly selected fcu altitude
+     * It creates a timeout to simulate real life delay which resets every time the fcu knob alt increases or decreases.
+     * @private
+     */
+    _onTrySetCruiseFlightLevel() {
+        if (!(this.currentFlightPhase === FmgcFlightPhases.CLIMB || this.currentFlightPhase === FmgcFlightPhases.CRUISE)) {
+            return;
+        }
+
+        const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+
+        if ((activeVerticalMode >= 11 && activeVerticalMode <= 15) || (activeVerticalMode >= 21 && activeVerticalMode <= 23)) {
+            const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
+
+            if (this.currentFlightPhase === FmgcFlightPhases.CLIMB && fcuFl > this.cruiseFlightLevel ||
+                this.currentFlightPhase === FmgcFlightPhases.CRUISE && fcuFl !== this.cruiseFlightLevel
+            ) {
+                if (this.cruiseFlightLevelTimeOut) {
+                    clearTimeout(this.cruiseFlightLevelTimeOut);
+                    this.cruiseFlightLevelTimeOut = undefined;
+                }
+
+                this.cruiseFlightLevelTimeOut = setTimeout(() => {
+                    if (fcuFl === Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100 &&
+                        (
+                            this.currentFlightPhase === FmgcFlightPhases.CLIMB && fcuFl > this.cruiseFlightLevel ||
+                            this.currentFlightPhase === FmgcFlightPhases.CRUISE && fcuFl !== this.cruiseFlightLevel
+                        )
+                    ) {
+                        this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(fcuFl * 100));
+                        this.cruiseFlightLevel = fcuFl;
+                        this._cruiseFlightLevel = fcuFl;
+                        if (this.page.Current === this.page.ProgressPage) {
+                            CDUProgressPage.ShowPage(this);
+                        }
+                    }
+                }, 3000);
+            }
+        }
     }
 
     /* END OF FMS EVENTS */
@@ -2481,33 +2571,93 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
-    //TODO: fix this functionality
     trySetPreSelectedClimbSpeed(s) {
+        const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.TAKEOFF;
+        if (s === FMCMainDisplay.clrValue) {
+            this.preSelectedClbSpeed = undefined;
+            if (isNextPhase) {
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+            }
+            return true;
+        }
         const v = parseFloat(s);
         if (isFinite(v)) {
-            this.preSelectedClbSpeed = v;
+            if (v < 1) {
+                this.preSelectedClbSpeed = v;
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                }
+            } else {
+                this.preSelectedClbSpeed = Math.round(v);
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedClbSpeed);
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                }
+            }
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
-    //TODO: fix this functionality
     trySetPreSelectedCruiseSpeed(s) {
+        const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.CLIMB;
+        if (s === FMCMainDisplay.clrValue) {
+            this.preSelectedCrzSpeed = undefined;
+            if (isNextPhase) {
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+            }
+            return true;
+        }
         const v = parseFloat(s);
         if (isFinite(v)) {
-            this.preSelectedCrzSpeed = v;
+            if (v < 1) {
+                this.preSelectedCrzSpeed = v;
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                }
+            } else {
+                this.preSelectedCrzSpeed = Math.round(v);
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedCrzSpeed);
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                }
+            }
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
-    //TODO: fix this functionality
     trySetPreSelectedDescentSpeed(s) {
+        const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.CRUISE;
+        if (s === FMCMainDisplay.clrValue) {
+            this.preSelectedDesSpeed = undefined;
+            if (isNextPhase) {
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+            }
+            return true;
+        }
         const v = parseFloat(s);
         if (isFinite(v)) {
-            this.preSelectedDesSpeed = v;
+            if (v < 1) {
+                this.preSelectedDesSpeed = v;
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                }
+            } else {
+                this.preSelectedDesSpeed = Math.round(v);
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedDesSpeed);
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                }
+            }
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);

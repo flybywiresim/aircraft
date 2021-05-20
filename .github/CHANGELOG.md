@@ -68,6 +68,11 @@
 1. [FBW] Elevator trim wheels no longer move when stop is reached - @aguther (Andreas Guther)
 1. [AP] Improved V/S and FPA speed protection mode - @aguther (Andreas Guther)
 1. [MISC] Seatbelt sign state can be toggled via external events - @Saschl (saschl#9432)
+1. [MISC] Standby instrument brightness buttons can now be held down rather than pressed to -/+ brightness - @2hwk (2Cas#1022)
+1. [AP] Fixed and improved mode transitions related to LAND modes - @aguther (Andreas Guther)
+1. [ENGINE] Adapt engine IDLE N1 based on environmental conditions - @Taz5150 (TazX [Z+2]#0405), @aguther (Andreas Guther)
+1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
+1. [ELEC] ENG FIRE push button deactivates IDG - @davidwalschots (David Walschots)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
