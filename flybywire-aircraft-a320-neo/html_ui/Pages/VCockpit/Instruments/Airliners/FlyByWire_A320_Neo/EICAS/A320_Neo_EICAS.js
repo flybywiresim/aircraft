@@ -114,17 +114,17 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
 
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7", "FLOAT64", 0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84", "FLOAT64", 0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85", "FLOAT64", 0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86", "FLOAT64", 0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7", "number", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84", "number", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85", "number", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86", "number", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "number", 0.1);
 
         this.ecamAllButtonPrevState = false;
         this.updateThrottler = new UpdateThrottler(500);

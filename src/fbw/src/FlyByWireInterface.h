@@ -184,6 +184,7 @@ class FlyByWireInterface {
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   EngineData engineData = {};
+  std::unique_ptr<LocalVariable> engineEngineIdleN1;
   std::unique_ptr<LocalVariable> engineEngine1EGT;
   std::unique_ptr<LocalVariable> engineEngine2EGT;
   std::unique_ptr<LocalVariable> engineEngine1FF;

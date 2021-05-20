@@ -1,18 +1,14 @@
 [package]
-name = "a320_systems_wasm"
+name = "systems_wasm"
 version = "0.1.0"
 authors = ["FlyByWire Simulations"]
 edition = "2018"
 
 [lib]
-name = "systems"
-crate-type = ["cdylib"]
 test = false
-doc = false
+doctest = false
 
 [dependencies]
 uom = "0.30.0"
-a320_systems = { path = "../a320_systems" }
 systems = { path = "../systems" }
-systems_wasm = { path = "../systems_wasm" }
 msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }

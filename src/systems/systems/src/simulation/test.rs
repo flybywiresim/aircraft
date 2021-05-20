@@ -45,7 +45,7 @@ impl SimulationTestBed {
     ///
     /// By default the unseeded simulation will return 0.0 or false for any requested
     /// variables. If this is a problem for your test, then use this function.
-    pub fn seeded_with<T: SimulationElement>(element: &mut T) -> Self {
+    pub fn seeded_with(element: &mut impl SimulationElement) -> Self {
         let mut test_bed = Self::new();
 
         let mut writer = SimulatorWriter::new(&mut test_bed.reader_writer);
@@ -59,9 +59,8 @@ impl SimulationTestBed {
     ///
     /// [`Aircraft`]: ../trait.Aircraft.html
     /// [`Simulation`]: ../struct.Simulation.html
-    pub fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T) {
-        let mut simulation = Simulation::new(aircraft, &mut self.reader_writer);
-        simulation.tick(self.delta);
+    pub fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
+        Simulation::tick(self.delta, aircraft, &mut self.reader_writer);
     }
 
     /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing
@@ -113,7 +112,7 @@ impl SimulationTestBed {
     ///
     /// [`Simulation`]: ../struct.Simulation.html
     /// [`SimulationElement`]: ../trait.SimulationElement.html
-    pub fn run_without_update<T: SimulationElement>(&mut self, element: &mut T) {
+    pub fn run_without_update(&mut self, element: &mut impl SimulationElement) {
         self.run(element, |_, _| {});
     }
 
@@ -177,9 +176,9 @@ impl SimulationTestBed {
         );
     }
 
-    pub fn supplied_power_fn<T: Fn() -> SuppliedPower + 'static>(
+    pub fn supplied_power_fn(
         mut self,
-        supplied_power_fn: T,
+        supplied_power_fn: impl Fn() -> SuppliedPower + 'static,
     ) -> Self {
         self.get_supplied_power_fn = Box::new(supplied_power_fn);
         self
@@ -253,7 +252,9 @@ impl<'a, T: SimulationElement, U: Fn(&mut T, &UpdateContext)> SimulationElement
     for TestAircraft<'a, T, U>
 {
     fn accept<W: SimulationElementVisitor>(&mut self, visitor: &mut W) {
-        visitor.visit(self.element);
+        self.element.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -339,23 +340,6 @@ impl SimulatorReaderWriter for TestReaderWriter {
             self.variables.insert(name.to_owned(), value);
         }
     }
-
-    fn update_brake_input_left(&mut self, _left_raw_val: u32) {}
-    fn update_brake_input_right(&mut self, _right_raw_val: u32) {}
-    fn get_brake_output_left(&mut self) -> u32 {
-        0
-    }
-    fn get_brake_output_right(&mut self) -> u32 {
-        0
-    }
-    fn receive_a_park_brake_event(&mut self) {}
-
-    fn set_brake_left_key_pressed(&mut self) {}
-
-    fn set_brake_right_key_pressed(&mut self) {}
-
-    fn update_keyboard_inputs(&mut self, _delta: &Duration) {}
-    fn reset_keyboard_events(&mut self) {}
 }
 
 impl Default for TestReaderWriter {
