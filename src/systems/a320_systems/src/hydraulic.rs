@@ -13,7 +13,7 @@ use systems::{
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
     },
-    shared::EngineFirePushButtons,
+    shared::{EmergencyElectricalRatPushButton, EngineFirePushButtons},
 };
 use systems::{
     shared::{LandingGearPosition, RamAirTurbineHydraulicLoopPressurised},
@@ -22,8 +22,6 @@ use systems::{
         UpdateContext,
     },
 };
-
-use super::electrical::A320EmergencyElectricalOverheadStates;
 
 use systems::electrical::{consumption::SuppliedPower, ElectricalBusType};
 use systems::{engine::Engine, landing_gear::LandingGear};
@@ -230,7 +228,7 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
         landing_gear: &LandingGear,
-        rat_and_emer_gen_man_on: &impl A320EmergencyElectricalOverheadStates,
+        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         is_in_emergency_elec: bool,
     ) {
         let min_hyd_loop_timestep =
@@ -353,7 +351,7 @@ impl A320Hydraulic {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        rat_and_emer_gen_man_on: &impl A320EmergencyElectricalOverheadStates,
+        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         is_in_emergency_elec: bool,
     ) {
         // Updating rat stowed pos on all frames in case it's used for graphics
@@ -1437,7 +1435,7 @@ mod tests {
                 visitor.visit(self);
             }
         }
-        impl A320EmergencyElectricalOverheadStates for A320TestEmergencyElectricalOverheadPanel {
+        impl EmergencyElectricalRatPushButton for A320TestEmergencyElectricalOverheadPanel {
             fn rat_and_emer_gen_man_on(&self) -> bool {
                 self.rat_and_emer_gen_man_on.is_pressed()
             }

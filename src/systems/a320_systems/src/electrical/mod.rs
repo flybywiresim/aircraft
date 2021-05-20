@@ -20,8 +20,9 @@ use systems::{
         NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
     },
     shared::{
-        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EngineCorrectedN2,
-        EngineFirePushButtons, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
+        EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
+        RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
@@ -382,11 +383,7 @@ impl SimulationElement for A320EmergencyElectricalOverheadPanel {
         visitor.visit(self);
     }
 }
-// Trait used to share RAT MAN button with hydraulics logic without ELEC type dependencies
-pub trait A320EmergencyElectricalOverheadStates {
-    fn rat_and_emer_gen_man_on(&self) -> bool;
-}
-impl A320EmergencyElectricalOverheadStates for A320EmergencyElectricalOverheadPanel {
+impl EmergencyElectricalRatPushButton for A320EmergencyElectricalOverheadPanel {
     fn rat_and_emer_gen_man_on(&self) -> bool {
         self.rat_and_emer_gen_man_on.is_pressed()
     }

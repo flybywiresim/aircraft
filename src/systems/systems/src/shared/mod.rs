@@ -30,6 +30,10 @@ pub trait EngineFirePushButtons {
     fn is_released(&self, engine_number: usize) -> bool;
 }
 
+pub trait EmergencyElectricalRatPushButton {
+    fn rat_and_emer_gen_man_on(&self) -> bool;
+}
+
 pub trait ApuMaster {
     fn master_sw_is_on(&self) -> bool;
 }
