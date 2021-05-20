@@ -1848,6 +1848,7 @@
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_SINGLE_CODE>
+                            <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_LEAVE_CODE>
                             <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED, Bool))%{if}Ram air turbine deployed (Inop.)%{else}Deploy ram air turbine (Inop.)%{end}</TOOLTIPID>
                             <MOMENTARY/>
                             <NO_SEQ1 />
@@ -1887,6 +1888,7 @@
                         <NODE_ID>PUSH_OVHD_HYD_RATMANON</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_RATMANON</LOCK_NODE_ID>
                         <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
+                        <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
                         <TOOLTIPID>Deploys ram air turbine</TOOLTIPID>
                         <MOMENTARY/>
                         <NO_SEQ1 />
