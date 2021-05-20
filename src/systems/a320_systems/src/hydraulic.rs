@@ -4,17 +4,23 @@ use uom::si::{
     ratio::percent, volume::gallon,
 };
 
-use systems::hydraulic::{
-    ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
-    PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController, RamAirTurbine,
-    RamAirTurbineController,
-};
 use systems::overhead::{
-    AutoOffFaultPushButton, AutoOnFaultPushButton, FirePushButton, MomentaryPushButton,
-    OnOffFaultPushButton,
+    AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
 };
-use systems::simulation::{
-    SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
+use systems::{
+    hydraulic::{
+        ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
+        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
+        RamAirTurbine, RamAirTurbineController,
+    },
+    shared::EngineFirePushButtons,
+};
+use systems::{
+    shared::{LandingGearPosition, RamAirTurbineHydraulicLoopPressurised},
+    simulation::{
+        SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        UpdateContext,
+    },
 };
 
 use super::electrical::A320EmergencyElectricalOverheadStates;
@@ -216,13 +222,13 @@ impl A320Hydraulic {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub(super) fn update<T: Engine>(
+    pub(super) fn update<T: Engine, U: EngineFirePushButtons>(
         &mut self,
         context: &UpdateContext,
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
-        engine_fire_overhead: &A320EngineFireOverheadPanel,
+        engine_fire_push_buttons: &U,
         landing_gear: &LandingGear,
         rat_and_emer_gen_man_on: &impl A320EmergencyElectricalOverheadStates,
         is_in_emergency_elec: bool,
@@ -278,7 +284,7 @@ impl A320Hydraulic {
                     engine1,
                     engine2,
                     overhead_panel,
-                    engine_fire_overhead,
+                    engine_fire_push_buttons,
                     landing_gear,
                 );
             }
@@ -328,7 +334,7 @@ impl A320Hydraulic {
             .nose_wheel_steering_pin_is_inserted()
     }
 
-    pub(super) fn is_blue_pressurised(&self) -> bool {
+    fn is_blue_pressurised(&self) -> bool {
         self.blue_loop.is_pressurised()
     }
 
@@ -392,13 +398,13 @@ impl A320Hydraulic {
     fn update_blue_actuators_volume(&mut self) {}
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
-    fn update_fixed_step<T: Engine>(
+    fn update_fixed_step<T: Engine, U: EngineFirePushButtons>(
         &mut self,
         context: &UpdateContext,
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
-        engine_fire_overhead: &A320EngineFireOverheadPanel,
+        engine_fire_push_buttons: &U,
         landing_gear: &LandingGear,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
@@ -434,7 +440,7 @@ impl A320Hydraulic {
             .update(self.green_loop.pressure());
         self.engine_driven_pump_1_controller.update(
             overhead_panel,
-            engine_fire_overhead,
+            engine_fire_push_buttons,
             engine1.corrected_n2(),
             engine1.oil_pressure(),
             self.engine_driven_pump_1_pressure_switch.is_pressurised(),
@@ -453,7 +459,7 @@ impl A320Hydraulic {
             .update(self.yellow_loop.pressure());
         self.engine_driven_pump_2_controller.update(
             overhead_panel,
-            engine_fire_overhead,
+            engine_fire_push_buttons,
             engine2.corrected_n2(),
             engine2.oil_pressure(),
             self.engine_driven_pump_2_pressure_switch.is_pressurised(),
@@ -498,7 +504,7 @@ impl A320Hydraulic {
         self.ram_air_turbine
             .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
 
-        self.green_loop_controller.update(engine_fire_overhead);
+        self.green_loop_controller.update(engine_fire_push_buttons);
         self.green_loop.update(
             context,
             Vec::new(),
@@ -508,7 +514,7 @@ impl A320Hydraulic {
             &self.green_loop_controller,
         );
 
-        self.yellow_loop_controller.update(engine_fire_overhead);
+        self.yellow_loop_controller.update(engine_fire_push_buttons);
         self.yellow_loop.update(
             context,
             vec![&self.yellow_electric_pump],
@@ -518,7 +524,7 @@ impl A320Hydraulic {
             &self.yellow_loop_controller,
         );
 
-        self.blue_loop_controller.update(engine_fire_overhead);
+        self.blue_loop_controller.update(engine_fire_push_buttons);
         self.blue_loop.update(
             context,
             vec![&self.blue_electric_pump],
@@ -530,6 +536,11 @@ impl A320Hydraulic {
 
         self.braking_circuit_norm.update(context, &self.green_loop);
         self.braking_circuit_altn.update(context, &self.yellow_loop);
+    }
+}
+impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
+    fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
+        self.is_blue_pressurised()
     }
 }
 impl SimulationElement for A320Hydraulic {
@@ -581,10 +592,9 @@ impl A320HydraulicLoopController {
         }
     }
 
-    fn update(&mut self, engine_fire_overhead: &A320EngineFireOverheadPanel) {
+    fn update<T: EngineFirePushButtons>(&mut self, engine_fire_push_buttons: &T) {
         if let Some(eng_number) = self.engine_number {
-            self.should_open_fire_shutoff_valve =
-                !engine_fire_overhead.fire_push_button_is_released(eng_number);
+            self.should_open_fire_shutoff_valve = !engine_fire_push_buttons.is_released(eng_number);
         }
     }
 }
@@ -646,21 +656,21 @@ impl A320EngineDrivenPumpController {
             self.is_pressure_low && (!is_engine_low_oil_pressure || !self.weight_on_wheels);
     }
 
-    fn update(
+    fn update<T: EngineFirePushButtons>(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
-        engine_fire_overhead: &A320EngineFireOverheadPanel,
+        engine_fire_push_buttons: &T,
         engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.engine_number)
-            && !engine_fire_overhead.fire_push_button_is_released(self.engine_number)
+            && !engine_fire_push_buttons.is_released(self.engine_number)
         {
             should_pressurise_if_powered = true;
         } else if overhead_panel.edp_push_button_is_off(self.engine_number)
-            || engine_fire_overhead.fire_push_button_is_released(self.engine_number)
+            || engine_fire_push_buttons.is_released(self.engine_number)
         {
             should_pressurise_if_powered = false;
         }
@@ -1394,35 +1404,6 @@ impl SimulationElement for A320HydraulicOverheadPanel {
     }
 }
 
-pub(super) struct A320EngineFireOverheadPanel {
-    eng1_fire_pb: FirePushButton,
-    eng2_fire_pb: FirePushButton,
-}
-impl A320EngineFireOverheadPanel {
-    pub(super) fn new() -> Self {
-        Self {
-            eng1_fire_pb: FirePushButton::new("ENG1"),
-            eng2_fire_pb: FirePushButton::new("ENG2"),
-        }
-    }
-
-    fn fire_push_button_is_released(&self, engine_number: usize) -> bool {
-        match engine_number {
-            1 => self.eng1_fire_pb.is_released(),
-            2 => self.eng2_fire_pb.is_released(),
-            _ => panic!("The A320 only supports two engines."),
-        }
-    }
-}
-impl SimulationElement for A320EngineFireOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.eng1_fire_pb.accept(visitor);
-        self.eng2_fire_pb.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1431,7 +1412,7 @@ mod tests {
     mod a320_hydraulics {
         use super::*;
         use systems::electrical::{Potential, PotentialOrigin};
-        use systems::engine::leap_engine::LeapEngine;
+        use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
@@ -1466,8 +1447,8 @@ mod tests {
             engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
-            engine_fire_overhead: A320EngineFireOverheadPanel,
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
+            engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
 
             // Electric buses states to be able to kill them dynamically
@@ -1488,8 +1469,8 @@ mod tests {
                     engine_2: LeapEngine::new(2),
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
-                    engine_fire_overhead: A320EngineFireOverheadPanel::new(),
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
+                    engine_fire_overhead: EngineFireOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
                     is_ac_ground_service_powered: true,
                     is_dc_ground_service_powered: true,
@@ -4145,7 +4126,7 @@ mod tests {
         #[test]
         fn controller_engine_driven_pump1_overhead_button_logic_with_eng_on() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let fire_overhead_panel = A320EngineFireOverheadPanel::new();
+            let fire_overhead_panel = EngineFireOverheadPanel::new();
             overhead_panel.edp1_push_button.push_auto();
 
             let mut edp1_controller = A320EngineDrivenPumpController::new(
@@ -4192,9 +4173,8 @@ mod tests {
         #[test]
         fn controller_engine_driven_pump1_fire_overhead_released_stops_pump() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let mut fire_overhead_panel = A320EngineFireOverheadPanel::new();
+            let mut fire_overhead_panel = EngineFireOverheadPanel::new();
             overhead_panel.edp1_push_button.push_auto();
-            fire_overhead_panel.eng1_fire_pb.set(false);
 
             let mut edp1_controller = A320EngineDrivenPumpController::new(
                 1,
@@ -4216,7 +4196,10 @@ mod tests {
             );
             assert!(edp1_controller.should_pressurise());
 
-            fire_overhead_panel.eng1_fire_pb.set(true);
+            let mut test_bed = SimulationTestBed::new();
+            test_bed.write_bool("FIRE_BUTTON_ENG1", true);
+            test_bed.run(&mut fire_overhead_panel, |_, _| {});
+
             edp1_controller.update(
                 &overhead_panel,
                 &fire_overhead_panel,
@@ -4230,7 +4213,7 @@ mod tests {
         #[test]
         fn controller_engine_driven_pump2_overhead_button_logic_with_eng_on() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let fire_overhead_panel = A320EngineFireOverheadPanel::new();
+            let fire_overhead_panel = EngineFireOverheadPanel::new();
             overhead_panel.edp2_push_button.push_auto();
 
             let mut edp2_controller = A320EngineDrivenPumpController::new(
@@ -4280,9 +4263,8 @@ mod tests {
         #[test]
         fn controller_engine_driven_pump2_fire_overhead_released_stops_pump() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let mut fire_overhead_panel = A320EngineFireOverheadPanel::new();
+            let mut fire_overhead_panel = EngineFireOverheadPanel::new();
             overhead_panel.edp2_push_button.push_auto();
-            fire_overhead_panel.eng2_fire_pb.set(false);
 
             let mut edp2_controller = A320EngineDrivenPumpController::new(
                 2,
@@ -4306,7 +4288,10 @@ mod tests {
             );
             assert!(edp2_controller.should_pressurise());
 
-            fire_overhead_panel.eng2_fire_pb.set(true);
+            let mut test_bed = SimulationTestBed::new();
+            test_bed.write_bool("FIRE_BUTTON_ENG2", true);
+            test_bed.run(&mut fire_overhead_panel, |_, _| {});
+
             edp2_controller.update(
                 &overhead_panel,
                 &fire_overhead_panel,

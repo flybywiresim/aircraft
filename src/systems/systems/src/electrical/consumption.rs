@@ -38,12 +38,12 @@ impl ElectricPower {
         }
     }
 
-    pub fn distribute_to<T: SimulationElement>(&self, element: &mut T) {
+    pub fn distribute_to(&self, element: &mut impl SimulationElement) {
         let mut visitor = ReceivePowerVisitor::new(&self.supplied_power);
         element.accept(&mut visitor);
     }
 
-    pub fn consume_in<T: SimulationElement>(&mut self, element: &mut T) {
+    pub fn consume_in(&mut self, element: &mut impl SimulationElement) {
         let mut visitor = ConsumePowerVisitor::new(&mut self.power_consumption);
         element.accept(&mut visitor);
 
@@ -51,7 +51,7 @@ impl ElectricPower {
         element.accept(&mut visitor);
     }
 
-    pub fn report_consumption_to<T: SimulationElement>(&mut self, element: &mut T) {
+    pub fn report_consumption_to(&mut self, element: &mut impl SimulationElement) {
         let mut visitor = ProcessPowerConsumptionReportVisitor::new(&self.power_consumption);
         element.accept(&mut visitor);
     }
