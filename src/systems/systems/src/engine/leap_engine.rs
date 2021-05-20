@@ -1,6 +1,9 @@
 use uom::si::{angular_velocity::revolution_per_minute, f64::*, pressure::psi, ratio::percent};
 
-use crate::simulation::{SimulationElement, SimulatorReader, UpdateContext};
+use crate::{
+    shared::EngineCorrectedN2,
+    simulation::{SimulationElement, SimulatorReader, UpdateContext},
+};
 
 use super::Engine;
 pub struct LeapEngine {
@@ -48,12 +51,12 @@ impl SimulationElement for LeapEngine {
         self.update_parameters();
     }
 }
-
-impl Engine for LeapEngine {
+impl EngineCorrectedN2 for LeapEngine {
     fn corrected_n2(&self) -> Ratio {
         self.corrected_n2
     }
-
+}
+impl Engine for LeapEngine {
     fn hydraulic_pump_output_speed(&self) -> AngularVelocity {
         self.hydraulic_pump_output_speed
     }
