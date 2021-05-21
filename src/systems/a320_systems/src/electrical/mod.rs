@@ -370,7 +370,7 @@ impl A320EmergencyElectricalOverheadPanel {
         self.gen_1_line.is_on()
     }
 
-    pub fn rat_and_emer_gen_man_on(&self) -> bool {
+    fn rat_and_emer_gen_man_on(&self) -> bool {
         self.rat_and_emer_gen_man_on.is_pressed()
     }
 }
