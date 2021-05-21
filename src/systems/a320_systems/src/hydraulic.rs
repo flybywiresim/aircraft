@@ -1413,12 +1413,12 @@ mod tests {
         use super::*;
         use systems::electrical::{Potential, PotentialOrigin};
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
+        use systems::shared::EmergencyElectricalState;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
             ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot,
         };
-        use systems::shared::{EmergencyElectricalState};
 
         struct A320TestEmergencyElectricalOverheadPanel {
             rat_and_emer_gen_man_on: MomentaryPushButton,
@@ -1445,19 +1445,19 @@ mod tests {
         }
 
         struct A320TestElectrical {
-            airspeed : Velocity,
+            airspeed: Velocity,
             all_ac_lost: bool,
         }
         impl A320TestElectrical {
             pub fn new() -> Self {
                 A320TestElectrical {
-                    airspeed : Velocity::new::<knot>(100.),
+                    airspeed: Velocity::new::<knot>(100.),
                     all_ac_lost: false,
                 }
             }
 
-            fn update(&mut self,context : &UpdateContext){
-                self.airspeed=context.indicated_airspeed();
+            fn update(&mut self, context: &UpdateContext) {
+                self.airspeed = context.indicated_airspeed();
             }
         }
         impl EmergencyElectricalState for A320TestElectrical {
@@ -1467,14 +1467,12 @@ mod tests {
         }
         impl SimulationElement for A320TestElectrical {
             fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-                self.all_ac_lost = ! supplied_power
+                self.all_ac_lost = !supplied_power
                     .potential_of(&ElectricalBusType::AlternatingCurrent(1))
                     .is_powered()
-                    &&
-                    !
-                     supplied_power
-                    .potential_of(&ElectricalBusType::AlternatingCurrent(2))
-                    .is_powered();
+                    && !supplied_power
+                        .potential_of(&ElectricalBusType::AlternatingCurrent(2))
+                        .is_powered();
             }
         }
         struct A320HydraulicsTestAircraft {
@@ -4139,7 +4137,7 @@ mod tests {
             );
             yellow_epump_controller.receive_power(&test_supplied_power(
                 ElectricalBusType::DirectCurrentGndFltService,
-                true,
+                false,
             ));
 
             overhead_panel.yellow_epump_push_button.push_auto();
@@ -4151,8 +4149,8 @@ mod tests {
 
             // Need to run again the receive power state as now cargo door is operated
             yellow_epump_controller.receive_power(&test_supplied_power(
-                ElectricalBusType::DirectCurrent(2),
-                false,
+                ElectricalBusType::DirectCurrentGndFltService,
+                true,
             ));
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
 
