@@ -21,7 +21,7 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
+        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
         RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
@@ -205,6 +205,11 @@ impl SimulationElement for A320Electrical {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool("ELEC_GALLEY_IS_SHED", self.galley_is_shed())
+    }
+}
+impl EmergencyElectricalState for A320Electrical {
+    fn is_in_emergency_elec(&self) -> bool {
+        self.in_emergency_elec()
     }
 }
 

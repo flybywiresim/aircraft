@@ -16,7 +16,9 @@ use systems::{
     shared::{EmergencyElectricalRatPushButton, EngineFirePushButtons},
 };
 use systems::{
-    shared::{LandingGearPosition, RamAirTurbineHydraulicLoopPressurised},
+    shared::{
+        EmergencyElectricalState, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+    },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext,
@@ -232,7 +234,7 @@ impl A320Hydraulic {
         engine_fire_push_buttons: &U,
         landing_gear: &LandingGear,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        is_in_emergency_elec: bool,
+        emergency_elec_state: &impl EmergencyElectricalState,
     ) {
         let min_hyd_loop_timestep =
             Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
@@ -251,7 +253,7 @@ impl A320Hydraulic {
             &context,
             &overhead_panel,
             rat_and_emer_gen_man_on,
-            is_in_emergency_elec,
+            emergency_elec_state,
         );
 
         if number_of_steps_floating_point < 1.0 {
@@ -355,7 +357,7 @@ impl A320Hydraulic {
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        is_in_emergency_elec: bool,
+        emergency_elec_state: &impl EmergencyElectricalState,
     ) {
         // Updating rat stowed pos on all frames in case it's used for graphics
         self.ram_air_turbine.update_position(&context.delta());
@@ -364,7 +366,7 @@ impl A320Hydraulic {
         self.ram_air_turbine_controller.update(
             &overhead_panel,
             rat_and_emer_gen_man_on,
-            is_in_emergency_elec,
+            emergency_elec_state,
         );
 
         // Tug has its angle changing on each frame and we'd like to detect this
@@ -896,13 +898,12 @@ impl SimulationElement for A320YellowElectricPumpController {
     fn receive_power(&mut self, supplied_power: &SuppliedPower) {
         // Control of the pump is powered by dedicated bus OR manual operation of cargo door through another bus
         self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered()
-            ||
-            ( self
+            || (self
                 .should_activate_yellow_pump_for_cargo_door_operation
-                .output()   &&
-                supplied_power.potential_of(&self.powered_by_when_cargo_door_operation).is_powered()
-            )
-
+                .output()
+                && supplied_power
+                    .potential_of(&self.powered_by_when_cargo_door_operation)
+                    .is_powered())
     }
 }
 
@@ -1025,13 +1026,13 @@ impl A320RamAirTurbineController {
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        is_in_emergency_elec: bool,
+        emergency_elec_state: &impl EmergencyElectricalState,
     ) {
         let should_solenoid_1_deploy_if_powered =
             overhead_panel.rat_man_on_push_button_is_pressed();
 
         let should_solenoid_2_deploy_if_powered =
-            is_in_emergency_elec || rat_and_emer_gen_man_on.is_pressed();
+            emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
 
         self.should_deploy = (self.is_solenoid_1_powered && should_solenoid_1_deploy_if_powered)
             || (self.is_solenoid_2_powered && should_solenoid_2_deploy_if_powered);
@@ -1417,6 +1418,7 @@ mod tests {
             acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
             ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot,
         };
+        use systems::shared::{EmergencyElectricalState};
 
         struct A320TestEmergencyElectricalOverheadPanel {
             rat_and_emer_gen_man_on: MomentaryPushButton,
@@ -1441,6 +1443,40 @@ mod tests {
                 self.rat_and_emer_gen_man_on.is_pressed()
             }
         }
+
+        struct A320TestElectrical {
+            airspeed : Velocity,
+            all_ac_lost: bool,
+        }
+        impl A320TestElectrical {
+            pub fn new() -> Self {
+                A320TestElectrical {
+                    airspeed : Velocity::new::<knot>(100.),
+                    all_ac_lost: false,
+                }
+            }
+
+            fn update(&mut self,context : &UpdateContext){
+                self.airspeed=context.indicated_airspeed();
+            }
+        }
+        impl EmergencyElectricalState for A320TestElectrical {
+            fn is_in_emergency_elec(&self) -> bool {
+                self.all_ac_lost && self.airspeed >= Velocity::new::<knot>(100.)
+            }
+        }
+        impl SimulationElement for A320TestElectrical {
+            fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+                self.all_ac_lost = ! supplied_power
+                    .potential_of(&ElectricalBusType::AlternatingCurrent(1))
+                    .is_powered()
+                    &&
+                    !
+                     supplied_power
+                    .potential_of(&ElectricalBusType::AlternatingCurrent(2))
+                    .is_powered();
+            }
+        }
         struct A320HydraulicsTestAircraft {
             engine_1: LeapEngine,
             engine_2: LeapEngine,
@@ -1449,6 +1485,7 @@ mod tests {
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
+            electrical: A320TestElectrical,
 
             // Electric buses states to be able to kill them dynamically
             is_ac_ground_service_powered: bool,
@@ -1471,6 +1508,7 @@ mod tests {
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     engine_fire_overhead: EngineFireOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
+                    electrical: A320TestElectrical::new(),
                     is_ac_ground_service_powered: true,
                     is_dc_ground_service_powered: true,
                     is_ac_1_powered: true,
@@ -1556,13 +1594,7 @@ mod tests {
 
         impl Aircraft for A320HydraulicsTestAircraft {
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-                let is_in_emergency_elec = context.indicated_airspeed().get::<knot>() >= 100.
-                    && !self
-                        .get_supplied_power()
-                        .is_powered(&ElectricalBusType::AlternatingCurrent(1))
-                    && !self
-                        .get_supplied_power()
-                        .is_powered(&ElectricalBusType::AlternatingCurrent(2));
+                self.electrical.update(context);
 
                 self.hydraulics.update(
                     context,
@@ -1572,7 +1604,7 @@ mod tests {
                     &self.engine_fire_overhead,
                     &self.landing_gear,
                     &self.emergency_electrical_overhead,
-                    is_in_emergency_elec,
+                    &self.electrical,
                 );
 
                 self.overhead.update(&self.hydraulics);
@@ -1692,6 +1724,7 @@ mod tests {
                 self.engine_fire_overhead.accept(visitor);
                 self.landing_gear.accept(visitor);
                 self.emergency_electrical_overhead.accept(visitor);
+                self.electrical.accept(visitor);
 
                 visitor.visit(self);
             }
@@ -4016,6 +4049,7 @@ mod tests {
 
             let mut yellow_epump_controller = A320YellowElectricPumpController::new(
                 A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             );
             yellow_epump_controller.receive_power(&test_supplied_power(
                 ElectricalBusType::DirectCurrent(2),
@@ -4045,6 +4079,7 @@ mod tests {
 
             let mut yellow_epump_controller = A320YellowElectricPumpController::new(
                 A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             );
 
             yellow_epump_controller.receive_power(&test_supplied_power(
@@ -4064,6 +4099,7 @@ mod tests {
 
             let mut yellow_epump_controller = A320YellowElectricPumpController::new(
                 A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             );
             yellow_epump_controller.receive_power(&test_supplied_power(
                 ElectricalBusType::DirectCurrent(2),
@@ -4099,10 +4135,11 @@ mod tests {
 
             let mut yellow_epump_controller = A320YellowElectricPumpController::new(
                 A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             );
             yellow_epump_controller.receive_power(&test_supplied_power(
-                ElectricalBusType::DirectCurrent(2),
-                false,
+                ElectricalBusType::DirectCurrentGndFltService,
+                true,
             ));
 
             overhead_panel.yellow_epump_push_button.push_auto();
