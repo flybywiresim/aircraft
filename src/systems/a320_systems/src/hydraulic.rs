@@ -76,6 +76,8 @@ impl A320Hydraulic {
 
     const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
+    const YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrentGndFltService;
     const YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrentGndFltService;
 
@@ -183,6 +185,7 @@ impl A320Hydraulic {
             ),
             yellow_electric_pump_controller: A320YellowElectricPumpController::new(
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+                Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
 
             forward_cargo_door: Door::new(5),
@@ -814,6 +817,7 @@ impl SimulationElement for A320BlueElectricPumpController {
 struct A320YellowElectricPumpController {
     is_powered: bool,
     powered_by: ElectricalBusType,
+    powered_by_when_cargo_door_operation: ElectricalBusType,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
@@ -823,10 +827,14 @@ impl A320YellowElectricPumpController {
     const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
         Duration::from_secs(20);
 
-    fn new(powered_by: ElectricalBusType) -> Self {
+    fn new(
+        powered_by: ElectricalBusType,
+        powered_by_when_cargo_door_operation: ElectricalBusType,
+    ) -> Self {
         Self {
             is_powered: false,
             powered_by,
+            powered_by_when_cargo_door_operation,
             should_pressurise: false,
             has_pressure_low_fault: false,
             is_pressure_low: true,
@@ -886,11 +894,15 @@ impl SimulationElement for A320YellowElectricPumpController {
     }
 
     fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        // Control of the pump is powered by dedicated bus OR manual operation of cargo door
+        // Control of the pump is powered by dedicated bus OR manual operation of cargo door through another bus
         self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered()
-            || self
+            ||
+            ( self
                 .should_activate_yellow_pump_for_cargo_door_operation
-                .output();
+                .output()   &&
+                supplied_power.potential_of(&self.powered_by_when_cargo_door_operation).is_powered()
+            )
+
     }
 }
 
