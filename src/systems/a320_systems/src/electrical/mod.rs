@@ -384,7 +384,7 @@ impl SimulationElement for A320EmergencyElectricalOverheadPanel {
     }
 }
 impl EmergencyElectricalRatPushButton for A320EmergencyElectricalOverheadPanel {
-    fn rat_and_emer_gen_man_on(&self) -> bool {
+    fn is_pressed(&self) -> bool {
         self.rat_and_emer_gen_man_on()
     }
 }

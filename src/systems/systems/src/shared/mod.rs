@@ -31,7 +31,7 @@ pub trait EngineFirePushButtons {
 }
 
 pub trait EmergencyElectricalRatPushButton {
-    fn rat_and_emer_gen_man_on(&self) -> bool;
+    fn is_pressed(&self) -> bool;
 }
 
 pub trait ApuMaster {
