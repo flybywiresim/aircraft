@@ -1173,8 +1173,8 @@ impl A320BrakingForceSimulationOutput {
 
 impl SimulationElement for A320BrakingForceSimulationOutput {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64("BRAKE LEFT POSITION", self.left_brake_force);
-        writer.write_f64("BRAKE RIGHT POSITION", self.right_brake_force);
+        writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_brake_force);
+        writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_brake_force);
         writer.write_bool("PARK_BRAKE_LEVER_POS", self.park_brake_lever_is_set);
 
         writer.write_f64(
@@ -1826,15 +1826,18 @@ mod tests {
                     .set_gear_down()
             }
 
-            fn set_left_brake(mut self, position_percent: Ratio) -> Self {
-                self.simulation_test_bed
-                    .write_f64("MASKED BRAKE LEFT AXIS", position_percent.get::<percent>());
-                self
+            fn set_left_brake(self, position_percent: Ratio) -> Self {
+                self.set_brake("BRAKE LEFT POSITION", position_percent)
             }
 
-            fn set_right_brake(mut self, position_percent: Ratio) -> Self {
+            fn set_right_brake(self, position_percent: Ratio) -> Self {
+                self.set_brake("BRAKE RIGHT POSITION", position_percent)
+            }
+
+            fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
+                let scaled_value = position_percent.get::<percent>() / 100.;
                 self.simulation_test_bed
-                    .write_f64("MASKED BRAKE RIGHT AXIS", position_percent.get::<percent>());
+                    .write_f64(name, scaled_value.min(1.).max(0.));
                 self
             }
 

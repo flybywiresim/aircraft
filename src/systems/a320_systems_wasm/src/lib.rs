@@ -376,11 +376,11 @@ impl ReadWrite for Brakes {
 
     fn write(&mut self, name: &str, value: f64) -> bool {
         match name {
-            "BRAKE LEFT POSITION" => {
+            "BRAKE LEFT FORCE FACTOR" => {
                 self.set_brake_left_output(value);
                 true
             }
-            "BRAKE RIGHT POSITION" => {
+            "BRAKE RIGHT FORCE FACTOR" => {
                 self.set_brake_right_output(value);
                 true
             }
