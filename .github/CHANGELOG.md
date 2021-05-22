@@ -75,6 +75,7 @@
 1. [ELEC] ENG FIRE push button deactivates IDG - @davidwalschots (David Walschots)
 1. [AP] Improved OP CLB/DES, CLB/DES speed hold characteristics - @aguther (Andreas Guther)
 1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
+1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
