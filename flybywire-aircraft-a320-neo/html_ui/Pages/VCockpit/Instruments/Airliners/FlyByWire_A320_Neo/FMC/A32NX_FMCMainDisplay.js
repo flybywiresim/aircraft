@@ -2389,7 +2389,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         const phase = this.currentFlightPhase;
-        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
+        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue("feet")) / 100);
         if (fl < selFl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND)) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
