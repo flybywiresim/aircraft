@@ -42,13 +42,14 @@ const HydraulicContext = React.createContext<HydraulicsContext>({
 });
 
 export const FctlPage = () => {
-    const [engine1State] = useSimVar('TURB ENG N2:1', 'Percent', 1000);
-    const [engine2State] = useSimVar('TURB ENG N2:2', 'Percent', 1000);
+    const [greenPress] = useSimVar('L:A32NX_HYD_GREEN_PRESSURE', 'number', 1000);
+    const [yellowPress] = useSimVar('L:A32NX_HYD_YELLOW_PRESSURE', 'number', 1000);
+    const [bluePress] = useSimVar('L:A32NX_HYD_BLUE_PRESSURE', 'number', 1000);
 
     const hydraulicContext: HydraulicsContext = {
-        G: { available: engine1State > 15 },
-        Y: { available: engine2State > 15 },
-        B: { available: engine1State > 15 || engine2State > 15 },
+        G: { available: greenPress > 1450 },
+        Y: { available: yellowPress > 1450 },
+        B: { available: bluePress > 1450 },
     };
 
     return (
@@ -138,7 +139,6 @@ interface SpoilerProps extends ComponentPositionProps, ComponentSidePositionProp
 }
 const Spoiler = ({ x, y, number, side, actuatedBy, upWhenActuated }: SpoilerProps) => {
     const hydraulics = useContext(HydraulicContext);
-    const showSpoilerInUpPosition = upWhenActuated && hydraulics[actuatedBy].available;
 
     return (
         <SvgGroup x={x} y={y}>
@@ -147,15 +147,20 @@ const Spoiler = ({ x, y, number, side, actuatedBy, upWhenActuated }: SpoilerProp
                 d={`M 0 0 l ${side === 'right' ? '-' : ''}15 0`}
             />
             <path
-                visibility={showSpoilerInUpPosition ? 'visible' : 'hidden'}
+                visibility={upWhenActuated ? 'visible' : 'hidden'}
+                className={hydraulics[actuatedBy].available ? 'GreenShape' : 'WarningShape'}
+                d={`M ${side === 'left' ? 8 : -8} -22 l -6 0 l 6 -12 l 6 12 l -6 0`}
+            />
+            <path
+                visibility={upWhenActuated && hydraulics[actuatedBy].available ? 'visible' : 'hidden'}
                 className="GreenShape"
-                d={`M ${side === 'left' ? 8 : -8} 0 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`}
+                d={`M ${side === 'left' ? 8 : -8} 0 l 0 -22`}
             />
             <text
                 x={side === 'left' ? 8 : -8}
-                y={-9}
+                y={-11}
                 visibility={hydraulics[actuatedBy].available ? 'hidden' : 'visible'}
-                className="Warning Medium"
+                className="Warning Standard"
                 textAnchor="middle"
                 alignmentBaseline="central"
             >
@@ -181,7 +186,14 @@ const PitchTrim = ({ x, y }: ComponentPositionProps) => {
             <text x={5} y={35} className={`${hydraulicAvailableClass} Standard`} textAnchor="middle" alignmentBaseline="central">.</text>
             <text x={14} y={37} className={`${hydraulicAvailableClass} Small`} textAnchor="middle" alignmentBaseline="central">{pitchFractional}</text>
             <text x={28} y={35} className="ValueCyan Standard" textAnchor="middle" alignmentBaseline="central">°</text>
-            <text x={48} y={37} className={`${hydraulicAvailableClass} Small`} textAnchor="middle" alignmentBaseline="central">
+            <text
+                x={48}
+                y={37}
+                visibility={Math.abs(adjustedPitchTrim) > 0.05 ? 'visible' : 'hidden'}
+                className={`${hydraulicAvailableClass} Small`}
+                textAnchor="middle"
+                alignmentBaseline="central"
+            >
                 {Math.sign(adjustedPitchTrim) === -1 ? 'DN' : 'UP'}
             </text>
 
