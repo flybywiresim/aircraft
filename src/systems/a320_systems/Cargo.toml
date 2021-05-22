@@ -6,4 +6,8 @@ edition = "2018"
 
 [dependencies]
 uom = "0.30.0"
+rand = "0.8.0"
 systems = { path = "../systems" }
+
+[dev-dependencies]
+rstest = "0.10.0"
