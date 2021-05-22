@@ -74,6 +74,7 @@
 1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
 1. [ELEC] ENG FIRE push button deactivates IDG - @davidwalschots (David Walschots)
 1. [AP] Improved OP CLB/DES, CLB/DES speed hold characteristics - @aguther (Andreas Guther)
+1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
