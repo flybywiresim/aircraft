@@ -51,6 +51,7 @@ class AutopilotLawsModelClass {
     real_T Delay_DSTATE_g;
     real_T Delay_DSTATE_k;
     real_T Delay_DSTATE_h2;
+    real_T eventTime;
     real_T Tau;
     real_T H_bias;
     real_T limit;
@@ -60,6 +61,7 @@ class AutopilotLawsModelClass {
     uint8_T icLoad_f;
     uint8_T is_active_c5_AutopilotLaws;
     uint8_T is_c5_AutopilotLaws;
+    boolean_T eventTime_not_empty;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
     boolean_T limit_not_empty;
@@ -159,9 +161,12 @@ class AutopilotLawsModelClass {
     real_T CompareToConstant5_const_e;
     real_T CompareToConstant_const_n;
     real_T CompareToConstant6_const;
+    real_T CompareToConstant2_const_e;
     real_T CompareToConstant7_const;
+    real_T GammaTCorrection_gain;
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs_lo_o;
+    real_T GammaTCorrection_time;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs_up_i;
     boolean_T CompareToConstant_const_h;

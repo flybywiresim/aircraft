@@ -187,6 +187,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendIsPilotEntered = false;
         this.managedSpeedDescendMach = .78;
         // this.managedSpeedDescendMachIsPilotEntered = false;
+        this.cruiseFlightLevelTimeOut = undefined;
     }
 
     Init() {
@@ -1100,15 +1101,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
             this.flightPhaseManager.handleFcuAltKnobTurn();
-            if (this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
-                const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
-                if (this._activeCruiseFlightLevelDefaulToFcu || fcuFl >= this._cruiseFlightLevel) {
-                    this.cruiseFlightLevel = fcuFl;
-                    if (this.page.Current === this.page.ProgressPage) {
-                        CDUProgressPage.ShowPage(this);
-                    }
-                }
-            }
+            this._onTrySetCruiseFlightLevel();
         }
         if (_event === "AP_DEC_HEADING" || _event === "AP_INC_HEADING") {
             if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
@@ -1171,13 +1164,55 @@ class FMCMainDisplay extends BaseAirliners {
         const _targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
         if (
-            (this.currentFlightPhase === FmgcFlightPhases.CLIMB && _targetFl >= this.cruiseFlightLevel) ||
+            (this.currentFlightPhase === FmgcFlightPhases.CLIMB && _targetFl > this.cruiseFlightLevel) ||
             (this.currentFlightPhase === FmgcFlightPhases.CRUISE && _targetFl !== this.cruiseFlightLevel)
         ) {
             this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_targetFl * 100));
+            this.cruiseFlightLevel = _targetFl;
+            this._cruiseFlightLevel = _targetFl;
         }
-        this.cruiseFlightLevel = _targetFl;
-        this._cruiseFlightLevel = _targetFl;
+    }
+
+    /***
+     * Executed on every alt knob turn, checks whether or not the crz fl can be changed to the newly selected fcu altitude
+     * It creates a timeout to simulate real life delay which resets every time the fcu knob alt increases or decreases.
+     * @private
+     */
+    _onTrySetCruiseFlightLevel() {
+        if (!(this.currentFlightPhase === FmgcFlightPhases.CLIMB || this.currentFlightPhase === FmgcFlightPhases.CRUISE)) {
+            return;
+        }
+
+        const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+
+        if ((activeVerticalMode >= 11 && activeVerticalMode <= 15) || (activeVerticalMode >= 21 && activeVerticalMode <= 23)) {
+            const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
+
+            if (this.currentFlightPhase === FmgcFlightPhases.CLIMB && fcuFl > this.cruiseFlightLevel ||
+                this.currentFlightPhase === FmgcFlightPhases.CRUISE && fcuFl !== this.cruiseFlightLevel
+            ) {
+                if (this.cruiseFlightLevelTimeOut) {
+                    clearTimeout(this.cruiseFlightLevelTimeOut);
+                    this.cruiseFlightLevelTimeOut = undefined;
+                }
+
+                this.cruiseFlightLevelTimeOut = setTimeout(() => {
+                    if (fcuFl === Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100 &&
+                        (
+                            this.currentFlightPhase === FmgcFlightPhases.CLIMB && fcuFl > this.cruiseFlightLevel ||
+                            this.currentFlightPhase === FmgcFlightPhases.CRUISE && fcuFl !== this.cruiseFlightLevel
+                        )
+                    ) {
+                        this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(fcuFl * 100));
+                        this.cruiseFlightLevel = fcuFl;
+                        this._cruiseFlightLevel = fcuFl;
+                        if (this.page.Current === this.page.ProgressPage) {
+                            CDUProgressPage.ShowPage(this);
+                        }
+                    }
+                }, 3000);
+            }
+        }
     }
 
     /* END OF FMS EVENTS */
@@ -2354,7 +2389,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         const phase = this.currentFlightPhase;
-        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
+        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue("feet")) / 100);
         if (fl < selFl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND)) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;

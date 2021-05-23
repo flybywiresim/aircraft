@@ -21,7 +21,7 @@ impl BleedAirValve {
         BleedAirValve { open: false }
     }
 
-    pub fn update<T: BleedAirValveController>(&mut self, controller: &T) {
+    pub fn update(&mut self, controller: &impl BleedAirValveController) {
         self.open = controller.should_open_bleed_air_valve();
     }
 }

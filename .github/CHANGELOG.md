@@ -72,6 +72,11 @@
 1. [AP] Fixed and improved mode transitions related to LAND modes - @aguther (Andreas Guther)
 1. [ENGINE] Adapt engine IDLE N1 based on environmental conditions - @Taz5150 (TazX [Z+2]#0405), @aguther (Andreas Guther)
 1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
+1. [ELEC] ENG FIRE push button deactivates IDG - @davidwalschots (David Walschots)
+1. [AP] Improved OP CLB/DES, CLB/DES speed hold characteristics - @aguther (Andreas Guther)
+1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
+1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
+1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
