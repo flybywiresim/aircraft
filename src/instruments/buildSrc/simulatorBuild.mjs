@@ -43,7 +43,7 @@ export default getInputs()
             name,
             input: `${Directories.instruments}/src/${path}/${config.index}`,
             output: {
-                file: 'bundle.js',
+                file: `${Directories.temp}/bundle.js`,
                 format: 'iife',
             },
             plugins: [
