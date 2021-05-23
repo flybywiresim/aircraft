@@ -37,6 +37,7 @@ jobs:
       A32NX_PRODUCTION_BUILD: 1
       ZIP_NAME: A32NX.zip
       BUILD_DIR_NAME: zip-build
+      NODE_OPTIONS: "--max_old_space_size=4096"
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
