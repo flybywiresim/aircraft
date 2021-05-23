@@ -20,7 +20,7 @@ export class NXDataStore {
         if (val === undefined || val === null) {
             return defaultVal;
         }
-        return {};
+        return val;
     }
 
     /**
