@@ -1,8 +1,9 @@
 import { ExecTask, TaskOfTasks } from '@flybywiresim/igniter';
+import instrumentsTasks from './src/instruments/buildSrc/igniter/tasks.mjs';
 
 export default new TaskOfTasks('a32nx', [
     new TaskOfTasks('build', [
-        new ExecTask('instruments','src/instruments/build.sh', ['src/instruments', 'flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX']),
+        new TaskOfTasks('instruments',instrumentsTasks, true),
         new ExecTask('behavior','node src/behavior/build.js', ['src/behavior', 'flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated']),
         new ExecTask('model','node src/model/build.js', ['src/model', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model']),
         new ExecTask('systems', [

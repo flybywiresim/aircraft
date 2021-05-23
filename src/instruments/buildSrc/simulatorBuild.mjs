@@ -45,6 +45,7 @@ export default getInputs()
 
         return {
             watch: true,
+            name,
             input: `${Directories.instruments}/src/${path}/${config.index}`,
             output: {
                 file: `bundle.js`,
