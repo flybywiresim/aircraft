@@ -3,7 +3,7 @@
 set -ex
 
 if [ "$1" = "--no-tty"  ]; then
-    npx igniter --no-tty
+  node --max-old-space-size=4096 $(which npx) igniter --no-tty
 else
-    npx igniter
+   node --max-old-space-size=4096 $(which npx) igniter
 fi
