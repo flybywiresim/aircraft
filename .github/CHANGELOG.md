@@ -76,6 +76,7 @@
 1. [AP] Improved OP CLB/DES, CLB/DES speed hold characteristics - @aguther (Andreas Guther)
 1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
 1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
+1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
