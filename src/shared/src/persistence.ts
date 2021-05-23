@@ -17,7 +17,7 @@ export class NXDataStore {
      */
     static get<T extends StorageValue>(key: string, defaultVal?: StorageContents<T>): StorageContents<T> {
         const val = GetStoredData(`A32NX_${key}`);
-        if (val === undefined || val === null) {
+        if (!val) {
             return defaultVal;
         }
         return val;
