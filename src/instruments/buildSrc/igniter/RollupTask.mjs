@@ -1,6 +1,6 @@
 import { GenericTask } from '@flybywiresim/igniter';
 import { promisify } from 'util';
-import { exec } from "child_process";
+import { exec } from 'child_process';
 
 export class RollupTask extends GenericTask {
     constructor(

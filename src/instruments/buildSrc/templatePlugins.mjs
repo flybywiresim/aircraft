@@ -1,6 +1,6 @@
 import instrumentTemplate from '@flybywiresim/rollup-plugin-msfs';
 import ecamPageTemplate from '../ecam-page-template/rollup.js';
-import { Directories } from "./directories.mjs";
+import { Directories } from './directories.mjs';
 
 export function getTemplatePlugin({ name, config, imports = [], isInstrument }) {
     if (isInstrument) {
@@ -11,10 +11,9 @@ export function getTemplatePlugin({ name, config, imports = [], isInstrument }) 
             imports,
             outputDir: `${Directories.root}/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX`,
         });
-    } else {
-        return ecamPageTemplate({
-            name,
-            outputDir: `${Directories.root}/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EcamPages/`,
-        });
     }
+    return ecamPageTemplate({
+        name,
+        outputDir: `${Directories.root}/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EcamPages/`,
+    });
 }

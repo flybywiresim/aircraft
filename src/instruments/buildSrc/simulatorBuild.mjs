@@ -1,14 +1,9 @@
-'use strict';
-
-import os from 'os';
 import fs from 'fs';
 import { baseCompile } from './plugins.mjs';
-import { getTemplatePlugin } from "./templatePlugins.mjs";
-import { Directories } from "./directories.mjs";
+import { getTemplatePlugin } from './templatePlugins.mjs';
+import { Directories } from './directories.mjs';
 
 process.chdir(Directories.src);
-
-const TMPDIR = `${os.tmpdir()}/a32nx-instruments-gen`;
 
 const ecamPages = [
     {
@@ -30,12 +25,12 @@ const ecamPages = [
 ];
 
 function getInputs() {
-    const baseInstruments = fs.readdirSync(`${Directories.instruments}/src`, {withFileTypes: true})
+    const baseInstruments = fs.readdirSync(`${Directories.instruments}/src`, { withFileTypes: true })
         .filter((d) => d.isDirectory() && fs.existsSync(`${Directories.instruments}/src/${d.name}/config.json`));
 
     return [
-        ...baseInstruments.map(({name}) => ({path: name, name, isInstrument: true})),
-        ...ecamPages.map((def) => ({...def, isInstrument: false})),
+        ...baseInstruments.map(({ name }) => ({ path: name, name, isInstrument: true })),
+        ...ecamPages.map((def) => ({ ...def, isInstrument: false })),
     ];
 }
 
@@ -48,12 +43,12 @@ export default getInputs()
             name,
             input: `${Directories.instruments}/src/${path}/${config.index}`,
             output: {
-                file: `bundle.js`,
+                file: 'bundle.js',
                 format: 'iife',
             },
             plugins: [
                 ...baseCompile(name, path),
-                getTemplatePlugin({name, path, imports: ['/JS/dataStorage.js'], config, isInstrument}),
+                getTemplatePlugin({ name, path, imports: ['/JS/dataStorage.js'], config, isInstrument }),
             ],
         };
     });

@@ -1,5 +1,3 @@
-'use strict';
-
 import fs from 'fs';
 import serve from 'rollup-plugin-serve';
 import liveReload from 'rollup-plugin-livereload';

@@ -7,9 +7,7 @@ import { typescriptPaths } from 'rollup-plugin-typescript-paths';
 import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from 'tailwindcss';
-import { Directories } from "./directories.mjs";
-
-const __dirname = new URL('.', import.meta.url).pathname;
+import { Directories } from './directories.mjs';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
 
@@ -37,32 +35,32 @@ function postCss(instrumentName, instrumentFolder) {
 
     if (fs.existsSync(tailwindConfigPath)) {
         plugins = [
-            tailwindcss(tailwindConfigPath)
+            tailwindcss(tailwindConfigPath),
         ];
     } else {
         plugins = [
-            tailwindcss(undefined)
+            tailwindcss(undefined),
         ];
     }
 
     return postcss({
         use: { sass: {} },
         plugins,
-        extract: `bundle.css`,
+        extract: 'bundle.css',
     });
 }
 
 export function baseCompile(instrumentName, instrumentFolder) {
     return [
         image(),
-        nodeResolve({extensions}),
-        commonjs({include: /node_modules/}),
+        nodeResolve({ extensions }),
+        commonjs({ include: /node_modules/ }),
         babel(),
         typescriptPaths({
-            tsConfigPath:`${Directories.src}/tsconfig.json`,
+            tsConfigPath: `${Directories.src}/tsconfig.json`,
             preserveExtensions: true,
         }),
-        replace({'process.env.NODE_ENV': '"production"'}),
+        replace({ 'process.env.NODE_ENV': '"production"' }),
         postCss(instrumentName, instrumentFolder),
-    ]
+    ];
 }
