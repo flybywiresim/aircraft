@@ -105,7 +105,7 @@
 
     Clone of Asobo template to fix broken logic
 
-    Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
+    Takes into account the value of L:A32NX_OVHD_INTLT_ANN.
     -->
     <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
         <DefaultTemplateParameters>
@@ -234,7 +234,7 @@
         <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or
                 </EMISSIVE_CODE>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
             </UseTemplate>
@@ -242,7 +242,7 @@
         <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -332,8 +332,8 @@
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 
@@ -631,7 +631,7 @@
                     #GROUP_INDEX# -1 &gt; if{
                         (L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) #GROUP_INDEX# ==
                     }
-                    (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                    (L:A32NX_OVHD_INTLT_ANN) 0 == or
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>

@@ -73,7 +73,7 @@
         <UseTemplate Name="#TEMPLATE_TO_CALL#">
             <Condition Check="SEQ1_EMISSIVE_CODE">
                 <True>
-                    <SEQ1_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #BLOCK_SEQ1# ! and #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
+                    <SEQ1_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #BLOCK_SEQ1# ! and #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
                 </True>
                 <False>
                     <SEQ1_EMISSIVE_CODE>#BLOCK_SEQ1# ! #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
@@ -81,7 +81,7 @@
             </Condition>
             <Condition Check="SEQ2_EMISSIVE_CODE">
                 <True>
-                    <SEQ2_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #BLOCK_SEQ2# ! and #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+                    <SEQ2_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #BLOCK_SEQ2# ! and #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
                 </True>
                 <False>
                     <SEQ2_EMISSIVE_CODE>#BLOCK_SEQ2# ! #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
@@ -568,7 +568,7 @@
                 #AUDIO_KNOB_POWERED# ! if{
                     0
                 } els{
-                    (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == ! and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or if{
+                    (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == ! and (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
                         14
                     } els{
                         (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0.5 *
@@ -603,7 +603,7 @@
                     4 (&gt;K:COPILOT_TRANSMITTER_SET)
                     </LEFT_SINGLE_CODE>
                     <NODE_ID>#NODE_ID_BUTTON#</NODE_ID>
-                    <SEQ1_EMISSIVE_CODE>#Button_ID# (L:XMLVAR_COM_Transmit_Channel) == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ1_POWERED# and</SEQ1_EMISSIVE_CODE>
+                    <SEQ1_EMISSIVE_CODE>#Button_ID# (L:XMLVAR_COM_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and</SEQ1_EMISSIVE_CODE>
                     <WWISE_EVENT_1>audioreceiver_knob_push_button_on</WWISE_EVENT_1>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <WWISE_EVENT_2>audioreceiver_knob_push_button_off</WWISE_EVENT_2>
