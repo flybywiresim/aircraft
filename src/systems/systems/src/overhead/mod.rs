@@ -65,6 +65,57 @@ impl SimulationElement for OnOffFaultPushButton {
     }
 }
 
+pub struct OnOffPushButton {
+    is_on_id: String,
+
+    is_on: bool,
+}
+impl OnOffPushButton {
+    pub fn new_on(name: &str) -> Self {
+        Self::new(name, true)
+    }
+
+    pub fn new_off(name: &str) -> Self {
+        Self::new(name, false)
+    }
+
+    fn new(name: &str, is_on: bool) -> Self {
+        Self {
+            is_on_id: format!("OVHD_{}_PB_IS_ON", name),
+            is_on,
+        }
+    }
+
+    pub fn set_on(&mut self, value: bool) {
+        self.is_on = value;
+    }
+
+    pub fn push_on(&mut self) {
+        self.is_on = true;
+    }
+
+    pub fn push_off(&mut self) {
+        self.is_on = false;
+    }
+
+    pub fn is_on(&self) -> bool {
+        self.is_on
+    }
+
+    pub fn is_off(&self) -> bool {
+        !self.is_on
+    }
+}
+impl SimulationElement for OnOffPushButton {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.is_on_id, self.is_on());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_on(reader.read_bool(&self.is_on_id));
+    }
+}
+
 pub struct OnOffAvailablePushButton {
     is_on_id: String,
     is_available_id: String,
@@ -256,6 +307,71 @@ impl SimulationElement for AutoOffFaultPushButton {
     }
 }
 
+pub struct AutoManFaultPushButton {
+    is_auto_id: String,
+    has_fault_id: String,
+
+    is_auto: bool,
+    has_fault: bool,
+}
+impl AutoManFaultPushButton {
+    pub fn new_auto(name: &str) -> Self {
+        Self::new(name, true)
+    }
+
+    pub fn new_man(name: &str) -> Self {
+        Self::new(name, false)
+    }
+
+    fn new(name: &str, is_auto: bool) -> Self {
+        Self {
+            is_auto_id: format!("OVHD_{}_PB_IS_AUTO", name),
+            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_auto,
+            has_fault: false,
+        }
+    }
+
+    pub fn push_man(&mut self) {
+        self.is_auto = false;
+    }
+
+    pub fn push_auto(&mut self) {
+        self.is_auto = true;
+    }
+
+    pub fn is_auto(&self) -> bool {
+        self.is_auto
+    }
+
+    pub fn is_man(&self) -> bool {
+        !self.is_auto
+    }
+
+    pub fn set_auto(&mut self, value: bool) {
+        self.is_auto = value;
+    }
+
+    pub fn has_fault(&self) -> bool {
+        self.has_fault
+    }
+
+    fn set_fault(&mut self, value: bool) {
+        self.has_fault = value;
+    }
+}
+impl SimulationElement for AutoManFaultPushButton {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.is_auto_id, self.is_auto());
+        writer.write_bool(&self.has_fault_id, self.has_fault());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_auto(reader.read_bool(&self.is_auto_id));
+        self.set_fault(reader.read_bool(&self.has_fault_id));
+    }
+}
+
 pub struct FaultReleasePushButton {
     is_released_id: String,
     has_fault_id: String,
@@ -336,6 +452,43 @@ impl SimulationElement for FirePushButton {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.set(reader.read_bool(&self.is_released_id));
+    }
+}
+
+pub struct ValueKnob {
+    value_id: String,
+    value: f64,
+}
+impl ValueKnob {
+    pub fn new(name: &str) -> Self {
+        Self {
+            value_id: format!("OVHD_KNOB_{}", name),
+            value: 0.,
+        }
+    }
+
+    pub fn new_with_value(name: &str, value: f64) -> Self {
+        Self {
+            value_id: format!("OVHD_KNOB_{}", name),
+            value: value,
+        }
+    }
+
+    pub fn set_value(&mut self, value: f64) {
+        self.value = value
+    }
+
+    pub fn value (&self) -> f64 {
+        self.value
+    }
+}
+impl SimulationElement for ValueKnob {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.value_id, self.value());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_value(reader.read_f64(&self.value_id));
     }
 }
 

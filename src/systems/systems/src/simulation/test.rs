@@ -1,5 +1,5 @@
 use std::{collections::HashMap, time::Duration};
-use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
+use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::{knot, foot_per_minute, foot_per_second}, pressure::inch_of_mercury};
 
 use crate::electrical::consumption::SuppliedPower;
 
@@ -33,6 +33,8 @@ impl SimulationTestBed {
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
         test_bed.set_indicated_altitude(Length::new::<foot>(5000.));
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
+        test_bed.set_ambient_pressure(Pressure::new::<inch_of_mercury>(29.92));
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
         test_bed.set_on_ground(false);
 
         test_bed
@@ -153,6 +155,20 @@ impl SimulationTestBed {
             UpdateContext::AMBIENT_TEMPERATURE_KEY,
             ambient_temperature.get::<degree_celsius>(),
         );
+    }
+
+    pub fn set_ambient_pressure(&mut self, ambient_pressure: Pressure) {
+        self.reader_writer.write_f64(
+            UpdateContext::AMBIENT_PRESSURE_KEY,
+            ambient_pressure.get::<inch_of_mercury>(),
+        )
+    }
+
+    pub fn set_vertical_speed(&mut self, vertical_speed: Velocity) {
+        self.reader_writer.write_f64(
+            UpdateContext::VERTICAL_SPEED_KEY,
+            vertical_speed.get::<foot_per_second>(),
+        )
     }
 
     pub fn set_on_ground(&mut self, on_ground: bool) {

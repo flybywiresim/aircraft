@@ -33,6 +33,8 @@ struct A320SimulatorReaderWriter {
     engine_generator_1_pb_on: AircraftVariable,
     engine_generator_2_pb_on: AircraftVariable,
     gear_center_position: AircraftVariable,
+    turb_eng_corrected_n1_1: AircraftVariable,
+    turb_eng_corrected_n1_2: AircraftVariable,
     turb_eng_corrected_n2_1: AircraftVariable,
     turb_eng_corrected_n2_2: AircraftVariable,
     airspeed_indicated: AircraftVariable,
@@ -40,6 +42,9 @@ struct A320SimulatorReaderWriter {
     fuel_tank_left_main_quantity: AircraftVariable,
     sim_on_ground: AircraftVariable,
     unlimited_fuel: AircraftVariable,
+    ambient_pressure: AircraftVariable,
+    sea_level_pressure: AircraftVariable,
+    vertical_speed: AircraftVariable,
 }
 impl A320SimulatorReaderWriter {
     fn new() -> Result<Self, Box<dyn std::error::Error>> {
@@ -66,6 +71,8 @@ impl A320SimulatorReaderWriter {
                 2,
             )?,
             gear_center_position: AircraftVariable::from("GEAR CENTER POSITION", "Percent", 0)?,
+            turb_eng_corrected_n1_1: AircraftVariable::from("TURB ENG CORRECTED N1", "Percent", 1)?,
+            turb_eng_corrected_n1_2: AircraftVariable::from("TURB ENG CORRECTED N1", "Percent", 2)?,
             turb_eng_corrected_n2_1: AircraftVariable::from("TURB ENG CORRECTED N2", "Percent", 1)?,
             turb_eng_corrected_n2_2: AircraftVariable::from("TURB ENG CORRECTED N2", "Percent", 2)?,
             airspeed_indicated: AircraftVariable::from("AIRSPEED INDICATED", "Knots", 0)?,
@@ -77,6 +84,9 @@ impl A320SimulatorReaderWriter {
             )?,
             sim_on_ground: AircraftVariable::from("SIM ON GROUND", "Bool", 0)?,
             unlimited_fuel: AircraftVariable::from("UNLIMITED FUEL", "Bool", 0)?,
+            ambient_pressure: AircraftVariable::from("AMBIENT PRESSURE", "inHg", 0)?,
+            sea_level_pressure: AircraftVariable::from("SEA LEVEL PRESSURE", "Millibars", 0)?,
+            vertical_speed: AircraftVariable::from("VELOCITY WORLD Y", "Feet per Second", 0)?,
         })
     }
 }
@@ -91,6 +101,8 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             "AMBIENT TEMPERATURE" => self.ambient_temperature.get(),
             "EXTERNAL POWER AVAILABLE:1" => self.external_power_available.get(),
             "GEAR CENTER POSITION" => self.gear_center_position.get(),
+            "TURB ENG CORRECTED N1:1" => self.turb_eng_corrected_n1_1.get(),
+            "TURB ENG CORRECTED N1:2" => self.turb_eng_corrected_n1_2.get(),
             "TURB ENG CORRECTED N2:1" => self.turb_eng_corrected_n2_1.get(),
             "TURB ENG CORRECTED N2:2" => self.turb_eng_corrected_n2_2.get(),
             "FUEL TANK LEFT MAIN QUANTITY" => self.fuel_tank_left_main_quantity.get(),
@@ -98,6 +110,9 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             "AIRSPEED INDICATED" => self.airspeed_indicated.get(),
             "INDICATED ALTITUDE" => self.indicated_altitude.get(),
             "SIM ON GROUND" => self.sim_on_ground.get(),
+            "AMBIENT PRESSURE" => self.ambient_pressure.get(),
+            "SEA LEVEL PRESSURE" => self.sea_level_pressure.get(),
+            "VELOCITY WORLD Y" => self.vertical_speed.get(),
             _ => {
                 lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name).get_value()
             }

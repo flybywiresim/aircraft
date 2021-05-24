@@ -1,5 +1,5 @@
 use std::time::Duration;
-use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
+use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::{knot, foot_per_second}, pressure::inch_of_mercury};
 
 use super::SimulatorReader;
 
@@ -11,27 +11,36 @@ pub struct UpdateContext {
     indicated_airspeed: Velocity,
     indicated_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
+    ambient_pressure: Pressure,
     is_on_ground: bool,
+    vertical_speed: Velocity,
 }
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const INDICATED_ALTITUDE_KEY: &'static str = "INDICATED ALTITUDE";
     pub(crate) const IS_ON_GROUND_KEY: &'static str = "SIM ON GROUND";
+    pub(crate) const AMBIENT_PRESSURE_KEY: &'static str = "AMBIENT PRESSURE";
+    pub(crate) const VERTICAL_SPEED_KEY: &'static str = "VELOCITY WORLD Y";
+
 
     pub fn new(
         delta: Duration,
         indicated_airspeed: Velocity,
         indicated_altitude: Length,
         ambient_temperature: ThermodynamicTemperature,
+        ambient_pressure: Pressure,
         is_on_ground: bool,
+        vertical_speed: Velocity,
     ) -> UpdateContext {
         UpdateContext {
             delta,
             indicated_airspeed,
             indicated_altitude,
             ambient_temperature,
+            ambient_pressure,
             is_on_ground,
+            vertical_speed,
         }
     }
 
@@ -47,7 +56,13 @@ impl UpdateContext {
             indicated_altitude: Length::new::<foot>(
                 reader.read_f64(UpdateContext::INDICATED_ALTITUDE_KEY),
             ),
+            ambient_pressure: Pressure::new::<inch_of_mercury>(
+                reader.read_f64(UpdateContext::AMBIENT_PRESSURE_KEY),
+            ),
             is_on_ground: reader.read_bool(UpdateContext::IS_ON_GROUND_KEY),
+            vertical_speed: Velocity::new::<foot_per_second>(
+                reader.read_f64(UpdateContext::VERTICAL_SPEED_KEY),
+            ),
             delta: delta_time,
         }
     }
@@ -70,6 +85,14 @@ impl UpdateContext {
 
     pub fn ambient_temperature(&self) -> ThermodynamicTemperature {
         self.ambient_temperature
+    }
+
+    pub fn ambient_pressure(&self) -> Pressure {
+        self.ambient_pressure
+    }
+
+    pub fn vertical_speed(&self) -> Velocity {
+        self.vertical_speed
     }
 
     pub fn is_on_ground(&self) -> bool {
