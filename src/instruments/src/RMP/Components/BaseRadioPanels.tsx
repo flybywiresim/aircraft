@@ -1,8 +1,8 @@
 import React from 'react';
+import { useSimVar, useInteractionSimVar } from '@instruments/common/simVars';
+import { useInteractionEvent } from '@instruments/common/hooks';
 import { VhfRadioPanel } from './VhfRadioPanel';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
-import { useSimVar, useInteractionSimVar } from '../../Common/simVars';
-import { useInteractionEvent } from '../../Common/hooks';
 
 interface Props {
     /**

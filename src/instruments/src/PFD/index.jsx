@@ -19,7 +19,7 @@ class PFD extends Component {
     constructor(props) {
         super(props);
 
-        const url = document.getElementsByTagName('a32nx-pfd-element')[0].getAttribute('url');
+        const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
         this.dispIndex = parseInt(url.substring(url.length - 1), 10);
 
         this.deltaTime = 0;

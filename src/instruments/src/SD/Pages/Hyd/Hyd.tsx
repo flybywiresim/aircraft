@@ -1,8 +1,8 @@
 import './Hyd.scss';
 import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
+import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
 import { ptuArray, levels } from './common';
 
 setIsEcamPage('hyd_page');
@@ -164,9 +164,7 @@ export const HydPage = () => {
 
                 <PTU x={300} y={y + 126} ptuScenario={ptuScenario} />
 
-                <text className="RatPtuElec FillWhite" x={248} y={y + 180} alignmentBaseline="central">RAT</text>
-                <line className="GreenLine Hide" x1={290} y1={y + 180} x2={300} y2={y + 180} />
-                <Triangle x={290} y={y + 180} colour="White" fill={0} orientation={90} />
+                <RAT x={290} y={y} />
 
                 <text
                     id="ELEC-centre"
@@ -196,6 +194,23 @@ export const HydPage = () => {
                 <text className="Psi" x={395} y={y + 70} alignmentBaseline="central">PSI</text>
 
             </svg>
+        </>
+    );
+};
+
+type RATProps = {
+    x: number,
+    y: number,
+}
+
+const RAT = ({ x, y }: RATProps) => {
+    const [RatStowed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percentover100', 500);
+
+    return (
+        <>
+            <text className="RatPtuElec FillWhite" x={x - 42} y={y + 180} alignmentBaseline="central">RAT</text>
+            <line className={`GreenLine ${RatStowed === 1 ? '' : 'Hide'}`} x1={x} y1={y + 180} x2={x + 10} y2={y + 180} />
+            <Triangle x={x} y={y + 180} colour={RatStowed === 1 ? 'Green' : 'White'} fill={RatStowed === 1 ? 1 : 0} orientation={90} />
         </>
     );
 };
@@ -408,8 +423,6 @@ const PTU = ({ x, y, ptuScenario } : PTUProps) => {
     const semiCircleD = `M${x - 16},${y} C${x - 16},${y + 24} ${x + 16},${y + 24} ${x + 16},${y}`;
 
     const result: any = ptuArray.find(({ scenario }) => scenario === ptuScenario);
-    console.log(ptuScenario);
-    console.log(JSON.stringify(result));
     const ptu1 = result.format.find(({ id }) => id === 'ptu1');
     const ptu2 = result.format.find(({ id }) => id === 'ptu2');
     const ptu3 = result.format.find(({ id }) => id === 'ptu3');

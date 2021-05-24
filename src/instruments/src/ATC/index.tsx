@@ -1,8 +1,8 @@
 import './style.scss';
 import React, { useEffect, useState } from 'react';
-import { render } from '../Common';
-import { useSimVar, useSplitSimVar } from '../Common/simVars';
-import { useInteractionEvent, useUpdate } from '../Common/hooks';
+import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
+import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
+import { render } from '@instruments/common/index';
 
 const getDigitsFromBco16 = (code: number): number[] => {
     let codeCopy = code;
