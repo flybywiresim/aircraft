@@ -237,6 +237,7 @@ function applyNodeModifications(gltfPath, outputPath, modifications) {
         }
         for (let i = 0; i < gltf.nodes.length; i++) {
             if (mod.node === gltf.nodes[i].name) {
+                // eslint-disable-next-line guard-for-in
                 for (const prop in mod.mods) {
                     gltf.nodes[i][prop] = mod.mods[prop];
                 }
