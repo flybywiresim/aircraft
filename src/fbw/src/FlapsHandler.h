@@ -13,10 +13,10 @@ class FlapsHandler {
   enum SIM_POSITION {
     SIM_POSITION_FLAPS_0 = 0,
     SIM_POSITION_FLAPS_1 = 1,
-    SIM_POSITION_FLAPS_1F = 2,
-    SIM_POSITION_FLAPS_2 = 3,
-    SIM_POSITION_FLAPS_3 = 4,
-    SIM_POSITION_FLAPS_4 = 5
+    SIM_POSITION_FLAPS_1F = 1,
+    SIM_POSITION_FLAPS_2 = 2,
+    SIM_POSITION_FLAPS_3 = 3,
+    SIM_POSITION_FLAPS_4 = 4
   };
 
   bool getIsInitialized() const;
