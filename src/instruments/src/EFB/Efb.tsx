@@ -13,6 +13,7 @@ import Ground from './Ground/Ground';
 import Performance from './Performance/Performance';
 import Navigation from './Navigation/Navigation';
 import Settings from './Settings/Settings';
+import { CheckLists } from './CheckLists/CheckLists';
 import store from './Store';
 
 type TimeState = {
@@ -138,6 +139,9 @@ const Efb = () => {
         case 5:
             history.push('/settings');
             break;
+        case 6:
+            history.push('/checklist');
+            break;
         default:
             history.push('/dashboard');
             break;
@@ -259,6 +263,9 @@ const Efb = () => {
                                 </Route>
                                 <Route path="/navigation">
                                     <Navigation />
+                                </Route>
+                                <Route path="/checklist">
+                                    <CheckLists />
                                 </Route>
                                 <Route path="/settings">
                                     <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
