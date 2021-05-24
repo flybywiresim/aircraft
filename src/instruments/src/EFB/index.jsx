@@ -43,6 +43,8 @@ const EFBLoad = () => {
 
             switch (nowPoweredOn) {
             case 0:
+                // clear Check Lists checks state from session if new flight
+                sessionStorage.removeItem('checks');
                 setContent('off');
                 break;
             case 1:

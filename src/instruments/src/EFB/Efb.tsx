@@ -13,7 +13,7 @@ import Ground from './Ground/Ground';
 import Performance from './Performance/Performance';
 import Navigation from './Navigation/Navigation';
 import Settings from './Settings/Settings';
-import { CheckLists } from './CheckLists/CheckLists';
+import { Checklists } from './Checklists';
 import store from './Store';
 
 type TimeState = {
@@ -228,7 +228,7 @@ const Efb = () => {
                     <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
                     <div className="flex flex-row">
                         <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
-                        <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen overflow-hidden">
+                        <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen overflow-hidden flex flex-col">
                             <Switch>
                                 <Route path="/dashboard">
                                     <Dashboard
@@ -265,7 +265,7 @@ const Efb = () => {
                                     <Navigation />
                                 </Route>
                                 <Route path="/checklist">
-                                    <CheckLists />
+                                    <Checklists />
                                 </Route>
                                 <Route path="/settings">
                                     <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />

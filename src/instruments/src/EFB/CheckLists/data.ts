@@ -4,25 +4,6 @@ export enum ECheckListTypes {
     THE_LINE = 'the-line'
 }
 
-// type TCheckListItem = {
-//     type: ECheckListTypes
-// }
-
-// interface TCheckListStep extends TCheckListItem {
-//     description: string,
-//     expectedResult: string,
-//     detailNote: Array<string>
-// }
-
-// interface TCheckListNote extends TCheckListItem {
-//     note: string
-// }
-
-// type CheckListType = {
-//     name: string;
-//     items: Array<TCheckListStep|TCheckListNote|TCheckListItem>
-// }
-
 export const checklists = [
     {
         name: 'Before Start',
@@ -43,7 +24,7 @@ export const checklists = [
         ],
     },
     {
-        name: 'After STRT',
+        name: 'After Start',
         items: [
             { type: ECheckListTypes.STEP, description: 'WINDOWS/DOORS', expectedResult: 'CLOSED (BOTH)' },
             { type: ECheckListTypes.STEP, description: 'BEACON', expectedResult: 'ON' },
@@ -64,7 +45,7 @@ export const checklists = [
                 type: ECheckListTypes.STEP,
                 description: 'ECAM MEMO',
                 expectedResult: 'TO NO BLUE',
-                additionals: [
+                detailNotes: [
                     'AUTO BRK MAX',
                     'SIGNS ON',
                     'CABIN READY',
@@ -82,7 +63,7 @@ export const checklists = [
         ],
     },
     {
-        name: 'After T/O, CLM',
+        name: 'After T/O, CLMB',
         items: [
             { type: ECheckListTypes.STEP, description: 'LDG GEAR', expectedResult: 'UP' },
             { type: ECheckListTypes.STEP, description: 'FLAPS', expectedResult: 'RETRACTED' },
@@ -112,7 +93,7 @@ export const checklists = [
                 type: ECheckListTypes.STEP,
                 description: 'ECAM MEMO',
                 expectedResult: 'LDG NO BLUE',
-                additionals: [
+                detailNotes: [
                     'LDG GEAR DN', 'SIGNS ON', 'CABIN READY', 'SPLRS ARM', 'FLAPS SET',
                 ],
             },

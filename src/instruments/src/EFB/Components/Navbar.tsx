@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
 export type NavbarProps = {
-    tabs: string[],
-    onSelected: (index: number) => void;
+    tabs: string[]
+    selectedIndex: number
+    onSelected: (index: number) => void
 };
 
 const c = {
@@ -10,12 +11,13 @@ const c = {
     inactive: 'flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition duration-300 rounded-lg mr-2',
 };
 
-export const Navbar = (props: NavbarProps) => {
+export const Navbar: React.FC<NavbarProps> = ({ tabs, onSelected, selectedIndex }) => {
     const [activeIndex, setActiveIndex] = useState(0);
 
     const handleClick = (index: number) => {
+        // if index state is being provided by selectedIndex, then this set will have no effect
         setActiveIndex(index);
-        props.onSelected(index);
+        onSelected(index);
     };
 
     return (
@@ -24,8 +26,10 @@ export const Navbar = (props: NavbarProps) => {
                 <div className="flex-1 flex items-center justify-start">
                     <div className="flex text-xl">
                         {
-                            props.tabs.map((tab, index) => (
-                                <a className={index === activeIndex ? c.active : c.inactive} key={tab} onClick={() => handleClick(index)}>
+                            tabs.map((tab, index) => (
+                                // always priotise selectedIndex over activeIndex
+                                // - if selectedIndex is undefined, it will revert to active index
+                                <a className={index === (selectedIndex || activeIndex) ? c.active : c.inactive} key={tab} onClick={() => handleClick(index)}>
                                     {tab}
                                 </a>
                             ))
