@@ -12,6 +12,7 @@ export const useUpdate = (handler: (deltaTime: number) => void) => {
         const wrappedHandler = (event: CustomEvent) => {
             savedHandler.current(event.detail);
         };
+
         getRootElement().addEventListener('update', wrappedHandler);
         return () => {
             getRootElement().removeEventListener('update', wrappedHandler);
