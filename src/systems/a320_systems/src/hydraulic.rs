@@ -1028,14 +1028,15 @@ impl A320RamAirTurbineController {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
-        let should_solenoid_1_deploy_if_powered =
+        let solenoid_1_should_trigger_deployment_if_powered =
             overhead_panel.rat_man_on_push_button_is_pressed();
 
-        let should_solenoid_2_deploy_if_powered =
+        let solenoid_2_should_trigger_deployment_if_powered =
             emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
 
-        self.should_deploy = (self.is_solenoid_1_powered && should_solenoid_1_deploy_if_powered)
-            || (self.is_solenoid_2_powered && should_solenoid_2_deploy_if_powered);
+        self.should_deploy = (self.is_solenoid_1_powered
+            && solenoid_1_should_trigger_deployment_if_powered)
+            || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered);
     }
 }
 impl RamAirTurbineController for A320RamAirTurbineController {
