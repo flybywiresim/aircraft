@@ -108,27 +108,7 @@
     "ASOBO_normal_map_convention",
     "ASOBO_asset_optimized"
   ],
-  "materials": [
-    {
-      "name": "TEXT",
-      "alphaMode": "BLEND",
-      "emissiveFactor": [
-        4.953845977783203,
-        4.953845977783203,
-        4.953845977783203
-      ],
-      "pbrMetallicRoughness": {
-        "baseColorFactor": [
-          0.800000011920929,
-          0.800000011920929,
-          0.800000011920929,
-          1
-        ],
-        "metallicFactor": 0,
-        "roughnessFactor": 0.5
-      }
-    }
-  ],
+  "materials": [],
   "meshes": [
     {
       "primitives": [

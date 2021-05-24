@@ -266,7 +266,7 @@ const SimVarProvider: React.FC = ({ children }) => {
 export const useSimVar = (
     name: string,
     unit: UnitName,
-    maxStaleness: number = 0,
+    maxStaleness = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
     const value = useSimVarValue(name, unit, maxStaleness);
@@ -298,7 +298,7 @@ export const useSimVar = (
 export const useGlobalVar = (
     name: string,
     unit: UnitName,
-    maxStaleness: number = 0,
+    maxStaleness = 0,
 ): SimVarValue => {
     const contextValue = useContext(context);
 
@@ -359,7 +359,7 @@ export const useInteractionSimVar = (
     name: string,
     unit: UnitName,
     interactionEvents: string | string[],
-    maxStaleness: number = 500,
+    maxStaleness = 500,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
     const contextValue = useContext(context);
@@ -403,7 +403,7 @@ export const useSplitSimVar = (
     readUnit: UnitName,
     writeName: string,
     writeUnit?: UnitName,
-    maxStaleness: number = 0,
+    maxStaleness = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
     const value = useSimVarValue(readName, readUnit, maxStaleness);
