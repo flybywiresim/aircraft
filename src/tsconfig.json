@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "allowJs": true,
+    "paths": {
+      "@shared/*": ["./shared/src/*"],
+      "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@fmgc/*": ["./fmgc/src/*"],
+      "@typings/*": ["../typings/*"]
+    }
+  }
+}

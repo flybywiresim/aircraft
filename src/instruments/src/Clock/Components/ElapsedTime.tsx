@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useInteractionSimVar, useSimVar } from '../../Common/simVars';
+import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 
 const getDisplayString = (seconds: number, running: boolean) : string => (seconds === 0 && !running ? ''
     : `${Math.floor(Math.min(seconds, 359940) / 3600).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor((Math.min(seconds, 359940) % 3600) / 60)).toString().padStart(2, '0')}`);
