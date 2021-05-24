@@ -62,7 +62,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("ENG", "BottomScreen", "a320-neo-lower-ecam-engine");
         this.createLowerScreenPage("BLEED", "BottomScreen", "a320-neo-lower-ecam-bleed"); // MODIFIED
         this.createLowerScreenPage("PRESS", "BottomScreen", "a320-neo-lower-ecam-press"); // MODIFIED
-        this.createLowerScreenPage("ELEC", "BottomScreen", "a320-neo-lower-ecam-elec"); // MODIFIED
+        this.createLowerScreenPage("ELEC", "BottomScreen", "a32nx-elec-page-element");
         this.createLowerScreenPage("HYD", "BottomScreen", "a320-neo-lower-ecam-hyd"); // MODIFIED
         this.createLowerScreenPage("FUEL", "BottomScreen", "a320-neo-lower-ecam-fuel");
         this.createLowerScreenPage("APU", "BottomScreen", "a320-neo-lower-ecam-apu");
@@ -114,17 +114,17 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
 
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7", "FLOAT64", 0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84", "FLOAT64", 0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85", "FLOAT64", 0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86", "FLOAT64", 0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92", "FLOAT64", 0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7", "number", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84", "number", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85", "number", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86", "number", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92", "number", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "number", 0.1);
 
         this.ecamAllButtonPrevState = false;
         this.updateThrottler = new UpdateThrottler(500);

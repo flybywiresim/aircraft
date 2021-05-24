@@ -7,26 +7,27 @@
 class AutothrustModelClass {
  public:
   typedef struct {
+    real_T pY;
+    boolean_T pY_not_empty;
+  } rtDW_RateLimiter_Autothrust_T;
+
+  typedef struct {
     real_T Delay_DSTATE;
-    real_T Delay_DSTATE_c;
-    real_T Delay_DSTATE_o;
-    real_T Delay_DSTATE_p;
-    real_T Delay_DSTATE_c5;
-    real_T Delay_DSTATE_g;
-    real_T Delay_DSTATE_l;
-    real_T Delay1_DSTATE;
     real_T Delay_DSTATE_k;
     real_T Delay_DSTATE_j;
     real_T Delay_DSTATE_n;
-    real_T Delay_DSTATE_l2;
+    real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_lz;
     real_T Delay_DSTATE_h;
     real_T prev_TLA_1;
     real_T prev_TLA_2;
+    real_T pY;
+    real_T pU;
     real_T eventTime;
+    real_T eventTime_h;
     real_T eventTime_f;
-    athr_status pStatus;
     athr_mode pMode;
+    athr_status pStatus;
     boolean_T Delay_DSTATE_a;
     uint8_T icLoad;
     uint8_T icLoad_c;
@@ -44,9 +45,17 @@ class AutothrustModelClass {
     boolean_T condition_THR_LK;
     boolean_T pThrustMemoActive;
     boolean_T pUseAutoThrustControl;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
     boolean_T eventTime_not_empty;
-    boolean_T eventTime_not_empty_g;
     boolean_T latch;
+    boolean_T eventTime_not_empty_i;
+    boolean_T eventTime_not_empty_g;
+    rtDW_RateLimiter_Autothrust_T sf_RateLimiter_p;
+    rtDW_RateLimiter_Autothrust_T sf_RateLimiter_f;
+    rtDW_RateLimiter_Autothrust_T sf_RateLimiter_b;
+    rtDW_RateLimiter_Autothrust_T sf_RateLimiter_k;
+    rtDW_RateLimiter_Autothrust_T sf_RateLimiter;
   } D_Work_Autothrust_T;
 
   typedef struct {
@@ -62,7 +71,6 @@ class AutothrustModelClass {
     real_T ScheduledGain2_BreakpointsForDimension1[2];
     real_T ScheduledGain1_BreakpointsForDimension1[2];
     real_T ScheduledGain_BreakpointsForDimension1[2];
-    real_T ScheduledGain3_BreakpointsForDimension1[4];
     real_T ScheduledGain4_BreakpointsForDimension1[2];
     real_T LagFilter_C1;
     real_T DiscreteDerivativeVariableTs_Gain;
@@ -88,7 +96,6 @@ class AutothrustModelClass {
     real_T ScheduledGain2_Table[2];
     real_T ScheduledGain1_Table[2];
     real_T ScheduledGain_Table[2];
-    real_T ScheduledGain3_Table[4];
     real_T ScheduledGain4_Table[2];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit;
@@ -107,6 +114,10 @@ class AutothrustModelClass {
     real_T RateLimiterVariableTs_up_m;
     real_T RateLimiterVariableTs_up_i;
     real_T RateLimiterVariableTs_up_in;
+    athr_mode CompareToConstant2_const_h;
+    athr_mode CompareToConstant3_const;
+    athr_mode CompareToConstant2_const_c;
+    athr_mode CompareToConstant3_const_k;
     athr_status CompareToConstant_const_d;
     boolean_T CompareToConstant1_const;
     boolean_T CompareToConstant_const_j;
@@ -142,7 +153,6 @@ class AutothrustModelClass {
     real_T Gain1_Gain;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
-    real_T Constant_Value;
     real_T uDLookupTable_tableData[4];
     real_T uDLookupTable_bp01Data[2];
     real_T uDLookupTable_bp02Data[2];
@@ -199,9 +209,6 @@ class AutothrustModelClass {
     real_T Gain1_Gain_c;
     real_T Gain_Gain_h;
     real_T Gain_Gain_b;
-    real_T Delay_InitialCondition;
-    real_T Constant_Value_k;
-    real_T Delay1_InitialCondition;
     real_T Constant2_Value;
     real_T Constant3_Value;
     real_T Gain_Gain_d;
@@ -230,7 +237,7 @@ class AutothrustModelClass {
     uint32_T MaximumTakeOff_maxIndex[2];
     uint32_T OATCornerPoint_maxIndex_m[2];
     boolean_T Logic_table[16];
-    boolean_T Delay_InitialCondition_c;
+    boolean_T Delay_InitialCondition;
     boolean_T Logic_table_m[16];
   };
 
@@ -257,6 +264,8 @@ class AutothrustModelClass {
   static void Autothrust_ThrustMode1(real_T rtu_u, real_T *rty_y);
   static void Autothrust_TLAComputation1(const athr_out *rtu_in, real_T rtu_TLA, real_T *rty_N1c, boolean_T
     *rty_inReverse);
+  static void Autothrust_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init, real_T *
+    rty_Y, rtDW_RateLimiter_Autothrust_T *localDW);
 };
 
 #endif

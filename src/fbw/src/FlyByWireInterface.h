@@ -6,6 +6,7 @@
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
+#include "ElevatorTrimHandler.h"
 #include "EngineData.h"
 #include "FlapsHandler.h"
 #include "FlightDataRecorder.h"
@@ -13,9 +14,11 @@
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
+#include "RudderTrimHandler.h"
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
+
 class FlyByWireInterface {
  public:
   bool connect();
@@ -73,6 +76,7 @@ class FlyByWireInterface {
 
   FlyByWireModelClass flyByWire;
   FlyByWireModelClass::ExternalInputs_FlyByWire_T flyByWireInput = {};
+  fbw_output flyByWireOutput;
 
   AutopilotStateMachineModelClass autopilotStateMachine;
   AutopilotStateMachineModelClass::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
@@ -96,6 +100,12 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idSideStickPositionX;
   std::unique_ptr<LocalVariable> idSideStickPositionY;
+  std::unique_ptr<LocalVariable> idRudderPedalPosition;
+
+  std::unique_ptr<LocalVariable> idSpeedAlphaProtection;
+  std::unique_ptr<LocalVariable> idSpeedAlphaMax;
+
+  std::unique_ptr<LocalVariable> idAlphaMaxPercentage;
 
   std::unique_ptr<LocalVariable> idFmaLateralMode;
   std::unique_ptr<LocalVariable> idFmaLateralArmed;
@@ -174,6 +184,7 @@ class FlyByWireInterface {
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   EngineData engineData = {};
+  std::unique_ptr<LocalVariable> engineEngineIdleN1;
   std::unique_ptr<LocalVariable> engineEngine1EGT;
   std::unique_ptr<LocalVariable> engineEngine2EGT;
   std::unique_ptr<LocalVariable> engineEngine1FF;
@@ -197,6 +208,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
+
+  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
+  std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
 
   void loadConfiguration();
   void setupLocalVariables();

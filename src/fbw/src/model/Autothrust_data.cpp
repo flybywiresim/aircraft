@@ -105,8 +105,6 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   { 0.0, 1.0 },
 
-  { 0.0, 5.0, 10.0, 15.0 },
-
   { 0.0, 1.0 },
   10.0,
   1.0,
@@ -136,8 +134,6 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   { 0.3, 0.6 },
 
-  { 0.5, 0.5, 0.0, 0.0 },
-
   { 1.0, 0.01 },
   100.0,
   0.0,
@@ -156,6 +152,10 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   0.2,
   0.2,
   0.2,
+  athr_mode_A_FLOOR,
+  athr_mode_TOGA_LK,
+  athr_mode_A_FLOOR,
+  athr_mode_TOGA_LK,
   athr_status_ENGAGED_ACTIVE,
   0,
   0,
@@ -209,7 +209,6 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   2.0,
   1.0,
   0.0,
-  19.5,
 
   { 0.0, 2.0, 2.5, 4.5 },
 
@@ -475,9 +474,6 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   0.017453292519943295,
   0.1019367991845056,
   57.295779513082323,
-  0.0,
-  2.0,
-  0.0,
   3.0,
   -3.0,
   5.0,

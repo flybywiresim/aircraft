@@ -7,10 +7,10 @@
 
 @mixin GenericPulsingStroke($color) {
   @keyframes pulsing {
-    0% {stroke: scale-color($color, $lightness: 30%);}
-    50% {stroke: scale-color($color, $lightness: 30%);}
-    51% {stroke: scale-color($color, $lightness: -30%);}
-    100% {stroke: scale-color($color, $lightness: -30%);}
+    0% {stroke: scale-color($color, $lightness: -30%);}
+    50% {stroke: scale-color($color, $lightness: -30%);}
+    51% {stroke: scale-color($color, $lightness: 30%);}
+    100% {stroke: scale-color($color, $lightness: 30%);}
   }
   animation-name: pulsing;
   animation-duration: 1s;
@@ -18,10 +18,10 @@
 }
 @mixin GenericPulsingFill($color) {
   @keyframes pulsing {
-    0% {fill: scale-color($color, $lightness: 30%);}
-    50% {fill: scale-color($color, $lightness: 30%);}
-    51% {fill: scale-color($color, $lightness: -30%);}
-    100% {fill: scale-color($color, $lightness: -30%);}
+    0% {fill: scale-color($color, $lightness: -30%);}
+    50% {fill: scale-color($color, $lightness: -30%);}
+    51% {fill: scale-color($color, $lightness: 30%);}
+    100% {fill: scale-color($color, $lightness: 30%);}
   }
   animation-name: pulsing;
   animation-duration: 1s;

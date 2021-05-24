@@ -9,6 +9,20 @@
 class AutopilotStateMachineModelClass {
  public:
   typedef struct {
+    real_T pY;
+    real_T pU;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
+  } rtDW_LagFilter_AutopilotStateMachine_T;
+
+  typedef struct {
+    real_T pY;
+    real_T pU;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
+  } rtDW_WashoutFilter_AutopilotStateMachine_T;
+
+  typedef struct {
     ap_sm_output BusAssignment_g;
     ap_vertical_output out;
     ap_lateral_output out_g;
@@ -19,28 +33,17 @@ class AutopilotStateMachineModelClass {
     ap_lateral Delay_DSTATE;
     real_T Delay_DSTATE_d[100];
     real_T Delay_DSTATE_c[100];
-    real_T Delay_DSTATE_l;
-    real_T Delay1_DSTATE_b;
     real_T DelayInput1_DSTATE;
-    real_T Delay_DSTATE_b;
-    real_T Delay1_DSTATE_f;
-    real_T Delay_DSTATE_a;
-    real_T Delay1_DSTATE_i;
     real_T Delay_DSTATE_o;
-    real_T Delay_DSTATE_ov;
-    real_T Delay1_DSTATE_h;
-    real_T Delay_DSTATE_c5;
-    real_T Delay1_DSTATE_p;
     real_T Delay_DSTATE_d2[100];
     real_T Delay_DSTATE_f;
-    real_T Delay_DSTATE_ls;
+    real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_e;
     real_T local_H_fcu_ft;
     real_T local_H_constraint_ft;
     real_T local_H_GA_init_ft;
-    real_T out_H_dot_c_fpm;
-    real_T out_FPA_c_deg;
     real_T eventTime;
+    real_T eventTime_n;
     real_T eventTime_i;
     real_T eventTime_p;
     real_T lastTargetSpeed;
@@ -48,6 +51,7 @@ class AutopilotStateMachineModelClass {
     real_T timeDeltaSpeed10;
     real_T timeConditionSoftAlt;
     real_T eventTime_a;
+    real_T eventTime_iz;
     real_T eventTime_c;
     real_T newFcuAltitudeSelected;
     real_T newFcuAltitudeSelected_b;
@@ -78,13 +82,14 @@ class AutopilotStateMachineModelClass {
     boolean_T wereAllEnginesOperative_not_empty;
     boolean_T wereAllEnginesOperative_d;
     boolean_T wereAllEnginesOperative_not_empty_a;
-    boolean_T out_H_dot_c_fpm_not_empty;
-    boolean_T out_FPA_c_deg_not_empty;
     boolean_T verticalSpeedCancelMode;
     boolean_T sAP1;
     boolean_T sAP2;
     boolean_T sLandModeArmedOrActive;
+    boolean_T sRollOutActive;
+    boolean_T sGoAroundModeActive;
     boolean_T eventTime_not_empty;
+    boolean_T eventTime_not_empty_b;
     boolean_T eventTime_not_empty_h;
     boolean_T eventTime_not_empty_p;
     boolean_T lastTargetSpeed_not_empty;
@@ -95,6 +100,7 @@ class AutopilotStateMachineModelClass {
     boolean_T newFcuAltitudeSelected_c;
     boolean_T state;
     boolean_T eventTime_not_empty_m;
+    boolean_T eventTime_not_empty_i;
     boolean_T eventTime_not_empty_e;
     boolean_T sThrottleCondition;
     boolean_T state_h;
@@ -102,6 +108,11 @@ class AutopilotStateMachineModelClass {
     boolean_T state_j;
     boolean_T sDES;
     boolean_T sCLB;
+    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_h;
+    rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter_d;
+    rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter;
+    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_j;
+    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter;
   } D_Work_AutopilotStateMachine_T;
 
   typedef struct {
@@ -169,24 +180,9 @@ class AutopilotStateMachineModelClass {
     real_T Delay_InitialCondition_i;
     real_T Constant_Value_jq;
     real_T Delay_InitialCondition_m;
-    real_T Delay_InitialCondition_c;
-    real_T Constant_Value_b;
-    real_T Delay1_InitialCondition_l;
-    real_T Delay_InitialCondition_n;
-    real_T Constant_Value_l;
-    real_T Delay1_InitialCondition_d;
     real_T Saturation_UpperSat_k;
     real_T Saturation_LowerSat_b;
-    real_T Delay_InitialCondition_b;
-    real_T Constant_Value_f;
-    real_T Delay1_InitialCondition_j;
     real_T Gain2_Gain_d;
-    real_T Delay_InitialCondition_p;
-    real_T Constant_Value_jm;
-    real_T Delay1_InitialCondition_k;
-    real_T Delay_InitialCondition_k;
-    real_T Constant_Value_n;
-    real_T Delay1_InitialCondition_n;
     real_T Constant_Value_m;
     real_T Delay_InitialCondition_i4;
     real_T Raising_Value;
@@ -218,6 +214,10 @@ class AutopilotStateMachineModelClass {
   D_Work_AutopilotStateMachine_T AutopilotStateMachine_DWork;
   ExternalInputs_AutopilotStateMachine_T AutopilotStateMachine_U;
   ExternalOutputs_AutopilotStateMachine_T AutopilotStateMachine_Y;
+  static void AutopilotStateMachine_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
+    rtDW_LagFilter_AutopilotStateMachine_T *localDW);
+  static void AutopilotStateMachine_WashoutFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
+    rtDW_WashoutFilter_AutopilotStateMachine_T *localDW);
   static void AutopilotStateMachine_BitShift(real_T rtu_u, real_T *rty_y);
   static void AutopilotStateMachine_BitShift1(real_T rtu_u, real_T *rty_y);
   boolean_T AutopilotStateMachine_X_TO_OFF(const ap_sm_output *BusAssignment);
@@ -237,8 +237,10 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_LAND_entry(void);
   boolean_T AutopilotStateMachine_NAV_TO_HDG(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_RWY_TO_RWY_TRK(const ap_sm_output *BusAssignment);
+  boolean_T AutopilotStateMachine_RWY_TO_OFF(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_RWY_TRK_entry(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_GA_TRK_entry(const ap_sm_output *BusAssignment);
+  void AutopilotStateMachine_ON(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_GA_TRK_during(void);
   boolean_T AutopilotStateMachine_OFF_TO_HDG(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_OFF_TO_NAV(const ap_sm_output *BusAssignment);
@@ -275,6 +277,8 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_DES(void);
   void AutopilotStateMachine_ROLL_OUT_entry_o(void);
   boolean_T AutopilotStateMachine_GS_TO_X(void);
+  boolean_T AutopilotStateMachine_GS_TO_X_MR(void);
+  boolean_T AutopilotStateMachine_GS_TO_ALT(void);
   void AutopilotStateMachine_GS_TRACK_entry(void);
   void AutopilotStateMachine_LAND_entry_i(void);
   void AutopilotStateMachine_FLARE_entry_g(void);
@@ -285,7 +289,7 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_SRS_during(void);
   void AutopilotStateMachine_SRS(void);
   void AutopilotStateMachine_exit_internal_ON(void);
-  void AutopilotStateMachine_ON(void);
+  void AutopilotStateMachine_ON_l(void);
 };
 
 #endif
