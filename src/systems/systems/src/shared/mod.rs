@@ -14,10 +14,41 @@ pub trait ApuStartContactorsController {
     fn should_close_start_contactors(&self) -> bool;
 }
 
-pub trait AuxiliaryPowerUnitElectrical: PotentialSource + ApuStartContactorsController {
+pub trait AuxiliaryPowerUnitElectrical:
+    PotentialSource + ApuStartContactorsController + ApuAvailable
+{
     fn start_motor_powered_by(&mut self, source: Potential);
-    fn is_available(&self) -> bool;
     fn output_within_normal_parameters(&self) -> bool;
+}
+
+pub trait ApuAvailable {
+    fn is_available(&self) -> bool;
+}
+
+pub trait EngineFirePushButtons {
+    /// Indicates if the fire push button of the given engine is released.
+    fn is_released(&self, engine_number: usize) -> bool;
+}
+
+pub trait ApuMaster {
+    fn master_sw_is_on(&self) -> bool;
+}
+
+pub trait ApuStart {
+    fn start_is_on(&self) -> bool;
+}
+
+pub trait RamAirTurbineHydraulicLoopPressurised {
+    fn is_rat_hydraulic_loop_pressurised(&self) -> bool;
+}
+
+pub trait LandingGearPosition {
+    fn is_up_and_locked(&self) -> bool;
+    fn is_down_and_locked(&self) -> bool;
+}
+
+pub trait EngineCorrectedN2 {
+    fn corrected_n2(&self) -> Ratio;
 }
 
 #[derive(FromPrimitive)]
