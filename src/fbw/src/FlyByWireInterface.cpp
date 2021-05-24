@@ -22,6 +22,7 @@ bool FlyByWireInterface::connect() {
   spoilersHandler = make_shared<SpoilersHandler>();
   elevatorTrimHandler = make_shared<ElevatorTrimHandler>();
   rudderTrimHandler = make_shared<RudderTrimHandler>();
+  animationAileronHandler = make_shared<AnimationAileronHandler>();
 
   // initialize model
   autopilotStateMachine.initialize();
@@ -304,6 +305,9 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
+
+  idAileronPositionLeft = make_unique<LocalVariable>("A32NX_3D_AILERON_LEFT_DEFLECTION");
+  idAileronPositionRight = make_unique<LocalVariable>("A32NX_3D_AILERON_RIGHT_DEFLECTION");
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -1038,6 +1042,12 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   // update speeds
   idSpeedAlphaProtection->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn);
   idSpeedAlphaMax->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn);
+
+  // update aileron positions
+  animationAileronHandler->update(spoilersHandler->getIsGroundSpoilersActive(), simData.flaps_position,
+                                  idExternalOverride->get() == 1 ? simData.xi_pos : flyByWireOutput.output.xi_pos, sampleTime);
+  idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
+  idAileronPositionRight->set(animationAileronHandler->getPositionRight());
 
   // success ----------------------------------------------------------------------------------------------------------
   return true;
