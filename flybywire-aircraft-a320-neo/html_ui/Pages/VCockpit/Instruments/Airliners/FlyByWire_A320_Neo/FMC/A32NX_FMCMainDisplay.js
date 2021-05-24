@@ -3352,12 +3352,8 @@ class FMCMainDisplay extends BaseAirliners {
             }
         })();
 
-        if (_old < _new) {
-            if (phase <= _new) {
-                CDUPerformancePage.ShowPage(this);
-            }
-        } else if (phase === _old) {
-            CDUPerformancePage.ShowPage(this, _old);
+        if (phase !== -1 && (_old < _new ? phase <= _new : phase === _old)) {
+            CDUPerformancePage.ShowPage(this, phase === _old ? _old : undefined);
         }
     }
 
