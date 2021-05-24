@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconClipboard, IconMap, IconCalculator, IconSettings, IconTruck } from '@tabler/icons';
+import { IconClipboard, IconMap, IconCalculator, IconSettings, IconTruck, IconListCheck } from '@tabler/icons';
 import logo from '../Assets/fbw-logo.svg';
 
 type ToolbarProps = {
@@ -41,6 +41,11 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                         <li className={this.state.activeIndex === 1 ? c.active : c.inactive}>
                             <a onClick={() => this.handleClick(1)}>
                                 <IconClipboard className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                            </a>
+                        </li>
+                        <li className={this.state.activeIndex === 1 ? c.active : c.inactive}>
+                            <a onClick={() => this.handleClick(6)}>
+                                <IconListCheck className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
                             </a>
                         </li>
                         <li className={this.state.activeIndex === 2 ? c.active : c.inactive}>

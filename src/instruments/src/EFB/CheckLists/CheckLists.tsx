@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { checklists } from './data';
-import { CheckBox } from '../Components/Form/CheckBox';
 import { Navbar } from '../Components/Navbar';
+import { IconCircleCheck, IconCircleDashed } from '@tabler/icons';
 
 export const CheckLists: React.FC = () => {
     const initialiseChecks = (() => {
@@ -16,10 +16,10 @@ export const CheckLists: React.FC = () => {
     const [checks, setChecks] = useState(initialiseChecks);
 
     return (
-        <div className="w-half">
+        <div>
             <h1 className="text-3xl pt-6 text-white">Check Lists</h1>
             <Navbar tabs={checklists.map(({ name }) => name)} onSelected={(index) => setCurrentCheckList(index)} />
-            <div className="mt-6 text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 text-lg font-mono font-thin">
+            <div className="mt-6 text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 text-lg font-mono font-thin w-1/2">
                 {
                     checklists[currentCheckList].items.map((item, index) => {
                         switch (item.type) {
@@ -74,7 +74,10 @@ const CheckListItem = ({ description, additionals = [], expectedResult, isChecke
                     {expectedResult}
                 </div>
                 <div>
-                    <CheckBox value={isChecked} />
+                    {isChecked ?
+                        <IconCircleCheck className="ml-2" size={32} color="#00b341" stroke={1} strokeLinejoin="miter"/> :
+                        <IconCircleDashed className="ml-2" size={32} color="white" stroke={1} strokeLinejoin="miter"/>
+                        }
                 </div>
             </div>
         </div>

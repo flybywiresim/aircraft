@@ -228,7 +228,7 @@ const Efb = () => {
                     <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
                     <div className="flex flex-row">
                         <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
-                        <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
+                        <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen overflow-hidden">
                             <Switch>
                                 <Route path="/dashboard">
                                     <Dashboard
