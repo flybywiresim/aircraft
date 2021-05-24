@@ -39,7 +39,6 @@ const builds = getInputs()
 
 const instruments = getInputs().map(({ path }) => path);
 
-console.log(JSON.stringify(instruments));
 fs.writeFileSync(`${Directories.instruments}/devServer/instruments.json`, JSON.stringify(instruments));
 
 export default builds;

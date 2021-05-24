@@ -1,6 +1,6 @@
 import fs from 'fs';
+import { ExecTask } from '@flybywiresim/igniter';
 import { Directories } from '../directories.mjs';
-import { RollupTask } from './RollupTask.mjs';
 
 const ecamPages = [
     {
@@ -26,14 +26,14 @@ function getInputs() {
         .filter((d) => d.isDirectory() && fs.existsSync(`${Directories.instruments}/src/${d.name}/config.json`));
 
     return [
-        ...baseInstruments.map(({ name }) => new RollupTask(
+        ...baseInstruments.map(({ name }) => new ExecTask(
             name,
-            name,
+            `node src/instruments/buildSrc/igniter/worker.mjs ${name}`,
             [`src/instruments/src/${name}`, `flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/${name}`],
         )),
-        ...ecamPages.map(({ name, path }) => new RollupTask(
+        ...ecamPages.map(({ name, path }) => new ExecTask(
             name,
-            name,
+            `node src/instruments/buildSrc/igniter/worker.mjs ${name}`,
             [`src/instruments/src/${path}`, `flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EcamPages/${name}`],
         )),
     ];
