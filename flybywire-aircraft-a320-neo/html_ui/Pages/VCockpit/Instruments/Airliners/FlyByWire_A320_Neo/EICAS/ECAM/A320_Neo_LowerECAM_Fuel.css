@@ -85,24 +85,24 @@ text.Unit {
 }
 
 text.Tiny {
-  font-size: 15px !important;
+  font-size: 15px;
 }
 
 text.XSmall {
-  font-size: 17px !important;
+  font-size: 17px;
 }
 
 text.Small {
-  font-size: 20px !important;
+  font-size: 20px;
 }
 
 text.Large {
   font-weight: bold;
-  font-size: 22px !important;
+  font-size: 22px;
 }
 
 text.XLarge {
-  font-size: 25px !important;
+  font-size: 25px;
 }
 
 #APU text {

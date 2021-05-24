@@ -288,6 +288,7 @@
                     } els{
                         (&gt;H:A320_Neo_FCU_VS_INC_VS)
                     }
+                    (&gt;H:A320_Neo_CDU_VS)
                 </CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
@@ -295,12 +296,15 @@
                     } els{
                         (&gt;H:A320_Neo_FCU_VS_DEC_VS)
                     }
+                    (&gt;H:A320_Neo_CDU_VS)
                 </ANTICLOCKWISE_CODE>
                 <PULL_CODE>
                     (&gt;H:A320_Neo_FCU_VS_PULL)
+                    (&gt;H:A320_Neo_CDU_VS)
                 </PULL_CODE>
                 <PUSH_CODE>
                     (&gt;H:A320_Neo_FCU_VS_PUSH)
+                    (&gt;H:A320_Neo_CDU_VS)
                 </PUSH_CODE>
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
@@ -313,13 +317,15 @@
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_#SIDE#</NODE_ID>
             <SEQ_POWERED>1</SEQ_POWERED>
+            <NO_SEQ2 />
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_Push_Held">
             <SEQ1_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool)</SEQ1_CODE>
-            <SEQ2_CODE />
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
             <LEFT_SINGLE_CODE />
+            <HOLD_SIMVAR />
+            <NO_SEQ2 />
         </UseTemplate>
     </Template>
 </ModelBehaviors>

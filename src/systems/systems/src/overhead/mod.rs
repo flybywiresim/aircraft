@@ -291,11 +291,76 @@ impl AutoOffFaultPushButton {
         self.has_fault
     }
 
-    fn set_fault(&mut self, value: bool) {
+    pub fn set_fault(&mut self, value: bool) {
         self.has_fault = value;
     }
 }
 impl SimulationElement for AutoOffFaultPushButton {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.is_auto_id, self.is_auto());
+        writer.write_bool(&self.has_fault_id, self.has_fault());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_auto(reader.read_bool(&self.is_auto_id));
+        self.set_fault(reader.read_bool(&self.has_fault_id));
+    }
+}
+
+pub struct AutoOnFaultPushButton {
+    is_auto_id: String,
+    has_fault_id: String,
+
+    is_auto: bool,
+    has_fault: bool,
+}
+impl AutoOnFaultPushButton {
+    pub fn new_auto(name: &str) -> Self {
+        Self::new(name, true)
+    }
+
+    pub fn new_on(name: &str) -> Self {
+        Self::new(name, false)
+    }
+
+    fn new(name: &str, is_auto: bool) -> Self {
+        Self {
+            is_auto_id: format!("OVHD_{}_PB_IS_AUTO", name),
+            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_auto,
+            has_fault: false,
+        }
+    }
+
+    pub fn push_on(&mut self) {
+        self.is_auto = false;
+    }
+
+    pub fn push_auto(&mut self) {
+        self.is_auto = true;
+    }
+
+    pub fn is_auto(&self) -> bool {
+        self.is_auto
+    }
+
+    pub fn is_on(&self) -> bool {
+        !self.is_auto
+    }
+
+    pub fn set_auto(&mut self, value: bool) {
+        self.is_auto = value;
+    }
+
+    pub fn has_fault(&self) -> bool {
+        self.has_fault
+    }
+
+    pub fn set_fault(&mut self, value: bool) {
+        self.has_fault = value;
+    }
+}
+impl SimulationElement for AutoOnFaultPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool(&self.is_auto_id, self.is_auto());
         writer.write_bool(&self.has_fault_id, self.has_fault());
@@ -356,7 +421,7 @@ impl AutoManFaultPushButton {
         self.has_fault
     }
 
-    fn set_fault(&mut self, value: bool) {
+    pub fn set_fault(&mut self, value: bool) {
         self.has_fault = value;
     }
 }
@@ -489,6 +554,50 @@ impl SimulationElement for ValueKnob {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.set_value(reader.read_f64(&self.value_id));
+    }
+}
+
+pub struct FaultIndication {
+    has_fault_id: String,
+    has_fault: bool,
+}
+impl FaultIndication {
+    pub fn new(name: &str) -> Self {
+        Self {
+            has_fault_id: format!("OVHD_{}_HAS_FAULT", name),
+            has_fault: false,
+        }
+    }
+
+    pub fn set_fault(&mut self, fault: bool) {
+        self.has_fault = fault;
+    }
+}
+impl SimulationElement for FaultIndication {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.has_fault_id, self.has_fault);
+    }
+}
+
+pub struct MomentaryPushButton {
+    is_pressed_id: String,
+    is_pressed: bool,
+}
+impl MomentaryPushButton {
+    pub fn new(name: &str) -> Self {
+        Self {
+            is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
+            is_pressed: false,
+        }
+    }
+
+    pub fn is_pressed(&self) -> bool {
+        self.is_pressed
+    }
+}
+impl SimulationElement for MomentaryPushButton {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.is_pressed = reader.read_bool(&self.is_pressed_id);
     }
 }
 
@@ -691,5 +800,48 @@ mod fire_push_button_tests {
         test_bed.run_without_update(&mut button);
 
         assert!(test_bed.contains_key("FIRE_BUTTON_APU"));
+    }
+}
+
+#[cfg(test)]
+mod fault_indication_tests {
+    use super::*;
+    use crate::simulation::test::SimulationTestBed;
+
+    #[test]
+    fn new_does_not_have_fault() {
+        assert!(!FaultIndication::new("TEST").has_fault);
+    }
+
+    #[test]
+    fn writes_its_state() {
+        let mut button = FaultIndication::new("TEST");
+        let mut test_bed = SimulationTestBed::new();
+
+        test_bed.run_without_update(&mut button);
+
+        assert!(test_bed.contains_key("OVHD_TEST_HAS_FAULT"));
+    }
+}
+
+#[cfg(test)]
+mod momentary_push_button_tests {
+    use super::*;
+    use crate::simulation::test::SimulationTestBed;
+
+    #[test]
+    fn new_is_not_pressed() {
+        assert!(!MomentaryPushButton::new("TEST").is_pressed());
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut button = MomentaryPushButton::new("TEST");
+        let mut test_bed = SimulationTestBed::new();
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run_without_update(&mut button);
+
+        assert!(button.is_pressed());
     }
 }
