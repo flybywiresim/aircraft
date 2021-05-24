@@ -20,8 +20,9 @@ use systems::{
         NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
     },
     shared::{
-        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EngineCorrectedN2,
-        EngineFirePushButtons, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
+        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
+        RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
@@ -206,6 +207,11 @@ impl SimulationElement for A320Electrical {
         writer.write_bool("ELEC_GALLEY_IS_SHED", self.galley_is_shed())
     }
 }
+impl EmergencyElectricalState for A320Electrical {
+    fn is_in_emergency_elec(&self) -> bool {
+        self.in_emergency_elec()
+    }
+}
 
 trait A320DirectCurrentElectricalSystem {
     fn static_inverter(&self) -> &StaticInverter;
@@ -369,7 +375,7 @@ impl A320EmergencyElectricalOverheadPanel {
         self.gen_1_line.is_on()
     }
 
-    pub fn rat_and_emer_gen_man_on(&self) -> bool {
+    fn rat_and_emer_gen_man_on(&self) -> bool {
         self.rat_and_emer_gen_man_on.is_pressed()
     }
 }
@@ -382,13 +388,9 @@ impl SimulationElement for A320EmergencyElectricalOverheadPanel {
         visitor.visit(self);
     }
 }
-// Trait used to share RAT MAN button with hydraulics logic without ELEC type dependencies
-pub trait A320EmergencyElectricalOverheadStates {
-    fn rat_and_emer_gen_man_on(&self) -> bool;
-}
-impl A320EmergencyElectricalOverheadStates for A320EmergencyElectricalOverheadPanel {
-    fn rat_and_emer_gen_man_on(&self) -> bool {
-        self.rat_and_emer_gen_man_on.is_pressed()
+impl EmergencyElectricalRatPushButton for A320EmergencyElectricalOverheadPanel {
+    fn is_pressed(&self) -> bool {
+        self.rat_and_emer_gen_man_on()
     }
 }
 #[cfg(test)]
