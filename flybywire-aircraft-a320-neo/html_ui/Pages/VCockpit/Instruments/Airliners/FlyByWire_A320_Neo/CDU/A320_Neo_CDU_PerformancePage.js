@@ -1,17 +1,19 @@
 class CDUPerformancePage {
-    static ShowPage(mcdu) {
+    static ShowPage(mcdu, _phase = undefined) {
         mcdu.activeSystem = 'FMGC';
-        if (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) {
+        const phase = _phase || mcdu.currentFlightPhase;
+
+        if (phase <= FmgcFlightPhases.TAKEOFF) {
             CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.CLIMB) {
+        } else if (phase === FmgcFlightPhases.CLIMB) {
             CDUPerformancePage.ShowCLBPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.CRUISE) {
+        } else if (phase === FmgcFlightPhases.CRUISE) {
             CDUPerformancePage.ShowCRZPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.DESCENT) {
+        } else if (phase === FmgcFlightPhases.DESCENT) {
             CDUPerformancePage.ShowDESPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
+        } else if (phase === FmgcFlightPhases.APPROACH) {
             CDUPerformancePage.ShowAPPRPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
+        } else if (phase === FmgcFlightPhases.GOAROUND) {
             CDUPerformancePage.ShowGOAROUNDPage(mcdu);
         }
     }

@@ -3334,26 +3334,30 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Evaluates whether the new performance page is in order an can be shown or the old one needs to be reloaded instead
+     * Evaluates whether the new performance page is in order and can be shown or the old one can be reloaded instead
      * Updates the performance page relative to the current flight phase
      * @param _old {FmgcFlightPhases}
      * @param _new {FmgcFlightPhases}
      */
     tryUpdatePerfPage(_old, _new) {
-        const phase = _old < _new ? _new : _old;
+        const phase = (() => {
+            switch (this.page.Current) {
+                case this.page.PerformancePageTakeoff : return FmgcFlightPhases.TAKEOFF;
+                case this.page.PerformancePageClb : return FmgcFlightPhases.CLIMB;
+                case this.page.PerformancePageCrz : return FmgcFlightPhases.CRUISE;
+                case this.page.PerformancePageDes : return FmgcFlightPhases.DESCENT;
+                case this.page.PerformancePageAppr : return FmgcFlightPhases.APPROACH;
+                case this.page.PerformancePageGoAround : return FmgcFlightPhases.GOAROUND;
+                default: return -1;
+            }
+        })();
 
-        if (phase === FmgcFlightPhases.TAKEOFF && this.page.Current === this.page.PerformancePageTakeoff) {
-            CDUPerformancePage.ShowTAKEOFFPage(this);
-        } else if (phase === FmgcFlightPhases.CLIMB && this.page.Current === this.page.PerformancePageClb) {
-            CDUPerformancePage.ShowCLBPage(this);
-        } else if (phase === FmgcFlightPhases.CRUISE && this.page.Current === this.page.PerformancePageCrz) {
-            CDUPerformancePage.ShowCRZPage(this);
-        } else if (phase === FmgcFlightPhases.DESCENT && this.page.Current === this.page.PerformancePageDes) {
-            CDUPerformancePage.ShowDESPage(this);
-        } else if (phase === FmgcFlightPhases.APPROACH && this.page.Current === this.page.PerformancePageAppr) {
-            CDUPerformancePage.ShowAPPRPage(this);
-        } else if (phase === FmgcFlightPhases.GOAROUND && this.page.Current === this.page.PerformancePageGoAround) {
-            CDUPerformancePage.ShowGOAROUNDPage(this);
+        if (_old < _new) {
+            if (phase <= _new) {
+                CDUPerformancePage.ShowPage(this);
+            }
+        } else if (phase === _old) {
+            CDUPerformancePage.ShowPage(this, _old);
         }
     }
 
