@@ -1,31 +1,29 @@
-enum ECheckListTypes {
+export enum ECheckListTypes {
     STEP = 'step',
     NOTE = 'note',
     THE_LINE = 'the-line'
 }
 
-type TCheckListItem = {
-    type: ECheckListTypes
-}
+// type TCheckListItem = {
+//     type: ECheckListTypes
+// }
 
-interface TCheckListStep extends TCheckListItem {
-    description: string,
-    expectedResult: string,
-    additionals: Array<string>
-}
+// interface TCheckListStep extends TCheckListItem {
+//     description: string,
+//     expectedResult: string,
+//     detailNote: Array<string>
+// }
 
-interface TCheckListNote extends TCheckListItem {
-    note: string
-}
+// interface TCheckListNote extends TCheckListItem {
+//     note: string
+// }
 
-interface TCheckListPause extends TCheckListItem {}
+// type CheckListType = {
+//     name: string;
+//     items: Array<TCheckListStep|TCheckListNote|TCheckListItem>
+// }
 
-type TCheckList = {
-    name: string;
-    items: Array<TCheckListStep|TCheckListNote|TCheckListPause>
-}
-
-export const checklists: Array<TCheckList> = [
+export const checklists = [
     {
         name: 'Before Start',
         items: [

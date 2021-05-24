@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { IconCircleCheck, IconCircleDashed } from '@tabler/icons';
 import { checklists } from './data';
 import { Navbar } from '../Components/Navbar';
-import { IconCircleCheck, IconCircleDashed } from '@tabler/icons';
+import { useSessionStorage } from '../../Common/hooks';
 
 export const CheckLists: React.FC = () => {
     const initialiseChecks = (() => {
@@ -13,7 +14,7 @@ export const CheckLists: React.FC = () => {
     })();
 
     const [currentCheckList, setCurrentCheckList] = useState(0);
-    const [checks, setChecks] = useState(initialiseChecks);
+    const [checks, setChecks] = useSessionStorage('checks', initialiseChecks);
 
     return (
         <div>
@@ -26,8 +27,8 @@ export const CheckLists: React.FC = () => {
                         case 'step':
                             return (
                                 <CheckListItem
-                                    key={item}
                                     {...item}
+                                    key={item}
                                     isChecked={checks[currentCheckList][index]}
                                     onChecked={() => {
                                         const newMarks = { ...checks };
@@ -52,15 +53,22 @@ export const CheckLists: React.FC = () => {
     );
 };
 
+const CheckMark: React.FC<{isChecked: boolean}> = ({ isChecked }) => {
+    if (isChecked) {
+        return (<IconCircleCheck className="ml-2" size={32} color="#00b341" stroke={1} strokeLinejoin="miter" />);
+    }
+    return (<IconCircleDashed className="ml-2" size={32} color="white" stroke={1} strokeLinejoin="miter" />);
+};
+
 type CheckListItemProps = {
     description: string
     expectedResult: string
     isChecked: boolean
-    additionals: Array<string>
+    detailNotes: Array<string>
     onChecked: () => void
-};
+}
 
-const CheckListItem = ({ description, additionals = [], expectedResult, isChecked, onChecked }: CheckListItemProps) => (
+const CheckListItem: React.FC<CheckListItemProps> = ({ description, detailNotes = [], expectedResult, isChecked, onChecked }) => (
     <div className="py-3">
         <div className="flex justify-between items-start" onClick={onChecked}>
             <div className="flex-none">
@@ -74,18 +82,15 @@ const CheckListItem = ({ description, additionals = [], expectedResult, isChecke
                     {expectedResult}
                 </div>
                 <div>
-                    {isChecked ?
-                        <IconCircleCheck className="ml-2" size={32} color="#00b341" stroke={1} strokeLinejoin="miter"/> :
-                        <IconCircleDashed className="ml-2" size={32} color="white" stroke={1} strokeLinejoin="miter"/>
-                        }
+                    <CheckMark isChecked={isChecked} />
                 </div>
             </div>
         </div>
-        {additionals.length > 0 && (
+        {detailNotes.length > 0 && (
             <ul className="list-dash">
-                {additionals.map((additional) => (
-                    <li key={additional}>
-                        {`- ${additional}`}
+                {detailNotes.map((detailNote) => (
+                    <li key={detailNote}>
+                        {`- ${detailNote}`}
                     </li>
                 ))}
             </ul>
@@ -93,16 +98,12 @@ const CheckListItem = ({ description, additionals = [], expectedResult, isChecke
     </div>
 );
 
-type CheckListNoteProps = {
-    note: string
-}
-
-const CheckListNote = ({ note }: CheckListNoteProps) => (
+const CheckListNote: React.FC<{note: string}> = ({ note }) => (
     <div>
         {note}
     </div>
 );
 
-const CheckListTheLine = () => (
+const CheckListTheLine: React.FC = () => (
     <div className="h-1 bg-white my-2" />
 );

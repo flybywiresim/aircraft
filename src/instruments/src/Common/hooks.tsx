@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getRootElement } from './defaults';
 
 export const useUpdate = (handler: (deltaTime: number) => void) => {
@@ -59,4 +59,29 @@ export const useInteractionEvents = (events: string[], handler: (any?) => void):
     }, [
         ...events,
     ]);
+};
+
+export const useSessionStorage = (key: string, initialValue: any) => {
+    // useSessionStorage hook to allow the use of Session Storage to persist
+    // state during a session and works in the same fashion as useState
+    const [storedValue, setStoredValue] = useState(() => {
+        try {
+            const item = window.sessionStorage.getItem(key);
+            return item ? JSON.parse(item) : initialValue;
+        } catch (error) {
+            console.log(error);
+            return initialValue;
+        }
+    });
+
+    const setValue = (value: any) => {
+        try {
+            const valueToStore = value instanceof Function ? value(storedValue) : value;
+            setStoredValue(valueToStore);
+            window.sessionStorage.setItem(key, JSON.stringify(valueToStore));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+    return [storedValue, setValue];
 };
