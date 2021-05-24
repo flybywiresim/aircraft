@@ -1569,6 +1569,13 @@ class FMCMainDisplay extends BaseAirliners {
                         }
                     }
                 }
+                const approach = this.flightPlanManager.getApproach();
+                if (approach) {
+                    const runway = this.flightPlanManager.getApproachRunway();
+                    if (runway) {
+                        SimVar.SetSimVarValue("L:A32NX_AUTO_LANDING_ELEVATION", "feet", runway.elevation * 3.28084);
+                    }
+                }
                 callback(true);
             });
         });
@@ -2527,6 +2534,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (HPA_REGEX.test(s)) {
             if (value >= 745 && value <= 1050) {
                 this.perfApprQNH = value;
+                SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", this.perfApprQNH);
                 return true;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2535,9 +2543,11 @@ class FMCMainDisplay extends BaseAirliners {
         } else if (INHG_REGEX.test(s)) {
             if (value >= 2200 && value <= 3100) {
                 this.perfApprQNH = value / 100;
+                SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", this.perfApprQNH * 33.8639);
                 return true;
             } else if (value >= 22.0 && value <= 31.00) {
                 this.perfApprQNH = value;
+                SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", this.perfApprQNH * 33.8639);
                 return true;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
