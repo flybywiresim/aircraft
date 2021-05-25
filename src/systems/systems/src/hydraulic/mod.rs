@@ -9,6 +9,8 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
+use crate::electrical::consumption::PowerConsumer;
+use crate::electrical::ElectricalBusType;
 use crate::shared::interpolation;
 use crate::simulation::UpdateContext;
 use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
@@ -725,6 +727,7 @@ pub struct ElectricPump {
     active_id: String,
 
     is_active: bool,
+    power_consumer: PowerConsumer,
     rpm: f64,
     pump: Pump,
 }
@@ -739,10 +742,11 @@ impl ElectricPump {
     // 1 == No filtering
     const DISPLACEMENT_DYNAMICS: f64 = 1.0;
 
-    pub fn new(id: &str) -> Self {
+    pub fn new(id: &str, bus_type: ElectricalBusType) -> Self {
         Self {
             active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
             is_active: false,
+            power_consumer: PowerConsumer::from(bus_type),
             rpm: 0.,
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
@@ -762,7 +766,8 @@ impl ElectricPump {
         line: &HydraulicLoop,
         controller: &T,
     ) {
-        // TODO Simulate speed of pump depending on pump load (flow?/ current?)
+        self.is_active = controller.should_pressurise() && self.power_consumer.is_powered();
+
         // Pump startup/shutdown process
         if self.is_active && self.rpm < Self::NOMINAL_SPEED {
             self.rpm += (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64();
@@ -774,7 +779,6 @@ impl ElectricPump {
         self.rpm = self.rpm.min(Self::NOMINAL_SPEED).max(0.0);
 
         self.pump.update(context, line, self.rpm, controller);
-        self.is_active = controller.should_pressurise();
     }
 }
 impl PressureSource for ElectricPump {
@@ -786,6 +790,12 @@ impl PressureSource for ElectricPump {
     }
 }
 impl SimulationElement for ElectricPump {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.power_consumer.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool(&self.active_id, self.is_active);
     }
@@ -1009,7 +1019,8 @@ impl RamAirTurbine {
         line: &HydraulicLoop,
         controller: &T,
     ) {
-        self.deployment_commanded = controller.should_deploy();
+        // Once commanded, stays commanded forever
+        self.deployment_commanded = controller.should_deploy() || self.deployment_commanded;
 
         self.pump.update(
             context,

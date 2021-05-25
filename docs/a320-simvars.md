@@ -844,6 +844,10 @@
     - Gallon per second
     - Power Transfer Unit instantaneous flow in motor side
 
+- A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
+    - Bool
+    - Deploys the RAT manually
+
 - A32NX_HYD_RAT_STOW_POSITION
     - Percent over 100
     - RAT position, from fully stowed (0) to fully deployed (1)
