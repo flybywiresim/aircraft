@@ -11,12 +11,10 @@ import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvid
 import { ComponentPositionProps } from '../../Common/ComponentPositionProps';
 import { HydraulicSystem } from '../../Common/HydraulicSystem';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
+import { ComponentSidePositionProps } from '../../Common/ComponentSidePositionProps';
+import { Spoilers } from '../../Common/Spoilers';
 
 setIsEcamPage('fctl_page');
-
-interface ComponentSidePositionProps {
-    side: 'left' | 'right'
-}
 
 interface HydraulicSystemPairProps {
     leftHydraulicSystem: HydraulicSystem,
@@ -28,7 +26,7 @@ export const FctlPage = () => (
         <PageTitle x={6} y={18} text="F/CTL" />
 
         <HydraulicsProvider>
-            <Spoilers x={98} y={14} />
+            <Wings x={98} y={14} />
 
             <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
             <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" />
@@ -54,91 +52,25 @@ export const FctlPage = () => (
     </EcamPage>
 );
 
-const Spoilers = ({ x = 0, y = 0 }: ComponentPositionProps) => {
-    const [aileronLeftDeflectionState] = useSimVar('AILERON LEFT DEFLECTION PCT', 'percent over 100', 50);
-    const [aileronRightDeflectionState] = useSimVar('AILERON RIGHT DEFLECTION PCT', 'percent over 100', 50);
+const Wings = ({ x = 0, y = 0 }: ComponentPositionProps) => (
+    <SvgGroup x={x} y={y}>
+        <Note x={202} y={93}>SPD BRK</Note>
 
-    const [leftSpoilerState] = useSimVar('SPOILERS LEFT POSITION', 'percent over 100', 50);
-    const [rightSpoilerState] = useSimVar('SPOILERS RIGHT POSITION', 'percent over 100', 50);
-    const [speedBrakeHandlePosition] = useSimVar('SPOILERS HANDLE POSITION', 'percent over 100', 100);
+        <HydraulicIndicator x={171} y={0} type="G" />
+        <HydraulicIndicator x={193} y={0} type="B" />
+        <HydraulicIndicator x={215} y={0} type="Y" />
 
-    const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'boolean', 500);
+        <Spoilers x={5} y={70} />
 
-    const leftSpoilerUp = leftSpoilerState > 0.1;
-    const leftAileronUp = aileronLeftDeflectionState < -0.5;
-    const rightSpoilerUp = rightSpoilerState > 0.1;
-    const rightAileronUp = aileronRightDeflectionState > 0.5;
+        {/* Left spoiler wing shape */}
+        <path className="MainShape" d="M0 47 l0 -5 l140 -23 l0 5" />
+        <path className="MainShape" d="M37 96 l0 5 l105 -12 l0 -5" />
 
-    const speedBrakeUp = speedBrakeHandlePosition > 0.1;
-
-    return (
-        <SvgGroup x={x} y={y}>
-            <Note x={202} y={93}>SPD BRK</Note>
-
-            <HydraulicIndicator x={171} y={0} type="G" />
-            <HydraulicIndicator x={193} y={0} type="B" />
-            <HydraulicIndicator x={215} y={0} type="Y" />
-
-            <Spoiler x={5} y={90} side="left" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && leftSpoilerUp) || leftAileronUp} />
-            <Spoiler x={43} y={85} side="left" number={4} actuatedBy="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={81} y={80} side="left" number={3} actuatedBy="B" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={119} y={75} side="left" number={2} actuatedBy="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={157} y={70} side="left" number={1} actuatedBy="G" upWhenActuated={spoilersArmed && leftSpoilerUp} />
-
-            <Spoiler x={247} y={70} side="right" number={1} actuatedBy="G" upWhenActuated={spoilersArmed && rightSpoilerUp} />
-            <Spoiler x={285} y={75} side="right" number={2} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={323} y={80} side="right" number={3} actuatedBy="B" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={361} y={85} side="right" number={4} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={399} y={90} side="right" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && rightSpoilerUp) || rightAileronUp} />
-
-            {/* Left spoiler wing shape */}
-            <path className="MainShape" d="M0 47 l0 -5 l140 -23 l0 5" />
-            <path className="MainShape" d="M37 96 l0 5 l105 -12 l0 -5" />
-
-            {/* Right spoiler wing shape */}
-            <path className="MainShape" d="M404 47 l0 -5 l-140 -23 l0 5" />
-            <path className="MainShape" d="M367 96 l0 5 l-105 -12 l0 -5" />
-        </SvgGroup>
-    );
-};
-
-interface SpoilerProps extends ComponentPositionProps, ComponentSidePositionProps {
-    number: number,
-    actuatedBy: HydraulicSystem,
-    upWhenActuated: boolean,
-}
-const Spoiler = ({ x, y, number, side, actuatedBy, upWhenActuated }: SpoilerProps) => {
-    const hydraulics = useHydraulics();
-
-    return (
-        <SvgGroup x={x} y={y}>
-            <path
-                className={hydraulics[actuatedBy].available ? 'GreenShapeThick' : 'WarningShapeThick'}
-                d={`M 0 0 l ${side === 'right' ? '-' : ''}15 0`}
-            />
-            <path
-                visibility={upWhenActuated ? 'visible' : 'hidden'}
-                className={hydraulics[actuatedBy].available ? 'GreenShape' : 'WarningShape'}
-                d={`M ${side === 'left' ? 8 : -8} -22 l -6 0 l 6 -12 l 6 12 l -6 0`}
-            />
-            <path
-                visibility={upWhenActuated && hydraulics[actuatedBy].available ? 'visible' : 'hidden'}
-                className="GreenShape"
-                d={`M ${side === 'left' ? 8 : -8} 0 l 0 -22`}
-            />
-            <text
-                x={side === 'left' ? 8 : -8}
-                y={-11}
-                visibility={hydraulics[actuatedBy].available ? 'hidden' : 'visible'}
-                className="Warning Standard"
-                textAnchor="middle"
-                alignmentBaseline="central"
-            >
-                {number}
-            </text>
-        </SvgGroup>
-    );
-};
+        {/* Right spoiler wing shape */}
+        <path className="MainShape" d="M404 47 l0 -5 l-140 -23 l0 5" />
+        <path className="MainShape" d="M367 96 l0 5 l-105 -12 l0 -5" />
+    </SvgGroup>
+);
 
 const PitchTrim = ({ x, y }: ComponentPositionProps) => {
     const [rawPitchTrim] = useSimVar('ELEVATOR TRIM INDICATOR', 'Position 16k', 50);

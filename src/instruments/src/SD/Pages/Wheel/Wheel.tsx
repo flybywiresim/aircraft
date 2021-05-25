@@ -10,6 +10,7 @@ import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 import { ComponentPositionProps } from '../../Common/ComponentPositionProps';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
+import { Spoilers } from '../../Common/Spoilers';
 
 setIsEcamPage('wheel_page');
 
@@ -28,26 +29,13 @@ export const WheelPage = () => {
         <EcamPage name="main-wheel">
             <PageTitle x={6} y={115} text="WHEEL" />
 
-            {/* TODO: Use F/CTL page component */}
-            <g id="speedbrakes">
-                <path className="shape color-green" d="m 103 84 l 15 0" />
-                <path className="shape color-green" d="m 142 79 l 15 0" />
-                <path className="shape color-green" d="m 180 74 l 15 0" />
-                <path className="shape color-green" d="m 219 69 l 15 0" />
-                <path className="shape color-green" d="m 257 64 l 15 0" />
-
-                <path className="shape color-green" d="m 497 84 l -15 0" />
-                <path className="shape color-green" d="m 458 79 l -15 0" />
-                <path className="shape color-green" d="m 420 74 l -15 0" />
-                <path className="shape color-green" d="m 381 69 l -15 0" />
-                <path className="shape color-green" d="m 343 64 l -15 0" />
-            </g>
-
-            <LandingGearCtl x={255} y={263} />
-            <AntiSkid x={300} y={312} />
-
             <HydraulicsProvider>
+                <Spoilers x={103} y={64} />
+
                 <NoseWheelSteering x={205} y={200} />
+                <LandingGearCtl x={255} y={263} />
+                <AntiSkid x={300} y={312} />
+
                 <NormalBraking x={220} y={333} />
                 <AlternateBraking x={220} y={360} />
             </HydraulicsProvider>
