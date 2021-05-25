@@ -7,9 +7,9 @@ use uom::si::{
     acceleration::foot_per_second_squared,
     f64::*,
     length::foot,
-    pressure::{pascal, psi},
+    pressure::{pascal, psi, hectopascal},
     thermodynamic_temperature::degree_celsius,
-    velocity::knot,
+    velocity::{knot, foot_per_minute},
     volume::{gallon, liter},
     volume_rate::gallon_per_second,
 };
@@ -831,7 +831,9 @@ fn context(delta_time: Duration) -> UpdateContext {
         Velocity::new::<knot>(250.),
         Length::new::<foot>(5000.),
         ThermodynamicTemperature::new::<degree_celsius>(25.0),
+        Pressure::new::<hectopascal>(1013.),
         true,
+        Velocity::new::<foot_per_minute>(0.),
         Acceleration::new::<foot_per_second_squared>(0.),
     )
 }

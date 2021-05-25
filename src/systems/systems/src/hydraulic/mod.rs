@@ -3,8 +3,8 @@ use std::time::Duration;
 
 use uom::si::{
     f64::*,
-    pressure::psi,
-    velocity::knot,
+    pressure::{psi, hectopascal},
+    velocity::{knot, foot_per_minute},
     volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
 };
@@ -1273,7 +1273,9 @@ mod tests {
             Velocity::new::<knot>(250.),
             Length::new::<foot>(5000.),
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
+            Pressure::new::<hectopascal>(1013.),
             true,
+            Velocity::new::<foot_per_minute>(0.),
             Acceleration::new::<foot_per_second_squared>(0.),
         )
     }

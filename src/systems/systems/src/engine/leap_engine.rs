@@ -7,6 +7,8 @@ use crate::{
 
 use super::Engine;
 pub struct LeapEngine {
+    corrected_n1_id: String,
+    corrected_n1: Ratio,
     corrected_n2_id: String,
     corrected_n2: Ratio,
     n2_speed: AngularVelocity,
@@ -25,6 +27,8 @@ impl LeapEngine {
 
     pub fn new(number: usize) -> LeapEngine {
         LeapEngine {
+            corrected_n1_id: format!("TURB ENG CORRECTED N1:{}", number),
+            corrected_n1: Ratio::new::<percent>(0.),
             corrected_n2_id: format!("TURB ENG CORRECTED N2:{}", number),
             corrected_n2: Ratio::new::<percent>(0.),
             n2_speed: AngularVelocity::new::<revolution_per_minute>(0.),
@@ -44,9 +48,14 @@ impl LeapEngine {
         // Ultra stupid model just to have 18psi crossing at 25% N2
         self.oil_pressure = Pressure::new::<psi>(18. / 25. * self.corrected_n2.get::<percent>());
     }
+
+    pub fn corrected_n1(&self) -> Ratio {
+        self.corrected_n1
+    }
 }
 impl SimulationElement for LeapEngine {
     fn read(&mut self, reader: &mut SimulatorReader) {
+        self.corrected_n1 = Ratio::new::<percent>(reader.read_f64(&self.corrected_n1_id));
         self.corrected_n2 = Ratio::new::<percent>(reader.read_f64(&self.corrected_n2_id));
         self.update_parameters();
     }
