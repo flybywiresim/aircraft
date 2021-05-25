@@ -1,3 +1,8 @@
 import React from 'react';
 
-export const SvgGroup = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
+interface SvgGroupProps {
+    x: number,
+    y: number,
+    className?: string,
+}
+export const SvgGroup: React.FunctionComponent<SvgGroupProps> = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
