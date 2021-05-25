@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { PageTitle } from '../../Common/PageTitle';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
-
-import './Wheel.scss';
 import classNames from 'classnames';
+import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
+import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
+import { PageTitle } from '../../Common/PageTitle';
+import './Wheel.scss';
 
 setIsEcamPage('wheel_page');
 

@@ -22,6 +22,10 @@ const ecamPages = [
         name: 'elec-page',
         path: 'SD/Pages/Elec',
     },
+    {
+        name: 'wheel-page',
+        path: 'SD/Pages/Wheel',
+    },
 ];
 
 function getInputs() {
