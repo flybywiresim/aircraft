@@ -5,6 +5,8 @@ import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
 import { PageTitle } from '../../Common/PageTitle';
 import './Wheel.scss';
+import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
+import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 
 setIsEcamPage('wheel_page');
 
@@ -184,12 +186,14 @@ export const WheelPage = () => {
                 <path className="shape color-green" d="m 343 64 l -15 0" />
             </g>
 
-            <NoseWheelSteering x={205} y={200} />
             <LandingGearCtl x={255} y={263} />
             <AntiSkid x={300} y={312} />
 
-            <NormalBraking x={220} y={333} />
-            <AlternateBraking x={220} y={360} />
+            <HydraulicsProvider>
+                <NoseWheelSteering x={205} y={200} />
+                <NormalBraking x={220} y={333} />
+                <AlternateBraking x={220} y={360} />
+            </HydraulicsProvider>
 
             <AutoBrake x={300} y={460} />
 
@@ -221,9 +225,7 @@ const NoseWheelSteering = ({ x, y }) => {
 
     return !antiSkidActive ? (
         <SvgGroup x={x} y={y}>
-            {/* <!-- Hyd --> TODO Use HYD control from F/CTL. Show GREEN when it's okay. */}
-            <rect className="hyd-background" x={0} y={0} width="18" height="20" />
-            <text className="medium-text color-amber" x={9} y={10} textAnchor="middle" alignmentBaseline="central">Y</text>
+            <HydraulicIndicator x={0} y={0} type="Y" />
 
             <text x={29} y={17} className="big-text align-left color-amber">N/W STEERING</text>
         </SvgGroup>
@@ -262,15 +264,11 @@ const LandingGearCtl = ({ x, y }) => {
 };
 
 const NormalBraking = ({ x, y }) => {
-    const [eng1] = useSimVar('ENG COMBUSTION:1', 'Bool');
-    const [eng2] = useSimVar('ENG COMBUSTION:2', 'Bool');
-    const available = eng1 === 1 && eng2 === 1;
+    const hydraulics = useHydraulics();
 
-    return !available ? (
+    return !hydraulics.G.available ? (
         <SvgGroup x={x} y={y}>
-            {/* <!-- Hyd --> TODO Use HYD control from F/CTL. Show GREEN when it's okay. */}
-            <rect className="hyd-background" x={0} y={0} width="18" height="20" />
-            <text className="medium-text color-amber" x={9} y={10} textAnchor="middle" alignmentBaseline="central">G</text>
+            <HydraulicIndicator x={0} y={0} type="G" />
 
             <text x={86} y={18} className="big-text color-amber">NORM BRK</text>
         </SvgGroup>
@@ -278,15 +276,11 @@ const NormalBraking = ({ x, y }) => {
 };
 
 const AlternateBraking = ({ x, y }) => {
-    const [eng1] = useSimVar('ENG COMBUSTION:1', 'Bool');
-    const [eng2] = useSimVar('ENG COMBUSTION:2', 'Bool');
-    const available = eng1 === 1 && eng2 === 1;
+    const hydraulics = useHydraulics();
 
-    return !available ? (
+    return !hydraulics.G.available ? (
         <SvgGroup x={x} y={y}>
-            {/* <!-- Hyd --> TODO Use HYD control from F/CTL. Show GREEN when it's okay. */}
-            <rect className="hyd-background" x={0} y={0} width="18" height="20" />
-            <text className="medium-text color-amber" x={9} y={10} textAnchor="middle" alignmentBaseline="central">Y</text>
+            <HydraulicIndicator x={0} y={0} type="Y" />
 
             <text x={86} y={18} className="big-text color-green">ALTN BRK</text>
             <AccumulatorOnly x={45} y={28} />
