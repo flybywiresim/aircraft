@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 
-export const renderTarget = document.getElementById('A32NX_REACT_MOUNT');
+export const renderTarget = document.getElementById('MSFS_REACT_MOUNT');
 export const customElement = renderTarget.parentElement;
 
 // @param {() => void} handler

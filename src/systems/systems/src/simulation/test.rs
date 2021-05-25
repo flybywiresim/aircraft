@@ -1,5 +1,8 @@
 use std::{collections::HashMap, time::Duration};
-use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
+use uom::si::{
+    acceleration::foot_per_second_squared, f64::*, length::foot,
+    thermodynamic_temperature::degree_celsius, velocity::knot,
+};
 
 use crate::electrical::consumption::SuppliedPower;
 
@@ -42,7 +45,7 @@ impl SimulationTestBed {
     ///
     /// By default the unseeded simulation will return 0.0 or false for any requested
     /// variables. If this is a problem for your test, then use this function.
-    pub fn seeded_with<T: SimulationElement>(element: &mut T) -> Self {
+    pub fn seeded_with(element: &mut impl SimulationElement) -> Self {
         let mut test_bed = Self::new();
 
         let mut writer = SimulatorWriter::new(&mut test_bed.reader_writer);
@@ -56,7 +59,7 @@ impl SimulationTestBed {
     ///
     /// [`Aircraft`]: ../trait.Aircraft.html
     /// [`Simulation`]: ../struct.Simulation.html
-    pub fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T) {
+    pub fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
         let mut simulation = Simulation::new(aircraft, &mut self.reader_writer);
         simulation.tick(self.delta);
     }
@@ -110,7 +113,7 @@ impl SimulationTestBed {
     ///
     /// [`Simulation`]: ../struct.Simulation.html
     /// [`SimulationElement`]: ../trait.SimulationElement.html
-    pub fn run_without_update<T: SimulationElement>(&mut self, element: &mut T) {
+    pub fn run_without_update(&mut self, element: &mut impl SimulationElement) {
         self.run(element, |_, _| {});
     }
 
@@ -167,9 +170,16 @@ impl SimulationTestBed {
             .write_bool(UpdateContext::IS_ON_GROUND_KEY, on_ground);
     }
 
-    pub fn supplied_power_fn<T: Fn() -> SuppliedPower + 'static>(
+    pub fn set_long_acceleration(&mut self, accel: Acceleration) {
+        self.reader_writer.write_f64(
+            UpdateContext::ACCEL_BODY_Z_KEY,
+            accel.get::<foot_per_second_squared>(),
+        );
+    }
+
+    pub fn supplied_power_fn(
         mut self,
-        supplied_power_fn: T,
+        supplied_power_fn: impl Fn() -> SuppliedPower + 'static,
     ) -> Self {
         self.get_supplied_power_fn = Box::new(supplied_power_fn);
         self
@@ -243,7 +253,9 @@ impl<'a, T: SimulationElement, U: Fn(&mut T, &UpdateContext)> SimulationElement
     for TestAircraft<'a, T, U>
 {
     fn accept<W: SimulationElementVisitor>(&mut self, visitor: &mut W) {
-        visitor.visit(self.element);
+        self.element.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 

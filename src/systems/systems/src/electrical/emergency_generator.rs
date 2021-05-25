@@ -4,7 +4,10 @@ use super::{
     consumption::PowerConsumptionReport, ElectricalStateWriter, Potential, PotentialOrigin,
     PotentialSource, ProvideFrequency, ProvidePotential,
 };
-use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext};
+use crate::{
+    shared::RamAirTurbineHydraulicLoopPressurised,
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+};
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 pub struct EmergencyGenerator {
@@ -27,14 +30,18 @@ impl EmergencyGenerator {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, can_supply_when_running: bool) {
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
+    ) {
         // TODO: All of this is a very simple implementation.
         // Once hydraulics is available we should improve it.
         if self.starting_or_started {
             self.time_since_start += context.delta();
         }
 
-        self.supplying = can_supply_when_running
+        self.supplying = hydraulic.is_rat_hydraulic_loop_pressurised()
             && self.starting_or_started
             && self.time_since_start > Duration::from_secs(8);
     }
@@ -112,7 +119,7 @@ mod emergency_generator_tests {
             }
         }
 
-        fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T, delta: Duration) {
+        fn run_aircraft(&mut self, aircraft: &mut impl Aircraft, delta: Duration) {
             self.test_bed.set_delta(delta);
             self.test_bed.run_aircraft(aircraft);
         }
@@ -126,16 +133,36 @@ mod emergency_generator_tests {
         }
     }
 
+    struct TestHydraulicSystem {
+        is_rat_hydraulic_loop_pressurised: bool,
+    }
+    impl TestHydraulicSystem {
+        fn new() -> Self {
+            Self {
+                is_rat_hydraulic_loop_pressurised: true,
+            }
+        }
+
+        fn set_rat_hydraulic_loop_pressurised(&mut self, pressurised: bool) {
+            self.is_rat_hydraulic_loop_pressurised = pressurised;
+        }
+    }
+    impl RamAirTurbineHydraulicLoopPressurised for TestHydraulicSystem {
+        fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
+            self.is_rat_hydraulic_loop_pressurised
+        }
+    }
+
     struct TestAircraft {
         emer_gen: EmergencyGenerator,
-        is_blue_pressurised: bool,
+        hydraulic: TestHydraulicSystem,
         generator_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
         fn new() -> Self {
             Self {
                 emer_gen: EmergencyGenerator::new(),
-                is_blue_pressurised: true,
+                hydraulic: TestHydraulicSystem::new(),
                 generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }
@@ -152,8 +179,9 @@ mod emergency_generator_tests {
             self.emer_gen.stop();
         }
 
-        fn set_blue_pressurisation(&mut self, pressurised: bool) {
-            self.is_blue_pressurised = pressurised;
+        fn set_rat_hydraulic_loop_pressurised(&mut self, pressurised: bool) {
+            self.hydraulic
+                .set_rat_hydraulic_loop_pressurised(pressurised);
         }
 
         fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
@@ -170,7 +198,7 @@ mod emergency_generator_tests {
     }
     impl Aircraft for TestAircraft {
         fn update_before_power_distribution(&mut self, context: &UpdateContext) {
-            self.emer_gen.update(context, self.is_blue_pressurised);
+            self.emer_gen.update(context, &self.hydraulic);
 
             self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.emer_gen.output_within_normal_parameters();
         }
@@ -210,7 +238,7 @@ mod emergency_generator_tests {
         let mut test_bed = EmergencyGeneratorTestBed::new();
 
         aircraft.attempt_emer_gen_start();
-        aircraft.set_blue_pressurisation(false);
+        aircraft.set_rat_hydraulic_loop_pressurised(false);
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
         assert!(!aircraft.emer_gen_is_powered());
