@@ -42,14 +42,16 @@ export const Checklists: React.FC = () => {
 
     // marks entire checklist
     const switchChecklistState = () => {
+        // capture initial state of checklist completion
+        const initialState = checks[currentChecklist].isCompleted;
         // clone checks
         const newMarks = { ...checks };
         // switch value of current checklist
-        checks[currentChecklist].isCompleted = !checks[currentChecklist].isCompleted;
+        newMarks[currentChecklist].isCompleted = !checks[currentChecklist].isCompleted;
         // set new checks to state
         setChecks(newMarks);
         // if isCompleted, then change checklist to the next one
-        if (currentChecklist !== checklists.length - 1) setCurrentChecklist(currentChecklist + 1);
+        if (!initialState && currentChecklist !== checklists.length - 1) setCurrentChecklist(currentChecklist + 1);
     };
 
     // marks single step
@@ -102,7 +104,8 @@ export const Checklists: React.FC = () => {
                                     {...item}
                                     key={item}
                                     isChecked={checks[currentChecklist][index]}
-                                    onChecked={() => switchStepState(index)}
+                                    // if current checklist isCompleted, then don't allow changing step states
+                                    onChecked={() => !checks[currentChecklist].isCompleted && switchStepState(index)}
                                 />
                             );
 
