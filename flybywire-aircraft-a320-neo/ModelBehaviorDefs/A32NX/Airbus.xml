@@ -233,6 +233,7 @@
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -252,7 +253,7 @@
                 #GROUP_INDEX# -1 &gt; if{
                     (L:#CURRENT_BUTTON_VAR_NAME#) #GROUP_INDEX# ==
                 }
-                (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and
+                (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #EMISSIVE_DIM# *
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -947,10 +948,11 @@
         <DefaultTemplateParameters>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-            <SEQ1_EMISSIVE_CODE>(L:A32NX_COCKPIT_DOOR_LOCKED, Bool) 0 == (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_COCKPIT_DOOR_LOCKED, Bool) 0 == (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == #SEQ2_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 
@@ -1412,7 +1414,7 @@
     <Template Name="A32NX_GT_Emissive_Gauge_Sim">
         <DefaultTemplateParameters>
             <FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
-            <EMISSIVE_SIMVAR_SCALE>1</EMISSIVE_SIMVAR_SCALE>
+            <EMISSIVE_SIMVAR_SCALE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_SIMVAR_SCALE>
             <EMISSIVE_SIMVAR_BIAS>0</EMISSIVE_SIMVAR_BIAS>
             <EMISSIVE_SIMVAR_UNITS>Bool</EMISSIVE_SIMVAR_UNITS>
             <EMISSIVE_DRIVES_VISIBILITY>False</EMISSIVE_DRIVES_VISIBILITY>
@@ -1435,6 +1437,7 @@
 
     <Template Name="A32NX_GT_Emissive_Gauge">
         <DefaultTemplateParameters>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
             <Condition Check="FAILURE_CIRCUIT">
                 <False>
                     <FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
@@ -1462,7 +1465,7 @@
         <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
             <Condition Check="SEQ1_POWERED">
                 <True>
-                    <EMISSIVE_CODE>#EMISSIVE_CODE# #SEQ1_POWERED# and</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>#EMISSIVE_CODE# #SEQ1_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
                 </True>
             </Condition>
         </UseTemplate>

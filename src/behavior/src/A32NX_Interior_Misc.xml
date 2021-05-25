@@ -117,6 +117,7 @@
             <TOOLTIPID>%((L:XMLVAR_RTO_Level) #AUTOBRAKE_LEVEL# ==)%{if}TT:COCKPIT.TOOLTIPS.AUTO_BRK_TURN_OFF%{else}TT:#OFF_TOOLTIP#%{end}</TOOLTIPID>
             <ENGINES_COUNT>2</ENGINES_COUNT>
             <REF_DECEL_FPSS>-7</REF_DECEL_FPSS>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <!--XMLVAR_Autobrakes_Level it the SIMVAR that tracks the position of the autobrake pushbutton switches in A32NX.
@@ -234,7 +235,7 @@
         <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
                 </EMISSIVE_CODE>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
             </UseTemplate>
@@ -242,7 +243,7 @@
         <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -329,11 +330,12 @@
             <PART_ID>LANDING_GEAR_Light</PART_ID>
             <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
             <SEQ_POWERED>1</SEQ_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 

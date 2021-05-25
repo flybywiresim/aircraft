@@ -3854,6 +3854,7 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
                 </LEFT_LEAVE_CODE>
+                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
@@ -3876,6 +3877,7 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
                 </LEFT_LEAVE_CODE>
+                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
@@ -3897,6 +3899,7 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
                 </LEFT_LEAVE_CODE>
+                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
@@ -3919,6 +3922,7 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
                 </LEFT_LEAVE_CODE>
+                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
