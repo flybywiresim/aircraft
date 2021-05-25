@@ -484,6 +484,7 @@ class FMCMainDisplay extends BaseAirliners {
         }, 15000);
 
         this.rops = new A32NX_ROPS(this);
+        this.rops.init();
     }
 
     onUpdate(_deltaTime) {
