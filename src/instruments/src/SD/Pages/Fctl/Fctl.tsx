@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom';
-import React, { useContext } from 'react';
+import React from 'react';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
@@ -7,6 +7,7 @@ import './Fctl.scss';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
+import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 
 setIsEcamPage('fctl_page');
 
@@ -26,63 +27,36 @@ interface HydraulicSystemPairProps {
 
 type HydraulicSystem = 'B' | 'Y' | 'G';
 
-interface HydraulicSystemAvailable {
-    available: boolean
-}
+export const FctlPage = () => (
+    <EcamPage name="ecam-fctl">
+        <PageTitle x={6} y={18} text="F/CTL" />
 
-interface HydraulicsContext {
-    G: HydraulicSystemAvailable;
-    Y: HydraulicSystemAvailable;
-    B: HydraulicSystemAvailable;
-}
-const HydraulicContext = React.createContext<HydraulicsContext>({
-    G: { available: false },
-    Y: { available: false },
-    B: { available: false },
-});
+        <HydraulicsProvider>
+            <Spoilers x={98} y={14} />
 
-export const FctlPage = () => {
-    const [greenPress] = useSimVar('L:A32NX_HYD_GREEN_PRESSURE', 'number', 1000);
-    const [yellowPress] = useSimVar('L:A32NX_HYD_YELLOW_PRESSURE', 'number', 1000);
-    const [bluePress] = useSimVar('L:A32NX_HYD_BLUE_PRESSURE', 'number', 1000);
+            <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
+            <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" />
 
-    const hydraulicContext: HydraulicsContext = {
-        G: { available: greenPress > 1450 },
-        Y: { available: yellowPress > 1450 },
-        B: { available: bluePress > 1450 },
-    };
+            <Note x={195} y={178}>ELAC</Note>
+            <Elac x={170} y={190} number={1} />
+            <Elac x={194} y={206} number={2} />
 
-    return (
-        <EcamPage name="ecam-fctl">
-            <PageTitle x={6} y={18} text="F/CTL" />
+            <Note x={350} y={178}>SEC</Note>
+            <Sec x={324} y={190} number={1} />
+            <Sec x={348} y={206} number={2} />
+            <Sec x={372} y={222} number={3} />
 
-            <HydraulicContext.Provider value={hydraulicContext}>
-                <Spoilers x={98} y={14} />
+            <Elevator x={168} y={328} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
+            <Elevator x={432} y={328} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" />
 
-                <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
-                <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" />
+            <PitchTrim x={280} y={283} />
 
-                <Note x={195} y={178}>ELAC</Note>
-                <Elac x={170} y={190} number={1} />
-                <Elac x={194} y={206} number={2} />
+            <Stabilizer x={268} y={357} />
 
-                <Note x={350} y={178}>SEC</Note>
-                <Sec x={324} y={190} number={1} />
-                <Sec x={348} y={206} number={2} />
-                <Sec x={372} y={222} number={3} />
-
-                <Elevator x={168} y={328} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
-                <Elevator x={432} y={328} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" />
-
-                <PitchTrim x={280} y={283} />
-
-                <Stabilizer x={268} y={357} />
-
-                <Rudder x={250} y={356} />
-            </HydraulicContext.Provider>
-        </EcamPage>
-    );
-};
+            <Rudder x={250} y={356} />
+        </HydraulicsProvider>
+    </EcamPage>
+);
 
 const Spoilers = ({ x = 0, y = 0 }: ComponentPositionProps) => {
     const [aileronLeftDeflectionState] = useSimVar('AILERON LEFT DEFLECTION PCT', 'percent over 100', 50);
@@ -138,7 +112,7 @@ interface SpoilerProps extends ComponentPositionProps, ComponentSidePositionProp
     upWhenActuated: boolean,
 }
 const Spoiler = ({ x, y, number, side, actuatedBy, upWhenActuated }: SpoilerProps) => {
-    const hydraulics = useContext(HydraulicContext);
+    const hydraulics = useHydraulics();
 
     return (
         <SvgGroup x={x} y={y}>
@@ -176,7 +150,7 @@ const PitchTrim = ({ x, y }: ComponentPositionProps) => {
     const adjustedPitchTrim = rawPitchTrim / 1213.6296;
     const [pitchIntegral, pitchFractional] = Math.abs(adjustedPitchTrim).toFixed(1).split('.');
 
-    const hydraulics = useContext(HydraulicContext);
+    const hydraulics = useHydraulics();
     const hydraulicAvailableClass = hydraulics.G.available || hydraulics.Y.available ? 'Value' : 'Warning';
 
     return (
@@ -221,7 +195,7 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
     const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 500);
     const rudderTrimAngle = -rudderTrimState * 25;
 
-    const hydraulics = useContext(HydraulicContext);
+    const hydraulics = useHydraulics();
     const hydraulicAvailableClass = hydraulics.G.available || hydraulics.B.available || hydraulics.Y.available ? 'GreenShape' : 'WarningShape';
 
     return (
@@ -272,7 +246,7 @@ const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Comp
     const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51 + aileronDeflectPctNormalized
         : 51 - aileronDeflectPctNormalized} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
 
-    const hydraulics = useContext(HydraulicContext);
+    const hydraulics = useHydraulics();
 
     return (
         <SvgGroup x={x} y={y}>
@@ -293,7 +267,7 @@ interface HydraulicIndicatorProps extends ComponentPositionProps {
     type: HydraulicSystem,
 }
 const HydraulicIndicator = ({ x, y, type }: HydraulicIndicatorProps) => {
-    const hydraulics = useContext(HydraulicContext);
+    const hydraulics = useHydraulics();
 
     return (
         <SvgGroup x={x} y={y}>
@@ -360,7 +334,7 @@ const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Com
     const elevatorDeflectPctNormalized = elevatorDeflection * (elevatorDeflection > 0 ? 70 : 52);
     const cursorPath = `M${side === 'left' ? 1 : -1},${70 - elevatorDeflectPctNormalized} l${side === 'right' ? '-' : ''}15,-7 l0,14Z`;
 
-    const hydraulics = useContext(HydraulicContext);
+    const hydraulics = useHydraulics();
 
     return (
         <SvgGroup x={x} y={y}>
