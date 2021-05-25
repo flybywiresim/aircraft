@@ -1019,7 +1019,8 @@ impl RamAirTurbine {
         line: &HydraulicLoop,
         controller: &T,
     ) {
-        self.deployment_commanded = controller.should_deploy();
+        // Once commanded, stays commanded forever
+        self.deployment_commanded = controller.should_deploy() || self.deployment_commanded;
 
         self.pump.update(
             context,
