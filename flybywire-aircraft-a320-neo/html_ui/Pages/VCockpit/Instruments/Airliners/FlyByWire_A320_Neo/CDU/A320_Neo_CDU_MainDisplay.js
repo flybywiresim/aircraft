@@ -23,6 +23,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     get templateID() {
         return "A320_Neo_CDU";
     }
+    get isInteractive() {
+        return true;
+    }
     connectedCallback() {
         super.connectedCallback();
         RegisterViewListener("JS_LISTENER_KEYEVENT", () => {
@@ -63,6 +66,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._inOutElement.style.removeProperty("color");
         this._inOutElement.className = "white";
 
+        this.inFocus = false;
+
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
         };
@@ -100,6 +105,49 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             this.tryShowMessage();
         };
+
+        window.document.addEventListener('click', (e) => {
+            this.inFocus = !this.inFocus;
+            console.log(this.inFocus);
+        });
+        window.document.addEventListener('keydown', (e) => {
+            console.log(String.fromCharCode(e.keyCode));
+            const keycode = e.keyCode;
+            if (this.inFocus) {
+                if (keycode >= 48 && keycode <= 57 || keycode >= 65 && keycode <= 122) {
+                    this.onLetterInput(String.fromCharCode(keycode));
+                }
+                else if (keycode === 190) { // .
+                    this.onLetterInput(".");
+                }
+                else if (keycode === 191) { // Fwd Slash
+                    this.onDiv();
+                }
+                else if (keycode === 8) { // Backspace
+                    this.onClr();
+                }
+                else if (keycode === 32) { // Space
+                    this.onSp();
+                }
+                else if (keycode === 38) { // ArrowUp
+                    if (this.onUp) {
+                        this.onUp();
+                    }
+                } else if (keycode === 40) { // ArrowDown
+                    if (this.onDown) {
+                        this.onDown();
+                    }
+                } else if (keycode === 37) { // ArrowLeft
+                    if (this.onLeft) {
+                        this.onLeft();
+                    }
+                } else if (keycode === 39) { // ArrowRight
+                    if (this.onRight) {
+                        this.onRight();
+                    }
+                }
+            }
+        });
 
         this.PageTimeout = {
             Prog: 2000,
@@ -946,6 +994,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     onEvent(_event) {
         super.onEvent(_event);
+
+        console.log(_event);
 
         if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
             const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
