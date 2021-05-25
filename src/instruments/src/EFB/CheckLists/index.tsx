@@ -88,7 +88,9 @@ export const Checklists: React.FC = () => {
 
     return (
         <div className="flex flex-col flex-1 overflow-hidden">
-            <h1 className="text-3xl pt-6 text-white">Check Lists</h1>
+            <h1 className="text-3xl pt-6 text-white">
+                Checklists
+            </h1>
             <Navbar tabs={checklists.map(({ name }) => name)} onSelected={(index) => setCurrentChecklist(index)} selectedIndex={currentChecklist} />
             <div
                 ref={ref}
