@@ -8,13 +8,11 @@ import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
+import { ComponentPositionProps } from '../../Common/ComponentPositionProps';
+import { HydraulicSystem } from '../../Common/HydraulicSystem';
+import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 
 setIsEcamPage('fctl_page');
-
-interface ComponentPositionProps {
-    x: number,
-    y: number,
-}
 
 interface ComponentSidePositionProps {
     side: 'left' | 'right'
@@ -24,8 +22,6 @@ interface HydraulicSystemPairProps {
     leftHydraulicSystem: HydraulicSystem,
     rightHydraulicSystem: HydraulicSystem,
 }
-
-type HydraulicSystem = 'B' | 'Y' | 'G';
 
 export const FctlPage = () => (
     <EcamPage name="ecam-fctl">
@@ -259,22 +255,6 @@ const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Comp
 
             <HydraulicIndicator x={side === 'left' ? 22 : -62} y={93} type={leftHydraulicSystem} />
             <HydraulicIndicator x={side === 'left' ? 44 : -40} y={93} type={rightHydraulicSystem} />
-        </SvgGroup>
-    );
-};
-
-interface HydraulicIndicatorProps extends ComponentPositionProps {
-    type: HydraulicSystem,
-}
-const HydraulicIndicator = ({ x, y, type }: HydraulicIndicatorProps) => {
-    const hydraulics = useHydraulics();
-
-    return (
-        <SvgGroup x={x} y={y}>
-            <rect x={0} y={0} className="HydBgShape" width="18" height="24" rx="0" />
-            <text x={9} y={11} className={`Standard ${hydraulics[type].available ? 'Value' : 'Warning'}`} textAnchor="middle" alignmentBaseline="central">
-                {type}
-            </text>
         </SvgGroup>
     );
 };
