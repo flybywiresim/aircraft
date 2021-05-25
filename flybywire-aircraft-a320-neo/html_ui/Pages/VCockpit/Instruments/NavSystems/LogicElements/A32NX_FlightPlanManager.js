@@ -1258,9 +1258,9 @@ class FlightPlanManager {
             if (runways && runways.length > 0) {
                 const direction = Simplane.getHeadingMagnetic();
                 let bestRunway = runways[0];
-                let bestDeltaAngle = Math.abs(Avionics.Utils.angleDiff(direction, bestRunway.direction));
+                let bestDeltaAngle = Math.abs(Avionics.Utils.diffAngle(direction, bestRunway.direction));
                 for (let i = 1; i < runways.length; i++) {
-                    const deltaAngle = Math.abs(Avionics.Utils.angleDiff(direction, runways[i].direction));
+                    const deltaAngle = Math.abs(Avionics.Utils.diffAngle(direction, runways[i].direction));
                     if (deltaAngle < bestDeltaAngle) {
                         bestDeltaAngle = deltaAngle;
                         bestRunway = runways[i];
