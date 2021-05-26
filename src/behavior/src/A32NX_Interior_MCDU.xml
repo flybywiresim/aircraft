@@ -321,6 +321,8 @@
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_MCDU#SIDE#_#BASE_NAME#</NODE_ID>
             <LEFT_SINGLE_CODE_BTN_NAME>#BASE_NAME#</LEFT_SINGLE_CODE_BTN_NAME>
+            <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+            <SWITCH_POSITION_VAR>A32NX_MCDU_PUSH_#SIDE#_#BASE_NAME#</SWITCH_POSITION_VAR>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">

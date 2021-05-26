@@ -25,6 +25,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     get templateID() {
         return "A320_Neo_CDU";
     }
+    get isInteractive() {
+        return true;
+    }
     connectedCallback() {
         super.connectedCallback();
         RegisterViewListener("JS_LISTENER_KEYEVENT", () => {
@@ -838,7 +841,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         window.document.addEventListener('click', () => {
             this.inFocus = !this.inFocus;
             if (this.inFocus) {
-                this._inOutElement.style = "display: inline-block; width:100%; background: rgba(255,255,255,0.25);";
+                this._inOutElement.style = "display: inline-block; width:100%; background: rgba(255,255,255,0.16);";
                 const check_focus = setInterval(() => {
                     const time = new Date().getTime() / 1000;
                     if (this.lastInput + 60 <= time) {
@@ -855,40 +858,67 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         });
         window.document.addEventListener('keydown', (e) => {
             this.lastInput = new Date().getTime() / 1000;
-            const keycode = e.keyCode;
+            let keycode = e.keyCode;
+
             if (this.inFocus) {
-                if (keycode >= 48 && keycode <= 57 || keycode >= 65 && keycode <= 122) {
-                    this.onLetterInput(String.fromCharCode(keycode));
+                if (keycode >= 96 && keycode <= 105) {
+                    keycode -= 48;  // numpad support
                 }
-                else if (keycode === 190) { // .
-                    this.onLetterInput(".");
+                if (keycode >= 48 && keycode <= 57 || keycode >= 65 && keycode <= 90) { // alphanumerics
+                    const letter = String.fromCharCode(keycode)
+                    this.onLetterInput(letter);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_"+ letter.toUpperCase(), "Number", 1); // TODO: L/R side MCDU Split
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_"+ letter.toUpperCase(), "Number", 1);
+                }
+                else if (keycode === 190 || keycode === 110) { // .
+                    setTimeout(() => {
+                        this.handlePreviousInputState();
+                        this.inOut += ".";
+                    }, this.getDelaySwitchPage());
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_DOT", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_DOT", "Number", 1);
                 }
                 else if (keycode === 191) { // Fwd Slash
-                    this.onDiv();
+                    setTimeout(() => {
+                        this.onDiv();
+                    }, this.getDelaySwitchPage());
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_SLASH", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_SLASH", "Number", 1);
                 }
                 else if (keycode === 8) { // Backspace
-                    this.onClr();
+                    setTimeout(() => {
+                        this.onClr();
+                    }, this.getDelaySwitchPage());
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_CLR", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_CLR", "Number", 1);
                 }
                 else if (keycode === 32) { // Space
-                    this.onSp();
+                    setTimeout(() => {
+                        this.onSp();
+                    }, this.getDelaySwitchPage());
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_SP", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_SP", "Number", 1);
                 }
-                else if (keycode === 38) { // ArrowUp
-                    if (this.onUp) {
-                        this.onUp();
-                    }
-                } else if (keycode === 40) { // ArrowDown
-                    if (this.onDown) {
-                        this.onDown();
-                    }
-                } else if (keycode === 37) { // ArrowLeft
-                    if (this.onLeft) {
-                        this.onLeft();
-                    }
-                } else if (keycode === 39) { // ArrowRight
-                    if (this.onRight) {
-                        this.onRight();
-                    }
+                else if (keycode === 187 || keycode === 189 || keycode === 107 || keycode === 109) {    // Plusminus
+                    setTimeout(() => {
+                        this.handlePreviousInputState();
+                        const val = this.inOut;
+                        if (val === "") {
+                            this.inOut = "-";
+                        } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
+                            if (val.slice(-1) === "-") {
+                                this.inOut = this.inOut.slice(0, -1) + "+";
+                            } else if (val.slice(-1) === "+") {
+                                this.inOut = this.inOut.slice(0, -1) + "-";
+                            } else {
+                                this.inOut += "-";
+                            }
+                        }
+                    }, this.getDelaySwitchPage());
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_PLUSMINUS", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_PLUSMINUS", "Number", 1);
                 }
+
             }
         });
     }
@@ -1008,8 +1038,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     onEvent(_event) {
         super.onEvent(_event);
-
-        console.log(_event);
 
         if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
             const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
