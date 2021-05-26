@@ -204,7 +204,7 @@ type RATProps = {
 }
 
 const RAT = ({ x, y }: RATProps) => {
-    const [RatStowed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percentover100', 500);
+    const [RatStowed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
 
     return (
         <>
