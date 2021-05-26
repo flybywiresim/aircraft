@@ -496,26 +496,28 @@ impl SimulationElement for MomentaryOnPushButton {
         writer.write_bool(&self.is_on_id, self.is_on);
     }
 }
-impl LatchedButton for MomentaryOnPushButton {
+impl RelayLatchedButton for MomentaryOnPushButton {
     fn has_changed(&self) -> bool {
         self.has_changed_state
     }
     fn is_pressed(&self) -> bool {
         self.is_pressed()
     }
-    fn set_latch(&mut self, latch_output: bool) {
+    fn set_active(&mut self, latch_output: bool) {
         self.set_on(latch_output);
     }
-    fn is_latched(&self) -> bool {
+    fn is_active(&self) -> bool {
         self.is_on()
     }
 }
 
-pub trait LatchedButton {
-    fn is_latched(&self) -> bool;
+// This trait enables a momentary pushbutton to be associated to a powered relay that will be latching
+// a button state depending on button input and relay electric power
+pub trait RelayLatchedButton {
+    fn is_active(&self) -> bool;
     fn is_pressed(&self) -> bool;
     fn has_changed(&self) -> bool;
-    fn set_latch(&mut self, latch_output: bool);
+    fn set_active(&mut self, relay_output: bool);
 }
 pub struct PushButtonElecRelay {
     powered_by: Vec<ElectricalBusType>,
@@ -529,14 +531,14 @@ impl PushButtonElecRelay {
         }
     }
 
-    pub fn update(&mut self, push_button: &mut impl LatchedButton) {
+    pub fn update(&mut self, push_button: &mut impl RelayLatchedButton) {
         // Relay truth table is actually a Xor, as output is 1 if ON and not(PRESSED) or if PRESSED and not(ON)
         // To this we add PRESSED && Has_changed to avoid flickering if button is kept pressed
-        let output = (push_button.is_latched()
+        let output = (push_button.is_active()
             ^ (push_button.is_pressed() && push_button.has_changed()))
             && self.relay_is_powered;
 
-        push_button.set_latch(output);
+        push_button.set_active(output);
     }
 }
 impl SimulationElement for PushButtonElecRelay {
@@ -546,7 +548,7 @@ impl SimulationElement for PushButtonElecRelay {
         self.relay_is_powered = self
             .powered_by
             .iter()
-            .all(|bus| supplied_power.potential_of(&bus).is_powered());
+            .all(|bus| supplied_power.is_powered(&bus));
     }
 }
 
