@@ -1,6 +1,5 @@
 use self::brake_circuit::Actuator;
-use crate::electrical::consumption::PowerConsumer;
-use crate::shared::{interpolation, ElectricalBusType};
+use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
 };
@@ -725,7 +724,8 @@ pub struct ElectricPump {
     active_id: String,
 
     is_active: bool,
-    power_consumer: PowerConsumer,
+    bus_type: ElectricalBusType,
+    is_powered: bool,
     rpm: f64,
     pump: Pump,
 }
@@ -744,7 +744,8 @@ impl ElectricPump {
         Self {
             active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
             is_active: false,
-            power_consumer: PowerConsumer::from(bus_type),
+            bus_type,
+            is_powered: false,
             rpm: 0.,
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
@@ -764,7 +765,7 @@ impl ElectricPump {
         line: &HydraulicLoop,
         controller: &T,
     ) {
-        self.is_active = controller.should_pressurise() && self.power_consumer.is_powered();
+        self.is_active = controller.should_pressurise() && self.is_powered;
 
         // Pump startup/shutdown process
         if self.is_active && self.rpm < Self::NOMINAL_SPEED {
@@ -788,14 +789,12 @@ impl PressureSource for ElectricPump {
     }
 }
 impl SimulationElement for ElectricPump {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.power_consumer.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool(&self.active_id, self.is_active);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.bus_type);
     }
 }
 

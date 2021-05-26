@@ -121,7 +121,8 @@ impl PowerConsumer {
     /// it during this simulation tick.
     /// If this function is called before power has been supplied to it
     /// during this tick, the result of this function will be last frame's state.
-    pub fn is_powered(&self) -> bool {
+    #[cfg(test)]
+    fn is_powered(&self) -> bool {
         self.provided_potential.is_powered()
     }
 
