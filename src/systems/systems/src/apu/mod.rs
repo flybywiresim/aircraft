@@ -8,7 +8,7 @@ use crate::{
     pneumatic::{BleedAirValve, BleedAirValveState, Valve},
     shared::{
         ApuAvailable, ApuMaster, ApuStart, ApuStartContactorsController,
-        AuxiliaryPowerUnitElectrical,
+        AuxiliaryPowerUnitElectrical, ElectricalBusType,
     },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
@@ -87,7 +87,7 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
             generator,
             ecb: ElectronicControlBox::new(),
             start_motor,
-            air_intake_flap: AirIntakeFlap::new(),
+            air_intake_flap: AirIntakeFlap::new(ElectricalBusType::DirectCurrentBattery),
             bleed_air_valve: BleedAirValve::new(),
             fuel_pressure_switch: FuelPressureSwitch::new(),
         }
@@ -160,8 +160,8 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
     }
 
     #[cfg(test)]
-    fn set_air_intake_flap_opening_delay(&mut self, duration: Duration) {
-        self.air_intake_flap.set_delay(duration);
+    fn set_air_intake_flap_travel_time(&mut self, duration: Duration) {
+        self.air_intake_flap.set_travel_time(duration);
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnitElectrical for AuxiliaryPowerUnit<T, U> {
@@ -192,6 +192,8 @@ impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.generator.accept(visitor);
         self.start_motor.accept(visitor);
+        self.air_intake_flap.accept(visitor);
+
         visitor.visit(self);
     }
 
@@ -420,8 +422,8 @@ pub mod tests {
             }
         }
 
-        fn set_air_intake_flap_opening_delay(&mut self, duration: Duration) {
-            self.apu.set_air_intake_flap_opening_delay(duration);
+        fn set_air_intake_flap_travel_time(&mut self, duration: Duration) {
+            self.apu.set_air_intake_flap_travel_time(duration);
         }
 
         fn set_apu_gen_is_used(&mut self, value: bool) {
@@ -509,6 +511,14 @@ pub mod tests {
                 );
             }
 
+            supplied_power.add(
+                ElectricalBusType::DirectCurrentBattery,
+                Potential::single(
+                    PotentialOrigin::Battery(1),
+                    ElectricPotential::new::<volt>(28.),
+                ),
+            );
+
             supplied_power
         }
     }
@@ -558,7 +568,7 @@ pub mod tests {
         }
 
         fn air_intake_flap_that_opens_in(mut self, duration: Duration) -> Self {
-            self.aircraft.set_air_intake_flap_opening_delay(duration);
+            self.aircraft.set_air_intake_flap_travel_time(duration);
             self
         }
 
@@ -711,12 +721,18 @@ pub mod tests {
         }
 
         pub fn run(mut self, delta: Duration) -> Self {
-            self.simulation_test_bed.set_delta(delta);
             self.simulation_test_bed
                 .set_ambient_temperature(self.ambient_temperature);
             self.simulation_test_bed
                 .set_indicated_altitude(self.indicated_altitude);
 
+            // As the APU update executes before power is distributed throughout
+            // the aircraft, not all elements have received power yet if only one run
+            // is performed. Thus we execute two runs, one without any time passing.
+            self.simulation_test_bed.set_delta(Duration::from_secs(0));
+            self.simulation_test_bed.run_aircraft(&mut self.aircraft);
+
+            self.simulation_test_bed.set_delta(delta);
             self.simulation_test_bed.run_aircraft(&mut self.aircraft);
 
             self
