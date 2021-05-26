@@ -1359,6 +1359,10 @@ impl A320HydraulicOverheadPanel {
             .set_fault(hyd.blue_epump_has_fault());
         self.yellow_epump_push_button
             .set_fault(hyd.yellow_epump_has_low_press_fault());
+
+        if self.blue_epump_push_button.is_off() {
+            self.blue_epump_override_relay.reset_output();
+        }
         self.blue_epump_override_relay
             .update(&mut self.blue_epump_override_push_button);
     }
@@ -3022,6 +3026,25 @@ mod tests {
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
             assert!(!test_bed.is_blue_pressurised());
+        }
+
+        #[test]
+        fn blue_epump_override_switches_to_off_when_pump_forced_off_on_hyd_panel() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Starting epump
+            test_bed = test_bed
+                .press_blue_epump_override_button_once()
+                .run_waiting_for(Duration::from_secs(10));
+            assert!(test_bed.blue_epump_override_is_on());
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed.set_blue_e_pump(false).run_one_tick();
+            assert!(!test_bed.blue_epump_override_is_on());
         }
 
         #[test]

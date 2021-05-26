@@ -506,15 +506,11 @@ impl RelayLatchedButton for MomentaryOnPushButton {
     fn set_active(&mut self, latch_output: bool) {
         self.set_on(latch_output);
     }
-    fn is_active(&self) -> bool {
-        self.is_on()
-    }
 }
 
 // This trait enables a momentary pushbutton to be associated to a powered relay that will be latching
 // a button state depending on button input and relay electric power
 pub trait RelayLatchedButton {
-    fn is_active(&self) -> bool;
     fn is_pressed(&self) -> bool;
     fn has_changed(&self) -> bool;
     fn set_active(&mut self, relay_output: bool);
@@ -522,23 +518,29 @@ pub trait RelayLatchedButton {
 pub struct PushButtonElecRelay {
     powered_by: Vec<ElectricalBusType>,
     relay_is_powered: bool,
+    relay_output: bool,
 }
 impl PushButtonElecRelay {
     pub fn new(powered_by: Vec<ElectricalBusType>) -> Self {
         PushButtonElecRelay {
             powered_by,
             relay_is_powered: false,
+            relay_output: false,
         }
     }
 
     pub fn update(&mut self, push_button: &mut impl RelayLatchedButton) {
         // Relay truth table is actually a Xor, as output is 1 if ON and not(PRESSED) or if PRESSED and not(ON)
         // To this we add PRESSED && Has_changed to avoid flickering if button is kept pressed
-        let output = (push_button.is_active()
+        self.relay_output = (self.relay_output
             ^ (push_button.is_pressed() && push_button.has_changed()))
             && self.relay_is_powered;
 
-        push_button.set_active(output);
+        push_button.set_active(self.relay_output);
+    }
+
+    pub fn reset_output(&mut self) {
+        self.relay_output = false;
     }
 }
 impl SimulationElement for PushButtonElecRelay {
