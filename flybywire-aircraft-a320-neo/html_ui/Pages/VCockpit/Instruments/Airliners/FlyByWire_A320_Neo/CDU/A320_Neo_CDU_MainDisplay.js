@@ -26,7 +26,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return "A320_Neo_CDU";
     }
     get isInteractive() {
-        return true;
+        const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "NONE");
+        switch (mcduInput) {
+            case "ALL":
+                return true;
+            case "RALT":
+                return false;
+            default:
+                return false;
+        }
     }
     connectedCallback() {
         super.connectedCallback();
@@ -839,28 +847,31 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     initKeyboardScratchpad() {
         window.document.addEventListener('click', () => {
-            this.inFocus = !this.inFocus;
-            if (this.inFocus) {
-                this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.16);";
-                const check_focus = setInterval(() => {
-                    const time = new Date().getTime() / 1000;
-                    if (this.lastInput + 60 <= time) {
-                        this.inFocus = false;
-                        this._inOutElement.style = "";
-                        clearInterval(check_focus);
-                    }
-                }, 10000);
+
+            const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "NONE");
+            if (mcduInput != "NONE") {
+                this.inFocus = !this.inFocus;
+                if (this.inFocus) {
+                    this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.16);";
+                    const check_focus = setInterval(() => {
+                        const time = new Date().getTime() / 1000;
+                        if (this.lastInput + 60 <= time) {
+                            this.inFocus = false;
+                            this._inOutElement.style = "";
+                            clearInterval(check_focus);
+                        }
+                    }, 10000);
+                } else {
+                    this._inOutElement.style = "";
+                }
             } else {
-                this._inOutElement.style = "";
+                this.inFocus = false;
             }
-
-
         });
         window.document.addEventListener('keydown', (e) => {
-            this.lastInput = new Date().getTime() / 1000;
-            let keycode = e.keyCode;
-
             if (this.inFocus) {
+                let keycode = e.keyCode;
+                this.lastInput = new Date().getTime() / 1000;
                 if (keycode >= 96 && keycode <= 105) {
                     keycode -= 48;  // numpad support
                 }
