@@ -841,7 +841,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         window.document.addEventListener('click', () => {
             this.inFocus = !this.inFocus;
             if (this.inFocus) {
-                this._inOutElement.style = "display: inline-block; width:100%; background: rgba(255,255,255,0.16);";
+                this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.16);";
                 const check_focus = setInterval(() => {
                     const time = new Date().getTime() / 1000;
                     if (this.lastInput + 60 <= time) {
