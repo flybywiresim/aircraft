@@ -19,12 +19,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
+        this.inFocus = false;
+        this.lastInput = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
-    }
-    get isInteractive() {
-        return true;
     }
     connectedCallback() {
         super.connectedCallback();
@@ -44,6 +43,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             mainFrame = this;
         }
         this.generateHTMLLayout(mainFrame);
+        this.initKeyboardScratchpad();
         this._titleLeftElement = this.getChildById("title-left");
         this._titleElement = this.getChildById("title");
         this._pageCurrentElement = this.getChildById("page-current");
@@ -65,8 +65,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._inOutElement = this.getChildById("in-out");
         this._inOutElement.style.removeProperty("color");
         this._inOutElement.className = "white";
-
-        this.inFocus = false;
 
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
@@ -105,50 +103,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             this.tryShowMessage();
         };
-
-        window.document.addEventListener('click', (e) => {
-            this.inFocus = !this.inFocus;
-            console.log(this.inFocus);
-        });
-        window.document.addEventListener('keydown', (e) => {
-            console.log(String.fromCharCode(e.keyCode));
-            const keycode = e.keyCode;
-            if (this.inFocus) {
-                if (keycode >= 48 && keycode <= 57 || keycode >= 65 && keycode <= 122) {
-                    this.onLetterInput(String.fromCharCode(keycode));
-                }
-                else if (keycode === 190) { // .
-                    this.onLetterInput(".");
-                }
-                else if (keycode === 191) { // Fwd Slash
-                    this.onDiv();
-                }
-                else if (keycode === 8) { // Backspace
-                    this.onClr();
-                }
-                else if (keycode === 32) { // Space
-                    this.onSp();
-                }
-                else if (keycode === 38) { // ArrowUp
-                    if (this.onUp) {
-                        this.onUp();
-                    }
-                } else if (keycode === 40) { // ArrowDown
-                    if (this.onDown) {
-                        this.onDown();
-                    }
-                } else if (keycode === 37) { // ArrowLeft
-                    if (this.onLeft) {
-                        this.onLeft();
-                    }
-                } else if (keycode === 39) { // ArrowRight
-                    if (this.onRight) {
-                        this.onRight();
-                    }
-                }
-            }
-        });
-
         this.PageTimeout = {
             Prog: 2000,
             Dyn: 1500
@@ -793,6 +747,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const inout = document.createElement("span");
         inout.id = "in-out";
 
+
         this.arrowVertical = document.createElement("span");
         this.arrowVertical.id = "arrow-vertical";
         this.arrowVertical.innerHTML = "↓↑\xa0";
@@ -877,6 +832,65 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.isDisplayingTypeTwoMessage = false;
         this._inOutElement.className = "white";
         this.inOut = data;
+    }
+
+    initKeyboardScratchpad() {
+        window.document.addEventListener('click', () => {
+            this.inFocus = !this.inFocus;
+            if (this.inFocus) {
+                this._inOutElement.style = "display: inline-block; width:100%; background: rgba(255,255,255,0.25);";
+                const check_focus = setInterval(() => {
+                    const time = new Date().getTime() / 1000;
+                    if (this.lastInput + 60 <= time) {
+                        this.inFocus = false;
+                        this._inOutElement.style = "";
+                        clearInterval(check_focus);
+                    }
+                }, 10000);
+            } else {
+                this._inOutElement.style = "";
+            }
+
+
+        });
+        window.document.addEventListener('keydown', (e) => {
+            this.lastInput = new Date().getTime() / 1000;
+            const keycode = e.keyCode;
+            if (this.inFocus) {
+                if (keycode >= 48 && keycode <= 57 || keycode >= 65 && keycode <= 122) {
+                    this.onLetterInput(String.fromCharCode(keycode));
+                }
+                else if (keycode === 190) { // .
+                    this.onLetterInput(".");
+                }
+                else if (keycode === 191) { // Fwd Slash
+                    this.onDiv();
+                }
+                else if (keycode === 8) { // Backspace
+                    this.onClr();
+                }
+                else if (keycode === 32) { // Space
+                    this.onSp();
+                }
+                else if (keycode === 38) { // ArrowUp
+                    if (this.onUp) {
+                        this.onUp();
+                    }
+                } else if (keycode === 40) { // ArrowDown
+                    if (this.onDown) {
+                        this.onDown();
+                    }
+                } else if (keycode === 37) { // ArrowLeft
+                    if (this.onLeft) {
+                        this.onLeft();
+                    }
+                } else if (keycode === 39) { // ArrowRight
+                    if (this.onRight) {
+                        this.onRight();
+                    }
+                }
+            }
+        });
     }
 
     /* END OF MCDU SCRATCHPAD */
