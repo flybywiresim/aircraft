@@ -849,18 +849,23 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         window.document.addEventListener('click', () => {
 
             const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "NONE");
+            const mcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60")) * 1000;
+
             if (mcduInput != "NONE") {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus) {
                     this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.16);";
-                    const check_focus = setInterval(() => {
-                        const time = new Date().getTime() / 1000;
-                        if (this.lastInput + 60 <= time) {
-                            this.inFocus = false;
-                            this._inOutElement.style = "";
-                            clearInterval(check_focus);
-                        }
-                    }, 10000);
+                    if (mcduTimeout) {
+                        const check_focus = setInterval(() => {
+                            const time = new Date().getTime() / 1000;
+                            if (this.lastInput + 60 <= time) {
+                                this.inFocus = false;
+                                this._inOutElement.style = "";
+                                clearInterval(check_focus);
+                            }
+                        }, mcduTimeout);
+                    }
+
                 } else {
                     this._inOutElement.style = "";
                 }
@@ -882,50 +887,40 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_"+ letter.toUpperCase(), "Number", 1);
                 }
                 else if (keycode === 190 || keycode === 110) { // .
-                    setTimeout(() => {
-                        this.handlePreviousInputState();
-                        this.inOut += ".";
-                    }, this.getDelaySwitchPage());
+                    this.handlePreviousInputState();
+                    this.inOut += ".";
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_DOT", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_DOT", "Number", 1);
                 }
                 else if (keycode === 191) { // Fwd Slash
-                    setTimeout(() => {
-                        this.onDiv();
-                    }, this.getDelaySwitchPage());
+                    this.onDiv();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_SLASH", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_SLASH", "Number", 1);
                 }
                 else if (keycode === 8) { // Backspace
-                    setTimeout(() => {
-                        this.onClr();
-                    }, this.getDelaySwitchPage());
+                    this.onClr();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_CLR", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_CLR", "Number", 1);
                 }
                 else if (keycode === 32) { // Space
-                    setTimeout(() => {
-                        this.onSp();
-                    }, this.getDelaySwitchPage());
+                    this.onSp();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_SP", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_SP", "Number", 1);
                 }
                 else if (keycode === 187 || keycode === 189 || keycode === 107 || keycode === 109) {    // Plusminus
-                    setTimeout(() => {
-                        this.handlePreviousInputState();
-                        const val = this.inOut;
-                        if (val === "") {
-                            this.inOut = "-";
-                        } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
-                            if (val.slice(-1) === "-") {
-                                this.inOut = this.inOut.slice(0, -1) + "+";
-                            } else if (val.slice(-1) === "+") {
-                                this.inOut = this.inOut.slice(0, -1) + "-";
-                            } else {
-                                this.inOut += "-";
-                            }
+                    this.handlePreviousInputState();
+                    const val = this.inOut;
+                    if (val === "") {
+                        this.inOut = "-";
+                    } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
+                        if (val.slice(-1) === "-") {
+                            this.inOut = this.inOut.slice(0, -1) + "+";
+                        } else if (val.slice(-1) === "+") {
+                            this.inOut = this.inOut.slice(0, -1) + "-";
+                        } else {
+                            this.inOut += "-";
                         }
-                    }, this.getDelaySwitchPage());
+                    }
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_PLUSMINUS", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_PLUSMINUS", "Number", 1);
                 }

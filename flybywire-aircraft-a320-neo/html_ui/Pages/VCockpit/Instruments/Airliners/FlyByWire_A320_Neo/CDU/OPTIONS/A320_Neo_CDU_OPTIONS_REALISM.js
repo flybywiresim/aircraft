@@ -3,16 +3,16 @@ class CDU_OPTIONS_REALISM {
         mcdu.clearDisplay();
 
         const storedDMCTestTime = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-        const boolean_v = true;
-        const mcduKeyboardEnabled = boolean_v.toString().toUpperCase();
-        console.log(mcduKeyboardEnabled);
+        let storedMcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
+        if (storedMcduTimeout === 0)
+            storedMcduTimeout = "NONE";
 
         mcdu.setTemplate([
             ["A32NX OPTIONS REALISM"],
             ["\xa0ADIRS", "DMC SELF-TEST\xa0"],
             ["<ALIGN TIME", `{small}[S]{end}{cyan}${storedDMCTestTime}*{end}`],
-            ["\xa0MCDU"],
-            ["<ALLOW INPUT"],
+            ["\xa0MCDU", "INPUT TIMEOUT\xa0"],
+            ["<ALLOW INPUT", `{small}[S]{end}{cyan}${storedMcduTimeout}*{end}`],
             [""],
             [""],
             [""],
@@ -46,6 +46,21 @@ class CDU_OPTIONS_REALISM {
         };
 
         mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onRightInput[1] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                NXDataStore.set("CONFIG_MCDU_KB_TIMEOUT", "60");
+            } else if (isNaN(value) || parseInt(value) > 120) {
+                mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+            } else {
+                NXDataStore.set("CONFIG_MCDU_KB_TIMEOUT", value);
+            }
+            CDU_OPTIONS_REALISM.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
