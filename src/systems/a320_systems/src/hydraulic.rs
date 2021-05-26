@@ -6,6 +6,7 @@ use uom::si::{
 
 use systems::overhead::{
     AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
+    PushButtonElecRelay,
 };
 use systems::{
     hydraulic::{
@@ -1330,7 +1331,7 @@ pub(super) struct A320HydraulicOverheadPanel {
     rat_push_button: MomentaryPushButton,
     yellow_epump_push_button: AutoOnFaultPushButton,
     blue_epump_override_push_button: MomentaryOnPushButton,
-    blue_pump_override_relay_powered_by: Vec<ElectricalBusType>,
+    blue_epump_override_relay: PushButtonElecRelay,
 }
 impl A320HydraulicOverheadPanel {
     pub(super) fn new() -> A320HydraulicOverheadPanel {
@@ -1342,10 +1343,10 @@ impl A320HydraulicOverheadPanel {
             rat_push_button: MomentaryPushButton::new("HYD_RAT_MAN_ON"),
             yellow_epump_push_button: AutoOnFaultPushButton::new_auto("HYD_EPUMPY"),
             blue_epump_override_push_button: MomentaryOnPushButton::new("HYD_EPUMPY_OVRD"),
-            blue_pump_override_relay_powered_by: vec![
+            blue_epump_override_relay: PushButtonElecRelay::new(vec![
                 A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
                 A320Hydraulic::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
-            ],
+            ]),
         }
     }
 
@@ -1358,6 +1359,8 @@ impl A320HydraulicOverheadPanel {
             .set_fault(hyd.blue_epump_has_fault());
         self.yellow_epump_push_button
             .set_fault(hyd.yellow_epump_has_low_press_fault());
+        self.blue_epump_override_relay
+            .update(&mut self.blue_epump_override_push_button);
     }
 
     fn yellow_epump_push_button_is_auto(&self) -> bool {
@@ -1405,27 +1408,9 @@ impl SimulationElement for A320HydraulicOverheadPanel {
         self.rat_push_button.accept(visitor);
         self.yellow_epump_push_button.accept(visitor);
         self.blue_epump_override_push_button.accept(visitor);
+        self.blue_epump_override_relay.accept(visitor);
 
         visitor.visit(self);
-    }
-
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        // Relay is powered if ALL of its source buses are powered. This allows to reset pump button state if any power
-        // bus prevents the pump to run
-        let blue_pump_override_relay_is_powered = self
-            .blue_pump_override_relay_powered_by
-            .iter()
-            .all(|bus| supplied_power.potential_of(&bus).is_powered());
-
-        // Relay truth table is actually a Xor, as output is 1 if ON and not(PRESSED) or if PRESSED and not(ON)
-        // To this we add PRESSED && Has_changed to avoid flickering if button is kept pressed
-        let blue_pump_override_relay_output = (self.blue_epump_override_push_button.is_on()
-            ^ (self.blue_epump_override_push_button.is_pressed()
-                && self.blue_epump_override_push_button.has_changed()))
-            && blue_pump_override_relay_is_powered;
-
-        self.blue_epump_override_push_button
-            .set_on(blue_pump_override_relay_output);
     }
 }
 

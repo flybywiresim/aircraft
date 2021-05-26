@@ -1,3 +1,4 @@
+use crate::electrical::{consumption::SuppliedPower, ElectricalBusType};
 use crate::simulation::{SimulationElement, SimulatorReader, SimulatorWriter};
 
 pub struct OnOffFaultPushButton {
@@ -470,10 +471,6 @@ impl MomentaryOnPushButton {
         self.is_pressed
     }
 
-    pub fn has_changed(&self) -> bool {
-        self.has_changed_state
-    }
-
     pub fn is_on(&self) -> bool {
         self.is_on
     }
@@ -497,6 +494,59 @@ impl SimulationElement for MomentaryOnPushButton {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool(&self.is_on_id, self.is_on);
+    }
+}
+impl LatchedButton for MomentaryOnPushButton {
+    fn has_changed(&self) -> bool {
+        self.has_changed_state
+    }
+    fn is_pressed(&self) -> bool {
+        self.is_pressed()
+    }
+    fn set_latch(&mut self, latch_output: bool) {
+        self.set_on(latch_output);
+    }
+    fn is_latched(&self) -> bool {
+        self.is_on()
+    }
+}
+
+pub trait LatchedButton {
+    fn is_latched(&self) -> bool;
+    fn is_pressed(&self) -> bool;
+    fn has_changed(&self) -> bool;
+    fn set_latch(&mut self, latch_output: bool);
+}
+pub struct PushButtonElecRelay {
+    powered_by: Vec<ElectricalBusType>,
+    relay_is_powered: bool,
+}
+impl PushButtonElecRelay {
+    pub fn new(powered_by: Vec<ElectricalBusType>) -> Self {
+        PushButtonElecRelay {
+            powered_by,
+            relay_is_powered: false,
+        }
+    }
+
+    pub fn update(&mut self, push_button: &mut impl LatchedButton) {
+        // Relay truth table is actually a Xor, as output is 1 if ON and not(PRESSED) or if PRESSED and not(ON)
+        // To this we add PRESSED && Has_changed to avoid flickering if button is kept pressed
+        let output = (push_button.is_latched()
+            ^ (push_button.is_pressed() && push_button.has_changed()))
+            && self.relay_is_powered;
+
+        push_button.set_latch(output);
+    }
+}
+impl SimulationElement for PushButtonElecRelay {
+    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+        // Relay is powered if ALL of its source buses are powered. This allows to reset pump button state if any power
+        // bus prevents the pump to run
+        self.relay_is_powered = self
+            .powered_by
+            .iter()
+            .all(|bus| supplied_power.potential_of(&bus).is_powered());
     }
 }
 
