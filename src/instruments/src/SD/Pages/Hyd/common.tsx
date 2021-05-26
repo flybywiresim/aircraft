@@ -122,67 +122,6 @@ export const ptuArray = [
         ],
     },
     {
-        scenario: 'elec-pump',
-        format: [
-            {
-                id: 'ptu1',
-                className: 'GreenLine',
-                colour: '',
-                orientation: 0,
-                fill: 0,
-            },
-            {
-                id: 'ptu2',
-                className: 'GreenLine',
-                colour: '',
-                orientation: 0,
-                fill: 0,
-            },
-            {
-                id: 'ptu3',
-                className: 'GreenLine NoFill',
-                colour: '',
-                orientation: 0,
-                fill: 0,
-            },
-            {
-                id: 'ptu4',
-                className: 'GreenLine',
-                colour: '',
-                orientation: 0,
-                fill: 0,
-            },
-            {
-                id: 'ptu5',
-                className: 'GreenLine',
-                colour: '',
-                orientation: 0,
-                fill: 0,
-            },
-            {
-                id: 'triangle1',
-                className: 'FillGreen',
-                colour: 'Green',
-                orientation: -90,
-                fill: 1,
-            },
-            {
-                id: 'triangle2',
-                className: 'FillGreen',
-                colour: 'Green',
-                orientation: -90,
-                fill: 1,
-            },
-            {
-                id: 'triangle3',
-                className: 'FillGreen',
-                colour: 'Green',
-                orientation: -90,
-                fill: 1,
-            },
-        ],
-    },
-    {
         scenario: 'right-to-left',
         format: [
             {
