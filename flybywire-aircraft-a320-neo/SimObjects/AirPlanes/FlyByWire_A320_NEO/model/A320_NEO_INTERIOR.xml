@@ -2860,9 +2860,9 @@
                         <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_LEAVE_CODE>
                         <TOOLTIPID>Runs the blue electric pump</TOOLTIPID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                        <SEQ1_CODE>(L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_ON, Bool)</SEQ1_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_ON, Bool)</SEQ2_CODE>
                         <MOMENTARY/>
-                        <NO_SEQ2 />
+                        <NO_SEQ1 />
                     </UseTemplate>
 
                     <!-- "HYD LEAK MEASUREMENT VALVES" -->
