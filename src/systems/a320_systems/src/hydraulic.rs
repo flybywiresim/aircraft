@@ -1412,6 +1412,7 @@ impl SimulationElement for A320HydraulicOverheadPanel {
             .is_powered();
 
         // Relay truth table is actually a Xor, as output is 1 if ON and not(PRESSED) or if PRESSED and not(ON)
+        // To this we add PRESSED && Has_changed to avoid flickering if button is kept pressed
         let blue_pump_override_relay_output = (self.blue_epump_override_push_button.is_on()
             ^ (self.blue_epump_override_push_button.is_pressed()
                 && self.blue_epump_override_push_button.has_changed()))
