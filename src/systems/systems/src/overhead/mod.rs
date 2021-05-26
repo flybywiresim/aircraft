@@ -453,6 +453,7 @@ pub struct MomentaryOnPushButton {
     is_on_id: String,
     is_pressed: bool,
     is_on: bool,
+    has_changed_state: bool,
 }
 impl MomentaryOnPushButton {
     pub fn new(name: &str) -> Self {
@@ -461,11 +462,16 @@ impl MomentaryOnPushButton {
             is_on_id: format!("OVHD_{}_IS_ON", name),
             is_pressed: false,
             is_on: false,
+            has_changed_state: false,
         }
     }
 
     pub fn is_pressed(&self) -> bool {
         self.is_pressed
+    }
+
+    pub fn has_changed(&self) -> bool {
+        self.has_changed_state
     }
 
     pub fn is_on(&self) -> bool {
@@ -483,8 +489,10 @@ impl MomentaryOnPushButton {
 }
 impl SimulationElement for MomentaryOnPushButton {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        // Debouncing the input: if keep pressing the button is_pressed will only be true on one frame event
-        self.is_pressed = !self.is_pressed && reader.read_bool(&self.is_pressed_id);
+        let new_press_state = reader.read_bool(&self.is_pressed_id);
+
+        self.has_changed_state = self.is_pressed != new_press_state;
+        self.is_pressed = new_press_state;
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
