@@ -5,8 +5,11 @@ pub use update_context::*;
 
 pub mod test;
 
-use crate::electrical::consumption::{
-    ElectricPower, PowerConsumption, PowerConsumptionReport, SuppliedPower,
+use crate::{
+    electrical::consumption::{
+        ElectricPower, PowerConsumption, PowerConsumptionReport, SuppliedPower,
+    },
+    shared::ElectricalBuses,
 };
 
 /// Trait for a type which can read and write simulator data.
@@ -108,7 +111,7 @@ pub trait SimulationElement {
     /// The easiest way to deal with power consumption is using the [`PowerConsumer`] type.
     ///
     /// [`PowerConsumer`]: ../electrical/struct.PowerConsumer.html
-    fn receive_power(&mut self, _supplied_power: &SuppliedPower) {}
+    fn receive_power(&mut self, _buses: &impl ElectricalBuses) {}
 
     /// Consume power previously made available by  aircraft's electrical system.
     /// The easiest way to deal with power consumption is using the [`PowerConsumer`] type.

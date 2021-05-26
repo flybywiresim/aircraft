@@ -1,6 +1,11 @@
+use self::brake_circuit::Actuator;
+use crate::electrical::consumption::PowerConsumer;
+use crate::shared::{interpolation, ElectricalBusType};
+use crate::simulation::{
+    SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+};
 use std::string::String;
 use std::time::Duration;
-
 use uom::si::{
     f64::*,
     pressure::psi,
@@ -9,14 +14,7 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
-use crate::electrical::consumption::PowerConsumer;
-use crate::electrical::ElectricalBusType;
-use crate::shared::interpolation;
-use crate::simulation::UpdateContext;
-use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
-
 pub mod brake_circuit;
-use crate::hydraulic::brake_circuit::Actuator;
 
 pub trait PressureSource {
     /// Gives the maximum available volume at that time as if it is a variable displacement

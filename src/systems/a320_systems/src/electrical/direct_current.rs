@@ -7,10 +7,11 @@ use systems::electrical::Potential;
 use systems::{
     electrical::{
         consumption::SuppliedPower, Battery, BatteryChargeLimiter, Contactor, ElectricalBus,
-        ElectricalBusType, EmergencyElectrical, EmergencyGenerator, PotentialSource,
-        PotentialTarget, StaticInverter,
+        EmergencyElectrical, EmergencyGenerator, PotentialSource, PotentialTarget, StaticInverter,
     },
-    shared::{ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, LandingGearPosition},
+    shared::{
+        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ElectricalBusType, LandingGearPosition,
+    },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, velocity::knot};

@@ -8,7 +8,7 @@ mod engine_generator;
 mod external_power_source;
 mod static_inverter;
 mod transformer_rectifier;
-use std::{cmp::Ordering, fmt::Display, hash::Hash, time::Duration};
+use std::{cmp::Ordering, hash::Hash, time::Duration};
 
 pub use battery::Battery;
 pub use battery_charge_limiter::BatteryChargeLimiter;
@@ -21,7 +21,10 @@ use itertools::Itertools;
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 
-use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext};
+use crate::{
+    shared::ElectricalBusType,
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+};
 use uom::si::{
     electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, ratio::percent,
     velocity::knot,
@@ -297,40 +300,6 @@ impl PotentialSource for Contactor {
 impl SimulationElement for Contactor {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool(&self.closed_id, self.is_closed());
-    }
-}
-
-/// The common types of electrical buses within Airbus aircraft.
-/// These include types such as AC, DC, AC ESS, etc.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum ElectricalBusType {
-    AlternatingCurrent(u8),
-    AlternatingCurrentEssential,
-    AlternatingCurrentEssentialShed,
-    AlternatingCurrentStaticInverter,
-    AlternatingCurrentGndFltService,
-    DirectCurrent(u8),
-    DirectCurrentEssential,
-    DirectCurrentEssentialShed,
-    DirectCurrentBattery,
-    DirectCurrentHot(u8),
-    DirectCurrentGndFltService,
-}
-impl Display for ElectricalBusType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ElectricalBusType::AlternatingCurrent(number) => write!(f, "AC_{}", number),
-            ElectricalBusType::AlternatingCurrentEssential => write!(f, "AC_ESS"),
-            ElectricalBusType::AlternatingCurrentEssentialShed => write!(f, "AC_ESS_SHED"),
-            ElectricalBusType::AlternatingCurrentStaticInverter => write!(f, "AC_STAT_INV"),
-            ElectricalBusType::AlternatingCurrentGndFltService => write!(f, "AC_GND_FLT_SVC"),
-            ElectricalBusType::DirectCurrent(number) => write!(f, "DC_{}", number),
-            ElectricalBusType::DirectCurrentEssential => write!(f, "DC_ESS"),
-            ElectricalBusType::DirectCurrentEssentialShed => write!(f, "DC_ESS_SHED"),
-            ElectricalBusType::DirectCurrentBattery => write!(f, "DC_BAT"),
-            ElectricalBusType::DirectCurrentHot(number) => write!(f, "DC_HOT_{}", number),
-            ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
-        }
     }
 }
 
@@ -904,45 +873,6 @@ mod tests {
 
         fn none_potential() -> Potential {
             Potential::none()
-        }
-    }
-
-    #[cfg(test)]
-    mod electrical_bus_type_tests {
-        use crate::electrical::ElectricalBusType;
-
-        #[test]
-        fn get_name_returns_name() {
-            assert_eq!(ElectricalBusType::AlternatingCurrent(2).to_string(), "AC_2");
-            assert_eq!(
-                ElectricalBusType::AlternatingCurrentEssential.to_string(),
-                "AC_ESS"
-            );
-            assert_eq!(
-                ElectricalBusType::AlternatingCurrentEssentialShed.to_string(),
-                "AC_ESS_SHED"
-            );
-            assert_eq!(
-                ElectricalBusType::AlternatingCurrentStaticInverter.to_string(),
-                "AC_STAT_INV"
-            );
-            assert_eq!(ElectricalBusType::DirectCurrent(2).to_string(), "DC_2");
-            assert_eq!(
-                ElectricalBusType::DirectCurrentEssential.to_string(),
-                "DC_ESS"
-            );
-            assert_eq!(
-                ElectricalBusType::DirectCurrentEssentialShed.to_string(),
-                "DC_ESS_SHED"
-            );
-            assert_eq!(
-                ElectricalBusType::DirectCurrentBattery.to_string(),
-                "DC_BAT"
-            );
-            assert_eq!(
-                ElectricalBusType::DirectCurrentHot(2).to_string(),
-                "DC_HOT_2"
-            );
         }
     }
 

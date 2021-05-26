@@ -410,21 +410,19 @@ mod a320_electrical {
 
 #[cfg(test)]
 mod a320_electrical_circuit_tests {
-    use super::alternating_current::A320AcEssFeedContactors;
-    use super::*;
+    use super::{alternating_current::A320AcEssFeedContactors, *};
     use rstest::rstest;
     use std::time::Duration;
     use systems::{
         electrical::{
-            ElectricalBusType, ExternalPowerSource, Potential, PotentialOrigin, PotentialSource,
+            ExternalPowerSource, Potential, PotentialOrigin, PotentialSource,
             INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
-        shared::{ApuAvailable, ApuStartContactorsController},
+        shared::{ApuAvailable, ApuStartContactorsController, ElectricalBusType, ElectricalBuses},
         simulation::{test::SimulationTestBed, Aircraft},
     };
     use uom::si::f64::*;
-    use uom::si::{electric_potential::volt, ratio::percent};
-    use uom::si::{length::foot, velocity::knot};
+    use uom::si::{electric_potential::volt, length::foot, ratio::percent, velocity::knot};
 
     #[test]
     fn everything_off_batteries_empty() {
@@ -1198,21 +1196,21 @@ mod a320_electrical_circuit_tests {
         let mut test_bed = test_bed_with().running_engines().run();
         let power_supply = test_bed.get_supplied_power();
 
-        assert!(power_supply.is_powered(&ElectricalBusType::AlternatingCurrent(1)));
-        assert!(power_supply.is_powered(&ElectricalBusType::AlternatingCurrent(2)));
-        assert!(power_supply.is_powered(&ElectricalBusType::AlternatingCurrentEssential));
-        assert!(power_supply.is_powered(&ElectricalBusType::AlternatingCurrentEssentialShed));
-        assert!(!power_supply.is_powered(&ElectricalBusType::AlternatingCurrentStaticInverter));
-        assert!(!power_supply.is_powered(&ElectricalBusType::AlternatingCurrentStaticInverter));
-        assert!(power_supply.is_powered(&ElectricalBusType::AlternatingCurrentGndFltService));
-        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrent(1)));
-        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrent(2)));
-        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentBattery));
-        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentEssential));
-        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentEssentialShed));
-        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentHot(1)));
-        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentHot(2)));
-        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentGndFltService));
+        assert!(power_supply.is_powered(ElectricalBusType::AlternatingCurrent(1)));
+        assert!(power_supply.is_powered(ElectricalBusType::AlternatingCurrent(2)));
+        assert!(power_supply.is_powered(ElectricalBusType::AlternatingCurrentEssential));
+        assert!(power_supply.is_powered(ElectricalBusType::AlternatingCurrentEssentialShed));
+        assert!(!power_supply.is_powered(ElectricalBusType::AlternatingCurrentStaticInverter));
+        assert!(!power_supply.is_powered(ElectricalBusType::AlternatingCurrentStaticInverter));
+        assert!(power_supply.is_powered(ElectricalBusType::AlternatingCurrentGndFltService));
+        assert!(power_supply.is_powered(ElectricalBusType::DirectCurrent(1)));
+        assert!(power_supply.is_powered(ElectricalBusType::DirectCurrent(2)));
+        assert!(power_supply.is_powered(ElectricalBusType::DirectCurrentBattery));
+        assert!(power_supply.is_powered(ElectricalBusType::DirectCurrentEssential));
+        assert!(power_supply.is_powered(ElectricalBusType::DirectCurrentEssentialShed));
+        assert!(power_supply.is_powered(ElectricalBusType::DirectCurrentHot(1)));
+        assert!(power_supply.is_powered(ElectricalBusType::DirectCurrentHot(2)));
+        assert!(power_supply.is_powered(ElectricalBusType::DirectCurrentGndFltService));
     }
 
     #[rstest]
@@ -2561,31 +2559,31 @@ mod a320_electrical_circuit_tests {
         fn ac_bus_output(&mut self, number: u8) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::AlternatingCurrent(number))
+                .potential_of(ElectricalBusType::AlternatingCurrent(number))
         }
 
         fn ac_ess_bus_output(&mut self) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::AlternatingCurrentEssential)
+                .potential_of(ElectricalBusType::AlternatingCurrentEssential)
         }
 
         fn ac_ess_shed_bus_output(&mut self) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::AlternatingCurrentEssentialShed)
+                .potential_of(ElectricalBusType::AlternatingCurrentEssentialShed)
         }
 
         fn ac_stat_inv_bus_output(&mut self) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::AlternatingCurrentStaticInverter)
+                .potential_of(ElectricalBusType::AlternatingCurrentStaticInverter)
         }
 
         fn ac_gnd_flt_service_bus_output(&mut self) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::AlternatingCurrentGndFltService)
+                .potential_of(ElectricalBusType::AlternatingCurrentGndFltService)
         }
 
         fn static_inverter_input(&self) -> Potential {
@@ -2615,37 +2613,37 @@ mod a320_electrical_circuit_tests {
         fn dc_bus_output(&mut self, number: u8) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::DirectCurrent(number))
+                .potential_of(ElectricalBusType::DirectCurrent(number))
         }
 
         fn dc_bat_bus_output(&mut self) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::DirectCurrentBattery)
+                .potential_of(ElectricalBusType::DirectCurrentBattery)
         }
 
         fn dc_ess_bus_output(&mut self) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::DirectCurrentEssential)
+                .potential_of(ElectricalBusType::DirectCurrentEssential)
         }
 
         fn dc_ess_shed_bus_output(&mut self) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::DirectCurrentEssentialShed)
+                .potential_of(ElectricalBusType::DirectCurrentEssentialShed)
         }
 
         fn hot_bus_output(&mut self, number: u8) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::DirectCurrentHot(number))
+                .potential_of(ElectricalBusType::DirectCurrentHot(number))
         }
 
         fn dc_gnd_flt_service_bus_output(&mut self) -> Potential {
             self.aircraft
                 .get_supplied_power()
-                .potential_of(&ElectricalBusType::DirectCurrentGndFltService)
+                .potential_of(ElectricalBusType::DirectCurrentGndFltService)
         }
 
         fn ac_ess_feed_has_fault(&mut self) -> bool {

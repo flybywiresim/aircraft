@@ -338,8 +338,9 @@ pub mod tests {
     use crate::{
         electrical::{
             consumption::{PowerConsumer, SuppliedPower},
-            ElectricalBusType, PotentialOrigin,
+            PotentialOrigin,
         },
+        shared::ElectricalBusType,
         simulation::{test::SimulationTestBed, Aircraft},
     };
 

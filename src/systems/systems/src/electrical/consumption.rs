@@ -16,14 +16,13 @@
 //! 6. The total load is passed to the various origins so that they can calculate their
 //!    load %, voltage, frequency and current.
 
-use std::{collections::HashMap, time::Duration};
-
 use super::{ElectricalBus, ElectricalBusType, Potential, PotentialOrigin, PotentialSource};
 use crate::{
-    shared::{random_number, FwcFlightPhase},
+    shared::{random_number, ElectricalBuses, FwcFlightPhase},
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext},
 };
 use num_traits::FromPrimitive;
+use std::{collections::HashMap, time::Duration};
 use uom::si::{f64::*, power::watt};
 
 pub(crate) struct ElectricPower {
@@ -74,16 +73,21 @@ impl SuppliedPower {
     pub fn add(&mut self, bus_type: ElectricalBusType, output_potential: Potential) {
         self.state.insert(bus_type, output_potential);
     }
-
-    pub fn potential_of(&self, bus_type: &ElectricalBusType) -> Potential {
-        match self.state.get(bus_type) {
+}
+impl ElectricalBuses for SuppliedPower {
+    fn potential_of(&self, bus_type: ElectricalBusType) -> Potential {
+        match self.state.get(&bus_type) {
             Some(potential) => *potential,
             None => Potential::none(),
         }
     }
 
-    pub fn is_powered(&self, bus_type: &ElectricalBusType) -> bool {
+    fn is_powered(&self, bus_type: ElectricalBusType) -> bool {
         self.potential_of(bus_type).is_powered()
+    }
+
+    fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool {
+        bus_types.iter().any(|bus_type| self.is_powered(*bus_type))
     }
 }
 impl Default for SuppliedPower {
@@ -122,12 +126,12 @@ impl PowerConsumer {
     }
 }
 impl SimulationElement for PowerConsumer {
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.provided_potential = self
             .powered_by
             .iter()
             .find_map(|bus_type| {
-                let potential = supplied_power.potential_of(bus_type);
+                let potential = buses.potential_of(*bus_type);
                 if potential.is_powered() {
                     Some(potential)
                 } else {
@@ -273,7 +277,7 @@ impl<'a> ReceivePowerVisitor<'a> {
 }
 impl<'a> SimulationElementVisitor for ReceivePowerVisitor<'a> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.receive_power(&self.supplied_power);
+        visited.receive_power(self.supplied_power);
     }
 }
 
@@ -368,7 +372,7 @@ mod tests {
         #[test]
         fn is_powered_returns_false_when_bus_not_found() {
             let supplied_power = SuppliedPower::new();
-            assert!(!supplied_power.is_powered(&ElectricalBusType::AlternatingCurrent(1)))
+            assert!(!supplied_power.is_powered(ElectricalBusType::AlternatingCurrent(1)))
         }
 
         #[test]
@@ -376,7 +380,7 @@ mod tests {
             let mut supplied_power = SuppliedPower::new();
             supplied_power.add_bus(&powered_bus(ElectricalBusType::AlternatingCurrent(1)));
 
-            assert!(supplied_power.is_powered(&ElectricalBusType::AlternatingCurrent(1)))
+            assert!(supplied_power.is_powered(ElectricalBusType::AlternatingCurrent(1)))
         }
 
         #[test]
@@ -384,7 +388,7 @@ mod tests {
             let mut supplied_power = SuppliedPower::new();
             supplied_power.add_bus(&unpowered_bus(ElectricalBusType::AlternatingCurrent(1)));
 
-            assert!(!supplied_power.is_powered(&ElectricalBusType::AlternatingCurrent(1)))
+            assert!(!supplied_power.is_powered(ElectricalBusType::AlternatingCurrent(1)))
         }
     }
 

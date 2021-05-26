@@ -6,11 +6,11 @@ use std::time::Duration;
 use systems::{
     electrical::{
         consumption::SuppliedPower, AlternatingCurrentElectricalSystem, Contactor, ElectricalBus,
-        ElectricalBusType, EmergencyGenerator, EngineGenerator, ExternalPowerSource, Potential,
-        PotentialOrigin, PotentialSource, PotentialTarget, TransformerRectifier,
+        EmergencyGenerator, EngineGenerator, ExternalPowerSource, Potential, PotentialOrigin,
+        PotentialSource, PotentialTarget, TransformerRectifier,
     },
     shared::{
-        AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, EngineCorrectedN2,
+        AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType, EngineCorrectedN2,
         EngineFirePushButtons,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
