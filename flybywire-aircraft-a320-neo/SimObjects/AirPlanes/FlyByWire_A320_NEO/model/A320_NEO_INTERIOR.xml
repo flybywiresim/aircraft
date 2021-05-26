@@ -2859,7 +2859,7 @@
                         <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_SINGLE_CODE>
                         <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_LEAVE_CODE>
                         <TOOLTIPID>Runs the blue electric pump</TOOLTIPID>
-                        <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                        <SEQ_POWERED>(L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_ON, Bool)</SEQ_POWERED>
                         <MOMENTARY/>
                         <NO_SEQ1 />
                         <NO_SEQ2 />

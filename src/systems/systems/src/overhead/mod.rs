@@ -483,7 +483,8 @@ impl MomentaryOnPushButton {
 }
 impl SimulationElement for MomentaryOnPushButton {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_pressed = reader.read_bool(&self.is_pressed_id);
+        // Debouncing the input: if keep pressing the button is_pressed will only be true on one frame event
+        self.is_pressed = !self.is_pressed && reader.read_bool(&self.is_pressed_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
