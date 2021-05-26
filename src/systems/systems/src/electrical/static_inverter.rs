@@ -54,7 +54,7 @@ impl SimulationElement for StaticInverter {
         // Currently static inverter inefficiency isn't modelled.
         // It is to be expected that DC consumption should actually be somewhat
         // higher than AC consumption.
-        consumption.add(&self.input_potential, ac_power);
+        consumption.consume(self.input_potential, ac_power);
     }
 
     fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _: &T) {

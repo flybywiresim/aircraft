@@ -719,7 +719,7 @@ impl SimulationElement for Aps3200StartMotor {
                 + (APU_W_X7 * since.powi(7)))
             .max(0.);
 
-            consumption.add(&self.input_potential, Power::new::<watt>(w));
+            consumption.consume(self.input_potential, Power::new::<watt>(w));
         }
     }
 }

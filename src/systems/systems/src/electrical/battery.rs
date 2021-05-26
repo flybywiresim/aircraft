@@ -159,7 +159,7 @@ impl SimulationElement for Battery {
             );
 
             let power = self.input_potential.raw() * self.current;
-            consumption.add(&self.input_potential, power);
+            consumption.consume(self.input_potential, power);
 
             let time = Time::new::<second>(consumption.delta().as_secs_f64());
             self.charge +=

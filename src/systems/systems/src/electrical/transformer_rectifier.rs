@@ -78,7 +78,7 @@ impl SimulationElement for TransformerRectifier {
         // Currently transformer rectifier inefficiency isn't modelled.
         // It is to be expected that AC consumption should actually be somewhat
         // higher than DC consumption.
-        consumption.add(&self.input_potential, dc_power);
+        consumption.consume(self.input_potential, dc_power);
     }
 
     fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
