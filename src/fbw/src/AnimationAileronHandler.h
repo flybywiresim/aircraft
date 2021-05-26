@@ -8,6 +8,7 @@ class AnimationAileronHandler {
 
   void update(bool autopilotActive,
               bool groundSpoilersActive,
+              double simulationTime,
               double pitchAttitudeDegrees,
               double flapsHandleIndex,
               double flapsPosition,
@@ -25,10 +26,24 @@ class AnimationAileronHandler {
   static constexpr double POSITION_ANTI_DROOP_RIGHT = 1.0;
   static constexpr double RATE = 2.00;
 
-  double droopBiasLeft = 0;
-  double droopBiasRight = 0;
-  double targetValueLeft = 0;
-  double targetValueRight = 0;
+  static constexpr double DROOP_RATE = 0.25;
+  static constexpr double DROOP_TIME_SWITCH = 2.0;
+  static constexpr double DROOP_BIAS_OFF = 0.0;
+  static constexpr double DROOP_BIAS_ON = 0.2;
+  static constexpr double ANTI_DROOP_RATE = 1.0;
+  static constexpr double ANTI_DROOP_BIAS_OFF = 0.0;
+  static constexpr double ANTI_DROOP_BIAS_ON = -1.2;
+
+  bool antiDroopInhibited = false;
+  bool areGroundSpoilersActive = false;
+
+  double eventTime = 0;
+
+  double lastFlapsPosition = 0;
+  double targetValueDroop = DROOP_BIAS_OFF;
+
   RateLimiter rateLimiterLeft;
   RateLimiter rateLimiterRight;
+  RateLimiter rateLimiterDroop;
+  RateLimiter rateLimiterAntiDroop;
 };

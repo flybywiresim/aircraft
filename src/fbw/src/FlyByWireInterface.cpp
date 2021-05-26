@@ -1044,8 +1044,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idSpeedAlphaMax->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn);
 
   // update aileron positions
-  animationAileronHandler->update(idAutopilotActiveAny->get(), spoilersHandler->getIsGroundSpoilersActive(), simData.Theta_deg,
-                                  simData.flaps_handle_index, simData.flaps_position,
+  animationAileronHandler->update(idAutopilotActiveAny->get(), spoilersHandler->getIsGroundSpoilersActive(), simData.simulationTime,
+                                  simData.Theta_deg, simData.flaps_handle_index, simData.flaps_position,
                                   idExternalOverride->get() == 1 ? simData.xi_pos : flyByWireOutput.output.xi_pos, sampleTime);
   idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
   idAileronPositionRight->set(animationAileronHandler->getPositionRight());
