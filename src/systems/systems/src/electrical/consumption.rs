@@ -85,13 +85,6 @@ impl SuppliedPower {
     pub fn is_powered(&self, bus_type: &ElectricalBusType) -> bool {
         self.potential_of(bus_type).is_powered()
     }
-
-    pub fn source_for(&self, bus_type: &ElectricalBusType) -> Potential {
-        match self.state.get(bus_type) {
-            Some(source) => *source,
-            None => Potential::none(),
-        }
-    }
 }
 impl Default for SuppliedPower {
     fn default() -> Self {
