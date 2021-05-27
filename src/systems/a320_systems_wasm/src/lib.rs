@@ -182,10 +182,11 @@ impl ElectricalBusConnection {
 struct Brakes {
     id_brake_left: sys::DWORD,
     id_brake_right: sys::DWORD,
-    id_parking_brake: sys::DWORD,
     id_brake_keyboard: sys::DWORD,
     id_brake_left_keyboard: sys::DWORD,
     id_brake_right_keyboard: sys::DWORD,
+    id_parking_brake: sys::DWORD,
+    id_parking_brake_set: sys::DWORD,
 
     brake_left_sim_input: f64,
     brake_right_sim_input: f64,
@@ -210,12 +211,16 @@ impl Brakes {
                 .map_client_event_to_sim_event("AXIS_LEFT_BRAKE_SET", true)?,
             id_brake_right: sim_connect
                 .map_client_event_to_sim_event("AXIS_RIGHT_BRAKE_SET", true)?,
-            id_parking_brake: sim_connect.map_client_event_to_sim_event("PARKING_BRAKES", true)?,
+
             id_brake_keyboard: sim_connect.map_client_event_to_sim_event("BRAKES", true)?,
             id_brake_left_keyboard: sim_connect
                 .map_client_event_to_sim_event("BRAKES_LEFT", true)?,
             id_brake_right_keyboard: sim_connect
                 .map_client_event_to_sim_event("BRAKES_RIGHT", true)?,
+
+            id_parking_brake: sim_connect.map_client_event_to_sim_event("PARKING_BRAKES", true)?,
+            id_parking_brake_set: sim_connect
+                .map_client_event_to_sim_event("PARKING_BRAKE_SET", true)?,
 
             brake_left_sim_input: 0.,
             brake_right_sim_input: 0.,
@@ -313,6 +318,10 @@ impl Brakes {
         self.parking_brake_lever_is_set = !self.parking_brake_lever_is_set;
     }
 
+    fn receive_a_park_brake_set_event(&mut self, data: u32) {
+        self.parking_brake_lever_is_set = data == 1;
+    }
+
     fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> u32 {
         f64_to_sim_connect_32k_pos(self.brake_right_output_to_sim)
     }
@@ -366,6 +375,9 @@ impl HandleMessage for Brakes {
                     true
                 } else if e.id() == self.id_parking_brake {
                     self.receive_a_park_brake_event();
+                    true
+                } else if e.id() == self.id_parking_brake_set {
+                    self.receive_a_park_brake_set_event(e.data());
                     true
                 } else if e.id() == self.id_brake_keyboard {
                     self.set_brake_left_key_pressed();
