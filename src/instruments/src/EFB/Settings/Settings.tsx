@@ -141,7 +141,7 @@ const PlaneSettings = () => {
 
             <div className="divide-y divide-gray-700 flex flex-col">
                 <div className="mb-3.5 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">ATIS Source</span>
+                    <span className="text-lg text-gray-300">ATIS/ATC Source</span>
                     <SelectGroup>
                         {atisSourceButtons.map((button) => (
                             <SelectItem
