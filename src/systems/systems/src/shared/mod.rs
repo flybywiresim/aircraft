@@ -157,29 +157,6 @@ pub(crate) fn calculate_towards_target_temperature(
     }
 }
 
-const MIN_32KPOS_VAL_FROM_SIMCONNECT: f64 = -16384.;
-const MAX_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
-const RANGE_32KPOS_VAL_FROM_SIMCONNECT: f64 =
-    MAX_32KPOS_VAL_FROM_SIMCONNECT - MIN_32KPOS_VAL_FROM_SIMCONNECT;
-const OFFSET_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
-// Takes a 32k position type from simconnect, returns a value from scaled from 0 to 1
-pub fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: u32) -> f64 {
-    let casted_value = (sim_connect_axis_value as i32) as f64;
-    let scaled_value =
-        (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
-
-    scaled_value.min(1.).max(0.)
-}
-// Takes a [0:1] f64 and returns a simconnect 32k position type
-pub fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> u32 {
-    let back_to_position_format = ((scaled_axis_value) * RANGE_32KPOS_VAL_FROM_SIMCONNECT)
-        - OFFSET_32KPOS_VAL_FROM_SIMCONNECT;
-    let to_i32 = back_to_position_format as i32;
-    let to_u32 = to_i32 as u32;
-
-    to_u32
-}
-
 // Interpolate values_map_y at point value_at_point in breakpoints break_points_x
 pub(crate) fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
     debug_assert!(xs.len() == ys.len());
@@ -407,28 +384,6 @@ mod delayed_false_logic_gate_tests {
         test_bed.run_aircraft(&mut aircraft);
 
         assert_eq!(aircraft.gate_output(), true);
-    }
-}
-
-#[cfg(test)]
-mod sim_connect_type_casts {
-    use super::*;
-    #[test]
-    fn min_simconnect_value() {
-        // We expect to get first element of YS1
-        assert!(sim_connect_32k_pos_to_f64(u32::MAX - 16384) <= 0.001);
-    }
-    #[test]
-    fn middle_simconnect_value() {
-        // We expect to get first element of YS1
-        let val=sim_connect_32k_pos_to_f64(0);
-        assert!(val <= 0.501 && val >= 0.499);
-    }
-
-    #[test]
-    fn max_simconnect_value() {
-        // We expect to get first element of YS1
-        assert!(sim_connect_32k_pos_to_f64(16384) >= 0.999);
     }
 }
 

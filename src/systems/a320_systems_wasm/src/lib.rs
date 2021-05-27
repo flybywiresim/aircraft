@@ -3,10 +3,10 @@ use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use msfs::{legacy::execute_calculator_code, sim_connect::SimConnect, sys};
 use std::{pin::Pin, time::Duration};
-use systems::shared::{f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64};
 use systems_wasm::{
-    HandleMessage, MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter,
-    MsfsSimulationHandler, PrePostTick, ReadWrite, SimulatorAspect,
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, HandleMessage,
+    MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter, MsfsSimulationHandler, PrePostTick,
+    ReadWrite, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
