@@ -883,29 +883,29 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (keycode >= 48 && keycode <= 57 || keycode >= 65 && keycode <= 90) { // alphanumerics
                     const letter = String.fromCharCode(keycode)
                     this.onLetterInput(letter);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_"+ letter.toUpperCase(), "Number", 1); // TODO: L/R side MCDU Split
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_"+ letter.toUpperCase(), "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_"+ letter.toUpperCase(), "Number", 1); // TODO: L/R side MCDU Split
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_"+ letter.toUpperCase(), "Number", 1);
                 }
                 else if (keycode === 190 || keycode === 110) { // .
                     this.handlePreviousInputState();
                     this.inOut += ".";
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_DOT", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_DOT", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_DOT", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_DOT", "Number", 1);
                 }
                 else if (keycode === 191) { // Fwd Slash
                     this.onDiv();
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_SLASH", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_SLASH", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_SLASH", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_SLASH", "Number", 1);
                 }
                 else if (keycode === 8) { // Backspace
                     this.onClr();
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_CLR", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_CLR", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_CLR", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_CLR", "Number", 1);
                 }
                 else if (keycode === 32) { // Space
                     this.onSp();
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_SP", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_SP", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_SP", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_SP", "Number", 1);
                 }
                 else if (keycode === 187 || keycode === 189 || keycode === 107 || keycode === 109) {    // Plusminus
                     this.handlePreviousInputState();
@@ -921,8 +921,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                             this.inOut += "-";
                         }
                     }
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_L_PLUSMINUS", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_R_PLUSMINUS", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_PLUSMINUS", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_PLUSMINUS", "Number", 1);
                 }
 
             }
