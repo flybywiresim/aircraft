@@ -260,11 +260,17 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   6.0,
 
+  3.0,
+
   7.0,
 
+  0.8,
+
   -10.0,
 
   -10.0,
+
+  15.0,
 
   1.0,
 

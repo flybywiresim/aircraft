@@ -6,6 +6,7 @@
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
+1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
 1. [ENGINE] Fixed fuel flow being 0 at Start-up  - @Taz5150 (TazX [Z+2]#0405)
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
@@ -73,6 +74,11 @@
 1. [ENGINE] Adapt engine IDLE N1 based on environmental conditions - @Taz5150 (TazX [Z+2]#0405), @aguther (Andreas Guther)
 1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
 1. [ELEC] ENG FIRE push button deactivates IDG - @davidwalschots (David Walschots)
+1. [AP] Improved OP CLB/DES, CLB/DES speed hold characteristics - @aguther (Andreas Guther)
+1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
+1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
+1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
+1. [PFD] Add baro setting flash when passing TA/TL - @lukecologne (luke)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

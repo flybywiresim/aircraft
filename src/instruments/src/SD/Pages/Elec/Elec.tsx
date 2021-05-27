@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom';
 import { PageTitle } from '../../Common/PageTitle';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { EcamPage } from '../../Common/EcamPage';
+import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Elec.scss';
 
@@ -144,7 +146,7 @@ export const ElecPage = () => {
     );
 };
 
-export const Battery = ({ x, y, number }) => {
+const Battery = ({ x, y, number }) => {
     const [isAuto] = useSimVar(`L:A32NX_OVHD_ELEC_BAT_${number}_PB_IS_AUTO`, 'Bool', maxStaleness);
 
     const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${number}_POTENTIAL`, 'Volts', maxStaleness);
@@ -217,14 +219,6 @@ const BatteryToBatBusWire = ({ x, y, number }) => {
         </SvgGroup>
     );
 };
-
-const EcamPage = ({ name, children }) => (
-    <svg id={name} version="1.1" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-        {children}
-    </svg>
-);
-
-const SvgGroup = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
 
 const ElectricalProperty = ({ x, y, value, unit, isWithinNormalRange }) => (
     <SvgGroup x={x} y={y}>
