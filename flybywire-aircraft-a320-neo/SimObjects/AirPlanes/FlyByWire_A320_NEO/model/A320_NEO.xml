@@ -20,7 +20,6 @@
         <!-- Alternatively we could script the angles for the wingflex -->
         <!-- Just define some nodes/bones to move for now (this configuration will likely change at some point) -->
         <!-- 	order	:	node 															-->
-        <!-- 	--------------------------------------------------------------------------- -->
         <!-- 	0	:	the left wing bone closest to the center 							-->
         <!-- 	1	:	in between 															-->
         <!-- 	2	:	in between 															-->
@@ -74,7 +73,7 @@
                 <TRIM_ONLY>True</TRIM_ONLY>
                 <ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Aileron_Template">
+            <UseTemplate Name="FBW_HANDLING_Aileron_Template">
                 <ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
             </UseTemplate>
