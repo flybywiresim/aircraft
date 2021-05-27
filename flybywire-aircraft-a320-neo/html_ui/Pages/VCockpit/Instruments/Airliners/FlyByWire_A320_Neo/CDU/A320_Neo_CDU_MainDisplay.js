@@ -845,6 +845,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inOut = data;
     }
 
+    clearFocus() {
+        this.inFocus = false;
+        this._inOutElement.style = "";
+        if (this.check_focus) {
+            clearInterval(this.check_focus);
+        }
+    }
+
     initKeyboardScratchpad() {
         window.document.addEventListener('click', () => {
 
@@ -859,21 +867,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         this.check_focus = setInterval(() => {
                             const time = new Date().getTime() / 1000;
                             if (this.lastInput + mcduTimeout <= time) {
-                                this.inFocus = false;
-                                this._inOutElement.style = "";
-                                clearInterval(this.check_focus);
+                                this.clearFocus();
                             }
                         }, mcduTimeout);
                     }
-
                 } else {
-                    this._inOutElement.style = "";
-                    if (this.check_focus) {
-                        clearInterval(this.check_focus)
-                    }
+                    this.clearFocus();
                 }
             } else {
-                this.inFocus = false;
+                this.clearFocus();
             }
         });
         window.document.addEventListener('keydown', (e) => {

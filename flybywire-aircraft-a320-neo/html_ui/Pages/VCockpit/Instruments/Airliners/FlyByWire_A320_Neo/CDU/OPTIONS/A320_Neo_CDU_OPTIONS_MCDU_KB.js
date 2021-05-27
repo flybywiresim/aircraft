@@ -49,6 +49,7 @@ class CDU_OPTIONS_MCDU_KB {
         };
         mcdu.onLeftInput[0] = () => {
             if (mcduInput !== "ALL") {
+                mcdu.clearFocus();
                 NXDataStore.set("MCDU_KB_INPUT", "ALL");
                 CDU_OPTIONS_MCDU_KB.ShowPage(mcdu, true);
             }
@@ -59,6 +60,7 @@ class CDU_OPTIONS_MCDU_KB {
         mcdu.onLeftInput[1] = () => {
             if (mcduInput !== "RALT") {
                 NXDataStore.set("MCDU_KB_INPUT", "RALT");
+                mcdu.clearFocus();
                 if (mcduInput === "ALL") {
                     CDU_OPTIONS_MCDU_KB.ShowPage(mcdu, true);
                 } else {
@@ -72,6 +74,7 @@ class CDU_OPTIONS_MCDU_KB {
         mcdu.onLeftInput[2] = () => {
             if (mcduInput !== "NONE") {
                 NXDataStore.set("MCDU_KB_INPUT", "NONE");
+                mcdu.clearFocus();
                 if (mcduInput === "ALL") {
                     CDU_OPTIONS_MCDU_KB.ShowPage(mcdu, true);
                 } else {
