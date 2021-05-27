@@ -1,3 +1,4 @@
+#![cfg(any(target_arch = "wasm32", doc))]
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
     sim_connect::{SimConnect, SimConnectRecv},
