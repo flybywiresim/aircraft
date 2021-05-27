@@ -178,6 +178,28 @@ impl ElectricalBusConnection {
     }
 }
 
+const MIN_32KPOS_VAL_FROM_SIMCONNECT: f64 = -16384.;
+const MAX_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
+const RANGE_32KPOS_VAL_FROM_SIMCONNECT: f64 =
+    MAX_32KPOS_VAL_FROM_SIMCONNECT - MIN_32KPOS_VAL_FROM_SIMCONNECT;
+const OFFSET_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
+// Takes a 32k position type from simconnect, returns a value from scaled from 0 to 1
+fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: u32) -> f64 {
+    let casted_value = (sim_connect_axis_value as i32) as f64;
+    let scaled_value =
+        (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
+
+    scaled_value.min(1.).max(0.)
+}
+// Takes a [0:1] f64 and returns a simconnect 32k position type
+fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> u32 {
+    let back_to_position_format = ((scaled_axis_value) * RANGE_32KPOS_VAL_FROM_SIMCONNECT)
+        - OFFSET_32KPOS_VAL_FROM_SIMCONNECT;
+    let to_i32 = back_to_position_format as i32;
+    let to_u32 = to_i32 as u32;
+
+    to_u32
+}
 struct Brakes {
     id_brake_left: sys::DWORD,
     id_brake_right: sys::DWORD,
@@ -199,15 +221,8 @@ struct Brakes {
     parking_brake_lever_is_set: bool,
 }
 impl Brakes {
-    const KEYBOARD_PRESS_SPEED: f64 = 0.5;
+    const KEYBOARD_PRESS_SPEED: f64 = 0.6;
     const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
-
-    const MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = -16384.;
-    const MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
-
-    const RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 =
-        Self::MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT - Self::MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-    const OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
@@ -238,10 +253,7 @@ impl Brakes {
     }
 
     fn set_brake_left(&mut self, simconnect_value: u32) {
-        let casted_value = (simconnect_value as i32) as f64;
-        let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
-            / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        self.brake_left_sim_input = scaled_value.min(1.).max(0.);
+        self.brake_left_sim_input = sim_connect_32k_pos_to_f64(simconnect_value);
     }
 
     fn set_brake_left_key_pressed(&mut self) {
@@ -296,21 +308,8 @@ impl Brakes {
         Ok(())
     }
 
-    fn set_brake_left_percent(&mut self, percent_value: f64) {
-        let scaled_value = percent_value / 100.;
-        self.brake_left_sim_input = scaled_value.min(1.).max(0.);
-    }
-
     fn set_brake_right(&mut self, simconnect_value: u32) {
-        let casted_value = (simconnect_value as i32) as f64;
-        let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
-            / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        self.brake_right_sim_input = scaled_value.min(1.).max(0.);
-    }
-
-    fn set_brake_right_percent(&mut self, percent_value: f64) {
-        let scaled_value = percent_value / 100.;
-        self.brake_right_sim_input = scaled_value.min(1.).max(0.);
+        self.brake_right_sim_input = sim_connect_32k_pos_to_f64(simconnect_value);
     }
 
     fn brake_left(&mut self) -> f64 {
@@ -336,23 +335,11 @@ impl Brakes {
     }
 
     fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> u32 {
-        let back_to_position_format = ((self.brake_right_output_to_sim)
-            * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
-            - Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        let to_i32 = back_to_position_format as i32;
-        let to_u32 = to_i32 as u32;
-
-        to_u32
+        f64_to_sim_connect_32k_pos(self.brake_right_output_to_sim)
     }
 
     fn get_brake_left_output_converted_in_simconnect_format(&mut self) -> u32 {
-        let back_to_position_format = ((self.brake_left_output_to_sim)
-            * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
-            - Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        let to_i32 = back_to_position_format as i32;
-        let to_u32 = to_i32 as u32;
-
-        to_u32
+        f64_to_sim_connect_32k_pos(self.brake_left_output_to_sim)
     }
 
     fn is_park_brake_set(&self) -> f64 {

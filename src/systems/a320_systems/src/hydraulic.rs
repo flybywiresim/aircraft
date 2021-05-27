@@ -1,8 +1,8 @@
 use std::time::Duration;
 use systems::shared::{EmergencyElectricalRatPushButton, EmergencyElectricalState};
 use uom::si::{
-    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
-    pressure::pascal, pressure::psi, ratio::percent, volume::gallon,
+    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
+    ratio::percent, volume::gallon,
 };
 
 use systems::overhead::{
@@ -376,7 +376,6 @@ impl A320Hydraulic {
         self.pushback_tug.update();
 
         self.brake_output_generator.update_forces(
-            &context,
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
             &self.hyd_brake_logic,
@@ -1266,8 +1265,6 @@ struct A320BrakingForceSimulationOutput {
     right_brake_force: f64,
 
     park_brake_lever_is_set: bool,
-    ground_surface_type: f64,
-    acceleration: f64,
 }
 impl A320BrakingForceSimulationOutput {
     pub fn new() -> Self {
@@ -1279,15 +1276,11 @@ impl A320BrakingForceSimulationOutput {
             right_brake_force: 0.,
 
             park_brake_lever_is_set: true,
-
-            ground_surface_type: 4.,
-            acceleration: 0.,
         }
     }
 
     pub fn update_forces(
         &mut self,
-        context: &UpdateContext,
         norm_brakes: &BrakeCircuit,
         altn_brakes: &BrakeCircuit,
         brake_logic: &A320HydraulicBrakingLogic,
@@ -1305,13 +1298,6 @@ impl A320BrakingForceSimulationOutput {
         let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>() / 3000.;
         self.right_brake_force = right_force_norm + right_force_altn;
         self.right_brake_force = self.right_brake_force.max(0.).min(1.);
-
-        let accel = context.long_accel().get::<meter_per_second_squared>();
-
-        self.acceleration = self.acceleration
-            + (accel - self.acceleration)
-                * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / 0.1));
-        //println!("DECEL:{:.1}m/s2", self.acceleration);
     }
 }
 
@@ -1332,7 +1318,6 @@ impl SimulationElement for A320BrakingForceSimulationOutput {
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.ground_surface_type = state.read_f64("SURFACE TYPE");
         self.park_brake_lever_is_set = state.read_bool("BRAKE PARKING POSITION");
     }
 }
