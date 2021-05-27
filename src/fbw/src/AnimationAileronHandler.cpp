@@ -2,8 +2,8 @@
 #include <cmath>
 
 AnimationAileronHandler::AnimationAileronHandler() {
-  rateLimiterLeft.setRate(RATE);
-  rateLimiterRight.setRate(RATE);
+  rateLimiterLeft.setRate(AILERON_RATE);
+  rateLimiterRight.setRate(AILERON_RATE);
   rateLimiterDroop.setRate(DROOP_RATE);
   rateLimiterAntiDroop.setRate(ANTI_DROOP_RATE);
 }
@@ -25,18 +25,20 @@ void AnimationAileronHandler::update(bool autopilotActive,
   areGroundSpoilersActive = groundSpoilersActive;
 
   // anti-droop
-  if (groundSpoilersActive && !antiDroopInhibited && (-pitchAttitudeDegrees) < PITCH_ATTITUDE_REFERENCE && flapsHandleIndex > 0) {
+  if (groundSpoilersActive && !antiDroopInhibited && (-pitchAttitudeDegrees) < ANTI_DROOP_PITCH_ATTITUDE_REFERENCE &&
+      flapsHandleIndex > 0) {
     rateLimiterAntiDroop.update(ANTI_DROOP_BIAS_ON, dt);
   } else {
     rateLimiterAntiDroop.update(ANTI_DROOP_BIAS_OFF, dt);
   }
 
   // droop
-  if ((lastFlapsPosition == 0 && flapsPosition > 0) || (lastFlapsPosition > 0 && flapsPosition == 0)) {
+  if ((lastFlapsPosition <= DROOP_MINIMUM_FLAPS_EXTENSION && flapsPosition > DROOP_MINIMUM_FLAPS_EXTENSION) ||
+      (lastFlapsPosition > DROOP_MINIMUM_FLAPS_EXTENSION && flapsPosition <= DROOP_MINIMUM_FLAPS_EXTENSION)) {
     eventTime = simulationTime;
   }
   if (simulationTime - eventTime >= DROOP_TIME_SWITCH) {
-    if (flapsPosition > 0) {
+    if (flapsPosition > DROOP_MINIMUM_FLAPS_EXTENSION) {
       targetValueDroop = DROOP_BIAS_ON;
     } else {
       targetValueDroop = DROOP_BIAS_OFF;
