@@ -34,14 +34,16 @@ export const ATC = () => {
     }, [atisSource]);
 
     const loadAtc = () => {
+        console.log('load', atisSource);
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             for (const a of allAtc) {
-                a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude);
+                console.log(a);
+                a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude) * 1.3;
             }
+            allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
             allAtc = allAtc.slice(0, 26);
             allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.radar, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
-            allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
             setControllers(allAtc.filter((a) => a.distance <= a.visualRange
                 && a.callsign.indexOf('_OBS') === -1
                 && parseFloat(a.frequency) <= 136.975));
