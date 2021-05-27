@@ -78,6 +78,7 @@
 1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
 1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
 1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
+1. [MCDU] MCDU can now accept direct keyboard input, enabled by new option in A32NX Realism Settings. - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
