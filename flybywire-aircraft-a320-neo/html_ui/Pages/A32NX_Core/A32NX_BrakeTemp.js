@@ -5,7 +5,7 @@ const WHEEL_RPM_THRESHOLD = 10;
 /**
  * Scale factor for heat up
  */
-const HEAT_UP_SCALE = 0.00009;
+const HEAT_UP_SCALE = 0.000085;
 
 const BASE_HEAT_UP_FACTOR = 0.003;
 
