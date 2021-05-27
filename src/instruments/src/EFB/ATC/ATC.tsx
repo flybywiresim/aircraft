@@ -46,9 +46,7 @@ export const ATC = () => {
                 && a.callsign.indexOf('_OBS') === -1
                 && parseFloat(a.frequency) <= 136.975));
             if (frequency) {
-                const converted = fromFrequency(frequency);
-                const ctl = allAtc.find((c) => c.frequency === converted);
-                setCurrentAtc(ctl);
+                setCurrentAtc(allAtc.find((c) => c.frequency === fromFrequency(frequency)));
             }
         });
     };
@@ -56,8 +54,7 @@ export const ATC = () => {
     const setAtc = () => {
         const converted = fromFrequency(frequency);
         setCurrentFrequency(converted);
-        const c = controllers?.find((c) => c.frequency === converted);
-        setCurrentAtc(c);
+        setCurrentAtc(controllers?.find((c) => c.frequency === converted));
     };
 
     const getDistanceFromLatLonInNm = (lat1, lon1, lat2, lon2) : number => {
