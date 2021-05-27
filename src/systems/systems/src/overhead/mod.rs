@@ -529,12 +529,20 @@ impl PushButtonElecRelay {
         }
     }
 
-    pub fn update(&mut self, push_button: &mut impl RelayLatchedButton) {
+    pub fn update(
+        &mut self,
+        push_button: &mut impl RelayLatchedButton,
+        external_reset_condition: bool,
+    ) {
         // Relay truth table is actually a Xor, as output is 1 if ON and not(PRESSED) or if PRESSED and not(ON)
         // To this we add PRESSED && Has_changed to avoid flickering if button is kept pressed
         self.relay_output = (self.relay_output
             ^ (push_button.is_pressed() && push_button.has_changed()))
             && self.relay_is_powered;
+
+        if external_reset_condition {
+            self.reset_output();
+        }
 
         push_button.set_active(self.relay_output);
     }

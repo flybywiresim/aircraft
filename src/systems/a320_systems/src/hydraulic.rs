@@ -1360,11 +1360,10 @@ impl A320HydraulicOverheadPanel {
         self.yellow_epump_push_button
             .set_fault(hyd.yellow_epump_has_low_press_fault());
 
-        if self.blue_epump_push_button.is_off() {
-            self.blue_epump_override_relay.reset_output();
-        }
-        self.blue_epump_override_relay
-            .update(&mut self.blue_epump_override_push_button);
+        self.blue_epump_override_relay.update(
+            &mut self.blue_epump_override_push_button,
+            self.blue_epump_push_button.is_off(),
+        );
     }
 
     fn yellow_epump_push_button_is_auto(&self) -> bool {
