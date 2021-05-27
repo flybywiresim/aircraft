@@ -34,11 +34,9 @@ export const ATC = () => {
     }, [atisSource]);
 
     const loadAtc = () => {
-        console.log('load', atisSource);
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             for (const a of allAtc) {
-                console.log(a);
                 a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude) * 1.3;
             }
             allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
