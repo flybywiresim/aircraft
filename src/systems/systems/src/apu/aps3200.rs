@@ -679,6 +679,11 @@ impl SimulationElement for Aps3200ApuGenerator {
 }
 
 pub struct Aps3200StartMotor {
+    /// On the A320, the start motor is powered through the DC BAT BUS.
+    /// There are however additional contactors which open and close based on
+    /// overhead panel push button positions. Therefore we cannot simply look
+    /// at whether or not DC BAT BUS is powered, but must instead handle
+    /// potential coming in via those contactors.
     input_potential: Potential,
     powered_since: Duration,
 }

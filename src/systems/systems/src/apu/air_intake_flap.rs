@@ -48,7 +48,8 @@ impl AirIntakeFlap {
                 self.get_flap_change_for_delta(context)
                     .min(100. - self.open_amount.get::<percent>()),
             );
-            self.is_moving = true;
+
+            self.is_moving = (self.open_amount.get::<percent>() - 100.).abs() > f64::EPSILON;
         } else if !controller.should_open_air_intake_flap()
             && self.open_amount > Ratio::new::<percent>(0.)
         {
@@ -56,7 +57,8 @@ impl AirIntakeFlap {
                 self.get_flap_change_for_delta(context)
                     .min(self.open_amount.get::<percent>()),
             );
-            self.is_moving = true;
+
+            self.is_moving = (self.open_amount.get::<percent>() - 0.).abs() > f64::EPSILON;
         } else {
             self.is_moving = false;
         }
@@ -66,12 +68,13 @@ impl AirIntakeFlap {
         100. * (context.delta_as_secs_f64() / self.travel_time.as_secs_f64())
     }
 
-    pub fn is_fully_open(&self) -> bool {
-        self.open_amount == Ratio::new::<percent>(100.)
-    }
-
     pub fn open_amount(&self) -> Ratio {
         self.open_amount
+    }
+
+    #[cfg(test)]
+    pub fn is_fully_open(&self) -> bool {
+        (self.open_amount.get::<percent>() - 100.).abs() < f64::EPSILON
     }
 
     #[cfg(test)]

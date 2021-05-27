@@ -3,18 +3,23 @@ use super::{
     AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch, Turbine, TurbineController, TurbineState,
 };
 use crate::{
-    electrical::PotentialSource,
+    electrical::{consumption::PowerConsumption, PotentialSource},
     pneumatic::{BleedAirValveController, Valve},
-    shared::{ApuMaster, ApuStart, ApuStartContactorsController},
-    simulation::UpdateContext,
+    shared::{
+        ApuMaster, ApuStart, ApuStartContactorsController, ElectricalBusType, ElectricalBuses,
+    },
+    simulation::{SimulationElement, UpdateContext},
 };
 use std::time::Duration;
-use uom::si::{f64::*, length::foot, ratio::percent, thermodynamic_temperature::degree_celsius};
+use uom::si::{
+    f64::*, length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
+};
 
 /// Powered by the DC BAT BUS (801PP).
 /// Not yet implemented. Will power this up when implementing the electrical system.
 /// It is powered when MASTER SW is ON.
 pub struct ElectronicControlBox {
+    is_powered: bool,
     turbine_state: TurbineState,
     master_is_on: bool,
     start_is_on: bool,
@@ -23,7 +28,7 @@ pub struct ElectronicControlBox {
     bleed_is_on: bool,
     bleed_air_valve_last_open_time_ago: Duration,
     fault: Option<ApuFault>,
-    air_intake_flap_fully_open: bool,
+    air_intake_flap_open_amount: Ratio,
     egt: ThermodynamicTemperature,
     egt_warning_temperature: ThermodynamicTemperature,
     n_above_95_duration: Duration,
@@ -35,6 +40,7 @@ impl ElectronicControlBox {
 
     pub fn new() -> Self {
         ElectronicControlBox {
+            is_powered: false,
             turbine_state: TurbineState::Shutdown,
             master_is_on: false,
             start_is_on: false,
@@ -43,7 +49,7 @@ impl ElectronicControlBox {
             bleed_is_on: false,
             bleed_air_valve_last_open_time_ago: Duration::from_secs(1000),
             fault: None,
-            air_intake_flap_fully_open: false,
+            air_intake_flap_open_amount: Ratio::new::<percent>(0.),
             egt: ThermodynamicTemperature::new::<degree_celsius>(0.),
             egt_warning_temperature: ThermodynamicTemperature::new::<degree_celsius>(
                 ElectronicControlBox::RUNNING_WARNING_EGT,
@@ -51,6 +57,16 @@ impl ElectronicControlBox {
             n_above_95_duration: Duration::from_secs(0),
             fire_button_is_released: false,
         }
+    }
+
+    pub fn is_on(&self) -> bool {
+        self.is_powered
+            && (self.master_is_on
+                || (self.air_intake_flap_open_amount.get::<percent>() - 0.).abs() > f64::EPSILON)
+    }
+
+    fn is_powered_by_apu_itself(&self) -> bool {
+        self.n().get::<percent>() > 70.
     }
 
     pub fn update_overhead_panel_state(
@@ -69,7 +85,7 @@ impl ElectronicControlBox {
     }
 
     pub fn update_air_intake_flap_state(&mut self, air_intake_flap: &AirIntakeFlap) {
-        self.air_intake_flap_fully_open = air_intake_flap.is_fully_open();
+        self.air_intake_flap_open_amount = air_intake_flap.open_amount();
     }
 
     pub fn update_start_motor_state(&mut self, start_motor: &impl PotentialSource) {
@@ -80,7 +96,7 @@ impl ElectronicControlBox {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, turbine: &mut dyn Turbine) {
+    pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine) {
         self.n = turbine.n();
         self.egt = turbine.egt();
         self.turbine_state = turbine.state();
@@ -93,9 +109,7 @@ impl ElectronicControlBox {
             self.n_above_95_duration = Duration::from_secs(0);
         }
 
-        if !self.master_is_on && self.n.get::<percent>() == 0. {
-            // We reset the fault when master is not on and the APU is not running.
-            // Once electrical is implemented, the ECB will be unpowered that will reset the fault.
+        if !self.is_on() {
             self.fault = None;
         }
     }
@@ -217,7 +231,10 @@ impl ApuStartContactorsController for ElectronicControlBox {
         } else {
             match self.turbine_state {
                 TurbineState::Shutdown => {
-                    self.master_is_on && self.start_is_on && self.air_intake_flap_fully_open
+                    self.master_is_on
+                        && self.start_is_on
+                        && (self.air_intake_flap_open_amount.get::<percent>() - 100.).abs()
+                            < f64::EPSILON
                 }
                 TurbineState::Starting => {
                     const START_MOTOR_POWERED_UNTIL_N: f64 = 55.;
@@ -245,11 +262,12 @@ impl AirIntakeFlapController for ElectronicControlBox {
 impl TurbineController for ElectronicControlBox {
     /// Indicates if the start sequence should be started.
     fn should_start(&self) -> bool {
-        self.start_motor_is_powered
+        self.is_on() && self.start_motor_is_powered
     }
 
     fn should_stop(&self) -> bool {
-        self.is_auto_shutdown()
+        !self.is_on()
+            || self.is_auto_shutdown()
             || self.is_emergency_shutdown()
             || (!self.master_is_on
                 && self.turbine_state != TurbineState::Starting
@@ -264,6 +282,21 @@ impl BleedAirValveController for ElectronicControlBox {
             && self.master_is_on
             && self.n.get::<percent>() > 95.
             && self.bleed_is_on
+    }
+}
+impl SimulationElement for ElectronicControlBox {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = self.is_powered_by_apu_itself()
+            || buses.is_powered(ElectricalBusType::DirectCurrentBattery);
+    }
+
+    fn consume_power(&mut self, consumption: &mut PowerConsumption) {
+        if !self.is_powered_by_apu_itself() && self.is_on() {
+            consumption.consume_from_bus(
+                ElectricalBusType::DirectCurrentBattery,
+                Power::new::<watt>(105.),
+            )
+        }
     }
 }
 
