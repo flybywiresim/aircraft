@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function,no-restricted-globals */
+/* eslint-disable @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function,no-restricted-globals,no-underscore-dangle */
 /*
  * MIT License
  *
@@ -24,7 +24,8 @@
  */
 
 import { NXDataStore } from '@shared/persistence';
-import { ManagedFlightPlan, GPS } from '../wtsdk';
+import { ManagedFlightPlan } from './ManagedFlightPlan';
+import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 
@@ -833,29 +834,6 @@ export class FlightPlanManager {
     }
 
     /**
-     * Gets all the waypoints that are currently visible and part of the routing.
-     *
-     * This is used to obtain the list of waypoints to display after a DIRECT TO.
-     *
-     * @param flightPlanIndex The index of the flight plan to get the waypoints from. If omitted, will get from the current flight plan.
-     */
-    public getAllVisibleWaypoints(flightPlanIndex = NaN): WayPoint[] {
-        if (isNaN(flightPlanIndex)) {
-            flightPlanIndex = this._currentFlightPlanIndex;
-        }
-
-        const allWaypoints = this._flightPlans[flightPlanIndex].waypoints;
-
-        if (this._flightPlans[flightPlanIndex].directTo.isActive) {
-            const directToWaypointIndex = this._flightPlans[flightPlanIndex].directTo.planWaypointIndex;
-
-            return allWaypoints.slice(Math.max(this.getActiveWaypointIndex() - 1, directToWaypointIndex), allWaypoints.length - 1);
-        }
-
-        return allWaypoints.slice(this.getActiveWaypointIndex() - 1, allWaypoints.length - 1);
-    }
-
-    /**
      * Gets all waypoints from a flight plan.
      * @param flightPlanIndex The index of the flight plan to get the waypoints from. If omitted, will get from the current flight plan.
      */
@@ -865,29 +843,6 @@ export class FlightPlanManager {
         }
 
         return this._flightPlans[flightPlanIndex].waypoints;
-    }
-
-    /**
-     * Gets all the entire flight plan grouped by discontinuities.
-     */
-    public getContinuousSegments(): WayPoint[][] {
-        const waypoints = this.getAllWaypoints();
-        const continuousSegments: WayPoint[][] = [];
-
-        let segment = [];
-        for (let i = 0; i < waypoints.length; i++) {
-            const waypoint = waypoints[i];
-            segment.push(waypoint);
-            if (waypoint.endsInDiscontinuity) {
-                continuousSegments.push(segment);
-                segment = [];
-            }
-        }
-        if (segment.length) {
-            continuousSegments.push(segment);
-        }
-
-        return continuousSegments;
     }
 
     /**
