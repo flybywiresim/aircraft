@@ -4,7 +4,7 @@ import { EngPage } from './Pages/Eng.jsx';
 import { BleedPage } from './Pages/Bleed.jsx';
 import { PressPage } from './Pages/Press.jsx';
 import { ElecPage } from './Pages/Elec/Elec.tsx';
-import { HydPage } from './Pages/Hyd.jsx';
+import { HydPage } from './Pages/Hyd/Hyd.tsx';
 import { FuelPage } from './Pages/Fuel.jsx';
 import { ApuPage } from './Pages/Apu.jsx';
 import { CondPage } from './Pages/Cond/Cond.tsx';
