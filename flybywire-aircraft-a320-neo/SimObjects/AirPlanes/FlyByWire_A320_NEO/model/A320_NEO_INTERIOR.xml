@@ -1770,7 +1770,7 @@
                             <NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EVAC_COMMAND</LOCK_NODE_ID>
 
-                            <TOGGLE_SIMVAR>L:A32NX_EVAC_COMMAND_TOGGLE</TOGGLE_SIMVAR>
+                            <LEFT_SINGLE_CODE>0 (&gt;L:PUSH_OVHD_EVAC_HORN) (L:A32NX_EVAC_COMMAND_TOGGLE) ! (&gt;L:A32NX_EVAC_COMMAND_TOGGLE)</LEFT_SINGLE_CODE>
                             <INVERTED_ANIMATION/>
 
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -1782,7 +1782,7 @@
                         <!-- HORN SHUT OFF -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_EVAC_HORN</NODE_ID>
-                            <LEFT_SINGLE_CODE>(L:PUSH_OVHD_EVAC_HORN) ! (&gt;L:PUSH_OVHD_EVAC_HORN)</LEFT_SINGLE_CODE>
+                            <LEFT_SINGLE_CODE>1 (&gt;L:PUSH_OVHD_EVAC_HORN)</LEFT_SINGLE_CODE>
                             <MOMENTARY/>
                             <NO_SEQ1 />
                             <NO_SEQ2 />
