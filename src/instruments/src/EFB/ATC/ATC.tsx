@@ -3,7 +3,6 @@ import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
 import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconTrafficLights } from '@tabler/icons';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
-import './ATC.scss';
 import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
 
@@ -96,15 +95,15 @@ export const ATC = () => {
                         Controllers currently in range
                     </h1>
                     <div className="bg-gray-800 rounded-xl p-2 text-white shadow-lg">
-                        <div className="flex p-2 w-full atc-buttons">
+                        <div className="flex p-2 w-full flex flex-wrap justify-between">
                             { controllers && controllers.map((atc) => (
                                 <Button
-                                    className={classNames({ 'atc-button': true, 'active': atc.frequency === currentFrequency })}
+                                    className={classNames({ 'w-60 m-1 flex': true, 'text-yellow-200': atc.frequency === currentFrequency })}
                                     id="atc.callsign"
                                     onClick={() => setFrequency(toFrequency(atc.frequency))}
                                 >
-                                    <div className="button-content">
-                                        <div className="left">
+                                    <div className="flex w-full justify-start text-base">
+                                        <div>
                                             { atc.type === apiClient.AtcType.radar && <IconChartRadar size="2rem" /> }
                                             { atc.type === apiClient.AtcType.ground && <IconTrafficLights size="2rem" /> }
                                             { atc.type === apiClient.AtcType.departure && <IconPlaneDeparture size="2rem" /> }
@@ -112,11 +111,11 @@ export const ATC = () => {
                                             { atc.type === apiClient.AtcType.tower && <IconBuildingLighthouse size="2rem" /> }
                                             { atc.type === apiClient.AtcType.delivery && <IconCircleCheck size="2rem" /> }
                                         </div>
-                                        <div className="right">
+                                        <div className="flex flex-col flex-grow text-center justify-center items-center">
                                             <div>
                                                 {atc.callsign}
                                             </div>
-                                            <div className="freq">
+                                            <div>
                                                 {atc.frequency}
                                             </div>
                                         </div>
@@ -129,7 +128,7 @@ export const ATC = () => {
             )}
 
             { (atisSource !== 'IVAO' && atisSource !== 'VATSIM') && (
-                <div className="w-12/12">
+                <div className="w-full">
                     <h1 className="text-white font-medium mb-4 text-2xl">
                         Only available when 'IVAO' or 'VATSIM' is selected as ATIS/ATC source in the settings page
                     </h1>
@@ -141,7 +140,7 @@ export const ATC = () => {
                     <h1 className="text-white font-medium mb-4 text-2xl">Active frequency</h1>
                     <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
                         <div>
-                            <div className="active-frequency">
+                            <div className="flex text-2xl text-yellow-200">
                                 <div className="mr-4">
                                     {currentFrequency && currentFrequency.toString()}
                                 </div>
@@ -149,9 +148,9 @@ export const ATC = () => {
                                     {currentAtc && currentAtc.callsign}
                                 </div>
                             </div>
-                            <div className="active-atis">
+                            <div className="active-atis mt-8 text-2xl">
                                 { currentAtc?.textAtis && currentAtc.textAtis.map((line) => (
-                                    <p>{line}</p>
+                                    <p className="mt-2">{line}</p>
                                 )) }
                             </div>
                         </div>
@@ -159,7 +158,6 @@ export const ATC = () => {
 
                 </div>
             )}
-
         </div>
     );
 };
