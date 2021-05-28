@@ -157,6 +157,11 @@ function combineGltf(pathA, pathB, outputPath) {
                 }
             }
             delete node.parentNode;
+            for (let i = 0; i < gltfB.scenes[0].nodes.length; i++) {
+                if (gltfB.scenes[0].nodes[i] === gltfA.nodes.length - nodesCount) {
+                    gltfB.scenes[0].nodes.splice(i, 1);
+                }
+            }
         }
         gltfA.nodes.push(node);
     }
