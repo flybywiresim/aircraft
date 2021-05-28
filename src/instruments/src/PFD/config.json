@@ -1,4 +1,10 @@
 {
   "index": "./index.jsx",
-  "isInteractive": false
+  "isInteractive": false,
+  "dimensions": {
+    "px": {
+      "width": 1280,
+      "height": 1280
+    }
+  }
 }
