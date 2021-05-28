@@ -72,14 +72,18 @@
 1. [MISC] Standby instrument brightness buttons can now be held down rather than pressed to -/+ brightness - @2hwk (2Cas#1022)
 1. [AP] Fixed and improved mode transitions related to LAND modes - @aguther (Andreas Guther)
 1. [ENGINE] Adapt engine IDLE N1 based on environmental conditions - @Taz5150 (TazX [Z+2]#0405), @aguther (Andreas Guther)
+1. [ECAM] Added hydraulics page on SD - @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
 1. [ELEC] ENG FIRE push button deactivates IDG - @davidwalschots (David Walschots)
 1. [AP] Improved OP CLB/DES, CLB/DES speed hold characteristics - @aguther (Andreas Guther)
 1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
 1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
 1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
+1. [LIGHTS] Add OVHD ANN LT DIM functionality - @bouveng (Johan Bouveng)
 1. [PFD] Add baro setting flash when passing TA/TL - @lukecologne (luke)
+1. [FLIGHT MODEL] Fix flap transition bounce - @donstim (donbikes#4084)
 1. [FBW] Added visual aileron droop and anti-droop - @aguther (Andreas Guther)
+1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
 1. [FLIGHT MODEL] Adds new parameters introduced by SU4 - @donstim (donbikes#4084)
 
 ## 0.6.0
