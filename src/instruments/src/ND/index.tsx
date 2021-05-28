@@ -8,7 +8,7 @@ import './styles.scss';
 
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
-        const url = document.getElementsByTagName('a32nx-nd-element')[0].getAttribute('url');
+        const url = document.getElementsByTagName('a32nx-nd')[0].getAttribute('url');
 
         return parseInt(url?.substring(url.length - 1) ?? '1', 10);
     });
