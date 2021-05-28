@@ -162,24 +162,6 @@ const LinearDeviationIndicator = ({ linearDeviation, alt }) => {
     );
 };
 
-function shouldAltimeterFlashing(mode, alt) {
-    if (Simplane.getIsGrounded()) {
-        return false;
-    }
-
-    const phase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
-    const transAlt = getSimVar(phase <= 3 ? 'L:AIRLINER_TRANS_ALT' : 'L:AIRLINER_APPR_TRANS_ALT', 'Number');
-
-    if (phase <= 3 && transAlt <= alt && mode !== 'STD') {
-        return true;
-    }
-
-    if (phase > 3 && transAlt >= alt && mode === 'STD') {
-        return true;
-    }
-    return false;
-}
-
 const AltimeterIndicator = ({ mode, alt }) => {
     const phase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const transAlt = getSimVar(phase <= 3 ? 'L:AIRLINER_TRANS_ALT' : 'L:AIRLINER_APPR_TRANS_ALT', 'number');
