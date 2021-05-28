@@ -167,6 +167,7 @@ interface AutoBrakeLevelProps {
     text: string,
     available: boolean,
 }
+
 const AutoBrakeLevel = ({ text, available }: AutoBrakeLevelProps) => <text className={`big-text color-${available ? 'green' : 'amber'}`}>{text}</text>;
 
 const GearDoorJoint = ({ x, y }: ComponentPositionProps) => (
@@ -179,6 +180,7 @@ interface GearDoorProps extends ComponentPositionProps {
     location: GearLocation,
     inTransit: boolean,
 }
+
 const GearDoor = ({ x, y, location, inTransit }: GearDoorProps) => {
     if (location === 'center') {
         return (
@@ -222,6 +224,7 @@ const GearDoor = ({ x, y, location, inTransit }: GearDoorProps) => {
 interface LandingGearPositionIndicatorsProps extends ComponentPositionProps {
     inTransit: boolean,
 }
+
 const LandingGearPositionIndicators = ({ x, y, inTransit }: LandingGearPositionIndicatorsProps) => (
     <SvgGroup x={x} y={y} className="gear-lgcius">
         <g className={`shape gear-lgciu-1 color-${!inTransit ? 'green' : 'red'}`}>
@@ -254,6 +257,7 @@ const LandingGearPositionIndicators = ({ x, y, inTransit }: LandingGearPositionI
 interface GearProps extends ComponentPositionProps {
     location: GearLocation
 }
+
 const Gear = ({ x, y, location }: GearProps) => {
     const [landingGearPosition] = useSimVar(`GEAR ${location.toUpperCase()} POSITION`, 'Percent Over 100', maxStaleness);
 
@@ -287,6 +291,7 @@ interface WheelArchProps extends ComponentPositionProps {
     green?: boolean,
     amber?: boolean
 }
+
 const WheelArch = ({ x, y, type, green, amber }: WheelArchProps) => {
     const classes = classNames('wheel-set-brake-arch', { green: green && !amber }, { amber });
 
@@ -309,6 +314,7 @@ interface WheelsProps extends ComponentPositionProps {
     left: Brake,
     right: Brake,
 }
+
 const Wheels = ({ x, y, left, right }: WheelsProps) => {
     const brakeAmberThreshold = 300;
 

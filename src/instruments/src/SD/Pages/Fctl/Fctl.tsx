@@ -206,6 +206,7 @@ const Sec = ({ x, y, number }: ElacSecProps) => (
 interface ElacSecShapeProps extends ElacSecProps {
     type: 'ELAC' | 'SEC',
 }
+
 const ElacSecShape = ({ x, y, number, type }: ElacSecShapeProps) => {
     const [on] = useSimVar(`L:A32NX_FBW_${type}_SWITCH:${number}`, 'boolean', 1000);
     const [failed] = useSimVar(`L:A32NX_FBW_${type}_FAILED:${number}`, 'boolean', 1000);
