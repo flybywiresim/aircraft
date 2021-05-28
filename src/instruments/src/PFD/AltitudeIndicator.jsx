@@ -168,7 +168,7 @@ const AltimeterIndicator = ({ mode, alt }) => {
 
     if (mode === 'STD') {
         return (
-            <g id="STDAltimeterModeGroup" className={(phase > 3 && transAlt > alt && transAlt !== 0) ? 'BlinkInfinite' : ''}>
+            <g id="STDAltimeterModeGroup" className={(phase !== 7 && phase > 3 && transAlt > alt && transAlt !== 0) ? 'BlinkInfinite' : ''}>
                 <path className="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
                 <text className="FontMedium Cyan AlignLeft" x="125.99706" y="137.20053">STD</text>
             </g>
