@@ -792,13 +792,19 @@
                     <EMISSIVE_CODE>(L:A32NX_BARO_BRIGHTNESS, Percent over 100)</EMISSIVE_CODE>
                 </UseTemplate> -->
 
-                <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
+                <UseTemplate Name="FBW_ISIS_Knob_Template">
                     <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
                     <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
                     <ID>3</ID>
-                    <BARO_ID> (L:A32NX_BARO_BUGS_ACTIVE) 0 == if{ 2 } els{ -1 } </BARO_ID>
+                    <BARO_ID>2</BARO_ID>
                     <CLOCKWISE_CONDITION> (H:A320_Neo_SAI_KNOB_BARO_C) ! (>H:A320_Neo_SAI_KNOB_BARO_C) 1</CLOCKWISE_CONDITION>
                     <ANTICLOCKWISE_CONDITION> (H:A320_Neo_SAI_KNOB_BARO_AC) ! (>H:A320_Neo_SAI_KNOB_BARO_AC) 1</ANTICLOCKWISE_CONDITION>
+                    <USE_PUSH_STD/>
+                    <!--THRESHOLD_X_INPUT>0.01</THRESHOLD_X_INPUT>
+                    <THRESHOLD_X_MOUSE>0.05</THRESHOLD_X_MOUSE>
+                    <THRESHOLD_INPUT>0.01</THRESHOLD_INPUT>
+                    <THRESHOLD_MOUSE>0.05</THRESHOLD_MOUSE-->
+                    <AIRLINER_TYPE>A330</AIRLINER_TYPE>
 
                     <ANIMREF_ID>-1</ANIMREF_ID>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STBY_TUNING_KNOB_INCREASE</ANIMTIP_0>

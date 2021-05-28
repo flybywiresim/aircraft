@@ -1105,11 +1105,17 @@ class A320_Neo_SAI_PressureIndicator extends HTMLElement {
     }
     update() {
         if (this.pressureSVG) {
+            const baroMode = SimVar.GetSimVarValue("L:A32NX_ISIS_BARO_MODE", "enum");
             const pressureInHg = SimVar.GetSimVarValue("KOHLSMAN SETTING HG:2", "inches of mercury");
-            if (pressureInHg !== this.lastPressureValue) {
+            if (pressureInHg !== this.lastPressureValue || baroMode !== this.lastBaroMode) {
                 this.lastPressureValue = pressureInHg;
-                const pressureHpa = SimVar.GetSimVarValue("KOHLSMAN SETTING HG:2", "millibar");
-                this.pressureSVG.textContent = fastToFixed(pressureHpa, 0) + "/" + pressureInHg.toFixed(2);
+                this.lastBaroMode = baroMode;
+                if (baroMode === 1) {
+                    this.pressureSVG.textContent = "STD";
+                } else {
+                    const pressureHpa = SimVar.GetSimVarValue("KOHLSMAN SETTING HG:2", "millibar");
+                    this.pressureSVG.textContent = fastToFixed(pressureHpa, 0) + "/" + pressureInHg.toFixed(2);
+                }
             }
         }
     }
@@ -1618,7 +1624,7 @@ customElements.define('a320-neo-sai-att-reset-indicator', A320_Neo_SAI_AttResetI
 class A320_Neo_SAI_Bugs extends NavSystemElement {
     init(root) {
         const check_interval = 5;
-        SimVar.SetSimVarValue("L:A32NX_BARO_BUGS_ACTIVE","Bool", false);
+        SimVar.SetSimVarValue("L:A32NX_ISIS_BUGS_ACTIVE","Bool", false);
         this.bugsElement = this.gps.getChildById("Bugs");
         this.blink_status = false;
         this.current_bug = 0;
@@ -1643,6 +1649,7 @@ class A320_Neo_SAI_Bugs extends NavSystemElement {
     onExit() {
     }
     onEvent(_event) {
+        console.log(_event);
         switch (_event) {
             case "BTN_BARO_BUGS":
                 this.blink_status = false;
@@ -2156,10 +2163,10 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
     }
     togglePage() {
         if (this.bugsDiv.style.display === "block") {
-            SimVar.SetSimVarValue("L:A32NX_BARO_BUGS_ACTIVE","Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_ISIS_BUGS_ACTIVE","Bool", false);
             this.bugsDiv.style.display = "none";
         } else {
-            SimVar.SetSimVarValue("L:A32NX_BARO_BUGS_ACTIVE","Bool", true);
+            SimVar.SetSimVarValue("L:A32NX_ISIS_BUGS_ACTIVE","Bool", true);
             this.bugsDiv.style.display = "block";
         }
     }
