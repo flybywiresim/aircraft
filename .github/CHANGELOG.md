@@ -79,8 +79,11 @@
 1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
 1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
 1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
+1. [LIGHTS] Add OVHD ANN LT DIM functionality - @bouveng (Johan Bouveng)
 1. [PFD] Add baro setting flash when passing TA/TL - @lukecologne (luke)
+1. [FLIGHT MODEL] Fix flap transition bounce - @donstim (donbikes#4084)
 1. [FBW] Added visual aileron droop and anti-droop - @aguther (Andreas Guther)
+1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
