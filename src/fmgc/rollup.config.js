@@ -24,6 +24,7 @@
 
 'use strict';
 
+const { join } = require('path');
 const babel = require('@rollup/plugin-babel').default;
 const { typescriptPaths } = require('rollup-plugin-typescript-paths');
 const commonjs = require('@rollup/plugin-commonjs');
@@ -33,24 +34,24 @@ const copy = require('rollup-plugin-copy');
 
 const extensions = ['.js', '.ts'];
 
+const src = join(__dirname, '..');
+const root = join(__dirname, '..', '..');
+
+process.chdir(src);
+
 module.exports = {
-    input: `${__dirname}/src/index.ts`,
+    input: join(__dirname, 'src/index.ts'),
     plugins: [
         copy({
             targets: [
                 {
-                    src: `${__dirname}/src/utils/LzUtf8.js`,
-                    dest: `${__dirname}/../../flybywire-aircraft-a320-neo/html_ui/JS/fmgc/`,
+                    src: 'fmgc/src/utils/LzUtf8.js',
+                    dest: '../flybywire-aircraft-a320-neo/html_ui/JS/fmgc/',
                 },
             ],
         }),
-        replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
         nodeResolve({ extensions }),
         commonjs(),
-        typescriptPaths({
-            tsConfigPath: `${__dirname}/../tsconfig.json`,
-            preserveExtensions: true,
-        }),
         babel({
             presets: ['@babel/preset-typescript', ['@babel/preset-env', { targets: { browsers: ['safari 11'] } }]],
             plugins: [
@@ -58,11 +59,17 @@ module.exports = {
             ],
             extensions,
         }),
+        typescriptPaths({
+            tsConfigPath: join(src, 'tsconfig.json'),
+            preserveExtensions: true,
+        }),
+        replace({
+            'process.env.NODE_ENV': '"production"',
+            'preventAssignment': true,
+        }),
     ],
-    external: ['MSFS', 'WorkingTitle'],
     output: {
-        file: `${__dirname}/../../flybywire-aircraft-a320-neo/html_ui/JS/fmgc/bundle.js`,
-        globals: { WorkingTitle: 'WorkingTitle' },
+        file: join(root, 'flybywire-aircraft-a320-neo/html_ui/JS/fmgc/fmgcBundle.js'),
         format: 'umd',
         name: 'Fmgc',
     },

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { FlightPlanManager } from '../wtsdk';
+import { FlightPlanManager } from './FlightPlanManager';
 import { GeoMath } from './GeoMath';
 
 /**
