@@ -84,6 +84,8 @@
 1. [FLIGHT MODEL] Fix flap transition bounce - @donstim (donbikes#4084)
 1. [FBW] Added visual aileron droop and anti-droop - @aguther (Andreas Guther)
 1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
+1. [LIGHTS] Correct Korry button labels - @tracernz (Mike), @tyler58546 (tyler58546)
+1. [OVHD] Correct EVAC button behaviours - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
