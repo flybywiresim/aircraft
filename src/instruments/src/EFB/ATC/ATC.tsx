@@ -6,6 +6,8 @@ import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import './ATC.scss';
 import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
+import { SelectGroup, SelectItem } from '../Components/Form/Select';
+import { FmgcFlightPhases } from '../../Common/flightPhase';
 
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
     distance: number;
@@ -18,7 +20,9 @@ export const ATC = () => {
     const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
+    const [currentFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+    const [atcMode, setAtcMode] = usePersistentProperty('CONFIG_ATC_MODE', 'RANGE');
 
     useEffect(() => {
         loadAtc();
@@ -33,18 +37,22 @@ export const ATC = () => {
         loadAtc();
     }, [atisSource]);
 
-    const loadAtc = () => {
+    const loadAtc = (mode: string = 'RANGE') => {
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
-            for (const a of allAtc) {
+            for (const a of allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975)) {
                 a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude) * 1.3;
             }
-            allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
-            allAtc = allAtc.slice(0, 26);
-            allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.radar, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
-            setControllers(allAtc.filter((a) => a.distance <= a.visualRange
-                && a.callsign.indexOf('_OBS') === -1
-                && parseFloat(a.frequency) <= 136.975));
+
+            if (mode === 'RANGE') {
+                allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
+                allAtc = allAtc.slice(0, 26);
+                allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.radar, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
+                allAtc = allAtc.filter((a) => a.distance <= a.visualRange);
+            } else {
+                allAtc = [];
+            }
+            setControllers(allAtc);
             if (frequency) {
                 setCurrentAtc(allAtc.find((c) => c.frequency === fromFrequency(frequency)));
             }
@@ -87,6 +95,34 @@ export const ATC = () => {
         return '';
     };
 
+    const phaseAsString = (phase: FmgcFlightPhases | null): string => {
+        switch (phase) {
+        case FmgcFlightPhases.PREFLIGHT: return 'Pre flight';
+        case FmgcFlightPhases.TAKEOFF: return 'Take off';
+        case FmgcFlightPhases.CLIMB: return 'Climb';
+        case FmgcFlightPhases.CRUISE: return 'Cruise';
+        case FmgcFlightPhases.DESCENT: return 'Descent';
+        case FmgcFlightPhases.APPROACH: return 'Approach';
+        case FmgcFlightPhases.GOAROUND: return 'Go around';
+        case FmgcFlightPhases.DONE: return 'Done';
+        default: return '';
+        }
+    };
+
+    const getNextPhase = (phase: FmgcFlightPhases): FmgcFlightPhases | null => {
+        switch (phase) {
+        case FmgcFlightPhases.PREFLIGHT: return FmgcFlightPhases.TAKEOFF;
+        case FmgcFlightPhases.TAKEOFF: return FmgcFlightPhases.CLIMB;
+        case FmgcFlightPhases.CLIMB: return FmgcFlightPhases.CRUISE;
+        case FmgcFlightPhases.CRUISE: return FmgcFlightPhases.DESCENT;
+        case FmgcFlightPhases.DESCENT: return FmgcFlightPhases.APPROACH;
+        case FmgcFlightPhases.APPROACH: return FmgcFlightPhases.DONE;
+        case FmgcFlightPhases.GOAROUND: return FmgcFlightPhases.APPROACH;
+        case FmgcFlightPhases.DONE: return null;
+        default: return null;
+        }
+    };
+
     return (
         <div className="flex p-6 w-full">
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') && (
@@ -94,9 +130,35 @@ export const ATC = () => {
                     <h1 className="text-white font-medium mb-4 text-2xl">
                         {atisSource}
                         {' - '}
-                        Controllers currently in range
+                        Controllers
                     </h1>
                     <div className="bg-gray-800 rounded-xl p-2 text-white shadow-lg">
+                        <div>
+                            <SelectGroup>
+                                <SelectItem
+                                    onSelect={() => setAtcMode('RANGE')}
+                                    selected={atcMode === 'RANGE'}
+                                >
+                                    In range
+                                </SelectItem>
+                                <SelectItem
+                                    onSelect={() => setAtcMode('CURRENT')}
+                                    selected={atcMode === 'CURRENT'}
+                                >
+                                    Current phase (
+                                    {phaseAsString(currentFlightPhase)}
+                                    )
+                                </SelectItem>
+                                <SelectItem
+                                    onSelect={() => setAtcMode('NEXT')}
+                                    selected={atcMode === 'NEXT'}
+                                >
+                                    Next phase (
+                                    {phaseAsString(getNextPhase(currentFlightPhase))}
+                                    )
+                                </SelectItem>
+                            </SelectGroup>
+                        </div>
                         <div className="flex p-2 w-full atc-buttons">
                             { controllers && controllers.map((atc) => (
                                 <Button
