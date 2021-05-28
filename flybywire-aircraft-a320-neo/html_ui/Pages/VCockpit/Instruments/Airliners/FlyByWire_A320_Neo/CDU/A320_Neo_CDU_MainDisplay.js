@@ -887,47 +887,35 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
                 if (keycode >= 48 && keycode <= 57 || keycode >= 65 && keycode <= 90) { // alphanumerics
                     const letter = String.fromCharCode(keycode)
-                    this.onLetterInput(letter);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_"+ letter.toUpperCase(), "Number", 1); // TODO: L/R side MCDU Split
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_"+ letter.toUpperCase(), "Number", 1);
+                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_"+ letter.toUpperCase(), "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_"+ letter.toUpperCase(), "Number", 1); // TODO: L/R [1/2] side MCDU Split
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_"+ letter.toUpperCase(), "Number", 1);
                 }
                 else if (keycode === 190 || keycode === 110) { // .
                     this.handlePreviousInputState();
-                    this.inOut += ".";
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_DOT", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_DOT", "Number", 1);
+                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_DOT", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_DOT", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_DOT", "Number", 1);
                 }
                 else if (keycode === 191) { // Fwd Slash
-                    this.onDiv();
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_SLASH", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_SLASH", "Number", 1);
+                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_SLASH", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SLASH", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SLASH", "Number", 1);
                 }
                 else if (keycode === 8) { // Backspace
-                    this.onClr();
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_CLR", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_CLR", "Number", 1);
+                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_CLR", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
                 }
                 else if (keycode === 32) { // Space
-                    this.onSp();
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_SP", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_SP", "Number", 1);
+                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_SP", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SP", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SP", "Number", 1);
                 }
                 else if (keycode === 187 || keycode === 189 || keycode === 107 || keycode === 109) {    // Plusminus
-                    this.handlePreviousInputState();
-                    const val = this.inOut;
-                    if (val === "") {
-                        this.inOut = "-";
-                    } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
-                        if (val.slice(-1) === "-") {
-                            this.inOut = this.inOut.slice(0, -1) + "+";
-                        } else if (val.slice(-1) === "+") {
-                            this.inOut = this.inOut.slice(0, -1) + "-";
-                        } else {
-                            this.inOut += "-";
-                        }
-                    }
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_L_PLUSMINUS", "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_R_PLUSMINUS", "Number", 1);
+                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_PLUSMINUS", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_PLUSMINUS", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_PLUSMINUS", "Number", 1);
                 }
 
             }
@@ -1090,15 +1078,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             } else if (input === "SP") {
                 setTimeout(() => {
                     this.onSp();
-                }, this.getDelaySwitchPage());
+                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
             } else if (input === "DEL") {
                 setTimeout(() => {
                     this.onDel();
-                }, this.getDelaySwitchPage());
+                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
             } else if (input === "CLR") {
                 setTimeout(() => {
                     this.onClr();
-                }, this.getDelaySwitchPage());
+                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
             } else if (input === "DIV") {
                 setTimeout(() => {
                     this.onDiv();
@@ -1107,7 +1095,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 setTimeout(() => {
                     this.handlePreviousInputState();
                     this.inOut += ".";
-                }, this.getDelaySwitchPage());
+                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
             } else if (input === "PLUSMINUS") {
                 setTimeout(() => {
                     this.handlePreviousInputState();
@@ -1123,7 +1111,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                             this.inOut += "-";
                         }
                     }
-                }, this.getDelaySwitchPage());
+                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
             } else if (input.length === 2 && input[0] === "L") {
