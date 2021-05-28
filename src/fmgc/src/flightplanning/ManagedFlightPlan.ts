@@ -119,6 +119,23 @@ export class ManagedFlightPlan {
         return waypoints;
     }
 
+    /**
+     * Gets all the waypoints that are currently visible and part of the routing.
+     *
+     * This is used to obtain the list of waypoints to display after a DIRECT TO.
+     */
+    public get visibleWaypoints(): WayPoint[] {
+        const allWaypoints = this.waypoints;
+
+        if (this.directTo.isActive) {
+            const directToWaypointIndex = this.directTo.planWaypointIndex;
+
+            return allWaypoints.slice(Math.max(this.activeWaypointIndex - 1, directToWaypointIndex), allWaypoints.length - 1);
+        }
+
+        return allWaypoints.slice(this.activeWaypointIndex - 1, allWaypoints.length - 1);
+    }
+
     public get segments(): FlightPlanSegment[] {
         return this._segments;
     }
@@ -646,6 +663,7 @@ export class ManagedFlightPlan {
             }
 
             if (runway) {
+                console.error('bruh');
                 // Reference : AMM - 22-71-00 PB001, Page 4
                 if (departureIndex === -1 && transitionIndex === -1) {
                     const TEMPORARY_VERTICAL_SPEED = 500.0;
@@ -653,7 +671,10 @@ export class ManagedFlightPlan {
                     const altitudeFeet = (runway.elevation * 3.2808399) + 1500;
                     const distanceInNM = altitudeFeet / TEMPORARY_VERTICAL_SPEED;
 
-                    const coordinates = GeoMath.relativeBearingDistanceToCoords(runway.direction, distanceInNM, runway.endCoordinates);
+                    const magvar = SimVar.GetSimVarValue('GPS MAGVAR', 'Degrees');
+                    console.error(`magvar: ${magvar}`);
+                    const course = runway.direction - magvar;
+                    const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, runway.endCoordinates);
 
                     const faLeg = procedure.buildWaypoint(`${Math.round(altitudeFeet)}`, coordinates);
                     faLeg.endsInDiscontinuity = true;
