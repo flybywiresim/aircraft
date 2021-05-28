@@ -966,6 +966,24 @@
     - Percentage of current (filtered) alpha to alpha max
     - alpha max can be overshoot so values beyond 1.0 should be expected
 
+- A32NX_3D_AILERON_LEFT_DEFLECTION
+    - Number
+    - Provides the left aileron position
+      Value | Meaning
+      --- | ---
+      -1.0 | full up
+       0.0 | neutral
+      1.0 | full down
+
+- A32NX_3D_AILERON_RIGHT_DEFLECTION
+    - Number
+    - Provides the right aileron position
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+       0.0 | neutral
+      1.0 | full up
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
