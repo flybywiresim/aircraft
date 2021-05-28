@@ -66,7 +66,7 @@ pub(super) struct A320Hydraulic {
 
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
-    brake_output_generator: A320BrakingForceSimulationOutput,
+    braking_force: A320BrakingForce,
 
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
@@ -220,7 +220,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(0.13),
             ),
 
-            brake_output_generator: A320BrakingForceSimulationOutput::new(),
+            braking_force: A320BrakingForce::new(),
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
@@ -375,7 +375,7 @@ impl A320Hydraulic {
         // Tug has its angle changing on each frame and we'd like to detect this
         self.pushback_tug.update();
 
-        self.brake_output_generator.update_forces(
+        self.braking_force.update_forces(
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
             &self.hyd_brake_logic,
@@ -587,7 +587,7 @@ impl SimulationElement for A320Hydraulic {
 
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
-        self.brake_output_generator.accept(visitor);
+        self.braking_force.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1257,23 +1257,23 @@ impl SimulationElement for A320HydraulicBrakingLogic {
     }
 }
 
-struct A320BrakingForceSimulationOutput {
+struct A320BrakingForce {
     left_brake_pedal_position: f64,
     right_brake_pedal_position: f64,
 
-    left_brake_force: f64,
-    right_brake_force: f64,
+    left_braking_force: f64,
+    right_braking_force: f64,
 
     park_brake_lever_is_set: bool,
 }
-impl A320BrakingForceSimulationOutput {
+impl A320BrakingForce {
     pub fn new() -> Self {
-        A320BrakingForceSimulationOutput {
+        A320BrakingForce {
             left_brake_pedal_position: 0.,
             right_brake_pedal_position: 0.,
 
-            left_brake_force: 0.,
-            right_brake_force: 0.,
+            left_braking_force: 0.,
+            right_braking_force: 0.,
 
             park_brake_lever_is_set: true,
         }
@@ -1291,22 +1291,28 @@ impl A320BrakingForceSimulationOutput {
 
         let left_force_norm = norm_brakes.left_brake_pressure().get::<psi>() / 3000.;
         let left_force_altn = altn_brakes.left_brake_pressure().get::<psi>() / 3000.;
-        self.left_brake_force = left_force_norm + left_force_altn;
-        self.left_brake_force = self.left_brake_force.max(0.).min(1.);
+        self.left_braking_force = left_force_norm + left_force_altn;
+        self.left_braking_force = self.left_braking_force.max(0.).min(1.);
 
         let right_force_norm = norm_brakes.right_brake_pressure().get::<psi>() / 3000.;
         let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>() / 3000.;
-        self.right_brake_force = right_force_norm + right_force_altn;
-        self.right_brake_force = self.right_brake_force.max(0.).min(1.);
+        self.right_braking_force = right_force_norm + right_force_altn;
+        self.right_braking_force = self.right_braking_force.max(0.).min(1.);
     }
 }
 
-impl SimulationElement for A320BrakingForceSimulationOutput {
+impl SimulationElement for A320BrakingForce {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_brake_force);
-        writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_brake_force);
+        // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
+        writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
+        writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
+
+        // We write to the simulator the fact that the park brake lever is actually set or not. This is the lever position
+        // handling only, and does not guarantee you will end up with brake force if hydraulics are down for example
         writer.write_bool("PARK_BRAKE_LEVER_POS", self.park_brake_lever_is_set);
 
+        // We "write" to the simulator the actual input we received from the pilot. This would drive the
+        // toe brake pedal animation
         writer.write_f64(
             "LEFT_BRAKE_PEDAL_INPUT",
             self.left_brake_pedal_position * 100.,
@@ -1317,6 +1323,9 @@ impl SimulationElement for A320BrakingForceSimulationOutput {
         );
     }
 
+    // We receive here events from the simulator indicating that parking brake lever must be set or removed
+    // Parking brake force itself is handled by our hydraulic system using normal brake force not the simulator "parking
+    // brake force"
     fn read(&mut self, state: &mut SimulatorReader) {
         self.park_brake_lever_is_set = state.read_bool("BRAKE PARKING POSITION");
     }
