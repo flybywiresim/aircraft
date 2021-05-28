@@ -8,8 +8,8 @@ import { SvgGroup } from './SvgGroup';
 import './Spoilers.scss';
 
 export const Spoilers = ({ x, y }) => {
-    const [aileronLeftDeflectionState] = useSimVar('AILERON LEFT DEFLECTION PCT', 'percent over 100', 50);
-    const [aileronRightDeflectionState] = useSimVar('AILERON RIGHT DEFLECTION PCT', 'percent over 100', 50);
+    const [aileronLeftDeflectionState] = useSimVar('L:A32NX_3D_AILERON_LEFT_DEFLECTION', 'number', 50);
+    const [aileronRightDeflectionState] = useSimVar('L:A32NX_3D_AILERON_RIGHT_DEFLECTION', 'number', 50);
 
     const [leftSpoilerState] = useSimVar('SPOILERS LEFT POSITION', 'percent over 100', 50);
     const [rightSpoilerState] = useSimVar('SPOILERS RIGHT POSITION', 'percent over 100', 50);

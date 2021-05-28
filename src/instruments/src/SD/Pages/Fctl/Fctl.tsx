@@ -169,7 +169,7 @@ const Stabilizer = ({ x, y }: ComponentPositionProps) => (
 const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
     const textPositionX = side === 'left' ? -40 : 40;
 
-    const [aileronDeflection] = useSimVar(`AILERON ${side.toUpperCase()} DEFLECTION PCT`, 'percent over 100', 50);
+    const [aileronDeflection] = useSimVar(`L:A32NX_3D_AILERON_${side.toUpperCase()}_DEFLECTION`, 'number', 50);
     const aileronDeflectPctNormalized = aileronDeflection * 54;
     const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51 + aileronDeflectPctNormalized
         : 51 - aileronDeflectPctNormalized} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
