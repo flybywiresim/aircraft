@@ -83,6 +83,7 @@
 1. [FLIGHT MODEL] Fix flap transition bounce - @donstim (donbikes#4084)
 1. [FBW] Added visual aileron droop and anti-droop - @aguther (Andreas Guther)
 1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
+1. [PFD] fix QNH Flashing - @davidwalschots (David Walschots), @Kimbyeongjang (김병장#7165)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
