@@ -619,7 +619,7 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <ANIM_NAME>#ANIM_NAME_R#</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_RIGHT_BRAKE_PEDAL_INPUT,number)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_RIGHT_BRAKE_PEDAL_INPUT, number)</ANIM_CODE>
             </UseTemplate>
     </Template>
 
