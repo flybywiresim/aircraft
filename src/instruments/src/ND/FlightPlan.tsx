@@ -4,11 +4,12 @@ import { Geometry, Leg, TFLeg, Type1Transition } from '@fmgc/guidance/Geometry';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { MathUtils } from '@shared/MathUtils';
 import { Layer } from '@instruments/common/utils';
+import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 import { MapParameters } from './utils/MapParameters';
 
-export type FlightPathProps = { xOffset?: number, yOffset?: number, mapParams: MapParameters }
+export type FlightPathProps = { x?: number, y?: number, mapParams: MapParameters, clipPath: string }
 
-export const FlightPlan: React.FC<FlightPathProps> = ({ xOffset = 0, yOffset = 0, mapParams }) => {
+export const FlightPlan: React.FC<FlightPathProps> = ({ x = 0, y = 0, mapParams, clipPath }) => {
     const flightPlanManager = useFlightPlanManager();
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const flightPlan = useCurrentFlightPlan();
@@ -21,9 +22,9 @@ export const FlightPlan: React.FC<FlightPathProps> = ({ xOffset = 0, yOffset = 0
 
     if (geometry) {
         return (
-            <Layer x={xOffset} y={yOffset}>
-                {flightPlanManager.getAllVisibleWaypoints().map((waypoint) => <Waypoint key={waypoint.ident} waypoint={waypoint} mapParams={mapParams} />)}
-                <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" />
+            <Layer x={x} y={y}>
+                {flightPlan.visibleWaypoints.map((waypoint) => <Waypoint key={waypoint.ident} waypoint={waypoint} mapParams={mapParams} />)}
+                <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" clipPath={clipPath} />
             </Layer>
         );
     }
@@ -35,11 +36,14 @@ const Waypoint: React.FC<{ waypoint: WayPoint, mapParams: MapParameters }> = ({ 
     const [x, y] = mapParams.coordinatesToXYy(waypoint.infos.coordinates);
 
     return (
-        <g className="GtLayer">
-            <rect x={x - 4} y={y - 4} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform={`rotate(45 ${x} ${y})`} />
+        !waypoint.isVectors
+            && (
+                <g className="GtLayer">
+                    <rect x={x - 4} y={y - 4} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform={`rotate(45 ${x} ${y})`} />
 
-            <text x={x + 15} y={y + 10} fontSize={20} fill="#00ff00">{waypoint.ident}</text>
-        </g>
+                    <text x={x + 15} y={y + 10} fontSize={20} fill="#00ff00">{waypoint.ident}</text>
+                </g>
+            )
     );
 };
 
@@ -89,12 +93,23 @@ function makePathFromGeometry(geometry: Geometry, mapParams: MapParameters): str
 
         // If the "to" waypoint ends in a discontinuity, we won't draw a line there later, so do it now
         if (firstLeg.to.endsInDiscontinuity) {
-            const [toX, toY] = mapParams.coordinatesToXYy(firstLeg.to.infos.coordinates);
+            if (firstLeg.to.isVectors) {
+                const farAwayCoords = GeoMath.relativeBearingDistanceToCoords(firstLeg.bearing, 70, firstLeg.to.infos.coordinates);
 
-            x = MathUtils.fastToFixed(toX, 1);
-            y = MathUtils.fastToFixed(toY, 1);
+                const [toX, toY] = mapParams.coordinatesToXYy(farAwayCoords);
 
-            path.push(`L ${x} ${y}`);
+                x = MathUtils.fastToFixed(toX, 1);
+                y = MathUtils.fastToFixed(toY, 1);
+
+                path.push(`L ${x} ${y}`);
+            } else {
+                const [toX, toY] = mapParams.coordinatesToXYy(firstLeg.to.infos.coordinates);
+
+                x = MathUtils.fastToFixed(toX, 1);
+                y = MathUtils.fastToFixed(toY, 1);
+
+                path.push(`L ${x} ${y}`);
+            }
         }
     }
 

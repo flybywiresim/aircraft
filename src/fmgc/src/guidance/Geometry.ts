@@ -93,7 +93,7 @@ export class TFLeg extends Leg {
 
     isAbeam(ppos: LatLongAlt): boolean {
         const bearingAC = Avionics.Utils.computeGreatCircleHeading(this.from.infos.coordinates, ppos);
-        const headingAC = Math.abs(Avionics.Utils.angleDiff(this.bearing, bearingAC));
+        const headingAC = Math.abs(Avionics.Utils.diffAngle(this.bearing, bearingAC));
         if (headingAC > 90) {
             // if we're even not abeam of the starting point
             return false;
@@ -147,7 +147,7 @@ export class Type1Transition extends Transition {
     get angle(): Degrees {
         const bearingFrom = this.previousLeg.bearing;
         const bearingTo = this.nextLeg.bearing;
-        return Math.abs(Avionics.Utils.angleDiff(bearingFrom, bearingTo));
+        return Math.abs(Avionics.Utils.diffAngle(bearingFrom, bearingTo));
     }
 
     /**
@@ -174,7 +174,7 @@ export class Type1Transition extends Transition {
         const [inbound] = this.getTurningPoints();
 
         const bearingAC = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
-        const headingAC = Math.abs(Avionics.Utils.angleDiff(this.previousLeg.bearing, bearingAC));
+        const headingAC = Math.abs(Avionics.Utils.diffAngle(this.previousLeg.bearing, bearingAC));
         return headingAC <= 90;
     }
 
