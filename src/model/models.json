@@ -74,6 +74,10 @@
       {
         "gltf": "./light/light.gltf",
         "bin": "./light/light.bin"
+      },
+      {
+        "gltf": "./buttondecals/buttondecals.gltf",
+        "bin": "./buttondecals/buttondecals.bin"
       }
     ],
     "modifications": [

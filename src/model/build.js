@@ -146,6 +146,18 @@ function combineGltf(pathA, pathB, outputPath) {
             }
             node.children = newChildren;
         }
+        if (node.parentNode) {
+            for (let i = 0; i < gltfA.nodes.length; i++) {
+                if (gltfA.nodes[i].name === node.parentNode) {
+                    if (gltfA.nodes[i].children) {
+                        gltfA.nodes[i].children.push(gltfA.nodes.length);
+                    } else {
+                        gltfA.nodes[i].children = [gltfA.nodes.length];
+                    }
+                }
+            }
+            delete node.parentNode;
+        }
         gltfA.nodes.push(node);
     }
 
