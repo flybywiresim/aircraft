@@ -162,13 +162,31 @@ const LinearDeviationIndicator = ({ linearDeviation, alt }) => {
     );
 };
 
+function shouldAltimeterFlashing(mode, alt) {
+    if (Simplane.getIsGrounded()) {
+        return false;
+    }
+
+    const phase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
+    const transAlt = getSimVar(phase <= 3 ? 'L:AIRLINER_TRANS_ALT' : 'L:AIRLINER_APPR_TRANS_ALT', 'Number');
+
+    if (phase <= 3 && transAlt <= alt && mode !== 'STD') {
+        return true;
+    }
+
+    if (phase > 3 && transAlt >= alt && mode === 'STD') {
+        return true;
+    }
+    return false;
+}
+
 const AltimeterIndicator = ({ mode, alt }) => {
     const phase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const transAlt = getSimVar(phase <= 3 ? 'L:AIRLINER_TRANS_ALT' : 'L:AIRLINER_APPR_TRANS_ALT', 'number');
 
     if (mode === 'STD') {
         return (
-            <g id="STDAltimeterModeGroup" className={(alt < transAlt && transAlt !== 0) ? 'BlinkInfinite' : ''}>
+            <g id="STDAltimeterModeGroup" className={(shouldAltimeterFlashing(mode, alt) && transAlt !== 0) ? 'BlinkInfinite' : ''}>
                 <path className="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
                 <text className="FontMedium Cyan AlignLeft" x="125.99706" y="137.20053">STD</text>
             </g>
@@ -185,7 +203,7 @@ const AltimeterIndicator = ({ mode, alt }) => {
     }
 
     return (
-        <g id="AltimeterGroup" className={(alt > transAlt && transAlt !== 0) ? 'BlinkInfinite' : ''}>
+        <g id="AltimeterGroup" className={(shouldAltimeterFlashing(mode, alt) && transAlt !== 0) ? 'BlinkInfinite' : ''}>
             {mode === 'QFE'
             && <path className="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />}
             <text id="AltimeterModeText" className="FontMedium White" x="118.29047" y="138.03368">{mode}</text>
