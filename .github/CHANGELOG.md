@@ -80,6 +80,7 @@
 1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
 1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
 1. [PFD] Add baro setting flash when passing TA/TL - @lukecologne (luke)
+1. [FBW] Added visual aileron droop and anti-droop - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
