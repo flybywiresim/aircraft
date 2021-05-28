@@ -25,6 +25,9 @@ function translate(filename) {
                 returnType: rnp.Type[(e.getAttribute('return') || 'void').toUpperCase()] || rnp.Type.VOID,
             });
             messages.forEach((m) => {
+                if (m.level === 'error') {
+                    process.exitCode = 1;
+                }
                 process.stderr.write(`${m.level}: ${m.message}\n${m.detail}\n`);
             });
 
