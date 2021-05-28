@@ -13,7 +13,7 @@ import Ground from './Ground/Ground';
 import Performance from './Performance/Performance';
 import Navigation from './Navigation/Navigation';
 import Settings from './Settings/Settings';
-import { Checklists } from './Checklists';
+import Checklists from './Checklists';
 import store from './Store';
 
 type TimeState = {

@@ -63,7 +63,7 @@ export const checklists = [
         ],
     },
     {
-        name: 'After T/O, CLMB',
+        name: 'After T/O and CLMB',
         items: [
             { type: ECheckListTypes.STEP, description: 'LDG GEAR', expectedResult: 'UP' },
             { type: ECheckListTypes.STEP, description: 'FLAPS', expectedResult: 'RETRACTED' },

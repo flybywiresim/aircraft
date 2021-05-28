@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
+import { connect } from 'react-redux';
 import { IconCheck } from '@tabler/icons';
 import { checklists, ECheckListTypes } from './data';
 import { Navbar } from '../Components/Navbar';
-import { useSessionStorage } from '../../Common/hooks';
-import ChecklistNote from './ChecklistNote';
 import ChecklistStep from './ChecklistStep';
 import ChecklistTheLine from './ChecklistTheLine';
-import './styles.scss';
+import { CHECKLIST_REDUCER } from '../Store/index';
+import { setChecklist } from '../Store/action-creator/checklists';
 
 enum EChecklistStates {
     INCOMPLETE = 'incomplete',
@@ -14,20 +14,19 @@ enum EChecklistStates {
     CHECKLIST_DONE = 'checklist-done'
 }
 
-export const Checklists: React.FC = () => {
+const initialiseChecks = (() => {
+    const checks = {};
+    for (let i = 0; i < checklists.length; i++) {
+        checks[i] = { isCompleted: false };
+    }
+    return checks;
+})();
+
+const Checklists: React.FC = ({ checks = initialiseChecks, dispatch }) => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const initialiseChecks = (() => {
-        const checks = {};
-        for (let i = 0; i < checklists.length; i++) {
-            checks[i] = { isCompleted: false };
-        }
-        return checks;
-    })();
-
     const [currentChecklist, setCurrentChecklist] = useState(0);
-    const [checks, setChecks] = useSessionStorage('checks', initialiseChecks);
 
     const stepCount = checklists[currentChecklist].items.filter(({ type }) => type === ECheckListTypes.STEP).length;
     const checkCount = Object.keys(checks[currentChecklist]).filter((key) => key !== 'isCompleted' && checks[currentChecklist][key] !== false).length;
@@ -38,18 +37,16 @@ export const Checklists: React.FC = () => {
         return EChecklistStates.INCOMPLETE;
     })();
 
-    console.log(`checklistState ${checklistState}`);
-
     // marks entire checklist
     const switchChecklistState = () => {
         // capture initial state of checklist completion
         const initialState = checks[currentChecklist].isCompleted;
         // clone checks
-        const newMarks = { ...checks };
+        const newChecks = Object.assign(checks);
         // switch value of current checklist
-        newMarks[currentChecklist].isCompleted = !checks[currentChecklist].isCompleted;
+        newChecks[currentChecklist].isCompleted = !checks[currentChecklist].isCompleted;
         // set new checks to state
-        setChecks(newMarks);
+        dispatch(setChecklist(newChecks));
         // if isCompleted, then change checklist to the next one
         if (!initialState && currentChecklist !== checklists.length - 1) setCurrentChecklist(currentChecklist + 1);
     };
@@ -57,14 +54,12 @@ export const Checklists: React.FC = () => {
     // marks single step
     const switchStepState = (stepIndex) => {
         // clone checks
-        const newMarks = { ...checks };
+        const newChecks = Object.assign(checks);
         // switch value of check
-        newMarks[currentChecklist][stepIndex] = !newMarks[currentChecklist][stepIndex];
+        newChecks[currentChecklist][stepIndex] = !checks[currentChecklist][stepIndex];
         // set new checks to state
-        setChecks(newMarks);
+        dispatch(setChecklist(checks));
     };
-
-    // console.log(`s: ${stepCount}, c: ${checkCount}, done: ${checklistState === EChecklistStates.CHECKS_DONE}`);
 
     const mouseDownHandler = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
@@ -95,12 +90,14 @@ export const Checklists: React.FC = () => {
             <div
                 ref={ref}
                 onMouseDown={mouseDownHandler}
-                className="flex-auto checklist-container mt-6 text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 text-lg font-mono font-thin w-1/2 grabbable show-scrollbar overflow-y-auto"
+                className="flex-auto checklist-container mt-6 text-white overflow-hidden
+                bg-navy-lighter rounded-2xl shadow-lg p-6 text-lg font-mono font-thin
+                w-1/2 grabbable show-scrollbar overflow-y-auto"
             >
                 {
                     checklists[currentChecklist].items.map((item, index) => {
                         switch (item.type) {
-                        case 'step':
+                        case 'step': {
                             return (
                                 <ChecklistStep
                                     {...item}
@@ -110,9 +107,10 @@ export const Checklists: React.FC = () => {
                                     onChecked={() => !checks[currentChecklist].isCompleted && switchStepState(index)}
                                 />
                             );
+                        }
 
                         case 'note':
-                            return (<ChecklistNote key={item} {...item} />);
+                            return (<div key={item} {...item} />);
 
                         case 'the-line':
                             return (<ChecklistTheLine key={item} />);
@@ -147,6 +145,7 @@ const CompletionButton: React.FC<CompletionButtonProps> = ({ checklistState, onC
         buttonText = 'MARK CHECKLIST COMPLETED';
         break;
     }
+
     default: {
         buttonText = 'CHECKLIST NOT COMPLETED';
         disableButton = true;
@@ -166,3 +165,7 @@ const CompletionButton: React.FC<CompletionButtonProps> = ({ checklistState, onC
         </button>
     );
 };
+
+export default connect(
+    ({ [CHECKLIST_REDUCER]: { checks } }) => ({ checks }),
+)(Checklists);
