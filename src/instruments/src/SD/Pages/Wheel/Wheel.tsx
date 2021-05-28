@@ -42,7 +42,7 @@ export const WheelPage = () => {
 
             <AutoBrake x={300} y={460} />
 
-            <Gear x={18} y={210} type="left" />
+            <Gear x={18} y={210} location="left" />
             <Wheels
                 x={12}
                 y={318}
@@ -50,11 +50,11 @@ export const WheelPage = () => {
                 right={{ number: 2, temperature: temperatures[1], hottest: maxTemperatureIndex === 1 }}
             />
 
-            <Gear x={210} y={107} type="center" />
+            <Gear x={210} y={107} location="center" />
             <WheelArch x={298} y={370} type="bottom" />
             <WheelArch x={406} y={370} type="bottom" />
 
-            <Gear x={401} y={210} type="right" />
+            <Gear x={401} y={210} location="right" />
             <Wheels
                 x={436}
                 y={318}
@@ -65,7 +65,7 @@ export const WheelPage = () => {
     );
 };
 
-const NoseWheelSteering = ({ x, y }) => {
+const NoseWheelSteering = ({ x, y }: ComponentPositionProps) => {
     const [antiSkidActive] = useSimVar('ANTISKID BRAKES ACTIVE', 'Bool', maxStaleness);
 
     return !antiSkidActive ? (
@@ -77,7 +77,7 @@ const NoseWheelSteering = ({ x, y }) => {
     ) : null;
 };
 
-const AntiSkid = ({ x, y }) => {
+const AntiSkid = ({ x, y }: ComponentPositionProps) => {
     const [antiSkidActive] = useSimVar('ANTISKID BRAKES ACTIVE', 'Bool', maxStaleness);
 
     return !antiSkidActive ? (
@@ -95,7 +95,7 @@ const AntiSkid = ({ x, y }) => {
     ) : null;
 };
 
-const LandingGearCtl = ({ x, y }) => {
+const LandingGearCtl = ({ x, y }: ComponentPositionProps) => {
     const [landingGearLeft] = useSimVar('GEAR LEFT POSITION', 'Percent Over 100', maxStaleness);
     const [landingGearCenter] = useSimVar('GEAR CENTER POSITION', 'Percent Over 100', maxStaleness);
     const [landingGearRight] = useSimVar('GEAR RIGHT POSITION', 'Percent Over 100', maxStaleness);
@@ -108,7 +108,7 @@ const LandingGearCtl = ({ x, y }) => {
     ) : null;
 };
 
-const NormalBraking = ({ x, y }) => {
+const NormalBraking = ({ x, y }: ComponentPositionProps) => {
     const hydraulics = useHydraulics();
 
     return !hydraulics.G.available ? (
@@ -120,7 +120,7 @@ const NormalBraking = ({ x, y }) => {
     ) : null;
 };
 
-const AlternateBraking = ({ x, y }) => {
+const AlternateBraking = ({ x, y }: ComponentPositionProps) => {
     const hydraulics = useHydraulics();
 
     return !hydraulics.G.available ? (
@@ -133,7 +133,7 @@ const AlternateBraking = ({ x, y }) => {
     ) : null;
 };
 
-const AccumulatorOnly = ({ x, y }) => (
+const AccumulatorOnly = ({ x, y }: ComponentPositionProps) => (
     <SvgGroup x={x} y={y} className="shape color-green">
         {/* <!-- Arrow --> */}
         <polygon points="0,0 8,0 4,-6" />
@@ -143,7 +143,7 @@ const AccumulatorOnly = ({ x, y }) => (
     </SvgGroup>
 );
 
-const AutoBrake = ({ x, y }) => {
+const AutoBrake = ({ x, y }: ComponentPositionProps) => {
     const [eng1] = useSimVar('ENG COMBUSTION:1', 'Bool');
     const [eng2] = useSimVar('ENG COMBUSTION:2', 'Bool');
     const available = eng1 === 1 && eng2 === 1;
@@ -163,14 +163,24 @@ const AutoBrake = ({ x, y }) => {
     ) : null;
 };
 
-const AutoBrakeLevel = ({ text, available }) => <text className={`big-text color-${available ? 'green' : 'amber'}`}>{text}</text>;
+interface AutoBrakeLevelProps {
+    text: string,
+    available: boolean,
+}
+const AutoBrakeLevel = ({ text, available }: AutoBrakeLevelProps) => <text className={`big-text color-${available ? 'green' : 'amber'}`}>{text}</text>;
 
-const GearDoorJoint = ({ x, y }) => (
+const GearDoorJoint = ({ x, y }: ComponentPositionProps) => (
     <ellipse className="gear-door-joint" cx={x} cy={y} rx={2.6} ry={2.6} />
 );
 
-const GearDoor = ({ x, y, type, inTransit }) => {
-    if (type === 'center') {
+type GearLocation = 'left' | 'center' | 'right';
+
+interface GearDoorProps extends ComponentPositionProps {
+    location: GearLocation,
+    inTransit: boolean,
+}
+const GearDoor = ({ x, y, location, inTransit }: GearDoorProps) => {
+    if (location === 'center') {
         return (
             <SvgGroup x={x} y={y}>
                 <path className="gear-door-side-line" d="m 0 0 h 13.41" />
@@ -201,15 +211,18 @@ const GearDoor = ({ x, y, type, inTransit }) => {
             <path className="gear-door-side-line" d="m106.43 0 h17.91" />
 
             {inTransit
-                ? <line className="gear-door-in-transit-line" x1={type === 'left' ? 103.01 : 21.69} x2={type === 'left' ? 112.33 : 12.37} y1={3} y2={70} />
+                ? <line className="gear-door-in-transit-line" x1={location === 'left' ? 103.01 : 21.69} x2={location === 'left' ? 112.33 : 12.37} y1={3} y2={70} />
                 : <line className="gear-door-line" x1={23.35} x2={100.5} y1={0} y2={0} />}
 
-            <GearDoorJoint x={type === 'left' ? 103.01 : 21.13} y={0} />
+            <GearDoorJoint x={location === 'left' ? 103.01 : 21.13} y={0} />
         </SvgGroup>
     );
 };
 
-const LandingGearPositionIndicators = ({ x, y, inTransit }) => (
+interface LandingGearPositionIndicatorsProps extends ComponentPositionProps {
+    inTransit: boolean,
+}
+const LandingGearPositionIndicators = ({ x, y, inTransit }: LandingGearPositionIndicatorsProps) => (
     <SvgGroup x={x} y={y} className="gear-lgcius">
         <g className={`shape gear-lgciu-1 color-${!inTransit ? 'green' : 'red'}`}>
             <polygon points="0,0 22,0 22,29" />
@@ -238,8 +251,11 @@ const LandingGearPositionIndicators = ({ x, y, inTransit }) => (
     </SvgGroup>
 );
 
-const Gear = ({ x, y, type }) => {
-    const [landingGearPosition] = useSimVar(`GEAR ${type.toUpperCase()} POSITION`, 'Percent Over 100', maxStaleness);
+interface GearProps extends ComponentPositionProps {
+    location: GearLocation
+}
+const Gear = ({ x, y, location }: GearProps) => {
+    const [landingGearPosition] = useSimVar(`GEAR ${location.toUpperCase()} POSITION`, 'Percent Over 100', maxStaleness);
 
     const [status, setStatus] = useState({
         inTransit: false,
@@ -259,7 +275,7 @@ const Gear = ({ x, y, type }) => {
     return (
         <g transform="scale(1.1)">
             <SvgGroup x={x} y={y}>
-                <GearDoor x={0} y={0} type={type} inTransit={status.inTransit} />
+                <GearDoor x={0} y={0} location={location} inTransit={status.inTransit} />
                 { status.positionIndicatorVisible ? <LandingGearPositionIndicators x={35} y={7} inTransit={status.inTransit} /> : null }
             </SvgGroup>
         </g>
@@ -283,7 +299,17 @@ const WheelArch = ({ x, y, type, green, amber }: WheelArchProps) => {
     return <path className={classes} stroke="#dadadf" strokeLinecap="round" d={`m${x} ${y}c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.3921 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.815 3.4005z`} />;
 };
 
-const Wheels = ({ x, y, left, right }) => {
+interface Brake {
+    number: number,
+    temperature: number,
+    hottest: boolean
+}
+
+interface WheelsProps extends ComponentPositionProps {
+    left: Brake,
+    right: Brake,
+}
+const Wheels = ({ x, y, left, right }: WheelsProps) => {
     const brakeAmberThreshold = 300;
 
     return (
