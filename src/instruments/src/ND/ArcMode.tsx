@@ -11,25 +11,26 @@ export type ArcModeProps = { side: 'L' | 'R' }
 export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
     const [lat] = useSimVar('PLANE LATITUDE', 'degree latitude');
     const [long] = useSimVar('PLANE LONGITUDE', 'degree longitude');
-    const [heading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
+    const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
+    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute({ lat, long }, rangeSettings[rangeIndex], 768, heading);
+        params.compute({ lat, long }, rangeSettings[rangeIndex] * 2, 768, trueHeading);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute({ lat, long }, rangeSettings[rangeIndex], 768, heading);
-    }, [lat, long, heading, rangeIndex].map((n) => MathUtils.fastToFixed(n, 6)));
+        mapParams.compute({ lat, long }, rangeSettings[rangeIndex] * 2, 768, trueHeading);
+    }, [lat, long, magHeading, rangeIndex].map((n) => MathUtils.fastToFixed(n, 6)));
 
     return (
         <>
-            <FlightPlan yOffset={236} mapParams={mapParams} />
+            <FlightPlan y={236} mapParams={mapParams} clipPath="url(#arc-mode-flight-plan-clip)" />
 
-            <Overlay heading={Number(MathUtils.fastToFixed(heading, 1))} rangeIndex={rangeIndex} />
+            <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} />
         </>
     );
 };
@@ -41,6 +42,9 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex }) => {
 
     return (
         <>
+            <clipPath id="arc-mode-flight-plan-clip">
+                <circle cx={384} cy={620} r={724} />
+            </clipPath>
             <clipPath id="arc-mode-overlay-clip-4">
                 <path d="m 6 0 h 756 v 768 h -756 z" />
             </clipPath>

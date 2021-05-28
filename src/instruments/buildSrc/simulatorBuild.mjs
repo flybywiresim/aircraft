@@ -21,7 +21,16 @@ export default getInputs()
             },
             plugins: [
                 ...baseCompile(name, path),
-                getTemplatePlugin({ name, path, imports: ['/JS/dataStorage.js'], config, isInstrument }),
+                getTemplatePlugin({
+                    name,
+                    path,
+                    imports: [
+                        '/JS/dataStorage.js',
+                        '/Pages/VCockpit/Instruments/FlightElements/Waypoint.js'
+                    ],
+                    config,
+                    isInstrument
+                }),
             ],
         };
     });

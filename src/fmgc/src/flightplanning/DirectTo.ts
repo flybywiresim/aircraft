@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { FlightPlanSegment } from '../wtsdk';
+import { FlightPlanSegment } from './FlightPlanSegment';
 
 /**
  * Information about the current direct-to procedures in the flight plan.
