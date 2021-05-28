@@ -23,6 +23,10 @@ const ecamPages = [
         name: 'hyd-page',
         path: 'SD/Pages/Hyd',
     },
+    {
+        name: 'wheel-page',
+        path: 'SD/Pages/Wheel',
+    },
 ];
 
 function getInputs() {
