@@ -93,6 +93,7 @@ clang++ \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${DIR}/src/zlib" \
   "${DIR}/src/zlib/zfstream.cc" \
+  "${DIR}/src/AnimationAileronHandler.cpp" \
   "${DIR}/src/ElevatorTrimHandler.cpp" \
   "${DIR}/src/FlapsHandler.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \

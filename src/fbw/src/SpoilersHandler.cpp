@@ -14,6 +14,10 @@ bool SpoilersHandler::getIsArmed() const {
   return isArmed;
 }
 
+bool SpoilersHandler::getIsGroundSpoilersActive() const {
+  return isGroundSpoilersActive;
+}
+
 double SpoilersHandler::getHandlePosition() const {
   return handlePosition;
 }
@@ -128,6 +132,7 @@ void SpoilersHandler::update(double simulationTime_new,
       } else {
         simPosition = handlePosition_new;
       }
+      isGroundSpoilersActive = false;
     }
   }
 
@@ -181,6 +186,7 @@ void SpoilersHandler::update(double simulationTime_new,
   if (conditionTakeOff) {
     if ((isArmed && areThrustLeversAtOrBelowIdle) || isAtLeastOneInReverseAndOtherInIdle(thrustLeverAngle_1, thrustLeverAngle_2)) {
       simPosition = POSITION_FULL;
+      isGroundSpoilersActive = true;
     }
   }
 
@@ -198,6 +204,7 @@ void SpoilersHandler::update(double simulationTime_new,
         if (areThrustLeversAtOrBelowIdle || isAtLeastOneThrustLeverInReverseAndOtherBelowMct) {
           // full deployment
           simPosition = POSITION_FULL;
+          isGroundSpoilersActive = true;
         } else if (isArmed && areThrustLeversBelowClimb) {
           // partial deployment
           simPosition = POSITION_PARTIAL;
@@ -214,6 +221,7 @@ void SpoilersHandler::update(double simulationTime_new,
         if (numberOfMainLandingGearsOnGround == 2) {
           // full deployment
           simPosition = POSITION_FULL;
+          isGroundSpoilersActive = true;
         } else if (numberOfMainLandingGearsOnGround >= 1) {
           // partial deployment
           simPosition = POSITION_PARTIAL;
@@ -225,6 +233,7 @@ void SpoilersHandler::update(double simulationTime_new,
     if (numberOfMainLandingGearsOnGround > 0 &&
         (thrustLeverAngle_1 > TLA_CONDITION_TOUCH_GO || thrustLeverAngle_2 > TLA_CONDITION_TOUCH_GO)) {
       simPosition = fmax(handlePosition, POSITION_RETRACTED);
+      isGroundSpoilersActive = false;
     }
   }
 }
