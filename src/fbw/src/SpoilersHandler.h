@@ -6,6 +6,7 @@ class SpoilersHandler {
   bool getIsArmed() const;
   double getHandlePosition() const;
   double getSimPosition() const;
+  bool getIsGroundSpoilersActive() const;
 
   void setInitialPosition(double position);
   void setSimulationVariables(double simulationTime_new,
@@ -65,6 +66,8 @@ class SpoilersHandler {
   double landingGearCompression_2 = 0.0;
   double flapsHandleIndex = 0.0;
   bool isAngleOfAttackProtectionActive = false;
+
+  bool isGroundSpoilersActive = false;
 
   void update(bool isArmed_new, double handlePosition_new);
 

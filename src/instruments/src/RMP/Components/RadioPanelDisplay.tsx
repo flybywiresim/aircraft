@@ -21,7 +21,7 @@ const formatFrequency = (frequency: number): string => (frequency / 1000000).toF
  * Renders the seven-segment display with the appropriate value.
  */
 export function RadioPanelDisplay(props: Props) {
-    const [lightsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Boolean', 1000);
+    const [lightsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Boolean', 1000);
 
     // If the passed value prop is a number, we'll use formatFrequency to get string format.
     const value = typeof props.value === 'number' ? formatFrequency(props.value) : props.value;
@@ -29,7 +29,7 @@ export function RadioPanelDisplay(props: Props) {
     return (
         <svg className="rmp-svg">
             <text x="100%" y="52%">
-                {lightsTest ? '8.8.8.8.8.8' : value}
+                {lightsTest === 0 ? '8.8.8.8.8.8' : value}
             </text>
         </svg>
     );
