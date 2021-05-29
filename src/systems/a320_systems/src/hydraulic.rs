@@ -1267,6 +1267,8 @@ struct A320BrakingForce {
     park_brake_lever_is_set: bool,
 }
 impl A320BrakingForce {
+    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 3000.;
+
     pub fn new() -> Self {
         A320BrakingForce {
             left_brake_pedal_position: 0.,
@@ -1289,13 +1291,17 @@ impl A320BrakingForce {
         self.left_brake_pedal_position = brake_logic.left_brake_pilot_input;
         self.right_brake_pedal_position = brake_logic.right_brake_pilot_input;
 
-        let left_force_norm = norm_brakes.left_brake_pressure().get::<psi>() / 3000.;
-        let left_force_altn = altn_brakes.left_brake_pressure().get::<psi>() / 3000.;
+        let left_force_norm =
+            norm_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        let left_force_altn =
+            altn_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.left_braking_force = left_force_norm + left_force_altn;
         self.left_braking_force = self.left_braking_force.max(0.).min(1.);
 
-        let right_force_norm = norm_brakes.right_brake_pressure().get::<psi>() / 3000.;
-        let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>() / 3000.;
+        let right_force_norm = norm_brakes.right_brake_pressure().get::<psi>()
+            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>()
+            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
     }
