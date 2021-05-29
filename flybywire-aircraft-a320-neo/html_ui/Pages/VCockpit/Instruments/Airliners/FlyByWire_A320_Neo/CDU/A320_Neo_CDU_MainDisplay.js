@@ -77,6 +77,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._inOutElement.style.removeProperty("color");
         this._inOutElement.className = "white";
 
+        this.setFocusTimeout(func) = () => {
+            if (this.inFocus) {
+                func();
+            } else {
+                setTimeout(() => {
+                    func();
+                }, this.getDelaySwitchPage());
+            }
+        };
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
         };
@@ -98,6 +107,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.handlePreviousInputState();
             this.inOut += "/";
         };
+        this.onDot = () => {
+            this.handlePreviousInputState();
+            this.inOut += ".";
+        }
         this.onClr = () => {
             if (this.inOut === "") {
                 this.inOut = FMCMainDisplay.clrValue;
@@ -114,6 +127,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             this.tryShowMessage();
         };
+        this.onPlusMinus = () => {
+            this.handlePreviousInputState();
+            const val = this.inOut;
+            if (val === "") {
+                this.inOut = "-";
+            } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
+                if (val.slice(-1) === "-") {
+                    this.inOut = this.inOut.slice(0, -1) + "+";
+                } else if (val.slice(-1) === "+") {
+                    this.inOut = this.inOut.slice(0, -1) + "-";
+                } else {
+                    this.inOut += "-";
+                }
+            }
+        }
         this.PageTimeout = {
             Prog: 2000,
             Dyn: 1500
@@ -1076,42 +1104,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                 }, this.getDelaySwitchPage());
             } else if (input === "SP") {
-                setTimeout(() => {
-                    this.onSp();
-                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
+                setFocusTimeout(this.opSp());
             } else if (input === "DEL") {
-                setTimeout(() => {
-                    this.onDel();
-                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
+                setFocusTimeout(this.onDel());
             } else if (input === "CLR") {
-                setTimeout(() => {
-                    this.onClr();
-                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
+                this.setFocusTimeout(this.onClr());
             } else if (input === "DIV") {
-                setTimeout(() => {
-                    this.onDiv();
-                }, this.getDelaySwitchPage());
+                this.setFocusTimeout(this.onDiv());
             } else if (input === "DOT") {
-                setTimeout(() => {
-                    this.handlePreviousInputState();
-                    this.inOut += ".";
-                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
+                this.setFocusTimeout(this.onDot());
             } else if (input === "PLUSMINUS") {
-                setTimeout(() => {
-                    this.handlePreviousInputState();
-                    const val = this.inOut;
-                    if (val === "") {
-                        this.inOut = "-";
-                    } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
-                        if (val.slice(-1) === "-") {
-                            this.inOut = this.inOut.slice(0, -1) + "+";
-                        } else if (val.slice(-1) === "+") {
-                            this.inOut = this.inOut.slice(0, -1) + "-";
-                        } else {
-                            this.inOut += "-";
-                        }
-                    }
-                }, (this.inFocus) ? 0 : this.getDelaySwitchPage());
+                this.setFocusTimeout(this.onPlusMinus());
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
             } else if (input.length === 2 && input[0] === "L") {

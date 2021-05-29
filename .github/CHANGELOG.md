@@ -80,6 +80,7 @@
 1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
 1. [PFD] Add baro setting flash when passing TA/TL - @lukecologne (luke)
 1. [MCDU] MCDU accepts direct keyboard input (enabled by new option in A32NX Realism Settings). - @2hwk (2Cas#1022)
+
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
