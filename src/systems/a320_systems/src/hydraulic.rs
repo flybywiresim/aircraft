@@ -1306,26 +1306,9 @@ impl SimulationElement for A320BrakingForce {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
         writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
         writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
-
-        // We write to the simulator the fact that the park brake lever is actually set or not. This is the lever position
-        // handling only, and does not guarantee you will end up with brake force if hydraulics are down for example
-        writer.write_bool("PARK_BRAKE_LEVER_POS", self.park_brake_lever_is_set);
-
-        // We "write" to the simulator the actual input we received from the pilot. This would drive the
-        // toe brake pedal animation
-        writer.write_f64(
-            "LEFT_BRAKE_PEDAL_INPUT",
-            self.left_brake_pedal_position * 100.,
-        );
-        writer.write_f64(
-            "RIGHT_BRAKE_PEDAL_INPUT",
-            self.right_brake_pedal_position * 100.,
-        );
     }
 
-    // We receive here events from the simulator indicating that parking brake lever must be set or removed
-    // Parking brake force itself is handled by our hydraulic system using normal brake force not the simulator "parking
-    // brake force"
+    // We receive here the desired parking brake position. This is the parking brake lever input
     fn read(&mut self, state: &mut SimulatorReader) {
         self.park_brake_lever_is_set = state.read_bool("BRAKE PARKING POSITION");
     }

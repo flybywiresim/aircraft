@@ -1,7 +1,11 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
-use msfs::{legacy::execute_calculator_code, sim_connect::SimConnect, sys};
+use msfs::{
+    legacy::{execute_calculator_code, NamedVariable},
+    sim_connect::SimConnect,
+    sys,
+};
 use std::{pin::Pin, time::Duration};
 use systems_wasm::{
     f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, HandleMessage,
@@ -180,6 +184,10 @@ impl ElectricalBusConnection {
 }
 
 struct Brakes {
+    park_brake_lever_masked_input: NamedVariable,
+    left_pedal_brake_masked_input: NamedVariable,
+    right_pedal_brake_masked_input: NamedVariable,
+
     id_brake_left: sys::DWORD,
     id_brake_right: sys::DWORD,
     id_brake_keyboard: sys::DWORD,
@@ -206,6 +214,10 @@ impl Brakes {
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
+            park_brake_lever_masked_input: NamedVariable::from("A32NX_PARK_BRAKE_LEVER_POS"),
+            left_pedal_brake_masked_input: NamedVariable::from("A32NX_LEFT_BRAKE_PEDAL_INPUT"),
+            right_pedal_brake_masked_input: NamedVariable::from("A32NX_RIGHT_BRAKE_PEDAL_INPUT"),
+
             // SimConnect inputs masking
             id_brake_left: sim_connect
                 .map_client_event_to_sim_event("AXIS_LEFT_BRAKE_SET", true)?,
@@ -270,6 +282,15 @@ impl Brakes {
     fn reset_keyboard_events(&mut self) {
         self.left_key_pressed = false;
         self.right_key_pressed = false;
+    }
+
+    fn transmit_masked_inputs(&mut self) {
+        let park_is_set = self.parking_brake_lever_is_set as u32 as f64;
+        let brake_right = self.brake_right() * 100.;
+        let brake_left = self.brake_left() * 100.;
+        self.park_brake_lever_masked_input.set_value(park_is_set);
+        self.right_pedal_brake_masked_input.set_value(brake_right);
+        self.left_pedal_brake_masked_input.set_value(brake_left);
     }
 
     fn transmit_client_events(
@@ -408,6 +429,7 @@ impl PrePostTick for Brakes {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.reset_keyboard_events();
         self.transmit_client_events(sim_connect)?;
+        self.transmit_masked_inputs();
 
         Ok(())
     }
