@@ -21,3 +21,82 @@
 .GtLayer {
   -webkit-transform: rotateX(0deg);
 }
+
+.Magenta {
+  fill: none;
+  stroke: $display-magenta;
+}
+text.Magenta {
+  fill: $display-magenta;
+  stroke: none;
+}
+
+.Cyan {
+  fill: none;
+  stroke: $display-cyan;
+}
+text.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
+tspan.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
+
+.White {
+  fill: none;
+  stroke: $display-white;
+}
+.White.Fill {
+  fill: $display-white;
+  stroke: none;
+}
+text.White {
+  fill: $display-white;
+  stroke: none;
+}
+
+.Green {
+  stroke: $display-green;
+  fill: none;
+}
+text.Green {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Amber {
+  stroke: $display-amber;
+  fill: none;
+}
+text.Amber {
+  fill: $display-amber;
+  stroke: none;
+}
+
+.Yellow {
+  stroke: $display-yellow;
+  fill: none;
+}
+.Yellow.Fill {
+  fill: $display-yellow;
+  stroke: none;
+}
+text.Yellow {
+  fill: $display-yellow;
+  stroke: none;
+}
+
+.Red {
+  stroke: $display-red;
+  fill: none;
+}
+.Red.Fill {
+  fill: $display-red;
+  stroke: none;
+}
+text.Red {
+  fill: $display-red;
+  stroke: none;
+}
