@@ -9,7 +9,7 @@ import { FuelPage } from './Pages/Fuel.jsx';
 import { ApuPage } from './Pages/Apu.jsx';
 import { CondPage } from './Pages/Cond/Cond.tsx';
 import { DoorPage } from './Pages/Door/Door.tsx';
-import { WheelPage } from './Pages/Wheel.jsx';
+import { WheelPage } from './Pages/Wheel/Wheel.tsx';
 import { FctlPage } from './Pages/Fctl/Fctl.tsx';
 
 export const PagesContainer = () => {
