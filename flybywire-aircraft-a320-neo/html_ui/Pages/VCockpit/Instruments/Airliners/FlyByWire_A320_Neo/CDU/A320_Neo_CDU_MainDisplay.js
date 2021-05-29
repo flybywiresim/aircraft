@@ -77,12 +77,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._inOutElement.style.removeProperty("color");
         this._inOutElement.className = "white";
 
-        this.setFocusTimeout(func) = () => {
+        this.setFocusTimeout = (func) => {
             if (this.inFocus) {
-                func();
+                func;
             } else {
                 setTimeout(() => {
-                    func();
+                    func;
                 }, this.getDelaySwitchPage());
             }
         };
@@ -940,7 +940,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SP", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SP", "Number", 1);
                 }
-                else if (keycode === 187 || keycode === 189 || keycode === 107 || keycode === 109) {    // Plusminus
+                else if (keycode === 187 || keycode === 189 || keycode === 107 || keycode === 109) {    // Plus/Minus Keys
                     SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_PLUSMINUS", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_PLUSMINUS", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_PLUSMINUS", "Number", 1);
@@ -1104,9 +1104,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                 }, this.getDelaySwitchPage());
             } else if (input === "SP") {
-                setFocusTimeout(this.opSp());
+                this.setFocusTimeout(this.opSp());
             } else if (input === "DEL") {
-                setFocusTimeout(this.onDel());
+                this.setFocusTimeout(this.onDel());
             } else if (input === "CLR") {
                 this.setFocusTimeout(this.onClr());
             } else if (input === "DIV") {
