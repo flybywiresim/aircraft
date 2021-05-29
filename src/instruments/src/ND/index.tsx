@@ -3,6 +3,8 @@ import { DisplayUnit } from '@instruments/common/displayUnit';
 import { FlightPlanProvider } from '@instruments/common/flightplan';
 import { render } from '../Common';
 import { ArcMode } from './ArcMode';
+import { WindIndicator } from './WindIndicator';
+import { SpeedIndicator } from './SpeedIndicator';
 
 import './styles.scss';
 
@@ -20,6 +22,9 @@ const NavigationDisplay: React.FC = () => {
         >
             <FlightPlanProvider>
                 <svg className="pfd-svg" version="1.1" viewBox="0 0 768 768">
+                    <SpeedIndicator />
+                    <WindIndicator />
+
                     <ArcMode side="L" />
                 </svg>
             </FlightPlanProvider>
