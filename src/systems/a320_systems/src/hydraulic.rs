@@ -1251,8 +1251,8 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
         self.is_gear_lever_down = state.read_bool("GEAR HANDLE POSITION");
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
-        self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION");
-        self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION");
+        self.left_brake_pilot_input = state.read_f64("LEFT_BRAKE_PEDAL_INPUT");
+        self.right_brake_pilot_input = state.read_f64("RIGHT_BRAKE_PEDAL_INPUT");
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
     }
 }
@@ -2209,11 +2209,11 @@ mod tests {
             }
 
             fn set_left_brake(self, position_percent: Ratio) -> Self {
-                self.set_brake("BRAKE LEFT POSITION", position_percent)
+                self.set_brake("LEFT_BRAKE_PEDAL_INPUT", position_percent)
             }
 
             fn set_right_brake(self, position_percent: Ratio) -> Self {
-                self.set_brake("BRAKE RIGHT POSITION", position_percent)
+                self.set_brake("RIGHT_BRAKE_PEDAL_INPUT", position_percent)
             }
 
             fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {

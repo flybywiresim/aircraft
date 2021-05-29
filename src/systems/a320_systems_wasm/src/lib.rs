@@ -364,8 +364,8 @@ impl ReadWrite for Brakes {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
             "PARK_BRAKE_LEVER_POS" => Some(self.is_park_brake_set()),
-            "BRAKE LEFT POSITION" => Some(self.brake_left()),
-            "BRAKE RIGHT POSITION" => Some(self.brake_right()),
+            "LEFT_BRAKE_PEDAL_INPUT" => Some(self.brake_left()),
+            "RIGHT_BRAKE_PEDAL_INPUT" => Some(self.brake_right()),
             _ => None,
         }
     }
