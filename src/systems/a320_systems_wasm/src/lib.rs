@@ -363,7 +363,7 @@ impl SimulatorAspect for Brakes {}
 impl ReadWrite for Brakes {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
-            "BRAKE PARKING POSITION" => Some(self.is_park_brake_set()),
+            "PARK_BRAKE_LEVER_POS" => Some(self.is_park_brake_set()),
             "BRAKE LEFT POSITION" => Some(self.brake_left()),
             "BRAKE RIGHT POSITION" => Some(self.brake_right()),
             _ => None,

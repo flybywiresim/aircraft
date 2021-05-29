@@ -995,7 +995,7 @@ impl PowerTransferUnitController for A320PowerTransferUnitController {
 }
 impl SimulationElement for A320PowerTransferUnitController {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_lever_pos = state.read_bool("BRAKE PARKING POSITION");
+        self.parking_brake_lever_pos = state.read_bool("PARK_BRAKE_LEVER_POS");
         self.eng_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
         self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
@@ -1247,7 +1247,7 @@ impl A320HydraulicBrakingLogic {
 
 impl SimulationElement for A320HydraulicBrakingLogic {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_demand = state.read_bool("BRAKE PARKING POSITION");
+        self.parking_brake_demand = state.read_bool("PARK_BRAKE_LEVER_POS");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
         self.is_gear_lever_down = state.read_bool("GEAR HANDLE POSITION");
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
@@ -1310,7 +1310,7 @@ impl SimulationElement for A320BrakingForce {
 
     // We receive here the desired parking brake position. This is the parking brake lever input
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.park_brake_lever_is_set = state.read_bool("BRAKE PARKING POSITION");
+        self.park_brake_lever_is_set = state.read_bool("PARK_BRAKE_LEVER_POS");
     }
 }
 
@@ -2093,7 +2093,7 @@ mod tests {
 
             fn set_park_brake(mut self, is_set: bool) -> Self {
                 self.simulation_test_bed
-                    .write_bool("BRAKE PARKING POSITION", is_set);
+                    .write_bool("PARK_BRAKE_LEVER_POS", is_set);
                 self
             }
 
