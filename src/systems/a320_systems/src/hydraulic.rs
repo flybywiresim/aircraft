@@ -1267,7 +1267,7 @@ struct A320BrakingForce {
     park_brake_lever_is_set: bool,
 }
 impl A320BrakingForce {
-    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 3000.;
+    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
 
     pub fn new() -> Self {
         A320BrakingForce {
