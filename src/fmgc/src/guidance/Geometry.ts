@@ -244,7 +244,7 @@ export class Type1Transition extends Transition {
             this.clockwise ? bearingPpos + 90 : bearingPpos - 90,
             360,
         );
-        const trackAngleError = mod(desiredTrack - trueTrack, 360);
+        const trackAngleError = mod(desiredTrack - trueTrack + 180, 360) - 180;
 
         const distanceFromCenter = Avionics.Utils.computeGreatCircleDistance(
             center,
