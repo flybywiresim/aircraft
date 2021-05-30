@@ -20,6 +20,8 @@ const NavigationDisplay: React.FC = () => {
         return parseInt(url?.substring(url.length - 1) ?? '1', 10);
     });
 
+    const side = displayIndex === 1 ? 'L' : 'R';
+
     return (
         <DisplayUnit
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
@@ -30,7 +32,7 @@ const NavigationDisplay: React.FC = () => {
                     <SpeedIndicator adirsState={adirsState} tas={tas} />
                     <WindIndicator adirsState={adirsState} tas={tas} />
 
-                    <ArcMode side="L" />
+                    <ArcMode side={side} />
                 </svg>
             </FlightPlanProvider>
         </DisplayUnit>
