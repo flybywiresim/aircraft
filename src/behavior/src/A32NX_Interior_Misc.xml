@@ -644,4 +644,40 @@
             </UseTemplate>
         </Component>
     </Template>
+
+    <!--
+    Main Parameters:
+        - NODE_ID
+    -->
+    <Template Name="FBW_Airbus_ATC_MSG_Button">
+        <UseTemplate Name="FBW_Push_Held">
+            <TOOLTIP>Acknowledge ATC message.</TOOLTIP>
+            <SEQ1_CODE>(L:A32NX_DCDU_ATC_MSG_WAITING, Bool)</SEQ1_CODE>
+            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_DCDU_ATC_MSG_ACK, Bool)</LEFT_SINGLE_CODE>
+            <NO_SEQ2/>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Main Parameters:
+        - NODE_ID
+    -->
+    <Template Name="FBW_Airbus_PA_Button">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ1_CODE type="rnp" return="boolean">
+                alias cabinReady = (L:A32NX_CABIN_READY, bool);
+                alias toConfigNormal = (L:A32NX_TO_CONFIG_NORMAL, bool);
+                alias absTime = (E:ABSOLUTE TIME, seconds);
+                alias callStart = (O:CALL_START_#NODE_ID#, seconds);
+                alias cabinWasReady = (O:WAS_READY_#NODE_ID#, bool);
+
+                if (cabinReady and toConfigNormal and !cabinWasReady) {
+                    callStart = absTime;
+                }
+                cabinWasReady = cabinReady and toConfigNormal;
+
+                cabinReady and (absTime - callStart) &lt; 5
+            </SEQ1_CODE>
+        </UseTemplate>
+    </Template>
 </ModelBehaviors>
