@@ -5,8 +5,6 @@
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.THROTTLE_CONTROL</TOOLTIPID>
             <POSITION_TYPE>O</POSITION_TYPE>
             <POSITION_VAR>Position</POSITION_VAR>
-            <ANIM_NAME>ENGINE_Lever_Throttle_#ID_NODE#</ANIM_NAME>
-            <NODE_ID>ENGINE_Lever_Throttle_#ID_NODE#</NODE_ID>
             <PART_ID>ENGINE_Lever_Throttle</PART_ID>
             <USE_TRAJECTORY_DRAG_MODE>true</USE_TRAJECTORY_DRAG_MODE>
         </DefaultTemplateParameters>
@@ -138,5 +136,13 @@
                 <NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
             </UseTemplate>
         </Condition>
+    </Template>
+
+    <Template Name="FBW_Airbus_Engine_Lights">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_ENG#ID#, bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:ENG FAILED:#ID#, bool)</SEQ2_CODE>
+        </UseTemplate>
     </Template>
 </ModelBehaviors>

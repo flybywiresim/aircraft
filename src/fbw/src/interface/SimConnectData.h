@@ -37,6 +37,7 @@ struct SimData {
   double gear_animation_pos_1;
   double gear_animation_pos_2;
   double flaps_handle_index;
+  double flaps_position;
   double spoilers_handle_position;
   double spoilers_left_pos;
   double spoilers_right_pos;
@@ -231,6 +232,8 @@ struct ClientDataAutothrust {
 };
 
 struct ClientDataFlyByWire {
+  double eta_trim_deg_should_write;
+  double zeta_trim_pos_should_write;
   double alpha_floor_command;
   double protection_ap_disc;
   double v_alpha_prot_kn;
@@ -242,6 +245,7 @@ struct ClientDataLocalVariables {
   double V2;
   double V_APP;
   double V_LS;
+  double V_MAX;
   double flightPlanAvailable;
   double altitudeConstraint;
   double thrustReductionAltitude;

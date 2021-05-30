@@ -42,9 +42,8 @@ class AutopilotStateMachineModelClass {
     real_T local_H_fcu_ft;
     real_T local_H_constraint_ft;
     real_T local_H_GA_init_ft;
-    real_T out_H_dot_c_fpm;
-    real_T out_FPA_c_deg;
     real_T eventTime;
+    real_T eventTime_n;
     real_T eventTime_i;
     real_T eventTime_p;
     real_T lastTargetSpeed;
@@ -52,6 +51,7 @@ class AutopilotStateMachineModelClass {
     real_T timeDeltaSpeed10;
     real_T timeConditionSoftAlt;
     real_T eventTime_a;
+    real_T eventTime_iz;
     real_T eventTime_c;
     real_T newFcuAltitudeSelected;
     real_T newFcuAltitudeSelected_b;
@@ -82,13 +82,14 @@ class AutopilotStateMachineModelClass {
     boolean_T wereAllEnginesOperative_not_empty;
     boolean_T wereAllEnginesOperative_d;
     boolean_T wereAllEnginesOperative_not_empty_a;
-    boolean_T out_H_dot_c_fpm_not_empty;
-    boolean_T out_FPA_c_deg_not_empty;
     boolean_T verticalSpeedCancelMode;
     boolean_T sAP1;
     boolean_T sAP2;
     boolean_T sLandModeArmedOrActive;
+    boolean_T sRollOutActive;
+    boolean_T sGoAroundModeActive;
     boolean_T eventTime_not_empty;
+    boolean_T eventTime_not_empty_b;
     boolean_T eventTime_not_empty_h;
     boolean_T eventTime_not_empty_p;
     boolean_T lastTargetSpeed_not_empty;
@@ -99,6 +100,7 @@ class AutopilotStateMachineModelClass {
     boolean_T newFcuAltitudeSelected_c;
     boolean_T state;
     boolean_T eventTime_not_empty_m;
+    boolean_T eventTime_not_empty_i;
     boolean_T eventTime_not_empty_e;
     boolean_T sThrottleCondition;
     boolean_T state_h;
@@ -235,8 +237,10 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_LAND_entry(void);
   boolean_T AutopilotStateMachine_NAV_TO_HDG(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_RWY_TO_RWY_TRK(const ap_sm_output *BusAssignment);
+  boolean_T AutopilotStateMachine_RWY_TO_OFF(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_RWY_TRK_entry(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_GA_TRK_entry(const ap_sm_output *BusAssignment);
+  void AutopilotStateMachine_ON(const ap_sm_output *BusAssignment);
   void AutopilotStateMachine_GA_TRK_during(void);
   boolean_T AutopilotStateMachine_OFF_TO_HDG(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_OFF_TO_NAV(const ap_sm_output *BusAssignment);
@@ -273,6 +277,8 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_DES(void);
   void AutopilotStateMachine_ROLL_OUT_entry_o(void);
   boolean_T AutopilotStateMachine_GS_TO_X(void);
+  boolean_T AutopilotStateMachine_GS_TO_X_MR(void);
+  boolean_T AutopilotStateMachine_GS_TO_ALT(void);
   void AutopilotStateMachine_GS_TRACK_entry(void);
   void AutopilotStateMachine_LAND_entry_i(void);
   void AutopilotStateMachine_FLARE_entry_g(void);
@@ -283,7 +289,7 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_SRS_during(void);
   void AutopilotStateMachine_SRS(void);
   void AutopilotStateMachine_exit_internal_ON(void);
-  void AutopilotStateMachine_ON(void);
+  void AutopilotStateMachine_ON_l(void);
 };
 
 #endif

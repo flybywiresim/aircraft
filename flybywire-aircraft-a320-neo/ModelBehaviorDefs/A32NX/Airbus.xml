@@ -17,8 +17,8 @@
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
-            <SEQ1_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #BLOCK_SEQ1# ! and #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #BLOCK_SEQ2# ! and #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #BLOCK_SEQ1# ! and #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #BLOCK_SEQ2# ! and #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 
@@ -101,25 +101,6 @@
         <UseTemplate Name="A32NX_GlassCockpit_Push_Template">
             <PLANE_PREFIX>A320_Neo</PLANE_PREFIX>
         </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_AIRBUS_Push_Heading_Track_Template">
-        <DefaultTemplateParameters>
-            <NODE_ID>AIRBUS_Push_Heading_Track</NODE_ID>
-            <ANIM_NAME>AIRBUS_Push_Heading_Track</ANIM_NAME>
-            <PART_ID>AIRBUS_Push_Heading_Track</PART_ID>
-            <WWISE_EVENT_1>autopilot_push_button2_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>autopilot_push_button2_off</WWISE_EVENT_2>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-            <TOOLTIPID>%((L:XMLVAR_TRK_FPA_MODE_ACTIVE, bool))%{if}TT:COCKPIT.TOOLTIPS.HDGVS_TRK_SET_HDG%{else}TT:COCKPIT.TOOLTIPS.HDGVS_TRK_SET_TRK%{end}</TOOLTIPID>
-        </DefaultTemplateParameters>
-
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button">
-                <LEFT_SINGLE_CODE>(L:XMLVAR_TRK_FPA_MODE_ACTIVE) ! (&gt;L:XMLVAR_TRK_FPA_MODE_ACTIVE)</LEFT_SINGLE_CODE><!-- TODO -->
-            </UseTemplate>
-        </Component>
     </Template>
 
     <Template Name="FBW_AIRBUS_Push_Metric_Alt_Template">
@@ -252,6 +233,7 @@
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -271,7 +253,7 @@
                 #GROUP_INDEX# -1 &gt; if{
                     (L:#CURRENT_BUTTON_VAR_NAME#) #GROUP_INDEX# ==
                 }
-                (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ1_POWERED# and
+                (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #EMISSIVE_DIM# *
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -370,7 +352,7 @@
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
                 (L:A32NX_ECAM_SFAIL) -1 &gt;
-                (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                (L:A32NX_OVHD_INTLT_ANN) 0 == or
                 #SEQ1_POWERED# and
                 </EMISSIVE_CODE>
             </UseTemplate>
@@ -416,6 +398,43 @@
                 </Component>
             </True>
         </Condition>
+    </Template>
+
+    <Template Name="FBW_ECAM_EMERCANC_BUTTON_Template">
+        <DefaultTemplateParameters>
+            <BASE_NAME>UNKNOWN</BASE_NAME>
+            <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
+            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
+            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
+            <WWISE_EVENT_1>radio_push_button_on</WWISE_EVENT_1>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <WWISE_EVENT_2>radio_push_button_off</WWISE_EVENT_2>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                1 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Condition Check="POTENTIOMETER">
+            <True>
+                <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
+            <EMISSIVE_CODE>#SEQ2_POWERED# 0.3 *</EMISSIVE_CODE>
+        </UseTemplate>
     </Template>
 
     <!-- This whole section is modified -->
@@ -523,7 +542,7 @@
             <TOOLTIPID>Test T.O CONFIG</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_BUTTON_Template">
+        <UseTemplate Name="FBW_ECAM_EMERCANC_BUTTON_Template">
             <BASE_NAME>EMERCANC</BASE_NAME>
             <PART_ID>ECAM_EMERCANC</PART_ID>
             <TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
@@ -531,8 +550,7 @@
 
         <UseTemplate Name="FBW_Covered_Push_Toggle">
             <LOCK_NODE_ID>LOCK_ECAM_EMERCANC</LOCK_NODE_ID>
-
-           <TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
+            <TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
         </UseTemplate>
 
         <UseTemplate Name="A32NX_ECAM_CLR_BUTTON_Template">
@@ -795,9 +813,43 @@
 
         <UseTemplate Name="FBW_Push_Toggle">
             <SEQ1_CODE>0</SEQ1_CODE>
-            <SEQ2_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_CODE>
+            <SEQ2_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 == (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ2_CODE>
             <DUMMY_BUTTON/>
         </UseTemplate>
+    </Template>
+
+    <Template Name = "FBW_GT_Switch">
+        <DefaultTemplateParameters>
+            <ANIMREF_ID>0</ANIMREF_ID>
+            <ANIMTIP_0_ON_PERCENT>0.0</ANIMTIP_0_ON_PERCENT>
+            <ANIMTIP_1_ON_PERCENT>1.0</ANIMTIP_1_ON_PERCENT>
+            <ANIM_LAG>400</ANIM_LAG>
+            <IS_SWITCH>True</IS_SWITCH>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <ANIM_SIMVAR_UNITS>Bool</ANIM_SIMVAR_UNITS>
+        </OverrideTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+
+            <UseTemplate Name = "ASOBO_GT_Anim_Sim">
+                <ANIM_SIMVAR_SCALE>100</ANIM_SIMVAR_SCALE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents"></UseTemplate>
+
+            <Condition Valid="IS_SWITCH">
+                <True>
+                    <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
+                        <LEFT_SINGLE_CODE>(&gt;K:#EVENTID#)</LEFT_SINGLE_CODE>
+                        <EVENTID/>
+                        <ANIM_CODE>(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) 100 *</ANIM_CODE>
+                    </UseTemplate>
+                </True>
+                <False>
+                    <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Event"></UseTemplate>
+                </False>
+            </Condition>
+        </Component>
     </Template>
 
     <!-- Copy of A32NX_GT_Switch_Dummy -->
@@ -863,7 +915,7 @@
                     #AUDIO_KNOB_POWERED# ! if{
                         0
                     } els{
-                        (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == if{
+                        (L:A32NX_OVHD_INTLT_ANN) 0 == if{
                             14
                         } els{
                             (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0.5 *
@@ -896,10 +948,11 @@
         <DefaultTemplateParameters>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-            <SEQ1_EMISSIVE_CODE>(L:A32NX_COCKPIT_DOOR_LOCKED, Bool) 0 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ1_POWERED# and</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_COCKPIT_DOOR_LOCKED, Bool) 0 == (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == #SEQ2_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 
@@ -1104,13 +1157,27 @@
             </UseTemplate>
         </Component>
   </Template>
-
     <Template Name="A32NX_Push_BARO_Template">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <PART_ID>#NODE_ID#</PART_ID>
-                <LEFT_SINGLE_CODE>(>H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
+                <WWISE_EVENT_1>autopilot_push_button_on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>autopilot_push_button_off</WWISE_EVENT_2>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>
+                <TOOLTIPID>#TOOLTIPID#</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+    </Template>
+    <Template Name="A32NX_Push_Held_BARO_Template">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <PART_ID>#NODE_ID#</PART_ID>
+                <LEFT_SINGLE_CODE>0 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>1 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_LEAVE_CODE>
                 <WWISE_EVENT_1>autopilot_push_button_on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>autopilot_push_button_off</WWISE_EVENT_2>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -1251,7 +1318,7 @@
             <Condition Check="EMISSIVE_SIMVAR_ACTIVE">
                 <True>
                     <UseTemplate Name="A32NX_GT_Emissive_Gauge_Sim">
-                        <ALT_CODE>(L:XMLVAR_LTS_Test)</ALT_CODE>
+                        <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</ALT_CODE>
                         <Condition Check="EMISSIVE_SIMVAR_ACTIVE">
                             <EMISSIVE_SIMVAR>#EMISSIVE_SIMVAR_ACTIVE#</EMISSIVE_SIMVAR>
                         </Condition>
@@ -1262,7 +1329,7 @@
                 </True>
                 <False>
                     <UseTemplate Name="A32NX_GT_Emissive_Gauge">
-                        <ALT_CODE>(L:XMLVAR_LTS_Test)</ALT_CODE>
+                        <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</ALT_CODE>
                         <Condition Check="EMISSIVE_CODE_ACTIVE">
                             <EMISSIVE_CODE>#EMISSIVE_CODE_ACTIVE#</EMISSIVE_CODE>
                         </Condition>
@@ -1347,7 +1414,7 @@
     <Template Name="A32NX_GT_Emissive_Gauge_Sim">
         <DefaultTemplateParameters>
             <FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
-            <EMISSIVE_SIMVAR_SCALE>1</EMISSIVE_SIMVAR_SCALE>
+            <EMISSIVE_SIMVAR_SCALE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_SIMVAR_SCALE>
             <EMISSIVE_SIMVAR_BIAS>0</EMISSIVE_SIMVAR_BIAS>
             <EMISSIVE_SIMVAR_UNITS>Bool</EMISSIVE_SIMVAR_UNITS>
             <EMISSIVE_DRIVES_VISIBILITY>False</EMISSIVE_DRIVES_VISIBILITY>
@@ -1370,6 +1437,7 @@
 
     <Template Name="A32NX_GT_Emissive_Gauge">
         <DefaultTemplateParameters>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
             <Condition Check="FAILURE_CIRCUIT">
                 <False>
                     <FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
@@ -1397,7 +1465,7 @@
         <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
             <Condition Check="SEQ1_POWERED">
                 <True>
-                    <EMISSIVE_CODE>#EMISSIVE_CODE# #SEQ1_POWERED# and</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>#EMISSIVE_CODE# #SEQ1_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
                 </True>
             </Condition>
         </UseTemplate>

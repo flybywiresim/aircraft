@@ -3,13 +3,13 @@ import { getSimVar, useInteractionEvent } from '../util.js';
 import { EngPage } from './Pages/Eng.jsx';
 import { BleedPage } from './Pages/Bleed.jsx';
 import { PressPage } from './Pages/Press.jsx';
-import { ElecPage } from './Pages/Elec.jsx';
-import { HydPage } from './Pages/Hyd.jsx';
+import { ElecPage } from './Pages/Elec/Elec.tsx';
+import { HydPage } from './Pages/Hyd/Hyd.tsx';
 import { FuelPage } from './Pages/Fuel.jsx';
 import { ApuPage } from './Pages/Apu/Apu.tsx';
 import { CondPage } from './Pages/Cond/Cond.tsx';
 import { DoorPage } from './Pages/Door/Door.tsx';
-import { WheelPage } from './Pages/Wheel.jsx';
+import { WheelPage } from './Pages/Wheel/Wheel.tsx';
 import { FctlPage } from './Pages/Fctl/Fctl.tsx';
 
 export const PagesContainer = () => {

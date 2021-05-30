@@ -1,4 +1,7 @@
-use crate::simulation::{SimulationElement, SimulatorReader};
+use crate::{
+    shared::LandingGearPosition,
+    simulation::{SimulationElement, SimulatorReader},
+};
 use uom::si::{f64::*, ratio::percent};
 
 /// Represents a landing gear on Airbus aircraft.
@@ -16,12 +19,13 @@ impl LandingGear {
             position: Ratio::new::<percent>(0.),
         }
     }
-
-    pub fn is_up_and_locked(&self) -> bool {
+}
+impl LandingGearPosition for LandingGear {
+    fn is_up_and_locked(&self) -> bool {
         (self.position.get::<percent>() - 0.).abs() < f64::EPSILON
     }
 
-    pub fn is_down_and_locked(&self) -> bool {
+    fn is_down_and_locked(&self) -> bool {
         (self.position.get::<percent>() - 100.).abs() < f64::EPSILON
     }
 }

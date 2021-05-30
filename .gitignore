@@ -7,7 +7,7 @@
 /flybywire-aircraft-a320-neo/layout.json
 /flybywire-aircraft-a320-neo/manifest.json
 /flybywire-aircraft-a320-neo/build_info.json
-/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/generated
+/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX
 /flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated
 !/docs/**
 !/src/**
@@ -30,6 +30,8 @@
 .DS_Store
 node_modules
 /src/sound/.cache
+/src/instruments/devServer/bundles
+/src/instruments/devServer/instruments.json
 /src/instruments/src/EFB/dist
 /src/autothrottle/target
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf
@@ -38,6 +40,7 @@ node_modules
 /target
 /src/instruments/src/EFB/web/
 /src/systems/target/
+/src/systems/a320_hydraulic_simulation_graphs/*.png
 !igniter.config.mjs
 .igniter
 /src/fdr2csv/*.exe

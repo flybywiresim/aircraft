@@ -8,29 +8,42 @@ mod engine_generator;
 mod external_power_source;
 mod static_inverter;
 mod transformer_rectifier;
-use std::{cmp::Ordering, fmt::Display, hash::Hash};
+use std::{cmp::Ordering, fmt::Display, hash::Hash, time::Duration};
 
 pub use battery::Battery;
-pub use battery_charge_limiter::{BatteryChargeLimiter, BatteryChargeLimiterArguments};
+pub use battery_charge_limiter::BatteryChargeLimiter;
 pub use emergency_generator::EmergencyGenerator;
 pub use engine_generator::{
-    EngineGenerator, EngineGeneratorUpdateArguments,
-    INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
+    EngineGenerator, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
 };
 pub use external_power_source::ExternalPowerSource;
 use itertools::Itertools;
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 
-use crate::simulation::{SimulationElement, SimulatorWriter};
+use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext};
 use uom::si::{
     electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, ratio::percent,
+    velocity::knot,
 };
 
 use self::consumption::SuppliedPower;
 
 pub trait ElectricalSystem {
     fn get_supplied_power(&self) -> SuppliedPower;
+}
+
+pub trait AlternatingCurrentElectricalSystem {
+    fn any_non_essential_bus_powered(&self) -> bool;
+}
+
+pub trait EngineGeneratorPushButtons {
+    fn engine_gen_push_button_is_on(&self, number: usize) -> bool;
+    fn idg_push_button_is_released(&self, number: usize) -> bool;
+}
+
+pub trait BatteryPushButtons {
+    fn bat_is_auto(&self, number: usize) -> bool;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -192,6 +205,10 @@ impl Default for Potential {
 /// origin of the potential. It can also be a conductor.
 pub trait PotentialSource {
     fn output(&self) -> Potential;
+
+    fn potential(&self) -> ElectricPotential {
+        self.output().raw()
+    }
 
     /// Indicates if the instance provides electric potential.
     fn is_powered(&self) -> bool {
@@ -403,49 +420,49 @@ impl ElectricalStateWriter {
         }
     }
 
-    pub fn write_direct<T: ProvideCurrent + ProvidePotential>(
+    pub fn write_direct(
         &self,
-        source: &T,
+        source: &(impl ProvideCurrent + ProvidePotential),
         writer: &mut SimulatorWriter,
     ) {
         self.write_current(source, writer);
         self.write_potential(source, writer);
     }
 
-    pub fn write_alternating<T: ProvidePotential + ProvideFrequency>(
+    pub fn write_alternating(
         &self,
-        source: &T,
+        source: &(impl ProvidePotential + ProvideFrequency),
         writer: &mut SimulatorWriter,
     ) {
         self.write_potential(source, writer);
         self.write_frequency(source, writer);
     }
 
-    pub fn write_alternating_with_load<T: ProvidePotential + ProvideFrequency + ProvideLoad>(
+    pub fn write_alternating_with_load(
         &self,
-        source: &T,
+        source: &(impl ProvidePotential + ProvideFrequency + ProvideLoad),
         writer: &mut SimulatorWriter,
     ) {
         self.write_alternating(source, writer);
         self.write_load(source, writer);
     }
 
-    fn write_current<T: ProvideCurrent>(&self, source: &T, writer: &mut SimulatorWriter) {
+    fn write_current(&self, source: &impl ProvideCurrent, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.current_id, source.current().get::<ampere>());
         writer.write_bool(&self.current_normal_id, source.current_normal());
     }
 
-    fn write_potential<T: ProvidePotential>(&self, source: &T, writer: &mut SimulatorWriter) {
+    fn write_potential(&self, source: &impl ProvidePotential, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.potential_id, source.potential().get::<volt>());
         writer.write_bool(&self.potential_normal_id, source.potential_normal());
     }
 
-    fn write_frequency<T: ProvideFrequency>(&self, source: &T, writer: &mut SimulatorWriter) {
+    fn write_frequency(&self, source: &impl ProvideFrequency, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.frequency_id, source.frequency().get::<hertz>());
         writer.write_bool(&self.frequency_normal_id, source.frequency_normal());
     }
 
-    fn write_load<T: ProvideLoad>(&self, source: &T, writer: &mut SimulatorWriter) {
+    fn write_load(&self, source: &impl ProvideLoad, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.load_id, source.load().get::<percent>());
         writer.write_bool(&self.load_normal_id, source.load_normal());
     }
@@ -469,6 +486,45 @@ pub trait ProvideFrequency {
 pub trait ProvideLoad {
     fn load(&self) -> Ratio;
     fn load_normal(&self) -> bool;
+}
+
+/// Determines if and for how long the aircraft is in an emergency electrical situation.
+pub struct EmergencyElectrical {
+    is_active_for_duration: Duration,
+}
+impl EmergencyElectrical {
+    pub fn new() -> Self {
+        Self {
+            is_active_for_duration: Duration::from_secs(0),
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+    ) {
+        if !ac_electrical_system.any_non_essential_bus_powered()
+            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
+        {
+            self.is_active_for_duration += context.delta();
+        } else {
+            self.is_active_for_duration = Duration::from_secs(0)
+        }
+    }
+
+    pub fn is_active(&self) -> bool {
+        self.is_active_for_duration > Duration::from_secs(0)
+    }
+
+    fn active_duration(&self) -> Duration {
+        self.is_active_for_duration
+    }
+}
+impl Default for EmergencyElectrical {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(test)]
@@ -930,7 +986,7 @@ mod tests {
 
             fn powered_by_battery_at(&mut self, potential: ElectricPotential) {
                 self.bus.powered_by(&BatteryStub::new(Potential::single(
-                    PotentialOrigin::Battery(10),
+                    PotentialOrigin::Battery(1),
                     potential,
                 )));
             }
@@ -946,10 +1002,8 @@ mod tests {
         #[test]
         fn or_powered_by_both_batteries_results_in_both() {
             let potential = ElectricPotential::new::<volt>(28.);
-            let bat_1 =
-                BatteryStub::new(Potential::single(PotentialOrigin::Battery(10), potential));
-            let bat_2 =
-                BatteryStub::new(Potential::single(PotentialOrigin::Battery(11), potential));
+            let bat_1 = BatteryStub::new(Potential::single(PotentialOrigin::Battery(1), potential));
+            let bat_2 = BatteryStub::new(Potential::single(PotentialOrigin::Battery(2), potential));
 
             let mut bus = electrical_bus();
 
@@ -965,32 +1019,30 @@ mod tests {
 
             assert!(bus
                 .input_potential()
-                .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+                .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         }
 
         #[test]
         fn or_powered_by_both_batteries_results_in_battery_with_highest_voltage() {
             let bat_1 = BatteryStub::new(Potential::single(
-                PotentialOrigin::Battery(10),
+                PotentialOrigin::Battery(1),
                 ElectricPotential::new::<volt>(28.),
             ));
             let bat_2 = BatteryStub::new(Potential::single(
-                PotentialOrigin::Battery(11),
+                PotentialOrigin::Battery(2),
                 ElectricPotential::new::<volt>(25.),
             ));
 
             let mut bus = electrical_bus();
             execute_or_powered_by_both_batteries(&mut bus, bat_1, bat_2);
 
-            assert!(bus
-                .input_potential()
-                .is_single(PotentialOrigin::Battery(10)));
+            assert!(bus.input_potential().is_single(PotentialOrigin::Battery(1)));
         }
 
         #[test]
         fn or_powered_by_battery_1_results_in_bat_1_output() {
             let bat_1 = BatteryStub::new(Potential::single(
-                PotentialOrigin::Battery(10),
+                PotentialOrigin::Battery(1),
                 ElectricPotential::new::<volt>(28.),
             ));
             let bat_2 = BatteryStub::new(Potential::none());
@@ -998,25 +1050,21 @@ mod tests {
             let mut bus = electrical_bus();
             execute_or_powered_by_both_batteries(&mut bus, bat_1, bat_2);
 
-            assert!(bus
-                .input_potential()
-                .is_single(PotentialOrigin::Battery(10)));
+            assert!(bus.input_potential().is_single(PotentialOrigin::Battery(1)));
         }
 
         #[test]
         fn or_powered_by_battery_2_results_in_bat_2_output() {
             let bat_1 = BatteryStub::new(Potential::none());
             let bat_2 = BatteryStub::new(Potential::single(
-                PotentialOrigin::Battery(11),
+                PotentialOrigin::Battery(2),
                 ElectricPotential::new::<volt>(28.),
             ));
 
             let mut bus = electrical_bus();
             execute_or_powered_by_both_batteries(&mut bus, bat_1, bat_2);
 
-            assert!(bus
-                .input_potential()
-                .is_single(PotentialOrigin::Battery(11)));
+            assert!(bus.input_potential().is_single(PotentialOrigin::Battery(2)));
         }
 
         #[test]

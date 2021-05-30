@@ -11,7 +11,7 @@ module.exports = {
         sourceType: 'script',
         requireConfigFile: false,
     },
-    settings: { 'import/resolver': { node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] } } },
+    settings: { 'import/resolver': { node: { extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'] } } },
     overrides: [
         {
             files: ['*.jsx', '*.tsx'],
@@ -52,6 +52,7 @@ module.exports = {
         'radix': 'off',
 
         // Avoid typescript-eslint conflicts
+        'import/no-unresolved': 'off',
         'no-unused-vars': 'off',
         '@typescript-eslint/no-unused-vars': ['error', {
             vars: 'all',

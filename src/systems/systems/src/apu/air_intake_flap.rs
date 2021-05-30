@@ -25,7 +25,7 @@ impl AirIntakeFlap {
         }
     }
 
-    pub fn update<T: AirIntakeFlapController>(&mut self, context: &UpdateContext, controller: &T) {
+    pub fn update(&mut self, context: &UpdateContext, controller: &impl AirIntakeFlapController) {
         if controller.should_open_air_intake_flap()
             && self.open_amount < Ratio::new::<percent>(100.)
         {
@@ -44,7 +44,7 @@ impl AirIntakeFlap {
     }
 
     fn get_flap_change_for_delta(&self, context: &UpdateContext) -> f64 {
-        100. * (context.delta().as_secs_f64() / self.delay.as_secs_f64())
+        100. * (context.delta_as_secs_f64() / self.delay.as_secs_f64())
     }
 
     pub fn is_fully_open(&self) -> bool {

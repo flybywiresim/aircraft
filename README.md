@@ -3,15 +3,15 @@
 
 [![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
 
+[![GitHub latest release version](https://img.shields.io/github/v/release/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
+[![Github All Releases download count](https://img.shields.io/github/downloads/flybywiresim/a32nx/total.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
+[![GitHub contributors](https://img.shields.io/github/contributors/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/graphs/contributors)
+
 #### Socials
 [![Twitter](https://img.shields.io/badge/-@FlyByWireSim-e84393?label=&logo=twitter&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://twitter.com/FlybywireSim)
 [![Instagram](https://img.shields.io/badge/-@FlyByWireSim-e84393?label=&logo=instagram&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://instagram.com/flybywiresim)
 [![YouTube](https://img.shields.io/badge/-FlyByWireSimulations-e84393?label=&logo=youtube&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://www.youtube.com/c/FlyByWire-Simulations)
 [![Facebook](https://img.shields.io/badge/-FlyByWireSimulations-e84393?label=&logo=facebook&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://www.facebook.com/FlyByWireSimulations/)
-
-[![GitHub latest release version](https://img.shields.io/github/v/release/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
-[![Github All Releases download count](https://img.shields.io/github/downloads/flybywiresim/a32nx/total.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
-[![GitHub contributors](https://img.shields.io/github/contributors/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/graphs/contributors)
 
 ## About
 
@@ -36,7 +36,7 @@ In the above profile change the aircrafts registration to your liking and save i
 Pilot ID can be found in the Optional Entries section of the Dispatch Options page.
 
 ## Downloads
-**Warning:** The development (master) and experimental versions have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
+**Warning:** All versions of the A32NX have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
 
 ### A32NX Installer
 
@@ -105,6 +105,7 @@ If you would like to contribute to the project, see [Contributing.md](.github/Co
 - Rudder keybindings not working (you have to set your keybinding to rudder axis right and left)
 - Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
 - Black screens/unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
+- Invisible plane, no sounds? Reinstall A32NX, delete any old version from your `Community` folder.
 
 ## License
 

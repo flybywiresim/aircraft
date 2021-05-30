@@ -12,6 +12,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                                   std::shared_ptr<FlapsHandler> flapsHandler,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
+                                  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
+                                  std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                                   double keyChangeAileron,
                                   double keyChangeElevator,
                                   double keyChangeRudder) {
@@ -31,10 +33,18 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     this->flapsHandler = flapsHandler;
     // store spoilers handler
     this->spoilersHandler = spoilersHandler;
+    // store elevator trim handler
+    this->elevatorTrimHandler = elevatorTrimHandler;
+    // store rudder trim handler
+    this->rudderTrimHandler = rudderTrimHandler;
     // store key change value for each axis
     flightControlsKeyChangeAileron = keyChangeAileron;
     flightControlsKeyChangeElevator = keyChangeElevator;
     flightControlsKeyChangeRudder = keyChangeRudder;
+    // register local variables
+    idFcuEventSetSPEED = make_unique<LocalVariable>("A320_Neo_FCU_SPEED_SET_DATA");
+    idFcuEventSetHDG = make_unique<LocalVariable>("A320_Neo_FCU_HDG_SET_DATA");
+    idFcuEventSetVS = make_unique<LocalVariable>("A320_Neo_FCU_VS_SET_DATA");
     // add data to definition
     bool prepareResult = prepareSimDataSimConnectDataDefinitions();
     prepareResult &= prepareSimInputSimConnectDataDefinitions(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled);
@@ -68,6 +78,10 @@ void SimConnectInterface::disconnect() {
     // info message
     cout << "WASM: Disconnected" << endl;
   }
+}
+
+void SimConnectInterface::setSampleTime(double sampleTime) {
+  this->sampleTime = sampleTime;
 }
 
 bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
@@ -106,6 +120,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:2", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TRAILING EDGE FLAPS LEFT ANGLE", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS LEFT POSITION", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS RIGHT POSITION", "PERCENT OVER 100");
@@ -203,6 +218,12 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_RIGHT, "RUDDER_RIGHT", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_AXIS_MINUS, "RUDDER_AXIS_MINUS", flyByWireEnabled);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_LEFT, "RUDDER_TRIM_LEFT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_RESET, "RUDDER_TRIM_RESET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_RIGHT, "RUDDER_TRIM_RIGHT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_SET, "RUDDER_TRIM_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_SET_EX1, "RUDDER_TRIM_SET_EX1", true);
+
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERON_SET, "AILERON_SET", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERONS_LEFT, "AILERONS_LEFT", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERONS_RIGHT, "AILERONS_RIGHT", flyByWireEnabled);
@@ -213,6 +234,11 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_DOWN, "ELEV_DOWN", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_UP, "ELEV_UP", flyByWireEnabled);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_DN, "ELEV_TRIM_DN", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_UP, "ELEV_TRIM_UP", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_TRIM_SET, "ELEVATOR_TRIM_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET", true);
+
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", autopilotStateMachineEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_ON, "AUTOPILOT_ON", autopilotStateMachineEnabled);
@@ -221,16 +247,31 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::TOGGLE_FLIGHT_DIRECTOR, "TOGGLE_FLIGHT_DIRECTOR", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_1_PUSH, "A32NX.FCU_AP_1_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_2_PUSH, "A32NX.FCU_AP_2_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_DISCONNECT_PUSH, "A32NX.FCU_AP_DISCONNECT_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ATHR_PUSH, "A32NX.FCU_ATHR_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ATHR_DISCONNECT_PUSH, "A32NX.FCU_ATHR_DISCONNECT_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_INC, "A32NX.FCU_SPD_INC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_DEC, "A32NX.FCU_SPD_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_SET, "A32NX.FCU_SPD_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_PUSH, "A32NX.FCU_SPD_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_PULL, "A32NX.FCU_SPD_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_SPD_MACH_TOGGLE_PUSH, "A32NX.FCU_SPD_MACH_TOGGLE_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_INC, "A32NX.FCU_HDG_INC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_DEC, "A32NX.FCU_HDG_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_SET, "A32NX.FCU_HDG_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_PUSH, "A32NX.FCU_HDG_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_PULL, "A32NX.FCU_HDG_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TRK_FPA_TOGGLE_PUSH, "A32NX.FCU_TRK_FPA_TOGGLE_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_HDG_PUSH, "A32NX.FCU_TO_AP_HDG_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_HDG_PULL, "A32NX.FCU_TO_AP_HDG_PULL", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INC, "A32NX.FCU_ALT_INC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_DEC, "A32NX.FCU_ALT_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_SET, "A32NX.FCU_ALT_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PUSH, "A32NX.FCU_ALT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PULL, "A32NX.FCU_ALT_PULL", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_INC, "A32NX.FCU_VS_INC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_DEC, "A32NX.FCU_VS_DEC", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_SET, "A32NX.FCU_VS_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PUSH, "A32NX.FCU_VS_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PULL, "A32NX.FCU_VS_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_TO_AP_VS_PUSH, "A32NX.FCU_TO_AP_VS_PUSH", false);
@@ -493,6 +534,10 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // request data to be updated when set
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::FLY_BY_WIRE, ClientData::FLY_BY_WIRE, ClientData::FLY_BY_WIRE,
@@ -506,6 +551,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES, sizeof(ClientDataLocalVariables),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -887,6 +934,27 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       simInput.inputs[AXIS_RUDDER_SET] = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
       break;
 
+    case Events::RUDDER_TRIM_LEFT: {
+      rudderTrimHandler->onEventRudderTrimLeft(sampleTime);
+      break;
+    }
+    case Events::RUDDER_TRIM_RESET: {
+      rudderTrimHandler->onEventRudderTrimReset();
+      break;
+    }
+    case Events::RUDDER_TRIM_RIGHT: {
+      rudderTrimHandler->onEventRudderTrimRight(sampleTime);
+      break;
+    }
+    case Events::RUDDER_TRIM_SET: {
+      rudderTrimHandler->onEventRudderTrimSet(static_cast<long>(event->dwData));
+      break;
+    }
+    case Events::RUDDER_TRIM_SET_EX1: {
+      rudderTrimHandler->onEventRudderTrimSet(static_cast<long>(event->dwData));
+      break;
+    }
+
     case Events::AILERON_SET:
       simInput.inputs[AXIS_AILERONS_SET] = static_cast<long>(event->dwData) / 16384.0;
       break;
@@ -915,6 +983,23 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::ELEV_UP:
       simInput.inputs[AXIS_ELEVATOR_SET] = fmax(-1.0, simInput.inputs[AXIS_ELEVATOR_SET] - flightControlsKeyChangeElevator);
       break;
+
+    case Events::ELEV_TRIM_DN: {
+      elevatorTrimHandler->onEventElevatorTrimDown();
+      break;
+    }
+    case Events::ELEV_TRIM_UP: {
+      elevatorTrimHandler->onEventElevatorTrimUp();
+      break;
+    }
+    case Events::ELEVATOR_TRIM_SET: {
+      elevatorTrimHandler->onEventElevatorTrimSet(static_cast<long>(event->dwData));
+      break;
+    }
+    case Events::AXIS_ELEV_TRIM_SET: {
+      elevatorTrimHandler->onEventElevatorTrimAxisSet(static_cast<long>(event->dwData));
+      break;
+    }
 
     case Events::AUTOPILOT_OFF: {
       simInputAutopilot.AP_disconnect = 1;
@@ -957,6 +1042,40 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
+    case Events::A32NX_FCU_AP_DISCONNECT_PUSH: {
+      simInputAutopilot.AP_disconnect = 1;
+      cout << "WASM: event triggered: A32NX_FCU_AP_DISCONNECT_PUSH" << endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_ATHR_PUSH: {
+      simInputThrottles.ATHR_push = 1;
+      cout << "WASM: event triggered: A32NX_FCU_ATHR_PUSH" << endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_ATHR_DISCONNECT_PUSH: {
+      simInputThrottles.ATHR_disconnect = 1;
+      cout << "WASM: event triggered: A32NX_FCU_ATHR_DISCONNECT_PUSH" << endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_SPD_INC: {
+      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_INC)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_SPD_INC" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_SPD_DEC: {
+      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_DEC)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_SPD_DEC" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_SPD_SET: {
+      idFcuEventSetSPEED->set(static_cast<long>(event->dwData));
+      execute_calculator_code("(>H:A320_Neo_FCU_SPEED_SET)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_SPD_SET: " << static_cast<long>(event->dwData) << endl;
+      break;
+    }
     case Events::A32NX_FCU_SPD_PUSH: {
       execute_calculator_code("(>H:A320_Neo_FCU_SPEED_PUSH)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_SPD_PUSH" << endl;
@@ -973,6 +1092,26 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
+    case Events::A32NX_FCU_HDG_INC: {
+      execute_calculator_code(
+          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_HDG_INC_TRACK) } els{ (>H:A320_Neo_FCU_HDG_INC_HEADING) }",
+          nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_HDG_INC" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_HDG_DEC: {
+      execute_calculator_code(
+          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_HDG_DEC_TRACK) } els{ (>H:A320_Neo_FCU_HDG_DEC_HEADING) }",
+          nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_HDG_DEC" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_HDG_SET: {
+      idFcuEventSetHDG->set(static_cast<long>(event->dwData));
+      execute_calculator_code("(>H:A320_Neo_FCU_HDG_SET)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_HDG_SET: " << static_cast<long>(event->dwData) << endl;
+      break;
+    }
     case Events::A32NX_FCU_HDG_PUSH: {
       execute_calculator_code("(>H:A320_Neo_FCU_HDG_PUSH)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_HDG_PUSH" << endl;
@@ -1000,24 +1139,105 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
+    case Events::A32NX_FCU_ALT_INC: {
+      long increment = static_cast<long>(event->dwData);
+      if (increment == 100) {
+        execute_calculator_code(
+            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 100 + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) "
+            "100 % - 49000 min (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Up) "
+            "(>H:A320_Neo_CDU_AP_INC_ALT)",
+            nullptr, nullptr, nullptr);
+      } else if (increment == 1000) {
+        execute_calculator_code(
+            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 1000 + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) "
+            "1000 % - 49000 min (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Up) "
+            "(>H:A320_Neo_CDU_AP_INC_ALT)",
+            nullptr, nullptr, nullptr);
+      } else {
+        execute_calculator_code(
+            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) "
+            "(L:XMLVAR_Autopilot_Altitude_Increment) % - 49000 min (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Up) "
+            "(>H:A320_Neo_CDU_AP_INC_ALT)",
+            nullptr, nullptr, nullptr);
+      }
+      cout << "WASM: event triggered: A32NX_FCU_ALT_INC" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_ALT_DEC: {
+      long increment = static_cast<long>(event->dwData);
+      if (increment == 100) {
+        execute_calculator_code(
+            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 100 - 100 "
+            "(A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 100 % - 100 % "
+            "+ 100 max (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Down) (>H:A320_Neo_CDU_AP_DEC_ALT)",
+            nullptr, nullptr, nullptr);
+      } else if (increment == 1000) {
+        execute_calculator_code(
+            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 1000 - 1000 "
+            "(A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) 1000 % - 1000 % "
+            "+ 100 max (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Down) (>H:A320_Neo_CDU_AP_DEC_ALT)",
+            nullptr, nullptr, nullptr);
+      } else {
+        execute_calculator_code(
+            "3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) - (L:XMLVAR_Autopilot_Altitude_Increment) "
+            "(A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) (L:XMLVAR_Autopilot_Altitude_Increment) % - (L:XMLVAR_Autopilot_Altitude_Increment) % "
+            "+ 100 max (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Down) (>H:A320_Neo_CDU_AP_DEC_ALT)",
+            nullptr, nullptr, nullptr);
+      }
+      cout << "WASM: event triggered: A32NX_FCU_ALT_INC" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_ALT_SET: {
+      long value = 100 * (static_cast<long>(event->dwData) / 100);
+      ostringstream stringStream;
+      stringStream << value;
+      stringStream << " (>K:3:AP_ALT_VAR_SET_ENGLISH)";
+      execute_calculator_code(stringStream.str().c_str(), nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_ALT_SET: " << value << endl;
+      break;
+    }
     case Events::A32NX_FCU_ALT_PUSH: {
       simInputAutopilot.ALT_push = 1;
+      execute_calculator_code("(>H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_ALT_PUSH" << endl;
       break;
     }
     case Events::A32NX_FCU_ALT_PULL: {
       simInputAutopilot.ALT_pull = 1;
+      execute_calculator_code("(>H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_ALT_PULL" << endl;
       break;
     }
 
+    case Events::A32NX_FCU_VS_INC: {
+      execute_calculator_code(
+          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_VS_INC_FPA) } els{ (>H:A320_Neo_FCU_VS_INC_VS) } "
+          "(>H:A320_Neo_CDU_VS)",
+          nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_VS_INC" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_VS_DEC: {
+      execute_calculator_code(
+          "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_VS_DEC_FPA) } els{ (>H:A320_Neo_FCU_VS_DEC_VS) } "
+          "(>H:A320_Neo_CDU_VS)",
+          nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_VS_DEC" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_VS_SET: {
+      idFcuEventSetVS->set(static_cast<long>(event->dwData));
+      execute_calculator_code("(>H:A320_Neo_FCU_VS_SET) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_VS_SET: " << static_cast<long>(event->dwData) << endl;
+      break;
+    }
     case Events::A32NX_FCU_VS_PUSH: {
-      execute_calculator_code("(>H:A320_Neo_FCU_VS_PUSH)", nullptr, nullptr, nullptr);
+      execute_calculator_code("(>H:A320_Neo_FCU_VS_PUSH) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_VS_PUSH" << endl;
       break;
     }
     case Events::A32NX_FCU_VS_PULL: {
-      execute_calculator_code("(>H:A320_Neo_FCU_VS_PULL)", nullptr, nullptr, nullptr);
+      execute_calculator_code("(>H:A320_Neo_FCU_VS_PULL) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_VS_PULL" << endl;
       break;
     }
