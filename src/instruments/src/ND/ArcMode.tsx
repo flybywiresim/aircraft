@@ -3,6 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { MathUtils } from '@shared/MathUtils';
 import { FlightPlan } from './FlightPlan';
 import { MapParameters } from './utils/MapParameters';
+import { RadioNeedle } from './RadioNeedles';
 
 const rangeSettings = [10, 20, 40, 80, 160, 320];
 
@@ -30,14 +31,14 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
         <>
             <FlightPlan y={236} mapParams={mapParams} clipPath="url(#arc-mode-flight-plan-clip)" debug />
 
-            <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} />
+            <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} side={side} />
         </>
     );
 };
 
-type OverlayProps = { heading: number, rangeIndex: number }
+type OverlayProps = { heading: number, rangeIndex: number, side: 'L' | 'R' }
 
-const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex }) => {
+const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex, side }) => {
     const range = rangeSettings[rangeIndex];
 
     return (
@@ -279,6 +280,9 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex }) => {
                     clipPath="url(#arc-mode-overlay-clip-1)"
                 />
             </g>
+
+            <RadioNeedle index={1} side={side} />
+            <RadioNeedle index={2} side={side} />
 
             <image x={342} y={596} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
         </>
