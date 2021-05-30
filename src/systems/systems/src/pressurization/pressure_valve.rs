@@ -47,3 +47,171 @@ impl PressureValve {
         self.open_amount
     }
 }
+
+#[cfg(test)]
+mod pressure_valve_tests {
+    use super::*;
+    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::{Aircraft, SimulationElement};
+
+    struct TestAircraft {
+        valve: PressureValve,
+        actuator: TestValveActuator,
+    }
+    impl TestAircraft {
+        fn new(valve: PressureValve, actuator: TestValveActuator) -> Self {
+            Self { valve, actuator }
+        }
+
+        fn command_valve_open(&mut self) {
+            self.actuator.open();
+        }
+
+        fn command_valve_close(&mut self) {
+            self.actuator.close();
+        }
+
+        fn command_valve_open_amount(&mut self, amount: Ratio) {
+            self.actuator.set_target_valve_position(amount);
+        }
+
+        fn valve_open_amount(&self) -> Ratio {
+            self.valve.open_amount()
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.valve.update(context, &self.actuator);
+        }
+    }
+    impl SimulationElement for TestAircraft {}
+
+    struct TestValveActuator {
+        should_open: bool,
+        should_close: bool,
+        target_valve_position: Ratio,
+    }
+    impl TestValveActuator {
+        fn new() -> Self {
+            TestValveActuator {
+                should_open: true,
+                should_close: false,
+                target_valve_position: Ratio::new::<percent>(100.),
+            }
+        }
+
+        fn open(&mut self) {
+            self.should_open = true;
+        }
+
+        fn close(&mut self) {
+            self.should_close = true;
+        }
+
+        fn set_target_valve_position(&mut self, amount: Ratio) {
+            self.target_valve_position = amount;
+        }
+    }
+    impl PressureValveActuator for TestValveActuator {
+        fn should_open_pressure_valve(&self) -> bool {
+            self.should_open
+        }
+        fn should_close_pressure_valve(&self) -> bool {
+            self.should_close
+        }
+        fn target_valve_position(&self) -> Ratio {
+            self.target_valve_position
+        }
+    }
+
+    #[test]
+    fn valve_starts_fully_open() {
+        let mut aircraft = TestAircraft::new(PressureValve::new(), TestValveActuator::new());
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(5));
+
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.valve_open_amount().get::<percent>(), 100.);
+    }
+
+    #[test]
+    fn valve_does_not_instantly_close() {
+        let mut aircraft = TestAircraft::new(PressureValve::new(), TestValveActuator::new());
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(1));
+
+        aircraft.command_valve_close();
+        aircraft.command_valve_open_amount(Ratio::new::<percent>(0.));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert!(aircraft.valve_open_amount().get::<percent>() > 0.);
+    }
+
+    #[test]
+    fn valve_closes_when_target_is_closed() {
+        let mut aircraft = TestAircraft::new(PressureValve::new(), TestValveActuator::new());
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(4));
+
+        aircraft.command_valve_open();
+        test_bed.run_aircraft(&mut aircraft);
+
+        let valve_open_amount = aircraft.valve_open_amount();
+
+        aircraft.command_valve_close();
+        aircraft.command_valve_open_amount(Ratio::new::<percent>(0.));
+        test_bed.set_delta(Duration::from_secs(3));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert!(aircraft.valve_open_amount() < valve_open_amount);
+    }
+
+    #[test]
+    fn valve_does_not_instantly_open() {
+        let mut aircraft = TestAircraft::new(PressureValve::new(), TestValveActuator::new());
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(4));
+
+        aircraft.command_valve_close();
+        aircraft.command_valve_open_amount(Ratio::new::<percent>(0.));
+        test_bed.run_aircraft(&mut aircraft);
+
+        aircraft.command_valve_open();
+        aircraft.command_valve_open_amount(Ratio::new::<percent>(100.));
+        test_bed.set_delta(Duration::from_secs(3));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert!(aircraft.valve_open_amount().get::<percent>() < 100.);
+    }
+
+    #[test]
+    fn valve_never_closes_beyond_0_percent() {
+        let mut aircraft = TestAircraft::new(PressureValve::new(), TestValveActuator::new());
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(1_000));
+
+        aircraft.command_valve_close();
+        aircraft.command_valve_open_amount(Ratio::new::<percent>(0.));
+        test_bed.run_aircraft(&mut aircraft);
+
+        aircraft.command_valve_close();
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.valve_open_amount(), Ratio::new::<percent>(0.));
+    }
+
+    #[test]
+    fn valve_never_opens_beyond_100_percent() {
+        let mut aircraft = TestAircraft::new(PressureValve::new(), TestValveActuator::new());
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(1_000));
+
+        aircraft.command_valve_close();
+        aircraft.command_valve_open_amount(Ratio::new::<percent>(0.));
+        test_bed.run_aircraft(&mut aircraft);
+
+        aircraft.command_valve_open();
+        aircraft.command_valve_open_amount(Ratio::new::<percent>(100.));
+        test_bed.run_aircraft(&mut aircraft);
+
+        aircraft.command_valve_open();
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.valve_open_amount(), Ratio::new::<percent>(100.));
+    }
+}
