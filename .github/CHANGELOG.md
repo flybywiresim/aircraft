@@ -86,6 +86,7 @@
 1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
 1. [HYD] Brakes are now connected to hydraulic system - @crocket63 (crocket)
 1. [ADIRS] Fix ADIRUs not aligned starting on runway - @davidwalschots (David Walschots)
+1. [FLIGHT MODEL] Adds new parameters introduced by SU4 - @donstim (donbikes#4084)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
