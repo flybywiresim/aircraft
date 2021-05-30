@@ -1,8 +1,8 @@
 use std::time::Duration;
 use systems::shared::{EmergencyElectricalRatPushButton, EmergencyElectricalState};
 use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, volume::gallon,
+    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
+    pressure::pascal, pressure::psi, ratio::percent, volume::gallon,
 };
 
 use systems::overhead::{
@@ -376,6 +376,7 @@ impl A320Hydraulic {
         self.pushback_tug.update();
 
         self.braking_force.update_forces(
+            &context,
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
             &self.hyd_brake_logic,
@@ -1265,6 +1266,8 @@ struct A320BrakingForce {
     right_braking_force: f64,
 
     park_brake_lever_is_set: bool,
+
+    acceleration: f64,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
@@ -1278,11 +1281,14 @@ impl A320BrakingForce {
             right_braking_force: 0.,
 
             park_brake_lever_is_set: true,
+
+            acceleration: 0.,
         }
     }
 
     pub fn update_forces(
         &mut self,
+        context: &UpdateContext,
         norm_brakes: &BrakeCircuit,
         altn_brakes: &BrakeCircuit,
         brake_logic: &A320HydraulicBrakingLogic,
@@ -1304,6 +1310,13 @@ impl A320BrakingForce {
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
+
+        let accel = context.long_accel().get::<meter_per_second_squared>();
+
+        self.acceleration = self.acceleration
+            + (accel - self.acceleration)
+                * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / 0.1));
+        // println!("DECEL:{:.1}m/s2", self.acceleration);
     }
 }
 
