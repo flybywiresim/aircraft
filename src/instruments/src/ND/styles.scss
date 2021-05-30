@@ -100,3 +100,8 @@ text.Red {
   fill: $display-red;
   stroke: none;
 }
+
+path.rounded {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
