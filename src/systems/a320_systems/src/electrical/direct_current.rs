@@ -16,6 +16,8 @@ use systems::{
 };
 use uom::si::{f64::*, velocity::knot};
 
+pub(crate) const APU_START_MOTOR_BUS_TYPE: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
+
 pub(super) struct A320DirectCurrentElectrical {
     dc_bus_1: ElectricalBus,
     dc_bus_2: ElectricalBus,
@@ -73,7 +75,7 @@ impl A320DirectCurrentElectrical {
             tr_2_contactor: Contactor::new("5PU2"),
             tr_ess_contactor: Contactor::new("3PE"),
             apu_start_contactors: Contactor::new("10KA_AND_5KA"),
-            apu_start_motor_bus: ElectricalBus::new(ElectricalBusType::Sub("49-42-00")),
+            apu_start_motor_bus: ElectricalBus::new(APU_START_MOTOR_BUS_TYPE),
             dc_gnd_flt_service_bus: ElectricalBus::new(
                 ElectricalBusType::DirectCurrentGndFltService,
             ),

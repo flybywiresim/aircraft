@@ -7,6 +7,7 @@ use self::{
     direct_current::A320DirectCurrentElectrical,
     galley::{MainGalley, SecondaryGalley},
 };
+pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 #[cfg(test)]
 use systems::electrical::Potential;
 use systems::{

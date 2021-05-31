@@ -8,6 +8,7 @@ use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
 
 use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
+    APU_START_MOTOR_BUS_TYPE,
 };
 
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
@@ -46,7 +47,12 @@ pub struct A320 {
 impl A320 {
     pub fn new() -> A320 {
         A320 {
-            apu: AuxiliaryPowerUnitFactory::new_aps3200(1, ElectricalBusType::Sub("49-42-00")),
+            apu: AuxiliaryPowerUnitFactory::new_aps3200(
+                1,
+                APU_START_MOTOR_BUS_TYPE,
+                ElectricalBusType::DirectCurrentBattery,
+                ElectricalBusType::DirectCurrentBattery,
+            ),
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(),

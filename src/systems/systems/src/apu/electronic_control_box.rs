@@ -16,6 +16,7 @@ use uom::si::{
 };
 
 pub struct ElectronicControlBox {
+    powered_by: ElectricalBusType,
     is_powered: bool,
     turbine_state: TurbineState,
     master_is_on: bool,
@@ -35,8 +36,9 @@ impl ElectronicControlBox {
     const RUNNING_WARNING_EGT: f64 = 682.;
     pub const BLEED_AIR_COOLDOWN_DURATION_MILLIS: u64 = 120000;
 
-    pub fn new() -> Self {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
         ElectronicControlBox {
+            powered_by,
             is_powered: false,
             turbine_state: TurbineState::Shutdown,
             master_is_on: false,
@@ -283,16 +285,12 @@ impl BleedAirValveController for ElectronicControlBox {
 }
 impl SimulationElement for ElectronicControlBox {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = self.is_powered_by_apu_itself()
-            || buses.is_powered(ElectricalBusType::DirectCurrentBattery);
+        self.is_powered = self.is_powered_by_apu_itself() || buses.is_powered(self.powered_by);
     }
 
     fn consume_power(&mut self, consumption: &mut PowerConsumption) {
         if !self.is_powered_by_apu_itself() && self.is_on() {
-            consumption.consume_from_bus(
-                ElectricalBusType::DirectCurrentBattery,
-                Power::new::<watt>(105.),
-            )
+            consumption.consume_from_bus(self.powered_by, Power::new::<watt>(105.))
         }
     }
 }

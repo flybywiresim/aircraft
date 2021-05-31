@@ -26,11 +26,15 @@ impl AuxiliaryPowerUnitFactory {
     pub fn new_aps3200(
         number: usize,
         start_motor_powered_by: ElectricalBusType,
+        electronic_control_box_powered_by: ElectricalBusType,
+        air_intake_flap_powered_by: ElectricalBusType,
     ) -> AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor> {
         AuxiliaryPowerUnit::new(
             Box::new(ShutdownAps3200Turbine::new()),
             Aps3200ApuGenerator::new(number),
             Aps3200StartMotor::new(start_motor_powered_by),
+            electronic_control_box_powered_by,
+            air_intake_flap_powered_by,
         )
     }
 }
@@ -82,13 +86,19 @@ pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor> {
     fuel_pressure_switch: FuelPressureSwitch,
 }
 impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
-    pub fn new(turbine: Box<dyn Turbine>, generator: T, start_motor: U) -> Self {
+    pub fn new(
+        turbine: Box<dyn Turbine>,
+        generator: T,
+        start_motor: U,
+        electronic_control_box_powered_by: ElectricalBusType,
+        air_intake_flap_powered_by: ElectricalBusType,
+    ) -> Self {
         AuxiliaryPowerUnit {
             turbine: Some(turbine),
             generator,
-            ecb: ElectronicControlBox::new(),
+            ecb: ElectronicControlBox::new(electronic_control_box_powered_by),
             start_motor,
-            air_intake_flap: AirIntakeFlap::new(ElectricalBusType::DirectCurrentBattery),
+            air_intake_flap: AirIntakeFlap::new(air_intake_flap_powered_by),
             bleed_air_valve: BleedAirValve::new(),
             fuel_pressure_switch: FuelPressureSwitch::new(),
         }
@@ -411,9 +421,13 @@ pub mod tests {
             bool,
     }
     impl AuxiliaryPowerUnitTestAircraft {
+        const START_MOTOR_POWERED_BY: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
+        const ECB_AND_AIR_INTAKE_FLAP_POWERED_BY: ElectricalBusType =
+            ElectricalBusType::DirectCurrentBattery;
+
         fn new() -> Self {
             Self {
-                apu: AuxiliaryPowerUnitFactory::new_aps3200(1, ElectricalBusType::Sub("49-42-00")),
+                apu: AuxiliaryPowerUnitFactory::new_aps3200(1, Self::START_MOTOR_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY),
                 apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
                 apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
                 apu_bleed: OnOffFaultPushButton::new_on("APU_BLEED"),
@@ -519,12 +533,12 @@ pub mod tests {
             }
 
             supplied_power.add(
-                ElectricalBusType::DirectCurrentBattery,
+                Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY,
                 self.dc_bat_bus_potential,
             );
 
             supplied_power.add(
-                ElectricalBusType::Sub("49-42-00"),
+                Self::START_MOTOR_POWERED_BY,
                 if self.apu.should_close_start_contactors() && !self.cut_start_motor_power {
                     Potential::single(
                         PotentialOrigin::External,
