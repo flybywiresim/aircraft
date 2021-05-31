@@ -28,7 +28,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
 
     return (
         <>
-            <FlightPlan y={236} mapParams={mapParams} clipPath="url(#arc-mode-flight-plan-clip)" />
+            <FlightPlan y={236} mapParams={mapParams} clipPath="url(#arc-mode-flight-plan-clip)" debug />
 
             <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} />
         </>
