@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useCurrentFlightPlan, useFlightPlanManager } from '@instruments/common/flightplan';
 import { Geometry, Leg, TFLeg, Type1Transition } from '@fmgc/guidance/Geometry';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { MathUtils } from '@shared/MathUtils';
 import { Layer } from '@instruments/common/utils';
 import { GeoMath } from '@fmgc/flightplanning/GeoMath';
+import { useSimVar } from '@instruments/common/simVars';
 import { MapParameters } from './utils/MapParameters';
 
-export type FlightPathProps = { x?: number, y?: number, mapParams: MapParameters, clipPath: string }
+export type FlightPathProps = { x?: number, y?: number, mapParams: MapParameters, clipPath: string, debug: boolean }
 
-export const FlightPlan: React.FC<FlightPathProps> = ({ x = 0, y = 0, mapParams, clipPath }) => {
+export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, mapParams, clipPath, debug = false }) => {
     const flightPlanManager = useFlightPlanManager();
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const flightPlan = useCurrentFlightPlan();
@@ -23,8 +24,15 @@ export const FlightPlan: React.FC<FlightPathProps> = ({ x = 0, y = 0, mapParams,
     if (geometry) {
         return (
             <Layer x={x} y={y}>
-                {flightPlan.visibleWaypoints.map((waypoint) => <Waypoint key={waypoint.ident} waypoint={waypoint} mapParams={mapParams} />)}
+                {flightPlan.visibleWaypoints.map((waypoint) => (
+                    <Waypoint key={waypoint.ident} waypoint={waypoint} mapParams={mapParams} />
+                ))}
                 <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" clipPath={clipPath} />
+                {debug && (
+                    Array.from(geometry.legs.values()).map((leg) => (
+                        <DebugLeg leg={leg} mapParams={mapParams} />
+                    ))
+                )}
             </Layer>
         );
     }
@@ -32,7 +40,7 @@ export const FlightPlan: React.FC<FlightPathProps> = ({ x = 0, y = 0, mapParams,
     return null;
 };
 
-const Waypoint: React.FC<{ waypoint: WayPoint, mapParams: MapParameters }> = ({ waypoint, mapParams }) => {
+const Waypoint: FC<{ waypoint: WayPoint, mapParams: MapParameters }> = ({ waypoint, mapParams }) => {
     const [x, y] = mapParams.coordinatesToXYy(waypoint.infos.coordinates);
 
     return (
@@ -44,6 +52,58 @@ const Waypoint: React.FC<{ waypoint: WayPoint, mapParams: MapParameters }> = ({ 
                     <text x={x + 15} y={y + 10} fontSize={20} fill="#00ff00">{waypoint.ident}</text>
                 </g>
             )
+    );
+};
+
+export type DebugLegProps = {
+    leg: Leg,
+    mapParams: MapParameters,
+}
+
+const DebugLeg: FC<DebugLegProps> = ({ leg, mapParams }) => {
+    if (!(leg instanceof TFLeg)) {
+        return null;
+    }
+
+    const legType = 'TF';
+
+    const [lat] = useSimVar('PLANE LATITUDE', 'degrees', 250);
+    const [long] = useSimVar('PLANE LONGITUDE', 'degrees', 250);
+
+    const [fromX, fromY] = mapParams.coordinatesToXYy(leg.from.infos.coordinates);
+    const [toX, toY] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
+
+    const [infoX, infoY] = [
+        Math.round(Math.min(fromX, toX) + (Math.abs(toX - fromX) / 2) + 5),
+        Math.round(Math.min(fromY, toY) + (Math.abs(toY - fromY) / 2)),
+    ];
+
+    return (
+        <>
+            <text fill="#ff4444" x={infoX} y={infoY} fontSize={16}>
+                {leg.from.ident}
+                {' '}
+                -&gt;
+                {' '}
+                {leg.to.ident}
+            </text>
+            <text fill="#ff4444" x={infoX} y={infoY + 20} fontSize={16}>{legType}</text>
+            <text fill="#ff4444" x={infoX} y={infoY + 40} fontSize={16}>
+                Tl:
+                {' '}
+                {MathUtils.fastToFixed(leg.bearing, 1)}
+            </text>
+            <text fill="#ff4444" x={infoX + 120} y={infoY + 40} fontSize={16}>
+                tA:
+                {' '}
+                {MathUtils.fastToFixed(leg.getAircraftToLegBearing({ lat, long }), 1)}
+            </text>
+            <text fill="#ff4444" x={infoX} y={infoY + 60} fontSize={16}>
+                DTG:
+                {' '}
+                {leg.getDistanceToGo({ lat, long })}
+            </text>
+        </>
     );
 };
 
