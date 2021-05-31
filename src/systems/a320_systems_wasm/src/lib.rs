@@ -60,7 +60,9 @@ fn create_aircraft_variable_reader(
     reader.add("PUSHBACK STATE", "Enum", 0)?;
     reader.add("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
     reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
-    reader.add("SURFACE TYPE", "Enum", 0)?;
+    reader.add("SPOILERS LEFT POSITION", "Position", 0)?;
+    reader.add("SPOILERS RIGHT POSITION", "Position", 0)?;
+
     reader.add_with_additional_names(
         "APU GENERATOR SWITCH",
         "Bool",
