@@ -896,6 +896,15 @@ mod tests {
             assert!(test_bed.contains_key("ELEC_AC_2_BUS_IS_POWERED"));
         }
 
+        #[test]
+        fn sub_bus_does_not_write_its_state() {
+            let mut aircraft = ElectricalBusTestAircraft::new(ElectricalBusType::Sub("202PP"));
+            let mut test_bed = SimulationTestBed::new();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!test_bed.contains_key("ELEC_SUB_202PP_BUS_IS_POWERED"));
+        }
+
         struct BatteryStub {
             potential: Potential,
         }
