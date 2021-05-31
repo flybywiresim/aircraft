@@ -22,7 +22,10 @@
  * SOFTWARE.
  */
 
-export declare class WayPoint {
+import { FlightPlanManager } from "@fmgc/index";
+import { NXDataStore } from "@shared/persistence";
+
+declare class WayPoint {
     constructor(_baseInstrument: BaseInstrument);
 
     icao: string;
@@ -126,6 +129,19 @@ declare class NDBInfo extends WayPointInfo {
     constructor(_instrument: BaseInstrument);
 }
 
+declare class FMCMainDisplay {
+    constructor();
+
+    approachSpeeds: NXSpeedsApp;
+
+
+    flightPlanManager: FlightPlanManager;
+}
+
+declare class NXSpeedsApp {
+    vapp: number;
+}
+
 declare interface OneWayRunway {
     designation: string;
     direction: number;
@@ -154,6 +170,82 @@ declare interface ProcedureLeg {
     distance: number;
     rho: number;
     theta: number;
+}
+
+declare interface RopsStateMachine {
+    currentState: RopsState;
+    states: {
+        FLIGHT_INHIBIT: {
+            value: number;
+            activateROPS(): void;
+            execute(): void;
+        },
+        ROPS: {
+            value: number;
+            armROW(): void;
+            execute(): void;
+        },
+        ROW: {
+            value: number;
+            engageROP(): void;
+            execute(): void;
+        },
+        ROP: {
+            value: number;
+            engageGroundInhibit(): void;
+            execute(): void;
+        },
+        GROUND_INHIBIT: {
+            value: number;
+            engageInflightInhibit(): void;
+            execute(): void;
+        }
+    }
+}
+
+declare interface RopsState {
+    value: number;
+
+    activateROPS?();
+
+    armROW?();
+
+    engageROP?();
+
+    engageGroundInhibit?();
+
+    engageInflightInhibit?();
+
+    execute(): void;
+}
+
+declare interface RopsLandingConstants {
+    flapFull: {
+        refDist: number;
+        positiveWeightCorrection: number;
+        negativeWeightCorrection: number;
+        speedCorrection: number;
+        altCorrection: number;
+        windCorrection: number;
+        tempCorrection: number;
+        downSlopeCorrection: number;
+        reverseThrCorrection: number;
+        overWeightCorrection: number;
+        autolandCorrection: number;
+    },
+    config3: {
+        refDist: number;
+        positiveWeightCorrection: number;
+        negativeWeightCorrection: number;
+        speedCorrection: number;
+        altCorrection: number;
+        windCorrection: number;
+        tempCorrection: number;
+        downSlopeCorrection: number;
+        reverseThrCorrection: number;
+        overWeightCorrection: number;
+        autolandCorrection: number;
+    }
 }
 
 declare function RegisterViewListener(handler: string): void
