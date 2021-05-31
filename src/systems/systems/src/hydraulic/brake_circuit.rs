@@ -5,8 +5,9 @@ use crate::{
 
 use std::f64::consts::E;
 use std::string::String;
+use std::time::Duration;
 
-use uom::si::{f64::*, pressure::psi, volume::gallon};
+use uom::si::{acceleration::meter_per_second_squared, f64::*, pressure::psi, volume::gallon};
 
 use super::Accumulator;
 
@@ -322,6 +323,91 @@ impl SimulationElement for BrakeCircuit {
         if self.has_accumulator {
             writer.write_f64(&self.id_acc_press, self.accumulator_pressure().get::<psi>());
         }
+    }
+}
+
+struct Autobrake {
+    target: Acceleration,
+    ki: f64,
+    kp: f64,
+    last_error: f64,
+
+    current_output: f64,
+    acceleration: Acceleration,
+
+    is_engaged: bool,
+    time_engaged: Duration,
+}
+impl Autobrake {
+    // Low pass filter, time constant in second
+    const ACCELERATION_INPUT_FILTER: f64 = 0.2;
+
+    fn new() -> Autobrake {
+        Self {
+            target: Acceleration::new::<meter_per_second_squared>(10.),
+            ki: 0.5,
+            kp: 0.5,
+            last_error: 0.,
+
+            current_output: 0.,
+            acceleration: Acceleration::new::<meter_per_second_squared>(0.),
+            is_engaged: false,
+            time_engaged: Duration::from_secs(0),
+        }
+    }
+
+    pub fn update_target(&mut self, deceleration_target: Acceleration) {
+        self.target = deceleration_target;
+    }
+
+    pub fn engage(&mut self) {
+        self.is_engaged = true;
+    }
+
+    pub fn disable(&mut self) {
+        self.is_engaged = false;
+        self.time_engaged = Duration::from_secs(0);
+    }
+
+    pub fn time_engaged(&self) -> Duration {
+        self.time_engaged
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        let accel = context.long_accel();
+        self.acceleration = self.acceleration
+            + (accel - self.acceleration)
+                * (1.
+                    - std::f64::consts::E
+                        .powf(-context.delta_as_secs_f64() / Self::ACCELERATION_INPUT_FILTER));
+
+        if self.is_engaged {
+            self.time_engaged += context.delta();
+
+            let target_error = self.acceleration.get::<meter_per_second_squared>()
+                - self.target.get::<meter_per_second_squared>();
+
+            let p_term = self.kp * (target_error - self.last_error);
+            let i_term = self.ki * target_error * context.delta_as_secs_f64();
+            self.current_output += p_term + i_term;
+
+            self.last_error = target_error;
+
+            self.current_output = self.current_output.min(1.).max(0.);
+        } else {
+            self.last_error = 0.;
+            self.current_output = 0.;
+        }
+        println!(
+            "Accel/Target:{:.2}/{:.2},Out{:.2}",
+            self.acceleration.get::<meter_per_second_squared>(),
+            self.target.get::<meter_per_second_squared>(),
+            self.output()
+        );
+    }
+
+    fn output(&self) -> f64 {
+        self.current_output
     }
 }
 
