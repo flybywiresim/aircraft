@@ -6,14 +6,19 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
 export interface Guidable {
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: number): GuidanceParameters | null;
-    getDistanceToGo(ppos: LatLongAlt): NauticalMiles;
+    getDistanceToGo(ppos: LatLong | LatLongAlt): NauticalMiles;
     isAbeam(ppos: LatLongAlt): boolean;
 }
 
 export abstract class Leg implements Guidable {
     abstract getGuidanceParameters(ppos, trueTrack);
 
-    abstract getDistanceToGo(ppos);
+    /**
+     * Calculates directed DTG parameter
+     *
+     * @param ppos {LatLong} the current position of the aircraft
+     */
+    abstract getDistanceToGo(ppos: LatLong): NauticalMiles;
 
     abstract isAbeam(ppos);
 }
@@ -64,7 +69,28 @@ export class TFLeg extends Leg {
         };
     }
 
-    getAircraftToLegBearing(ppos) {
+    /**
+     * Calculates the angle between the leg and the aircraft PPOS.
+     *
+     * This effectively returns the angle ABC in the figure shown below:
+     *
+     * ```
+     * * A
+     * |
+     * * B (TO)
+     * |\
+     * | \
+     * |  \
+     * |   \
+     * |    \
+     * |     \
+     * |      \
+     * * FROM  * C (PPOS)
+     * ```
+     *
+     * @param ppos {LatLong} the current position of the aircraft
+     */
+    getAircraftToLegBearing(ppos: LatLong): number {
         const aircraftToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(ppos, this.to.infos.coordinates);
 
         // Rotate frame of reference to 0deg
@@ -84,13 +110,17 @@ export class TFLeg extends Leg {
         return aircraftToLegBearing;
     }
 
-    getDistanceToGo(ppos) {
+    getDistanceToGo(ppos: LatLong): NauticalMiles {
         const aircraftLegBearing = this.getAircraftToLegBearing(ppos);
 
         const absDtg = Avionics.Utils.computeGreatCircleDistance(ppos, this.to.infos.coordinates);
 
         // @todo should be abeam distance
         if (aircraftLegBearing >= 90 && aircraftLegBearing <= 270) {
+            // Since a line perpendicular to the leg is formed by two 90 degree angles, an aircraftLegBearing outside
+            // (North - 90) and (North + 90) is in the lower quadrants of a plane centered at the TO fix. This means
+            // the aircraft is NOT past the TO fix, and DTG must be positive.
+
             return absDtg;
         }
 
