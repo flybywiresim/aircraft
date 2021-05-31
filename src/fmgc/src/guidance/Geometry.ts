@@ -64,18 +64,28 @@ export class TFLeg extends Leg {
         };
     }
 
-    getDistanceToGo(ppos) {
+    getAircraftToLegBearing(ppos) {
         const aircraftToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(ppos, this.to.infos.coordinates);
 
-        let aircraftLegBearing;
-        if (aircraftToTerminationBearing < 180) {
-            aircraftLegBearing = aircraftToTerminationBearing + 180;
-        } else {
-            const bearingCompositeAngle = 360 - aircraftToTerminationBearing;
-            const bearingComplementaryAngle = 180 - bearingCompositeAngle;
-
-            aircraftLegBearing = mod((bearingComplementaryAngle + this.bearing) + 90, 360);
+        // Rotate frame of reference to 0deg
+        let correctedLegBearing = this.bearing - aircraftToTerminationBearing;
+        if (correctedLegBearing < 0) {
+            correctedLegBearing = 360 + correctedLegBearing;
         }
+
+        let aircraftToLegBearing = 180 - correctedLegBearing;
+        if (aircraftToLegBearing < 0) {
+            // if correctedLegBearing was greater than 180 degrees, then its supplementary angle is negative.
+            // In this case, we can subtract it from 360 degrees to obtain the bearing.
+
+            aircraftToLegBearing = 360 + aircraftToLegBearing;
+        }
+
+        return aircraftToLegBearing;
+    }
+
+    getDistanceToGo(ppos) {
+        const aircraftLegBearing = this.getAircraftToLegBearing(ppos);
 
         const absDtg = Avionics.Utils.computeGreatCircleDistance(ppos, this.to.infos.coordinates);
 
