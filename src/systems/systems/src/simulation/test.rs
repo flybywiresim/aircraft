@@ -308,8 +308,7 @@ impl Default for TestReaderWriter {
 mod tests {
     use super::*;
     use crate::{
-        electrical::consumption::{PowerConsumption, PowerConsumptionReport},
-        shared::ElectricalBuses,
+        shared::{ConsumePower, ElectricalBuses, PowerConsumptionReport},
         simulation::{SimulatorReader, SimulatorWriter},
     };
 
@@ -365,11 +364,11 @@ mod tests {
             self.receive_power_called = true;
         }
 
-        fn consume_power(&mut self, _: &mut PowerConsumption) {
+        fn consume_power<T: ConsumePower>(&mut self, _: &mut T) {
             self.consume_power_called = true;
         }
 
-        fn consume_power_in_converters(&mut self, _consumption: &mut PowerConsumption) {
+        fn consume_power_in_converters<T: ConsumePower>(&mut self, _: &mut T) {
             self.consume_power_in_converters_called = true;
         }
 

@@ -18,7 +18,9 @@
 
 use super::{ElectricalBus, ElectricalBusType, Potential, PotentialOrigin, PotentialSource};
 use crate::{
-    shared::{random_number, ElectricalBuses, FwcFlightPhase},
+    shared::{
+        random_number, ConsumePower, ElectricalBuses, FwcFlightPhase, PowerConsumptionReport,
+    },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext},
 };
 use num_traits::FromPrimitive;
@@ -147,7 +149,7 @@ impl SimulationElement for PowerConsumer {
             .unwrap_or_default();
     }
 
-    fn consume_power(&mut self, consumption: &mut PowerConsumption) {
+    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
         consumption.consume(self.provided_potential, self.demand);
     }
 }
@@ -235,34 +237,30 @@ impl From<FwcFlightPhase> for PowerConsumerFlightPhase {
     }
 }
 
-pub trait PowerConsumptionReport {
-    fn total_consumption_of(&self, potential_origin: PotentialOrigin) -> Power;
-    fn delta(&self) -> Duration;
-}
-
-pub struct PowerConsumption {
+struct PowerConsumption {
     bus_to_potential: HashMap<ElectricalBusType, Potential>,
     consumption_per_origin: HashMap<PotentialOrigin, Power>,
     /// The simulation tick's duration.
     delta: Duration,
 }
 impl PowerConsumption {
-    pub fn new(delta: Duration, supplied_power: &SuppliedPower) -> Self {
+    fn new(delta: Duration, supplied_power: &SuppliedPower) -> Self {
         PowerConsumption {
             bus_to_potential: supplied_power.state().clone(),
             consumption_per_origin: HashMap::new(),
             delta,
         }
     }
-
-    pub fn consume(&mut self, potential: Potential, power: Power) {
+}
+impl ConsumePower for PowerConsumption {
+    fn consume(&mut self, potential: Potential, power: Power) {
         for origin in potential.origins() {
             let y = self.consumption_per_origin.entry(origin).or_default();
             *y += power / potential.count() as f64;
         }
     }
 
-    pub fn consume_from_bus(&mut self, bus: ElectricalBusType, power: Power) {
+    fn consume_from_bus(&mut self, bus: ElectricalBusType, power: Power) {
         if let Some(potential) = self.bus_to_potential.get(&bus) {
             let potential = *potential;
             self.consume(potential, power);
@@ -306,7 +304,7 @@ impl<'a> ConsumePowerVisitor<'a> {
 }
 impl<'a> SimulationElementVisitor for ConsumePowerVisitor<'a> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.consume_power(&mut self.consumption);
+        visited.consume_power(self.consumption);
     }
 }
 struct ConsumePowerInConvertersVisitor<'a> {
@@ -319,7 +317,7 @@ impl<'a> ConsumePowerInConvertersVisitor<'a> {
 }
 impl<'a> SimulationElementVisitor for ConsumePowerInConvertersVisitor<'a> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.consume_power_in_converters(&mut self.consumption);
+        visited.consume_power_in_converters(self.consumption);
     }
 }
 

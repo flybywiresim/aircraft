@@ -1,7 +1,6 @@
 use super::AirIntakeFlapController;
 use crate::{
-    electrical::consumption::PowerConsumption,
-    shared::{random_number, ElectricalBusType, ElectricalBuses},
+    shared::{random_number, ConsumePower, ElectricalBusType, ElectricalBuses},
     simulation::{SimulationElement, UpdateContext},
 };
 use std::time::Duration;
@@ -87,7 +86,7 @@ impl SimulationElement for AirIntakeFlap {
         self.is_powered = buses.is_powered(self.powered_by);
     }
 
-    fn consume_power(&mut self, consumption: &mut PowerConsumption) {
+    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
         if self.is_moving {
             consumption.consume_from_bus(self.powered_by, Power::new::<watt>(20.))
         }
@@ -97,13 +96,10 @@ impl SimulationElement for AirIntakeFlap {
 #[cfg(test)]
 mod air_intake_flap_tests {
     use super::*;
-    use crate::shared::ElectricalBusType;
+    use crate::shared::{ElectricalBusType, PotentialOrigin, PowerConsumptionReport};
     use crate::simulation::{test::SimulationTestBed, Aircraft, SimulationElement};
     use crate::{
-        electrical::{
-            consumption::{PowerConsumptionReport, SuppliedPower},
-            Potential, PotentialOrigin,
-        },
+        electrical::{consumption::SuppliedPower, Potential},
         simulation::SimulationElementVisitor,
     };
     use ntest::assert_about_eq;

@@ -1,12 +1,12 @@
 use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineController, TurbineState};
 use crate::{
     electrical::{
-        consumption::{PowerConsumption, PowerConsumptionReport},
-        ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, ProvideFrequency,
-        ProvideLoad, ProvidePotential,
+        ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
+        ProvidePotential,
     },
     shared::{
-        calculate_towards_target_temperature, random_number, ElectricalBusType, ElectricalBuses,
+        calculate_towards_target_temperature, random_number, ConsumePower, ElectricalBusType,
+        ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
     },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
@@ -687,26 +687,30 @@ pub struct Aps3200StartMotor {
     /// at whether or not DC BAT BUS is powered, but must instead handle
     /// potential coming in via those contactors.
     powered_by: ElectricalBusType,
-    potential: Potential,
+    is_powered: bool,
     powered_since: Duration,
 }
 impl Aps3200StartMotor {
     pub fn new(powered_by: ElectricalBusType) -> Self {
         Aps3200StartMotor {
             powered_by,
-            potential: Potential::none(),
+            is_powered: false,
             powered_since: Duration::from_secs(0),
         }
     }
 }
-impl ApuStartMotor for Aps3200StartMotor {}
+impl ApuStartMotor for Aps3200StartMotor {
+    fn is_powered(&self) -> bool {
+        self.is_powered
+    }
+}
 impl SimulationElement for Aps3200StartMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.potential = buses.potential_of(self.powered_by);
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 
-    fn consume_power(&mut self, consumption: &mut PowerConsumption) {
-        if self.potential.is_unpowered() {
+    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
+        if !self.is_powered {
             self.powered_since = Duration::from_secs(0);
         } else {
             self.powered_since += consumption.delta();
@@ -732,13 +736,8 @@ impl SimulationElement for Aps3200StartMotor {
                 + (APU_W_X7 * since.powi(7)))
             .max(0.);
 
-            consumption.consume(self.potential, Power::new::<watt>(w));
+            consumption.consume_from_bus(self.powered_by, Power::new::<watt>(w));
         }
-    }
-}
-impl PotentialSource for Aps3200StartMotor {
-    fn output(&self) -> Potential {
-        self.potential
     }
 }
 

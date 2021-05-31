@@ -1,12 +1,12 @@
 use super::{
-    AirIntakeFlap, AirIntakeFlapController, AuxiliaryPowerUnitFireOverheadPanel,
+    AirIntakeFlap, AirIntakeFlapController, ApuStartMotor, AuxiliaryPowerUnitFireOverheadPanel,
     AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch, Turbine, TurbineController, TurbineState,
 };
 use crate::{
-    electrical::{consumption::PowerConsumption, PotentialSource},
     pneumatic::{BleedAirValveController, Valve},
     shared::{
-        ApuMaster, ApuStart, ApuStartContactorsController, ElectricalBusType, ElectricalBuses,
+        ApuMaster, ApuStart, ApuStartContactorsController, ConsumePower, ElectricalBusType,
+        ElectricalBuses,
     },
     simulation::{SimulationElement, UpdateContext},
 };
@@ -87,7 +87,7 @@ impl ElectronicControlBox {
         self.air_intake_flap_open_amount = air_intake_flap.open_amount();
     }
 
-    pub fn update_start_motor_state(&mut self, start_motor: &impl PotentialSource) {
+    pub fn update_start_motor_state(&mut self, start_motor: &impl ApuStartMotor) {
         self.start_motor_is_powered = start_motor.is_powered();
 
         if self.should_close_start_contactors() && !self.start_motor_is_powered {
@@ -288,7 +288,7 @@ impl SimulationElement for ElectronicControlBox {
         self.is_powered = self.is_powered_by_apu_itself() || buses.is_powered(self.powered_by);
     }
 
-    fn consume_power(&mut self, consumption: &mut PowerConsumption) {
+    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
         if !self.is_powered_by_apu_itself() && self.is_on() {
             consumption.consume_from_bus(self.powered_by, Power::new::<watt>(105.))
         }

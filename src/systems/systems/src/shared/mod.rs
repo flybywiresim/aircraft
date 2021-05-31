@@ -112,6 +112,27 @@ pub trait ElectricalBuses {
     fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool;
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum PotentialOrigin {
+    EngineGenerator(usize),
+    ApuGenerator(usize),
+    External,
+    EmergencyGenerator,
+    Battery(usize),
+    TransformerRectifier(usize),
+    StaticInverter,
+}
+
+pub trait PowerConsumptionReport {
+    fn total_consumption_of(&self, potential_origin: PotentialOrigin) -> Power;
+    fn delta(&self) -> Duration;
+}
+
+pub trait ConsumePower: PowerConsumptionReport {
+    fn consume(&mut self, potential: Potential, power: Power);
+    fn consume_from_bus(&mut self, bus: ElectricalBusType, power: Power);
+}
+
 #[derive(FromPrimitive)]
 pub(crate) enum FwcFlightPhase {
     ElecPwr = 1,

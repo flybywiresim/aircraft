@@ -8,7 +8,7 @@ mod engine_generator;
 mod external_power_source;
 mod static_inverter;
 mod transformer_rectifier;
-use std::{cmp::Ordering, hash::Hash, time::Duration};
+use std::{cmp::Ordering, time::Duration};
 
 pub use battery::Battery;
 pub use battery_charge_limiter::BatteryChargeLimiter;
@@ -22,7 +22,7 @@ pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 
 use crate::{
-    shared::ElectricalBusType,
+    shared::{ElectricalBusType, PotentialOrigin},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 use uom::si::{
@@ -47,17 +47,6 @@ pub trait EngineGeneratorPushButtons {
 
 pub trait BatteryPushButtons {
     fn bat_is_auto(&self, number: usize) -> bool;
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum PotentialOrigin {
-    EngineGenerator(usize),
-    ApuGenerator(usize),
-    External,
-    EmergencyGenerator,
-    Battery(usize),
-    TransformerRectifier(usize),
-    StaticInverter,
 }
 
 /// Within an electrical system, electric potential is made available by an origin.

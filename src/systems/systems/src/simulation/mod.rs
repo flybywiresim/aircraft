@@ -6,10 +6,8 @@ pub use update_context::*;
 pub mod test;
 
 use crate::{
-    electrical::consumption::{
-        ElectricPower, PowerConsumption, PowerConsumptionReport, SuppliedPower,
-    },
-    shared::ElectricalBuses,
+    electrical::consumption::{ElectricPower, SuppliedPower},
+    shared::{ConsumePower, ElectricalBuses, PowerConsumptionReport},
 };
 
 /// Trait for a type which can read and write simulator data.
@@ -117,14 +115,14 @@ pub trait SimulationElement {
     /// The easiest way to deal with power consumption is using the [`PowerConsumer`] type.
     ///
     /// [`PowerConsumer`]: ../electrical/struct.PowerConsumer.html
-    fn consume_power(&mut self, _consumption: &mut PowerConsumption) {}
+    fn consume_power<T: ConsumePower>(&mut self, _power: &mut T) {}
 
     /// Consume power within converters, such as transformer rectifiers and the static
     /// inverter. This is a separate function, as their power consumption can only be
     /// determined after the consumption of elements to which they provide power is known.
     ///
     /// [`consume_power`]: fn.consume_power.html
-    fn consume_power_in_converters(&mut self, _consumption: &mut PowerConsumption) {}
+    fn consume_power_in_converters<T: ConsumePower>(&mut self, _power: &mut T) {}
 
     /// Process a report containing the power consumption per potential origin.
     /// This is useful for calculating the load percentage on a given generator,

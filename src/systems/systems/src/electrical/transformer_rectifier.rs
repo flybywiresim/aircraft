@@ -1,9 +1,11 @@
 use super::{
-    consumption::{PowerConsumption, PowerConsumptionReport},
     ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
     ProvideCurrent, ProvidePotential,
 };
-use crate::simulation::{SimulationElement, SimulatorWriter};
+use crate::{
+    shared::{ConsumePower, PowerConsumptionReport},
+    simulation::{SimulationElement, SimulatorWriter},
+};
 use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
 
 pub struct TransformerRectifier {
@@ -70,7 +72,7 @@ impl SimulationElement for TransformerRectifier {
         self.writer.write_direct(self, writer);
     }
 
-    fn consume_power_in_converters(&mut self, consumption: &mut PowerConsumption) {
+    fn consume_power_in_converters<T: ConsumePower>(&mut self, consumption: &mut T) {
         let dc_power =
             consumption.total_consumption_of(PotentialOrigin::TransformerRectifier(self.number));
 

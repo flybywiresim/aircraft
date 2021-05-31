@@ -1398,9 +1398,10 @@ mod tests {
     mod a320_hydraulics {
         use super::*;
         use systems::electrical::consumption::SuppliedPower;
-        use systems::electrical::{Potential, PotentialOrigin};
+        use systems::electrical::Potential;
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
         use systems::shared::EmergencyElectricalState;
+        use systems::shared::PotentialOrigin;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, electric_potential::volt, length::foot,

@@ -39,7 +39,9 @@ impl AuxiliaryPowerUnitFactory {
     }
 }
 
-pub trait ApuStartMotor: PotentialSource + SimulationElement {}
+pub trait ApuStartMotor: SimulationElement {
+    fn is_powered(&self) -> bool;
+}
 
 /// Komp: There is a pressure switch between the fuel valve and the APU.
 /// It switches from 0 to 1 when the pressure is >=17 PSI and the signal is received by the ECB
@@ -351,11 +353,8 @@ impl Default for AuxiliaryPowerUnitOverheadPanel {
 #[cfg(test)]
 pub mod tests {
     use crate::{
-        electrical::{
-            consumption::{PowerConsumer, SuppliedPower},
-            PotentialOrigin,
-        },
-        shared::ElectricalBusType,
+        electrical::consumption::{PowerConsumer, SuppliedPower},
+        shared::{ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
         simulation::{test::SimulationTestBed, Aircraft},
     };
 
@@ -563,12 +562,8 @@ pub mod tests {
             visitor.visit(self);
         }
 
-        fn process_power_consumption_report<
-            T: crate::electrical::consumption::PowerConsumptionReport,
-        >(
-            &mut self,
-            report: &T,
-        ) where
+        fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T)
+        where
             Self: Sized,
         {
             self.power_consumption = report.total_consumption_of(PotentialOrigin::External);

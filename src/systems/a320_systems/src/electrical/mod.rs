@@ -416,10 +416,13 @@ mod a320_electrical_circuit_tests {
     use std::time::Duration;
     use systems::{
         electrical::{
-            ExternalPowerSource, Potential, PotentialOrigin, PotentialSource,
+            ExternalPowerSource, Potential, PotentialSource,
             INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
-        shared::{ApuAvailable, ApuStartContactorsController, ElectricalBusType, ElectricalBuses},
+        shared::{
+            ApuAvailable, ApuStartContactorsController, ElectricalBusType, ElectricalBuses,
+            PotentialOrigin,
+        },
         simulation::{test::SimulationTestBed, Aircraft},
     };
     use uom::si::f64::*;
