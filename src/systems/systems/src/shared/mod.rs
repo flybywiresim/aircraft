@@ -9,13 +9,8 @@ use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
 mod random;
 pub use random::*;
 
-/// Signals to the APU start contactor what position it should be in.
-pub trait ApuStartContactorsController {
-    fn should_close_start_contactors(&self) -> bool;
-}
-
 pub trait AuxiliaryPowerUnitElectrical:
-    PotentialSource + ApuStartContactorsController + ApuAvailable
+    ControllerSignal<ContactorSignal> + PotentialSource + ApuAvailable
 {
     fn output_within_normal_parameters(&self) -> bool;
 }
@@ -131,6 +126,24 @@ pub trait PowerConsumptionReport {
 pub trait ConsumePower: PowerConsumptionReport {
     fn consume(&mut self, potential: Potential, power: Power);
     fn consume_from_bus(&mut self, bus: ElectricalBusType, power: Power);
+}
+
+pub trait ControllerSignal<S> {
+    fn signal(&self) -> Option<S>;
+}
+
+pub enum PneumaticValveSignal {
+    Open,
+    Close,
+}
+
+pub trait PneumaticValve {
+    fn is_open(&self) -> bool;
+}
+
+pub enum ContactorSignal {
+    Open,
+    Close,
 }
 
 #[derive(FromPrimitive)]

@@ -10,7 +10,8 @@ use systems::{
         EmergencyElectrical, EmergencyGenerator, PotentialSource, PotentialTarget, StaticInverter,
     },
     shared::{
-        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ElectricalBusType, LandingGearPosition,
+        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
+        LandingGearPosition,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -201,7 +202,7 @@ impl A320DirectCurrentElectrical {
         self.apu_start_contactors.close_when(
             self.battery_1_contactor.is_closed()
                 && self.battery_2_contactor.is_closed()
-                && apu.should_close_start_contactors(),
+                && matches!(apu.signal(), Some(ContactorSignal::Close)),
         );
         self.apu_start_motor_bus
             .powered_by(&self.apu_start_contactors);

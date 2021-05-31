@@ -5,10 +5,10 @@ use self::{
 use crate::{
     electrical::{Potential, PotentialSource, ProvideFrequency, ProvidePotential},
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
-    pneumatic::{BleedAirValve, BleedAirValveState, Valve},
+    pneumatic::{BleedAirValve, BleedAirValveState},
     shared::{
-        ApuAvailable, ApuMaster, ApuStart, ApuStartContactorsController,
-        AuxiliaryPowerUnitElectrical, ElectricalBusType,
+        ApuAvailable, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal,
+        ControllerSignal, ElectricalBusType, PneumaticValve,
     },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
@@ -67,15 +67,9 @@ impl FuelPressureSwitch {
     }
 }
 
-/// Signals to the APU air intake flap what position it should move towards.
-pub trait AirIntakeFlapController {
-    fn should_open_air_intake_flap(&self) -> bool;
-}
-
-/// Signals to the APU turbine whether it should start or stop.
-pub trait TurbineController {
-    fn should_start(&self) -> bool;
-    fn should_stop(&self) -> bool;
+pub enum TurbineSignal {
+    StartOrContinue,
+    Stop,
 }
 
 pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor> {
@@ -191,9 +185,11 @@ impl<T: ApuGenerator, U: ApuStartMotor> ApuAvailable for AuxiliaryPowerUnit<T, U
         self.ecb.is_available()
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> ApuStartContactorsController for AuxiliaryPowerUnit<T, U> {
-    fn should_close_start_contactors(&self) -> bool {
-        self.ecb.should_close_start_contactors()
+impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ContactorSignal>
+    for AuxiliaryPowerUnit<T, U>
+{
+    fn signal(&self) -> Option<ContactorSignal> {
+        self.ecb.signal()
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> PotentialSource for AuxiliaryPowerUnit<T, U> {
@@ -248,7 +244,7 @@ pub trait Turbine {
         context: &UpdateContext,
         apu_bleed_is_used: bool,
         apu_gen_is_used: bool,
-        controller: &dyn TurbineController,
+        controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine>;
     fn n(&self) -> Ratio;
     fn egt(&self) -> ThermodynamicTemperature;
@@ -387,7 +383,7 @@ pub mod tests {
             _: &UpdateContext,
             _: bool,
             _: bool,
-            _: &dyn TurbineController,
+            _: &dyn ControllerSignal<TurbineSignal>,
         ) -> Box<dyn Turbine> {
             self
         }
@@ -465,8 +461,8 @@ pub mod tests {
             self.power_consumer.demand(power);
         }
 
-        fn should_close_start_contactors_commanded(&self) -> bool {
-            self.apu.should_close_start_contactors()
+        fn close_start_contactors_signal(&self) -> Option<ContactorSignal> {
+            self.apu.signal()
         }
 
         fn cut_start_motor_power(&mut self) {
@@ -538,7 +534,9 @@ pub mod tests {
 
             supplied_power.add(
                 Self::START_MOTOR_POWERED_BY,
-                if self.apu.should_close_start_contactors() && !self.cut_start_motor_power {
+                if matches!(self.apu.signal(), Some(ContactorSignal::Close))
+                    && !self.cut_start_motor_power
+                {
                     Potential::single(
                         PotentialOrigin::External,
                         ElectricPotential::new::<volt>(115.),
@@ -911,7 +909,14 @@ pub mod tests {
         }
 
         fn should_close_start_contactors_commanded(&self) -> bool {
-            self.aircraft.should_close_start_contactors_commanded()
+            matches!(
+                self.aircraft.close_start_contactors_signal(),
+                Some(ContactorSignal::Close)
+            )
+        }
+
+        fn close_start_contactors_signal(&self) -> Option<ContactorSignal> {
+            self.aircraft.close_start_contactors_signal()
         }
 
         fn has_fuel_low_pressure_fault(&mut self) -> bool {
@@ -1520,6 +1525,16 @@ pub mod tests {
                 .running_apu()
                 .run(Duration::from_secs(1_000));
             assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
+        }
+
+        #[test]
+        fn start_contactors_signal_is_none_when_ecb_unpowered() {
+            let test_bed = test_bed_with()
+                .starting_apu()
+                .and()
+                .unpowered_dc_bat_bus()
+                .run(Duration::from_secs(1));
+            assert!(matches!(test_bed.close_start_contactors_signal(), None));
         }
 
         #[test]

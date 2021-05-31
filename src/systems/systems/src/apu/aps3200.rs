@@ -1,12 +1,12 @@
-use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineController, TurbineState};
+use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
 use crate::{
     electrical::{
         ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
         ProvidePotential,
     },
     shared::{
-        calculate_towards_target_temperature, random_number, ConsumePower, ElectricalBusType,
-        ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
+        calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
+        ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
     },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
@@ -36,14 +36,13 @@ impl Turbine for ShutdownAps3200Turbine {
         context: &UpdateContext,
         _: bool,
         _: bool,
-        controller: &dyn TurbineController,
+        controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.egt = calculate_towards_ambient_egt(self.egt, context);
 
-        if controller.should_start() {
-            Box::new(Starting::new(self.egt))
-        } else {
-            self
+        match controller.signal() {
+            Some(TurbineSignal::StartOrContinue) => Box::new(Starting::new(self.egt)),
+            Some(TurbineSignal::Stop) | None => self,
         }
     }
 
@@ -180,18 +179,20 @@ impl Turbine for Starting {
         context: &UpdateContext,
         _: bool,
         _: bool,
-        controller: &dyn TurbineController,
+        controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
         self.n = self.calculate_n();
         self.egt = self.calculate_egt(context);
 
-        if controller.should_stop() {
-            Box::new(Stopping::new(self.egt, self.n))
-        } else if (self.n.get::<percent>() - 100.).abs() < f64::EPSILON {
-            Box::new(Running::new(self.egt))
-        } else {
-            self
+        match controller.signal() {
+            Some(TurbineSignal::Stop) | None => Box::new(Stopping::new(self.egt, self.n)),
+            Some(TurbineSignal::StartOrContinue)
+                if { (self.n.get::<percent>() - 100.).abs() < f64::EPSILON } =>
+            {
+                Box::new(Running::new(self.egt))
+            }
+            Some(TurbineSignal::StartOrContinue) => self,
         }
     }
 
@@ -366,14 +367,15 @@ impl Turbine for Running {
         context: &UpdateContext,
         apu_bleed_is_used: bool,
         apu_gen_is_used: bool,
-        controller: &dyn TurbineController,
+        controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
 
-        if controller.should_stop() {
-            Box::new(Stopping::new(self.egt, Ratio::new::<percent>(100.)))
-        } else {
-            self
+        match controller.signal() {
+            Some(TurbineSignal::StartOrContinue) => self,
+            Some(TurbineSignal::Stop) | None => {
+                Box::new(Stopping::new(self.egt, Ratio::new::<percent>(100.)))
+            }
         }
     }
 
@@ -495,7 +497,7 @@ impl Turbine for Stopping {
         context: &UpdateContext,
         _: bool,
         _: bool,
-        _: &dyn TurbineController,
+        _: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
         self.n = Stopping::calculate_n(self.since) * self.n_factor;

@@ -420,7 +420,7 @@ mod a320_electrical_circuit_tests {
             INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
         shared::{
-            ApuAvailable, ApuStartContactorsController, ElectricalBusType, ElectricalBuses,
+            ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
             PotentialOrigin,
         },
         simulation::{test::SimulationTestBed, Aircraft},
@@ -2103,9 +2103,13 @@ mod a320_electrical_circuit_tests {
             self.is_available
         }
     }
-    impl ApuStartContactorsController for TestApu {
-        fn should_close_start_contactors(&self) -> bool {
-            self.should_close_start_contactor
+    impl ControllerSignal<ContactorSignal> for TestApu {
+        fn signal(&self) -> Option<ContactorSignal> {
+            if self.should_close_start_contactor {
+                Some(ContactorSignal::Close)
+            } else {
+                Some(ContactorSignal::Open)
+            }
         }
     }
 

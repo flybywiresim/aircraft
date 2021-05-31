@@ -1,12 +1,12 @@
 use super::{
-    AirIntakeFlap, AirIntakeFlapController, ApuStartMotor, AuxiliaryPowerUnitFireOverheadPanel,
-    AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch, Turbine, TurbineController, TurbineState,
+    air_intake_flap::AirIntakeFlapSignal, AirIntakeFlap, ApuStartMotor,
+    AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch,
+    Turbine, TurbineSignal, TurbineState,
 };
 use crate::{
-    pneumatic::{BleedAirValveController, Valve},
     shared::{
-        ApuMaster, ApuStart, ApuStartContactorsController, ConsumePower, ElectricalBusType,
-        ElectricalBuses,
+        ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal, ElectricalBusType,
+        ElectricalBuses, PneumaticValve, PneumaticValveSignal,
     },
     simulation::{SimulationElement, UpdateContext},
 };
@@ -34,6 +34,7 @@ pub struct ElectronicControlBox {
 }
 impl ElectronicControlBox {
     const RUNNING_WARNING_EGT: f64 = 682.;
+    const START_MOTOR_POWERED_UNTIL_N: f64 = 55.;
     pub const BLEED_AIR_COOLDOWN_DURATION_MILLIS: u64 = 120000;
 
     pub fn new(powered_by: ElectricalBusType) -> Self {
@@ -83,14 +84,18 @@ impl ElectronicControlBox {
         }
     }
 
-    pub fn update_air_intake_flap_state(&mut self, air_intake_flap: &AirIntakeFlap) {
+    pub(super) fn update_air_intake_flap_state(&mut self, air_intake_flap: &AirIntakeFlap) {
         self.air_intake_flap_open_amount = air_intake_flap.open_amount();
     }
 
     pub fn update_start_motor_state(&mut self, start_motor: &impl ApuStartMotor) {
         self.start_motor_is_powered = start_motor.is_powered();
 
-        if self.should_close_start_contactors() && !self.start_motor_is_powered {
+        if matches!(
+            <ElectronicControlBox as ControllerSignal<ContactorSignal>>::signal(&self),
+            Some(ContactorSignal::Close)
+        ) && !self.start_motor_is_powered
+        {
             self.fault = Some(ApuFault::DcPowerLoss);
         }
     }
@@ -116,7 +121,7 @@ impl ElectronicControlBox {
     pub fn update_bleed_air_valve_state(
         &mut self,
         context: &UpdateContext,
-        bleed_air_valve: &impl Valve,
+        bleed_air_valve: &impl PneumaticValve,
     ) {
         if bleed_air_valve.is_open() {
             self.bleed_air_valve_last_open_time_ago = Duration::from_secs(0);
@@ -222,65 +227,98 @@ impl ElectronicControlBox {
         self.turbine_state == TurbineState::Starting
     }
 }
-impl ApuStartContactorsController for ElectronicControlBox {
-    /// Indicates if the APU start contactor should be closed.
-    fn should_close_start_contactors(&self) -> bool {
+/// APU start Motor contactors controller
+impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
+    fn signal(&self) -> Option<ContactorSignal> {
+        if !self.is_on() {
+            return None;
+        }
+
         if self.is_inoperable() {
-            false
-        } else {
-            match self.turbine_state {
-                TurbineState::Shutdown => {
+            return Some(ContactorSignal::Open);
+        }
+
+        match self.turbine_state {
+            TurbineState::Shutdown
+                if {
                     self.master_is_on
                         && self.start_is_on
                         && (self.air_intake_flap_open_amount.get::<percent>() - 100.).abs()
                             < f64::EPSILON
-                }
-                TurbineState::Starting => {
-                    const START_MOTOR_POWERED_UNTIL_N: f64 = 55.;
+                } =>
+            {
+                Some(ContactorSignal::Close)
+            }
+            TurbineState::Starting
+                if {
                     self.turbine_state == TurbineState::Starting
-                        && self.n.get::<percent>() < START_MOTOR_POWERED_UNTIL_N
-                }
-                _ => false,
+                        && self.n.get::<percent>() < Self::START_MOTOR_POWERED_UNTIL_N
+                } =>
+            {
+                Some(ContactorSignal::Close)
+            }
+            _ => Some(ContactorSignal::Open),
+        }
+    }
+}
+impl ControllerSignal<AirIntakeFlapSignal> for ElectronicControlBox {
+    fn signal(&self) -> Option<AirIntakeFlapSignal> {
+        if !self.is_on() {
+            None
+        } else {
+            if match self.turbine_state {
+                TurbineState::Shutdown => self.master_is_on,
+                TurbineState::Starting => true,
+                // While running, the air intake flap remains open.
+                TurbineState::Running => true,
+                // Manual shutdown sequence: the air intake flap closes at N = 7%.
+                TurbineState::Stopping => self.master_is_on || 7. <= self.n.get::<percent>(),
+            } {
+                Some(AirIntakeFlapSignal::Open)
+            } else {
+                Some(AirIntakeFlapSignal::Close)
             }
         }
     }
 }
-impl AirIntakeFlapController for ElectronicControlBox {
-    /// Indicates if the air intake flap should be opened.
-    fn should_open_air_intake_flap(&self) -> bool {
-        match self.turbine_state {
-            TurbineState::Shutdown => self.master_is_on,
-            TurbineState::Starting => true,
-            // While running, the air intake flap remains open.
-            TurbineState::Running => true,
-            // Manual shutdown sequence: the air intake flap closes at N = 7%.
-            TurbineState::Stopping => self.master_is_on || 7. <= self.n.get::<percent>(),
+impl ControllerSignal<TurbineSignal> for ElectronicControlBox {
+    fn signal(&self) -> Option<TurbineSignal> {
+        if !self.is_on() {
+            return None;
         }
-    }
-}
-impl TurbineController for ElectronicControlBox {
-    /// Indicates if the start sequence should be started.
-    fn should_start(&self) -> bool {
-        self.is_on() && self.start_motor_is_powered
-    }
 
-    fn should_stop(&self) -> bool {
-        !self.is_on()
-            || self.is_auto_shutdown()
+        if self.is_auto_shutdown()
             || self.is_emergency_shutdown()
             || (!self.master_is_on
                 && self.turbine_state != TurbineState::Starting
                 && !self.bleed_air_valve_was_open_in_last(Duration::from_millis(
                     ElectronicControlBox::BLEED_AIR_COOLDOWN_DURATION_MILLIS,
                 )))
+        {
+            Some(TurbineSignal::Stop)
+        } else if self.start_motor_is_powered
+            || self.n.get::<percent>() >= Self::START_MOTOR_POWERED_UNTIL_N
+        {
+            Some(TurbineSignal::StartOrContinue)
+        } else {
+            None
+        }
     }
 }
-impl BleedAirValveController for ElectronicControlBox {
-    fn should_open_bleed_air_valve(&self) -> bool {
-        self.fault != Some(ApuFault::ApuFire)
+/// Bleed air valve controller
+impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
+    fn signal(&self) -> Option<PneumaticValveSignal> {
+        if !self.is_on() {
+            None
+        } else if self.fault != Some(ApuFault::ApuFire)
             && self.master_is_on
             && self.n.get::<percent>() > 95.
             && self.bleed_is_on
+        {
+            Some(PneumaticValveSignal::Open)
+        } else {
+            Some(PneumaticValveSignal::Close)
+        }
     }
 }
 impl SimulationElement for ElectronicControlBox {

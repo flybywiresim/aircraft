@@ -1,12 +1,16 @@
-use super::AirIntakeFlapController;
 use crate::{
-    shared::{random_number, ConsumePower, ElectricalBusType, ElectricalBuses},
+    shared::{random_number, ConsumePower, ControllerSignal, ElectricalBusType, ElectricalBuses},
     simulation::{SimulationElement, UpdateContext},
 };
 use std::time::Duration;
 use uom::si::{f64::*, power::watt, ratio::percent};
 
-pub struct AirIntakeFlap {
+pub(super) enum AirIntakeFlapSignal {
+    Open,
+    Close,
+}
+
+pub(super) struct AirIntakeFlap {
     is_powered: bool,
     powered_by: ElectricalBusType,
     open_amount: Ratio,
@@ -34,32 +38,40 @@ impl AirIntakeFlap {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, controller: &impl AirIntakeFlapController) {
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        controller: &impl ControllerSignal<AirIntakeFlapSignal>,
+    ) {
         if !self.is_powered {
             self.is_moving = false;
-            return;
-        }
-
-        if controller.should_open_air_intake_flap()
-            && self.open_amount < Ratio::new::<percent>(100.)
-        {
-            self.open_amount += Ratio::new::<percent>(
-                self.get_flap_change_for_delta(context)
-                    .min(100. - self.open_amount.get::<percent>()),
-            );
-
-            self.is_moving = (self.open_amount.get::<percent>() - 100.).abs() > f64::EPSILON;
-        } else if !controller.should_open_air_intake_flap()
-            && self.open_amount > Ratio::new::<percent>(0.)
-        {
-            self.open_amount -= Ratio::new::<percent>(
-                self.get_flap_change_for_delta(context)
-                    .min(self.open_amount.get::<percent>()),
-            );
-
-            self.is_moving = (self.open_amount.get::<percent>() - 0.).abs() > f64::EPSILON;
         } else {
-            self.is_moving = false;
+            match controller.signal() {
+                Some(AirIntakeFlapSignal::Open)
+                    if { self.open_amount < Ratio::new::<percent>(100.) } =>
+                {
+                    self.open_amount += Ratio::new::<percent>(
+                        self.get_flap_change_for_delta(context)
+                            .min(100. - self.open_amount.get::<percent>()),
+                    );
+
+                    self.is_moving =
+                        (self.open_amount.get::<percent>() - 100.).abs() > f64::EPSILON;
+                }
+                Some(AirIntakeFlapSignal::Close)
+                    if { self.open_amount > Ratio::new::<percent>(0.) } =>
+                {
+                    self.open_amount -= Ratio::new::<percent>(
+                        self.get_flap_change_for_delta(context)
+                            .min(self.open_amount.get::<percent>()),
+                    );
+
+                    self.is_moving = (self.open_amount.get::<percent>() - 0.).abs() > f64::EPSILON;
+                }
+                _ => {
+                    self.is_moving = false;
+                }
+            }
         }
     }
 
@@ -129,6 +141,10 @@ mod air_intake_flap_tests {
             self.controller.close();
         }
 
+        fn unpower_controller(&mut self) {
+            self.controller.unpower();
+        }
+
         fn flap_open_amount(&self) -> Ratio {
             self.flap.open_amount()
         }
@@ -137,7 +153,7 @@ mod air_intake_flap_tests {
             self.flap.is_fully_open()
         }
 
-        fn unpower(&mut self) {
+        fn unpower_air_intake_flap(&mut self) {
             self.is_powered = false;
         }
 
@@ -182,10 +198,14 @@ mod air_intake_flap_tests {
 
     struct TestFlapController {
         should_open: bool,
+        is_powered: bool,
     }
     impl TestFlapController {
         fn new() -> Self {
-            TestFlapController { should_open: false }
+            TestFlapController {
+                should_open: false,
+                is_powered: true,
+            }
         }
 
         fn open(&mut self) {
@@ -195,10 +215,22 @@ mod air_intake_flap_tests {
         fn close(&mut self) {
             self.should_open = false;
         }
+
+        fn unpower(&mut self) {
+            self.is_powered = false;
+        }
     }
-    impl AirIntakeFlapController for TestFlapController {
-        fn should_open_air_intake_flap(&self) -> bool {
-            self.should_open
+    impl ControllerSignal<AirIntakeFlapSignal> for TestFlapController {
+        fn signal(&self) -> Option<AirIntakeFlapSignal> {
+            if self.is_powered {
+                if self.should_open {
+                    Some(AirIntakeFlapSignal::Open)
+                } else {
+                    Some(AirIntakeFlapSignal::Close)
+                }
+            } else {
+                None
+            }
         }
     }
 
@@ -308,7 +340,7 @@ mod air_intake_flap_tests {
         let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(5));
 
         aircraft.command_flap_open();
-        aircraft.unpower();
+        aircraft.unpower_air_intake_flap();
         test_bed.run_aircraft(&mut aircraft);
 
         assert_about_eq!(aircraft.flap_open_amount().get::<percent>(), 0.);
@@ -333,5 +365,17 @@ mod air_intake_flap_tests {
         test_bed.run_aircraft(&mut aircraft);
 
         assert_about_eq!(aircraft.power_consumption().get::<watt>(), 0.);
+    }
+
+    #[test]
+    fn does_not_move_when_controller_unpowered() {
+        let mut aircraft = TestAircraft::new();
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(5));
+
+        aircraft.command_flap_open();
+        aircraft.unpower_controller();
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_about_eq!(aircraft.flap_open_amount().get::<percent>(), 0.);
     }
 }
