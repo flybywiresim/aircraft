@@ -2072,6 +2072,11 @@ mod a320_electrical_circuit_tests {
             self.start_motor_powered_by.is_powered()
         }
     }
+    impl SimulationElement for TestApu {
+        fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+            self.start_motor_powered_by = buses.potential_of(ElectricalBusType::Sub("49-42-00"));
+        }
+    }
     impl PotentialSource for TestApu {
         fn output(&self) -> Potential {
             if self.is_available {
@@ -2085,10 +2090,6 @@ mod a320_electrical_circuit_tests {
         }
     }
     impl AuxiliaryPowerUnitElectrical for TestApu {
-        fn start_motor_powered_by(&mut self, source: Potential) {
-            self.start_motor_powered_by = source;
-        }
-
         fn output_within_normal_parameters(&self) -> bool {
             self.is_available
         }
@@ -2340,6 +2341,7 @@ mod a320_electrical_circuit_tests {
             self.elec.accept(visitor);
             self.overhead.accept(visitor);
             self.emergency_overhead.accept(visitor);
+            self.apu.accept(visitor);
 
             visitor.visit(self);
         }

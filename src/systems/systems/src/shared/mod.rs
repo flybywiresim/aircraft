@@ -17,7 +17,6 @@ pub trait ApuStartContactorsController {
 pub trait AuxiliaryPowerUnitElectrical:
     PotentialSource + ApuStartContactorsController + ApuAvailable
 {
-    fn start_motor_powered_by(&mut self, source: Potential);
     fn output_within_normal_parameters(&self) -> bool;
 }
 
@@ -73,6 +72,20 @@ pub enum ElectricalBusType {
     DirectCurrentBattery,
     DirectCurrentHot(u8),
     DirectCurrentGndFltService,
+
+    /// A sub bus is a subsection of a larger bus. An example of
+    /// a sub bus is the A320's 202PP, which is a sub bus of DC BUS 2 (2PP).
+    ///
+    /// Sub buses represent a very small area of the electrical system. To keep things simple,
+    /// they shouldn't be used for the vast majority of situations. Thus, prefer using a main
+    /// bus over a sub bus. They do however come in handy when handling very specific situations,
+    /// such as the APU STARTER MOTOR which is powered by a smaller section of the DC BAT BUS on the A320.
+    /// Implementing this without a sub bus leads to additional work and reduces the commonality in
+    /// handling the flow of electricity. In such cases, use the sub bus.
+    ///
+    /// As sub buses represent such a small area, their state is not exported towards
+    /// the simulator.
+    Sub(&'static str),
 }
 impl Display for ElectricalBusType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -88,6 +101,7 @@ impl Display for ElectricalBusType {
             ElectricalBusType::DirectCurrentBattery => write!(f, "DC_BAT"),
             ElectricalBusType::DirectCurrentHot(number) => write!(f, "DC_HOT_{}", number),
             ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
+            ElectricalBusType::Sub(name) => write!(f, "SUB_{}", name),
         }
     }
 }

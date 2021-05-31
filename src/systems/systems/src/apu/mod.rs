@@ -3,7 +3,7 @@ use self::{
     electronic_control_box::ElectronicControlBox,
 };
 use crate::{
-    electrical::{Potential, PotentialSource, PotentialTarget, ProvideFrequency, ProvidePotential},
+    electrical::{Potential, PotentialSource, ProvideFrequency, ProvidePotential},
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
     pneumatic::{BleedAirValve, BleedAirValveState, Valve},
     shared::{
@@ -25,16 +25,17 @@ pub struct AuxiliaryPowerUnitFactory {}
 impl AuxiliaryPowerUnitFactory {
     pub fn new_aps3200(
         number: usize,
+        start_motor_powered_by: ElectricalBusType,
     ) -> AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor> {
         AuxiliaryPowerUnit::new(
             Box::new(ShutdownAps3200Turbine::new()),
             Aps3200ApuGenerator::new(number),
-            Aps3200StartMotor::new(),
+            Aps3200StartMotor::new(start_motor_powered_by),
         )
     }
 }
 
-pub trait ApuStartMotor: PotentialTarget + PotentialSource + SimulationElement {}
+pub trait ApuStartMotor: PotentialSource + SimulationElement {}
 
 /// Komp: There is a pressure switch between the fuel valve and the APU.
 /// It switches from 0 to 1 when the pressure is >=17 PSI and the signal is received by the ECB
@@ -130,7 +131,7 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
             .update(self.n(), self.is_emergency_shutdown());
     }
 
-    pub fn update_after_electrical(&mut self) {
+    pub fn update_after_power_distribution(&mut self) {
         self.ecb.update_start_motor_state(&self.start_motor);
     }
 
@@ -169,10 +170,6 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnitElectrical for AuxiliaryPowerUnit<T, U> {
-    fn start_motor_powered_by(&mut self, source: Potential) {
-        self.start_motor.powered_by(&source);
-    }
-
     fn output_within_normal_parameters(&self) -> bool {
         self.generator.output_within_normal_parameters()
     }
@@ -416,7 +413,7 @@ pub mod tests {
     impl AuxiliaryPowerUnitTestAircraft {
         fn new() -> Self {
             Self {
-                apu: AuxiliaryPowerUnitFactory::new_aps3200(1),
+                apu: AuxiliaryPowerUnitFactory::new_aps3200(1, ElectricalBusType::Sub("49-42-00")),
                 apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
                 apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
                 apu_bleed: OnOffFaultPushButton::new_on("APU_BLEED"),
@@ -501,21 +498,12 @@ pub mod tests {
                 self.has_fuel_remaining,
             );
 
-            self.apu.start_motor_powered_by(
-                if self.apu.should_close_start_contactors() && !self.cut_start_motor_power {
-                    Potential::single(
-                        PotentialOrigin::External,
-                        ElectricPotential::new::<volt>(115.),
-                    )
-                } else {
-                    Potential::none()
-                },
-            );
-
-            self.apu.update_after_electrical();
-            self.apu_overhead.update_after_apu(&self.apu);
-
             self.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report = self.apu.output_within_normal_parameters();
+        }
+
+        fn update_after_power_distribution(&mut self, _: &UpdateContext) {
+            self.apu.update_after_power_distribution();
+            self.apu_overhead.update_after_apu(&self.apu);
         }
 
         fn get_supplied_power(&mut self) -> SuppliedPower {
@@ -533,6 +521,18 @@ pub mod tests {
             supplied_power.add(
                 ElectricalBusType::DirectCurrentBattery,
                 self.dc_bat_bus_potential,
+            );
+
+            supplied_power.add(
+                ElectricalBusType::Sub("49-42-00"),
+                if self.apu.should_close_start_contactors() && !self.cut_start_motor_power {
+                    Potential::single(
+                        PotentialOrigin::External,
+                        ElectricPotential::new::<volt>(115.),
+                    )
+                } else {
+                    Potential::none()
+                },
             );
 
             supplied_power

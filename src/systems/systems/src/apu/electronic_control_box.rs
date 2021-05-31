@@ -15,9 +15,6 @@ use uom::si::{
     f64::*, length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
 };
 
-/// Powered by the DC BAT BUS (801PP).
-/// Not yet implemented. Will power this up when implementing the electrical system.
-/// It is powered when MASTER SW is ON.
 pub struct ElectronicControlBox {
     is_powered: bool,
     turbine_state: TurbineState,

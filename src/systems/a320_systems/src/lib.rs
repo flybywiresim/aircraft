@@ -21,6 +21,7 @@ use systems::{
     electrical::{consumption::SuppliedPower, ElectricalSystem, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     landing_gear::LandingGear,
+    shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
@@ -45,7 +46,7 @@ pub struct A320 {
 impl A320 {
     pub fn new() -> A320 {
         A320 {
-            apu: AuxiliaryPowerUnitFactory::new_aps3200(1),
+            apu: AuxiliaryPowerUnitFactory::new_aps3200(1, ElectricalBusType::Sub("49-42-00")),
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(),
@@ -98,16 +99,16 @@ impl Aircraft for A320 {
             &self.landing_gear,
         );
 
-        self.apu.update_after_electrical();
-
         self.electrical_overhead
             .update_after_electrical(&self.electrical);
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
-        self.apu_overhead.update_after_apu(&self.apu);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+        self.apu.update_after_power_distribution();
+        self.apu_overhead.update_after_apu(&self.apu);
+
         self.hydraulic.update(
             context,
             &self.engine_1,

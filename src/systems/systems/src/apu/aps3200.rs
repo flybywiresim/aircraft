@@ -2,10 +2,12 @@ use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineController, TurbineStat
 use crate::{
     electrical::{
         consumption::{PowerConsumption, PowerConsumptionReport},
-        ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
-        ProvideFrequency, ProvideLoad, ProvidePotential,
+        ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, ProvideFrequency,
+        ProvideLoad, ProvidePotential,
     },
-    shared::{calculate_towards_target_temperature, random_number},
+    shared::{
+        calculate_towards_target_temperature, random_number, ElectricalBusType, ElectricalBuses,
+    },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 use std::time::Duration;
@@ -684,21 +686,27 @@ pub struct Aps3200StartMotor {
     /// overhead panel push button positions. Therefore we cannot simply look
     /// at whether or not DC BAT BUS is powered, but must instead handle
     /// potential coming in via those contactors.
-    input_potential: Potential,
+    powered_by: ElectricalBusType,
+    potential: Potential,
     powered_since: Duration,
 }
 impl Aps3200StartMotor {
-    pub fn new() -> Self {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
         Aps3200StartMotor {
-            input_potential: Potential::none(),
+            powered_by,
+            potential: Potential::none(),
             powered_since: Duration::from_secs(0),
         }
     }
 }
 impl ApuStartMotor for Aps3200StartMotor {}
 impl SimulationElement for Aps3200StartMotor {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.potential = buses.potential_of(self.powered_by);
+    }
+
     fn consume_power(&mut self, consumption: &mut PowerConsumption) {
-        if self.input_potential.is_unpowered() {
+        if self.potential.is_unpowered() {
             self.powered_since = Duration::from_secs(0);
         } else {
             self.powered_since += consumption.delta();
@@ -724,19 +732,13 @@ impl SimulationElement for Aps3200StartMotor {
                 + (APU_W_X7 * since.powi(7)))
             .max(0.);
 
-            consumption.consume(self.input_potential, Power::new::<watt>(w));
+            consumption.consume(self.potential, Power::new::<watt>(w));
         }
     }
 }
-potential_target!(Aps3200StartMotor);
 impl PotentialSource for Aps3200StartMotor {
     fn output(&self) -> Potential {
-        self.input_potential
-    }
-}
-impl Default for Aps3200StartMotor {
-    fn default() -> Self {
-        Self::new()
+        self.potential
     }
 }
 

@@ -351,6 +351,12 @@ impl PotentialSource for ElectricalBus {
 }
 impl SimulationElement for ElectricalBus {
     fn write(&self, writer: &mut SimulatorWriter) {
+        if let ElectricalBusType::Sub(_) = self.bus_type {
+            // Sub buses are not written towards the simulator. See the
+            // description on the sub bus type for details.
+            return;
+        }
+
         writer.write_bool(&self.bus_powered_id, self.is_powered());
         if self.bus_type == ElectricalBusType::DirectCurrentBattery {
             // It's good to note that in the real aircraft, the battery charge limiters (BCLs) are
