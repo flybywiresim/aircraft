@@ -1,8 +1,8 @@
 use std::time::Duration;
 use systems::shared::{EmergencyElectricalRatPushButton, EmergencyElectricalState};
 use uom::si::{
-    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
-    pressure::pascal, pressure::psi, ratio::percent, volume::gallon,
+    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
+    ratio::percent, volume::gallon,
 };
 
 use systems::overhead::{
@@ -375,12 +375,8 @@ impl A320Hydraulic {
         // Tug has its angle changing on each frame and we'd like to detect this
         self.pushback_tug.update();
 
-        self.braking_force.update_forces(
-            &context,
-            &self.braking_circuit_norm,
-            &self.braking_circuit_altn,
-            &self.hyd_brake_logic,
-        );
+        self.braking_force
+            .update_forces(&self.braking_circuit_norm, &self.braking_circuit_altn);
     }
 
     // All the higher frequency updates like physics
@@ -1259,44 +1255,24 @@ impl SimulationElement for A320HydraulicBrakingLogic {
 }
 
 struct A320BrakingForce {
-    left_brake_pedal_position: f64,
-    right_brake_pedal_position: f64,
-
     left_braking_force: f64,
     right_braking_force: f64,
 
     park_brake_lever_is_set: bool,
-
-    acceleration: f64,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
 
     pub fn new() -> Self {
         A320BrakingForce {
-            left_brake_pedal_position: 0.,
-            right_brake_pedal_position: 0.,
-
             left_braking_force: 0.,
             right_braking_force: 0.,
 
             park_brake_lever_is_set: true,
-
-            acceleration: 0.,
         }
     }
 
-    pub fn update_forces(
-        &mut self,
-        context: &UpdateContext,
-        norm_brakes: &BrakeCircuit,
-        altn_brakes: &BrakeCircuit,
-        brake_logic: &A320HydraulicBrakingLogic,
-    ) {
-        // Updating raw pilots inputs just to update pedals animation in the sim
-        self.left_brake_pedal_position = brake_logic.left_brake_pilot_input;
-        self.right_brake_pedal_position = brake_logic.right_brake_pilot_input;
-
+    pub fn update_forces(&mut self, norm_brakes: &BrakeCircuit, altn_brakes: &BrakeCircuit) {
         let left_force_norm =
             norm_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         let left_force_altn =
@@ -1310,13 +1286,6 @@ impl A320BrakingForce {
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
-
-        let accel = context.long_accel().get::<meter_per_second_squared>();
-
-        self.acceleration = self.acceleration
-            + (accel - self.acceleration)
-                * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / 0.1));
-        // println!("DECEL:{:.1}m/s2", self.acceleration);
     }
 }
 
