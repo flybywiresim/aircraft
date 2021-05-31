@@ -326,7 +326,7 @@ impl SimulationElement for BrakeCircuit {
     }
 }
 
-struct Autobrake {
+pub struct Autobrake {
     target: Acceleration,
     ki: f64,
     kp: f64,
@@ -342,7 +342,7 @@ impl Autobrake {
     // Low pass filter, time constant in second
     const ACCELERATION_INPUT_FILTER: f64 = 0.2;
 
-    fn new() -> Autobrake {
+    pub fn new() -> Autobrake {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
             ki: 0.5,
@@ -362,6 +362,10 @@ impl Autobrake {
 
     pub fn engage(&mut self) {
         self.is_engaged = true;
+    }
+
+    pub fn is_engaged(&self) -> bool {
+        self.is_engaged
     }
 
     pub fn disable(&mut self) {

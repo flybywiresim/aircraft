@@ -1,8 +1,8 @@
 use std::time::Duration;
 use systems::shared::{EmergencyElectricalRatPushButton, EmergencyElectricalState};
 use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, volume::gallon,
+    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
+    pressure::pascal, pressure::psi, ratio::percent, volume::gallon,
 };
 
 use systems::overhead::{
@@ -27,7 +27,8 @@ use systems::{
 use systems::electrical::{consumption::SuppliedPower, ElectricalBusType};
 use systems::{engine::Engine, landing_gear::LandingGear};
 use systems::{
-    hydraulic::brake_circuit::BrakeCircuit, shared::DelayedFalseLogicGate,
+    hydraulic::brake_circuit::{Autobrake, BrakeCircuit},
+    shared::DelayedFalseLogicGate,
     shared::DelayedTrueLogicGate,
 };
 
@@ -1406,6 +1407,7 @@ enum A320AutobrakeMode {
     MAX,
 }
 pub struct A320AutobrakeController {
+    controller: Autobrake,
     mode: A320AutobrakeMode,
 
     spoilers_left_position: f64,
@@ -1420,6 +1422,7 @@ pub struct A320AutobrakeController {
 impl A320AutobrakeController {
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
+            controller: Autobrake::new(),
             mode: A320AutobrakeMode::NONE,
             spoilers_left_position: 0.,
             spoilers_right_position: 0.,
@@ -1485,8 +1488,9 @@ impl A320AutobrakeController {
     }
 
     fn control_is_engaged(&self) -> bool {
-        self.regul_on
+        self.controller.is_engaged()
     }
+
     fn should_disarm(&self, brake_logic: &A320HydraulicBrakingLogic) -> bool {
         (self.control_is_engaged() && brake_logic.has_brake_pedal_input())
             || !self.is_armed()
@@ -1496,15 +1500,15 @@ impl A320AutobrakeController {
     }
 
     fn update_target(&self) {
-        let target: f64;
+        let target: Acceleration;
 
         match self.mode {
-            A320AutobrakeMode::NONE => target = 10.,
-            A320AutobrakeMode::LOW => target = -1.8,
-            A320AutobrakeMode::MED => target = -3.,
-            A320AutobrakeMode::MAX => target = -10.,
+            A320AutobrakeMode::NONE => target = Acceleration::new::<meter_per_second_squared>(10.),
+            A320AutobrakeMode::LOW => target = Acceleration::new::<meter_per_second_squared>(-1.8),
+            A320AutobrakeMode::MED => target = Acceleration::new::<meter_per_second_squared>(-3.),
+            A320AutobrakeMode::MAX => target = Acceleration::new::<meter_per_second_squared>(-10.),
         }
-        println!("Target:{}", target);
+        self.controller.update_target(target);
     }
 
     fn update(
@@ -1516,12 +1520,9 @@ impl A320AutobrakeController {
         self.update_mode_buttons(&autobrake_panel, brake_logic);
 
         if self.should_engage() && !self.should_disarm(&brake_logic) {
-            self.regul_on = true;
-            println!("AUTOBRAAAAAAAAAAAAAKE");
-            self.enabled_duration += context.delta();
+            self.controller.engage();
         } else {
-            self.enabled_duration = Duration::from_secs(0);
-            self.regul_on = false;
+            self.controller.disable();
         }
         self.update_target();
     }
