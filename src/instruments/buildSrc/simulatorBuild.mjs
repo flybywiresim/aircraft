@@ -46,6 +46,7 @@ export default getInputs()
     .map(({ path, name, isInstrument }) => {
         const config = JSON.parse(fs.readFileSync(`${Directories.instruments}/src/${path}/config.json`));
 
+        const additionalImports = config.additionalImports ? config.additionalImports : [];
         return {
             watch: true,
             name,
@@ -61,10 +62,11 @@ export default getInputs()
                     path,
                     imports: [
                         '/JS/dataStorage.js',
-                        '/Pages/VCockpit/Instruments/FlightElements/Waypoint.js'
+                        '/Pages/VCockpit/Instruments/FlightElements/Waypoint.js',
+                        ...additionalImports,
                     ],
                     config,
-                    isInstrument
+                    isInstrument,
                 }),
             ],
         };
