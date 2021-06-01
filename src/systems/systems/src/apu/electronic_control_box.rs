@@ -62,7 +62,8 @@ impl ElectronicControlBox {
     pub fn is_on(&self) -> bool {
         self.is_powered
             && (self.master_is_on
-                || (self.air_intake_flap_open_amount.get::<percent>() - 0.).abs() > f64::EPSILON)
+                || (self.air_intake_flap_open_amount.get::<percent>() - 0.).abs() > f64::EPSILON
+                || self.turbine_state != TurbineState::Shutdown)
     }
 
     fn is_powered_by_apu_itself(&self) -> bool {

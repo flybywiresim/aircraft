@@ -1959,13 +1959,16 @@ pub mod tests {
         }
 
         #[test]
-        fn ecb_uses_power_during_apu_shutdown_from_n_70_until_air_intake_flap_is_closed() {
+        fn ecb_uses_power_during_apu_shutdown_from_n_70_until_air_intake_flap_is_closed_and_turbine_is_shut_down(
+        ) {
             let mut test_bed = test_bed_with().running_apu().and().master_off();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
 
-                if test_bed.is_air_intake_flap_fully_closed() {
+                if test_bed.is_air_intake_flap_fully_closed()
+                    && (test_bed.n().get::<percent>() - 0.).abs() < f64::EPSILON
+                {
                     break;
                 } else if test_bed.n().get::<percent>() <= 70. {
                     assert!(test_bed.power_consumption() > Power::new::<watt>(0.));
