@@ -339,8 +339,8 @@ impl Autobrake {
     pub fn new() -> Autobrake {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
-            ki: 0.5,
-            kp: 0.3,
+            ki: 0.3,
+            kp: 0.2,
             last_error: 0.,
 
             current_output: 0.,

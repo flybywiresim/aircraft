@@ -1192,6 +1192,7 @@ impl A320HydraulicBrakeComputerUnit {
             &autobrake_panel,
             self.allow_autobrake_arming(),
             self.has_brake_pedal_input(),
+            self.weight_on_wheels,
         );
 
         let is_in_flight_gear_lever_up = !self.weight_on_wheels && !self.is_gear_lever_down;
@@ -1418,6 +1419,7 @@ enum A320AutobrakeMode {
 }
 pub struct A320AutobrakeController {
     controller: Autobrake,
+    target: Acceleration,
     mode: A320AutobrakeMode,
 
     arming_is_allowed: bool,
@@ -1428,13 +1430,17 @@ pub struct A320AutobrakeController {
     last_spoilers_left_position: f64,
     last_spoilers_right_position: f64,
     spoilers_armed: bool,
+    should_disarm_after_time_in_flight: DelayedTrueLogicGate,
+    in_flight_disarm_event: bool,
 }
 impl A320AutobrakeController {
-    const OPENED_SPOILER_DETECTION_THRESHOLD: f64 = 0.7;
+    const OPENED_SPOILER_DETECTION_THRESHOLD: f64 = 0.2;
+    const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: f64 = 10.;
 
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
             controller: Autobrake::new(),
+            target: Acceleration::new::<meter_per_second_squared>(0.),
             mode: A320AutobrakeMode::NONE,
             arming_is_allowed: false,
             pedal_input_is_present: false,
@@ -1443,6 +1449,10 @@ impl A320AutobrakeController {
             last_spoilers_left_position: 0.,
             last_spoilers_right_position: 0.,
             spoilers_armed: false,
+            should_disarm_after_time_in_flight: DelayedTrueLogicGate::new(Duration::from_secs_f64(
+                Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE,
+            )),
+            in_flight_disarm_event: false,
         }
     }
 
@@ -1478,7 +1488,10 @@ impl A320AutobrakeController {
             if self.mode == A320AutobrakeMode::MAX {
                 self.mode = A320AutobrakeMode::NONE
             } else {
-                self.mode = A320AutobrakeMode::MAX;
+                // If in flight after the takeoff disarming occured we reject max mode
+                if !self.should_disarm_after_time_in_flight.output() {
+                    self.mode = A320AutobrakeMode::MAX;
+                }
             }
         }
 
@@ -1488,7 +1501,7 @@ impl A320AutobrakeController {
     }
 
     fn should_engage(&self) -> bool {
-        self.is_armed() && self.spoilers_are_auto_deployed()
+        self.is_armed() && self.spoilers_are_auto_deployed() && !self.should_disarm()
     }
 
     fn allow_arming(&self) -> bool {
@@ -1503,48 +1516,78 @@ impl A320AutobrakeController {
         self.controller.is_engaged()
     }
 
+    fn is_decelerating(&self) -> bool {
+        let deceleration_demanded =
+            self.control_is_engaged() && self.target.get::<meter_per_second_squared>() < 0.;
+
+        if self.mode == A320AutobrakeMode::NONE {
+            false
+        } else if self.mode == A320AutobrakeMode::LOW {
+            deceleration_demanded && self.controller.is_on_target(80.)
+        } else if self.mode == A320AutobrakeMode::MED {
+            deceleration_demanded && self.controller.is_on_target(80.)
+        } else {
+            deceleration_demanded && self.controller.is_on_target(40.)
+        }
+    }
+
     fn should_disarm(&self) -> bool {
         (self.control_is_engaged() && self.pedal_input_is_present)
             || !self.is_armed()
             || !self.allow_arming()
             || self.spoilers_retracted_event()
-        // Todo add in flight for 10s
+            || self.in_flight_disarm_event
     }
 
-    fn target(&self) -> Acceleration {
-        let target: Acceleration;
-
+    fn update_target(&mut self) {
         match self.mode {
-            A320AutobrakeMode::NONE => target = Acceleration::new::<meter_per_second_squared>(10.),
+            A320AutobrakeMode::NONE => {
+                self.target = Acceleration::new::<meter_per_second_squared>(10.);
+            }
             A320AutobrakeMode::LOW => {
                 if self.controller.time_engaged().as_secs_f64() > 4. {
-                    target = Acceleration::new::<meter_per_second_squared>(-1.7);
+                    self.target = Acceleration::new::<meter_per_second_squared>(-1.7);
                 } else {
-                    target = Acceleration::new::<meter_per_second_squared>(0.);
+                    self.target = Acceleration::new::<meter_per_second_squared>(0.);
                 }
             }
             A320AutobrakeMode::MED => {
                 if self.controller.time_engaged().as_secs_f64() > 2. {
-                    target = Acceleration::new::<meter_per_second_squared>(-3.);
+                    self.target = Acceleration::new::<meter_per_second_squared>(-3.);
                 } else {
-                    target = Acceleration::new::<meter_per_second_squared>(0.);
+                    self.target = Acceleration::new::<meter_per_second_squared>(0.);
                 }
             }
-            A320AutobrakeMode::MAX => target = Acceleration::new::<meter_per_second_squared>(-8.),
+            A320AutobrakeMode::MAX => {
+                self.target = Acceleration::new::<meter_per_second_squared>(-8.);
+            }
         }
-        target
     }
 
     fn disarm(&mut self) {
         self.mode = A320AutobrakeMode::NONE;
         self.controller.disable();
+        self.in_flight_disarm_event = false;
     }
 
     fn engage(&mut self) {
         self.controller.engage();
     }
 
-    fn update_bcu_inputs(&mut self, allow_arming: bool, pedal_input_is_present: bool) {
+    fn update_bcu_inputs(
+        &mut self,
+        context: &UpdateContext,
+        allow_arming: bool,
+        pedal_input_is_present: bool,
+        weight_on_wheels: bool,
+    ) {
+        let in_flight_disarm_event_last = self.should_disarm_after_time_in_flight.output();
+        self.should_disarm_after_time_in_flight
+            .update(context, !weight_on_wheels);
+
+        self.in_flight_disarm_event =
+            !in_flight_disarm_event_last && self.should_disarm_after_time_in_flight.output();
+
         self.arming_is_allowed = allow_arming;
         self.pedal_input_is_present = pedal_input_is_present;
     }
@@ -1555,16 +1598,24 @@ impl A320AutobrakeController {
         autobrake_panel: &A320AutobrakePanel,
         allow_arming: bool,
         pedal_input_is_present: bool,
+        weight_on_wheels: bool,
     ) {
-        self.update_bcu_inputs(allow_arming, pedal_input_is_present);
+        self.update_bcu_inputs(
+            &context,
+            allow_arming,
+            pedal_input_is_present,
+            weight_on_wheels,
+        );
         self.update_mode_buttons(&autobrake_panel);
 
-        if self.should_engage() && !self.should_disarm() {
+        if self.should_engage() {
             self.engage();
         } else {
             self.controller.disable();
         }
-        self.controller.update_target(self.target());
+
+        self.update_target();
+        self.controller.update_target(self.target);
         self.controller.update(&context);
     }
 }
@@ -1578,23 +1629,24 @@ impl SimulationElement for A320AutobrakeController {
             A320AutobrakeMode::MAX => mode_num = 3,
         }
         writer.write_f64("AUTOBRK_ARMED_MODE", mode_num as f64);
+        writer.write_bool("AUTOBRAKES_BRAKING", self.is_decelerating());
 
         if mode_num == 0 {
             writer.write_bool("AUTOBRK_LOW_DECEL", false);
             writer.write_bool("AUTOBRK_MED_DECEL", false);
             writer.write_bool("AUTOBRK_MAX_DECEL", false);
         } else if mode_num == 1 {
-            writer.write_bool("AUTOBRK_LOW_DECEL", self.controller.is_on_target(80.));
+            writer.write_bool("AUTOBRK_LOW_DECEL", self.is_decelerating());
             writer.write_bool("AUTOBRK_MED_DECEL", false);
             writer.write_bool("AUTOBRK_MAX_DECEL", false);
         } else if mode_num == 2 {
             writer.write_bool("AUTOBRK_LOW_DECEL", false);
-            writer.write_bool("AUTOBRK_MED_DECEL", self.controller.is_on_target(80.));
+            writer.write_bool("AUTOBRK_MED_DECEL", self.is_decelerating());
             writer.write_bool("AUTOBRK_MAX_DECEL", false);
         } else {
             writer.write_bool("AUTOBRK_LOW_DECEL", false);
             writer.write_bool("AUTOBRK_MED_DECEL", false);
-            writer.write_bool("AUTOBRK_MAX_DECEL", self.controller.is_on_target(40.));
+            writer.write_bool("AUTOBRK_MAX_DECEL", self.is_decelerating());
         }
     }
 
