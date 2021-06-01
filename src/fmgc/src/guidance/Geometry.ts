@@ -1,4 +1,5 @@
 import { Degrees, NauticalMiles } from '@typings/types';
+import { MathUtils } from '@shared/MathUtils';
 import { ControlLaw, GuidanceParameters } from './ControlLaws';
 
 export const EARTH_RADIUS_NM = 3440.1;
@@ -133,7 +134,7 @@ export class TFLeg extends Leg {
 
     isAbeam(ppos: LatLongAlt): boolean {
         const bearingAC = Avionics.Utils.computeGreatCircleHeading(this.from.infos.coordinates, ppos);
-        const headingAC = Math.abs(Avionics.Utils.diffAngle(this.bearing, bearingAC));
+        const headingAC = Math.abs(MathUtils.diffAngle(this.bearing, bearingAC));
         if (headingAC > 90) {
             // if we're even not abeam of the starting point
             return false;
@@ -187,7 +188,7 @@ export class Type1Transition extends Transition {
     get angle(): Degrees {
         const bearingFrom = this.previousLeg.bearing;
         const bearingTo = this.nextLeg.bearing;
-        return Math.abs(Avionics.Utils.diffAngle(bearingFrom, bearingTo));
+        return Math.abs(MathUtils.diffAngle(bearingFrom, bearingTo));
     }
 
     /**
@@ -214,7 +215,7 @@ export class Type1Transition extends Transition {
         const [inbound] = this.getTurningPoints();
 
         const bearingAC = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
-        const headingAC = Math.abs(Avionics.Utils.diffAngle(this.previousLeg.bearing, bearingAC));
+        const headingAC = Math.abs(MathUtils.diffAngle(this.previousLeg.bearing, bearingAC));
         return headingAC <= 90;
     }
 
