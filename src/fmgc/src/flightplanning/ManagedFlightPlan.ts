@@ -592,17 +592,14 @@ export class ManagedFlightPlan {
         const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument);
         turningPoint.isTurningPoint = true;
 
-        const _deleteCount = index - this.activeWaypointIndex;
         this.addWaypoint(turningPoint, index);
         this.activeWaypointIndex = index + 1;
 
-        this.directTo.isActive = true;
-        this.directTo.planWaypointIndex = index;
-        // This causes cyclical data. don't do for now. maybe even not that useful
-        // this.directTo.waypoint = this.getWaypoint(index);
-        this.directTo.interceptPoints = [];
+        const deleteCount = this.activeWaypointIndex - 1;
 
-        // TODO remove waypoints
+        for (let i = 0; i < deleteCount; i++) {
+            this.removeWaypoint(0);
+        }
     }
 
     /**
