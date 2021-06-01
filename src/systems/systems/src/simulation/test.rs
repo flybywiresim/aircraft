@@ -60,8 +60,7 @@ impl SimulationTestBed {
     /// [`Aircraft`]: ../trait.Aircraft.html
     /// [`Simulation`]: ../struct.Simulation.html
     pub fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
-        let mut simulation = Simulation::new(aircraft, &mut self.reader_writer);
-        simulation.tick(self.delta);
+        Simulation::tick(self.delta, aircraft, &mut self.reader_writer);
     }
 
     /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing
@@ -298,6 +297,7 @@ impl SimulatorReaderWriter for TestReaderWriter {
         self.variables.insert(name.to_owned(), value);
     }
 }
+
 impl Default for TestReaderWriter {
     fn default() -> Self {
         Self::new()

@@ -1,3 +1,5 @@
+#![allow(clippy::suspicious_operation_groupings)]
+
 mod electrical;
 mod fuel;
 mod hydraulic;
