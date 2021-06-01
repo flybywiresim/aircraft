@@ -377,8 +377,6 @@ class FMCMainDisplay extends BaseAirliners {
                     this.activatePreSelSpeedMach(this.preSelectedClbSpeed);
                 }
 
-                SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
-
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedCrzSpeed);
 
@@ -899,21 +897,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
 
-            if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-                if (Simplane.getAltitudeAboveGround() < 1.5) {
-                    if (this.landingAutoBrakeTimer == null) {
-                        this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1 ? 4 : 2;
-                    }
-                    this.landingAutoBrakeTimer -= dt / 1000;
-                    if (this.landingAutoBrakeTimer <= 0) {
-                        this.landingAutoBrakeTimer = null;
-                        SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
-                    }
-                } else {
-                    //Reset timer to 30 when airborne in case of go around
-                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1 ? 4 : 2;
-                }
-            } else if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
+            if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
                 if (apLogicOn) {
                     //depending if on HDR/TRK or NAV mode, select appropriate Alt Mode (WIP)
                     //this._onModeManagedAltitude();
@@ -921,21 +905,6 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
             this.updateAutopilotCooldown = this._apCooldown;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            if (Simplane.getAltitudeAboveGround() < 1.5) {
-                if (this.landingAutoBrakeTimer == null) {
-                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1 ? 4 : 2;
-                }
-                this.landingAutoBrakeTimer -= dt / 1000;
-                if (this.landingAutoBrakeTimer <= 0) {
-                    this.landingAutoBrakeTimer = null;
-                    SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
-                }
-            } else {
-                //Reset timer to 30 when airborne in case of go around
-                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1 ? 4 : 2;
-            }
         }
     }
 

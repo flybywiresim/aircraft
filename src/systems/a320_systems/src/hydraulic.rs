@@ -1630,34 +1630,12 @@ impl SimulationElement for A320AutobrakeController {
         }
         writer.write_f64("AUTOBRK_ARMED_MODE", mode_num as f64);
         writer.write_bool("AUTOBRAKES_BRAKING", self.is_decelerating());
-
-        if mode_num == 0 {
-            writer.write_bool("AUTOBRK_LOW_DECEL", false);
-            writer.write_bool("AUTOBRK_MED_DECEL", false);
-            writer.write_bool("AUTOBRK_MAX_DECEL", false);
-        } else if mode_num == 1 {
-            writer.write_bool("AUTOBRK_LOW_DECEL", self.is_decelerating());
-            writer.write_bool("AUTOBRK_MED_DECEL", false);
-            writer.write_bool("AUTOBRK_MAX_DECEL", false);
-        } else if mode_num == 2 {
-            writer.write_bool("AUTOBRK_LOW_DECEL", false);
-            writer.write_bool("AUTOBRK_MED_DECEL", self.is_decelerating());
-            writer.write_bool("AUTOBRK_MAX_DECEL", false);
-        } else {
-            writer.write_bool("AUTOBRK_LOW_DECEL", false);
-            writer.write_bool("AUTOBRK_MED_DECEL", false);
-            writer.write_bool("AUTOBRK_MAX_DECEL", self.is_decelerating());
-        }
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
         self.spoilers_left_position = state.read_f64("SPOILERS LEFT POSITION");
         self.spoilers_right_position = state.read_f64("SPOILERS RIGHT POSITION");
         self.spoilers_armed = state.read_bool("SPOILERS_ARMED");
-        println!(
-            "LEFT spoilers{}, right spoilers{}, armed{}",
-            self.spoilers_left_position, self.spoilers_right_position, self.spoilers_armed
-        );
     }
 }
 

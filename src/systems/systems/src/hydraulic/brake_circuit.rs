@@ -334,13 +334,13 @@ impl Default for Autobrake {
 }
 impl Autobrake {
     // Low pass filter, time constant in second
-    const ACCELERATION_INPUT_FILTER: f64 = 0.2;
+    const ACCELERATION_INPUT_FILTER: f64 = 0.1;
 
     pub fn new() -> Autobrake {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
             ki: 0.3,
-            kp: 0.2,
+            kp: 0.4,
             last_error: 0.,
 
             current_output: 0.,
