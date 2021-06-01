@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode.react';
-import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMinus, IconMoon, IconPlus, IconSun } from '@tabler/icons';
+import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMoon, IconSun } from '@tabler/icons';
 import useInterval from '../../Common/useInterval';
 import NavigraphClient, {
     AirportInfo,
@@ -59,7 +59,7 @@ type ChartDisplay = {
 }
 
 const Loading = () => {
-    const [refreshToken, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
+    const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
 
     return (
         <div className="flex flex-col items-center justify-center">
@@ -113,7 +113,6 @@ const AuthUi = () => {
 };
 
 const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
-
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
@@ -140,8 +139,8 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
     return (
         <div
             className={props.isFullscreen
-            ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-full grabbable no-scrollbar'
-            : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3 grabbable no-scrollbar'}
+                ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-full grabbable no-scrollbar'
+                : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3 grabbable no-scrollbar'}
             ref={ref}
             onMouseDown={mouseDownHandler}
         >
@@ -170,7 +169,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
                     : <img draggable={false} src={props.chartLink.dark} alt="chart" />}
             </div>
         </div>
-    )
+    );
 };
 
 const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
@@ -410,7 +409,8 @@ const ChartsUi = (props: ChartsUiProps) => {
                                 placeholder="ICAO"
                                 value={props.icao}
                                 maxLength={4}
-                                className="w-full px-5 py-1.5 text-xl text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast"
+                                className="w-full px-5 py-1.5 text-xl text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light
+                                focus-within:outline-none focus-within:border-teal-light-contrast"
                                 onChange={(event) => handleIcaoChange(event.target.value)}
                             />
                             <div className="flex items-center w-full mt-6 h-9 bg-teal-light-contrast px-6 rounded-lg">
