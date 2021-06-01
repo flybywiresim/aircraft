@@ -137,4 +137,12 @@
             </UseTemplate>
         </Condition>
     </Template>
+
+    <Template Name="FBW_Airbus_Engine_Lights">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_ENG#ID#, bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:ENG FAILED:#ID#, bool)</SEQ2_CODE>
+        </UseTemplate>
+    </Template>
 </ModelBehaviors>

@@ -2518,7 +2518,7 @@ class Engine_Annunciations extends Cabin_Annunciations {
         return false;
     }
     parkBrake() {
-        return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
+        return SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool");
     }
     oxygen() {
         return false;

@@ -1,7 +1,7 @@
 // We currently assume that these two elements will be found.
 // Might be worth implementing checking in the future.
 
-let reactMount = document.getElementById('A32NX_REACT_MOUNT') as HTMLElement;
+let reactMount = document.getElementById('MSFS_REACT_MOUNT') as HTMLElement;
 
 const getEcamPageRenderTarget = (pageName: string): HTMLElement => (document.getElementById(`A32NX_${pageName}_PAGE_REACT_MOUNT`) as HTMLElement);
 

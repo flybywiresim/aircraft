@@ -852,12 +852,10 @@
             <Component ID="Dummies">
                 <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                     <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
-                    <ONLY_SEQ1/>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 </UseTemplate>
                 <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                     <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
-                    <ONLY_SEQ1/>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 </UseTemplate>
             </Component>
@@ -1240,10 +1238,10 @@
                     <HAS_AUTO>True</HAS_AUTO>
                     <INVERT_ANIM>True</INVERT_ANIM>
                     <POTENTIOMETER>24</POTENTIOMETER>
-                    <ANIMTIP_0>Turn OFF strobe lights</ANIMTIP_0>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_OFF</ANIMTIP_0>
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
                     <ANIMTIP_1>Set strobe lights to AUTO</ANIMTIP_1>
-                    <ANIMTIP_2>Turn ON strobe lights</ANIMTIP_2>
+                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_2>
 
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
@@ -1255,6 +1253,7 @@
                 </Update>
                 <UseTemplate Name="FBW_GT_Switch">
                     <NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
+                    <PART_ID>Seatbelt_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
                     <ANIM_SIMVAR>CABIN SEATBELTS ALERT SWITCH</ANIM_SIMVAR>
                     <LIGHT_TYPE>SEATBELT</LIGHT_TYPE>
@@ -1316,7 +1315,7 @@
                     <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
                     <LIGHT_TYPE>ANN_LT</LIGHT_TYPE>
                     <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                    <SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position</SWITCH_POSITION_VAR>
+                    <SWITCH_POSITION_VAR>A32NX_OVHD_INTLT_ANN</SWITCH_POSITION_VAR>
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
                     <ANIMTIP_0>Test annunciator lights</ANIMTIP_0>
                     <ANIMTIP_1>Set annunciator lights to BRT</ANIMTIP_1>
@@ -1324,9 +1323,9 @@
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                    <CODE_POS_0>1 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_0>
-                    <CODE_POS_1>0 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_1>
-                    <CODE_POS_2>0 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_2>
+                    <CODE_POS_0></CODE_POS_0>
+                    <CODE_POS_1></CODE_POS_1>
+                    <CODE_POS_2></CODE_POS_2>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Switch_Dummy">
@@ -1654,11 +1653,9 @@
                     </UseTemplate>
 
                     <!-- PA -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <UseTemplate Name="FBW_Airbus_PA_Button">
                         <NODE_ID>PUSH_OVHD_PA</NODE_ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>PA Annunciator</TOOLTIPID>
                         <DUMMY_BUTTON/>
                         <NO_SEQ2 />
@@ -1774,20 +1771,19 @@
                             <NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EVAC_COMMAND</LOCK_NODE_ID>
 
-                            <TOGGLE_SIMVAR>L:A32NX_EVAC_COMMAND_TOGGLE</TOGGLE_SIMVAR>
+                            <LEFT_SINGLE_CODE>0 (&gt;L:PUSH_OVHD_EVAC_HORN) (L:A32NX_EVAC_COMMAND_TOGGLE) ! (&gt;L:A32NX_EVAC_COMMAND_TOGGLE)</LEFT_SINGLE_CODE>
                             <INVERTED_ANIMATION/>
 
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                            <SEQ1_CODE>(L:A32NX_EVAC_COMMAND_FAULT, Bool)</SEQ1_CODE>
+                            <SEQ1_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE, Bool) ! (E:ABSOLUTE TIME, seconds) 1 % 0.4 &gt; and</SEQ1_CODE>
                             <SEQ2_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE, Bool) !</SEQ2_CODE>
-                            <NO_SEQ2 />
                             <TOOLTIPID>%((L:A32NX_EVAC_COMMAND_TOGGLE, Bool))%{if}Turn ON evacuation horn%{else}Turn OFF evacuation horn%{end}</TOOLTIPID>
                         </UseTemplate>
 
                         <!-- HORN SHUT OFF -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_EVAC_HORN</NODE_ID>
-                            <LEFT_SINGLE_CODE>(L:PUSH_OVHD_EVAC_HORN) ! (&gt;L:PUSH_OVHD_EVAC_HORN)</LEFT_SINGLE_CODE>
+                            <LEFT_SINGLE_CODE>1 (&gt;L:PUSH_OVHD_EVAC_HORN)</LEFT_SINGLE_CODE>
                             <MOMENTARY/>
                             <NO_SEQ1 />
                             <NO_SEQ2 />
@@ -1848,6 +1844,7 @@
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_SINGLE_CODE>
+                            <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_LEAVE_CODE>
                             <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED, Bool))%{if}Ram air turbine deployed (Inop.)%{else}Deploy ram air turbine (Inop.)%{end}</TOOLTIPID>
                             <MOMENTARY/>
                             <NO_SEQ1 />
@@ -1883,13 +1880,15 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO, Bool))%{if}Turn OFF eng 2 hyd pump%{else}Turn ON eng 2 hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <UseTemplate Name="ASOBO_GT_Switch_Dummy">
-                        <NODE_ID>LOCK_OVHD_HYD_RATMANON</NODE_ID>
-                        <ANIM_NAME>LOCK_OVHD_HYD_RATMANON</ANIM_NAME>
-                        <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-                        <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                        <SWITCH_POSITION_VAR>A32NX_HYD_RATMANONLOCK_TOGGLE</SWITCH_POSITION_VAR>
+                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_HYD_RATMANON</NODE_ID>
+                        <LOCK_NODE_ID>LOCK_OVHD_HYD_RATMANON</LOCK_NODE_ID>
+                        <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
+                        <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
+                        <TOOLTIPID>Deploys ram air turbine</TOOLTIPID>
+                        <MOMENTARY/>
+                        <NO_SEQ1 />
+                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <!-- BLUE ELEC PUMP -->
@@ -1981,14 +1980,13 @@
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_RAMAIR_TOGGLE</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_AIRCOND_RAMAIR_FAULT, Bool)</SEQ1_CODE>
-                        <SEQ2_CODE>(L:A32NX_AIRCOND_RAMAIR_TOGGLE, Bool) !</SEQ2_CODE>
+                        <SEQ2_CODE>(L:A32NX_AIRCOND_RAMAIR_TOGGLE, Bool)</SEQ2_CODE>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_AIRCOND_RAMAIR_TOGGLE, Bool))%{if}Turn OFF ram air%{else}Turn ON ram air%{end}</TOOLTIPID>
                         <NO_SEQ1 />
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_AIRLINER_Aircond_Knob_Template">
@@ -2252,7 +2250,7 @@
                     <Component ID="Overhead_Audio_Panel">
                         <OverrideTemplateParameters>
                             <POTENTIOMETER>1</POTENTIOMETER>
-                            <EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
+                            <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
                             <POTENTIOMETER_SEQ2>86</POTENTIOMETER_SEQ2>
                             <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
                             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
@@ -2482,10 +2480,10 @@
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
+                        <UseTemplate Name="FBW_Airbus_Engine_Lights">
                             <NODE_ID>PUSH_ENGINES_1</NODE_ID>
-                            <NO_SEQ1 />
-                            <NO_SEQ2 />
+                            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ2_POWERED>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
                             <NODE_ID>LOCK_OVHD_ENG1</NODE_ID>
@@ -2532,10 +2530,10 @@
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
+                        <UseTemplate Name="FBW_Airbus_Engine_Lights">
                             <NODE_ID>PUSH_ENGINES_2</NODE_ID>
-                            <NO_SEQ1 />
-                            <NO_SEQ2 />
+                            <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ2_POWERED>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
                             <NODE_ID>LOCK_OVHD_ENG2</NODE_ID>
@@ -2790,9 +2788,8 @@
                                 <TOGGLE_SIMVAR>L:A32NX_CALLS_EMER_ON</TOGGLE_SIMVAR>
                                 <TOOLTIPID>%((L:A32NX_CALLS_EMER_ON, Bool))%{if}Turn OFF emergency call%{else}Turn ON emergency call%{end}</TOOLTIPID>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                                <SEQ1_CODE>(L:A32NX_CALLS_EMER_ON, Bool)</SEQ1_CODE>
-                                <SEQ2_CODE>0</SEQ2_CODE>
-                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE>(L:A32NX_CALLS_EMER_ON, Bool) (E:ABSOLUTE TIME, seconds) 1 % 0.4 &gt; and</SEQ1_CODE>
+                                <SEQ2_CODE>(L:A32NX_CALLS_EMER_ON, Bool) (E:ABSOLUTE TIME, seconds) 1 % 0.4 &gt; and</SEQ2_CODE>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             </UseTemplate>
@@ -2819,8 +2816,8 @@
                         <NODE_ID>KNOB_OVHD_READINGLTL</NODE_ID>
                         <ANIM_NAME>KNOB_OVHD_READINGLTL</ANIM_NAME>
                         <POTENTIOMETER>96</POTENTIOMETER>
-                        <ANIMTIP_0>Decrease reading light brightness</ANIMTIP_0>
-                        <ANIMTIP_1>Increase reading light brightness</ANIMTIP_1>
+                        <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_DECREASE</ANIMTIP_0>
+                        <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_INCREASE</ANIMTIP_1>
                     </UseTemplate>
 
                     <!-- Left light -->
@@ -2835,8 +2832,8 @@
                         <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
                         <ANIM_NAME>KNOB_OVHD_READINGLTR</ANIM_NAME>
                         <POTENTIOMETER>97</POTENTIOMETER>
-                        <ANIMTIP_0>Decrease reading light brightness</ANIMTIP_0>
-                        <ANIMTIP_1>Increase reading light brightness</ANIMTIP_1>
+                        <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_DECREASE</ANIMTIP_0>
+                        <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_INCREASE</ANIMTIP_1>
                     </UseTemplate>
 
                     <!-- Right light -->
@@ -2996,7 +2993,6 @@
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                         <SEQ2_CODE>(L:A32NX_DITCHING)</SEQ2_CODE>
                         <NO_SEQ1 />
-                        <NO_SEQ2 />
                     </UseTemplate>
                 </Component>
             </Component>
@@ -3457,7 +3453,7 @@
                     <OverrideTemplateParameters>
                         <POTENTIOMETER>1</POTENTIOMETER>
                         <POTENTIOMETER_SEQ2>85</POTENTIOMETER_SEQ2>
-                        <SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</SEQ1_EMISSIVE_CODE>
+                        <SEQ1_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</SEQ1_EMISSIVE_CODE>
                         <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -3592,7 +3588,7 @@
                     <OverrideTemplateParameters>
                         <POTENTIOMETER>1</POTENTIOMETER>
                         <POTENTIOMETER_SEQ2>85</POTENTIOMETER_SEQ2>
-                        <SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</SEQ1_EMISSIVE_CODE>
+                        <SEQ1_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</SEQ1_EMISSIVE_CODE>
                         <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -3695,7 +3691,7 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
-                <EMISSIVE_CODE>(L:XMLVAR_LTS_Test) (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_ATC_Panel_ALT">
                 <Node_ID>Knob_ATC_ALT</Node_ID>
@@ -3851,11 +3847,10 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
                 </LEFT_LEAVE_CODE>
+                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
-                <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
-                <VAR_SCOPE>L</VAR_SCOPE>
-                <VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
                 <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_L</NODE_ID>
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ2</NODE_ID_SEQ2>
@@ -3875,11 +3870,10 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
                 </LEFT_LEAVE_CODE>
+                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
-                <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
-                <VAR_SCOPE>L</VAR_SCOPE>
-                <VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
                 <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_L</NODE_ID>
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ2</NODE_ID_SEQ2>
@@ -3898,11 +3892,10 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
                 </LEFT_LEAVE_CODE>
+                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
-                <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
-                <VAR_SCOPE>L</VAR_SCOPE>
-                <VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
                 <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_R</NODE_ID>
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ2</NODE_ID_SEQ2>
@@ -3922,11 +3915,10 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
                 </LEFT_LEAVE_CODE>
+                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
-                <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
-                <VAR_SCOPE>L</VAR_SCOPE>
-                <VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
                 <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_R</NODE_ID>
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ2</NODE_ID_SEQ2>
@@ -4018,8 +4010,9 @@
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_LEFT</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
@@ -4027,8 +4020,9 @@
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
                 <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_RIGHT</NODE_ID>
@@ -4250,9 +4244,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_ADIRS_3</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_HYD_RATMANON</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
