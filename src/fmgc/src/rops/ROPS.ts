@@ -99,6 +99,33 @@ export class ROPS {
         }
     }
 
+    private computeTailwindComponent(aircraftHdg: number, windDirection: number, windSpeed: number): number {
+
+        let correctedAircraftHdg: number;
+        let interiorAngle: number;
+        let tailwindComponent: number;
+
+        if (aircraftHdg > 180) {
+            correctedAircraftHdg = aircraftHdg - 180;
+        } else {
+            correctedAircraftHdg = aircraftHdg + 180;
+        }
+
+        if (aircraftHdg > windDirection) {
+            interiorAngle = correctedAircraftHdg - windDirection;
+        } else {
+            interiorAngle = windDirection - correctedAircraftHdg;
+        }
+
+        tailwindComponent = Math.cos(interiorAngle) * windSpeed;
+
+        if (tailwindComponent <= 0) {
+            return 0;
+        } else {
+            return tailwindComponent;
+        }
+    }
+
     /**
      * States:
      * FLIGHT_INHIBIT: The ROPS is inhibited - active above 2000ft RA
@@ -176,27 +203,21 @@ export class ROPS {
 
                         if (alt > 0) {} // TODO: impl. landing runway elevation
 
-                        if (windDirection) {} // TODO: impl. wind direction check -> only true if TL
+                        if (windDirection) {} // TODO: impl. wind direction check -> only true if TW
 
                         if (temp) {}
 
                         if (downSlope) {}
 
                         ldr += wetPerformance.config3.reverseThrCorrection;
-                        ldr += wetPerformance.config3.overWeightCorrection;
+                        ldr += wetPerformance.config3.overWeightCorrection; // TODO: impl. logic to detect overweight landing
 
                         if (isAutoland) {
                             ldr += wetPerformance.config3.autolandCorrection;
                         }
 
                         // Add 15% safety margin
-                        ldr = ldr * 0.15;
-
-                        if (ldr > lda) {
-                            SimVar.SetSimVarValue("L:A32NX_ROPS_IF_WET", "bool", 1);
-                        } else {
-                            SimVar.SetSimVarValue("L:A32NX_ROPS_IF_WET", "bool", 0);
-                        }
+                        ldr += ldr * 0.15;
                     }
                 }
             },
