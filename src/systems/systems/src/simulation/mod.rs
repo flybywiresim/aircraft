@@ -7,7 +7,7 @@ pub mod test;
 
 use crate::{
     electrical::consumption::{ElectricPower, SuppliedPower},
-    shared::{ConsumePower, ElectricalBuses, PowerConsumptionReport},
+    shared::{from_bool, to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
 };
 
 /// Trait for a type which can read and write simulator data.
@@ -356,19 +356,5 @@ impl<'a> SimulatorWriter<'a> {
     /// ```
     pub fn write_bool(&mut self, name: &str, value: bool) {
         self.simulator_read_writer.write(name, from_bool(value));
-    }
-}
-
-/// Converts a given `f64` representing a boolean value in the simulator into an actual `bool` value.
-fn to_bool(value: f64) -> bool {
-    (value - 1.).abs() < f64::EPSILON
-}
-
-/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
-pub(crate) fn from_bool(value: bool) -> f64 {
-    if value {
-        1.0
-    } else {
-        0.0
     }
 }

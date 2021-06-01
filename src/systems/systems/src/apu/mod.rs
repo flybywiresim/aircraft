@@ -14,7 +14,7 @@ use crate::{
 };
 #[cfg(test)]
 use std::time::Duration;
-use uom::si::{f64::*, ratio::percent, thermodynamic_temperature::degree_celsius};
+use uom::si::{f64::*, ratio::percent};
 
 mod air_intake_flap;
 mod aps3200;
@@ -134,18 +134,14 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
         }
 
         self.generator
-            .update(self.n(), self.is_emergency_shutdown());
+            .update(self.ecb.n(), self.is_emergency_shutdown());
     }
 
     pub fn update_after_power_distribution(&mut self) {
         self.ecb.update_start_motor_state(&self.start_motor);
     }
 
-    pub fn n(&self) -> Ratio {
-        self.ecb.n()
-    }
-
-    pub fn is_available(&self) -> bool {
+    fn is_available(&self) -> bool {
         self.ecb.is_available()
     }
 
@@ -213,23 +209,6 @@ impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit
             self.air_intake_flap.open_amount().get::<percent>(),
         );
         writer.write_bool("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
-        writer.write_f64(
-            "APU_EGT_CAUTION",
-            self.ecb.egt_caution_temperature().get::<degree_celsius>(),
-        );
-        writer.write_f64("APU_EGT", self.ecb.egt().get::<degree_celsius>());
-        writer.write_bool("ECAM_INOP_SYS_APU", self.ecb.is_inoperable());
-        writer.write_bool("APU_IS_AUTO_SHUTDOWN", self.ecb.is_auto_shutdown());
-        writer.write_bool("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
-        writer.write_bool(
-            "APU_LOW_FUEL_PRESSURE_FAULT",
-            self.ecb.has_fuel_low_pressure_fault(),
-        );
-        writer.write_f64("APU_N", self.n().get::<percent>());
-        writer.write_f64(
-            "APU_EGT_WARNING",
-            self.ecb.egt_warning_temperature().get::<degree_celsius>(),
-        );
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> BleedAirValveState for AuxiliaryPowerUnit<T, U> {
@@ -350,7 +329,7 @@ impl Default for AuxiliaryPowerUnitOverheadPanel {
 pub mod tests {
     use crate::{
         electrical::consumption::{PowerConsumer, SuppliedPower},
-        shared::{ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
+        shared::{to_bool, ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
         simulation::{test::SimulationTestBed, Aircraft},
     };
 
@@ -685,7 +664,7 @@ pub mod tests {
             loop {
                 self = self.run(Duration::from_secs(1));
 
-                if self.n().get::<percent>() == 0. {
+                if self.turbine_is_shutdown() {
                     break;
                 }
             }
@@ -699,8 +678,7 @@ pub mod tests {
             loop {
                 self = self.run(Duration::from_secs(1));
 
-                if (self.air_intake_flap_open_amount().get::<percent>() - 100.).abs() < f64::EPSILON
-                {
+                if self.is_air_intake_flap_fully_open() {
                     break;
                 }
             }
@@ -816,7 +794,11 @@ pub mod tests {
         }
 
         fn is_air_intake_flap_fully_open(&mut self) -> bool {
-            (self.air_intake_flap_open_amount().get::<percent>() - 100.).abs() < f64::EPSILON
+            to_bool(self.air_intake_flap_fully_open_raw())
+        }
+
+        fn air_intake_flap_fully_open_raw(&mut self) -> f64 {
+            self.simulation_test_bed.read_f64("APU_FLAP_FULLY_OPEN")
         }
 
         fn is_air_intake_flap_fully_closed(&mut self) -> bool {
@@ -832,6 +814,10 @@ pub mod tests {
 
         pub fn n(&mut self) -> Ratio {
             Ratio::new::<percent>(self.simulation_test_bed.read_f64("APU_N"))
+        }
+
+        fn turbine_is_shutdown(&mut self) -> bool {
+            self.n().get::<percent>() <= 0.
         }
 
         fn egt(&mut self) -> ThermodynamicTemperature {
@@ -920,8 +906,12 @@ pub mod tests {
         }
 
         fn has_fuel_low_pressure_fault(&mut self) -> bool {
+            to_bool(self.fuel_low_pressure_fault_raw())
+        }
+
+        fn fuel_low_pressure_fault_raw(&mut self) -> f64 {
             self.simulation_test_bed
-                .read_bool("APU_LOW_FUEL_PRESSURE_FAULT")
+                .read_f64("APU_LOW_FUEL_PRESSURE_FAULT")
         }
 
         fn is_auto_shutdown(&mut self) -> bool {
@@ -1263,7 +1253,7 @@ pub mod tests {
             loop {
                 test_bed = test_bed.run(Duration::from_secs(1));
 
-                if test_bed.n().get::<percent>() == 0. {
+                if test_bed.turbine_is_shutdown() {
                     break;
                 }
             }
@@ -1295,8 +1285,8 @@ pub mod tests {
             let mut test_bed = test_bed_with()
                 .running_apu()
                 .ambient_temperature(ambient)
-                .and()
-                .master_off();
+                .cooling_down_apu()
+                .master_on();
 
             while test_bed.egt() != ambient {
                 test_bed = test_bed.run(Duration::from_secs(1));
@@ -1307,6 +1297,8 @@ pub mod tests {
         fn shutdown_apu_warms_up_as_ambient_temperature_increases() {
             let starting_temperature = ThermodynamicTemperature::new::<degree_celsius>(0.);
             let mut test_bed = test_bed_with()
+                .master_on()
+                .and()
                 .ambient_temperature(starting_temperature)
                 .run(Duration::from_secs(1_000));
 
@@ -1416,7 +1408,11 @@ pub mod tests {
         #[test]
         fn restarting_apu_which_is_cooling_down_does_not_suddenly_reduce_egt_to_ambient_temperature(
         ) {
-            let mut test_bed = test_bed_with().cooling_down_apu();
+            let mut test_bed = test_bed_with()
+                .cooling_down_apu()
+                .and()
+                .master_on()
+                .run(Duration::from_secs(0));
 
             assert!(test_bed.egt().get::<degree_celsius>() > 100.);
 
@@ -1431,7 +1427,10 @@ pub mod tests {
         #[test]
         fn restarting_apu_which_is_cooling_down_does_reduce_towards_ambient_until_startup_egt_above_current_egt(
         ) {
-            let mut test_bed = test_bed_with().cooling_down_apu();
+            let mut test_bed = test_bed_with()
+                .cooling_down_apu()
+                .master_on()
+                .run(Duration::from_secs(0));
 
             let initial_egt = test_bed.egt();
 
@@ -1513,7 +1512,7 @@ pub mod tests {
                 test_bed = test_bed.run(Duration::from_millis(50));
                 assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
 
-                if test_bed.n().get::<percent>() == 0. {
+                if test_bed.turbine_is_shutdown() {
                     break;
                 }
             }
@@ -1612,7 +1611,7 @@ pub mod tests {
                 test_bed = test_bed.run(Duration::from_millis(50));
                 assert!(!test_bed.master_has_fault());
 
-                if test_bed.n().get::<percent>() == 0. {
+                if test_bed.turbine_is_shutdown() {
                     break;
                 }
             }
@@ -1918,6 +1917,18 @@ pub mod tests {
         }
 
         #[test]
+        fn ecb_doesnt_write_some_variables_when_off() {
+            let mut test_bed = test_bed_with().master_off().run(Duration::from_secs(1));
+
+            assert!(test_bed.n().get::<percent>() < -1000.);
+            assert!(test_bed.egt().get::<degree_celsius>() < -1000.);
+            assert!(test_bed.egt_caution_temperature().get::<degree_celsius>() < -1000.);
+            assert!(test_bed.egt_warning_temperature().get::<degree_celsius>() < -1000.);
+            assert!(test_bed.fuel_low_pressure_fault_raw() < -1000.);
+            assert!(test_bed.air_intake_flap_fully_open_raw() < -1000.);
+        }
+
+        #[test]
         /// The start motor is disconnected at 55% N. However, the APU itself only starts powering the ECB
         /// on passing 70% N. In between those moments there should still be power usage by the ECB.
         /// Of course the ECB also uses power below 55% N. It is however hard to measure that individually, as
@@ -1966,9 +1977,7 @@ pub mod tests {
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
 
-                if test_bed.is_air_intake_flap_fully_closed()
-                    && (test_bed.n().get::<percent>() - 0.).abs() < f64::EPSILON
-                {
+                if test_bed.is_air_intake_flap_fully_closed() && test_bed.turbine_is_shutdown() {
                     break;
                 } else if test_bed.n().get::<percent>() <= 70. {
                     assert!(test_bed.power_consumption() > Power::new::<watt>(0.));

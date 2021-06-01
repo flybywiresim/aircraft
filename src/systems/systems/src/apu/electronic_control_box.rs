@@ -5,17 +5,17 @@ use super::{
 };
 use crate::{
     shared::{
-        ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, PneumaticValve, PneumaticValveSignal,
+        from_bool, ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal,
+        ElectricalBusType, ElectricalBuses, PneumaticValve, PneumaticValveSignal,
     },
-    simulation::{SimulationElement, UpdateContext},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 use std::time::Duration;
 use uom::si::{
     f64::*, length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
 };
 
-pub struct ElectronicControlBox {
+pub(super) struct ElectronicControlBox {
     powered_by: ElectricalBusType,
     is_powered: bool,
     turbine_state: TurbineState,
@@ -85,7 +85,7 @@ impl ElectronicControlBox {
         }
     }
 
-    pub(super) fn update_air_intake_flap_state(&mut self, air_intake_flap: &AirIntakeFlap) {
+    pub fn update_air_intake_flap_state(&mut self, air_intake_flap: &AirIntakeFlap) {
         self.air_intake_flap_open_amount = air_intake_flap.open_amount();
     }
 
@@ -205,19 +205,11 @@ impl ElectronicControlBox {
                 || (self.turbine_state != TurbineState::Starting && self.n.get::<percent>() > 95.))
     }
 
-    pub fn egt_warning_temperature(&self) -> ThermodynamicTemperature {
-        self.egt_warning_temperature
-    }
-
     pub fn egt_caution_temperature(&self) -> ThermodynamicTemperature {
         const WARNING_TO_CAUTION_DIFFERENCE: f64 = 33.;
         ThermodynamicTemperature::new::<degree_celsius>(
             self.egt_warning_temperature.get::<degree_celsius>() - WARNING_TO_CAUTION_DIFFERENCE,
         )
-    }
-
-    pub fn egt(&self) -> ThermodynamicTemperature {
-        self.egt
     }
 
     pub fn n(&self) -> Ratio {
@@ -226,6 +218,14 @@ impl ElectronicControlBox {
 
     pub fn is_starting(&self) -> bool {
         self.turbine_state == TurbineState::Starting
+    }
+
+    fn air_intake_flap_is_fully_open(&self) -> bool {
+        (self.air_intake_flap_open_amount.get::<percent>() - 100.).abs() < f64::EPSILON
+    }
+
+    fn write_when_on(&self, writer: &mut SimulatorWriter, name: &str, value: f64) {
+        writer.write_f64(name, if self.is_on() { value } else { f64::MIN });
     }
 }
 /// APU start Motor contactors controller
@@ -242,10 +242,7 @@ impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
         match self.turbine_state {
             TurbineState::Shutdown
                 if {
-                    self.master_is_on
-                        && self.start_is_on
-                        && (self.air_intake_flap_open_amount.get::<percent>() - 100.).abs()
-                            < f64::EPSILON
+                    self.master_is_on && self.start_is_on && self.air_intake_flap_is_fully_open()
                 } =>
             {
                 Some(ContactorSignal::Close)
@@ -266,19 +263,17 @@ impl ControllerSignal<AirIntakeFlapSignal> for ElectronicControlBox {
     fn signal(&self) -> Option<AirIntakeFlapSignal> {
         if !self.is_on() {
             None
+        } else if match self.turbine_state {
+            TurbineState::Shutdown => self.master_is_on,
+            TurbineState::Starting => true,
+            // While running, the air intake flap remains open.
+            TurbineState::Running => true,
+            // Manual shutdown sequence: the air intake flap closes at N = 7%.
+            TurbineState::Stopping => self.master_is_on || 7. <= self.n.get::<percent>(),
+        } {
+            Some(AirIntakeFlapSignal::Open)
         } else {
-            if match self.turbine_state {
-                TurbineState::Shutdown => self.master_is_on,
-                TurbineState::Starting => true,
-                // While running, the air intake flap remains open.
-                TurbineState::Running => true,
-                // Manual shutdown sequence: the air intake flap closes at N = 7%.
-                TurbineState::Stopping => self.master_is_on || 7. <= self.n.get::<percent>(),
-            } {
-                Some(AirIntakeFlapSignal::Open)
-            } else {
-                Some(AirIntakeFlapSignal::Close)
-            }
+            Some(AirIntakeFlapSignal::Close)
         }
     }
 }
@@ -323,6 +318,38 @@ impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
     }
 }
 impl SimulationElement for ElectronicControlBox {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        self.write_when_on(writer, "APU_N", self.n().get::<percent>());
+
+        self.write_when_on(writer, "APU_EGT", self.egt.get::<degree_celsius>());
+        self.write_when_on(
+            writer,
+            "APU_EGT_CAUTION",
+            self.egt_caution_temperature().get::<degree_celsius>(),
+        );
+        self.write_when_on(
+            writer,
+            "APU_EGT_WARNING",
+            self.egt_warning_temperature.get::<degree_celsius>(),
+        );
+
+        self.write_when_on(
+            writer,
+            "APU_LOW_FUEL_PRESSURE_FAULT",
+            from_bool(self.has_fuel_low_pressure_fault()),
+        );
+        self.write_when_on(
+            writer,
+            "APU_FLAP_FULLY_OPEN",
+            from_bool(self.air_intake_flap_is_fully_open()),
+        );
+
+        // Flight Warning Computer related information.
+        writer.write_bool("ECAM_INOP_SYS_APU", self.is_inoperable());
+        writer.write_bool("APU_IS_AUTO_SHUTDOWN", self.is_auto_shutdown());
+        writer.write_bool("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
+    }
+
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = self.is_powered_by_apu_itself() || buses.is_powered(self.powered_by);
     }
