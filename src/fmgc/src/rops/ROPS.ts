@@ -203,7 +203,12 @@ export class ROPS {
 
                         if (alt > 0) {} // TODO: impl. landing runway elevation
 
-                        if (windDirection) {} // TODO: impl. wind direction check -> only true if TW
+                        const tailwindComponent: number = this.computeTailwindComponent(hdg, windDirection, windSpeed);
+                        if (tailwindComponent >= 5) {
+                            for (let i: number = tailwindComponent; i > 0; i -= 5) {
+                                ldr += wetPerformance.config3.windCorrection;
+                            }
+                        }
 
                         if (temp) {}
 
