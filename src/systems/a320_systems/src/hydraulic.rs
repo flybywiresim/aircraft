@@ -34,8 +34,7 @@ use systems::{
 
 pub(super) struct A320Hydraulic {
     autobrake_panel: A320AutobrakePanel,
-    autobrake_controller: A320AutobrakeController,
-    hyd_brake_logic: A320HydraulicBrakingLogic,
+    brake_computer: A320HydraulicBrakeComputerUnit,
 
     blue_loop: HydraulicLoop,
     blue_loop_controller: A320HydraulicLoopController,
@@ -114,8 +113,7 @@ impl A320Hydraulic {
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
             autobrake_panel: A320AutobrakePanel::new(),
-            autobrake_controller: A320AutobrakeController::new(),
-            hyd_brake_logic: A320HydraulicBrakingLogic::new(),
+            brake_computer: A320HydraulicBrakeComputerUnit::new(),
 
             blue_loop: HydraulicLoop::new(
                 "BLUE",
@@ -263,6 +261,7 @@ impl A320Hydraulic {
             &overhead_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
+            landing_gear,
         );
 
         if number_of_steps_floating_point < 1.0 {
@@ -297,7 +296,6 @@ impl A320Hydraulic {
                     engine2,
                     overhead_panel,
                     engine_fire_push_buttons,
-                    landing_gear,
                 );
             }
 
@@ -367,9 +365,17 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
+        landing_gear: &LandingGear,
     ) {
-        self.autobrake_controller
-            .update(&context, &self.autobrake_panel, &self.hyd_brake_logic);
+        // Process brake logic (which circuit brakes) and send brake demands (how much)
+        self.brake_computer.update_brake_demands(
+            context,
+            &self.green_loop,
+            &self.braking_circuit_altn,
+            &landing_gear,
+            &self.autobrake_panel,
+        );
+
         // Updating rat stowed pos on all frames in case it's used for graphics
         self.ram_air_turbine.update_position(&context.delta());
 
@@ -422,20 +428,8 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
-        landing_gear: &LandingGear,
     ) {
-        // Process brake logic (which circuit brakes) and send brake demands (how much)
-        self.hyd_brake_logic.update_brake_demands(
-            context,
-            &self.green_loop,
-            &self.braking_circuit_altn,
-            &landing_gear,
-        );
-        self.hyd_brake_logic.update_brake_pressure_limitation(
-            &mut self.braking_circuit_norm,
-            &mut self.braking_circuit_altn,
-        );
-        self.hyd_brake_logic.send_brake_demands(
+        self.brake_computer.send_brake_demands(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
         );
@@ -589,8 +583,7 @@ impl SimulationElement for A320Hydraulic {
         self.yellow_loop.accept(visitor);
 
         self.autobrake_panel.accept(visitor);
-        self.autobrake_controller.accept(visitor);
-        self.hyd_brake_logic.accept(visitor);
+        self.brake_computer.accept(visitor);
 
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
@@ -1077,7 +1070,8 @@ impl SimulationElement for A320RamAirTurbineController {
     }
 }
 
-struct A320HydraulicBrakingLogic {
+struct A320HydraulicBrakeComputerUnit {
+    autobrake_controller: A320AutobrakeController,
     parking_brake_demand: bool,
     weight_on_wheels: bool,
     is_gear_lever_down: bool,
@@ -1090,10 +1084,12 @@ struct A320HydraulicBrakingLogic {
     normal_brakes_available: bool,
     should_disable_auto_brake_when_retracting: DelayedTrueLogicGate,
     anti_skid_activated: bool,
-    autobrakes_setting: u8,
+
+    alternate_brake_pressure_limit: Pressure,
+    normal_brake_pressure_limit: Pressure,
 }
 /// Implements brakes computers logic
-impl A320HydraulicBrakingLogic {
+impl A320HydraulicBrakeComputerUnit {
     // Minimum pressure hysteresis on green until main switched on ALTN brakes
     // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
     const MIN_PRESSURE_BRAKE_ALTN_HYST_LO: f64 = 1305.;
@@ -1107,8 +1103,9 @@ impl A320HydraulicBrakingLogic {
 
     const PILOT_INPUT_DETECTION_TRESHOLD: f64 = 0.2;
 
-    fn new() -> A320HydraulicBrakingLogic {
-        A320HydraulicBrakingLogic {
+    fn new() -> A320HydraulicBrakeComputerUnit {
+        A320HydraulicBrakeComputerUnit {
+            autobrake_controller: A320AutobrakeController::new(),
             // Position of parking brake lever
             parking_brake_demand: true,
             weight_on_wheels: true,
@@ -1128,7 +1125,8 @@ impl A320HydraulicBrakingLogic {
                 Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
             ),
             anti_skid_activated: true,
-            autobrakes_setting: 0,
+            alternate_brake_pressure_limit: Pressure::new::<psi>(3000.),
+            normal_brake_pressure_limit: Pressure::new::<psi>(3000.),
         }
     }
 
@@ -1153,36 +1151,27 @@ impl A320HydraulicBrakingLogic {
         }
     }
 
-    fn update_brake_pressure_limitation(
-        &mut self,
-        norm_brk: &mut BrakeCircuit,
-        altn_brk: &mut BrakeCircuit,
-    ) {
+    fn update_brake_pressure_limitation(&mut self) {
         let yellow_manual_braking_input = self.left_brake_pilot_input
             > self.left_brake_yellow_output + 0.2
             || self.right_brake_pilot_input > self.right_brake_yellow_output + 0.2;
 
         // Nominal braking from pedals is limited to 2538psi
-        norm_brk.set_brake_limit_active(true);
-        norm_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
+        self.normal_brake_pressure_limit = Pressure::new::<psi>(2538.);
 
         if self.parking_brake_demand {
-            altn_brk.set_brake_limit_active(true);
-
             // If no pilot action, standard park brake pressure limit
             if !yellow_manual_braking_input {
-                altn_brk.set_brake_press_limit(Pressure::new::<psi>(2103.));
+                self.alternate_brake_pressure_limit = Pressure::new::<psi>(2103.);
             } else {
                 // Else manual action limited to a higher max nominal pressure
-                altn_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
+                self.alternate_brake_pressure_limit = Pressure::new::<psi>(2538.);
             }
         } else if !self.anti_skid_activated {
-            altn_brk.set_brake_press_limit(Pressure::new::<psi>(1160.));
-            altn_brk.set_brake_limit_active(true);
+            self.alternate_brake_pressure_limit = Pressure::new::<psi>(1160.);
         } else {
             // Else if any manual braking we use standard limit
-            altn_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
-            altn_brk.set_brake_limit_active(true);
+            self.alternate_brake_pressure_limit = Pressure::new::<psi>(2538.);
         }
     }
 
@@ -1193,8 +1182,17 @@ impl A320HydraulicBrakingLogic {
         green_loop: &HydraulicLoop,
         alternate_circuit: &BrakeCircuit,
         landing_gear: &LandingGear,
+        autobrake_panel: &A320AutobrakePanel,
     ) {
         self.update_normal_braking_availability(&green_loop.pressure());
+        self.update_brake_pressure_limitation();
+
+        self.autobrake_controller.update(
+            &context,
+            &autobrake_panel,
+            self.allow_autobrake_arming(),
+            self.has_brake_pedal_input(),
+        );
 
         let is_in_flight_gear_lever_up = !self.weight_on_wheels && !self.is_gear_lever_down;
         self.should_disable_auto_brake_when_retracting.update(
@@ -1220,8 +1218,13 @@ impl A320HydraulicBrakingLogic {
                 && !self.parking_brake_demand;
 
             if green_used_for_brakes {
-                self.left_brake_green_output = self.left_brake_pilot_input;
-                self.right_brake_green_output = self.right_brake_pilot_input;
+                // Final output on normal brakes is max(pilot demand , autobrake demand) to allow pilot override autobrake demand
+                self.left_brake_green_output = self
+                    .left_brake_pilot_input
+                    .max(self.autobrake_controller.brake_output());
+                self.right_brake_green_output = self
+                    .right_brake_pilot_input
+                    .max(self.autobrake_controller.brake_output());
                 self.left_brake_yellow_output = 0.;
                 self.right_brake_yellow_output = 0.;
             } else {
@@ -1257,14 +1260,22 @@ impl A320HydraulicBrakingLogic {
     }
 
     fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
+        norm.set_brake_press_limit(self.normal_brake_pressure_limit);
         norm.set_brake_demand_left(self.left_brake_green_output);
         norm.set_brake_demand_right(self.right_brake_green_output);
+
+        altn.set_brake_press_limit(self.alternate_brake_pressure_limit);
         altn.set_brake_demand_left(self.left_brake_yellow_output);
         altn.set_brake_demand_right(self.right_brake_yellow_output);
     }
 }
 
-impl SimulationElement for A320HydraulicBrakingLogic {
+impl SimulationElement for A320HydraulicBrakeComputerUnit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.autobrake_controller.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn read(&mut self, state: &mut SimulatorReader) {
         self.parking_brake_demand = state.read_bool("PARK_BRAKE_LEVER_POS");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
@@ -1272,7 +1283,6 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
         self.left_brake_pilot_input = state.read_f64("LEFT_BRAKE_PEDAL_INPUT");
         self.right_brake_pilot_input = state.read_f64("RIGHT_BRAKE_PEDAL_INPUT");
-        self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
     }
 }
 
@@ -1410,34 +1420,36 @@ pub struct A320AutobrakeController {
     controller: Autobrake,
     mode: A320AutobrakeMode,
 
+    arming_is_allowed: bool,
+    pedal_input_is_present: bool,
+
     spoilers_left_position: f64,
     spoilers_right_position: f64,
     last_spoilers_left_position: f64,
     last_spoilers_right_position: f64,
     spoilers_armed: bool,
-
-    enabled_duration: Duration,
-    regul_on: bool,
 }
 impl A320AutobrakeController {
+    const OPENED_SPOILER_DETECTION_THRESHOLD: f64 = 0.7;
+
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
             controller: Autobrake::new(),
             mode: A320AutobrakeMode::NONE,
+            arming_is_allowed: false,
+            pedal_input_is_present: false,
             spoilers_left_position: 0.,
             spoilers_right_position: 0.,
             last_spoilers_left_position: 0.,
             last_spoilers_right_position: 0.,
             spoilers_armed: false,
-            enabled_duration: Duration::from_secs(0),
-            regul_on: false,
         }
     }
 
     fn spoilers_are_auto_deployed(&self) -> bool {
         self.spoilers_armed
-            && self.spoilers_left_position > 0.2
-            && self.spoilers_right_position > 0.2
+            && self.spoilers_left_position > Self::OPENED_SPOILER_DETECTION_THRESHOLD
+            && self.spoilers_right_position > Self::OPENED_SPOILER_DETECTION_THRESHOLD
     }
 
     fn spoilers_retracted_event(&self) -> bool {
@@ -1445,11 +1457,11 @@ impl A320AutobrakeController {
             || self.spoilers_right_position == 0. && self.last_spoilers_right_position > 0.
     }
 
-    fn update_mode_buttons(
-        &mut self,
-        autobrake_panel: &A320AutobrakePanel,
-        brake_logic: &A320HydraulicBrakingLogic,
-    ) {
+    fn brake_output(&self) -> f64 {
+        self.controller.output()
+    }
+
+    fn update_mode_buttons(&mut self, autobrake_panel: &A320AutobrakePanel) {
         if autobrake_panel.low_pressed() {
             if self.mode == A320AutobrakeMode::LOW {
                 self.mode = A320AutobrakeMode::NONE;
@@ -1470,8 +1482,8 @@ impl A320AutobrakeController {
             }
         }
 
-        if !self.allow_arming(brake_logic) || self.should_disarm(&brake_logic) {
-            self.mode = A320AutobrakeMode::NONE;
+        if !self.allow_arming() || self.should_disarm() {
+            self.disarm();
         }
     }
 
@@ -1479,8 +1491,8 @@ impl A320AutobrakeController {
         self.is_armed() && self.spoilers_are_auto_deployed()
     }
 
-    fn allow_arming(&self, brake_logic: &A320HydraulicBrakingLogic) -> bool {
-        brake_logic.allow_autobrake_arming()
+    fn allow_arming(&self) -> bool {
+        self.arming_is_allowed
     }
 
     fn is_armed(&self) -> bool {
@@ -1491,40 +1503,69 @@ impl A320AutobrakeController {
         self.controller.is_engaged()
     }
 
-    fn should_disarm(&self, brake_logic: &A320HydraulicBrakingLogic) -> bool {
-        (self.control_is_engaged() && brake_logic.has_brake_pedal_input())
+    fn should_disarm(&self) -> bool {
+        (self.control_is_engaged() && self.pedal_input_is_present)
             || !self.is_armed()
-            || !self.allow_arming(&brake_logic)
+            || !self.allow_arming()
             || self.spoilers_retracted_event()
         // Todo add in flight for 10s
     }
 
-    fn update_target(&self) {
+    fn target(&self) -> Acceleration {
         let target: Acceleration;
 
         match self.mode {
             A320AutobrakeMode::NONE => target = Acceleration::new::<meter_per_second_squared>(10.),
-            A320AutobrakeMode::LOW => target = Acceleration::new::<meter_per_second_squared>(-1.8),
-            A320AutobrakeMode::MED => target = Acceleration::new::<meter_per_second_squared>(-3.),
-            A320AutobrakeMode::MAX => target = Acceleration::new::<meter_per_second_squared>(-10.),
+            A320AutobrakeMode::LOW => {
+                if self.controller.time_engaged().as_secs_f64() > 4. {
+                    target = Acceleration::new::<meter_per_second_squared>(-1.7);
+                } else {
+                    target = Acceleration::new::<meter_per_second_squared>(0.);
+                }
+            }
+            A320AutobrakeMode::MED => {
+                if self.controller.time_engaged().as_secs_f64() > 2. {
+                    target = Acceleration::new::<meter_per_second_squared>(-3.);
+                } else {
+                    target = Acceleration::new::<meter_per_second_squared>(0.);
+                }
+            }
+            A320AutobrakeMode::MAX => target = Acceleration::new::<meter_per_second_squared>(-8.),
         }
-        self.controller.update_target(target);
+        target
+    }
+
+    fn disarm(&mut self) {
+        self.mode = A320AutobrakeMode::NONE;
+        self.controller.disable();
+    }
+
+    fn engage(&mut self) {
+        self.controller.engage();
+    }
+
+    fn update_bcu_inputs(&mut self, allow_arming: bool, pedal_input_is_present: bool) {
+        self.arming_is_allowed = allow_arming;
+        self.pedal_input_is_present = pedal_input_is_present;
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
         autobrake_panel: &A320AutobrakePanel,
-        brake_logic: &A320HydraulicBrakingLogic,
+        allow_arming: bool,
+        pedal_input_is_present: bool,
     ) {
-        self.update_mode_buttons(&autobrake_panel, brake_logic);
+        self.update_bcu_inputs(allow_arming, pedal_input_is_present);
+        self.update_mode_buttons(&autobrake_panel);
 
-        if self.should_engage() && !self.should_disarm(&brake_logic) {
-            self.controller.engage();
+        if self.should_engage() && !self.should_disarm() {
+            self.engage();
         } else {
             self.controller.disable();
         }
-        self.update_target();
+        self.controller.update_target(self.target());
+        self.controller.update(&context);
     }
 }
 impl SimulationElement for A320AutobrakeController {
@@ -1543,11 +1584,17 @@ impl SimulationElement for A320AutobrakeController {
             writer.write_bool("AUTOBRK_MED_DECEL", false);
             writer.write_bool("AUTOBRK_MAX_DECEL", false);
         } else if mode_num == 1 {
-            writer.write_bool("AUTOBRK_LOW_DECEL", self.control_is_engaged());
+            writer.write_bool("AUTOBRK_LOW_DECEL", self.controller.is_on_target(80.));
+            writer.write_bool("AUTOBRK_MED_DECEL", false);
+            writer.write_bool("AUTOBRK_MAX_DECEL", false);
         } else if mode_num == 2 {
-            writer.write_bool("AUTOBRK_MED_DECEL", self.control_is_engaged());
+            writer.write_bool("AUTOBRK_LOW_DECEL", false);
+            writer.write_bool("AUTOBRK_MED_DECEL", self.controller.is_on_target(80.));
+            writer.write_bool("AUTOBRK_MAX_DECEL", false);
         } else {
-            writer.write_bool("AUTOBRK_MAX_DECEL", self.control_is_engaged());
+            writer.write_bool("AUTOBRK_LOW_DECEL", false);
+            writer.write_bool("AUTOBRK_MED_DECEL", false);
+            writer.write_bool("AUTOBRK_MAX_DECEL", self.controller.is_on_target(40.));
         }
     }
 
@@ -1573,7 +1620,7 @@ pub(super) struct A320AutobrakePanel {
 impl A320AutobrakePanel {
     pub(super) fn new() -> A320AutobrakePanel {
         A320AutobrakePanel {
-            lo_button: MomentaryPushButton::new("AUTOBRK_LO_ON"),
+            lo_button: MomentaryPushButton::new("AUTOBRK_LOW_ON"),
             med_button: MomentaryPushButton::new("AUTOBRK_MED_ON"),
             max_button: MomentaryPushButton::new("AUTOBRK_MAX_ON"),
             last_lo_state: false,
@@ -1583,10 +1630,6 @@ impl A320AutobrakePanel {
     }
 
     fn low_pressed(&self) -> bool {
-        println!(
-            "A320AutobrakePanel::low_pressed={}",
-            self.lo_button.is_pressed() && !self.last_lo_state
-        );
         self.lo_button.is_pressed() && !self.last_lo_state
     }
     fn med_pressed(&self) -> bool {
@@ -1606,15 +1649,7 @@ impl SimulationElement for A320AutobrakePanel {
     }
 
     fn read(&mut self, _state: &mut SimulatorReader) {
-        println!(
-            "LO{},Med{},MAX{}",
-            self.lo_button.is_pressed(),
-            self.med_button.is_pressed(),
-            self.max_button.is_pressed()
-        );
-
         self.last_lo_state = self.lo_button.is_pressed();
-        println!("A320AutobrakePanel::read last={}", self.last_lo_state);
         self.last_med_state = self.med_button.is_pressed();
         self.last_max_state = self.max_button.is_pressed();
     }

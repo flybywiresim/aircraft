@@ -125,7 +125,6 @@ pub struct BrakeCircuit {
     pressure_applied_right: Pressure,
 
     pressure_limitation: Pressure,
-    pressure_limitation_active: bool,
 
     /// Brake accumulator variables. Accumulator can have 0 volume if no accumulator
     has_accumulator: bool,
@@ -176,8 +175,7 @@ impl BrakeCircuit {
             pressure_applied_left: Pressure::new::<psi>(0.0),
             demanded_brake_position_right: 0.0,
             pressure_applied_right: Pressure::new::<psi>(0.0),
-            pressure_limitation: Pressure::new::<psi>(0.0),
-            pressure_limitation_active: false,
+            pressure_limitation: Pressure::new::<psi>(5000.0),
             has_accumulator: has_accu,
             accumulator: Accumulator::new(
                 Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
@@ -199,22 +197,13 @@ impl BrakeCircuit {
         self.pressure_limitation = pressure_limit;
     }
 
-    pub fn set_brake_limit_active(&mut self, is_pressure_limit_active: bool) {
-        self.pressure_limitation_active = is_pressure_limit_active;
-    }
-
     fn update_brake_actuators(&mut self, context: &UpdateContext, hyd_pressure: Pressure) {
         self.left_brake_actuator
             .set_position_demand(self.demanded_brake_position_left);
         self.right_brake_actuator
             .set_position_demand(self.demanded_brake_position_right);
 
-        let actual_max_allowed_pressure: Pressure;
-        if self.pressure_limitation_active {
-            actual_max_allowed_pressure = hyd_pressure.min(self.pressure_limitation);
-        } else {
-            actual_max_allowed_pressure = hyd_pressure;
-        }
+        let actual_max_allowed_pressure = hyd_pressure.min(self.pressure_limitation);
 
         self.left_brake_actuator
             .update(context, actual_max_allowed_pressure);
@@ -338,6 +327,11 @@ pub struct Autobrake {
     is_engaged: bool,
     time_engaged: Duration,
 }
+impl Default for Autobrake {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl Autobrake {
     // Low pass filter, time constant in second
     const ACCELERATION_INPUT_FILTER: f64 = 0.2;
@@ -346,7 +340,7 @@ impl Autobrake {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
             ki: 0.5,
-            kp: 0.5,
+            kp: 0.3,
             last_error: 0.,
 
             current_output: 0.,
@@ -375,6 +369,10 @@ impl Autobrake {
 
     pub fn time_engaged(&self) -> Duration {
         self.time_engaged
+    }
+
+    pub fn is_on_target(&self, percent_margin_to_target: f64) -> bool {
+        self.is_engaged && self.acceleration < self.target * percent_margin_to_target / 100.
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
@@ -410,7 +408,7 @@ impl Autobrake {
         );
     }
 
-    fn output(&self) -> f64 {
+    pub fn output(&self) -> f64 {
         self.current_output
     }
 }
@@ -685,11 +683,6 @@ mod tests {
 
         let pressure_limit = Pressure::new::<psi>(1200.);
         brake_circuit_primed.set_brake_press_limit(pressure_limit);
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
-        assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2900.));
-        assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(2900.));
-
-        brake_circuit_primed.set_brake_limit_active(true);
         brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), &hyd_loop);
 
         // Now we limit to 1200 but pressure shouldn't drop instantly
