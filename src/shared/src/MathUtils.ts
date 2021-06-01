@@ -18,4 +18,15 @@ export class MathUtils {
 
        return (Math.round(val * coefficient) / coefficient).toString();
    }
+
+   public static diffAngle(a: number, b: number): number {
+       let diff = b - a;
+       while (diff > 180) {
+           diff -= 360;
+       }
+       while (diff <= -180) {
+           diff += 360;
+       }
+       return diff;
+   }
 }
