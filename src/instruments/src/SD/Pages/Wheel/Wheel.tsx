@@ -148,7 +148,7 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
     const [eng2] = useSimVar('ENG COMBUSTION:2', 'Bool');
     const available = eng1 === 1 && eng2 === 1;
 
-    const [autoBrakeLevel] = useSimVar('L:XMLVAR_Autobrakes_Level', 'Number', maxStaleness);
+    const [autoBrakeLevel] = useSimVar('L:AUTOBRK_ARMED_MODE', 'Number', maxStaleness);
 
     return autoBrakeLevel !== 0 ? (
         <SvgGroup x={x} y={y}>

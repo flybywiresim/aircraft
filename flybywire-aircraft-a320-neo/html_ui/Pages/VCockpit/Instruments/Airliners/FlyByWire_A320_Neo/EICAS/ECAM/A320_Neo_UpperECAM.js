@@ -1369,7 +1369,7 @@ var A320_Neo_UpperECAM;
                         message: "AUTO BRK LO",
                         isActive: () => (
                             (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                            SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1
+                            SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1
                         )
                     },
                     {
@@ -1377,7 +1377,7 @@ var A320_Neo_UpperECAM;
                         isActive: () => {
                             return (
                                 (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 2
+                                SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 2
                             );
                         }
                     },
@@ -1386,7 +1386,7 @@ var A320_Neo_UpperECAM;
                         isActive: () => {
                             return (
                                 (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 3
+                                SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 3
                             );
                         }
                     },
@@ -1420,7 +1420,7 @@ var A320_Neo_UpperECAM;
                     "AUTO BRK",
                     "MAX",
                     "MAX",
-                    () => SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 3
+                    () => SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 3
                 ),
                 new A320_Neo_UpperECAM.MemoItem(
                     "to-memo-signs",

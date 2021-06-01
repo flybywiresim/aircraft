@@ -282,7 +282,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (infoPanelManager) {
 
             // ----------- MODIFIED --------------------//
-            const autoBrkValue = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
+            const autoBrkValue = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Number");
             const starterOne = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool");
             const starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
             const splrsArmed = SimVar.GetSimVarValue("L:A32NX_SPOILERS_ARMED", "Bool");

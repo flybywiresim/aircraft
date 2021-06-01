@@ -902,7 +902,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
                 if (Simplane.getAltitudeAboveGround() < 1.5) {
                     if (this.landingAutoBrakeTimer == null) {
-                        this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
+                        this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1 ? 4 : 2;
                     }
                     this.landingAutoBrakeTimer -= dt / 1000;
                     if (this.landingAutoBrakeTimer <= 0) {
@@ -911,7 +911,7 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 } else {
                     //Reset timer to 30 when airborne in case of go around
-                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
+                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1 ? 4 : 2;
                 }
             } else if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
                 if (apLogicOn) {
@@ -925,7 +925,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
             if (Simplane.getAltitudeAboveGround() < 1.5) {
                 if (this.landingAutoBrakeTimer == null) {
-                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
+                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1 ? 4 : 2;
                 }
                 this.landingAutoBrakeTimer -= dt / 1000;
                 if (this.landingAutoBrakeTimer <= 0) {
@@ -934,7 +934,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             } else {
                 //Reset timer to 30 when airborne in case of go around
-                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
+                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:A32NX_AUTOBRK_ARMED_MODE", "Enum") === 1 ? 4 : 2;
             }
         }
     }
