@@ -17,6 +17,7 @@ module.exports = {
             height: () => ({
                 'efb': '50rem',
                 'efb-nav': '45.75rem',
+                '124': '34.75rem',
             }),
             inset: () => ({
                 'ctr-tk-y': '18.75rem',

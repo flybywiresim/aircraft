@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Toggle } from '../Components/Form/Toggle';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { Slider } from '../Components/Form/Slider';
@@ -104,8 +104,35 @@ const PlaneSettings = () => {
         }
     };
 
+    const position = useRef({ top: 0, y: 0 });
+    const ref = useRef<HTMLDivElement>(null);
+
+    const mouseDownHandler = (event) => {
+        position.current.top = ref.current ? ref.current.scrollTop : 0;
+        position.current.y = event.clientY;
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+    };
+
+    const mouseMoveHandler = (event) => {
+        const dy = event.clientY - position.current.y;
+        if (ref.current) {
+            ref.current.scrollTop = position.current.top - dy;
+        }
+    };
+
+    const mouseUpHandler = () => {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
     return (
-        <div className="bg-navy-lighter rounded-2xl p-6 shadow-lg overflow-x-hidden overflow-y-scroll h-efb">
+        <div
+            className="bg-navy-lighter rounded-2xl p-6 shadow-lg overflow-x-hidden overflow-y-scroll h-efb grabbable no-scrollbar"
+            ref={ref}
+            onMouseDown={mouseDownHandler}
+        >
             <h1 className="text-xl font-medium text-white mb-4">Realism</h1>
 
             <div className="divide-y divide-gray-700 flex flex-col">
