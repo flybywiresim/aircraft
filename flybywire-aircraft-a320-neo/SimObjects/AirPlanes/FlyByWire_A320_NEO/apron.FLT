@@ -99,7 +99,6 @@ Pump.9=True
 BatterySwitch=True
 StructuralDeiceSwitch=False
 PropDeiceSwitch=False
-Autobrakes=1
 StandbyVacuum=False
 PropSync=False
 AutoFeatherSwitch=False
@@ -114,6 +113,7 @@ FoldingWingsState=0, 0
 ExternalPowerSwitch=False
 
 [LocalVars.0]
+A32NX_AUTOBRK_ARMED_MODE=0
 A32NX_RMP_L_TOGGLE_SWITCH=1
 A32NX_RMP_R_TOGGLE_SWITCH=1
 A32NX_RMP_L_SELECTED_MODE=1
