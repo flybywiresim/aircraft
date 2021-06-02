@@ -1,5 +1,5 @@
+import { IconMinus, IconPlus } from '@tabler/icons';
 import React, { useRef, useState, useEffect } from 'react';
-import './Loadsheet.scss';
 
 type LoadsheetPageProps = {
     loadsheet: string,
@@ -81,28 +81,28 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     return (
         <div className="mt-6">
             <div className="w-full">
-                <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav">
+                <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav relative">
                     {props.loadsheet !== 'N/A' ? (
                         <>
-                            <div className="flex flex-col justify-end absolute bottom-5 right-16">
+                            <div className="flex flex-col justify-end absolute bottom-6 right-16">
                                 <button
                                     type="button"
                                     onClick={fontIncreaseHandler}
-                                    className="font-size-button"
+                                    className="z-10 mb-2 bg-navy-regular p-2 rounded-lg bg-opacity-50"
                                 >
-                                    +
+                                    <IconPlus size={30} />
                                 </button>
                                 <button
                                     type="button"
                                     onClick={fontDecreaseHandler}
-                                    className="font-size-button"
+                                    className="z-10 bg-navy-regular p-2 rounded-lg bg-opacity-50"
                                 >
-                                    -
+                                    <IconMinus size={30} />
                                 </button>
                             </div>
                             <div
                                 ref={ref}
-                                className="loadsheet-container grabbable show-scrollbar overflow-y-scroll"
+                                className="loadsheet-container grabbable scrollbar overflow-y-scroll"
                                 onMouseDown={mouseDownHandler}
                                 // eslint-disable-next-line react/no-danger
                                 dangerouslySetInnerHTML={{ __html: props.loadsheet }}

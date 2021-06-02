@@ -1,14 +1,14 @@
 import './style.scss';
 import React from 'react';
-import { render } from '../Common';
-import { useSimVar } from '../Common/simVars';
+import { render } from '@instruments/common/index';
+import { useSimVar } from '@instruments/common/simVars';
 
 const BatDisplay = ({ number, x, y }) => {
-    const [ltsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Bool', 200);
+    const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 200);
     const [voltage] = useSimVar(`L:A32NX_ELEC_BAT_${number}_POTENTIAL`, 'Volts', 200);
 
     return (
-        <text x={x} y={y}>{ltsTest ? '88.8V' : `${voltage.toFixed(1)}V`}</text>
+        <text x={x} y={y}>{ltsTest === 0 ? '88.8V' : `${voltage.toFixed(1)}V`}</text>
     );
 };
 

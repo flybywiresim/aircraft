@@ -11,11 +11,11 @@ function replaceButSad(s, search, replace) {
 const TEMPLATE_HTML = fs.readFileSync(`${__dirname}/template.html`, 'utf8');
 const TEMPLATE_JS = fs.readFileSync(`${__dirname}/template.js`, 'utf8');
 
-module.exports = ({ name, outputDir, getCssBundle }) => ({
+module.exports = ({ name, outputDir }) => ({
     name: 'template',
     writeBundle(_config, bundle) {
-        const { code: jsCode } = bundle[`${name}-gen.js`];
-        const cssCode = getCssBundle();
+        const { code: jsCode } = bundle['bundle.js'];
+        const { source: cssCode } = bundle['bundle.css'];
 
         const snakeCaseName = name.replace('-', '_');
 

@@ -844,6 +844,10 @@
     - Gallon per second
     - Power Transfer Unit instantaneous flow in motor side
 
+- A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
+    - Bool
+    - Deploys the RAT manually
+
 - A32NX_HYD_RAT_STOW_POSITION
     - Percent over 100
     - RAT position, from fully stowed (0) to fully deployed (1)
@@ -869,6 +873,17 @@
 - A32NX_HYD_BRAKE_ALTN_ACC_PRESS
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
+
+- A32NX_PARK_BRAKE_LEVER_POS
+    - Bool
+    - Current position of the parking brake lever
+
+- A32NX_{brake_side}_BRAKE_PEDAL_INPUT
+    - Percent
+    - Current position of the toe brake pedal animation
+    - {brake_side}
+        - LEFT
+        - RIGHT
 
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
@@ -961,6 +976,24 @@
     - Number (0.0 -> 1.0)
     - Percentage of current (filtered) alpha to alpha max
     - alpha max can be overshoot so values beyond 1.0 should be expected
+
+- A32NX_3D_AILERON_LEFT_DEFLECTION
+    - Number
+    - Provides the left aileron position
+      Value | Meaning
+      --- | ---
+      -1.0 | full up
+       0.0 | neutral
+      1.0 | full down
+
+- A32NX_3D_AILERON_RIGHT_DEFLECTION
+    - Number
+    - Provides the right aileron position
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+       0.0 | neutral
+      1.0 | full up
 
 ## Autopilot System
 

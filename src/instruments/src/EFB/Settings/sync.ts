@@ -1,10 +1,10 @@
-import { NXDataStore } from '../../Common/persistence';
+import { NXDataStore } from '@shared/persistence';
 import { setSimVar } from '../../util.js';
 
 type SettingSync = { simVar: [name: string, type: string], propertyName: string }
 
 function syncSetting(simVarName, simVarUnit, propertyName) {
-    const propertyValue = NXDataStore.get(propertyName);
+    const propertyValue = NXDataStore.get<string>(propertyName);
 
     try {
         setSimVar(simVarName, Number.parseInt(propertyValue), 'number');

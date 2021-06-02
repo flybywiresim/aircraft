@@ -25,7 +25,6 @@ import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import Help from '../../Components/Help';
-import Card from '../../Components/Card/Card';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
 
@@ -279,7 +278,7 @@ export const LandingWidget = () => {
 
     return (
         <div className="flex flex-grow">
-            <Card className="w-1/2 mr-4">
+            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav mr-3">
                 <div className="w-full">
                     <div className="text-center mb-4">
                         <div className="flex mx-2 flex-1 justify-center">
@@ -492,10 +491,10 @@ export const LandingWidget = () => {
                         </div>
                     </div>
                 </div>
-            </Card>
-            <Card childrenContainerClassName="h-full">
+            </div>
+            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav ml-3">
                 <RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
-            </Card>
+            </div>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode.react';
 import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMoon, IconSun } from '@tabler/icons';
 import useInterval from '../../Common/useInterval';
@@ -59,7 +59,7 @@ type ChartDisplay = {
 }
 
 const Loading = () => {
-    const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN', '');
+    const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
 
     return (
         <div className="flex flex-col items-center justify-center">
@@ -112,37 +112,65 @@ const AuthUi = () => {
     );
 };
 
-const NavigraphChartComponent = (props: NavigraphChartComponentProps) => (
-    <div className={props.isFullscreen
-        ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll'
-        : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3'}
-    >
-        <div className="absolute z-10 m-3 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
-            <div onClick={() => props.setIsFullscreen(!props.isFullscreen)}>
-                {!props.isFullscreen
-                    ? <IconArrowsMaximize size={30} />
-                    : <IconArrowsMinimize size={30} />}
-            </div>
-        </div>
+const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
+    const position = useRef({ top: 0, y: 0 });
+    const ref = useRef<HTMLDivElement>(null);
 
-        <div className="absolute top-0 right-0 z-10 m-3 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
-            <div onClick={() => props.setEnableDarkCharts(!props.enableDarkCharts)}>
+    const mouseDownHandler = (event) => {
+        position.current.top = ref.current ? ref.current.scrollTop : 0;
+        position.current.y = event.clientY;
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+    };
+
+    const mouseMoveHandler = (event) => {
+        const dy = event.clientY - position.current.y;
+        if (ref.current) {
+            ref.current.scrollTop = position.current.top - dy;
+        }
+    };
+
+    const mouseUpHandler = () => {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    return (
+        <div
+            className={props.isFullscreen
+                ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-full grabbable no-scrollbar'
+                : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3 grabbable no-scrollbar'}
+            ref={ref}
+            onMouseDown={mouseDownHandler}
+        >
+            <div className="absolute z-10 m-3 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
+                <div onClick={() => props.setIsFullscreen(!props.isFullscreen)}>
+                    {!props.isFullscreen
+                        ? <IconArrowsMaximize size={30} />
+                        : <IconArrowsMinimize size={30} />}
+                </div>
+            </div>
+
+            <div className="absolute top-0 right-0 z-10 m-3 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
+                <div onClick={() => props.setEnableDarkCharts(!props.enableDarkCharts)}>
+                    {!props.enableDarkCharts
+                        ? <IconMoon size={30} />
+                        : <IconSun size={30} />}
+                </div>
+            </div>
+
+            <div className="m-auto relative">
+                <span className="absolute mt-2 ml-6 text-red-600 font-bold">
+                    {`This chart is linked to ${props.userInfo}`}
+                </span>
                 {!props.enableDarkCharts
-                    ? <IconMoon size={30} />
-                    : <IconSun size={30} />}
+                    ? <img draggable={false} src={props.chartLink.light} alt="chart" />
+                    : <img draggable={false} src={props.chartLink.dark} alt="chart" />}
             </div>
         </div>
-
-        <div className="m-auto relative">
-            <span className="absolute mt-2 ml-6 text-red-600 font-bold">
-                {`This chart is linked to ${props.userInfo}`}
-            </span>
-            {!props.enableDarkCharts
-                ? <img src={props.chartLink.light} alt="chart" />
-                : <img src={props.chartLink.dark} alt="chart" />}
-        </div>
-    </div>
-);
+    );
+};
 
 const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
     const noRunwayName = 'NONE';
@@ -347,27 +375,51 @@ const ChartsUi = (props: ChartsUiProps) => {
         setSelectedChartName({ light: chartNameDay, dark: chartNameNight });
     };
 
+    const position = useRef({ top: 0, y: 0 });
+    const ref = useRef<HTMLDivElement>(null);
+
+    const mouseDownHandler = (event) => {
+        position.current.top = ref.current ? ref.current.scrollTop : 0;
+        position.current.y = event.clientY;
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+    };
+
+    const mouseMoveHandler = (event) => {
+        const dy = event.clientY - position.current.y;
+        if (ref.current) {
+            ref.current.scrollTop = position.current.top - dy;
+        }
+    };
+
+    const mouseUpHandler = () => {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
     return (
         <div className="flex flex-row h-efb w-full bg-navy-medium rounded-2xl text-white shadow-lg mr-4 overflow-x-hidden">
             {!isFullscreen
                 ? (
                     <>
-                        <div className="flex flex-col w-1/3 h-full bg-navy-lighter">
+                        <div className="flex flex-col w-1/3 bg-navy-lighter p-6">
                             <input
                                 type="text"
                                 placeholder="ICAO"
                                 value={props.icao}
                                 maxLength={4}
-                                className="w-3/5 text-xl pb-1 mx-6 mt-6 bg-navy-lighter border-b-2 border-teal-light-contrast focus-within:outline-none focus-within:border-teal-medium"
+                                className="w-full px-5 py-1.5 text-xl text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light
+                                focus-within:outline-none focus-within:border-teal-light-contrast"
                                 onChange={(event) => handleIcaoChange(event.target.value)}
                             />
-                            <div className="flex items-center w-full mt-5 h-9 bg-teal-light-contrast px-6 py-2">
+                            <div className="flex items-center w-full mt-6 h-9 bg-teal-light-contrast px-6 rounded-lg">
                                 {props.icao.length !== 4
                                     ? <span className="text-xl">No Airport Selected</span>
-                                    : <span className="text-xl">{airportInfo.name}</span>}
+                                    : <span className="text-xl">{airportInfo.name.slice(0, 20)}</span>}
                             </div>
-                            <div className="flex flex-col p-6">
-                                <div className="flex flex-row justify-around bg-navy-lighter rounded-md">
+                            <div className="flex flex-col mt-6">
+                                <div className="flex flex-row justify-around bg-navy-lighter rounded-lg">
                                     {organizedCharts.map((organizedChart) => (organizedChart.name === selectedTab.name
                                         ? (
                                             <span
@@ -388,7 +440,11 @@ const ChartsUi = (props: ChartsUiProps) => {
                                             </span>
                                         )))}
                                 </div>
-                                <div className="mt-5 h-144 space-y-4 overflow-x-hidden overflow-y-scroll">
+                                <div
+                                    className="mt-5 h-124 space-y-4 rounded-lg overflow-x-hidden overflow-y-scroll grabbable scrollbar"
+                                    ref={ref}
+                                    onMouseDown={mouseDownHandler}
+                                >
                                     {props.enableNavigraph
                                         ? (
                                             <NavigraphChartSelector

@@ -13,6 +13,34 @@
   Custom CSS for a32nx [EFB]
 */
 
+/* ---- Global Scrollbar ---- */
+
+.scrollbar::-webkit-scrollbar {
+  @apply rounded-xl w-4;
+  @apply bg-navy-regular;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  @apply rounded-xl;
+  @apply bg-navy-regular;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  @apply rounded-xl;
+  @apply bg-teal-light;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ---- Loading/Boot Components ---- */
+
 .loading-screen {
   @apply bg-black text-4xl font-thin text-gray-100;
 
@@ -59,6 +87,27 @@
   margin-right: 16px;
 }
 
+/* ---- Dashboard Components ---- */
+
 .flip-vertical {
   transform: scaleX(-1);
+}
+
+/* ---- Dispatch Components ---- */
+
+.loadsheet-container {
+  height: 685px;
+}
+
+.grabbable {
+  cursor: move;
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+
+  &:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+  }
 }

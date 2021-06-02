@@ -1,3 +1,5 @@
+#![allow(clippy::suspicious_operation_groupings)]
+
 mod electrical;
 mod fuel;
 mod hydraulic;
@@ -115,6 +117,8 @@ impl Aircraft for A320 {
             &self.hydraulic_overhead,
             &self.engine_fire_overhead,
             &self.landing_gear,
+            &self.emergency_electrical_overhead,
+            &self.electrical,
         );
 
         self.hydraulic_overhead.update(&self.hydraulic);
