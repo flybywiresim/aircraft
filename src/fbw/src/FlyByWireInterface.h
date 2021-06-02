@@ -117,6 +117,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
   std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
   std::unique_ptr<LocalVariable> idFmaApproachCapability;
+  std::unique_ptr<LocalVariable> idFmaTripleClick;
+  std::unique_ptr<LocalVariable> idFmaModeReversion;
 
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;

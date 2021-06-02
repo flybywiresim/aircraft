@@ -189,6 +189,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.output.mode_reversion_lateral" << delimiter;
   out << "ap_sm.output.mode_reversion_vertical" << delimiter;
   out << "ap_sm.output.mode_reversion_TRK_FPA" << delimiter;
+  out << "ap_sm.output.mode_reversion_triple_click" << delimiter;
+  out << "ap_sm.output.mode_reversion_fma" << delimiter;
   out << "ap_sm.output.speed_protection_mode" << delimiter;
   out << "ap_sm.output.autothrust_mode" << delimiter;
   out << "ap_sm.output.Psi_c_deg" << delimiter;
@@ -646,6 +648,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << ap_sm.output.mode_reversion_lateral << delimiter;
   out << ap_sm.output.mode_reversion_vertical << delimiter;
   out << static_cast<unsigned int>(ap_sm.output.mode_reversion_TRK_FPA) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.output.mode_reversion_triple_click) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.output.mode_reversion_fma) << delimiter;
   out << static_cast<unsigned int>(ap_sm.output.speed_protection_mode) << delimiter;
   out << ap_sm.output.autothrust_mode << delimiter;
   out << ap_sm.output.Psi_c_deg << delimiter;
