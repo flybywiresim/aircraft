@@ -93,6 +93,7 @@
 1. [VFX] Add APU exhaust heat blur effect - @wpine215 (Iceman)
 1. [MCDU] Improve robustness of Lat/Lon & P-B/P-B input parsing - @tracernz (Mike)
 1. [RTPI] Add separate RTPI font file - @sidnov (Sid)
+1. [AP+PFD] Added triple click and FMA mode reversion logic - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
