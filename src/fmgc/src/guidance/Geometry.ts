@@ -295,7 +295,9 @@ export class Type1Transition extends Transition {
             ? distanceFromCenter - this.radius
             : this.radius - distanceFromCenter;
 
-        const phiCommand = this.clockwise ? 25 : -25;
+        const groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'meters per second');
+        const radiusInMeter = this.radius * 1852;
+        const phiCommand = (this.clockwise ? 1 : -1) * Math.atan((groundSpeed * groundSpeed) / (radiusInMeter * 9.81)) * (180 / Math.PI);
 
         return {
             law: ControlLaw.LATERAL_PATH,
