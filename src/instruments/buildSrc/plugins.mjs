@@ -8,10 +8,9 @@ import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from 'tailwindcss';
 import { Directories } from './directories.mjs';
+import dotenv from 'dotenv';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
-
-import dotenv from 'dotenv';
 
 dotenv.config();
 
