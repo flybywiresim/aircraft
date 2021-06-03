@@ -158,7 +158,7 @@ pub(crate) fn calculate_towards_target_temperature(
 }
 
 // Interpolate values_map_y at point value_at_point in breakpoints break_points_x
-pub(crate) fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
+pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
     debug_assert!(xs.len() == ys.len());
     debug_assert!(xs.len() >= 2);
     debug_assert!(ys.len() >= 2);

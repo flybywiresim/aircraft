@@ -17,7 +17,7 @@ use systems::{
     shared::EngineFirePushButtons,
 };
 use systems::{
-    shared::{LandingGearPosition, RamAirTurbineHydraulicLoopPressurised},
+    shared::{interpolation, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised},
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext,
@@ -1134,11 +1134,6 @@ impl A320HydraulicBrakeComputerUnit {
         self.anti_skid_activated && self.normal_brakes_available
     }
 
-    fn has_brake_pedal_input(&self) -> bool {
-        self.left_brake_pilot_input > Self::PILOT_INPUT_DETECTION_TRESHOLD
-            || self.right_brake_pilot_input > Self::PILOT_INPUT_DETECTION_TRESHOLD
-    }
-
     fn update_normal_braking_availability(&mut self, normal_braking_loop_pressure: &Pressure) {
         if normal_braking_loop_pressure.get::<psi>() > Self::MIN_PRESSURE_BRAKE_ALTN_HYST_HI
             && (self.left_brake_pilot_input < Self::PILOT_INPUT_DETECTION_TRESHOLD
@@ -1191,7 +1186,8 @@ impl A320HydraulicBrakeComputerUnit {
             &context,
             &autobrake_panel,
             self.allow_autobrake_arming(),
-            self.has_brake_pedal_input(),
+            self.left_brake_pilot_input,
+            self.right_brake_pilot_input,
             self.weight_on_wheels,
         );
 
@@ -1423,7 +1419,8 @@ pub struct A320AutobrakeController {
     mode: A320AutobrakeMode,
 
     arming_is_allowed: bool,
-    pedal_input_is_present: bool,
+    left_brake_pedal_input: f64,
+    right_brake_pedal_input: f64,
 
     spoilers_left_position: f64,
     spoilers_right_position: f64,
@@ -1434,8 +1431,14 @@ pub struct A320AutobrakeController {
     in_flight_disarm_event: bool,
 }
 impl A320AutobrakeController {
-    const OPENED_SPOILER_DETECTION_THRESHOLD: f64 = 0.2;
+    const OPENED_SPOILER_DETECTION_THRESHOLD: f64 = 0.1;
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: f64 = 10.;
+
+    const LOW_MODE_DECEL_PROFILE_ACCEL: [f64; 4] = [5., 5., 0., -1.7];
+    const LOW_MODE_DECEL_PROFILE_TIME: [f64; 4] = [0., 3.99, 4., 6.];
+
+    const MED_MODE_DECEL_PROFILE_ACCEL: [f64; 5] = [5., 5., 0., -2., -3.];
+    const MED_MODE_DECEL_PROFILE_TIME: [f64; 5] = [0., 1.99, 2., 4., 6.];
 
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
@@ -1443,7 +1446,8 @@ impl A320AutobrakeController {
             target: Acceleration::new::<meter_per_second_squared>(0.),
             mode: A320AutobrakeMode::NONE,
             arming_is_allowed: false,
-            pedal_input_is_present: false,
+            left_brake_pedal_input: 0.,
+            right_brake_pedal_input: 0.,
             spoilers_left_position: 0.,
             spoilers_right_position: 0.,
             last_spoilers_left_position: 0.,
@@ -1525,12 +1529,34 @@ impl A320AutobrakeController {
         } else if self.mode == A320AutobrakeMode::LOW || self.mode == A320AutobrakeMode::MED {
             deceleration_demanded && self.controller.is_on_target(80.)
         } else {
-            deceleration_demanded && self.controller.is_on_target(40.)
+            deceleration_demanded && self.controller.is_on_target(50.)
+        }
+    }
+
+    fn pedal_input_should_disarm(&self) -> bool {
+        match self.mode {
+            A320AutobrakeMode::NONE => false,
+            A320AutobrakeMode::LOW | A320AutobrakeMode::MED => {
+                // LOW and MED desativate if both pedals have more than 7.5° deflection. On 20° max that gives 0.375
+                if self.left_brake_pedal_input > 0.375 && self.left_brake_pedal_input > 0.375 {
+                    true
+                } else {
+                    false
+                }
+            }
+            A320AutobrakeMode::MAX => {
+                // MAX desativate if any pedal have more than half deflection. On 20° max that gives 0.5
+                if self.left_brake_pedal_input > 0.5 || self.left_brake_pedal_input > 0.5 {
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
     fn should_disarm(&self) -> bool {
-        (self.control_is_engaged() && self.pedal_input_is_present)
+        (self.control_is_engaged() && self.pedal_input_should_disarm())
             || !self.is_armed()
             || !self.allow_arming()
             || self.spoilers_retracted_event()
@@ -1543,21 +1569,21 @@ impl A320AutobrakeController {
                 self.target = Acceleration::new::<meter_per_second_squared>(10.);
             }
             A320AutobrakeMode::LOW => {
-                if self.controller.time_engaged().as_secs_f64() > 4. {
-                    self.target = Acceleration::new::<meter_per_second_squared>(-1.7);
-                } else {
-                    self.target = Acceleration::new::<meter_per_second_squared>(0.);
-                }
+                self.target = Acceleration::new::<meter_per_second_squared>(interpolation(
+                    &Self::LOW_MODE_DECEL_PROFILE_TIME,
+                    &Self::LOW_MODE_DECEL_PROFILE_ACCEL,
+                    self.controller.time_engaged().as_secs_f64(),
+                ));
             }
             A320AutobrakeMode::MED => {
-                if self.controller.time_engaged().as_secs_f64() > 2. {
-                    self.target = Acceleration::new::<meter_per_second_squared>(-3.);
-                } else {
-                    self.target = Acceleration::new::<meter_per_second_squared>(0.);
-                }
+                self.target = Acceleration::new::<meter_per_second_squared>(interpolation(
+                    &Self::MED_MODE_DECEL_PROFILE_TIME,
+                    &Self::MED_MODE_DECEL_PROFILE_ACCEL,
+                    self.controller.time_engaged().as_secs_f64(),
+                ));
             }
             A320AutobrakeMode::MAX => {
-                self.target = Acceleration::new::<meter_per_second_squared>(-8.);
+                self.target = Acceleration::new::<meter_per_second_squared>(-6.);
             }
         }
     }
@@ -1576,7 +1602,8 @@ impl A320AutobrakeController {
         &mut self,
         context: &UpdateContext,
         allow_arming: bool,
-        pedal_input_is_present: bool,
+        pedal_input_left: f64,
+        pedal_input_right: f64,
         weight_on_wheels: bool,
     ) {
         let in_flight_disarm_event_last = self.should_disarm_after_time_in_flight.output();
@@ -1587,7 +1614,8 @@ impl A320AutobrakeController {
             !in_flight_disarm_event_last && self.should_disarm_after_time_in_flight.output();
 
         self.arming_is_allowed = allow_arming;
-        self.pedal_input_is_present = pedal_input_is_present;
+        self.left_brake_pedal_input = pedal_input_left;
+        self.right_brake_pedal_input = pedal_input_right;
     }
 
     fn update(
@@ -1595,13 +1623,15 @@ impl A320AutobrakeController {
         context: &UpdateContext,
         autobrake_panel: &A320AutobrakePanel,
         allow_arming: bool,
-        pedal_input_is_present: bool,
+        pedal_input_left: f64,
+        pedal_input_right: f64,
         weight_on_wheels: bool,
     ) {
         self.update_bcu_inputs(
             &context,
             allow_arming,
-            pedal_input_is_present,
+            pedal_input_left,
+            pedal_input_right,
             weight_on_wheels,
         );
         self.update_mode_buttons(&autobrake_panel);
@@ -1618,6 +1648,12 @@ impl A320AutobrakeController {
     }
 }
 impl SimulationElement for A320AutobrakeController {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        //self.controller.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         let mode_num: u8;
         match self.mode {

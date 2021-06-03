@@ -1,6 +1,6 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext},
 };
 
 use std::f64::consts::E;
@@ -326,6 +326,7 @@ pub struct Autobrake {
 
     is_engaged: bool,
     time_engaged: Duration,
+    filter: f64,
 }
 impl Default for Autobrake {
     fn default() -> Self {
@@ -334,19 +335,20 @@ impl Default for Autobrake {
 }
 impl Autobrake {
     // Low pass filter, time constant in second
-    const ACCELERATION_INPUT_FILTER: f64 = 0.25;
+    const ACCELERATION_INPUT_FILTER: f64 = 0.15;
 
     pub fn new() -> Autobrake {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
-            ki: 0.3,
-            kp: 0.3,
+            ki: 0.2,
+            kp: 0.2,
             last_error: 0.,
 
             current_output: 0.,
             acceleration: Acceleration::new::<meter_per_second_squared>(0.),
             is_engaged: false,
             time_engaged: Duration::from_secs(0),
+            filter: Self::ACCELERATION_INPUT_FILTER,
         }
     }
 
@@ -365,6 +367,7 @@ impl Autobrake {
     pub fn disable(&mut self) {
         self.is_engaged = false;
         self.time_engaged = Duration::from_secs(0);
+        self.target = Acceleration::new::<meter_per_second_squared>(10.);
     }
 
     pub fn time_engaged(&self) -> Duration {
@@ -379,9 +382,7 @@ impl Autobrake {
         let accel = context.long_accel();
         self.acceleration = self.acceleration
             + (accel - self.acceleration)
-                * (1.
-                    - std::f64::consts::E
-                        .powf(-context.delta_as_secs_f64() / Self::ACCELERATION_INPUT_FILTER));
+                * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / self.filter));
 
         if self.is_engaged {
             self.time_engaged += context.delta();
@@ -412,6 +413,29 @@ impl Autobrake {
         self.current_output
     }
 }
+
+// impl SimulationElement for Autobrake {
+//     fn read(&mut self, state: &mut SimulatorReader) {
+//         let new_ki = state.read_f64("TUNE_KI");
+//         let new_kp = state.read_f64("TUNE_KP");
+//         let new_filt = state.read_f64("TUNE_F");
+
+//         if new_ki > 0.00001 {
+//             self.ki = new_ki;
+//             println!("new KI!!!!!!!!!!!");
+//         }
+//         if new_kp > 0.00001 {
+//             self.kp = new_kp;
+//             println!("new KP!!!!!!!!!!!");
+//         }
+//         if new_filt > 0.00001 {
+//             self.filter = new_filt;
+//             println!("new FILTER!!!!!!!!!!!");
+//         }
+
+//         println!("kp{:.2} ki{:.2} f{:.3}", self.kp, self.ki, self.filter)
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
