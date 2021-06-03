@@ -874,6 +874,17 @@
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
 
+- A32NX_PARK_BRAKE_LEVER_POS
+    - Bool
+    - Current position of the parking brake lever
+
+- A32NX_{brake_side}_BRAKE_PEDAL_INPUT
+    - Percent
+    - Current position of the toe brake pedal animation
+    - {brake_side}
+        - LEFT
+        - RIGHT
+
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
     - Holds the FMGCs current flight phase
