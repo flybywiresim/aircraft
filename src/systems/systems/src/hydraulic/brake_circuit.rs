@@ -1,8 +1,8 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    simulation::{SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
-
+//use crate::simulation::SimulatorReader;
 use std::f64::consts::E;
 use std::string::String;
 use std::time::Duration;
@@ -401,12 +401,12 @@ impl Autobrake {
             self.last_error = 0.;
             self.current_output = 0.;
         }
-        println!(
-            "Accel/Target:{:.2}/{:.2},Out{:.2}",
-            self.acceleration.get::<meter_per_second_squared>(),
-            self.target.get::<meter_per_second_squared>(),
-            self.output()
-        );
+        // println!(
+        //     "Accel/Target:{:.2}/{:.2},Out{:.2}",
+        //     self.acceleration.get::<meter_per_second_squared>(),
+        //     self.target.get::<meter_per_second_squared>(),
+        //     self.output()
+        // );
     }
 
     pub fn output(&self) -> f64 {
