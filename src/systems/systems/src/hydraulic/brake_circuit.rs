@@ -334,7 +334,7 @@ impl Default for Autobrake {
     }
 }
 impl Autobrake {
-    // Low pass filter, time constant in second
+    // Low pass filter for controller acceleration input, time constant in second
     const ACCELERATION_INPUT_FILTER: f64 = 0.15;
 
     pub fn new() -> Autobrake {
@@ -413,29 +413,6 @@ impl Autobrake {
         self.current_output
     }
 }
-
-// impl SimulationElement for Autobrake {
-//     fn read(&mut self, state: &mut SimulatorReader) {
-//         let new_ki = state.read_f64("TUNE_KI");
-//         let new_kp = state.read_f64("TUNE_KP");
-//         let new_filt = state.read_f64("TUNE_F");
-
-//         if new_ki > 0.00001 {
-//             self.ki = new_ki;
-//             println!("new KI!!!!!!!!!!!");
-//         }
-//         if new_kp > 0.00001 {
-//             self.kp = new_kp;
-//             println!("new KP!!!!!!!!!!!");
-//         }
-//         if new_filt > 0.00001 {
-//             self.filter = new_filt;
-//             println!("new FILTER!!!!!!!!!!!");
-//         }
-
-//         println!("kp{:.2} ki{:.2} f{:.3}", self.kp, self.ki, self.filter)
-//     }
-// }
 
 #[cfg(test)]
 mod tests {
