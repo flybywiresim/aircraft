@@ -1294,7 +1294,7 @@ impl SimulationElement for A320BrakingForce {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
         writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
         writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
-    }
+        println!("BRAKE FACTOR SENT TO SIM L{}/R{}",self.left_braking_force,self.right_braking_force);
 
     // We receive here the desired parking brake position. This is the parking brake lever input
     fn read(&mut self, state: &mut SimulatorReader) {
