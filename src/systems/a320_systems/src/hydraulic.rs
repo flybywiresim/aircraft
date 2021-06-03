@@ -1428,6 +1428,7 @@ impl A320AutobrakeController {
     const MED_MODE_DECEL_PROFILE_TIME: [f64; 5] = [0., 1.99, 2., 5., 6.];
 
     const MAX_MODE_DECEL_TARGET: f64 = -6.;
+    const OFF_MODE_DECEL_TARGET: f64 = 5.;
 
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
@@ -1547,7 +1548,8 @@ impl A320AutobrakeController {
     fn update_target(&mut self) {
         match self.mode {
             A320AutobrakeMode::NONE => {
-                self.target = Acceleration::new::<meter_per_second_squared>(10.);
+                self.target =
+                    Acceleration::new::<meter_per_second_squared>(Self::OFF_MODE_DECEL_TARGET);
             }
             A320AutobrakeMode::LOW => {
                 self.target = Acceleration::new::<meter_per_second_squared>(interpolation(
