@@ -1321,7 +1321,12 @@ impl SimulationElement for A320BrakingForce {
     // We receive here the desired parking brake position. This is the parking brake lever input
     fn read(&mut self, state: &mut SimulatorReader) {
         self.park_brake_lever_is_set = state.read_bool("PARK_BRAKE_LEVER_POS");
-        self.tunable_brake_press_factor = state.read_f64("TUNABLE_BRAKE_FACTOR_PSI");
+
+        let new_factor = state.read_f64("TUNABLE_BRAKE_FACTOR_PSI");
+
+        if new_factor > 0.001 {
+            self.tunable_brake_press_factor = new_factor;
+        }
     }
 }
 
