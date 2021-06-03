@@ -3,21 +3,15 @@ use crate::{
     simulation::UpdateContext,
 };
 use num_derive::FromPrimitive;
-use std::time::Duration;
+use std::{fmt::Display, time::Duration};
 use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
 
 mod random;
 pub use random::*;
 
-/// Signals to the APU start contactor what position it should be in.
-pub trait ApuStartContactorsController {
-    fn should_close_start_contactors(&self) -> bool;
-}
-
 pub trait AuxiliaryPowerUnitElectrical:
-    PotentialSource + ApuStartContactorsController + ApuAvailable
+    ControllerSignal<ContactorSignal> + PotentialSource + ApuAvailable
 {
-    fn start_motor_powered_by(&mut self, source: Potential);
     fn output_within_normal_parameters(&self) -> bool;
 }
 
@@ -56,6 +50,100 @@ pub trait LandingGearPosition {
 
 pub trait EngineCorrectedN2 {
     fn corrected_n2(&self) -> Ratio;
+}
+
+/// The common types of electrical buses within Airbus aircraft.
+/// These include types such as AC, DC, AC ESS, etc.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum ElectricalBusType {
+    AlternatingCurrent(u8),
+    AlternatingCurrentEssential,
+    AlternatingCurrentEssentialShed,
+    AlternatingCurrentStaticInverter,
+    AlternatingCurrentGndFltService,
+    DirectCurrent(u8),
+    DirectCurrentEssential,
+    DirectCurrentEssentialShed,
+    DirectCurrentBattery,
+    DirectCurrentHot(u8),
+    DirectCurrentGndFltService,
+
+    /// A sub bus is a subsection of a larger bus. An example of
+    /// a sub bus is the A320's 202PP, which is a sub bus of DC BUS 2 (2PP).
+    ///
+    /// Sub buses represent a very small area of the electrical system. To keep things simple,
+    /// they shouldn't be used for the vast majority of situations. Thus, prefer using a main
+    /// bus over a sub bus. They do however come in handy when handling very specific situations,
+    /// such as the APU STARTER MOTOR which is powered by a smaller section of the DC BAT BUS on the A320.
+    /// Implementing this without a sub bus leads to additional work and reduces the commonality in
+    /// handling the flow of electricity. In such cases, use the sub bus.
+    ///
+    /// As sub buses represent such a small area, their state is not exported towards
+    /// the simulator.
+    Sub(&'static str),
+}
+impl Display for ElectricalBusType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ElectricalBusType::AlternatingCurrent(number) => write!(f, "AC_{}", number),
+            ElectricalBusType::AlternatingCurrentEssential => write!(f, "AC_ESS"),
+            ElectricalBusType::AlternatingCurrentEssentialShed => write!(f, "AC_ESS_SHED"),
+            ElectricalBusType::AlternatingCurrentStaticInverter => write!(f, "AC_STAT_INV"),
+            ElectricalBusType::AlternatingCurrentGndFltService => write!(f, "AC_GND_FLT_SVC"),
+            ElectricalBusType::DirectCurrent(number) => write!(f, "DC_{}", number),
+            ElectricalBusType::DirectCurrentEssential => write!(f, "DC_ESS"),
+            ElectricalBusType::DirectCurrentEssentialShed => write!(f, "DC_ESS_SHED"),
+            ElectricalBusType::DirectCurrentBattery => write!(f, "DC_BAT"),
+            ElectricalBusType::DirectCurrentHot(number) => write!(f, "DC_HOT_{}", number),
+            ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
+            ElectricalBusType::Sub(name) => write!(f, "SUB_{}", name),
+        }
+    }
+}
+
+pub trait ElectricalBuses {
+    fn potential_of(&self, bus_type: ElectricalBusType) -> Potential;
+    fn is_powered(&self, bus_type: ElectricalBusType) -> bool;
+    fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool;
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum PotentialOrigin {
+    EngineGenerator(usize),
+    ApuGenerator(usize),
+    External,
+    EmergencyGenerator,
+    Battery(usize),
+    TransformerRectifier(usize),
+    StaticInverter,
+}
+
+pub trait PowerConsumptionReport {
+    fn total_consumption_of(&self, potential_origin: PotentialOrigin) -> Power;
+    fn delta(&self) -> Duration;
+}
+
+pub trait ConsumePower: PowerConsumptionReport {
+    fn consume(&mut self, potential: Potential, power: Power);
+    fn consume_from_bus(&mut self, bus: ElectricalBusType, power: Power);
+}
+
+pub trait ControllerSignal<S> {
+    fn signal(&self) -> Option<S>;
+}
+
+pub enum PneumaticValveSignal {
+    Open,
+    Close,
+}
+
+pub trait PneumaticValve {
+    fn is_open(&self) -> bool;
+}
+
+pub enum ContactorSignal {
+    Open,
+    Close,
 }
 
 #[derive(FromPrimitive)]
@@ -179,6 +267,20 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
 
         ys[idx - 1]
             + (intermediate_x - xs[idx - 1]) / (xs[idx] - xs[idx - 1]) * (ys[idx] - ys[idx - 1])
+    }
+}
+
+/// Converts a given `f64` representing a boolean value in the simulator into an actual `bool` value.
+pub(crate) fn to_bool(value: f64) -> bool {
+    (value - 1.).abs() < f64::EPSILON
+}
+
+/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
+pub(crate) fn from_bool(value: bool) -> f64 {
+    if value {
+        1.0
+    } else {
+        0.0
     }
 }
 
@@ -514,5 +616,44 @@ mod calculate_towards_target_temperature_tests {
         );
 
         assert_about_eq!(result.get::<degree_celsius>(), 10.);
+    }
+}
+
+#[cfg(test)]
+mod electrical_bus_type_tests {
+    use super::ElectricalBusType;
+
+    #[test]
+    fn get_name_returns_name() {
+        assert_eq!(ElectricalBusType::AlternatingCurrent(2).to_string(), "AC_2");
+        assert_eq!(
+            ElectricalBusType::AlternatingCurrentEssential.to_string(),
+            "AC_ESS"
+        );
+        assert_eq!(
+            ElectricalBusType::AlternatingCurrentEssentialShed.to_string(),
+            "AC_ESS_SHED"
+        );
+        assert_eq!(
+            ElectricalBusType::AlternatingCurrentStaticInverter.to_string(),
+            "AC_STAT_INV"
+        );
+        assert_eq!(ElectricalBusType::DirectCurrent(2).to_string(), "DC_2");
+        assert_eq!(
+            ElectricalBusType::DirectCurrentEssential.to_string(),
+            "DC_ESS"
+        );
+        assert_eq!(
+            ElectricalBusType::DirectCurrentEssentialShed.to_string(),
+            "DC_ESS_SHED"
+        );
+        assert_eq!(
+            ElectricalBusType::DirectCurrentBattery.to_string(),
+            "DC_BAT"
+        );
+        assert_eq!(
+            ElectricalBusType::DirectCurrentHot(2).to_string(),
+            "DC_HOT_2"
+        );
     }
 }

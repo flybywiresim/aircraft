@@ -1,35 +1,30 @@
 use std::time::Duration;
-use systems::shared::{EmergencyElectricalRatPushButton, EmergencyElectricalState};
-use uom::si::{
-    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
-    pressure::pascal, pressure::psi, ratio::percent, volume::gallon,
-};
-
-use systems::overhead::{
-    AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
-};
 use systems::{
+    engine::Engine,
     hydraulic::{
-        ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
-        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
-        RamAirTurbine, RamAirTurbineController,
+        brake_circuit::{Autobrake, BrakeCircuit}, ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop,
+        HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
+        PumpController, RamAirTurbine, RamAirTurbineController,
     },
-    shared::EngineFirePushButtons,
-};
-use systems::{
-    shared::{interpolation, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised},
+    landing_gear::LandingGear,
+    overhead::{
+        AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
+    },
+    shared::{
+        interpolation,DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineFirePushButtons,
+        LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+    },
+
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext,
     },
 };
 
-use systems::electrical::{consumption::SuppliedPower, ElectricalBusType};
-use systems::{engine::Engine, landing_gear::LandingGear};
-use systems::{
-    hydraulic::brake_circuit::{Autobrake, BrakeCircuit},
-    shared::DelayedFalseLogicGate,
-    shared::DelayedTrueLogicGate,
+use uom::si::{
+    acceleration::meter_per_second_squared,angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
+    ratio::percent, volume::gallon,
 };
 
 pub(super) struct A320Hydraulic {
@@ -717,11 +712,8 @@ impl SimulationElement for A320EngineDrivenPumpController {
         }
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = self
-            .powered_by
-            .iter()
-            .any(|bus| supplied_power.potential_of(&bus).is_powered());
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.any_is_powered(&self.powered_by);
     }
 }
 
@@ -821,8 +813,8 @@ impl SimulationElement for A320BlueElectricPumpController {
         writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered();
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
@@ -905,15 +897,13 @@ impl SimulationElement for A320YellowElectricPumpController {
         writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         // Control of the pump is powered by dedicated bus OR manual operation of cargo door through another bus
-        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered()
+        self.is_powered = buses.is_powered(self.powered_by)
             || (self
                 .should_activate_yellow_pump_for_cargo_door_operation
                 .output()
-                && supplied_power
-                    .potential_of(&self.powered_by_when_cargo_door_operation)
-                    .is_powered())
+                && buses.is_powered(self.powered_by_when_cargo_door_operation))
     }
 }
 
@@ -1001,8 +991,8 @@ impl SimulationElement for A320PowerTransferUnitController {
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered();
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
@@ -1060,13 +1050,9 @@ impl SimulationElement for A320RamAirTurbineController {
         self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_solenoid_1_powered = supplied_power
-            .potential_of(&self.solenoid_1_bus)
-            .is_powered();
-        self.is_solenoid_2_powered = supplied_power
-            .potential_of(&self.solenoid_2_bus)
-            .is_powered();
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_solenoid_1_powered = buses.is_powered(self.solenoid_1_bus);
+        self.is_solenoid_2_powered = buses.is_powered(self.solenoid_2_bus);
     }
 }
 
@@ -1809,9 +1795,11 @@ mod tests {
 
     mod a320_hydraulics {
         use super::*;
-        use systems::electrical::{Potential, PotentialOrigin};
+        use systems::electrical::consumption::SuppliedPower;
+        use systems::electrical::Potential;
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
         use systems::shared::EmergencyElectricalState;
+        use systems::shared::PotentialOrigin;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
@@ -1864,13 +1852,9 @@ mod tests {
             }
         }
         impl SimulationElement for A320TestElectrical {
-            fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-                self.all_ac_lost = !supplied_power
-                    .potential_of(&ElectricalBusType::AlternatingCurrent(1))
-                    .is_powered()
-                    && !supplied_power
-                        .potential_of(&ElectricalBusType::AlternatingCurrent(2))
-                        .is_powered();
+            fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+                self.all_ac_lost = !buses.is_powered(ElectricalBusType::AlternatingCurrent(1))
+                    && !buses.is_powered(ElectricalBusType::AlternatingCurrent(2));
             }
         }
         struct A320HydraulicsTestAircraft {
