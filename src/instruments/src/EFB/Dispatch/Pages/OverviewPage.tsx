@@ -60,7 +60,7 @@ const OverviewPage = (props: OverviewPageProps) => {
             <div className="w-1/2">
                 <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav">
                     <h2 className="text-2xl font-medium">Airbus A320neo</h2>
-                    <span>FlyByWire Simulations</span>
+                    <span className="text-lg">FlyByWire Simulations</span>
                     <img className="flip-vertical mt-6 h-48 -ml-48" src={nose} />
                     <div className="flex mt-8">
                         <div className="w-1/2">
