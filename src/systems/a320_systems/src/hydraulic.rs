@@ -2,20 +2,20 @@ use std::time::Duration;
 use systems::{
     engine::Engine,
     hydraulic::{
-        brake_circuit::{Autobrake, BrakeCircuit}, ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop,
-        HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
-        PumpController, RamAirTurbine, RamAirTurbineController,
+        brake_circuit::{Autobrake, BrakeCircuit},
+        ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
+        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
+        RamAirTurbine, RamAirTurbineController,
     },
     landing_gear::LandingGear,
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
     },
     shared::{
-        interpolation,DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineFirePushButtons,
-        LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+        interpolation, DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+        EngineFirePushButtons, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
     },
-
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext,
@@ -23,8 +23,8 @@ use systems::{
 };
 
 use uom::si::{
-    acceleration::meter_per_second_squared,angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, volume::gallon,
+    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
+    pressure::pascal, pressure::psi, ratio::percent, volume::gallon,
 };
 
 pub(super) struct A320Hydraulic {
@@ -1524,7 +1524,7 @@ impl A320AutobrakeController {
             A320AutobrakeMode::NONE => false,
             A320AutobrakeMode::LOW | A320AutobrakeMode::MED => {
                 // LOW and MED desativate if both pedals have more than 7.5° deflection. On 20° max that gives 0.375
-                if self.left_brake_pedal_input > 0.375 && self.left_brake_pedal_input > 0.375 {
+                if self.left_brake_pedal_input > 0.375 && self.right_brake_pedal_input > 0.375 {
                     true
                 } else {
                     false
@@ -1532,7 +1532,7 @@ impl A320AutobrakeController {
             }
             A320AutobrakeMode::MAX => {
                 // MAX desativate if any pedal have more than half deflection. On 20° max that gives 0.5
-                if self.left_brake_pedal_input > 0.5 || self.left_brake_pedal_input > 0.5 {
+                if self.left_brake_pedal_input > 0.5 || self.right_brake_pedal_input > 0.5 {
                     true
                 } else {
                     false
