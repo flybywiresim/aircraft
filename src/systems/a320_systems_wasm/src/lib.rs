@@ -21,6 +21,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut msfs_simulation_handler = MsfsSimulationHandler::new(vec![
         Box::new(ElectricalBuses::new()),
         Box::new(Brakes::new(&mut sim_connect.as_mut())?),
+        Box::new(AutoBrakes::new(&mut sim_connect.as_mut())?),
         Box::new(create_aircraft_variable_reader()?),
         Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
     ]);
@@ -62,6 +63,7 @@ fn create_aircraft_variable_reader(
     reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
     reader.add("SPOILERS LEFT POSITION", "Position", 0)?;
     reader.add("SPOILERS RIGHT POSITION", "Position", 0)?;
+    reader.add("AUTO BRAKE SWITCH CB", "Position", 0)?;
 
     reader.add_with_additional_names(
         "APU GENERATOR SWITCH",
@@ -182,6 +184,105 @@ impl ElectricalBusConnection {
             ));
             self.connected = !self.connected;
         }
+    }
+}
+
+struct AutoBrakes {
+    id_mode_max: sys::DWORD,
+    id_mode_med: sys::DWORD,
+    id_mode_low: sys::DWORD,
+    id_disarm: sys::DWORD,
+
+    low_mode_requested: bool,
+    med_mode_requested: bool,
+    max_mode_requested: bool,
+    disarm_requested: bool,
+}
+impl AutoBrakes {
+    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self {
+            // SimConnect inputs masking
+            id_mode_max: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_HI_SET", false)?,
+            id_mode_med: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_MED_SET", false)?,
+            id_mode_low: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_LO_SET", false)?,
+            id_disarm: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_DISARM", false)?,
+
+            low_mode_requested: false,
+            med_mode_requested: false,
+            max_mode_requested: false,
+            disarm_requested: false,
+        })
+    }
+
+    fn reset_events(&mut self) {
+        self.max_mode_requested = false;
+        self.med_mode_requested = false;
+        self.low_mode_requested = false;
+        self.disarm_requested = false;
+    }
+
+    fn set_mode_max(&mut self) {
+        self.max_mode_requested = true;
+    }
+
+    fn set_mode_med(&mut self) {
+        self.med_mode_requested = true;
+    }
+
+    fn set_mode_low(&mut self) {
+        self.low_mode_requested = true;
+    }
+
+    fn set_disarm(&mut self) {
+        self.disarm_requested = true;
+    }
+}
+impl SimulatorAspect for AutoBrakes {}
+impl ReadWrite for AutoBrakes {
+    fn read(&mut self, name: &str) -> Option<f64> {
+        match name {
+            "KEY_AUTOBRAKE_DISARM" => Some(self.disarm_requested as u8 as f64),
+            "KEY_AUTOBRAKE_LOW" => Some(self.low_mode_requested as u8 as f64),
+            "KEY_AUTOBRAKE_MED" => Some(self.med_mode_requested as u8 as f64),
+            "KEY_AUTOBRAKE_MAX" => Some(self.max_mode_requested as u8 as f64),
+            _ => None,
+        }
+    }
+}
+impl HandleMessage for AutoBrakes {
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        match message {
+            SimConnectRecv::Event(e) => {
+                if e.id() == self.id_mode_low {
+                    self.set_mode_low();
+                    true
+                } else if e.id() == self.id_mode_med {
+                    self.set_mode_med();
+                    true
+                } else if e.id() == self.id_mode_max {
+                    self.set_mode_max();
+                    true
+                } else if e.id() == self.id_disarm {
+                    self.set_disarm();
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+}
+impl PrePostTick for AutoBrakes {
+    fn pre_tick(&mut self, delta: Duration) {}
+
+    fn post_tick(
+        &mut self,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.reset_events();
+
+        Ok(())
     }
 }
 

@@ -1615,7 +1615,7 @@ impl A320AutobrakeController {
     ) {
         self.update_bcu_inputs(
             &context,
-            allow_arming,
+            allow_arming && !autobrake_panel.disarm_event(),
             pedal_input_left,
             pedal_input_right,
             weight_on_wheels,
@@ -1666,6 +1666,14 @@ pub(super) struct A320AutobrakePanel {
     last_lo_state: bool,
     last_med_state: bool,
     last_max_state: bool,
+
+    disarm_request: bool,
+    low_request: bool,
+    med_request: bool,
+    max_request: bool,
+    last_low_request: bool,
+    last_med_request: bool,
+    last_max_request: bool,
 }
 impl A320AutobrakePanel {
     pub(super) fn new() -> A320AutobrakePanel {
@@ -1676,17 +1684,34 @@ impl A320AutobrakePanel {
             last_lo_state: false,
             last_med_state: false,
             last_max_state: false,
+
+            disarm_request: false,
+            low_request: false,
+            med_request: false,
+            max_request: false,
+            last_low_request: false,
+            last_med_request: false,
+            last_max_request: false,
         }
+    }
+
+    fn disarm_event(&self) -> bool {
+        self.disarm_request
     }
 
     fn low_pressed(&self) -> bool {
         self.lo_button.is_pressed() && !self.last_lo_state
+            || self.low_request && !self.last_low_request
     }
+
     fn med_pressed(&self) -> bool {
         self.med_button.is_pressed() && !self.last_med_state
+            || self.med_request && !self.last_med_request
     }
+
     fn max_pressed(&self) -> bool {
         self.max_button.is_pressed() && !self.last_max_state
+            || self.max_request && !self.last_max_request
     }
 }
 impl SimulationElement for A320AutobrakePanel {
@@ -1698,10 +1723,21 @@ impl SimulationElement for A320AutobrakePanel {
         self.max_button.accept(visitor);
     }
 
-    fn read(&mut self, _state: &mut SimulatorReader) {
+    fn read(&mut self, state: &mut SimulatorReader) {
         self.last_lo_state = self.lo_button.is_pressed();
         self.last_med_state = self.med_button.is_pressed();
         self.last_max_state = self.max_button.is_pressed();
+
+        self.disarm_request = state.read_bool("KEY_AUTOBRAKE_DISARM");
+
+        self.last_low_request = self.low_request;
+        self.low_request = state.read_bool("KEY_AUTOBRAKE_LOW");
+
+        self.last_med_request = self.med_request;
+        self.med_request = state.read_bool("KEY_AUTOBRAKE_MED");
+
+        self.last_max_request = self.max_request;
+        self.max_request = state.read_bool("KEY_AUTOBRAKE_MAX");
     }
 }
 
