@@ -11,6 +11,8 @@ import { Directories } from './directories.mjs';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
 
+require('dotenv').config();
+
 function babel() {
     return babelPlugin({
         presets: [
@@ -51,9 +53,6 @@ function postCss(instrumentName, instrumentFolder) {
 }
 
 export function baseCompile(instrumentName, instrumentFolder) {
-
-    require('dotenv').config();
-
     return [
         image(),
         nodeResolve({ extensions }),
