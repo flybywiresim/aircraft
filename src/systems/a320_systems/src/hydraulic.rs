@@ -1259,6 +1259,8 @@ struct A320BrakingForce {
     right_braking_force: f64,
 
     park_brake_lever_is_set: bool,
+
+    tunable_brake_press_factor: f64,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
@@ -1269,21 +1271,22 @@ impl A320BrakingForce {
             right_braking_force: 0.,
 
             park_brake_lever_is_set: true,
+            tunable_brake_press_factor: Self::REFERENCE_PRESSURE_FOR_MAX_FORCE,
         }
     }
 
     pub fn update_forces(&mut self, norm_brakes: &BrakeCircuit, altn_brakes: &BrakeCircuit) {
         let left_force_norm =
-            norm_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+            norm_brakes.left_brake_pressure().get::<psi>() / self.tunable_brake_press_factor;
         let left_force_altn =
-            altn_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+            altn_brakes.left_brake_pressure().get::<psi>() / self.tunable_brake_press_factor;
         self.left_braking_force = left_force_norm + left_force_altn;
         self.left_braking_force = self.left_braking_force.max(0.).min(1.);
 
-        let right_force_norm = norm_brakes.right_brake_pressure().get::<psi>()
-            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
-        let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>()
-            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        let right_force_norm =
+            norm_brakes.right_brake_pressure().get::<psi>() / self.tunable_brake_press_factor;
+        let right_force_altn =
+            altn_brakes.right_brake_pressure().get::<psi>() / self.tunable_brake_press_factor;
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
     }
@@ -1294,11 +1297,16 @@ impl SimulationElement for A320BrakingForce {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
         writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
         writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
-        println!("BRAKE FACTOR SENT TO SIM L{}/R{}",self.left_braking_force,self.right_braking_force);
+        println!(
+            "BRAKE FACTOR SENT TO SIM L{:.1}/R{:.1} ReferencePressure:{:.0}",
+            self.left_braking_force, self.right_braking_force, self.tunable_brake_press_factor
+        );
+    }
 
     // We receive here the desired parking brake position. This is the parking brake lever input
     fn read(&mut self, state: &mut SimulatorReader) {
         self.park_brake_lever_is_set = state.read_bool("PARK_BRAKE_LEVER_POS");
+        self.tunable_brake_press_factor = state.read_f64("TUNABLE_BRAKE_FACTOR_PSI");
     }
 }
 
