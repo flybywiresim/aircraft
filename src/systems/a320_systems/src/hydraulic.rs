@@ -1522,9 +1522,7 @@ impl A320AutobrakeController {
 
         if self.mode == A320AutobrakeMode::NONE {
             false
-        } else if self.mode == A320AutobrakeMode::LOW {
-            deceleration_demanded && self.controller.is_on_target(80.)
-        } else if self.mode == A320AutobrakeMode::MED {
+        } else if self.mode == A320AutobrakeMode::LOW || self.mode == A320AutobrakeMode::MED {
             deceleration_demanded && self.controller.is_on_target(80.)
         } else {
             deceleration_demanded && self.controller.is_on_target(40.)
