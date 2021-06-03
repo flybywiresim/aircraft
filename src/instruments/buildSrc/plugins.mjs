@@ -11,7 +11,9 @@ import { Directories } from './directories.mjs';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
 
-require('dotenv').config();
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 function babel() {
     return babelPlugin({
