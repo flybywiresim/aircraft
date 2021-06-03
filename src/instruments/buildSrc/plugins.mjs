@@ -51,6 +51,9 @@ function postCss(instrumentName, instrumentFolder) {
 }
 
 export function baseCompile(instrumentName, instrumentFolder) {
+
+    require('dotenv').config();
+
     return [
         image(),
         nodeResolve({ extensions }),
