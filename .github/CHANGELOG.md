@@ -89,6 +89,7 @@
 1. [FLIGHT MODEL] Adds new parameters introduced by SU4 - @donstim (donbikes#4084)
 1. [LIGHTS] Correct Korry button labels - @tracernz (Mike), @tyler58546 (tyler58546)
 1. [OVHD] Correct EVAC button behaviours - @tracernz (Mike)
+1. [OVHD] Fix invisible fault emissive decal on centre fuel pump 2 - @tracernz (Mike)
 1. [VFX] Add APU exhaust heat blur effect - @wpine215 (Iceman)
 
 ## 0.6.0
