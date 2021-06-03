@@ -85,6 +85,12 @@
 1. [FBW] Added visual aileron droop and anti-droop - @aguther (Andreas Guther)
 1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
 1. [MODEL] Reverse thrust animation no longer proportional to thrust lever position - @tracernz (Mike)
+1. [HYD] Brakes are now connected to hydraulic system - @crocket63 (crocket)
+1. [ADIRS] Fix ADIRUs not aligned starting on runway - @davidwalschots (David Walschots)
+1. [FLIGHT MODEL] Adds new parameters introduced by SU4 - @donstim (donbikes#4084)
+1. [LIGHTS] Correct Korry button labels - @tracernz (Mike), @tyler58546 (tyler58546)
+1. [OVHD] Correct EVAC button behaviours - @tracernz (Mike)
+1. [OVHD] Fix invisible fault emissive decal on centre fuel pump 2 - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
