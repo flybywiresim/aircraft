@@ -1438,7 +1438,7 @@ impl A320AutobrakeController {
     const LOW_MODE_DECEL_PROFILE_TIME: [f64; 4] = [0., 3.99, 4., 6.];
 
     const MED_MODE_DECEL_PROFILE_ACCEL: [f64; 5] = [5., 5., 0., -2., -3.];
-    const MED_MODE_DECEL_PROFILE_TIME: [f64; 5] = [0., 1.99, 2., 4., 6.];
+    const MED_MODE_DECEL_PROFILE_TIME: [f64; 5] = [0., 1.99, 2., 5., 6.];
 
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
