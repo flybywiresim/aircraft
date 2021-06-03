@@ -24,6 +24,9 @@ class A32NX_LocalVarUpdater {
         this.opacityMfd = 0;
         this.opacityMcdu = 0;
 
+        this.cabinReadyTakeoffNode = new NXLogic_ConfirmNode(120 + Math.random() * 60);
+        this.cabinReadyLandingNode = new NXLogic_ConfirmNode(2 + Math.random() * 6);
+
         this.updaters = [
             {
                 varName: "L:A32NX_NO_SMOKING_MEMO",
@@ -102,7 +105,13 @@ class A32NX_LocalVarUpdater {
                 type: "number",
                 selector: this._mcduLcdEffectSelector.bind(this),
                 refreshInterval: 150,
-            }
+            },
+            {
+                varName: "L:A32NX_CABIN_READY",
+                type: "Bool",
+                selector: this.cabinReady.bind(this),
+                refreshInterval: 1000,
+            },
             // New updaters go here...
         ];
 
@@ -123,8 +132,8 @@ class A32NX_LocalVarUpdater {
             return;
         }
 
-        const newValue = selector(selectorDeltaTime, identifier);
         const currentValue = SimVar.GetSimVarValue(varName, type);
+        const newValue = selector(selectorDeltaTime, identifier, currentValue);
 
         if (newValue !== currentValue) {
             SimVar.SetSimVarValue(varName, type, newValue);
@@ -270,6 +279,13 @@ class A32NX_LocalVarUpdater {
             this.zoomLevel = zoomLevel;
         }
         return this.opacityMcdu;
+    }
+
+    cabinReady(deltaTime, identifier, currentValue) {
+        const fwcPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
+        this.cabinReadyTakeoffNode.write(fwcPhase === 2, deltaTime);
+        this.cabinReadyLandingNode.write(fwcPhase >= 6 && SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95, deltaTime);
+        return this.cabinReadyTakeoffNode.read() || this.cabinReadyLandingNode.read() || (currentValue && fwcPhase !== 5);
     }
 
     // New selectors go here...
