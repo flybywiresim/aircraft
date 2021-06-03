@@ -150,7 +150,7 @@ const PlaneSettings = () => {
                     </SelectGroup>
                 </div>
                 <div className="pt-3 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">DMC self-test Time</span>
+                    <span className="text-lg text-gray-300">DMC Self Test Time</span>
                     <SelectGroup>
                         {dmcSelfTestTimeButtons.map((button) => (
                             <SelectItem

@@ -282,7 +282,7 @@ export const LandingWidget = () => {
                 <div className="w-full">
                     <div className="text-center mb-4">
                         <div className="flex mx-2 flex-1 justify-center">
-                            <SimpleInput label="Airport ICAO" value={icao} onChange={(value) => setIcao(value)} />
+                            <SimpleInput className="uppercase" label="Airport ICAO" value={icao} onChange={(value) => setIcao(value)} />
                             <button
                                 onClick={syncValues}
                                 className={`mx-2 font-medium p-2 bg-blue-500 text-white flex items-center justify-center rounded-lg focus:outline-none ${isValidIcao() ? '' : 'disabled'}`}

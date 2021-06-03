@@ -1,4 +1,7 @@
-use crate::simulation::{SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext};
+use crate::{
+    shared::PowerConsumptionReport,
+    simulation::{SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext},
+};
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 use super::{
@@ -55,10 +58,7 @@ impl SimulationElement for ExternalPowerSource {
         self.writer.write_alternating(self, writer);
     }
 
-    fn process_power_consumption_report<T: super::consumption::PowerConsumptionReport>(
-        &mut self,
-        _: &T,
-    ) {
+    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _: &T) {
         self.output_frequency = if self.should_provide_output() {
             Frequency::new::<hertz>(400.)
         } else {

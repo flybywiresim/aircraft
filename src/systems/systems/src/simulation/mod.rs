@@ -5,8 +5,9 @@ pub use update_context::*;
 
 pub mod test;
 
-use crate::electrical::consumption::{
-    ElectricPower, PowerConsumption, PowerConsumptionReport, SuppliedPower,
+use crate::{
+    electrical::consumption::{ElectricPower, SuppliedPower},
+    shared::{from_bool, to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
 };
 
 /// Trait for a type which can read and write simulator data.
@@ -108,20 +109,20 @@ pub trait SimulationElement {
     /// The easiest way to deal with power consumption is using the [`PowerConsumer`] type.
     ///
     /// [`PowerConsumer`]: ../electrical/struct.PowerConsumer.html
-    fn receive_power(&mut self, _supplied_power: &SuppliedPower) {}
+    fn receive_power(&mut self, _buses: &impl ElectricalBuses) {}
 
     /// Consume power previously made available by  aircraft's electrical system.
     /// The easiest way to deal with power consumption is using the [`PowerConsumer`] type.
     ///
     /// [`PowerConsumer`]: ../electrical/struct.PowerConsumer.html
-    fn consume_power(&mut self, _consumption: &mut PowerConsumption) {}
+    fn consume_power<T: ConsumePower>(&mut self, _power: &mut T) {}
 
     /// Consume power within converters, such as transformer rectifiers and the static
     /// inverter. This is a separate function, as their power consumption can only be
     /// determined after the consumption of elements to which they provide power is known.
     ///
     /// [`consume_power`]: fn.consume_power.html
-    fn consume_power_in_converters(&mut self, _consumption: &mut PowerConsumption) {}
+    fn consume_power_in_converters<T: ConsumePower>(&mut self, _power: &mut T) {}
 
     /// Process a report containing the power consumption per potential origin.
     /// This is useful for calculating the load percentage on a given generator,
@@ -355,19 +356,5 @@ impl<'a> SimulatorWriter<'a> {
     /// ```
     pub fn write_bool(&mut self, name: &str, value: bool) {
         self.simulator_read_writer.write(name, from_bool(value));
-    }
-}
-
-/// Converts a given `f64` representing a boolean value in the simulator into an actual `bool` value.
-fn to_bool(value: f64) -> bool {
-    (value - 1.).abs() < f64::EPSILON
-}
-
-/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
-pub(crate) fn from_bool(value: bool) -> f64 {
-    if value {
-        1.0
-    } else {
-        0.0
     }
 }
