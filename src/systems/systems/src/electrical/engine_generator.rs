@@ -1,9 +1,12 @@
 use super::{
-    consumption::PowerConsumptionReport, ElectricalStateWriter, EngineGeneratorPushButtons,
-    Potential, PotentialOrigin, PotentialSource, ProvideFrequency, ProvideLoad, ProvidePotential,
+    ElectricalStateWriter, EngineGeneratorPushButtons, Potential, PotentialOrigin, PotentialSource,
+    ProvideFrequency, ProvideLoad, ProvidePotential,
 };
 use crate::{
-    shared::{calculate_towards_target_temperature, EngineCorrectedN2, EngineFirePushButtons},
+    shared::{
+        calculate_towards_target_temperature, EngineCorrectedN2, EngineFirePushButtons,
+        PowerConsumptionReport,
+    },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 use std::cmp::min;

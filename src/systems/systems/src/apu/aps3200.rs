@@ -1,11 +1,13 @@
-use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineController, TurbineState};
+use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
 use crate::{
     electrical::{
-        consumption::{PowerConsumption, PowerConsumptionReport},
-        ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
-        ProvideFrequency, ProvideLoad, ProvidePotential,
+        ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
+        ProvidePotential,
     },
-    shared::{calculate_towards_target_temperature, random_number},
+    shared::{
+        calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
+        ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
+    },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 use std::time::Duration;
@@ -34,14 +36,13 @@ impl Turbine for ShutdownAps3200Turbine {
         context: &UpdateContext,
         _: bool,
         _: bool,
-        controller: &dyn TurbineController,
+        controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.egt = calculate_towards_ambient_egt(self.egt, context);
 
-        if controller.should_start() {
-            Box::new(Starting::new(self.egt))
-        } else {
-            self
+        match controller.signal() {
+            Some(TurbineSignal::StartOrContinue) => Box::new(Starting::new(self.egt)),
+            Some(TurbineSignal::Stop) | None => self,
         }
     }
 
@@ -178,18 +179,20 @@ impl Turbine for Starting {
         context: &UpdateContext,
         _: bool,
         _: bool,
-        controller: &dyn TurbineController,
+        controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
         self.n = self.calculate_n();
         self.egt = self.calculate_egt(context);
 
-        if controller.should_stop() {
-            Box::new(Stopping::new(self.egt, self.n))
-        } else if (self.n.get::<percent>() - 100.).abs() < f64::EPSILON {
-            Box::new(Running::new(self.egt))
-        } else {
-            self
+        match controller.signal() {
+            Some(TurbineSignal::Stop) | None => Box::new(Stopping::new(self.egt, self.n)),
+            Some(TurbineSignal::StartOrContinue)
+                if { (self.n.get::<percent>() - 100.).abs() < f64::EPSILON } =>
+            {
+                Box::new(Running::new(self.egt))
+            }
+            Some(TurbineSignal::StartOrContinue) => self,
         }
     }
 
@@ -364,14 +367,15 @@ impl Turbine for Running {
         context: &UpdateContext,
         apu_bleed_is_used: bool,
         apu_gen_is_used: bool,
-        controller: &dyn TurbineController,
+        controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
 
-        if controller.should_stop() {
-            Box::new(Stopping::new(self.egt, Ratio::new::<percent>(100.)))
-        } else {
-            self
+        match controller.signal() {
+            Some(TurbineSignal::StartOrContinue) => self,
+            Some(TurbineSignal::Stop) | None => {
+                Box::new(Stopping::new(self.egt, Ratio::new::<percent>(100.)))
+            }
         }
     }
 
@@ -493,7 +497,7 @@ impl Turbine for Stopping {
         context: &UpdateContext,
         _: bool,
         _: bool,
-        _: &dyn TurbineController,
+        _: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.since += context.delta();
         self.n = Stopping::calculate_n(self.since) * self.n_factor;
@@ -679,21 +683,36 @@ impl SimulationElement for Aps3200ApuGenerator {
 }
 
 pub struct Aps3200StartMotor {
-    input_potential: Potential,
+    /// On the A320, the start motor is powered through the DC BAT BUS.
+    /// There are however additional contactors which open and close based on
+    /// overhead panel push button positions. Therefore we cannot simply look
+    /// at whether or not DC BAT BUS is powered, but must instead handle
+    /// potential coming in via those contactors.
+    powered_by: ElectricalBusType,
+    is_powered: bool,
     powered_since: Duration,
 }
 impl Aps3200StartMotor {
-    pub fn new() -> Self {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
         Aps3200StartMotor {
-            input_potential: Potential::none(),
+            powered_by,
+            is_powered: false,
             powered_since: Duration::from_secs(0),
         }
     }
 }
-impl ApuStartMotor for Aps3200StartMotor {}
+impl ApuStartMotor for Aps3200StartMotor {
+    fn is_powered(&self) -> bool {
+        self.is_powered
+    }
+}
 impl SimulationElement for Aps3200StartMotor {
-    fn consume_power(&mut self, consumption: &mut PowerConsumption) {
-        if self.input_potential.is_unpowered() {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
+        if !self.is_powered {
             self.powered_since = Duration::from_secs(0);
         } else {
             self.powered_since += consumption.delta();
@@ -719,19 +738,8 @@ impl SimulationElement for Aps3200StartMotor {
                 + (APU_W_X7 * since.powi(7)))
             .max(0.);
 
-            consumption.add(&self.input_potential, Power::new::<watt>(w));
+            consumption.consume_from_bus(self.powered_by, Power::new::<watt>(w));
         }
-    }
-}
-potential_target!(Aps3200StartMotor);
-impl PotentialSource for Aps3200StartMotor {
-    fn output(&self) -> Potential {
-        self.input_potential
-    }
-}
-impl Default for Aps3200StartMotor {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
