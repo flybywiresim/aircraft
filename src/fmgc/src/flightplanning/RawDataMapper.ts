@@ -47,6 +47,7 @@ export class RawDataMapper {
 
             info.approaches = facility.approaches;
             info.approaches.forEach((approach) => approach.transitions.forEach((trans) => trans.name = trans.legs[0].fixIcao.substring(7, 12).trim()));
+            info.approaches.forEach((approach) => approach.runway = approach.runway.trim());
 
             info.departures = facility.departures;
             info.departures.forEach((departure) => departure.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
