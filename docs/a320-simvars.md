@@ -947,6 +947,14 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE
+    - Bool
+    - Indicates if the ground spoilers are active (fully deployed)
+      Value | Position
+      --- | ---
+      0 | Inactive
+      1 | Active
+
 - A32NX_PERFORMANCE_WARNING_ACTIVE
     - Bool
     - Indicates if performance warning is active

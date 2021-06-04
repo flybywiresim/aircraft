@@ -11,8 +11,8 @@ const RTPIDisplay = () => {
 
     return (
         <>
-            <text x="0" y="115" className="direction">{ltsTest === 0 ? '8' : directionText}</text>
-            <text x="330" y="115" className="value">{ltsTest === 0 ? '88.8' : `${Math.abs(rudderTrim).toFixed(1)}`}</text>
+            <text x="0" y="110" className="direction">{ltsTest === 0 ? 'T' : directionText}</text>
+            <text x="330" y="110" className="value">{ltsTest === 0 ? '88.8' : `${Math.abs(rudderTrim).toFixed(1)}`}</text>
         </>
     );
 };
