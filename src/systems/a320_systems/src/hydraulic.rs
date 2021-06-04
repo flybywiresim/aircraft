@@ -1529,12 +1529,16 @@ impl A320AutobrakeController {
         match self.mode {
             A320AutobrakeMode::NONE => false,
             A320AutobrakeMode::LOW | A320AutobrakeMode::MED => {
-                // LOW and MED desactivates if both pedals have more than 7.5° deflection. On 20° max that gives 0.375
-                self.left_brake_pedal_input > 0.375 && self.right_brake_pedal_input > 0.375
+                // LOW and MED desactivates if one pedal over 53% or two over 11%
+                self.left_brake_pedal_input > 0.53
+                    || self.right_brake_pedal_input > 0.53
+                    || (self.left_brake_pedal_input > 0.11 && self.right_brake_pedal_input > 0.11)
             }
             A320AutobrakeMode::MAX => {
-                // MAX desactivates if any pedal have more than half deflection. Thus 0.5
-                self.left_brake_pedal_input > 0.5 || self.right_brake_pedal_input > 0.5
+                // MAX desactivates if one pedal over 77% or two over 11%
+                self.left_brake_pedal_input > 0.77
+                    || self.right_brake_pedal_input > 0.77
+                    || (self.left_brake_pedal_input > 0.53 && self.right_brake_pedal_input > 0.53)
             }
         }
     }
@@ -4311,7 +4315,7 @@ mod tests {
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_up()
-                .run_waiting_for(Duration::from_secs(10));
+                .run_waiting_for(Duration::from_secs(12));
 
             assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
 
@@ -4428,7 +4432,54 @@ mod tests {
         }
 
         #[test]
-        fn autobrakes_max_disengage_on_half_left_pedal_input() {
+        // Should disable with one pedal > 61° over max range of 79.4° thus 77%
+        fn autobrakes_max_disengage_at_77_on_one_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(70.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(78.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        // Should disable with two pedals > 42° over max range of 79.4° thus 52%
+        fn autobrakes_max_disengage_at_52_on_both_pedal_input() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
@@ -4457,38 +4508,15 @@ mod tests {
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-        }
-
-        #[test]
-        fn autobrakes_max_disengage_on_half_right_pedal_input() {
-            let mut test_bed = test_bed_with()
-                .set_cold_dark_inputs()
-                .on_the_ground()
-                .set_park_brake(false)
-                .start_eng1(Ratio::new::<percent>(100.))
-                .start_eng2(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(10));
-
-            test_bed = test_bed
-                .set_autobrake_max()
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
-
-            test_bed = test_bed
-                .set_deploy_spoilers()
-                .run_waiting_for(Duration::from_secs(6));
-
             assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
             test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(55.))
                 .set_right_brake(Ratio::new::<percent>(55.))
                 .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
@@ -4498,7 +4526,8 @@ mod tests {
         }
 
         #[test]
-        fn autobrakes_med_disengage_on_both_pedal_input() {
+        // Should disable with one pedals > 42° over max range of 79.4° thus 52%
+        fn autobrakes_med_disengage_at_52_on_one_pedal_input() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
@@ -4522,7 +4551,7 @@ mod tests {
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
 
             test_bed = test_bed
-                .set_right_brake(Ratio::new::<percent>(55.))
+                .set_right_brake(Ratio::new::<percent>(50.))
                 .run_waiting_for(Duration::from_secs(1))
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
@@ -4533,7 +4562,53 @@ mod tests {
 
             test_bed = test_bed
                 .set_right_brake(Ratio::new::<percent>(55.))
-                .set_left_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        // Should disable with both pedals > 9° over max range of 79.4° thus 11.3%
+        fn autobrakes_med_disengage_at_11_on_both_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(15.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(15.))
+                .set_left_brake(Ratio::new::<percent>(15.))
                 .run_waiting_for(Duration::from_secs(1))
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .set_left_brake(Ratio::new::<percent>(0.))
