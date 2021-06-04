@@ -1,12 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useContext, useRef } from 'react';
 import { IconCheck } from '@tabler/icons';
-import { checklists, ECheckListTypes } from './data';
+import { checklistCollection, ECheckListTypes } from './data';
 import { Navbar } from '../Components/Navbar';
 import ChecklistStep from './ChecklistStep';
 import ChecklistTheLine from './ChecklistTheLine';
-import { CHECKLIST_REDUCER } from '../Store/index';
-import { setChecklist } from '../Store/action-creator/checklists';
+import { EChecklistActions, ChecklistContext } from '../Store/checklist-context';
 
 enum EChecklistStates {
     INCOMPLETE = 'incomplete',
@@ -14,51 +12,56 @@ enum EChecklistStates {
     CHECKLIST_DONE = 'checklist-done'
 }
 
-const initialiseChecks = (() => {
-    const checks = {};
-    for (let i = 0; i < checklists.length; i++) {
-        checks[i] = { isCompleted: false };
-    }
-    return checks;
-})();
+// const initialiseChecks = (() => {
+//     const checks = {};
+//     for (let i = 0; i < checklists.length; i++) {
+//         checks[i] = { isCompleted: false };
+//     }
+//     return checks;
+// })();
 
-const Checklists: React.FC = ({ checks = initialiseChecks, dispatch }) => {
+const Checklists: React.FC = () => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
     const [currentChecklist, setCurrentChecklist] = useState(0);
 
-    const stepCount = checklists[currentChecklist].items.filter(({ type }) => type === ECheckListTypes.STEP).length;
-    const checkCount = Object.keys(checks[currentChecklist]).filter((key) => key !== 'isCompleted' && checks[currentChecklist][key] !== false).length;
+    const { checklistState, checklistDispatch } = useContext(ChecklistContext);
 
-    const checklistState = (() => {
-        if (checks[currentChecklist].isCompleted === true) return EChecklistStates.CHECKLIST_DONE;
-        if (stepCount === checkCount) return EChecklistStates.CHECKS_DONE;
-        return EChecklistStates.INCOMPLETE;
+    const isChecklistComplete = (() => {
+        // const stepCount = checklistCollection[currentChecklist].items.filter(({ type }) => type === ECheckListTypes.STEP).length;
+        // const checkCount = Object.keys(checklistState[currentChecklist]).filter((key) => key !== 'isCompleted' && checklistState[currentChecklist][key] !== false).length;
+        // if (checklistState[currentChecklist].isCompleted === true) return EChecklistStates.CHECKLIST_DONE;
+        // if (stepCount === checkCount) return EChecklistStates.CHECKS_DONE;
+        // return EChecklistStates.INCOMPLETE;
     })();
 
     // marks entire checklist
     const switchChecklistState = () => {
-        // capture initial state of checklist completion
-        const initialState = checks[currentChecklist].isCompleted;
-        // clone checks
-        const newChecks = Object.assign(checks);
-        // switch value of current checklist
-        newChecks[currentChecklist].isCompleted = !checks[currentChecklist].isCompleted;
-        // set new checks to state
-        dispatch(setChecklist(newChecks));
-        // if isCompleted, then change checklist to the next one
-        if (!initialState && currentChecklist !== checklists.length - 1) setCurrentChecklist(currentChecklist + 1);
+        console.log('switch check list state');
+
+        // // capture initial state of checklist completion
+        // const initialState = checklistState[currentChecklist].isCompleted;
+        // // clone checks
+        // const newChecks = Object.assign(checklistState);
+        // // switch value of current checklist
+        // newChecks[currentChecklist].isCompleted = !checklistState[currentChecklist].isCompleted;
+        // // set new checks to state
+        // checklistDispatch(newChecks, ChecklistActions.SET_CHECKLIST);
+        // // if isCompleted, then change checklist to the next one
+        // if (!initialState && currentChecklist !== checklists.length - 1) setCurrentChecklist(currentChecklist + 1);
     };
 
     // marks single step
     const switchStepState = (stepIndex) => {
-        // clone checks
-        const newChecks = Object.assign(checks);
-        // switch value of check
-        newChecks[currentChecklist][stepIndex] = !checks[currentChecklist][stepIndex];
-        // set new checks to state
-        dispatch(setChecklist(checks));
+        console.log('switchStepState');
+
+        // // clone checks
+        // const newChecks = Object.assign(checklistState);
+        // // switch value of check
+        // newChecks[currentChecklist][stepIndex] = !checklistState[currentChecklist][stepIndex];
+        // // set new checks to state
+        checklistDispatch({ state: checklistState, stepIndex, checklistIndex: currentChecklist }, EChecklistActions.SET_CHECKLIST);
     };
 
     const mouseDownHandler = (event) => {
@@ -86,7 +89,7 @@ const Checklists: React.FC = ({ checks = initialiseChecks, dispatch }) => {
             <h1 className="text-3xl pt-6 text-white">
                 Checklists
             </h1>
-            <Navbar tabs={checklists.map(({ name }) => name)} onSelected={(index) => setCurrentChecklist(index)} selectedIndex={currentChecklist} />
+            <Navbar tabs={checklistCollection.map(({ name }) => name)} onSelected={(index) => setCurrentChecklist(index)} selectedIndex={currentChecklist} />
             <div
                 ref={ref}
                 onMouseDown={mouseDownHandler}
@@ -95,16 +98,18 @@ const Checklists: React.FC = ({ checks = initialiseChecks, dispatch }) => {
                 w-1/2 grabbable show-scrollbar overflow-y-auto"
             >
                 {
-                    checklists[currentChecklist].items.map((item, index) => {
+                    checklistCollection[currentChecklist].items.map((item, index) => {
+                        const checksExist = checklistState[currentChecklist];
+                        const isChecked = (checksExist) ? checklistState[currentChecklist][index] : false;
                         switch (item.type) {
                         case 'step': {
                             return (
                                 <ChecklistStep
+                                    key={index.toString() + isChecked.toString()}
                                     {...item}
-                                    key={item}
-                                    isChecked={checks[currentChecklist][index]}
+                                    isChecked={checksExist && checklistState[currentChecklist][index]}
                                     // if current checklist isCompleted, then don't allow changing step states
-                                    onChecked={() => !checks[currentChecklist].isCompleted && switchStepState(index)}
+                                    onChecked={() => !checklistState[currentChecklist]?.isCompleted && switchStepState(index)}
                                 />
                             );
                         }
@@ -121,7 +126,7 @@ const Checklists: React.FC = ({ checks = initialiseChecks, dispatch }) => {
                 }
             </div>
             <div className="flex-none pt-6 w-1/2">
-                <CompletionButton checklistState={checklistState} onClick={switchChecklistState} />
+                <CompletionButton checklistState={isChecklistComplete} onClick={switchChecklistState} />
             </div>
         </div>
     );
@@ -166,6 +171,4 @@ const CompletionButton: React.FC<CompletionButtonProps> = ({ checklistState, onC
     );
 };
 
-export default connect(
-    ({ [CHECKLIST_REDUCER]: { checks } }) => ({ checks }),
-)(Checklists);
+export default Checklists;
