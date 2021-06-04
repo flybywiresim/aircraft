@@ -2472,20 +2472,27 @@ void AutopilotStateMachineModelClass::step()
   AutopilotStateMachine_DWork.sLandModeArmedOrActive = speedTargetChanged;
   AutopilotStateMachine_DWork.sRollOutActive = conditionSoftAlt;
   AutopilotStateMachine_DWork.sGoAroundModeActive = rtb_cLAND;
-  AutopilotStateMachine_DWork.state_h = ((AutopilotStateMachine_U.in.data.is_flight_plan_available &&
-    (!AutopilotStateMachine_DWork.Delay_DSTATE.condition.NAV) && AutopilotStateMachine_DWork.DelayInput1_DSTATE_e &&
-    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_NAV) &&
-    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LOC_CPT) &&
+  if (!AutopilotStateMachine_DWork.wasFlightPlanAvailable_not_empty) {
+    AutopilotStateMachine_DWork.wasFlightPlanAvailable = AutopilotStateMachine_U.in.data.is_flight_plan_available;
+    AutopilotStateMachine_DWork.wasFlightPlanAvailable_not_empty = true;
+  }
+
+  AutopilotStateMachine_DWork.state_d = ((AutopilotStateMachine_U.in.data.is_flight_plan_available &&
+    (!AutopilotStateMachine_DWork.Delay_DSTATE.condition.NAV) && (AutopilotStateMachine_DWork.DelayInput1_DSTATE_e ||
+    ((rtb_on_ground != 0) && (!AutopilotStateMachine_DWork.wasFlightPlanAvailable) &&
+     AutopilotStateMachine_U.in.data.is_flight_plan_available)) && (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode
+    != lateral_mode_NAV) && (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LOC_CPT) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LOC_TRACK) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LAND) &&
-    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_FLARE)) || AutopilotStateMachine_DWork.state_h);
+    (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_FLARE)) || AutopilotStateMachine_DWork.state_d);
   engageCondition = !AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC;
-  AutopilotStateMachine_DWork.state_h = ((!AutopilotStateMachine_DWork.DelayInput1_DSTATE_g) &&
+  AutopilotStateMachine_DWork.state_d = ((!AutopilotStateMachine_DWork.DelayInput1_DSTATE_g) &&
     ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) || (!rtb_AND)) && engageCondition &&
     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_NAV)) &&
     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LAND)) &&
     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_FLARE)) &&
-    AutopilotStateMachine_DWork.state_h);
+    AutopilotStateMachine_DWork.state_d);
+  AutopilotStateMachine_DWork.wasFlightPlanAvailable = AutopilotStateMachine_U.in.data.is_flight_plan_available;
   rtb_cLAND = (AutopilotStateMachine_DWork.Delay1_DSTATE.armed.GS ||
                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_GS_CPT) ||
                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_GS_TRACK) ||
@@ -2496,16 +2503,16 @@ void AutopilotStateMachineModelClass::step()
              (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LOC_TRACK)) &&
              (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LAND)) &&
              (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_FLARE)));
-  AutopilotStateMachine_DWork.state_d = (((AutopilotStateMachine_U.in.data.H_radio_ft > 400.0) &&
+  AutopilotStateMachine_DWork.state_dg = (((AutopilotStateMachine_U.in.data.H_radio_ft > 400.0) &&
     AutopilotStateMachine_U.in.data.nav_valid && (AutopilotStateMachine_U.in.data.throttle_lever_1_pos < 45.0) &&
     (AutopilotStateMachine_U.in.data.throttle_lever_2_pos < 45.0) && (rtb_BusAssignment1_input_LOC_push ||
-    rtb_BusAssignment1_input_APPR_push) && rtb_cGA && rtb_cFLARE) || AutopilotStateMachine_DWork.state_d);
+    rtb_BusAssignment1_input_APPR_push) && rtb_cGA && rtb_cFLARE) || AutopilotStateMachine_DWork.state_dg);
   speedTargetChanged = !rtb_BusAssignment1_input_APPR_push;
   conditionSoftAlt = !rtb_BusAssignment1_input_LOC_push;
-  AutopilotStateMachine_DWork.state_d = ((conditionSoftAlt || engageCondition || rtb_cLAND) && (speedTargetChanged ||
+  AutopilotStateMachine_DWork.state_dg = ((conditionSoftAlt || engageCondition || rtb_cLAND) && (speedTargetChanged ||
     rtb_cFLARE) && (!AutopilotStateMachine_DWork.Delay_DSTATE.armed.NAV) && rtb_cGA &&
     (AutopilotStateMachine_U.in.data.throttle_lever_1_pos != 45.0) &&
-    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos != 45.0) && AutopilotStateMachine_DWork.state_d);
+    (AutopilotStateMachine_U.in.data.throttle_lever_2_pos != 45.0) && AutopilotStateMachine_DWork.state_dg);
   rtb_y_m = (AutopilotStateMachine_U.in.data.Psi_magnetic_deg - (AutopilotStateMachine_U.in.data.nav_loc_deg + 360.0)) +
     360.0;
   if (rtb_y_m == 0.0) {
@@ -3072,8 +3079,8 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_P.ap_sm_output_MATLABStruct.output.FD_disconnect;
   AutopilotStateMachine_B.BusAssignment_g.output.FD_connect =
     AutopilotStateMachine_P.ap_sm_output_MATLABStruct.output.FD_connect;
-  AutopilotStateMachine_B.BusAssignment_g.lateral.armed.NAV = AutopilotStateMachine_DWork.state_h;
-  AutopilotStateMachine_B.BusAssignment_g.lateral.armed.LOC = AutopilotStateMachine_DWork.state_d;
+  AutopilotStateMachine_B.BusAssignment_g.lateral.armed.NAV = AutopilotStateMachine_DWork.state_d;
+  AutopilotStateMachine_B.BusAssignment_g.lateral.armed.LOC = AutopilotStateMachine_DWork.state_dg;
   AutopilotStateMachine_B.BusAssignment_g.lateral.condition.NAV = ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) &&
     AutopilotStateMachine_U.in.data.is_flight_plan_available && (AutopilotStateMachine_U.in.data.flight_guidance_xtk_nmi
     < 10.0));

@@ -113,8 +113,10 @@ class AutopilotStateMachineModelClass {
     boolean_T eventTime_not_empty_i;
     boolean_T eventTime_not_empty_e;
     boolean_T sThrottleCondition;
-    boolean_T state_h;
+    boolean_T wasFlightPlanAvailable;
+    boolean_T wasFlightPlanAvailable_not_empty;
     boolean_T state_d;
+    boolean_T state_dg;
     boolean_T state_j;
     boolean_T sDES;
     boolean_T sCLB;

@@ -619,6 +619,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 this.selectedValue = _value;
                 this.isSelectedValueActive = false;
                 this.isPreselectionModeActive = false;
+                SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 2);
             }
             if (_isManagedActive !== this.isManagedActive) {
                 if (_isManagedActive) {
