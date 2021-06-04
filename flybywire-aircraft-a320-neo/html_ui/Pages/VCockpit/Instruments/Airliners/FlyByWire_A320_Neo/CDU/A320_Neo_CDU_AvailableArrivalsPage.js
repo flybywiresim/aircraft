@@ -44,7 +44,7 @@ class CDUAvailableArrivalsPage {
             }
             let selectedStarCell = "------";
             let selectedStarCellColor = "white";
-            let selectedArrival = airportInfo.arrivals[mcdu.flightPlanManager.getArrivalProcIndex()];
+            let selectedArrival = mcdu.flightPlanManager.getArrival();
             if (!selectedArrival) {
                 selectedArrival = airportInfo.arrivals[selectedStarIndex];
             }
@@ -142,6 +142,11 @@ class CDUAvailableArrivalsPage {
                             }
                             rows[2 * i] = ["{" + star.name + "[color]" + color];
                             mcdu.onLeftInput[i + 2] = () => {
+                                const runways = airportInfo.oneWayRunways;
+                                const arrivalRunwayIndex = runways.findIndex(t => {
+                                    return t.designation === selectedApproach.runway;
+                                });
+                                mcdu.flightPlanManager.setArrivalRunwayIndex(arrivalRunwayIndex);
                                 mcdu.setArrivalProcIndex(starIndex, () => {
                                     if (mcdu.flightPlanManager.getApproachIndex() > -1) {
                                         CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport);
