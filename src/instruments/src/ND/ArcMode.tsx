@@ -16,6 +16,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
+    const [tcasMode] = useSimVar("L:A32NX_SWITCH_TCAS_Position", "number");
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -32,14 +33,14 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
         <>
             <FlightPlan y={236} mapParams={mapParams} clipPath="url(#arc-mode-flight-plan-clip)" debug />
 
-            <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} side={side} />
+            <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} side={side} tcasMode={tcasMode} />
         </>
     );
 };
 
 type OverlayProps = { heading: number, rangeIndex: number, side: 'L' | 'R' }
 
-const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex, side }) => {
+const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex, side, tcasMode }) => {
     const range = rangeSettings[rangeIndex];
 
     return (
@@ -274,12 +275,34 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex, side }) => 
                 <text x={592} y={528} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{range / 2}</text>
 
                 {/* R = 123 */}
-                <path
-                    d="M261,620a123,123 0 1,0 246,0a123,123 0 1,0 -246,00"
-                    strokeDasharray="15 10"
-                    strokeDashoffset="-4.2"
-                    clipPath="url(#arc-mode-overlay-clip-1)"
-                />
+                { (tcasMode === 0 || range > 10) &&
+                    <path
+                        d="M261,620a123,123 0 1,0 246,0a123,123 0 1,0 -246,00"
+                        strokeDasharray="15 10"
+                        strokeDashoffset="-4.2"
+                        clipPath="url(#arc-mode-overlay-clip-1)"
+                    />
+                }
+                { (tcasMode > 0 && range === 10) &&
+                    <g>
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-60 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-30 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(0 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(30 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(60 384 620)" />
+                    </g>
+                }
+
+                {/* R = 62 */}
+                { (tcasMode > 0 && range === 20) &&
+                    <g>
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-60 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-30 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(0 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(30 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(60 384 620)" />
+                    </g>
+                }
             </g>
 
             <RadioNeedle index={1} side={side} />
