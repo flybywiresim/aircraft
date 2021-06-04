@@ -1,11 +1,6 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-
-enum NavAidMode {
-    Off = 0,
-    ADF,
-    VOR,
-}
+import { NavAidMode } from './RadioNavInfo';
 
 type RadioNavPointerProps = { index: 1 | 2, side: 'L' | 'R' };
 

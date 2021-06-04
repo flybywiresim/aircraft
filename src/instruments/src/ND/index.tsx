@@ -7,6 +7,7 @@ import { render } from '../Common';
 import { ArcMode } from './ArcMode';
 import { WindIndicator } from './WindIndicator';
 import { SpeedIndicator } from './SpeedIndicator';
+import { RadioNavInfo } from './RadioNavInfo';
 
 import './styles.scss';
 
@@ -33,6 +34,9 @@ const NavigationDisplay: React.FC = () => {
                     <WindIndicator adirsState={adirsState} tas={tas} />
 
                     <ArcMode side={side} />
+
+                    <RadioNavInfo index={1} side={side} />
+                    <RadioNavInfo index={2} side={side} />
                 </svg>
             </FlightPlanProvider>
         </DisplayUnit>
