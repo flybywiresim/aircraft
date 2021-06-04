@@ -401,16 +401,20 @@ impl Autobrake {
             self.last_error = 0.;
             self.current_output = 0.;
         }
-        // println!(
-        //     "Accel/Target:{:.2}/{:.2},Out{:.2}",
-        //     self.acceleration.get::<meter_per_second_squared>(),
-        //     self.target.get::<meter_per_second_squared>(),
-        //     self.output()
-        // );
+        println!(
+            "Accel/Target:{:.2}/{:.2},Out{:.2}",
+            self.acceleration.get::<meter_per_second_squared>(),
+            self.target.get::<meter_per_second_squared>(),
+            self.output()
+        );
     }
 
     pub fn output(&self) -> f64 {
         self.current_output
+    }
+
+    pub fn deceleration_value(&self) -> Acceleration {
+        self.acceleration
     }
 }
 

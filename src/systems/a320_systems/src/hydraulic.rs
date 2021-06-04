@@ -1421,14 +1421,17 @@ impl A320AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: f64 = 10.;
 
     // Dynamic decel target map versus time for any mode that needs it
-    const LOW_MODE_DECEL_PROFILE_ACCEL: [f64; 4] = [5., 5., 0., -1.7];
-    const LOW_MODE_DECEL_PROFILE_TIME: [f64; 4] = [0., 3.99, 4., 6.];
+    const LOW_MODE_DECEL_PROFILE_ACCEL: [f64; 4] = [5., 5., 0., -2.];
+    const LOW_MODE_DECEL_PROFILE_TIME: [f64; 4] = [0., 1.99, 2., 6.];
 
     const MED_MODE_DECEL_PROFILE_ACCEL: [f64; 5] = [5., 5., 0., -2., -3.];
     const MED_MODE_DECEL_PROFILE_TIME: [f64; 5] = [0., 1.99, 2., 5., 6.];
 
     const MAX_MODE_DECEL_TARGET: f64 = -6.;
     const OFF_MODE_DECEL_TARGET: f64 = 5.;
+
+    const MARGIN_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
+    const TARGET_TO_SHOW_DECEL_IN_MAX: f64 = -2.7;
 
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
@@ -1450,7 +1453,7 @@ impl A320AutobrakeController {
         }
     }
 
-    fn spoilers_are_auto_deployed(&self) -> bool {
+    fn ground_spoilers_are_deployed(&self) -> bool {
         self.spoilers_armed
             && self.spoilers_left_position > Self::OPENED_SPOILER_DETECTION_THRESHOLD
             && self.spoilers_right_position > Self::OPENED_SPOILER_DETECTION_THRESHOLD
@@ -1495,7 +1498,7 @@ impl A320AutobrakeController {
     }
 
     fn should_engage(&self) -> bool {
-        self.is_armed() && self.spoilers_are_auto_deployed() && !self.should_disarm()
+        self.is_armed() && self.ground_spoilers_are_deployed() && !self.should_disarm()
     }
 
     fn allow_arming(&self) -> bool {
@@ -1517,9 +1520,17 @@ impl A320AutobrakeController {
         if self.mode == A320AutobrakeMode::NONE {
             false
         } else if self.mode == A320AutobrakeMode::LOW || self.mode == A320AutobrakeMode::MED {
-            deceleration_demanded && self.controller.is_on_target(80.)
+            deceleration_demanded
+                && self
+                    .controller
+                    .is_on_target(Self::MARGIN_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED)
         } else {
-            deceleration_demanded && self.controller.is_on_target(50.)
+            deceleration_demanded
+                && self
+                    .controller
+                    .deceleration_value()
+                    .get::<meter_per_second_squared>()
+                    < Self::TARGET_TO_SHOW_DECEL_IN_MAX
         }
     }
 
