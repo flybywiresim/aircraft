@@ -265,7 +265,10 @@ const Efb = () => {
                                     <Navigation />
                                 </Route>
                                 <Route path="/atc">
-                                    <ATC />
+                                    <ATC
+                                        simbriefData={simbriefData}
+                                        fetchSimbrief={fetchSimbriefData}
+                                    />
                                 </Route>
                                 <Route path="/settings">
                                     <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
