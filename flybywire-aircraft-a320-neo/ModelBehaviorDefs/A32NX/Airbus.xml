@@ -799,7 +799,7 @@
 
         <UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
             <TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
-            <LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>0 (&gt;H:A32NX_EFIS_#SIDE#_CHRONO_PUSHED)</LEFT_SINGLE_CODE>
         </UseTemplate>
     </Template>
 
