@@ -897,12 +897,10 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
 
-            if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
-                if (apLogicOn) {
-                    //depending if on HDR/TRK or NAV mode, select appropriate Alt Mode (WIP)
-                    //this._onModeManagedAltitude();
-                    this._onModeSelectedAltitude();
-                }
+            if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND && apLogicOn) {
+                //depending if on HDR/TRK or NAV mode, select appropriate Alt Mode (WIP)
+                //this._onModeManagedAltitude();
+                this._onModeSelectedAltitude();
             }
             this.updateAutopilotCooldown = this._apCooldown;
         }
