@@ -28,7 +28,6 @@ use uom::si::{
 };
 
 pub(super) struct A320Hydraulic {
-    autobrake_panel: A320AutobrakePanel,
     brake_computer: A320HydraulicBrakeComputerUnit,
 
     blue_loop: HydraulicLoop,
@@ -107,7 +106,6 @@ impl A320Hydraulic {
 
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
-            autobrake_panel: A320AutobrakePanel::new(),
             brake_computer: A320HydraulicBrakeComputerUnit::new(),
 
             blue_loop: HydraulicLoop::new(
@@ -233,6 +231,7 @@ impl A320Hydraulic {
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
+        autobrake_panel: &A320AutobrakePanel,
         engine_fire_push_buttons: &U,
         landing_gear: &LandingGear,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
@@ -254,6 +253,7 @@ impl A320Hydraulic {
         self.update_every_frame(
             &context,
             &overhead_panel,
+            &autobrake_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
             landing_gear,
@@ -358,6 +358,7 @@ impl A320Hydraulic {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
+        autobrake_panel: &A320AutobrakePanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
         landing_gear: &LandingGear,
@@ -368,7 +369,7 @@ impl A320Hydraulic {
             &self.green_loop,
             &self.braking_circuit_altn,
             &landing_gear,
-            &self.autobrake_panel,
+            &autobrake_panel,
         );
 
         // Updating rat stowed pos on all frames in case it's used for graphics
@@ -577,7 +578,6 @@ impl SimulationElement for A320Hydraulic {
         self.green_loop.accept(visitor);
         self.yellow_loop.accept(visitor);
 
-        self.autobrake_panel.accept(visitor);
         self.brake_computer.accept(visitor);
 
         self.braking_circuit_norm.accept(visitor);
@@ -1897,6 +1897,7 @@ mod tests {
             engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
+            autobrake_panel: A320AutobrakePanel,
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
@@ -1920,6 +1921,7 @@ mod tests {
                     engine_2: LeapEngine::new(2),
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
+                    autobrake_panel: A320AutobrakePanel::new(),
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     engine_fire_overhead: EngineFireOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
@@ -2016,6 +2018,7 @@ mod tests {
                     &self.engine_1,
                     &self.engine_2,
                     &self.overhead,
+                    &self.autobrake_panel,
                     &self.engine_fire_overhead,
                     &self.landing_gear,
                     &self.emergency_electrical_overhead,
