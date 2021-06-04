@@ -25,7 +25,6 @@ const PlaneSettings = () => {
     const [accelerationOutAltSetting, setAccelerationOutAltSetting] = useState(accelerationOutAlt);
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
     const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
 
     const adirsAlignTimeButtons: ButtonType[] = [
         { name: 'Instant', setting: 'INSTANT' },
@@ -67,11 +66,6 @@ const PlaneSettings = () => {
     const weightUnitButtons: ButtonType[] = [
         { name: 'Kg', setting: '1' },
         { name: 'lbs', setting: '0' },
-    ];
-
-    const paxSignsButtons: ButtonType[] = [
-        { name: 'No Smoking', setting: '0' },
-        { name: 'No Portable Device', setting: '1' },
     ];
 
     const handleSetThrustReductionAlt = (value: string) => {
@@ -280,36 +274,27 @@ const PlaneSettings = () => {
                     </div>
                 </div>
             </div>
-
-            <h1 className="text-xl text-white font-medium my-4">CIDS</h1>
-
-            <div className="divide-y divide-gray-700 flex flex-col">
-                <div className="mb-3.5 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">PAX Signs</span>
-                    <SelectGroup>
-                        {paxSignsButtons.map((button) => (
-                            <SelectItem
-                                onSelect={() => setPaxSigns(button.setting)}
-                                selected={paxSigns === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </div>
-            </div>
         </div>
     );
 };
 
-const SoundSettings = () => {
+const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
     const [ptuAudible, setPtuAudible] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool', 'SOUND_PTU_AUDIBLE_COCKPIT');
     const [exteriorVolume, setExteriorVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_EXTERIOR_MASTER', 'number', 'SOUND_EXTERIOR_MASTER');
     const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
     const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
+    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
+    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+
+    const paxSignsButtons: ButtonType[] = [
+        { name: 'No Smoking', setting: '0' },
+        { name: 'No Portable Device', setting: '1' },
+    ];
 
     return (
         <div className="bg-navy-lighter rounded-2xl p-6 shadow-lg mb-6">
+            <h1 className="text-xl font-medium text-white mb-4">Audio & Display</h1>
+
             <div className="divide-y divide-gray-700 flex flex-col">
                 <div className="mb-4 flex flex-row justify-between items-center">
                     <span>
@@ -332,11 +317,51 @@ const SoundSettings = () => {
                         <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
                     </div>
                 </div>
-                <div className="pt-3 flex flex-row justify-between items-center">
+                <div className="mb-4 pt-3 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Wind Interior Volume</span>
                     <div className="flex flex-row items-center">
                         <span className="text-base pr-3">{windVolume}</span>
                         <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
+                    </div>
+                </div>
+                <div className="pt-3 flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Brightness</span>
+                    <div className="flex flex-row items-center">
+                        <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                    </div>
+                </div>
+            </div>
+
+            <h1 className="text-xl text-white font-medium my-4">CIDS</h1>
+
+            <div className="divide-y divide-gray-700 flex flex-col">
+                <div className="flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">PAX Signs</span>
+                    <SelectGroup>
+                        {paxSignsButtons.map((button) => (
+                            <SelectItem
+                                onSelect={() => setPaxSigns(button.setting)}
+                                selected={paxSigns === button.setting}
+                            >
+                                {button.name}
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </div>
+            </div>
+
+            <h1 className="text-xl text-white font-medium my-4">Integration</h1>
+
+            <div className="divide-y divide-gray-700 flex flex-col">
+                <div className="flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Simbrief Username</span>
+                    <div className="flex flex-row items-center">
+                        <input
+                            type="text"
+                            className="w-30 px-5 py-1.5 text-xl text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast"
+                            value={props.simbriefUsername}
+                            onChange={(event) => props.setSimbriefUsername(event.target.value)}
+                        />
                     </div>
                 </div>
             </div>
@@ -354,33 +379,6 @@ const ControlSettings = ({ setShowSettings }) => (
     </div>
 );
 
-const FlyPadSettings = () => {
-    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
-
-    return (
-        <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg mb-6">
-            <div className="flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Brightness</span>
-                <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
-            </div>
-        </div>
-    );
-};
-
-const IntegrationSettings = (props: {simbriefUsername, setSimbriefUsername}) => (
-    <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg mb-6">
-        <div className="flex flex-row justify-between items-center">
-            <span className="text-lg text-gray-300">Simbrief Username</span>
-            <input
-                type="text"
-                className="w-30 px-5 py-1.5 text-xl text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast"
-                value={props.simbriefUsername}
-                onChange={(event) => props.setSimbriefUsername(event.target.value)}
-            />
-        </div>
-    </div>
-);
-
 const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
 
@@ -395,11 +393,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                                 <PlaneSettings />
                             </div>
                             <div className="w-1/2 ml-3">
-                                <SoundSettings />
-
-                                <FlyPadSettings />
-
-                                <IntegrationSettings
+                                <OtherSettings
                                     simbriefUsername={props.simbriefUsername}
                                     setSimbriefUsername={props.setSimbriefUsername}
                                 />
