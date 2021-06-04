@@ -3367,7 +3367,7 @@ class FMCMainDisplay extends BaseAirliners {
                                 runway.length / 2 / 1852, // TODO unit conversion lib
                                 runway.latitude, runway.longitude
                             );
-                            return onSuccess(adjustedCoordinates);
+                            return onSuccess(adjustedCoordinates, Facilities.getMagVar(adjustedCoordinates));
                         }
                     }
                     return onError(NXSystemMessages.notInDatabase);
@@ -3396,13 +3396,15 @@ class FMCMainDisplay extends BaseAirliners {
     parseLatLon(place, onSuccess, onError) {
         const latlon = place.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/);
         if (latlon !== null) {
-            const latB = latlon[1] || "" + latlon[3] || "";
-            const lonB = latlon[4] || "" + latlon[6] || "";
-            const latD = latlon[2].length == 4 ? parseInt(latlon[2].substring(0, 1)) : parseInt(latlon[2].substring(0, 2));
-            const latM = latlon[2].length == 4 ? parseFloat(latlon[2].substring(1)) : parseFloat(latlon[2].substring(2));
-            const lonD = latlon[5].length == 4 ? parseInt(latlon[5].substring(0, 1)) : latlon[5].length == 5 ? parseInt(latlon[5].substring(0, 2)) : parseInt(latlon[5].substring(0, 3));
-            const lonM = latlon[5].length == 4 ? parseFloat(latlon[5].substring(1)) : latlon[5].length == 5 ? parseFloat(latlon[5].substring(2)) : parseFloat(latlon[5].substring(3));
-            if (latB.length == 0 || lonB.length == 0 || !isFinite(latM) || !isFinite(lonM)) {
+            const latB = (latlon[1] || "") + (latlon[3] || "");
+            const lonB = (latlon[4] || "") + (latlon[6] || "");
+            const latDdigits = latlon[2].length === 4 ? 3 : 4;
+            const latD = parseInt(latlon[2].substring(0, latlon[2].length - latDdigits));
+            const latM = parseFloat(latlon[2].substring(latlon[2].length - latDdigits));
+            const lonDdigits = latlon[5].length === 4 ? 3 : 4;
+            const lonD = parseInt(latlon[5].substring(0, latlon[5].length - lonDdigits));
+            const lonM = parseFloat(latlon[5].substring(latlon[5].length - lonDdigits));
+            if (latB.length !== 1 || lonB.length !== 1 || !isFinite(latM) || !isFinite(lonM)) {
                 return onError(NXSystemMessages.formatError);
             }
             if (latD > 90 || latM > 59.9 || lonD > 180 || lonM > 59.9) {
@@ -3410,7 +3412,8 @@ class FMCMainDisplay extends BaseAirliners {
             }
             const lat = (latD + latM / 60) * (latB === "S" ? -1 : 1);
             const lon = (lonD + lonM / 60) * (lonB === "W" ? -1 : 1);
-            return onSuccess(new LatLongAlt(lat, lon));
+            const ll = new LatLongAlt(lat, lon);
+            return onSuccess(ll, Facilities.getMagVar(ll));
         }
         return onError(NXSystemMessages.formatError);
     }
@@ -3436,7 +3439,7 @@ class FMCMainDisplay extends BaseAirliners {
         } else {
             this.getOrSelectWaypointByIdent(place, (waypoint) => {
                 if (waypoint) {
-                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation);
+                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation || Facilities.getMagVar(waypoint.infos.coordinates));
                 } else {
                     return onError(NXSystemMessages.notInDatabase);
                 }

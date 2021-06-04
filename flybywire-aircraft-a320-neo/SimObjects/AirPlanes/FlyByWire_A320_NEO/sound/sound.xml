@@ -1535,6 +1535,13 @@
             </Requires>
         </Sound>
 
+        <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FMA_TRIPLE_CLICK" Continuous="false">
+            <Range LowerBound="1"/>
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
     </SimVarSounds>
 
     <!-- AvionicSounds ========================================================================================== -->
