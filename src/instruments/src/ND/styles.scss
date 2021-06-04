@@ -101,6 +101,11 @@ text.Red {
   stroke: none;
 }
 
+.Grey.Fill {
+  fill: $display-grey;
+  stroke: none;
+}
+
 path.rounded {
   stroke-linecap: round;
   stroke-linejoin: round;
