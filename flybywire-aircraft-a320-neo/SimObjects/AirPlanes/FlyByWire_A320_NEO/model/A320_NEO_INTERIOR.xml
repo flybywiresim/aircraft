@@ -3953,10 +3953,12 @@
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
                 <NODE_ID>PUSH_AUTOPILOT_CHRONO_L</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_L</ANIM_NAME>
+                <SIDE>L</SIDE>
             </UseTemplate>
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
                 <NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
+                <SIDE>R</SIDE>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Chrono_Push_Toggle">
