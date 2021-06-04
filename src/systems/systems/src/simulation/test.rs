@@ -196,11 +196,23 @@ impl SimulationTestBed {
             .write_bool(UpdateContext::IS_ON_GROUND_KEY, on_ground);
     }
 
+    pub fn on_ground(&mut self) -> bool {
+        self.reader_writer
+            .read_bool(UpdateContext::IS_ON_GROUND_KEY)
+    }
+
     pub fn set_long_acceleration(&mut self, accel: Acceleration) {
         self.reader_writer.write_f64(
             UpdateContext::ACCEL_BODY_Z_KEY,
             accel.get::<foot_per_second_squared>(),
         );
+    }
+
+    pub fn long_acceleration(&mut self) -> Acceleration {
+        Acceleration::new::<foot_per_second_squared>(
+            self.reader_writer
+                .read_f64(UpdateContext::INDICATED_AIRSPEED_KEY),
+        )
     }
 
     pub fn supplied_power_fn(

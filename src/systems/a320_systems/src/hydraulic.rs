@@ -1408,16 +1408,13 @@ pub struct A320AutobrakeController {
     left_brake_pedal_input: f64,
     right_brake_pedal_input: f64,
 
-    spoilers_left_position: f64,
-    spoilers_right_position: f64,
-    last_spoilers_left_position: f64,
-    last_spoilers_right_position: f64,
-    spoilers_armed: bool,
+    ground_spoilers_active: bool,
+    last_ground_spoilers_active: bool,
+
     should_disarm_after_time_in_flight: DelayedTrueLogicGate,
     in_flight_disarm_event: bool,
 }
 impl A320AutobrakeController {
-    const OPENED_SPOILER_DETECTION_THRESHOLD: f64 = 0.1;
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: f64 = 10.;
 
     // Dynamic decel target map versus time for any mode that needs it
@@ -1441,11 +1438,8 @@ impl A320AutobrakeController {
             arming_is_allowed_by_bcu: false,
             left_brake_pedal_input: 0.,
             right_brake_pedal_input: 0.,
-            spoilers_left_position: 0.,
-            spoilers_right_position: 0.,
-            last_spoilers_left_position: 0.,
-            last_spoilers_right_position: 0.,
-            spoilers_armed: false,
+            ground_spoilers_active: false,
+            last_ground_spoilers_active: false,
             should_disarm_after_time_in_flight: DelayedTrueLogicGate::new(Duration::from_secs_f64(
                 Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE,
             )),
@@ -1454,14 +1448,11 @@ impl A320AutobrakeController {
     }
 
     fn ground_spoilers_are_deployed(&self) -> bool {
-        self.spoilers_armed
-            && self.spoilers_left_position > Self::OPENED_SPOILER_DETECTION_THRESHOLD
-            && self.spoilers_right_position > Self::OPENED_SPOILER_DETECTION_THRESHOLD
+        self.ground_spoilers_active
     }
 
     fn spoilers_retracted_event(&self) -> bool {
-        self.spoilers_left_position == 0. && self.last_spoilers_left_position > 0.
-            || self.spoilers_right_position == 0. && self.last_spoilers_right_position > 0.
+        !self.ground_spoilers_active && self.last_ground_spoilers_active
     }
 
     fn brake_output(&self) -> f64 {
@@ -1658,9 +1649,8 @@ impl SimulationElement for A320AutobrakeController {
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.spoilers_left_position = state.read_f64("SPOILERS LEFT POSITION");
-        self.spoilers_right_position = state.read_f64("SPOILERS RIGHT POSITION");
-        self.spoilers_armed = state.read_bool("SPOILERS_ARMED");
+        self.last_ground_spoilers_active = self.ground_spoilers_active;
+        self.ground_spoilers_active = state.read_bool("SPOILERS_GROUND_SPOILERS_ACTIVE");
     }
 }
 
@@ -1843,7 +1833,7 @@ mod tests {
         use systems::shared::PotentialOrigin;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
-            acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
+            acceleration::meter_per_second_squared, electric_potential::volt, length::foot,
             ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot,
         };
 
@@ -2276,6 +2266,18 @@ mod tests {
                 Volume::new::<gallon>(self.simulation_test_bed.read_f64("HYD_BLUE_RESERVOIR"))
             }
 
+            fn autobrake_mode(&mut self) -> A320AutobrakeMode {
+                let mode = self.simulation_test_bed.read_f64("AUTOBRK_ARMED_MODE") as u8;
+
+                match mode {
+                    0 => A320AutobrakeMode::NONE,
+                    1 => A320AutobrakeMode::LOW,
+                    2 => A320AutobrakeMode::MED,
+                    3 => A320AutobrakeMode::MAX,
+                    _ => A320AutobrakeMode::NONE,
+                }
+            }
+
             fn get_brake_left_green_pressure(&mut self) -> Pressure {
                 Pressure::new::<psi>(
                     self.simulation_test_bed
@@ -2578,6 +2580,45 @@ mod tests {
                 let scaled_value = position_percent.get::<percent>() / 100.;
                 self.simulation_test_bed
                     .write_f64(name, scaled_value.min(1.).max(0.));
+                self
+            }
+
+            fn set_autobrake_low(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_AUTOBRK_LOW_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.simulation_test_bed
+                    .write_bool("OVHD_AUTOBRK_LOW_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_autobrake_med(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_AUTOBRK_MED_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.simulation_test_bed
+                    .write_bool("OVHD_AUTOBRK_MED_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_autobrake_max(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_AUTOBRK_MAX_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.simulation_test_bed
+                    .write_bool("OVHD_AUTOBRK_MAX_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_deploy_spoilers(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_bool("SPOILERS_GROUND_SPOILERS_ACTIVE", true);
+                self
+            }
+
+            fn set_retract_spoilers(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_bool("SPOILERS_GROUND_SPOILERS_ACTIVE", false);
                 self
             }
 
@@ -4265,6 +4306,270 @@ mod tests {
         }
 
         #[test]
+        fn autobrakes_arms_in_flight_lo_or_med() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_low()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::LOW);
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+        }
+
+        #[test]
+        fn autobrakes_max_wont_arm_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_taxiing_wont_disarm_when_braking() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(60.))
+                .start_eng2(Ratio::new::<percent>(60.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+        }
+
+        #[test]
+        fn autobrakes_activates_on_ground_on_spoiler_deploy() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_disengage_on_spoiler_retract() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_retract_spoilers()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_max_disengage_on_half_left_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_max_disengage_on_half_right_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_med_disengage_on_both_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(55.))
+                .set_left_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_max_disarm_after_10s_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MAX);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+        }
+
+        #[test]
         fn controller_blue_epump_activates_when_no_weight_on_wheels() {
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
@@ -4971,7 +5276,7 @@ mod tests {
                 Length::new::<foot>(5000.),
                 ThermodynamicTemperature::new::<degree_celsius>(25.0),
                 true,
-                Acceleration::new::<foot_per_second_squared>(0.),
+                Acceleration::new::<meter_per_second_squared>(0.),
             )
         }
 
