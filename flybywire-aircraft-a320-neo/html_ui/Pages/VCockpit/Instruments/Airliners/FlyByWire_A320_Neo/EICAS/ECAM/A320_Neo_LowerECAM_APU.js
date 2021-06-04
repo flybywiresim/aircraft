@@ -103,11 +103,11 @@ var A320_Neo_LowerECAM_APU;
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
             }
 
-            const lowFuelPressure = SimVar.GetSimVarValue("L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT", "Bool");
-            toggleVisibility(this.FuelLoPr, lowFuelPressure);
+            const lowFuelPressure = SimVar.GetSimVarValue("L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT", "Number");
+            toggleVisibility(this.FuelLoPr, lowFuelPressure > 0);
 
-            const apuFlapOpenPercent = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_OPEN_PERCENTAGE", "Percent");
-            toggleVisibility(this.APUFlapOpen, apuFlapOpenPercent === 100);
+            const apuFlapFullyOpen = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_FULLY_OPEN", "Number");
+            toggleVisibility(this.APUFlapOpen, apuFlapFullyOpen > 0);
 
             this.apuInfo.update(_deltaTime);
         }
@@ -157,7 +157,7 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef2.dangerRange[1] = 1100;
             gaugeDef2.currentValuePos.x = 0.8;
             gaugeDef2.currentValuePos.y = 0.74;
-            gaugeDef2.currentValueFunction = this.getEgt.bind(this);
+            gaugeDef2.currentValueFunction = getEgt.bind(this);
             gaugeDef2.roundDisplayValueToNearest = 5;
             gaugeDef2.outerDynamicMarkerFunction = this.getCautionEgtForDynamicMarker.bind(this, "EGTCaution");
             this.apuEGTGauge = window.document.createElement("a320-neo-ecam-gauge");
@@ -179,9 +179,8 @@ var A320_Neo_LowerECAM_APU;
         }
 
         update(_deltaTime) {
-            const showApuData = shouldShowApuData();
-            this.apuEGTGauge.active = showApuData;
-            this.apuNGauge.active = showApuData;
+            this.apuEGTGauge.active = shouldShowEgt();
+            this.apuNGauge.active = shouldShowN();
 
             this.setCautionAndWarningRanges();
 
@@ -209,22 +208,26 @@ var A320_Neo_LowerECAM_APU;
         getWarningEgt() {
             return SimVar.GetSimVarValue("L:A32NX_APU_EGT_WARNING", "celsius");
         }
-
-        getEgt() {
-            return SimVar.GetSimVarValue("L:A32NX_APU_EGT", "celsius");
-        }
     }
 
     function shouldShowApuData() {
-        // Once ELEC is implemented, this depends on the ECB being powered or not.
-        // The ECB will be powered when the MASTER SW is on and unpower when MASTER SW is off, N = 0, and the flap is closed.
-        const apuFlapOpenPercent = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_OPEN_PERCENTAGE", "Percent");
-        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
-        return apuMasterSwitch || getN() > 0 || apuFlapOpenPercent !== 0;
+        return shouldShowEgt() || shouldShowN();
+    }
+
+    function getEgt() {
+        return SimVar.GetSimVarValue("L:A32NX_APU_EGT", "celsius");
     }
 
     function getN() {
         return SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
+    }
+
+    function shouldShowEgt() {
+        return getEgt() > -Number.MAX_VALUE;
+    }
+
+    function shouldShowN() {
+        return getN() > -Number.MAX_VALUE;
     }
 
     function toggleVisibility(element, condition) {

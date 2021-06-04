@@ -296,7 +296,7 @@ var A320_Neo_UpperECAM;
                     message: "PARKING BRK",
                     action: "ON",
                     isCompleted: () => {
-                        return this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool") == 1;
+                        return this.getCachedSimVar("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool") == 1;
                     }
                 },
                 {
@@ -539,7 +539,7 @@ var A320_Neo_UpperECAM;
                                         message: "PARKING BRK",
                                         action: "ON",
                                         isCompleted: () => {
-                                            return this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                            return this.getCachedSimVar("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool") == 1;
                                         }
                                     },
                                     {
@@ -586,7 +586,7 @@ var A320_Neo_UpperECAM;
                                         message: "PARKING BRK",
                                         action: "ON",
                                         isCompleted: () => {
-                                            return this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                            return this.getCachedSimVar("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool") == 1;
                                         }
                                     },
                                     {
@@ -899,14 +899,14 @@ var A320_Neo_UpperECAM;
                                 level: 2,
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 8, 9, 10],
                                 isActive: () => (
-                                    this.isInFlightPhase(8, 6, 7) && SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool")
+                                    this.isInFlightPhase(8, 6, 7) && SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool")
                                 ),
                                 actions: [
                                     {
                                         style: "action",
                                         message: "PARK BRK",
                                         action: "OFF",
-                                        isCompleted: () => !SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool"),
+                                        isCompleted: () => !SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool"),
                                     },
                                 ]
                             },
@@ -1254,7 +1254,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "PARK BRK",
                         isActive: () => (
-                            this.isInFlightPhase(1, 2, 9, 10) && this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool")
+                            this.isInFlightPhase(1, 2, 9, 10) && this.getCachedSimVar("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool")
                         ),
                     },
                     {
@@ -1710,7 +1710,7 @@ var A320_Neo_UpperECAM;
             const flapsMcdu = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
             const flapsMcduEntered = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool");
             const speedBrake = SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "Position");
-            const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
+            const parkBrake = SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool");
             const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
             const v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
             const vrSpeed = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots");

@@ -1,35 +1,28 @@
 use std::time::Duration;
-use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, volume::gallon,
-};
-
-use systems::overhead::{
-    AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
-};
 use systems::{
+    engine::Engine,
     hydraulic::{
-        ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
-        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
-        RamAirTurbine, RamAirTurbineController,
+        brake_circuit::BrakeCircuit, ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop,
+        HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
+        PumpController, RamAirTurbine, RamAirTurbineController,
     },
-    shared::{EmergencyElectricalRatPushButton, EngineFirePushButtons},
-};
-use systems::{
+    landing_gear::LandingGear,
+    overhead::{
+        AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
+    },
     shared::{
-        EmergencyElectricalState, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineFirePushButtons,
+        LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext,
     },
 };
-
-use systems::electrical::{consumption::SuppliedPower, ElectricalBusType};
-use systems::{engine::Engine, landing_gear::LandingGear};
-use systems::{
-    hydraulic::brake_circuit::BrakeCircuit, shared::DelayedFalseLogicGate,
-    shared::DelayedTrueLogicGate,
+use uom::si::{
+    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
+    ratio::percent, volume::gallon,
 };
 
 pub(super) struct A320Hydraulic {
@@ -67,6 +60,8 @@ pub(super) struct A320Hydraulic {
 
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
+    braking_force: A320BrakingForce,
+
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
 }
@@ -218,6 +213,8 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(0.5),
                 Volume::new::<gallon>(0.13),
             ),
+
+            braking_force: A320BrakingForce::new(),
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
@@ -371,6 +368,9 @@ impl A320Hydraulic {
 
         // Tug has its angle changing on each frame and we'd like to detect this
         self.pushback_tug.update();
+
+        self.braking_force
+            .update_forces(&self.braking_circuit_norm, &self.braking_circuit_altn);
     }
 
     // All the higher frequency updates like physics
@@ -578,6 +578,7 @@ impl SimulationElement for A320Hydraulic {
 
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
+        self.braking_force.accept(visitor);
 
         visitor.visit(self);
     }
@@ -707,11 +708,8 @@ impl SimulationElement for A320EngineDrivenPumpController {
         }
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = self
-            .powered_by
-            .iter()
-            .any(|bus| supplied_power.potential_of(&bus).is_powered());
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.any_is_powered(&self.powered_by);
     }
 }
 
@@ -811,8 +809,8 @@ impl SimulationElement for A320BlueElectricPumpController {
         writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered();
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
@@ -895,15 +893,13 @@ impl SimulationElement for A320YellowElectricPumpController {
         writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         // Control of the pump is powered by dedicated bus OR manual operation of cargo door through another bus
-        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered()
+        self.is_powered = buses.is_powered(self.powered_by)
             || (self
                 .should_activate_yellow_pump_for_cargo_door_operation
                 .output()
-                && supplied_power
-                    .potential_of(&self.powered_by_when_cargo_door_operation)
-                    .is_powered())
+                && buses.is_powered(self.powered_by_when_cargo_door_operation))
     }
 }
 
@@ -985,14 +981,14 @@ impl PowerTransferUnitController for A320PowerTransferUnitController {
 }
 impl SimulationElement for A320PowerTransferUnitController {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_lever_pos = state.read_bool("BRAKE PARKING INDICATOR");
+        self.parking_brake_lever_pos = state.read_bool("PARK_BRAKE_LEVER_POS");
         self.eng_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
         self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_powered = supplied_power.potential_of(&self.powered_by).is_powered();
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
@@ -1050,13 +1046,9 @@ impl SimulationElement for A320RamAirTurbineController {
         self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
     }
 
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-        self.is_solenoid_1_powered = supplied_power
-            .potential_of(&self.solenoid_1_bus)
-            .is_powered();
-        self.is_solenoid_2_powered = supplied_power
-            .potential_of(&self.solenoid_2_bus)
-            .is_powered();
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_solenoid_1_powered = buses.is_powered(self.solenoid_1_bus);
+        self.is_solenoid_2_powered = buses.is_powered(self.solenoid_2_bus);
     }
 }
 
@@ -1237,13 +1229,61 @@ impl A320HydraulicBrakingLogic {
 
 impl SimulationElement for A320HydraulicBrakingLogic {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
+        self.parking_brake_demand = state.read_bool("PARK_BRAKE_LEVER_POS");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
         self.is_gear_lever_down = state.read_bool("GEAR HANDLE POSITION");
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
-        self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION") / 100.0;
-        self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
+        self.left_brake_pilot_input = state.read_f64("LEFT_BRAKE_PEDAL_INPUT");
+        self.right_brake_pilot_input = state.read_f64("RIGHT_BRAKE_PEDAL_INPUT");
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
+    }
+}
+
+struct A320BrakingForce {
+    left_braking_force: f64,
+    right_braking_force: f64,
+
+    park_brake_lever_is_set: bool,
+}
+impl A320BrakingForce {
+    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
+
+    pub fn new() -> Self {
+        A320BrakingForce {
+            left_braking_force: 0.,
+            right_braking_force: 0.,
+
+            park_brake_lever_is_set: true,
+        }
+    }
+
+    pub fn update_forces(&mut self, norm_brakes: &BrakeCircuit, altn_brakes: &BrakeCircuit) {
+        let left_force_norm =
+            norm_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        let left_force_altn =
+            altn_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        self.left_braking_force = left_force_norm + left_force_altn;
+        self.left_braking_force = self.left_braking_force.max(0.).min(1.);
+
+        let right_force_norm = norm_brakes.right_brake_pressure().get::<psi>()
+            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>()
+            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        self.right_braking_force = right_force_norm + right_force_altn;
+        self.right_braking_force = self.right_braking_force.max(0.).min(1.);
+    }
+}
+
+impl SimulationElement for A320BrakingForce {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
+        writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
+        writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
+    }
+
+    // We receive here the desired parking brake position. This is the parking brake lever input
+    fn read(&mut self, state: &mut SimulatorReader) {
+        self.park_brake_lever_is_set = state.read_bool("PARK_BRAKE_LEVER_POS");
     }
 }
 
@@ -1412,9 +1452,11 @@ mod tests {
 
     mod a320_hydraulics {
         use super::*;
-        use systems::electrical::{Potential, PotentialOrigin};
+        use systems::electrical::consumption::SuppliedPower;
+        use systems::electrical::Potential;
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
         use systems::shared::EmergencyElectricalState;
+        use systems::shared::PotentialOrigin;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
@@ -1467,13 +1509,9 @@ mod tests {
             }
         }
         impl SimulationElement for A320TestElectrical {
-            fn receive_power(&mut self, supplied_power: &SuppliedPower) {
-                self.all_ac_lost = !supplied_power
-                    .potential_of(&ElectricalBusType::AlternatingCurrent(1))
-                    .is_powered()
-                    && !supplied_power
-                        .potential_of(&ElectricalBusType::AlternatingCurrent(2))
-                        .is_powered();
+            fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+                self.all_ac_lost = !buses.is_powered(ElectricalBusType::AlternatingCurrent(1))
+                    && !buses.is_powered(ElectricalBusType::AlternatingCurrent(2));
             }
         }
         struct A320HydraulicsTestAircraft {
@@ -2026,7 +2064,7 @@ mod tests {
 
             fn set_park_brake(mut self, is_set: bool) -> Self {
                 self.simulation_test_bed
-                    .write_bool("BRAKE PARKING INDICATOR", is_set);
+                    .write_bool("PARK_BRAKE_LEVER_POS", is_set);
                 self
             }
 
@@ -2141,15 +2179,18 @@ mod tests {
                     .set_gear_down()
             }
 
-            fn set_left_brake(mut self, position_percent: Ratio) -> Self {
-                self.simulation_test_bed
-                    .write_f64("BRAKE LEFT POSITION", position_percent.get::<percent>());
-                self
+            fn set_left_brake(self, position_percent: Ratio) -> Self {
+                self.set_brake("LEFT_BRAKE_PEDAL_INPUT", position_percent)
             }
 
-            fn set_right_brake(mut self, position_percent: Ratio) -> Self {
+            fn set_right_brake(self, position_percent: Ratio) -> Self {
+                self.set_brake("RIGHT_BRAKE_PEDAL_INPUT", position_percent)
+            }
+
+            fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
+                let scaled_value = position_percent.get::<percent>() / 100.;
                 self.simulation_test_bed
-                    .write_f64("BRAKE RIGHT POSITION", position_percent.get::<percent>());
+                    .write_f64(name, scaled_value.min(1.).max(0.));
                 self
             }
 

@@ -146,6 +146,23 @@ function combineGltf(pathA, pathB, outputPath) {
             }
             node.children = newChildren;
         }
+        if (node.parentNode) {
+            for (let i = 0; i < gltfA.nodes.length; i++) {
+                if (gltfA.nodes[i].name === node.parentNode) {
+                    if (gltfA.nodes[i].children) {
+                        gltfA.nodes[i].children.push(gltfA.nodes.length);
+                    } else {
+                        gltfA.nodes[i].children = [gltfA.nodes.length];
+                    }
+                }
+            }
+            delete node.parentNode;
+            for (let i = 0; i < gltfB.scenes[0].nodes.length; i++) {
+                if (gltfB.scenes[0].nodes[i] === gltfA.nodes.length - nodesCount) {
+                    gltfB.scenes[0].nodes.splice(i, 1);
+                }
+            }
+        }
         gltfA.nodes.push(node);
     }
 
@@ -182,6 +199,9 @@ function combineGltf(pathA, pathB, outputPath) {
 function applyModifications(buffer, gltfPath, modifications) {
     const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
     for (const mod of modifications) {
+        if (!mod.accessors) {
+            continue;
+        }
         for (const accessorName of mod.accessors) {
             for (const accessor of gltf.accessors) {
                 if (accessor.name === accessorName) {
@@ -209,12 +229,32 @@ function applyModifications(buffer, gltfPath, modifications) {
     return buffer;
 }
 
+function applyNodeModifications(gltfPath, outputPath, modifications) {
+    const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
+    for (const mod of modifications) {
+        if (!mod.node) {
+            continue;
+        }
+        for (let i = 0; i < gltf.nodes.length; i++) {
+            if (mod.node === gltf.nodes[i].name) {
+                // eslint-disable-next-line guard-for-in
+                for (const prop in mod.mods) {
+                    gltf.nodes[i][prop] = mod.mods[prop];
+                }
+            }
+        }
+    }
+    const data = JSON.stringify(gltf);
+    fs.writeFileSync(outputPath, data);
+}
+
 const models = JSON.parse(fs.readFileSync(path.join(__dirname, 'models.json'), 'utf8'));
 const p = (n) => path.resolve(__dirname, n);
 for (const model of models) {
     for (let i = 0; i < model.gltf.length; i += 1) {
         fs.copyFileSync(p(model.gltf[i]), p(model.output.gltf[i]));
         if (model.modifications) {
+            applyNodeModifications(p(model.output.gltf[i]), p(model.output.gltf[i]), model.modifications);
             const modifiedBin = applyModifications(
                 fs.readFileSync(p(model.bin[i])),
                 p(model.gltf[i]),

@@ -359,27 +359,33 @@
 
 - A32NX_APU_EGT_CAUTION
     - Celsius
-    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit
+    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit,
+      when f64::MIN/-Number.MAX_VALUE the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_EGT_WARNING
     - Celsius
-    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit
+    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit,
+      when f64::MIN/-Number.MAX_VALUE the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_EGT
     - Celsius
-    - The APU's exhaust gas temperature
+    - The APU's exhaust gas temperature,
+      when f64::MIN/-Number.MAX_VALUE the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_N
     - Percent
-    - The APU's rotations per minute in percentage of the maximum RPM
+    - The APU's rotations per minute in percentage of the maximum RPM,
+      when f64::MIN/-Number.MAX_VALUE the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
-    - Bool
-    - Indicates if the APU has an active LOW FUEL PRESSURE fault
+    - Number
+        - f64::MIN/-Number.MAX_VALUE: The ECB isn't supplying information, for example due to being unpowered.
+        - 0: The APU doesn't have an active LOW FUEL PRESSURE fault.
+        - 1: Indicates the APU has an active LOW FUEL PRESSURE fault.
 
 - A32NX_APU_IS_AUTO_SHUTDOWN
     - Bool
@@ -396,6 +402,12 @@
 - A32NX_APU_FLAP_OPEN_PERCENTAGE
     - Percent
     - Indicates the percentage the APU air intake flap is open
+
+- A32NX_APU_FLAP_FULLY_OPEN
+    - Number
+        - f64::MIN/-Number.MAX_VALUE: The ECB isn't supplying information, for example due to being unpowered.
+        - 0: The APU air intake flap isn't fully open.
+        - 1: The APU air intake flap is fully open.
 
 - A32NX_FIRE_BUTTON_APU
     - Bool
@@ -873,6 +885,17 @@
 - A32NX_HYD_BRAKE_ALTN_ACC_PRESS
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
+
+- A32NX_PARK_BRAKE_LEVER_POS
+    - Bool
+    - Current position of the parking brake lever
+
+- A32NX_{brake_side}_BRAKE_PEDAL_INPUT
+    - Percent
+    - Current position of the toe brake pedal animation
+    - {brake_side}
+        - LEFT
+        - RIGHT
 
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
