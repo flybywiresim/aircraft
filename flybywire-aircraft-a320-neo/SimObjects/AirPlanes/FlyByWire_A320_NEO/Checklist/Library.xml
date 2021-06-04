@@ -963,11 +963,11 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val Code="(L:A32NX_AUTOBRK_ARMED_MODE)"/>
+                  <Val Code="(L:A32NX_AUTOBRAKES_ARMED_MODE)"/>
                   <Val Value="3"/>
                </Operator>
             </TestValue>
-            <!--<Action Copilot="True" Condition="TestValueFalse" Once="true" Code="(&gt;L:A32NX_AUTOBRK_ARMED_MODE)" />-->
+            <!--<Action Copilot="True" Condition="TestValueFalse" Once="true" Code="(&gt;L:A32NX_AUTOBRAKES_ARMED_MODE)" />-->
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_ATC_CLEARANCE">
@@ -2032,7 +2032,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val Code="(L:A32NX_AUTOBRK_ARMED_MODE)"/>
+                  <Val Code="(L:A32NX_AUTOBRAKES_ARMED_MODE)"/>
                   <Val Value="0"/>
                </Operator>
             </TestValue>

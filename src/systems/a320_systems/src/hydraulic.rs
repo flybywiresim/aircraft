@@ -1648,7 +1648,7 @@ impl SimulationElement for A320AutobrakeController {
             A320AutobrakeMode::MED => mode_num = 2,
             A320AutobrakeMode::MAX => mode_num = 3,
         }
-        writer.write_f64("AUTOBRK_ARMED_MODE", mode_num as f64);
+        writer.write_f64("AUTOBRAKES_ARMED_MODE", mode_num as f64);
         writer.write_bool("AUTOBRAKES_BRAKING", self.is_decelerating());
     }
 
@@ -2274,7 +2274,7 @@ mod tests {
             }
 
             fn autobrake_mode(&mut self) -> A320AutobrakeMode {
-                let mode = self.simulation_test_bed.read_f64("AUTOBRK_ARMED_MODE") as u8;
+                let mode = self.simulation_test_bed.read_f64("AUTOBRAKES_ARMED_MODE") as u8;
 
                 match mode {
                     0 => A320AutobrakeMode::NONE,

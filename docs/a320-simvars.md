@@ -897,6 +897,18 @@
         - LEFT
         - RIGHT
 
+- A32NX_AUTOBRAKES_ARMED_MODE
+    - Number
+    - Current autobrake mode
+        - 0: Autobrake not armed
+        - 1: Autobrake in LOW
+        - 2: Autobrake in MED
+        - 3: Autobrake in MAX
+
+- A32NX_AUTOBRAKES_BRAKING
+    - Bool
+    - Autobrakes are braking and reached the deceleration target
+
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
     - Holds the FMGCs current flight phase
