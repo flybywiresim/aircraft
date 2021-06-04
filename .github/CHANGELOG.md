@@ -91,6 +91,7 @@
 1. [OVHD] Correct EVAC button behaviours - @tracernz (Mike)
 1. [OVHD] Fix invisible fault emissive decal on centre fuel pump 2 - @tracernz (Mike)
 1. [VFX] Add APU exhaust heat blur effect - @wpine215 (Iceman)
+1. [MCDU] Improve robustness of Lat/Lon & P-B/P-B input parsing - @tracernz (Mike)
 1. [RTPI] Add separate RTPI font file - @sidnov (Sid)
 
 ## 0.6.0
