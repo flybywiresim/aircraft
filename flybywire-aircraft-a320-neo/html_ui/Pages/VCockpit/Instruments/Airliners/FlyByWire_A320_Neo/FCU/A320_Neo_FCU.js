@@ -30,8 +30,17 @@ class A320_Neo_FCU extends BaseAirliners {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
-        this.electricity.style.display = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
+        const newStyle = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
             SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
+        if (newStyle === "block" && newStyle !== this.electricity.style.display) {
+            if (!SimVar.GetSimVarValue("AUTOPILOT FLIGHT DIRECTOR ACTIVE:1", "bool")) {
+                SimVar.SetSimVarValue("K:TOGGLE_FLIGHT_DIRECTOR", "number", 1);
+            }
+            if (!SimVar.GetSimVarValue("AUTOPILOT FLIGHT DIRECTOR ACTIVE:2", "bool")) {
+                SimVar.SetSimVarValue("K:TOGGLE_FLIGHT_DIRECTOR", "number", 2);
+            }
+        }
+        this.electricity.style.display = newStyle;
     }
     onEvent(_event) {
     }
