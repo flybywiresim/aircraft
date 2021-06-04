@@ -96,6 +96,7 @@
 1. [AP+PFD] Added triple click and FMA mode reversion logic - @aguther (Andreas Guther)
 1. [AP] Automatically arm NAV on ground when flight plan becomes available - @aguther (Andreas Guther)
 1. [FCU] Automatically connect flight directors when FCU is powered on - @aguther (Andreas Guther)
+1. [HYD] New custom auto brakes replace default one - @crocket63 (crocket)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
