@@ -10,11 +10,13 @@ use crate::{
         ApuAvailable, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal,
         ControllerSignal, ElectricalBusType, PneumaticValve,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
+    simulation::{
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    },
 };
 #[cfg(test)]
 use std::time::Duration;
-use uom::si::{f64::*, ratio::percent};
+use uom::si::f64::*;
 
 mod air_intake_flap;
 mod aps3200;
@@ -204,11 +206,11 @@ impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(
+        writer.write(
             "APU_FLAP_OPEN_PERCENTAGE",
-            self.air_intake_flap.open_amount().get::<percent>(),
+            self.air_intake_flap.open_amount(),
         );
-        writer.write_bool("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
+        writer.write("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> BleedAirValveState for AuxiliaryPowerUnit<T, U> {

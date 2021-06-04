@@ -8,7 +8,7 @@ use crate::{
         ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal, ElectricalBusType,
         ElectricalBuses, PneumaticValve, PneumaticValveSignal,
     },
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write, WriteWhen},
 };
 use std::time::Duration;
 use uom::si::{
@@ -335,9 +335,9 @@ impl SimulationElement for ElectronicControlBox {
         );
 
         // Flight Warning Computer related information.
-        writer.write_bool("ECAM_INOP_SYS_APU", self.is_inoperable());
-        writer.write_bool("APU_IS_AUTO_SHUTDOWN", self.is_auto_shutdown());
-        writer.write_bool("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
+        writer.write("ECAM_INOP_SYS_APU", self.is_inoperable());
+        writer.write("APU_IS_AUTO_SHUTDOWN", self.is_auto_shutdown());
+        writer.write("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
