@@ -66,16 +66,16 @@ class FacilityLoader {
         RegisterViewListener("JS_LISTENER_FACILITY", () => {
             console.log("JS_LISTENER_FACILITY registered.");
             Coherent.on("SendAirport", (data) => {
-                this.addFacility(data);
+                this.addFacility(data, 'A');
             });
             Coherent.on("SendIntersection", (data) => {
-                this.addFacility(data);
+                this.addFacility(data, 'W');
             });
             Coherent.on("SendVor", (data) => {
-                this.addFacility(data);
+                this.addFacility(data, 'V');
             });
             Coherent.on("SendNdb", (data) => {
-                this.addFacility(data);
+                this.addFacility(data, 'N');
             });
             this._isCompletelyRegistered = true;
         });
@@ -92,7 +92,7 @@ class FacilityLoader {
             }
         }
     }
-    addFacility(_data) {
+    addFacility(_data, type) {
 
         _data.icaoTrimed = _data.icao.trim();
 
@@ -113,42 +113,48 @@ class FacilityLoader {
             }
         }
 
-        const pendingRequest = this._pendingRawRequests.get(_data.icaoTrimed);
+        const pendingRequest = this._pendingRawRequests.get(`${type}${_data.icaoTrimed}`);
         if (pendingRequest) {
             clearTimeout(pendingRequest.timeout);
             pendingRequest.resolve(_data);
-            this._pendingRawRequests.delete(_data.icaoTrimed);
+            this._pendingRawRequests.delete(`${type}${_data.icaoTrimed}`);
         }
     }
     /**
      * Gets the raw facility data for a given icao.
      * @param {String} icao The ICAO to get the raw facility data for.
      */
-    getFacilityRaw(icao, timeout = 1000) {
-        return new Promise((resolve, reject) => {
-            const request = {
-                resolve: resolve,
-                timeout: setTimeout(() => reject(), timeout),
-                icao: icao.trim()
-            };
+    getFacilityRaw(icao, timeout = 1500) {
 
-            this._pendingRawRequests.set(request.icao, request);
-            const type = icao[0];
-            switch (type) {
-                case 'A':
-                    Coherent.call('LOAD_AIRPORT', icao);
-                    break;
-                case 'W':
-                    Coherent.call('LOAD_INTERSECTION', icao);
-                    break;
-                case 'V':
-                    Coherent.call('LOAD_VOR', icao);
-                    break;
-                case 'N':
-                    Coherent.call('LOAD_NDB', icao);
-                    break;
-            }
-        });
+        const queueRawLoad = (loadCall, icao, type) => {
+            return new Promise((resolve) => {
+                const request = {
+                    resolve: resolve,
+                    timeout: setTimeout(() => resolve(undefined), timeout),
+                    icao: icao.trim()
+                };
+
+                this._pendingRawRequests.set(`${type}${request.icao}`, request);
+                Coherent.call(loadCall, icao);
+            });
+        };
+
+        const type = icao[0];
+        switch (type) {
+            case 'A':
+                return queueRawLoad('LOAD_AIRPORT', icao, 'A');
+            case 'W':
+                return queueRawLoad('LOAD_INTERSECTION', icao, 'W');
+            case 'V':
+                return Promise.all([queueRawLoad('LOAD_VOR', icao, 'V'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
+                    .then(facilities => {
+                        return Object.assign(facilities[0], facilities[1]);
+                    });
+            case 'N':
+                return Promise.all([queueRawLoad('LOAD_NDB', icao, 'N'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
+                    .then(facilities => Object.assign(facilities[0], facilities[1]));
+        }
+
     }
     getFacilityCB(icao, callback, loadFacilitiesTransitively = false) {
         if (this._isCompletelyRegistered && this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
@@ -951,6 +957,13 @@ class FacilityLoader {
                         this.loadedAirwayDatas.set(routeName, airwayData);
                     }
                     if (airwayData) {
+                        // if waypoint not in airway then reload it
+                        // find intersectioninfo.icao in airwayData.icaos
+                        if (airwayData.icaos.findIndex((x) => x === intersectionInfo.icao) === -1) {
+                            airwayData = await this.getAirwayData(intersectionInfo, intersectionInfo.routes[i].name, maxLength);
+                            this.loadedAirwayDatas.set(routeName, airwayData);
+                        }
+
                         airways.push(airwayData);
                     }
                 }
@@ -960,6 +973,7 @@ class FacilityLoader {
     }
     async getAirwayData(intersectionInfo, name = "", maxLength = 100) {
         await this.waitRegistration();
+
         if (!intersectionInfo.routes) {
             return undefined;
         }
@@ -977,9 +991,11 @@ class FacilityLoader {
             };
             let currentRoute = route;
             let currentWaypointIcao = intersectionInfo.icao;
-            for (let i = 0; i < maxLength * 0.75; i++) {
+
+            for (let i = 0; i < maxLength * 0.5; i++) {
                 if (currentRoute) {
                     const prevIcao = currentRoute.prevIcao;
+
                     currentRoute = undefined;
                     if (prevIcao && prevIcao.length > 0 && prevIcao[0] != " ") {
                         const prevWaypoint = await this.getIntersectionData(prevIcao);
@@ -992,36 +1008,22 @@ class FacilityLoader {
                                 });
                             }
                         }
+                    } else {
+                        break;
                     }
                 }
             }
             currentRoute = route;
             currentWaypointIcao = intersectionInfo.icao;
-            for (let i = 0; i < maxLength * 0.75; i++) {
+            for (let i = 0; i < maxLength * 0.5; i++) {
                 if (currentRoute) {
                     const nextIcao = currentRoute.nextIcao;
+
                     currentRoute = undefined;
-                    if (nextIcao[0] === " ") {
-                        const currentWaypoint = await this.getIntersectionData(currentWaypointIcao);
-                        if (currentWaypoint) {
-                            if (currentWaypoint.routes) {
-                                currentWaypoint.routes.filter(r => {
-                                    if (r.name === name) {
-                                        if (r.nextIcao.replace(/\s+/g, '') != "") {
-                                            airway.icaos.push(r.nextIcao);
-                                            currentRoute = r;
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    }
                     if (nextIcao && nextIcao.length > 0 && nextIcao[0] != " ") {
                         const nextWaypoint = await this.getIntersectionData(nextIcao);
                         if (nextWaypoint) {
-                            if (!airway.icaos.includes(nextWaypoint.icao)) {
-                                airway.icaos.push(nextWaypoint.icao);
-                            }
+                            airway.icaos.push(nextWaypoint.icao);
                             currentWaypointIcao = nextWaypoint.icao;
                             if (nextWaypoint.routes) {
                                 currentRoute = nextWaypoint.routes.find(r => {
@@ -1029,9 +1031,12 @@ class FacilityLoader {
                                 });
                             }
                         }
+                    } else {
+                        break;
                     }
                 }
             }
+
             return airway;
         }
     }
@@ -1165,13 +1170,17 @@ class WaypointLoader {
         this.deprecationDelay /= 2;
         this.deprecationDelay = Math.max(this.deprecationDelay, WaypointLoader.DEPRECATION_DELAY_MIN);
     }
+    set speed(v) {
+        this.deprecationDelay = v;
+    }
+
     get maxItemsSearchCount() {
         return this._maxItemsSearchCount;
     }
     set maxItemsSearchCount(v) {
         if (this._maxItemsSearchCount !== v) {
             this._maxItemsSearchCountNeedUpdate = true;
-            this._maxItemsSearchCount = v;
+            this._maxItemsSearchCount = Math.min(v, this.waypointsCountLimit);
         }
     }
     get searchRange() {
@@ -1196,14 +1205,42 @@ class WaypointLoader {
     set searchLong(v) {
         this._searchOrigin.long = v;
     }
+
+    /**
+     * Used to add additional values to the batch. For use in applyResultFilter. To be overriden by loaders
+     * @param {SimVar.SimVarBatch} batch Existing SimVarBatch object
+     */
+    addSimVarBatchValues(batch) {
+        // empty noop for overrides
+        return;
+    }
+
+    /**
+     * Used to prefilter fs9gps result items. To be overriden by loaders
+     * @param {Array} data Array of waypoint result
+     * @returns true if the result should stay
+     */
+    applyResultFilter(data) {
+        // empty noop for overrides
+        return true;
+    }
+
+    /**
+     * Used to execute additional fs9gps commands to the search. To be overriden by loaders
+     */
+    async setCustomFs9Filter() {
+        return new Promise(resolve => {
+            // empty noop for overrides, called on max items update
+            resolve();
+        });
+    }
     update() {
         if (this._locked) {
             return;
         }
         const t = performance.now();
         if (!this._isLoadingItems) {
-            this.maxItemsSearchCount = Math.min(this.maxItemsSearchCount, this.waypointsCountLimit);
-            while (this.waypoints.length > this.waypointsCountLimit) {
+            while (this.waypoints.length > this.maxItemsSearchCount) {
                 this.waypoints.splice(0, 1);
             }
         }
@@ -1214,12 +1251,14 @@ class WaypointLoader {
                 this._locked = true;
                 SimVar.SetSimVarValue("C:fs9gps:" + this.SET_ORIGIN_LATITUDE, "degree latitude", this._searchOrigin.lat, this.instrument.instrumentIdentifier + "-loader").then(() => {
                     SimVar.SetSimVarValue("C:fs9gps:" + this.SET_ORIGIN_LONGITUDE, "degree longitude", this._searchOrigin.long, this.instrument.instrumentIdentifier + "-loader").then(() => {
-                        this._lastSearchOriginSyncDate = t;
-                        this._locked = false;
-                        this._itemsCountNeedUpdate = true;
-                        this._hasUpdatedItems = false;
-                        this._lastSearchOriginLat = this._searchOrigin.lat;
-                        this._lastSearchOriginLong = this._searchOrigin.long;
+                        this.setCustomFs9Filter().then(() => {
+                            this._lastSearchOriginSyncDate = t;
+                            this._locked = false;
+                            this._itemsCountNeedUpdate = true;
+                            this._hasUpdatedItems = false;
+                            this._lastSearchOriginLat = this._searchOrigin.lat;
+                            this._lastSearchOriginLong = this._searchOrigin.long;
+                        });
                     });
                 });
                 return;
@@ -1280,11 +1319,14 @@ class WaypointLoader {
                         }
                         this.batch = new SimVar.SimVarBatch("C:fs9gps:" + this.GET_ITEMS_COUNT, "C:fs9gps:" + this.SET_ITEM_INDEX);
                         this.batch.add("C:fs9gps:" + this.GET_ITEM_ICAO, "string");
+                        this.addSimVarBatchValues(this.batch);
                     }
                     const icaos = [];
                     SimVar.GetSimVarArrayValues(this.batch, async (values) => {
                         for (let i = 0; i < values.length; i++) {
-                            icaos.push(values[i][0]);
+                            if (this.applyResultFilter(values[i]) === true) {
+                                icaos.push(values[i][0]);
+                            }
                         }
                         const waypoints = await this.createWaypointsCallback(icaos);
                         if (waypoints && waypoints.length > 0) {
@@ -1439,9 +1481,11 @@ class VORLoader extends WaypointLoader {
     }
 }
 class IntersectionLoader extends WaypointLoader {
-    constructor(_instrument) {
+    constructor(_instrument, showNamedOnly = false, showTermWpts = false, loadername = "IntersectionLoader") {
         super(_instrument);
-        this.loaderName = "IntersectionLoader";
+        this._showNamedOnly = showNamedOnly;
+        this._showTermWpts = showTermWpts;
+        this.loaderName = loadername;
         this.SET_ORIGIN_LATITUDE = "NearestIntersectionCurrentLatitude";
         this.SET_ORIGIN_LONGITUDE = "NearestIntersectionCurrentLongitude";
         this.SET_SEARCH_RANGE = "NearestIntersectionMaximumDistance";
@@ -1452,6 +1496,7 @@ class IntersectionLoader extends WaypointLoader {
         this.SET_ITEM_INDEX = "NearestIntersectionCurrentLine";
         this.GET_ITEM_ICAO = "NearestIntersectionCurrentIcao";
         this.GET_ITEM_IDENT = "NearestIntersectionCurrentIdent";
+        this.SET_INTERS_FILTER = "NearestIntersectionCurrentFilter";
         this.createCallback = async (ident) => {
             const intersection = new NearestIntersection(this.instrument);
             intersection.ident = ident;
@@ -1498,9 +1543,34 @@ class IntersectionLoader extends WaypointLoader {
             return this.instrument.facilityLoader.getIntersections(icaosToLoad);
         };
     }
+
+    addSimVarBatchValues(batch) {
+        batch.add("C:fs9gps:NearestIntersectionCurrentType", "number");
+    }
+
+    applyResultFilter(data) {
+        console.log(data[0]);
+        if (this._showTermWpts) {
+            return data[0][3] !== ' ';
+        } else {
+            return data[0][3] === ' ';
+        }
+    }
+
+    async setCustomFs9Filter() {
+        return new Promise(resolve => {
+            if (this._showNamedOnly === true) {
+                SimVar.SetSimVarValue("C:fs9gps:" + this.SET_INTERS_FILTER, "number", 2, this.instrument.instrumentIdentifier + "-loader").then(() => {
+                    resolve();
+                }).catch(console.log);
+            } else {
+                resolve();
+            }
+        });
+    }
 }
 class AirportLoader extends WaypointLoader {
-    constructor(_instrument) {
+    constructor(_instrument, loadFacility = true) {
         super(_instrument);
         this.loaderName = "AirportLoader";
         this.SET_ORIGIN_LATITUDE = "NearestAirportCurrentLatitude";
@@ -1549,19 +1619,21 @@ class AirportLoader extends WaypointLoader {
                 this.instrument.facilityLoader.getFacilityCB(icao, resolve);
             });
         };
-        this.createWaypointsCallback = async (icaos) => {
-            const icaosToLoad = [];
-            for (let i = 0; i < icaos.length; i++) {
-                const icao = icaos[i];
-                if (icao) {
-                    if (!this.waypoints.find(a => {
-                        return a.icao === icao;
-                    })) {
-                        icaosToLoad.push(icao);
+        if (loadFacility) {
+            this.createWaypointsCallback = async (icaos) => {
+                const icaosToLoad = [];
+                for (let i = 0; i < icaos.length; i++) {
+                    const icao = icaos[i];
+                    if (icao) {
+                        if (!this.waypoints.find(a => {
+                            return a.icao === icao;
+                        })) {
+                            icaosToLoad.push(icao);
+                        }
                     }
                 }
-            }
-            return this.instrument.facilityLoader.getAirports(icaosToLoad);
-        };
+                return this.instrument.facilityLoader.getAirports(icaosToLoad);
+            };
+        }
     }
 }
