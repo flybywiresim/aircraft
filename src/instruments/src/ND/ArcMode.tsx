@@ -284,6 +284,7 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex, side }) => 
             <RadioNeedle index={1} side={side} />
             <RadioNeedle index={2} side={side} />
 
+            <line id="lubber" x1={384} y1={108} x2={384} y2="148" className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
             <image x={342} y={596} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
         </>
     );
