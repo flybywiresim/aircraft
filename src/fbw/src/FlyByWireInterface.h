@@ -210,6 +210,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
+  std::unique_ptr<LocalVariable> idSpoilersGroundSpoilersActive;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;

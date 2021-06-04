@@ -307,6 +307,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
+  idSpoilersGroundSpoilersActive = make_unique<LocalVariable>("A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE");
 
   idAileronPositionLeft = make_unique<LocalVariable>("A32NX_3D_AILERON_LEFT_DEFLECTION");
   idAileronPositionRight = make_unique<LocalVariable>("A32NX_3D_AILERON_RIGHT_DEFLECTION");
@@ -1282,6 +1283,7 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   // set 3D handle position
   idSpoilersArmed->set(spoilersHandler->getIsArmed() ? 1 : 0);
   idSpoilersHandlePosition->set(spoilersHandler->getHandlePosition());
+  idSpoilersGroundSpoilersActive->set(spoilersHandler->getIsGroundSpoilersActive() ? 1 : 0);
 
   // result
   return true;
