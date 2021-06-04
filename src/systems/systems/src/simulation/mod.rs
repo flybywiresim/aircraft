@@ -1,13 +1,18 @@
 use std::time::Duration;
 
 mod update_context;
+use uom::si::{
+    f64::*,
+    ratio::percent,
+    thermodynamic_temperature::{degree_celsius, kelvin},
+};
 pub use update_context::*;
 
 pub mod test;
 
 use crate::{
     electrical::consumption::{ElectricPower, SuppliedPower},
-    shared::{from_bool, to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
+    shared::{to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
 };
 
 /// Trait for a type which can read and write simulator data.
@@ -356,5 +361,67 @@ impl<'a> SimulatorWriter<'a> {
     /// ```
     pub fn write_bool(&mut self, name: &str, value: bool) {
         self.simulator_read_writer.write(name, from_bool(value));
+    }
+}
+
+/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
+fn from_bool(value: bool) -> f64 {
+    if value {
+        1.0
+    } else {
+        0.0
+    }
+}
+
+pub trait Write<T> {
+    /// Writes a variable with the given name and value.
+    fn write(&mut self, name: &str, value: T);
+
+    /// Writes a variable with the given name and value, unless the condition is false.
+    /// When the condition is false, writes a value which indicates the lack of a value.
+    fn write_when(&mut self, condition: bool, name: &str, value: T);
+}
+
+impl<'a> Write<ThermodynamicTemperature> for SimulatorWriter<'a> {
+    fn write(&mut self, name: &str, value: ThermodynamicTemperature) {
+        self.write_f64(name, value.get::<degree_celsius>())
+    }
+
+    fn write_when(&mut self, condition: bool, name: &str, value: ThermodynamicTemperature) {
+        self.write_f64(
+            name,
+            if condition {
+                value.get::<degree_celsius>()
+            } else {
+                ThermodynamicTemperature::new::<kelvin>(0.).get::<degree_celsius>() - 1.
+            },
+        );
+    }
+}
+
+impl<'a> Write<Ratio> for SimulatorWriter<'a> {
+    fn write(&mut self, name: &str, value: Ratio) {
+        self.write_f64(name, value.get::<percent>())
+    }
+
+    fn write_when(&mut self, condition: bool, name: &str, value: Ratio) {
+        self.write_f64(
+            name,
+            if condition {
+                value.get::<percent>()
+            } else {
+                -1.
+            },
+        );
+    }
+}
+
+impl<'a> Write<bool> for SimulatorWriter<'a> {
+    fn write(&mut self, name: &str, value: bool) {
+        self.write_bool(name, value);
+    }
+
+    fn write_when(&mut self, condition: bool, name: &str, value: bool) {
+        self.write_f64(name, if condition { from_bool(value) } else { -1. });
     }
 }
