@@ -8,18 +8,6 @@
     fill: $display-white;
   }
 
-  .GreenShapeThick {
-    fill: transparent;
-    stroke: $display-green;
-    stroke-width: 3;
-  }
-
-  .WarningShapeThick {
-    fill: transparent;
-    stroke: $display-amber;
-    stroke-width: 3;
-  }
-
   .MainShape {
     fill: transparent;
     stroke: $display-light-grey;
@@ -60,11 +48,6 @@
     fill: transparent;
     stroke: $display-amber;
     stroke-width: 2;
-  }
-
-  .HydBgShape {
-    fill: $display-grey;
-    stroke: none;
   }
 
   .Warning {

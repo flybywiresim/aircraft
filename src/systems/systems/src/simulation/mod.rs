@@ -5,8 +5,9 @@ pub use update_context::*;
 
 pub mod test;
 
-use crate::electrical::consumption::{
-    ElectricPower, PowerConsumption, PowerConsumptionReport, SuppliedPower,
+use crate::{
+    electrical::consumption::{ElectricPower, SuppliedPower},
+    shared::{from_bool, to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
 };
 
 /// Trait for a type which can read and write simulator data.
@@ -108,20 +109,20 @@ pub trait SimulationElement {
     /// The easiest way to deal with power consumption is using the [`PowerConsumer`] type.
     ///
     /// [`PowerConsumer`]: ../electrical/struct.PowerConsumer.html
-    fn receive_power(&mut self, _supplied_power: &SuppliedPower) {}
+    fn receive_power(&mut self, _buses: &impl ElectricalBuses) {}
 
     /// Consume power previously made available by  aircraft's electrical system.
     /// The easiest way to deal with power consumption is using the [`PowerConsumer`] type.
     ///
     /// [`PowerConsumer`]: ../electrical/struct.PowerConsumer.html
-    fn consume_power(&mut self, _consumption: &mut PowerConsumption) {}
+    fn consume_power<T: ConsumePower>(&mut self, _power: &mut T) {}
 
     /// Consume power within converters, such as transformer rectifiers and the static
     /// inverter. This is a separate function, as their power consumption can only be
     /// determined after the consumption of elements to which they provide power is known.
     ///
     /// [`consume_power`]: fn.consume_power.html
-    fn consume_power_in_converters(&mut self, _consumption: &mut PowerConsumption) {}
+    fn consume_power_in_converters<T: ConsumePower>(&mut self, _power: &mut T) {}
 
     /// Process a report containing the power consumption per potential origin.
     /// This is useful for calculating the load percentage on a given generator,
@@ -158,83 +159,75 @@ pub trait SimulationElementVisitor {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T);
 }
 
-/// Runs the aircraft simulation every time [`tick`] is called.
-/// This orchestrates the:
-/// 1. Reading of data from the simulator into the aircraft state.
-/// 2. Updating of the aircraft state for each tick.
-/// 3. Writing of aircraft state data to the simulator.
-///
-/// # Examples
-/// Basic usage is as follows:
-/// ```rust
-/// # use std::time::Duration;
-/// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation, UpdateContext};
-/// # use systems::electrical::consumption::SuppliedPower;
-/// # struct MyAircraft {}
-/// # impl MyAircraft {
-/// #     fn new() -> Self {
-/// #         Self {}
-/// #     }
-/// # }
-/// # impl Aircraft for MyAircraft {
-/// #     fn update_before_power_distribution(&mut self, context: &UpdateContext) {}
-/// #     fn update_after_power_distribution(&mut self, context: &UpdateContext) {}
-/// #     fn get_supplied_power(&mut self) -> SuppliedPower { SuppliedPower::new() }
-/// # }
-/// # impl SimulationElement for MyAircraft {}
-/// #
-/// # struct MySimulatorReaderWriter {}
-/// # impl MySimulatorReaderWriter {
-/// #     fn new() -> Self {
-/// #         Self {}
-/// #     }
-/// # }
-/// # impl SimulatorReaderWriter for MySimulatorReaderWriter {
-/// #     fn read(&mut self, name: &str) -> f64 { 0.0 }
-/// #     fn write(&mut self, name: &str, value: f64) { }
-/// # }
-/// // Create the Simulation only once.
-/// let mut aircraft = MyAircraft::new();
-/// let mut reader_writer = MySimulatorReaderWriter::new();
-/// let mut simulation = Simulation::new(&mut aircraft, &mut reader_writer);
-/// // For each frame, call the tick function.
-/// simulation.tick(Duration::from_millis(50));
-/// ```
-/// [`tick`]: #method.tick
-pub struct Simulation<'a, T: Aircraft, U: SimulatorReaderWriter> {
-    aircraft: &'a mut T,
-    simulator_read_writer: &'a mut U,
-}
-impl<'a, T: Aircraft, U: SimulatorReaderWriter> Simulation<'a, T, U> {
-    pub fn new(aircraft: &'a mut T, simulator_read_writer: &'a mut U) -> Self {
-        Simulation {
-            aircraft,
-            simulator_read_writer,
-        }
-    }
-
+pub struct Simulation {}
+impl Simulation {
     /// Execute a single run of the simulation using the specified `delta` duration
     /// as the amount of time that has passed since the previous run.
-    pub fn tick(&mut self, delta: Duration) {
-        let mut reader = SimulatorReader::new(self.simulator_read_writer);
+    ///
+    /// This orchestrates the:
+    /// 1. Reading of data from the simulator into the aircraft state.
+    /// 2. Updating of the aircraft state for each tick.
+    /// 3. Writing of aircraft state data to the simulator.
+    ///
+    /// # Examples
+    /// Basic usage is as follows:
+    /// ```rust
+    /// # use std::time::Duration;
+    /// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation, UpdateContext};
+    /// # use systems::electrical::consumption::SuppliedPower;
+    /// # struct MyAircraft {}
+    /// # impl MyAircraft {
+    /// #     fn new() -> Self {
+    /// #         Self {}
+    /// #     }
+    /// # }
+    /// # impl Aircraft for MyAircraft {
+    /// #     fn update_before_power_distribution(&mut self, context: &UpdateContext) {}
+    /// #     fn update_after_power_distribution(&mut self, context: &UpdateContext) {}
+    /// #     fn get_supplied_power(&mut self) -> SuppliedPower { SuppliedPower::new() }
+    /// # }
+    /// # impl SimulationElement for MyAircraft {}
+    /// #
+    /// # struct MySimulatorReaderWriter {}
+    /// # impl MySimulatorReaderWriter {
+    /// #     fn new() -> Self {
+    /// #         Self {}
+    /// #     }
+    /// # }
+    /// # impl SimulatorReaderWriter for MySimulatorReaderWriter {
+    /// #     fn read(&mut self, name: &str) -> f64 { 0.0 }
+    /// #     fn write(&mut self, name: &str, value: f64) { }
+    /// # }
+    /// let mut aircraft = MyAircraft::new();
+    /// let mut reader_writer = MySimulatorReaderWriter::new();
+    /// // For each frame, call the tick function.
+    /// Simulation::tick(Duration::from_millis(50), &mut aircraft, &mut reader_writer);
+    /// ```
+    /// [`tick`]: #method.tick
+    pub fn tick(
+        delta: Duration,
+        aircraft: &mut impl Aircraft,
+        simulator_reader_writer: &mut impl SimulatorReaderWriter,
+    ) {
+        let mut reader = SimulatorReader::new(simulator_reader_writer);
         let context = UpdateContext::from_reader(&mut reader, delta);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
-        self.aircraft.accept(&mut visitor);
+        aircraft.accept(&mut visitor);
 
-        self.aircraft.update_before_power_distribution(&context);
+        aircraft.update_before_power_distribution(&context);
 
-        let mut electric_power = ElectricPower::from(self.aircraft.get_supplied_power(), delta);
-        electric_power.distribute_to(self.aircraft);
+        let mut electric_power = ElectricPower::from(aircraft.get_supplied_power(), delta);
+        electric_power.distribute_to(aircraft);
 
-        self.aircraft.update_after_power_distribution(&context);
+        aircraft.update_after_power_distribution(&context);
 
-        electric_power.consume_in(self.aircraft);
-        electric_power.report_consumption_to(self.aircraft);
+        electric_power.consume_in(aircraft);
+        electric_power.report_consumption_to(aircraft);
 
-        let mut writer = SimulatorWriter::new(self.simulator_read_writer);
+        let mut writer = SimulatorWriter::new(simulator_reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
-        self.aircraft.accept(&mut visitor);
+        aircraft.accept(&mut visitor);
     }
 }
 
@@ -363,19 +356,5 @@ impl<'a> SimulatorWriter<'a> {
     /// ```
     pub fn write_bool(&mut self, name: &str, value: bool) {
         self.simulator_read_writer.write(name, from_bool(value));
-    }
-}
-
-/// Converts a given `f64` representing a boolean value in the simulator into an actual `bool` value.
-fn to_bool(value: f64) -> bool {
-    (value - 1.).abs() < f64::EPSILON
-}
-
-/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
-pub(crate) fn from_bool(value: bool) -> f64 {
-    if value {
-        1.0
-    } else {
-        0.0
     }
 }

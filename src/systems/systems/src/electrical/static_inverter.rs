@@ -1,9 +1,11 @@
 use super::{
-    consumption::{PowerConsumption, PowerConsumptionReport},
     ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
     ProvideFrequency, ProvidePotential,
 };
-use crate::simulation::{SimulationElement, SimulatorWriter};
+use crate::{
+    shared::{ConsumePower, PowerConsumptionReport},
+    simulation::{SimulationElement, SimulatorWriter},
+};
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 pub struct StaticInverter {
@@ -47,14 +49,14 @@ impl SimulationElement for StaticInverter {
         self.writer.write_alternating(self, writer);
     }
 
-    fn consume_power_in_converters(&mut self, consumption: &mut PowerConsumption) {
+    fn consume_power_in_converters<T: ConsumePower>(&mut self, consumption: &mut T) {
         let ac_power = consumption.total_consumption_of(PotentialOrigin::StaticInverter);
 
         // Add the AC consumption to the STAT INVs input (DC) consumption.
         // Currently static inverter inefficiency isn't modelled.
         // It is to be expected that DC consumption should actually be somewhat
         // higher than AC consumption.
-        consumption.add(&self.input_potential, ac_power);
+        consumption.consume(self.input_potential, ac_power);
     }
 
     fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _: &T) {

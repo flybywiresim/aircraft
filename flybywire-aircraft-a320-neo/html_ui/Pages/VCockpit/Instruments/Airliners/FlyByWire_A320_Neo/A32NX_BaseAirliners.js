@@ -268,7 +268,7 @@ var Airliners;
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
 
-            const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
+            const lightsTest = SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0;
             const lightsTestChanged = lightsTest !== this.lightsTest;
             this.lightsTest = lightsTest;
 
