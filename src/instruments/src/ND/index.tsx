@@ -8,6 +8,7 @@ import { ArcMode } from './ArcMode';
 import { WindIndicator } from './WindIndicator';
 import { SpeedIndicator } from './SpeedIndicator';
 import { RadioNavInfo } from './RadioNavInfo';
+import { Chrono } from './Chrono';
 
 import './styles.scss';
 
@@ -35,6 +36,7 @@ const NavigationDisplay: React.FC = () => {
 
                     <ArcMode side={side} />
 
+                    <Chrono side={side} />
                     <RadioNavInfo index={1} side={side} />
                     <RadioNavInfo index={2} side={side} />
                 </svg>
