@@ -94,7 +94,7 @@ class CDUAvailableArrivalsPage {
             } else {
                 const matchingArrivals = [];
                 if (selectedApproach) {
-                    const selectedRunway = selectedApproach.runway.trim();
+                    const selectedRunway = selectedApproach.runway;
                     for (let i = 0; i < airportInfo.arrivals.length; i++) {
                         const arrival = airportInfo.arrivals[i];
                         if (arrival.runwayTransitions.length) {
@@ -144,7 +144,7 @@ class CDUAvailableArrivalsPage {
                             mcdu.onLeftInput[i + 2] = () => {
                                 const runways = airportInfo.oneWayRunways;
                                 const arrivalRunwayIndex = runways.findIndex(t => {
-                                    return t.designation === selectedApproach.runway.trim();
+                                    return t.designation === selectedApproach.runway;
                                 });
                                 mcdu.flightPlanManager.setArrivalRunwayIndex(arrivalRunwayIndex);
                                 mcdu.setArrivalProcIndex(starIndex, () => {
