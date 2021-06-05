@@ -1,7 +1,7 @@
 import React from 'react';
 import { round } from 'lodash';
 import { IconPlayerPlay, IconHandStop } from '@tabler/icons';
-import { Slider } from '../../Components/Form/Slider';
+import { Slider } from '@flybywiresim/react-components';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import { ProgressBar } from '../../Components/Progress/Progress';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';

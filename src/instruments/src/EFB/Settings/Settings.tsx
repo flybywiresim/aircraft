@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Toggle } from '../Components/Form/Toggle';
+import { Slider, Toggle } from '@flybywiresim/react-components';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
-import { Slider } from '../Components/Form/Slider';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
