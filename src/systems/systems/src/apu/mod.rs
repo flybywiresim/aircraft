@@ -10,11 +10,13 @@ use crate::{
         ApuAvailable, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal,
         ControllerSignal, ElectricalBusType, PneumaticValve,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
+    simulation::{
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    },
 };
 #[cfg(test)]
 use std::time::Duration;
-use uom::si::{f64::*, ratio::percent};
+use uom::si::f64::*;
 
 mod air_intake_flap;
 mod aps3200;
@@ -204,11 +206,11 @@ impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(
+        writer.write(
             "APU_FLAP_OPEN_PERCENTAGE",
-            self.air_intake_flap.open_amount().get::<percent>(),
+            self.air_intake_flap.open_amount(),
         );
-        writer.write_bool("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
+        writer.write("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> BleedAirValveState for AuxiliaryPowerUnit<T, U> {
@@ -951,7 +953,7 @@ pub mod tests {
     mod apu_tests {
         use super::*;
         use ntest::{assert_about_eq, timeout};
-        use uom::si::power::watt;
+        use uom::si::{power::watt, thermodynamic_temperature::kelvin};
 
         const APPROXIMATE_STARTUP_TIME: u64 = 49;
 
@@ -1920,12 +1922,16 @@ pub mod tests {
         fn ecb_doesnt_write_some_variables_when_off() {
             let mut test_bed = test_bed_with().master_off().run(Duration::from_secs(1));
 
-            assert!(test_bed.n().get::<percent>() < -1000.);
-            assert!(test_bed.egt().get::<degree_celsius>() < -1000.);
-            assert!(test_bed.egt_caution_temperature().get::<degree_celsius>() < -1000.);
-            assert!(test_bed.egt_warning_temperature().get::<degree_celsius>() < -1000.);
-            assert!(test_bed.fuel_low_pressure_fault_raw() < -1000.);
-            assert!(test_bed.air_intake_flap_fully_open_raw() < -1000.);
+            assert!(test_bed.n().get::<percent>() < 0.);
+            assert!(test_bed.egt() < ThermodynamicTemperature::new::<kelvin>(0.));
+            assert!(
+                test_bed.egt_caution_temperature() < ThermodynamicTemperature::new::<kelvin>(0.)
+            );
+            assert!(
+                test_bed.egt_warning_temperature() < ThermodynamicTemperature::new::<kelvin>(0.)
+            );
+            assert!(test_bed.fuel_low_pressure_fault_raw() < 0.);
+            assert!(test_bed.air_intake_flap_fully_open_raw() < 0.);
         }
 
         #[test]
