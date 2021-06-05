@@ -46,9 +46,9 @@ export const Chrono: React.FC<{ side: 'L' | 'R' }> = ({ side }) => {
     if (state === 'HIDDEN') {
         return <></>;
     } else {
-        return <g>
-            <rect x={0} y={630} width={110} height={32} className="Grey Fill" />
-            <text x={8} y={656} fontSize={24} className="Green">{getDisplayString(elapsedTime)}</text>
+        return <g className="chrono">
+            <rect x={0} y={632} width={104} height={30} className="Grey Fill" />
+            <text x={8} y={652} fontSize={24} className="Green">{getDisplayString(elapsedTime)}</text>
         </g>;
     }
 };
