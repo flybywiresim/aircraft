@@ -1389,10 +1389,10 @@ impl SimulationElement for PushbackTug {
 
 #[derive(PartialEq)]
 enum A320AutobrakeMode {
-    NONE,
-    LOW,
-    MED,
-    MAX,
+    NONE = 0,
+    LOW = 1,
+    MED = 2,
+    MAX = 3,
 }
 pub struct A320AutobrakeController {
     controller: Autobrake,
@@ -1649,6 +1649,21 @@ impl SimulationElement for A320AutobrakeController {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.last_ground_spoilers_active = self.ground_spoilers_active;
         self.ground_spoilers_active = state.read_bool("SPOILERS_GROUND_SPOILERS_ACTIVE");
+
+        // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
+        let sim_mode = state.read_f64("AUTOBRAKES_ARMED_MODE") as u8;
+        let sim_mode_enum;
+        match sim_mode {
+            0 => sim_mode_enum = A320AutobrakeMode::NONE,
+            1 => sim_mode_enum = A320AutobrakeMode::LOW,
+            2 => sim_mode_enum = A320AutobrakeMode::MED,
+            3 => sim_mode_enum = A320AutobrakeMode::MAX,
+            _ => sim_mode_enum = A320AutobrakeMode::NONE,
+        }
+
+        if sim_mode_enum != self.mode {
+            self.mode = sim_mode_enum;
+        }
     }
 }
 
