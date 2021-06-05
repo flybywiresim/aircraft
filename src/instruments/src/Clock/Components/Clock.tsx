@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
+import DayNight from './DayNight';
 
 const secondsToDisplay = (seconds: number): number[] => {
     const displayTime = [0, 0, 0];
@@ -37,8 +38,8 @@ export const Clock = () => {
 
     return (
         <>
-            <text x="6" y="153" className="fontBig">{ltsTest === 0 ? '88:88:' : text1}</text>
-            <text x="190" y="147" className="fontSmall">{ltsTest === 0 ? '88' : text2}</text>
+            <text x="6" y="153" className={`fontBig ${DayNight()}`}>{ltsTest === 0 ? '88:88:' : text1}</text>
+            <text x="190" y="147" className={`fontSmall ${DayNight()}`}>{ltsTest === 0 ? '88' : text2}</text>
         </>
     );
 };

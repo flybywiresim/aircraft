@@ -14,7 +14,6 @@ svg {
 
 text {
   font-family: "AirbusChronometer";
-  fill: rgba(155, 148, 148, 0.6);
   alignment-baseline: center;
 }
 
@@ -24,4 +23,12 @@ text {
 
 .fontSmall {
   font-size: 48px;
+}
+
+.day {
+  fill: rgba(180, 170, 170, 0.85);
+}
+
+.night {
+  fill: rgba(155, 148, 148, 0.45);
 }

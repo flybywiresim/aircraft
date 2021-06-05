@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
+import DayNight from './DayNight';
 
 const getDisplayString = (seconds: number, running: boolean) : string => (seconds === 0 && !running ? ''
     : `${Math.floor(Math.min(seconds, 359940) / 3600).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor((Math.min(seconds, 359940) % 3600) / 60)).toString().padStart(2, '0')}`);
@@ -22,6 +23,6 @@ export const ElapsedTime = () => {
     }, [absTime, elapsedKnobPos]);
 
     return (
-        <text x="47" y="247" className="fontBig">{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, elapsedKnobPos === 0)}</text>
+        <text x="47" y="247" className={`fontBig ${DayNight()}`}>{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, elapsedKnobPos === 0)}</text>
     );
 };
