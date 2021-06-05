@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, IconBolt } from '@tabler/icons';
-import nose from '../../Assets/320neo-outline-nose.svg';
-import fuselage from '../../Assets/320neo-outline-fuselage.svg';
+import front from '../../Assets/320neo-front-airbus.png';
+import fuselage from '../../Assets/320neo-body-airbus.png';
 
 /* eslint-disable react/no-unused-prop-types */
 
@@ -57,12 +57,15 @@ const OverviewPage = (props: OverviewPageProps) => {
 
     return (
         <div className="flex mt-6">
-            <div className="w-1/2">
+            <div className="w-full">
                 <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav">
                     <h2 className="text-2xl font-medium">Airbus A320neo</h2>
                     <span className="text-lg">FlyByWire Simulations</span>
-                    <img className="flip-vertical mt-6 h-48 -ml-48" src={nose} />
-                    <div className="flex mt-8">
+                    <div className="flex items-center justify-center mt-2">
+                        <img className="h-56 mr-3" src={fuselage} />
+                        <img className="h-56 ml-3" src={front} />
+                    </div>
+                    <div className="flex mt-4">
                         <div className="w-1/2">
                             <h3 className="text-xl font-medium flex items-center">
                                 <IconPlane className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
@@ -137,9 +140,6 @@ const OverviewPage = (props: OverviewPageProps) => {
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className="w-1/2 flex items-center justify-center overflow-hidden">
-                <img className="transform rotate-45" src={fuselage} />
             </div>
         </div>
     );

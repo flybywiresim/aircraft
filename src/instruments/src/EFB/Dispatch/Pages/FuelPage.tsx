@@ -327,7 +327,7 @@ export const FuelPage = () => {
                             </div>
                             <div className="flex flex-row mt-4 mb-2 items-center">
                                 <div className="fuel-progress">
-                                    <Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" />
+                                    <Slider className="w-48" value={sliderValue} onInput={(value) => updateSlider(value)} />
                                 </div>
                                 <div className="fuel-label ml-4">
                                     <SimpleInput

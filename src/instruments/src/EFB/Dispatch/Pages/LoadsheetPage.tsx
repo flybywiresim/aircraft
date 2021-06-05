@@ -109,7 +109,11 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             />
                         </>
                     ) : (
-                        'N/A'
+                        <>
+                            <div className="h-full flex items-center justify-center">
+                                Please Import Flightplan from Simbrief.
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
