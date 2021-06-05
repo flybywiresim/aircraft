@@ -616,8 +616,6 @@ struct A320EngineDrivenPumpController {
     is_powered: bool,
     powered_by: Vec<ElectricalBusType>,
     engine_number: usize,
-    engine_master_on_id: String,
-    engine_master_on: bool,
     weight_on_wheels: bool,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
@@ -631,8 +629,6 @@ impl A320EngineDrivenPumpController {
             is_powered: false,
             powered_by,
             engine_number,
-            engine_master_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", engine_number),
-            engine_master_on: false,
             weight_on_wheels: true,
             should_pressurise: true,
             has_pressure_low_fault: false,
@@ -698,7 +694,6 @@ impl PumpController for A320EngineDrivenPumpController {
 }
 impl SimulationElement for A320EngineDrivenPumpController {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.engine_master_on = state.read_bool(&self.engine_master_on_id);
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
     }
 
@@ -5032,8 +5027,6 @@ mod tests {
                 true,
             ));
 
-            edp1_controller.engine_master_on = true;
-
             edp1_controller.update(
                 &overhead_panel,
                 &fire_overhead_panel,
@@ -5079,8 +5072,6 @@ mod tests {
                 true,
             ));
 
-            edp1_controller.engine_master_on = true;
-
             edp1_controller.update(
                 &overhead_panel,
                 &fire_overhead_panel,
@@ -5121,8 +5112,6 @@ mod tests {
                 ElectricalBusType::DirectCurrentEssential,
                 true,
             ));
-
-            edp2_controller.engine_master_on = true;
 
             edp2_controller.update(
                 &overhead_panel,
@@ -5171,7 +5160,6 @@ mod tests {
                 ElectricalBusType::DirectCurrentEssential,
                 true,
             ));
-            edp2_controller.engine_master_on = true;
 
             edp2_controller.update(
                 &overhead_panel,
