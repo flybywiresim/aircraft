@@ -1,5 +1,5 @@
 import React from 'react';
-import { CurrentFlight, Map } from '@flybywiresim/map';
+import { CurrentFlight, Map } from '@flybywiresim/react-components';
 import FlightWidget from './Widgets/FlightWidget';
 import WeatherWidget from './Widgets/WeatherWidget';
 import { useSimVar } from '../../Common/simVars';
