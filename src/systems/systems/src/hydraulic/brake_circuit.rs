@@ -1,6 +1,6 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 //use crate::simulation::SimulatorReader;
 use std::f64::consts::E;
@@ -304,13 +304,10 @@ impl Actuator for BrakeCircuit {
 }
 impl SimulationElement for BrakeCircuit {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.id_left_press, self.left_brake_pressure().get::<psi>());
-        writer.write_f64(
-            &self.id_right_press,
-            self.right_brake_pressure().get::<psi>(),
-        );
+        writer.write(&self.id_left_press, self.left_brake_pressure());
+        writer.write(&self.id_right_press, self.right_brake_pressure());
         if self.has_accumulator {
-            writer.write_f64(&self.id_acc_press, self.accumulator_pressure().get::<psi>());
+            writer.write(&self.id_acc_press, self.accumulator_pressure());
         }
     }
 }

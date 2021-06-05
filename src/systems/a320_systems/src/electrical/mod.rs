@@ -25,7 +25,9 @@ use systems::{
         EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
         RamAirTurbineHydraulicLoopPressurised,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
+    simulation::{
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    },
 };
 
 pub(super) struct A320Electrical {
@@ -205,7 +207,7 @@ impl SimulationElement for A320Electrical {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool("ELEC_GALLEY_IS_SHED", self.galley_is_shed())
+        writer.write("ELEC_GALLEY_IS_SHED", self.galley_is_shed())
     }
 }
 impl EmergencyElectricalState for A320Electrical {
