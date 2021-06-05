@@ -1471,7 +1471,6 @@ impl A320AutobrakeController {
             if self.mode == A320AutobrakeMode::MAX {
                 self.mode = A320AutobrakeMode::NONE
             } else {
-                // If in flight after the takeoff disarming occured we reject max mode
                 if !self.should_disarm_after_time_in_flight.output() {
                     self.mode = A320AutobrakeMode::MAX;
                 }
