@@ -1,6 +1,6 @@
 use crate::{
     shared::PowerConsumptionReport,
-    simulation::{SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext},
+    simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext},
 };
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
@@ -51,7 +51,7 @@ provide_potential!(ExternalPowerSource, (110.0..=120.0));
 provide_frequency!(ExternalPowerSource, (390.0..=410.0));
 impl SimulationElement for ExternalPowerSource {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_connected = reader.read_bool("EXTERNAL POWER AVAILABLE:1");
+        self.is_connected = reader.read("EXTERNAL POWER AVAILABLE:1");
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {

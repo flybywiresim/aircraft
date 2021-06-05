@@ -1,5 +1,11 @@
 var A320_Neo_ECAM_Common;
 (function (A320_Neo_ECAM_Common) {
+    const absoluteZeroThermodynamicTemperature = -273.15;
+
+    function hasThermodynamicTemperatureValue(value) {
+        return value >= absoluteZeroThermodynamicTemperature;
+    }
+
     function isEngineDisplayActive(_index) {
         return ((SimVar.GetSimVarValue("ENG N1 RPM:" + _index, "percent") >= 0.05) || (SimVar.GetSimVarValue("ENG N2 RPM:" + _index, "percent") >= 0.05));
     }
@@ -174,7 +180,7 @@ var A320_Neo_ECAM_Common;
                 this.redArc = document.createElementNS(Avionics.SVG.NS, "path");
                 this.redArc.id = "RedArc";
 
-                const d = this.minRedValue === -Number.MAX_VALUE ? "" : this.calculateRedArcD();
+                const d = hasThermodynamicTemperatureValue(this.minRedValue) ? this.calculateRedArcD() : "";
                 this.redArc.setAttribute("d", d);
 
                 this.rootSVG.appendChild(this.redArc);
@@ -415,7 +421,7 @@ var A320_Neo_ECAM_Common;
         }
         refreshRedArc() {
             if (this.redArc) {
-                const d = this.minRedValue === -Number.MAX_VALUE ? "" : this.calculateRedArcD();
+                const d = hasThermodynamicTemperatureValue(this.minRedValue) ? this.calculateRedArcD() : "";
                 this.redArc.setAttribute("d", d);
 
                 this.previousUpdateMinRedValue = this.minRedValue;
@@ -442,7 +448,7 @@ var A320_Neo_ECAM_Common;
             if (_value[1] != this.outerMarkerValue) {
                 this.outerMarkerValue = _value[1];
                 const marker = document.getElementById(_value[0]);
-                marker.style.display = this.outerMarkerValue === -Number.MAX_VALUE ? "none" : "block";
+                marker.style.display = hasThermodynamicTemperatureValue(this.outerMarkerValue) ? "block" : "none";
 
                 if (marker.style.display === "block") {
                     const dir = this.valueToDir(_value[1]);

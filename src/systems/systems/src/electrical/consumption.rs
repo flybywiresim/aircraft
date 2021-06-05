@@ -21,7 +21,9 @@ use crate::{
     shared::{
         random_number, ConsumePower, ElectricalBuses, FwcFlightPhase, PowerConsumptionReport,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext},
+    simulation::{
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
+    },
 };
 use num_traits::FromPrimitive;
 use std::{collections::HashMap, time::Duration};
@@ -204,7 +206,7 @@ impl SimulationElement for FlightPhasePowerConsumer {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         let flight_phase: Option<FwcFlightPhase> =
-            FromPrimitive::from_f64(reader.read_f64("FWC_FLIGHT_PHASE"));
+            FromPrimitive::from_f64(reader.read("FWC_FLIGHT_PHASE"));
         if let Some(phase) = flight_phase {
             self.current_flight_phase = PowerConsumerFlightPhase::from(phase);
         }

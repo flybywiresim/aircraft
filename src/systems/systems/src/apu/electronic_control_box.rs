@@ -5,10 +5,10 @@ use super::{
 };
 use crate::{
     shared::{
-        from_bool, ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal,
-        ElectricalBusType, ElectricalBuses, PneumaticValve, PneumaticValveSignal,
+        ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal, ElectricalBusType,
+        ElectricalBuses, PneumaticValve, PneumaticValveSignal,
     },
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write, WriteWhen},
 };
 use std::time::Duration;
 use uom::si::{
@@ -223,10 +223,6 @@ impl ElectronicControlBox {
     fn air_intake_flap_is_fully_open(&self) -> bool {
         (self.air_intake_flap_open_amount.get::<percent>() - 100.).abs() < f64::EPSILON
     }
-
-    fn write_when_on(&self, writer: &mut SimulatorWriter, name: &str, value: f64) {
-        writer.write_f64(name, if self.is_on() { value } else { f64::MIN });
-    }
 }
 /// APU start Motor contactors controller
 impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
@@ -319,35 +315,29 @@ impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
 }
 impl SimulationElement for ElectronicControlBox {
     fn write(&self, writer: &mut SimulatorWriter) {
-        self.write_when_on(writer, "APU_N", self.n().get::<percent>());
+        let is_on = self.is_on();
 
-        self.write_when_on(writer, "APU_EGT", self.egt.get::<degree_celsius>());
-        self.write_when_on(
-            writer,
-            "APU_EGT_CAUTION",
-            self.egt_caution_temperature().get::<degree_celsius>(),
-        );
-        self.write_when_on(
-            writer,
-            "APU_EGT_WARNING",
-            self.egt_warning_temperature.get::<degree_celsius>(),
-        );
+        writer.write_when(is_on, "APU_N", self.n());
 
-        self.write_when_on(
-            writer,
+        writer.write_when(is_on, "APU_EGT", self.egt);
+        writer.write_when(is_on, "APU_EGT_CAUTION", self.egt_caution_temperature());
+        writer.write_when(is_on, "APU_EGT_WARNING", self.egt_warning_temperature);
+
+        writer.write_when(
+            is_on,
             "APU_LOW_FUEL_PRESSURE_FAULT",
-            from_bool(self.has_fuel_low_pressure_fault()),
+            self.has_fuel_low_pressure_fault(),
         );
-        self.write_when_on(
-            writer,
+        writer.write_when(
+            is_on,
             "APU_FLAP_FULLY_OPEN",
-            from_bool(self.air_intake_flap_is_fully_open()),
+            self.air_intake_flap_is_fully_open(),
         );
 
         // Flight Warning Computer related information.
-        writer.write_bool("ECAM_INOP_SYS_APU", self.is_inoperable());
-        writer.write_bool("APU_IS_AUTO_SHUTDOWN", self.is_auto_shutdown());
-        writer.write_bool("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
+        writer.write("ECAM_INOP_SYS_APU", self.is_inoperable());
+        writer.write("APU_IS_AUTO_SHUTDOWN", self.is_auto_shutdown());
+        writer.write("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
