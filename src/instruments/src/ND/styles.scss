@@ -8,6 +8,14 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "NDChrono";
+  //noinspection CssUnknownTarget
+  src: url("/fonts/NDChrono.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 .pfd-svg {
   position: absolute;
   width: 1280px;
@@ -109,4 +117,8 @@ text.Red {
 path.rounded {
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.chrono {
+  font-family: "NDChrono", monospace !important;
 }
