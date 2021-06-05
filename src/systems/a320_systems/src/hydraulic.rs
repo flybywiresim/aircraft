@@ -1267,8 +1267,6 @@ impl SimulationElement for A320HydraulicBrakeComputerUnit {
 struct A320BrakingForce {
     left_braking_force: f64,
     right_braking_force: f64,
-
-    park_brake_lever_is_set: bool,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
@@ -1277,8 +1275,6 @@ impl A320BrakingForce {
         A320BrakingForce {
             left_braking_force: 0.,
             right_braking_force: 0.,
-
-            park_brake_lever_is_set: true,
         }
     }
 
@@ -1304,11 +1300,6 @@ impl SimulationElement for A320BrakingForce {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
         writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
         writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
-    }
-
-    // We receive here the desired parking brake position. This is the parking brake lever input
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.park_brake_lever_is_set = state.read_bool("PARK_BRAKE_LEVER_POS");
     }
 }
 
