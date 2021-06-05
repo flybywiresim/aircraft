@@ -2138,6 +2138,7 @@ mod tests {
                 self.engine_1.accept(visitor);
                 self.engine_2.accept(visitor);
                 self.hydraulics.accept(visitor);
+                self.autobrake_panel.accept(visitor);
                 self.overhead.accept(visitor);
                 self.engine_fire_overhead.accept(visitor);
                 self.landing_gear.accept(visitor);
@@ -4333,6 +4334,53 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+        }
+
+        #[test]
+        fn autobrakes_disarms_if_green_pressure_low() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_low()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::LOW);
+
+            test_bed = test_bed
+                .set_ptu_state(false)
+                .stop_eng1()
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_disarms_if_askid_off() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_anti_skid(false)
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == A320AutobrakeMode::NONE);
         }
 
         #[test]
