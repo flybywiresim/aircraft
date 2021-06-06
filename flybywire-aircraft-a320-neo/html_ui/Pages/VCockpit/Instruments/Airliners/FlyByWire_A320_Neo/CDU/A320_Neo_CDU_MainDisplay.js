@@ -974,13 +974,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 } else if (keycode >= KeyCode.KEY_F1 && keycode <= KeyCode.KEY_F6) {
                     const func_num = keycode - KeyCode.KEY_F1;
                     this.onLeftFunction(func_num);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_L" + func_num + 1, "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_L" + func_num + 1, "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_L" + (func_num + 1), "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_L" + (func_num + 1), "Number", 1);
                 } else if (keycode >= KeyCode.KEY_F7 && keycode <= KeyCode.KEY_F12) {
                     const func_num = keycode - KeyCode.KEY_F7;
                     this.onRightFunction(func_num);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_R" + func_num + 1, "Number", 1);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_R" + func_num + 1, "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_R" + (func_num + 1), "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_R" + (func_num + 1), "Number", 1);
                 }
             }
         });
