@@ -48,7 +48,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     Init() {
         super.Init();
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');            // note: without this, resetting mcdu kills camera
+        Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
         let mainFrame = this.getChildById("Mainframe");
         if (mainFrame == null) {
             mainFrame = this;
@@ -106,7 +106,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onDot = () => {
             this.handlePreviousInputState();
             this.inOut += ".";
-        }
+        };
         this.onClr = () => {
             if (this.inOut === "") {
                 this.inOut = FMCMainDisplay.clrValue;
@@ -137,7 +137,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.inOut += "-";
                 }
             }
-        }
+        };
         this.PageTimeout = {
             Prog: 2000,
             Dyn: 1500
@@ -781,8 +781,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         footer.classList.add("line");
         const inout = document.createElement("span");
         inout.id = "in-out";
-
-
         this.arrowVertical = document.createElement("span");
         this.arrowVertical.id = "arrow-vertical";
         this.arrowVertical.innerHTML = "↓↑\xa0";
@@ -892,7 +890,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
 
-                    this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);"
+                    this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
                     this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
                     Coherent.trigger('FOCUS_INPUT_FIELD');
                     this.lastInput = new Date().getTime() / 1000;
@@ -916,37 +914,31 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 let keycode = e.keyCode;
                 this.lastInput = new Date().getTime() / 1000;
                 if (keycode >= KeyCode.KEY_NUMPAD0 && keycode <= KeyCode.KEY_NUMPAD9) {
-                    keycode -= 48;  // numpad support
+                    keycode -= 48; // numpad support
                 }
-                // Note: tried using H-events, worse performance. Reverted to direct input.
+                //Note: tried using H-events, worse performance. Reverted to direct input.
                 if (keycode >= KeyCode.KEY_0 && keycode <= KeyCode.KEY_9 || keycode >= KeyCode.KEY_A && keycode <= KeyCode.KEY_Z) {
-                    const letter = String.fromCharCode(keycode)
+                    const letter = String.fromCharCode(keycode);
                     this.onLetterInput(letter);
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_"+ letter.toUpperCase(), "Number", 1); // TODO: L/R [1/2] side MCDU Split
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_"+ letter.toUpperCase(), "Number", 1);
-                }
-
-                else if (keycode === KeyCode.KEY_PERIOD || keycode === KeyCode.KEY_DECIMAL) {
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_" + letter.toUpperCase(), "Number", 1); // TODO: L/R [1/2] side MCDU Split
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_" + letter.toUpperCase(), "Number", 1);
+                } else if (keycode === KeyCode.KEY_PERIOD || keycode === KeyCode.KEY_DECIMAL) {
                     this.onDot();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_DOT", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_DOT", "Number", 1);
-                }
-                else if (keycode === KeyCode.KEY_SLASH) {
+                } else if (keycode === KeyCode.KEY_SLASH) {
                     this.onDiv();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SLASH", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SLASH", "Number", 1);
-                }
-                else if (keycode === KeyCode.KEY_BACK_SPACE) {
+                } else if (keycode === KeyCode.KEY_BACK_SPACE) {
                     this.onClr();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
-                }
-                else if (keycode === KeyCode.KEY_SPACE) {
+                } else if (keycode === KeyCode.KEY_SPACE) {
                     this.onSp();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SP", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SP", "Number", 1);
-                }
-                else if (keycode === 187 || keycode === 189 || keycode === KeyCode.KEY_ADD || keycode === KeyCode.KEY_SUBTRACT) {
+                } else if (keycode === 187 || keycode === 189 || keycode === KeyCode.KEY_ADD || keycode === KeyCode.KEY_SUBTRACT) {
                     this.onPlusMinus();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_PLUSMINUS", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_PLUSMINUS", "Number", 1);
@@ -1110,27 +1102,27 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }, this.getDelaySwitchPage());
             } else if (input === "SP") {
                 setTimeout(() => {
-                    this.onSp()
+                    this.onSp();
                 }, this.getDelaySwitchPage());
             } else if (input === "DEL") {
                 setTimeout(() => {
-                    this.onDel()
+                    this.onDel();
                 }, this.getDelaySwitchPage());
             } else if (input === "CLR") {
                 setTimeout(() => {
-                    this.onClr()
+                    this.onClr();
                 }, this.getDelaySwitchPage());
             } else if (input === "DIV") {
                 setTimeout(() => {
-                    this.onDiv()
+                    this.onDiv();
                 }, this.getDelaySwitchPage());
             } else if (input === "DOT") {
                 setTimeout(() => {
-                    this.onDot()
+                    this.onDot();
                 }, this.getDelaySwitchPage());
             } else if (input === "PLUSMINUS") {
                 setTimeout(() => {
-                    this.onPlusMinus()
+                    this.onPlusMinus();
                 }, this.getDelaySwitchPage());
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;

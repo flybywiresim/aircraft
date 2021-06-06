@@ -4,8 +4,9 @@ class CDU_OPTIONS_REALISM {
 
         const storedDMCTestTime = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
         let storedMcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
-        if (storedMcduTimeout === 0)
+        if (storedMcduTimeout === 0) {
             storedMcduTimeout = "NONE";
+        }
 
         mcdu.setTemplate([
             ["A32NX OPTIONS REALISM"],
