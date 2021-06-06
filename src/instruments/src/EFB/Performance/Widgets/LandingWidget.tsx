@@ -24,7 +24,6 @@ import RunwayVisualizationWidget, { DistanceLabel, LabelType } from './RunwayVis
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
-import Help from '../../Components/Help';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
 
@@ -278,11 +277,11 @@ export const LandingWidget = () => {
 
     return (
         <div className="flex flex-grow">
-            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav mr-3">
+            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav mr-3 w-9/12">
                 <div className="w-full">
                     <div className="text-center mb-4">
                         <div className="flex mx-2 flex-1 justify-center">
-                            <SimpleInput className="uppercase" label="Airport ICAO" value={icao} onChange={(value) => setIcao(value)} />
+                            <SimpleInput className="uppercase" label="Airport ICAO" value={icao} onChange={(value) => setIcao(value)} maxLength={4} />
                             <button
                                 onClick={syncValues}
                                 className={`mx-2 font-medium p-2 bg-blue-500 text-white flex items-center justify-center rounded-lg focus:outline-none ${isValidIcao() ? '' : 'disabled'}`}
@@ -295,6 +294,7 @@ export const LandingWidget = () => {
                         <div className="flex">
                             <div className="flex-1 m-2.5 column-left">
                                 <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="Wind Direction"
                                     value={windDirection}
                                     min={0}
@@ -302,20 +302,20 @@ export const LandingWidget = () => {
                                     padding={3}
                                     decimalPrecision={0}
                                     onChange={handleWindDirectionChange}
-                                    className="py-2"
                                     number
                                 />
                                 <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="Wind Magnitude"
                                     value={windMagnitude}
                                     placeholder="KTS"
                                     min={0}
                                     decimalPrecision={1}
                                     onChange={handleWindMagnitudeChange}
-                                    className="py-2"
                                     number
                                 />
                                 <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="Temperature"
                                     value={temperature}
                                     placeholder="°C"
@@ -323,10 +323,10 @@ export const LandingWidget = () => {
                                     max={55}
                                     decimalPrecision={1}
                                     onChange={handleTemperatureChange}
-                                    className="py-2"
                                     number
                                 />
                                 <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="QNH"
                                     value={pressure}
                                     placeholder="mb"
@@ -334,10 +334,10 @@ export const LandingWidget = () => {
                                     max={1200}
                                     decimalPrecision={2}
                                     onChange={handlePressureChange}
-                                    className="py-2"
                                     number
                                 />
                                 <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="Rwy Altitude"
                                     value={altitude}
                                     placeholder='" ASL'
@@ -345,10 +345,10 @@ export const LandingWidget = () => {
                                     max={20000}
                                     decimalPrecision={0}
                                     onChange={handleAltitudeChange}
-                                    className="py-2"
                                     number
                                 />
                                 <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="Rwy Heading"
                                     value={runwayHeading}
                                     min={0}
@@ -356,15 +356,14 @@ export const LandingWidget = () => {
                                     padding={3}
                                     decimalPrecision={0}
                                     onChange={handleRunwayHeadingChange}
-                                    className="py-2"
                                     number
                                 />
                                 <SelectInput
+                                    className="w-56 my-1.5"
                                     label="Rwy Condition"
                                     defaultValue={0}
                                     onChange={handleRunwayConditionChange}
                                     dropdownOnTop
-                                    className="py-2"
                                     options={[
                                         { value: 0, displayValue: 'Dry' },
                                         { value: 1, displayValue: 'Good' },
@@ -377,6 +376,7 @@ export const LandingWidget = () => {
                             </div>
                             <div className="flex-1 m-2.5 column-right">
                                 <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="Rwy Slope"
                                     value={slope}
                                     placeholder="%"
@@ -384,28 +384,23 @@ export const LandingWidget = () => {
                                     max={2}
                                     decimalPrecision={1}
                                     onChange={handleRunwaySlopeChange}
-                                    className="py-2"
                                     number
                                     reverse
                                 />
-                                <div className="flex justify-start items-center">
-                                    <SimpleInput
-                                        label="Rwy LDA"
-                                        value={runwayLength}
-                                        placeholder="m"
-                                        min={0}
-                                        max={6000}
-                                        decimalPrecision={0}
-                                        onChange={handleRunwayLengthChange}
-                                        className="py-2"
-                                        number
-                                        reverse
-                                    />
-                                    <Help title="Landing Distance Available (LDA)">
-                                        The distance available on the runway which is suitable for the ground run of the landing.
-                                    </Help>
-                                </div>
                                 <SimpleInput
+                                    className="w-56 my-1.5"
+                                    label="Rwy LDA"
+                                    value={runwayLength}
+                                    placeholder="m"
+                                    min={0}
+                                    max={6000}
+                                    decimalPrecision={0}
+                                    onChange={handleRunwayLengthChange}
+                                    number
+                                    reverse
+                                />
+                                <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="Approach Speed"
                                     value={approachSpeed}
                                     placeholder="KTS"
@@ -413,11 +408,11 @@ export const LandingWidget = () => {
                                     max={350}
                                     decimalPrecision={0}
                                     onChange={handleApproachSpeedChange}
-                                    className="py-2"
                                     number
                                     reverse
                                 />
                                 <SimpleInput
+                                    className="w-56 my-1.5"
                                     label="Weight"
                                     value={weight}
                                     placeholder="KG"
@@ -425,38 +420,37 @@ export const LandingWidget = () => {
                                     max={100000}
                                     decimalPrecision={0}
                                     onChange={handleWeightChange}
-                                    className="py-2"
                                     number
                                     reverse
                                 />
                                 <SelectInput
+                                    className="w-56 my-1.5"
                                     label="Flaps"
                                     defaultValue={1}
                                     onChange={handleFlapsChange}
                                     reverse
-                                    className="py-2"
                                     options={[
                                         { value: 1, displayValue: 'Full' },
                                         { value: 0, displayValue: 'CONF 3' },
                                     ]}
                                 />
                                 <SelectInput
+                                    className="w-56 my-1.5"
                                     label="Overweight Proc"
                                     defaultValue={0}
                                     onChange={handleOverweightProcedureChange}
                                     reverse
-                                    className="py-2"
                                     options={[
                                         { value: 0, displayValue: 'No' },
                                         { value: 1, displayValue: 'Yes' },
                                     ]}
                                 />
                                 <SelectInput
+                                    className="w-56 my-1.5"
                                     label="Reverse Thrust"
                                     defaultValue={0}
                                     onChange={handleReverseThrustChange}
                                     reverse
-                                    className="py-2"
                                     options={[
                                         { value: 0, displayValue: 'No' },
                                         { value: 1, displayValue: 'Yes' },
@@ -492,7 +486,7 @@ export const LandingWidget = () => {
                     </div>
                 </div>
             </div>
-            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav ml-3">
+            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav ml-3 w-3/12">
                 <RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
             </div>
         </div>

@@ -13,6 +13,8 @@ type SimpleInputProps = {
     decimalPrecision?: number,
     reverse?: boolean, // Flip label/input order,
     className?: string,
+    maxLength?: number,
+    noLabel?: boolean,
 };
 
 const SimpleInput: FC<SimpleInputProps> = (props) => {
@@ -83,19 +85,42 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
     };
 
     return (
-        <div className={`flex ${props.className} ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
-            <div className={`flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
-            <div className="flex items-center">
-                <input
-                    className="w-28 text-lg bg-gray-900 px-3 py-1.5 rounded"
-                    value={displayValue}
-                    placeholder={props.placeholder ?? ''}
-                    onChange={onChange}
-                    onFocus={onFocus}
-                    onBlur={onFocusOut}
-                />
-            </div>
-        </div>
+        <>
+            {props.noLabel
+                ? (
+                    <>
+                        <input
+                            className={`px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
+                            focus-within:border-teal-light-contrast ${props.className}`}
+                            value={displayValue}
+                            placeholder={props.placeholder ?? ''}
+                            onChange={onChange}
+                            onFocus={onFocus}
+                            onBlur={onFocusOut}
+                            maxLength={props.maxLength}
+                        />
+                    </>
+                )
+                : (
+                    <>
+                        <div className={`flex ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
+                            <div className={`text-lg flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
+                            <div className="flex items-center">
+                                <input
+                                    className={`px-5 py-1.5 text-lg text-white rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
+                                    focus-within:border-teal-light-contrast ${props.className}`}
+                                    value={displayValue}
+                                    placeholder={props.placeholder ?? ''}
+                                    onChange={onChange}
+                                    onFocus={onFocus}
+                                    onBlur={onFocusOut}
+                                    maxLength={props.maxLength}
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
+        </>
     );
 };
 

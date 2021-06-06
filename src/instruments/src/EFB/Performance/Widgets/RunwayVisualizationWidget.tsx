@@ -187,7 +187,7 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
                     <div className="bg-green-200 opacity-50" style={{ height: `${this.todaHeightPercentage()}%` }} />
                     <div className="bg-gray-700 opacity-50" style={{ height: `${this.asdaHeightPercentage()}%` }} />
                     <div
-                        className="runway w-40 relative"
+                        className="bg-black w-40 relative"
                         style={{ height: `${this.mainHeightPercentage()}%` }}
                     >
                         {this.runwayLengthLabel()}
@@ -204,8 +204,8 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
                             <div className="w-2 h-14 bg-white opacity-30" />
                         </div>
                         <div className="relative h-full overflow-hidden">
-                            <div className="w-1.5 h-20 bg-white opacity-10 absolute left-1/2 bottom-40 transform -translate-x-1/2" />
-                            <div className="w-1.5 h-20 bg-white opacity-10 absolute left-1/2 bottom-72 transform -translate-x-1/2" />
+                            <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-40 transform -translate-x-1/2" />
+                            <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-72 transform -translate-x-1/2" />
                         </div>
                         {this.runwayNumber()}
                     </div>

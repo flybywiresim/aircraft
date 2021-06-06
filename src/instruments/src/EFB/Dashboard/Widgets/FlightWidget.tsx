@@ -96,7 +96,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                     </div>
                 </div>
                 <div className="w-full my-3">
-                    <img src={fuselage} alt="Aircraft outline" className="flip-vertical -ml-48" />
+                    <img src={fuselage} alt="Aircraft outline" className="flip-horizontal -ml-48" />
                 </div>
                 <div className="w-full mt-3">
                     <div className="grid grid-cols-3 gap-4 text-center mb-10">

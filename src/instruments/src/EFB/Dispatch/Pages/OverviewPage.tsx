@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, IconBolt } from '@tabler/icons';
-import front from '../../Assets/320neo-front-airbus.png';
-import fuselage from '../../Assets/320neo-body-airbus.png';
+import fuselage from '../../Assets/320neo-outline-nose.svg';
+import { useSimVar } from '../../../Common/simVars';
 
 /* eslint-disable react/no-unused-prop-types */
 
@@ -55,17 +55,22 @@ const OverviewPage = (props: OverviewPageProps) => {
         setUnitConversion(unitConv);
     }, [props.units]);
 
+    let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
+
+    if (airline === 0 || null || '') {
+        airline = 'FlyByWire Simulations';
+    }
+
     return (
         <div className="flex mt-6">
-            <div className="w-full">
+            <div className="w-1/2 mr-3">
                 <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav">
                     <h2 className="text-2xl font-medium">Airbus A320neo</h2>
-                    <span className="text-lg">FlyByWire Simulations</span>
-                    <div className="flex items-center justify-center mt-2">
-                        <img className="h-56 mr-3" src={fuselage} />
-                        <img className="h-56 ml-3" src={front} />
+                    <span className="text-lg">{airline}</span>
+                    <div className="flex items-center justify-center mt-6">
+                        <img className="flip-horizontal h-48 -ml-96 mr-32" src={fuselage} />
                     </div>
-                    <div className="flex mt-4">
+                    <div className="mt-8 flex">
                         <div className="w-1/2">
                             <h3 className="text-xl font-medium flex items-center">
                                 <IconPlane className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />

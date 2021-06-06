@@ -126,6 +126,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                     type="text"
                                     placeholder={props.icao}
                                     onChange={handleIcao}
+                                    maxLength={4}
                                 />
                             </div>
                         </div>

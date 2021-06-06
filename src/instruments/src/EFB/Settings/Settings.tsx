@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
+import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 
 type ButtonType = {
     name: string,
@@ -182,39 +183,39 @@ const PlaneSettings = () => {
                 <div className="mb-3.5 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Thrust Reduction Altitude (ft)</span>
                     <div className="flex flex-row">
-                        <input
-                            type="text"
+                        <SimpleInput
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={thrustReductionAlt}
+                            noLabel
                             value={thrustReductionAltSetting}
-                            onChange={(event) => handleSetThrustReductionAlt(event.target.value)}
+                            onChange={(event) => handleSetThrustReductionAlt(event)}
                         />
                     </div>
                 </div>
                 <div className="mb-3.5 pt-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Acceleration Altitude (ft)</span>
                     <div className="flex flex-row">
-                        <input
-                            type="text"
+                        <SimpleInput
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={accelerationAlt}
+                            noLabel
                             value={accelerationAltSetting}
-                            onChange={(event) => handleSetAccelerationAlt(event.target.value)}
+                            onChange={(event) => handleSetAccelerationAlt(event)}
                         />
                     </div>
                 </div>
                 <div className="mb-3.5 pt-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Acceleration Out Altitude (ft)</span>
                     <div className="flex flex-row">
-                        <input
-                            type="text"
+                        <SimpleInput
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={accelerationOutAlt}
+                            noLabel
                             value={accelerationOutAltSetting}
-                            onChange={(event) => handleSetAccelerationOutAlt(event.target.value)}
+                            onChange={(event) => handleSetAccelerationOutAlt(event)}
                         />
                     </div>
                 </div>
@@ -267,25 +268,7 @@ const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
 
     return (
         <div className="bg-navy-lighter rounded-2xl p-6 shadow-lg mb-6">
-            <h1 className="text-xl text-white font-medium mb-4">CIDS</h1>
-
-            <div className="divide-y divide-gray-700 flex flex-col">
-                <div className="flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">PAX Signs</span>
-                    <SelectGroup>
-                        {paxSignsButtons.map((button) => (
-                            <SelectItem
-                                onSelect={() => setPaxSigns(button.setting)}
-                                selected={paxSigns === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </div>
-            </div>
-
-            <h1 className="text-xl font-medium text-white my-4">Audio & Display</h1>
+            <h1 className="text-xl font-medium text-white mb-4">Audio & Display</h1>
 
             <div className="divide-y divide-gray-700 flex flex-col">
                 <div className="mb-4 flex flex-row justify-between items-center">
@@ -324,19 +307,37 @@ const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
                 </div>
             </div>
 
-            <h1 className="text-xl text-white font-medium my-4">Integration</h1>
+            <h1 className="text-xl text-white font-medium mt-6 mb-4">Integration</h1>
 
             <div className="divide-y divide-gray-700 flex flex-col">
                 <div className="flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Simbrief Username</span>
                     <div className="flex flex-row items-center">
-                        <input
-                            type="text"
-                            className="w-30 px-5 py-1.5 text-xl text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast"
+                        <SimpleInput
+                            className="w-30"
                             value={props.simbriefUsername}
-                            onChange={(event) => props.setSimbriefUsername(event.target.value)}
+                            noLabel
+                            onChange={(event) => props.setSimbriefUsername(event)}
                         />
                     </div>
+                </div>
+            </div>
+
+            <h1 className="text-xl text-white font-medium my-4">CIDS</h1>
+
+            <div className="divide-y divide-gray-700 flex flex-col">
+                <div className="flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">PAX Signs</span>
+                    <SelectGroup>
+                        {paxSignsButtons.map((button) => (
+                            <SelectItem
+                                onSelect={() => setPaxSigns(button.setting)}
+                                selected={paxSigns === button.setting}
+                            >
+                                {button.name}
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
                 </div>
             </div>
         </div>
@@ -372,14 +373,14 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                                     setSimbriefUsername={props.setSimbriefUsername}
                                 />
 
-                                {/* <ControlSettings setShowSettings={setShowThrottleSettings} /> */}
+                                <ControlSettings setShowSettings={setShowThrottleSettings} />
 
-                                <h1 className="text-4xl text-center text-gray-400 mt-14">flyPadOS</h1>
+                                {/* <h1 className="text-4xl text-center text-gray-400 mt-14">flyPadOS</h1>
                                 <h1 className="text-xl text-center text-gray-500 my-2">v2.0.1-alpha</h1>
                                 <h1 className="text-md text-center text-gray-500 my-2">
                                     Copyright 2020-2021, FlyByWire
                                     Simulations.
-                                </h1>
+                                </h1> */}
                             </div>
                         </div>
                     </>

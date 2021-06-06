@@ -325,14 +325,15 @@ export const FuelPage = () => {
                                 <h2 className="text-2xl font-medium mr-2">Refuel</h2>
                                 <label htmlFor="fuel-label" className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
                             </div>
-                            <div className="flex flex-row mt-4 mb-2 items-center">
+                            <div className="flex flex-row mt-4 mb-2 items-center relative">
                                 <div className="fuel-progress">
                                     <Slider className="w-48" value={sliderValue} onInput={(value) => updateSlider(value)} />
                                 </div>
-                                <div className="fuel-label ml-4">
+                                <div className="fuel-label ml-4 relative">
                                     <SimpleInput
-                                        label=""
+                                        className="w-32"
                                         noLeftMargin
+                                        noLabel
                                         placeholder={round(totalFuel()).toString()}
                                         number
                                         min={0}
@@ -340,10 +341,10 @@ export const FuelPage = () => {
                                         value={inputValue}
                                         onChange={(x) => updateDesiredFuel(x)}
                                     />
-                                    <div className="absolute -mt-10 pt-1.5 ml-20 text-gray-400 text-lg">{currentUnit()}</div>
+                                    <div className="absolute top-2 right-4 text-gray-400 text-lg">{currentUnit()}</div>
                                 </div>
-                                <div className="absolute border-l-0 border-t-0 border-b-0 border-white border-r h-28 ml-80 pl-6" />
-                                <div className="absolute flex flex-col justify-center items-center ml-96 mt-4">
+                                <div className="absolute border-l-0 border-t-0 border-b-0 border-white border-r h-28 right-28" />
+                                <div className="absolute flex flex-col justify-center items-center right-3 mt-3">
                                     <div className={formatRefuelStatusClass()}>
                                         <Button onClick={() => switchRefuelState()} type={BUTTON_TYPE.NONE}>
                                             <IconPlayerPlay className={refuelStartedByUser ? 'hidden' : ''} />
