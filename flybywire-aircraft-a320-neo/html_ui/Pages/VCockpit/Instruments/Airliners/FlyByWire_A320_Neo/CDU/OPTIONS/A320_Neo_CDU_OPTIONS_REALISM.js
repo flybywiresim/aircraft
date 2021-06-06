@@ -12,7 +12,7 @@ class CDU_OPTIONS_REALISM {
             ["\xa0ADIRS", "DMC SELF-TEST\xa0"],
             ["<ALIGN TIME", `{small}[S]{end}{cyan}${storedDMCTestTime}*{end}`],
             ["\xa0MCDU", "INPUT TIMEOUT\xa0"],
-            ["<ALLOW INPUT", `{small}[S]{end}{cyan}${storedMcduTimeout}*{end}`],
+            ["<KEYBOARD INPUT", `{small}[S]{end}{cyan}${storedMcduTimeout}*{end}`],
             [""],
             [""],
             [""],

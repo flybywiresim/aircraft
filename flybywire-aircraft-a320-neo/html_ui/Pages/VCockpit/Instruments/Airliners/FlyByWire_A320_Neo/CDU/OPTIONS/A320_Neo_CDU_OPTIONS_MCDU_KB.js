@@ -1,31 +1,19 @@
 class CDU_OPTIONS_MCDU_KB {
-    static ShowPage(mcdu, reset = false) {
+    static ShowPage(mcdu) {
+
         mcdu.clearDisplay();
 
         const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "NONE");
 
-        let all = "*FULL[color]cyan";
-        let alt = "*POP-UP ONLY[color]cyan";
-        let none = "*NONE[color]cyan";
-
-        let reset_warn = "";
-        let reset_txt = "";
-
-        if (reset) {
-            mcdu.addNewMessage(NXFictionalMessages.resetMcdu);
-            reset_warn = "\xa0{red}WARNING: DATA LOSS{end}";
-            reset_txt = "<RESET MCDU";
-        }
+        let all = "*ALLOW INPUT[color]cyan";
+        let none = "*NO INPUT[color]cyan";
 
         switch (mcduInput) {
             case "ALL":
-                all = "FULL[color]green";
-                break;
-            case "RALT":
-                alt = "POP-UP ONLY[color]green";
+                all = "ALLOW INPUT[color]green";
                 break;
             default:
-                none = "NONE[color]green";
+                none = "NO INPUT[color]green";
         }
 
         mcdu.setTemplate([
@@ -33,13 +21,13 @@ class CDU_OPTIONS_MCDU_KB {
             ["", "", "MCDU KEYBOARD"],
             [all],
             [""],
-            [alt],
-            [""],
             [none],
             [""],
             [""],
-            [reset_warn],
-            [reset_txt],
+            [""],
+            [""],
+            [""],
+            [""],
             [""],
             ["<RETURN"]
         ]);
@@ -50,45 +38,19 @@ class CDU_OPTIONS_MCDU_KB {
         mcdu.onLeftInput[0] = () => {
             if (mcduInput !== "ALL") {
                 mcdu.clearFocus();
-                NXDataStore.set("MCDU_KB_INPUT", "ALL");
-                CDU_OPTIONS_MCDU_KB.ShowPage(mcdu, true);
+                //NXDataStore.set("MCDU_KB_INPUT", "ALL");
+                CDU_OPTIONS_MCDU_RESET.ShowPage(mcdu, "ALL");
             }
         };
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            if (mcduInput !== "RALT") {
-                NXDataStore.set("MCDU_KB_INPUT", "RALT");
-                mcdu.clearFocus();
-                if (mcduInput === "ALL") {
-                    CDU_OPTIONS_MCDU_KB.ShowPage(mcdu, true);
-                } else {
-                    CDU_OPTIONS_MCDU_KB.ShowPage(mcdu, reset);
-                }
-            }
-        };
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[2] = () => {
             if (mcduInput !== "NONE") {
-                NXDataStore.set("MCDU_KB_INPUT", "NONE");
                 mcdu.clearFocus();
-                if (mcduInput === "ALL") {
-                    CDU_OPTIONS_MCDU_KB.ShowPage(mcdu, true);
-                } else {
-                    CDU_OPTIONS_MCDU_KB.ShowPage(mcdu, reset);
-                }
+                //NXDataStore.set("MCDU_KB_INPUT", "NONE");
+                CDU_OPTIONS_MCDU_RESET.ShowPage(mcdu, "NONE");
             }
-        };
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[4] = () => {
-            if (reset)
-                Coherent.trigger('UNFOCUS_INPUT_FIELD');
-                window.document.location.reload(true);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
