@@ -755,6 +755,10 @@ impl ElectricPump {
         }
     }
 
+    pub fn is_starting(&self) -> bool {
+        self.is_active && self.rpm < Self::NOMINAL_SPEED * 0.95
+    }
+
     pub fn rpm(&self) -> f64 {
         self.rpm
     }
@@ -802,6 +806,7 @@ pub struct EngineDrivenPump {
     active_id: String,
 
     is_active: bool,
+    rpm: f64,
     pump: Pump,
 }
 impl EngineDrivenPump {
@@ -817,6 +822,7 @@ impl EngineDrivenPump {
         Self {
             active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
             is_active: false,
+            rpm: 0.,
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -832,8 +838,13 @@ impl EngineDrivenPump {
         pump_rpm: f64,
         controller: &T,
     ) {
+        self.rpm = pump_rpm;
         self.pump.update(context, line, pump_rpm, controller);
         self.is_active = controller.should_pressurise();
+    }
+
+    pub fn rpm(&self) -> f64 {
+        self.rpm
     }
 }
 impl PressureSource for EngineDrivenPump {
@@ -1053,6 +1064,10 @@ impl RamAirTurbine {
                 self.position = 1.;
             }
         }
+    }
+
+    pub fn turbine_rpm(&self) -> f64 {
+        self.wind_turbine.rpm
     }
 }
 impl PressureSource for RamAirTurbine {
