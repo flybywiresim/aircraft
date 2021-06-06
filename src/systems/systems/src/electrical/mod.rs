@@ -23,12 +23,9 @@ pub use transformer_rectifier::TransformerRectifier;
 
 use crate::{
     shared::{ElectricalBusType, PotentialOrigin},
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
-use uom::si::{
-    electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, ratio::percent,
-    velocity::knot,
-};
+use uom::si::{electric_potential::volt, f64::*, velocity::knot};
 
 use self::consumption::SuppliedPower;
 
@@ -288,7 +285,7 @@ impl PotentialSource for Contactor {
 }
 impl SimulationElement for Contactor {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.closed_id, self.is_closed());
+        writer.write(&self.closed_id, self.is_closed());
     }
 }
 
@@ -346,7 +343,7 @@ impl SimulationElement for ElectricalBus {
             return;
         }
 
-        writer.write_bool(&self.bus_powered_id, self.is_powered());
+        writer.write(&self.bus_powered_id, self.is_powered());
         if self.bus_type == ElectricalBusType::DirectCurrentBattery {
             // It's good to note that in the real aircraft, the battery charge limiters (BCLs) are
             // responsible for supplying this information to the SDAC. When the battery push
@@ -355,7 +352,7 @@ impl SimulationElement for ElectricalBus {
             // on the ECAM screen. For now we just always emit this information here and within
             // the ECAM code check the BAT push button position to see if XX should be presented or not.
             // Once the SDAC is implemented it can be moved there and read this value from the BCLs.
-            writer.write_bool(&self.bus_potential_normal_id, self.potential_normal())
+            writer.write(&self.bus_potential_normal_id, self.potential_normal())
         }
     }
 }
@@ -412,23 +409,23 @@ impl ElectricalStateWriter {
     }
 
     fn write_current(&self, source: &impl ProvideCurrent, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.current_id, source.current().get::<ampere>());
-        writer.write_bool(&self.current_normal_id, source.current_normal());
+        writer.write(&self.current_id, source.current());
+        writer.write(&self.current_normal_id, source.current_normal());
     }
 
     fn write_potential(&self, source: &impl ProvidePotential, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.potential_id, source.potential().get::<volt>());
-        writer.write_bool(&self.potential_normal_id, source.potential_normal());
+        writer.write(&self.potential_id, source.potential());
+        writer.write(&self.potential_normal_id, source.potential_normal());
     }
 
     fn write_frequency(&self, source: &impl ProvideFrequency, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.frequency_id, source.frequency().get::<hertz>());
-        writer.write_bool(&self.frequency_normal_id, source.frequency_normal());
+        writer.write(&self.frequency_id, source.frequency());
+        writer.write(&self.frequency_normal_id, source.frequency_normal());
     }
 
     fn write_load(&self, source: &impl ProvideLoad, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.load_id, source.load().get::<percent>());
-        writer.write_bool(&self.load_normal_id, source.load_normal());
+        writer.write(&self.load_id, source.load());
+        writer.write(&self.load_normal_id, source.load_normal());
     }
 }
 
@@ -493,7 +490,7 @@ impl Default for EmergencyElectrical {
 
 #[cfg(test)]
 mod tests {
-    use uom::si::frequency::hertz;
+    use uom::si::{electric_current::ampere, frequency::hertz, ratio::percent};
 
     use super::*;
     struct Powerless {}

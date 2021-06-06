@@ -1,6 +1,16 @@
 /** @type A320_Neo_LowerECAM_APU */
 var A320_Neo_LowerECAM_APU;
 (function (A320_Neo_LowerECAM_APU) {
+    const absoluteZeroThermodynamicTemperature = -273.15;
+
+    function hasThermodynamicTemperatureValue(value) {
+        return value >= absoluteZeroThermodynamicTemperature;
+    }
+
+    function hasRatioValue(value) {
+        return value >= 0;
+    }
+
     class Page extends Airliners.EICASTemplateElement {
         constructor() {
             super();
@@ -223,11 +233,11 @@ var A320_Neo_LowerECAM_APU;
     }
 
     function shouldShowEgt() {
-        return getEgt() > -Number.MAX_VALUE;
+        return hasThermodynamicTemperatureValue(getEgt());
     }
 
     function shouldShowN() {
-        return getN() > -Number.MAX_VALUE;
+        return hasRatioValue(getN());
     }
 
     function toggleVisibility(element, condition) {
