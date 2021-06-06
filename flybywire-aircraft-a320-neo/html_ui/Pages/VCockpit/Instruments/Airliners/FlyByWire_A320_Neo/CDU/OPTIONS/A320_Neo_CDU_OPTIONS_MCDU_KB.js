@@ -43,8 +43,8 @@ class CDU_OPTIONS_MCDU_KB {
             if (mcduInput !== "ALL") {
                 mcdu.clearFocus();
                 NXDataStore.set("MCDU_KB_INPUT", "ALL");
-                CDU_OPTIONS_MCDU_RESET.ShowPage(mcdu, "ALL");
                 mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
+                CDU_OPTIONS_MCDU_KB.ShowPage(mcdu);
             }
         };
         mcdu.leftInputDelay[1] = () => {
@@ -54,8 +54,8 @@ class CDU_OPTIONS_MCDU_KB {
             if (mcduInput !== "NONE") {
                 mcdu.clearFocus();
                 NXDataStore.set("MCDU_KB_INPUT", "NONE");
-                CDU_OPTIONS_MCDU_RESET.ShowPage(mcdu, "NONE");
                 mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
+                CDU_OPTIONS_MCDU_KB.ShowPage(mcdu);
             }
         };
 
