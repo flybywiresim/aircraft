@@ -513,7 +513,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
 
     // input ----------------------------------------------------------------------------------------------------------
-    autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active | simData.ap_fd_2_active;
+    autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
     autopilotStateMachineInput.in.input.AP_ENGAGE_push = simInputAutopilot.AP_engage;
     autopilotStateMachineInput.in.input.AP_1_push = simInputAutopilot.AP_1_push;
     autopilotStateMachineInput.in.input.AP_2_push = simInputAutopilot.AP_2_push;
@@ -1176,6 +1176,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
     autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
+    autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
 
     // step the model -------------------------------------------------------------------------------------------------
     autoThrust.setExternalInputs(&autoThrustInput);
