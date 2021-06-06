@@ -116,6 +116,7 @@ typedef struct {
   boolean_T is_anti_ice_engine_2_active;
   boolean_T is_air_conditioning_1_active;
   boolean_T is_air_conditioning_2_active;
+  boolean_T FD_active;
 } athr_input;
 
 #endif
@@ -204,6 +205,7 @@ typedef struct {
   boolean_T is_FLX_active;
   boolean_T ATHR_push;
   boolean_T ATHR_disabled;
+  real_T time_since_touchdown;
 } athr_data_computed;
 
 #endif
