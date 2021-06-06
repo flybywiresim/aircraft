@@ -96,6 +96,9 @@
 1. [AP+PFD] Added triple click and FMA mode reversion logic - @aguther (Andreas Guther)
 1. [AP] Automatically arm NAV on ground when flight plan becomes available - @aguther (Andreas Guther)
 1. [FCU] Automatically connect flight directors when FCU is powered on - @aguther (Andreas Guther)
+1. [AP] Improved disengage conditions for ROLL OUT and when excessive pitch or roll attitude - @aguther (Andreas Guther)
+1. [FBW] Improved ground spoiler logic - @aguther (Andreas Guther)
+1. [ATHR] Fixed incorrect THR LK activation when A/THR disconnect buttons have been used - @aguther (Andreas Guther)
 1. [MCDU] MCDU accepts direct keyboard input (enabled by new option in A32NX Realism Settings). - @2hwk (2Cas#1022)
 
 ## 0.6.0
