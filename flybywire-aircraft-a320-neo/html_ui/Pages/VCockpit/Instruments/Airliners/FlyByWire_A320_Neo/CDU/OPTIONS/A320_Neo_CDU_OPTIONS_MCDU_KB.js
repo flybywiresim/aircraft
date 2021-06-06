@@ -44,7 +44,7 @@ class CDU_OPTIONS_MCDU_KB {
                 mcdu.clearFocus();
                 NXDataStore.set("MCDU_KB_INPUT", "ALL");
                 CDU_OPTIONS_MCDU_RESET.ShowPage(mcdu, "ALL");
-                mcdu.addNewMessage(NXFictionalMessages.reloadPlane);
+                mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
             }
         };
         mcdu.leftInputDelay[1] = () => {
@@ -55,7 +55,7 @@ class CDU_OPTIONS_MCDU_KB {
                 mcdu.clearFocus();
                 NXDataStore.set("MCDU_KB_INPUT", "NONE");
                 CDU_OPTIONS_MCDU_RESET.ShowPage(mcdu, "NONE");
-                mcdu.addNewMessage(NXFictionalMessages.reloadPlane);
+                mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
             }
         };
 
