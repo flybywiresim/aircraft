@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
-import DayNight from './DayNight';
+import getDayNightState from './DayNight';
 
 const getDisplayString = (seconds: number, running: boolean) : string => (seconds === 0 && !running ? ''
     : `${Math.floor(Math.min(seconds, 359940) / 3600).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor((Math.min(seconds, 359940) % 3600) / 60)).toString().padStart(2, '0')}`);
@@ -9,6 +9,7 @@ export const ElapsedTime = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [elapsedKnobPos] = useInteractionSimVar('L:A32NX_CHRONO_ET_SWITCH_POS', 'number', 'A32NX_CHRONO_ET_POS_CHANGED');
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 1000);
+    const [localTime] = useSimVar('E:LOCAL TIME', 'seconds', 200);
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -23,6 +24,6 @@ export const ElapsedTime = () => {
     }, [absTime, elapsedKnobPos]);
 
     return (
-        <text x="47" y="247" className={`fontBig ${DayNight()}`}>{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, elapsedKnobPos === 0)}</text>
+        <text x="47" y="247" className={`fontBig ${getDayNightState(localTime)}`}>{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, elapsedKnobPos === 0)}</text>
     );
 };
