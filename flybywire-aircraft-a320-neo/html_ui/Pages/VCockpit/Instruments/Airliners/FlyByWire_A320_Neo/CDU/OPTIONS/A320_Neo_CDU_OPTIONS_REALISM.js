@@ -42,6 +42,7 @@ class CDU_OPTIONS_REALISM {
             } else {
                 NXDataStore.set("CONFIG_SELF_TEST_TIME", value);
             }
+            mcdu.clearFocus();
             CDU_OPTIONS_REALISM.ShowPage(mcdu);
         };
 

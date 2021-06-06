@@ -48,7 +48,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     Init() {
         super.Init();
-
+        Coherent.trigger('UNFOCUS_INPUT_FIELD');            // note: without this, resetting mcdu kills camera
         let mainFrame = this.getChildById("Mainframe");
         if (mainFrame == null) {
             mainFrame = this;
@@ -77,14 +77,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._inOutElement.style.removeProperty("color");
         this._inOutElement.className = "white";
 
-        this.setFocusTimeout = (func) => {
-            if (this.inFocus) {
+        this.setTimeout = (func) => {
+            setTimeout(() => {
                 func;
-            } else {
-                setTimeout(() => {
-                    func;
-                }, this.getDelaySwitchPage());
-            }
+            }, this.getDelaySwitchPage());
         };
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
@@ -875,7 +871,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     clearFocus() {
         this.inFocus = false;
-        this._inOutElement.style = "";
+        Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        this._inOutElement.style = null;
+        this.getChildById("header").style = null;
         if (this.check_focus) {
             clearInterval(this.check_focus);
         }
@@ -885,19 +883,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         window.document.addEventListener('click', () => {
 
             const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "NONE");
-            const mcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60")) * 1000;
+            const mcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
+            const isPoweredL = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number");
+            const isPoweredR = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Number");
 
+            // TODO: L/R MCDU
             if (mcduInput != "NONE") {
                 this.inFocus = !this.inFocus;
-                if (this.inFocus) {
-                    this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.16);";
+                if (this.inFocus && (isPoweredL || isPoweredR)) {
+
+                    this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);"
+                    this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
+                    Coherent.trigger('FOCUS_INPUT_FIELD');
+                    this.lastInput = new Date().getTime() / 1000;
                     if (mcduTimeout) {
                         this.check_focus = setInterval(() => {
                             const time = new Date().getTime() / 1000;
-                            if (this.lastInput + mcduTimeout <= time) {
+                            if (time - this.lastInput >= mcduTimeout) {
                                 this.clearFocus();
                             }
-                        }, mcduTimeout);
+                        }, Math.min(mcduTimeout * 1000 / 2, 1000));
                     }
                 } else {
                     this.clearFocus();
@@ -913,35 +918,35 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (keycode >= 96 && keycode <= 105) {
                     keycode -= 48;  // numpad support
                 }
+                // Note: tried using H-events, worse performance. Reverted to direct input.
                 if (keycode >= 48 && keycode <= 57 || keycode >= 65 && keycode <= 90) { // alphanumerics
                     const letter = String.fromCharCode(keycode)
-                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_"+ letter.toUpperCase(), "Number", 1);
+                    this.onLetterInput(letter);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_"+ letter.toUpperCase(), "Number", 1); // TODO: L/R [1/2] side MCDU Split
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_"+ letter.toUpperCase(), "Number", 1);
                 }
                 else if (keycode === 190 || keycode === 110) { // .
-                    this.handlePreviousInputState();
-                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_DOT", "Number", 1);
+                    this.onDot();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_DOT", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_DOT", "Number", 1);
                 }
                 else if (keycode === 191) { // Fwd Slash
-                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_SLASH", "Number", 1);
+                    this.onDiv();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SLASH", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SLASH", "Number", 1);
                 }
                 else if (keycode === 8) { // Backspace
-                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_CLR", "Number", 1);
+                    this.onClr();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
                 }
                 else if (keycode === 32) { // Space
-                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_SP", "Number", 1);
+                    this.onSp();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SP", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SP", "Number", 1);
                 }
                 else if (keycode === 187 || keycode === 189 || keycode === 107 || keycode === 109) {    // Plus/Minus Keys
-                    SimVar.SetSimVarValue("H:A320_Neo_CDU_1_BTN_PLUSMINUS", "Number", 1);
+                    this.onPlusMinus();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_PLUSMINUS", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_PLUSMINUS", "Number", 1);
                 }
@@ -1104,17 +1109,29 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                 }, this.getDelaySwitchPage());
             } else if (input === "SP") {
-                this.setFocusTimeout(this.opSp());
+                setTimeout(() => {
+                    this.onSp()
+                }, this.getDelaySwitchPage());
             } else if (input === "DEL") {
-                this.setFocusTimeout(this.onDel());
+                setTimeout(() => {
+                    this.onDel()
+                }, this.getDelaySwitchPage());
             } else if (input === "CLR") {
-                this.setFocusTimeout(this.onClr());
+                setTimeout(() => {
+                    this.onClr()
+                }, this.getDelaySwitchPage());
             } else if (input === "DIV") {
-                this.setFocusTimeout(this.onDiv());
+                setTimeout(() => {
+                    this.onDiv()
+                }, this.getDelaySwitchPage());
             } else if (input === "DOT") {
-                this.setFocusTimeout(this.onDot());
+                setTimeout(() => {
+                    this.onDot()
+                }, this.getDelaySwitchPage());
             } else if (input === "PLUSMINUS") {
-                this.setFocusTimeout(this.onPlusMinus());
+                setTimeout(() => {
+                    this.onPlusMinus()
+                }, this.getDelaySwitchPage());
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
             } else if (input.length === 2 && input[0] === "L") {

@@ -87,6 +87,7 @@ class CDU_OPTIONS_MCDU_KB {
         };
         mcdu.onLeftInput[4] = () => {
             if (reset)
+                Coherent.trigger('UNFOCUS_INPUT_FIELD');
                 window.document.location.reload(true);
         };
         mcdu.leftInputDelay[5] = () => {
