@@ -54,6 +54,7 @@ class AutopilotStateMachineModelClass {
     real_T timeDeltaSpeed4;
     real_T timeDeltaSpeed10;
     real_T timeConditionSoftAlt;
+    real_T runwayHeadingStored;
     real_T eventTime_a;
     real_T eventTime_iz;
     real_T eventTime_c;
