@@ -1,6 +1,6 @@
 use crate::{
     shared::LandingGearPosition,
-    simulation::{SimulationElement, SimulatorReader},
+    simulation::{Read, SimulationElement, SimulatorReader},
 };
 use uom::si::{f64::*, ratio::percent};
 
@@ -31,7 +31,7 @@ impl LandingGearPosition for LandingGear {
 }
 impl SimulationElement for LandingGear {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.position = Ratio::new::<percent>(reader.read_f64(LandingGear::GEAR_CENTER_POSITION));
+        self.position = reader.read(LandingGear::GEAR_CENTER_POSITION);
     }
 }
 impl Default for LandingGear {
