@@ -138,6 +138,35 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }
         };
+        this.onLeftFunction = (f) => {
+            if (isFinite(f)) {
+                if (this.onLeftInput[f]) {
+                    const value = this.clearUserInput();
+                    const cur = this.page.Current;
+                    setTimeout(() => {
+                        if (this.page.Current === cur) {
+                            this.onLeftInput[f](value);
+                            this.tryClearOldUserInput();
+                        }
+                    }, this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic());
+                }
+            }
+        };
+        this.onRightFunction = (f) => {
+            if (isFinite(f)) {
+                if (this.onRightInput[f]) {
+                    const value = this.clearUserInput();
+                    const cur = this.page.Current;
+                    setTimeout(() => {
+                        if (this.page.Current === cur) {
+                            this.onRightInput[f](value);
+                            this.tryClearOldUserInput();
+                        }
+                    }, this.rightInputDelay[f] ? this.rightInputDelay[f]() : this.getDelayBasic());
+                }
+            }
+        };
+
         this.PageTimeout = {
             Prog: 2000,
             Dyn: 1500
@@ -942,6 +971,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.onPlusMinus();
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_PLUSMINUS", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_PLUSMINUS", "Number", 1);
+                } else if (keycode >= KeyCode.KEY_F1 && keycode <= KeyCode.KEY_F6) {
+                    const func_num = keycode - KeyCode.KEY_F1 + 1;
+                    this.onLeftFunction(func_num);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_L" + func_num, "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_L" + func_num, "Number", 1);
+                } else if (keycode >= KeyCode.KEY_F7 && keycode <= KeyCode.KEY_F12) {
+                    const func_num = keycode - KeyCode.KEY_F7 + 1;
+                    this.onRightFunction(func_num);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_R" + func_num, "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_R" + func_num, "Number", 1);
                 }
             }
         });
@@ -1128,32 +1167,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this._apLocalizerOn = !this._apLocalizerOn;
             } else if (input.length === 2 && input[0] === "L") {
                 const v = parseInt(input[1]);
-                if (isFinite(v)) {
-                    if (this.onLeftInput[v - 1]) {
-                        const value = this.clearUserInput();
-                        const cur = this.page.Current;
-                        setTimeout(() => {
-                            if (this.page.Current === cur) {
-                                this.onLeftInput[v - 1](value);
-                                this.tryClearOldUserInput();
-                            }
-                        }, this.leftInputDelay[v - 1] ? this.leftInputDelay[v - 1](value) : this.getDelayBasic());
-                    }
-                }
+                this.onLeftFunction(v - 1);
             } else if (input.length === 2 && input[0] === "R") {
                 const v = parseInt(input[1]);
-                if (isFinite(v)) {
-                    if (this.onRightInput[v - 1]) {
-                        const value = this.clearUserInput();
-                        const cur = this.page.Current;
-                        setTimeout(() => {
-                            if (this.page.Current === cur) {
-                                this.onRightInput[v - 1](value);
-                                this.tryClearOldUserInput();
-                            }
-                        }, this.rightInputDelay[v - 1] ? this.rightInputDelay[v - 1]() : this.getDelayBasic());
-                    }
-                }
+                this.onRightFunction(v - 1);
             } else if (input.length === 1 && FMCMainDisplay._AvailableKeys.indexOf(input) !== -1) {
                 setTimeout(() => {
                     this.onLetterInput(input);
