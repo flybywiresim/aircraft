@@ -1270,8 +1270,8 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
 
   // update simulation variables
   spoilersHandler->setSimulationVariables(
-      simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP1 == 1,
-      simData.V_ias_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
+      simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP2 == 1,
+      simData.V_gnd_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
       simData.flaps_handle_index, flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1);
 
   // check state of spoilers and adapt if necessary
