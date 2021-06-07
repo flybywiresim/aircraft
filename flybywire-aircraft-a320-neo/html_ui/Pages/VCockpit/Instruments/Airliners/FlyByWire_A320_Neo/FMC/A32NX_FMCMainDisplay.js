@@ -1309,10 +1309,14 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.tropo) {
                 this.tropo = "";
                 return true;
-            } else {
-                this.addNewMessage(NXSystemMessages.notAllowed);
-                return false;
             }
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
+        if (!tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
         }
 
         const value = parseInt(tropo);
