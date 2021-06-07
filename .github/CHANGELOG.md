@@ -100,6 +100,7 @@
 1. [FBW] Improved ground spoiler logic - @aguther (Andreas Guther)
 1. [ATHR] Fixed incorrect THR LK activation when A/THR disconnect buttons have been used - @aguther (Andreas Guther)
 1. [ATHR] Support flight director off take-off procedure - @aguther (Andreas Guther)
+1. [MCDU] Fixed tropo entry validation - @MisterChocker (Leon)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

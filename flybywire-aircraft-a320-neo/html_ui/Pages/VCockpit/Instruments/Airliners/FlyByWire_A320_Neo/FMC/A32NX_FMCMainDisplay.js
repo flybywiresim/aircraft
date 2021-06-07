@@ -1301,22 +1301,27 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Any tropopause altitude up to 60,000 ft is able to be entered
-     * @param {string | number} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
+     * @param {string} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
      * @return {boolean} Whether tropopause could be set or not
      */
     tryUpdateTropo(tropo) {
-        const _tropo = typeof tropo === 'number' ? tropo.toString() : tropo;
-        if (_tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
-            const value = parseInt(_tropo.padEnd(5, '0'));
-            if (isFinite(value)) {
-                if (value >= 0 && value <= 60000) {
-                    const valueRounded = Math.round(value / 10) * 10;
-                    this.tropo = valueRounded.toString();
-                    return true;
-                }
+        if (tropo === FMCMainDisplay.clrValue) {
+            if (this.tropo) {
+                this.tropo = "";
+                return true;
+            } else {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return false;
             }
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
+
+        const value = parseInt(tropo);
+        if (isFinite(value) && value >= 0 && value <= 60000) {
+            this.tropo = ("" + Math.round(value / 10) * 10).padStart(5, "0");
+            return true;
+        }
+
+        this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
 
