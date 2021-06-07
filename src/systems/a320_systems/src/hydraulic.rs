@@ -599,20 +599,26 @@ impl SimulationElement for A320Hydraulic {
         let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
             && self.engine_driven_pump_2_controller.should_pressurise();
 
-        let estimated_yellow_epump_flow: VolumeRate;
+        let mut estimated_yellow_epump_flow: VolumeRate;
         if self.yellow_electric_pump_controller.should_pressurise() {
             if yellow_edp_outputs_some_flow {
                 estimated_yellow_epump_flow = self.yellow_loop.current_flow() * 0.2;
             } else {
                 estimated_yellow_epump_flow = self.yellow_loop.current_flow();
             }
+
+            if self.power_transfer_unit.is_active_right_to_left() {
+                estimated_yellow_epump_flow += self.power_transfer_unit.flow();
+            } else if self.power_transfer_unit.is_active_left_to_right() {
+                estimated_yellow_epump_flow -= self.power_transfer_unit.flow();
+            }
         } else {
             estimated_yellow_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
         }
-        writer.write(
-            "HYD_YELLOW_EPUMP_FLOW",
-            estimated_yellow_epump_flow.get::<gallon_per_second>(),
-        );
+        let yellow_flow_simvar = estimated_yellow_epump_flow
+            .get::<gallon_per_second>()
+            .max(0.);
+        writer.write("HYD_YELLOW_EPUMP_FLOW", yellow_flow_simvar);
 
         let ram_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
 
@@ -626,10 +632,8 @@ impl SimulationElement for A320Hydraulic {
         } else {
             estimated_blue_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
         }
-        writer.write(
-            "HYD_BLUE_EPUMP_FLOW",
-            estimated_blue_epump_flow.get::<gallon_per_second>(),
-        );
+        let blue_flow_simvar = estimated_blue_epump_flow.get::<gallon_per_second>().max(0.);
+        writer.write("HYD_BLUE_EPUMP_FLOW", blue_flow_simvar);
     }
 }
 
