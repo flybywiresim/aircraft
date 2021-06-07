@@ -27,6 +27,10 @@ const ecamPages = [
         name: 'wheel-page',
         path: 'SD/Pages/Wheel',
     },
+    {
+        name: 'crz-page',
+        path: 'SD/Pages/Crz',
+    },
 ];
 
 function getInputs() {
