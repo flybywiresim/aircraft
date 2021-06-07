@@ -101,10 +101,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.tryShowMessage();
         };
         this.onClrHeld = () => {
-            if (this.inOut !== "" && this.inOut !== FMCMainDisplay.clrValue) {
+            if (this.inOut === FMCMainDisplay.clrValue) {
                 this.inOut = "";
-                this.tryShowMessage();
+            } else if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
+                this.inOut = "";
             }
+            this.tryShowMessage();
         };
 
         this.PageTimeout = {
