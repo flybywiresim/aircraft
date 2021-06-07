@@ -102,6 +102,7 @@
 1. [ATHR] Support flight director off take-off procedure - @aguther (Andreas Guther)
 1. [MCDU] Fixed tropo entry validation - @MisterChocker (Leon)
 1. [AP/FMGC] Improved managed speed and V2 validity - @aguther (Andreas Guther)
+1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
