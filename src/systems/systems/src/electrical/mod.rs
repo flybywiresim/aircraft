@@ -8,7 +8,7 @@ mod engine_generator;
 mod external_power_source;
 mod static_inverter;
 mod transformer_rectifier;
-use std::{cmp::Ordering, time::Duration};
+use std::{cmp::Ordering, collections::HashMap, time::Duration};
 
 pub use battery::Battery;
 pub use battery_charge_limiter::BatteryChargeLimiter;
@@ -320,7 +320,7 @@ impl ElectricalBus {
         identifier_provider: &mut impl ElectricalElementIdentifierProvider,
     ) -> ElectricalBus {
         ElectricalBus {
-            identifier: identifier_provider.next(),
+            identifier: identifier_provider.next_for_bus(bus_type),
             bus_powered_id: format!("ELEC_{}_BUS_IS_POWERED", bus_type.to_string()),
             bus_potential_normal_id: format!("ELEC_{}_BUS_POTENTIAL_NORMAL", bus_type.to_string()),
             input_potential: Potential::none(),
@@ -1349,23 +1349,38 @@ impl ElectricalElementIdentifier {
 
 pub trait ElectricalElementIdentifierProvider {
     fn next(&mut self) -> ElectricalElementIdentifier;
+    fn next_for_bus(&mut self, bus_type: ElectricalBusType) -> ElectricalElementIdentifier;
 }
 
 #[derive(Debug)]
 pub struct Electricity {
     next_identifier: ElectricalElementIdentifier,
+    buses: HashMap<ElectricalBusType, ElectricalElementIdentifier>,
 }
 impl Electricity {
     pub fn new() -> Self {
         Self {
             next_identifier: ElectricalElementIdentifier::first(),
+            buses: HashMap::new(),
         }
+    }
+
+    #[cfg(test)]
+    fn identifier_for(&self, bus_type: ElectricalBusType) -> Option<&ElectricalElementIdentifier> {
+        self.buses.get(&bus_type)
     }
 }
 impl ElectricalElementIdentifierProvider for Electricity {
     fn next(&mut self) -> ElectricalElementIdentifier {
         let identifier = self.next_identifier;
         self.next_identifier = identifier.next();
+
+        identifier
+    }
+
+    fn next_for_bus(&mut self, bus_type: ElectricalBusType) -> ElectricalElementIdentifier {
+        let identifier = self.next();
+        self.buses.insert(bus_type, identifier);
 
         identifier
     }
@@ -1384,5 +1399,44 @@ mod new_tests {
             assert!(identifier.0 < next_identifier.0);
             identifier = next_identifier;
         }
+    }
+
+    #[test]
+    fn next_for_bus_provides_increasing_identifiers() {
+        let mut electricity = Electricity::new();
+        let mut identifier = electricity.next();
+        for _ in 1..=10 {
+            let next_identifier = electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery);
+            assert!(identifier.0 < next_identifier.0);
+            identifier = next_identifier;
+        }
+    }
+
+    #[test]
+    fn next_and_next_for_bus_together_provide_increasing_identifiers() {
+        let mut electricity = Electricity::new();
+        let mut identifier = electricity.next();
+        for n in 1..=10 {
+            let next_identifier = if n % 2 == 0 {
+                electricity.next()
+            } else {
+                electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery)
+            };
+            assert!(identifier.0 < next_identifier.0);
+            identifier = next_identifier;
+        }
+    }
+
+    #[test]
+    fn next_for_bus_identifier_matches_looked_up_identifier() {
+        let mut electricity = Electricity::new();
+
+        electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery);
+        let identifier = electricity.next_for_bus(ElectricalBusType::DirectCurrentEssential);
+
+        assert!(
+            electricity.identifier_for(ElectricalBusType::DirectCurrentEssential)
+                == Some(&identifier)
+        );
     }
 }
