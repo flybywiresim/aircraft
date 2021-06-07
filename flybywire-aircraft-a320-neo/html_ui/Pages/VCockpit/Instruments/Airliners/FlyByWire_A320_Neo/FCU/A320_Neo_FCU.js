@@ -170,6 +170,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this._rotaryEncoderTimeout = 300;
         this._rotaryEncoderIncrement = 0.15;
         this._rotaryEncoderPreviousTimestamp = 0;
+
+        this.onPull();
     }
 
     init() {
@@ -523,10 +525,11 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.textTRK = this.getTextElement("TRK");
         this.textLAT = this.getTextElement("LAT");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(true, false, false, false, true, 0, false, true);
-        this.selectedValue = -1;
-        this.isSelectedValueActive = false;
+        this.currentValue = -1;
+        this.selectedValue = Simplane.getAltitudeAboveGround() > 1000 ? this.getCurrentHeading() : 0;
+        this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
+        this.refresh(true, false, false, false, true, 0, false, true);
         this.onPull();
     }
 
@@ -828,13 +831,11 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         this.isActive = false;
         this.isManaged = false;
         this.currentValue = 0;
-        let initValue = Simplane.getAltitude();
-        if (initValue <= 5000) {
-            initValue = 5000;
-        } else {
-            initValue = Math.round(initValue / 100) * 100;
+        let initValue = 100;
+        if (Simplane.getAltitudeAboveGround() > 1000) {
+            initValue = Math.min(49000, Math.max(100, Math.round(Simplane.getAltitude() / 100) * 100));
         }
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, initValue, true);
+        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 3, initValue, true);
         this.refresh(false, false, initValue, 0, true);
     }
     reboot() {
