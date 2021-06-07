@@ -627,17 +627,14 @@ class FMCMainDisplay extends BaseAirliners {
             this.managedSpeedTargetIsMach = isMach;
         }
 
-        if (!this.isAirspeedManaged()) {
-            return;
-        }
-
         // Overspeed protection
         const Vtap = Math.min(this.managedSpeedTarget, SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number"));
-
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", vPfd);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", Vtap);
 
-        Coherent.call("AP_SPD_VAR_SET", 0, Vtap);
+        if (this.isAirspeedManaged()) {
+            Coherent.call("AP_SPD_VAR_SET", 0, Vtap);
+        }
     }
 
     activatePreSelSpeedMach(preSel) {
