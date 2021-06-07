@@ -361,7 +361,10 @@ class A32NX_FlightPhase_Done {
     }
 
     init(_fmc) {
-        SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
+        CDUIdentPage.ShowPage(_fmc);
+        _fmc.initVariables();
+        _fmc.initMcduVariables();
+        _fmc.forceClearScratchpad();
         CDUIdentPage.ShowPage(_fmc);
     }
 

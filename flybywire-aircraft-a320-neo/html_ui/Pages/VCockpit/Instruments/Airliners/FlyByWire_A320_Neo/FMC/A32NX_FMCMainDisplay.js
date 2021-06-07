@@ -1,6 +1,107 @@
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
+        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
+        this.fmsUpdateThrottler = new UpdateThrottler(250);
+        this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
+        this.currentFlightPhase = FmgcFlightPhases.PREFLIGHT;
+        this._apCooldown = 500;
+    }
+
+    Init() {
+        super.Init();
+        this.initVariables();
+
+        this.A32NXCore = new A32NX_Core();
+        this.A32NXCore.init(this._lastTime);
+
+        this.dataManager = new FMCDataManager(this);
+
+        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
+
+        this.tempCurve = new Avionics.Curve();
+        this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
+        this.tempCurve.add(-10 * 3.28084, 21.50);
+        this.tempCurve.add(0, 15.00);
+        this.tempCurve.add(10 * 3.28084, 8.50);
+        this.tempCurve.add(20 * 3.28084, 2.00);
+        this.tempCurve.add(30 * 3.28084, -4.49);
+        this.tempCurve.add(40 * 3.28084, -10.98);
+        this.tempCurve.add(50 * 3.28084, -17.47);
+        this.tempCurve.add(60 * 3.28084, -23.96);
+        this.tempCurve.add(70 * 3.28084, -30.45);
+        this.tempCurve.add(80 * 3.28084, -36.94);
+        this.tempCurve.add(90 * 3.28084, -43.42);
+        this.tempCurve.add(100 * 3.28084, -49.90);
+        this.tempCurve.add(150 * 3.28084, -56.50);
+        this.tempCurve.add(200 * 3.28084, -56.50);
+        this.tempCurve.add(250 * 3.28084, -51.60);
+        this.tempCurve.add(300 * 3.28084, -46.64);
+        this.tempCurve.add(400 * 3.28084, -22.80);
+        this.tempCurve.add(500 * 3.28084, -2.5);
+        this.tempCurve.add(600 * 3.28084, -26.13);
+        this.tempCurve.add(700 * 3.28084, -53.57);
+        this.tempCurve.add(800 * 3.28084, -74.51);
+
+        this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
+        this.cruiseFlightLevel /= 100;
+
+        this.flightPlanManager.onCurrentGameFlightLoaded(() => {
+            this.flightPlanManager.updateFlightPlan(() => {
+                this.flightPlanManager.updateCurrentApproach(() => {
+                    const frequency = this.flightPlanManager.getApproachNavFrequency();
+                    if (isFinite(frequency)) {
+                        const freq = Math.round(frequency * 100) / 100;
+                        if (this.connectIlsFrequency(freq)) {
+                            this._ilsFrequencyPilotEntered = false;
+                            SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
+                            const approach = this.flightPlanManager.getApproach();
+                            if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
+                                const runway = this.flightPlanManager.getApproachRunway();
+                                if (runway) {
+                                    SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_COURSE", "number", runway.direction);
+                                }
+                            }
+                        }
+                    }
+                });
+                const callback = () => {
+                    this.flightPlanManager.createNewFlightPlan();
+                    const cruiseAlt = Math.floor(this.flightPlanManager.cruisingAltitude / 100);
+                    console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
+                    if (cruiseAlt > 0) {
+                        this.cruiseFlightLevel = cruiseAlt;
+                    }
+                };
+                const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
+                if (arrivalIndex >= 0) {
+                    this.flightPlanManager.setArrivalProcIndex(arrivalIndex, callback);
+                } else {
+                    callback();
+                }
+            });
+        });
+
+        this.updateFuelVars();
+
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
+        CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
+        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+
+        // Start the check routine for system health and status
+        setInterval(() => {
+            if (this.currentFlightPhase === FmgcFlightPhases.CRUISE && !this._destDataChecked) {
+                const dest = this.flightPlanManager.getDestination();
+                if (dest && dest.liveDistanceTo < 180) {
+                    this._destDataChecked = true;
+                    this.checkDestData();
+                }
+            }
+        }, 15000);
+    }
+
+    initVariables() {
         this.currentFlightPlanWaypointIndex = -1;
         this.costIndex = 0;
         this.costIndexSet = false;
@@ -26,6 +127,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprWindSpeed = NaN;
         this.perfApprTransAlt = NaN;
         this.perfApprTransAltPilotEntered = false;
+        this.v1Speed = undefined;
+        this.vRSpeed = undefined;
+        this.v2Speed = undefined;
         this._v1Checked = true;
         this._vRChecked = true;
         this._v2Checked = true;
@@ -65,6 +169,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.engineOutAccelerationAltitude = NaN;
         this.engineOutAccelerationAltitudeGoaround = NaN;
         this.engineOutAccelerationAltitudeIsPilotEntered = false;
+        this.transitionAltitudeIsPilotEntered = false;
 
         this._windDirections = {
             TAILWIND : "TL",
@@ -101,7 +206,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.tropo = "";
         this._destDataChecked = false;
         this._towerHeadwind = 0;
-        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
         this._EfobBelowMinClr = false;
         this.simbrief = {
             route: "",
@@ -147,10 +251,13 @@ class FMCMainDisplay extends BaseAirliners {
             des: [],
             alternate: null
         };
+        this.computedVgd = undefined;
+        this.computedVfs = undefined;
+        this.computedVss = undefined;
+        this.computedVls = undefined;
         this.approachSpeeds = undefined; // based on selected config, not current config
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
-        this.currentFlightPhase = FmgcFlightPhases.PREFLIGHT;
         this.constraintAlt = 0;
         this.constraintAltCached = 0;
         this.fcuSelAlt = 0;
@@ -159,15 +266,11 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateAutopilotCooldown = 0;
         this._lastHasReachFlex = false;
         this._apMasterStatus = false;
-        this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
-        this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = undefined;
         this._activeCruiseFlightLevelDefaulToFcu = false;
-        this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDist = undefined;
-        this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
         this.preSelectedClbSpeed = undefined;
         this.preSelectedCrzSpeed = undefined;
         this.preSelectedDesSpeed = undefined;
@@ -188,48 +291,18 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendMach = .78;
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
-    }
 
-    Init() {
-        super.Init();
-
-        this.A32NXCore = new A32NX_Core();
-        this.A32NXCore.init(this._lastTime);
-
-        this.dataManager = new FMCDataManager(this);
-
-        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
-
-        this.tempCurve = new Avionics.Curve();
-        this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
-        this.tempCurve.add(-10 * 3.28084, 21.50);
-        this.tempCurve.add(0, 15.00);
-        this.tempCurve.add(10 * 3.28084, 8.50);
-        this.tempCurve.add(20 * 3.28084, 2.00);
-        this.tempCurve.add(30 * 3.28084, -4.49);
-        this.tempCurve.add(40 * 3.28084, -10.98);
-        this.tempCurve.add(50 * 3.28084, -17.47);
-        this.tempCurve.add(60 * 3.28084, -23.96);
-        this.tempCurve.add(70 * 3.28084, -30.45);
-        this.tempCurve.add(80 * 3.28084, -36.94);
-        this.tempCurve.add(90 * 3.28084, -43.42);
-        this.tempCurve.add(100 * 3.28084, -49.90);
-        this.tempCurve.add(150 * 3.28084, -56.50);
-        this.tempCurve.add(200 * 3.28084, -56.50);
-        this.tempCurve.add(250 * 3.28084, -51.60);
-        this.tempCurve.add(300 * 3.28084, -46.64);
-        this.tempCurve.add(400 * 3.28084, -22.80);
-        this.tempCurve.add(500 * 3.28084, -2.5);
-        this.tempCurve.add(600 * 3.28084, -26.13);
-        this.tempCurve.add(700 * 3.28084, -53.57);
-        this.tempCurve.add(800 * 3.28084, -74.51);
-
-        this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
-        this.cruiseFlightLevel /= 100;
-
+        // Reset SimVars
         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
 
-        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
+        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
+
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
+        CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
+        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
 
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
@@ -237,61 +310,11 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
         SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
-        this.flightPlanManager.onCurrentGameFlightLoaded(() => {
-            this.flightPlanManager.updateFlightPlan(() => {
-                this.flightPlanManager.updateCurrentApproach(() => {
-                    const frequency = this.flightPlanManager.getApproachNavFrequency();
-                    if (isFinite(frequency)) {
-                        const freq = Math.round(frequency * 100) / 100;
-                        if (this.connectIlsFrequency(freq)) {
-                            this._ilsFrequencyPilotEntered = false;
-                            SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
-                            const approach = this.flightPlanManager.getApproach();
-                            if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
-                                const runway = this.flightPlanManager.getApproachRunway();
-                                if (runway) {
-                                    SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_COURSE", "number", runway.direction);
-                                }
-                            }
-                        }
-                    }
-                });
-                const callback = () => {
-                    this.flightPlanManager.createNewFlightPlan();
-                    SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-                    SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-                    SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
-                    const cruiseAlt = Math.floor(this.flightPlanManager.cruisingAltitude / 100);
-                    console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
-                    if (cruiseAlt > 0) {
-                        this.cruiseFlightLevel = cruiseAlt;
-                    }
-                };
-                const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
-                if (arrivalIndex >= 0) {
-                    this.flightPlanManager.setArrivalProcIndex(arrivalIndex, callback);
-                } else {
-                    callback();
-                }
-            });
-        });
+        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
 
-        this.updateFuelVars();
-
-        CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
-        CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
-        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
-
-        // Start the check routine for system health and status
-        setInterval(() => {
-            if (this.currentFlightPhase === FmgcFlightPhases.CRUISE && !this._destDataChecked) {
-                const dest = this.flightPlanManager.getDestination();
-                if (dest && dest.liveDistanceTo < 180) {
-                    this._destDataChecked = true;
-                    this.checkDestData();
-                }
-            }
-        }, 15000);
+        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
+        SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
     }
 
     onUpdate(_deltaTime) {
@@ -359,10 +382,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.CLIMB: {
-                //TODO: when react PFD move vspeed reset to done flight phase (currently needed to keep the PFD working)
-                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
-                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
-                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
 
                 this._destDataChecked = false;
 
