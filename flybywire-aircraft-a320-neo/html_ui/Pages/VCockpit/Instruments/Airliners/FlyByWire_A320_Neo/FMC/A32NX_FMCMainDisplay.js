@@ -200,6 +200,9 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
 
+        this.raas = new A32NX_RAAS(this);
+        this.raas.init();
+
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
         this.tempCurve.add(-10 * 3.28084, 21.50);
@@ -318,6 +321,8 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         this.A32NXCore.update();
+
+        this.raas.update();
 
         this.updateAutopilot();
 
