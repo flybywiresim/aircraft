@@ -337,7 +337,7 @@ impl Autobrake {
     pub fn new() -> Autobrake {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
-            ki: 0.2,
+            ki: 0.02,
             kp: 0.2,
             last_error: 0.,
 
@@ -388,7 +388,7 @@ impl Autobrake {
                 - self.target.get::<meter_per_second_squared>();
 
             let p_term = self.kp * (target_error - self.last_error);
-            let i_term = self.ki * target_error * context.delta_as_secs_f64();
+            let i_term = self.ki * target_error;
             self.current_output += p_term + i_term;
 
             self.last_error = target_error;
