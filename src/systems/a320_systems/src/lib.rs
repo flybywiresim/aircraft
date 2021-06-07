@@ -18,7 +18,7 @@ use systems::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
-    electrical::{consumption::SuppliedPower, ElectricalSystem, ExternalPowerSource},
+    electrical::{consumption::SuppliedPower, ElectricalSystem, Electricity, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     landing_gear::LandingGear,
     shared::ElectricalBusType,
@@ -45,9 +45,11 @@ pub struct A320 {
 }
 impl A320 {
     pub fn new() -> A320 {
+        let mut electricity = Electricity::new();
         A320 {
             apu: AuxiliaryPowerUnitFactory::new_aps3200(
                 1,
+                &mut electricity,
                 APU_START_MOTOR_BUS_TYPE,
                 ElectricalBusType::DirectCurrentBattery,
                 ElectricalBusType::DirectCurrentBattery,
@@ -61,7 +63,7 @@ impl A320 {
             engine_1: LeapEngine::new(1),
             engine_2: LeapEngine::new(2),
             engine_fire_overhead: EngineFireOverheadPanel::new(),
-            electrical: A320Electrical::new(),
+            electrical: A320Electrical::new(&mut electricity),
             power_consumption: A320PowerConsumption::new(),
             ext_pwr: ExternalPowerSource::new(),
             hydraulic: A320Hydraulic::new(),

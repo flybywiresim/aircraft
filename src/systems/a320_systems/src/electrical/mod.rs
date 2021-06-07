@@ -13,8 +13,9 @@ use systems::electrical::Potential;
 use systems::{
     electrical::{
         consumption::SuppliedPower, AlternatingCurrentElectricalSystem, BatteryPushButtons,
-        ElectricalSystem, EmergencyElectrical, EmergencyGenerator, EngineGeneratorPushButtons,
-        ExternalPowerSource, StaticInverter, TransformerRectifier,
+        ElectricalElementIdentifierProvider, ElectricalSystem, EmergencyElectrical,
+        EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource, StaticInverter,
+        TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
@@ -39,14 +40,16 @@ pub(super) struct A320Electrical {
     emergency_gen: EmergencyGenerator,
 }
 impl A320Electrical {
-    pub fn new() -> A320Electrical {
+    pub fn new(
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> A320Electrical {
         A320Electrical {
-            alternating_current: A320AlternatingCurrentElectrical::new(),
-            direct_current: A320DirectCurrentElectrical::new(),
+            alternating_current: A320AlternatingCurrentElectrical::new(identifier_provider),
+            direct_current: A320DirectCurrentElectrical::new(identifier_provider),
             main_galley: MainGalley::new(),
             secondary_galley: SecondaryGalley::new(),
             emergency_elec: EmergencyElectrical::new(),
-            emergency_gen: EmergencyGenerator::new(),
+            emergency_gen: EmergencyGenerator::new(identifier_provider),
         }
     }
 
@@ -170,13 +173,19 @@ impl A320Electrical {
     }
 
     #[cfg(test)]
-    pub fn empty_battery_1(&mut self) {
-        self.direct_current.empty_battery_1();
+    pub fn empty_battery_1(
+        &mut self,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) {
+        self.direct_current.empty_battery_1(identifier_provider);
     }
 
     #[cfg(test)]
-    pub fn empty_battery_2(&mut self) {
-        self.direct_current.empty_battery_2();
+    pub fn empty_battery_2(
+        &mut self,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) {
+        self.direct_current.empty_battery_2(identifier_provider);
     }
 
     pub fn gen_contactor_open(&self, number: usize) -> bool {
@@ -399,11 +408,12 @@ impl EmergencyElectricalRatPushButton for A320EmergencyElectricalOverheadPanel {
 #[cfg(test)]
 mod a320_electrical {
     use super::*;
-    use systems::simulation::test::SimulationTestBed;
+    use systems::{electrical::Electricity, simulation::test::SimulationTestBed};
 
     #[test]
     fn writes_its_state() {
-        let mut elec = A320Electrical::new();
+        let mut electricity = Electricity::new();
+        let mut elec = A320Electrical::new(&mut electricity);
         let mut test_bed = SimulationTestBed::new();
         test_bed.run_without_update(&mut elec);
 
@@ -418,7 +428,7 @@ mod a320_electrical_circuit_tests {
     use std::time::Duration;
     use systems::{
         electrical::{
-            ExternalPowerSource, Potential, PotentialSource,
+            Electricity, ExternalPowerSource, Potential, PotentialSource,
             INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
         shared::{
@@ -2221,6 +2231,7 @@ mod a320_electrical_circuit_tests {
     }
 
     struct A320ElectricalTestAircraft {
+        electricity: Electricity,
         engines: [TestEngine; 2],
         ext_pwr: ExternalPowerSource,
         elec: A320Electrical,
@@ -2232,15 +2243,17 @@ mod a320_electrical_circuit_tests {
     }
     impl A320ElectricalTestAircraft {
         fn new() -> Self {
+            let mut electricity = Electricity::new();
             Self {
                 engines: [TestEngine::new(), TestEngine::new()],
                 ext_pwr: ExternalPowerSource::new(),
-                elec: A320Electrical::new(),
+                elec: A320Electrical::new(&mut electricity),
                 overhead: A320ElectricalOverheadPanel::new(),
                 emergency_overhead: A320EmergencyElectricalOverheadPanel::new(),
                 apu: TestApu::new(),
                 apu_overhead: TestApuOverhead::new(),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
+                electricity,
             }
         }
 
@@ -2273,11 +2286,11 @@ mod a320_electrical_circuit_tests {
         }
 
         fn empty_battery_1(&mut self) {
-            self.elec.empty_battery_1();
+            self.elec.empty_battery_1(&mut self.electricity);
         }
 
         fn empty_battery_2(&mut self) {
-            self.elec.empty_battery_2();
+            self.elec.empty_battery_2(&mut self.electricity);
         }
 
         fn failed_tr_1(&mut self) {

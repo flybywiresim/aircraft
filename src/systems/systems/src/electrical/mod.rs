@@ -248,13 +248,18 @@ pub trait PotentialTarget {
 /// When closed a contactor conducts the potential towards other targets.
 #[derive(Debug)]
 pub struct Contactor {
+    identifier: ElectricalElementIdentifier,
     closed_id: String,
     closed: bool,
     input_potential: Potential,
 }
 impl Contactor {
-    pub fn new(id: &str) -> Contactor {
+    pub fn new(
+        id: &str,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Contactor {
         Contactor {
+            identifier: identifier_provider.next(),
             closed_id: format!("ELEC_CONTACTOR_{}_IS_CLOSED", id),
             closed: false,
             input_potential: Potential::none(),
@@ -283,6 +288,19 @@ impl PotentialSource for Contactor {
         }
     }
 }
+impl ElectricalElement for Contactor {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        self.closed
+    }
+}
 impl SimulationElement for Contactor {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.closed_id, self.is_closed());
@@ -290,14 +308,19 @@ impl SimulationElement for Contactor {
 }
 
 pub struct ElectricalBus {
+    identifier: ElectricalElementIdentifier,
     bus_powered_id: String,
     bus_potential_normal_id: String,
     input_potential: Potential,
     bus_type: ElectricalBusType,
 }
 impl ElectricalBus {
-    pub fn new(bus_type: ElectricalBusType) -> ElectricalBus {
+    pub fn new(
+        bus_type: ElectricalBusType,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> ElectricalBus {
         ElectricalBus {
+            identifier: identifier_provider.next(),
             bus_powered_id: format!("ELEC_{}_BUS_IS_POWERED", bus_type.to_string()),
             bus_potential_normal_id: format!("ELEC_{}_BUS_POTENTIAL_NORMAL", bus_type.to_string()),
             input_potential: Potential::none(),
@@ -333,6 +356,19 @@ potential_target!(ElectricalBus);
 impl PotentialSource for ElectricalBus {
     fn output(&self) -> Potential {
         self.input_potential
+    }
+}
+impl ElectricalElement for ElectricalBus {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        true
     }
 }
 impl SimulationElement for ElectricalBus {
@@ -910,8 +946,9 @@ mod tests {
         }
         impl ElectricalBusTestAircraft {
             fn new(bus_type: ElectricalBusType) -> Self {
+                let mut electricity = Electricity::new();
                 Self {
-                    bus: ElectricalBus::new(bus_type),
+                    bus: ElectricalBus::new(bus_type, &mut electricity),
                 }
             }
 
@@ -937,12 +974,13 @@ mod tests {
             let bat_2 = BatteryStub::new(Potential::single(PotentialOrigin::Battery(2), potential));
 
             let mut bus = electrical_bus();
+            let mut electricity = Electricity::new();
 
-            let mut contactor_1 = Contactor::new("BAT1");
+            let mut contactor_1 = Contactor::new("BAT1", &mut electricity);
             contactor_1.powered_by(&bat_1);
             contactor_1.close_when(true);
 
-            let mut contactor_2 = Contactor::new("BAT2");
+            let mut contactor_2 = Contactor::new("BAT2", &mut electricity);
             contactor_2.powered_by(&bat_2);
             contactor_2.close_when(true);
 
@@ -1038,7 +1076,9 @@ mod tests {
 
         #[test]
         fn writes_potential_normal_when_bat_bus() {
-            let mut bus = ElectricalBus::new(ElectricalBusType::DirectCurrentBattery);
+            let mut electricity = Electricity::new();
+            let mut bus =
+                ElectricalBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
 
             let mut test_bed = SimulationTestBed::new();
             test_bed.run_without_update(&mut bus);
@@ -1048,7 +1088,11 @@ mod tests {
 
         #[test]
         fn does_not_write_potential_normal_when_not_bat_bus() {
-            let mut bus = ElectricalBus::new(ElectricalBusType::AlternatingCurrentEssential);
+            let mut electricity = Electricity::new();
+            let mut bus = ElectricalBus::new(
+                ElectricalBusType::AlternatingCurrentEssential,
+                &mut electricity,
+            );
 
             let mut test_bed = SimulationTestBed::new();
             test_bed.run_without_update(&mut bus);
@@ -1061,11 +1105,12 @@ mod tests {
             bat_1: BatteryStub,
             bat_2: BatteryStub,
         ) {
-            let mut contactor_1 = Contactor::new("BAT1");
+            let mut electricity = Electricity::new();
+            let mut contactor_1 = Contactor::new("BAT1", &mut electricity);
             contactor_1.powered_by(&bat_1);
             contactor_1.close_when(true);
 
-            let mut contactor_2 = Contactor::new("BAT2");
+            let mut contactor_2 = Contactor::new("BAT2", &mut electricity);
             contactor_2.powered_by(&bat_2);
             contactor_2.close_when(true);
 
@@ -1073,7 +1118,8 @@ mod tests {
         }
 
         fn electrical_bus() -> ElectricalBus {
-            ElectricalBus::new(ElectricalBusType::AlternatingCurrent(2))
+            let mut electricity = Electricity::new();
+            ElectricalBus::new(ElectricalBusType::AlternatingCurrent(2), &mut electricity)
         }
     }
 
@@ -1180,7 +1226,8 @@ mod tests {
         }
 
         fn contactor() -> Contactor {
-            Contactor::new("TEST")
+            let mut electricity = Electricity::new();
+            Contactor::new("TEST", &mut electricity)
         }
 
         fn open_contactor() -> Contactor {
@@ -1278,6 +1325,64 @@ mod tests {
             assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY_NORMAL"));
             assert!(test_bed.contains_key("ELEC_TEST_LOAD"));
             assert!(test_bed.contains_key("ELEC_TEST_LOAD_NORMAL"));
+        }
+    }
+}
+
+pub(super) trait ElectricalElement {
+    fn input_identifier(&self) -> ElectricalElementIdentifier;
+    fn output_identifier(&self) -> ElectricalElementIdentifier;
+    fn is_conductive(&self) -> bool;
+}
+
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
+pub struct ElectricalElementIdentifier(u32);
+impl ElectricalElementIdentifier {
+    fn first() -> Self {
+        Self { 0: 1 }
+    }
+
+    fn next(&self) -> Self {
+        Self { 0: self.0 + 1 }
+    }
+}
+
+pub trait ElectricalElementIdentifierProvider {
+    fn next(&mut self) -> ElectricalElementIdentifier;
+}
+
+#[derive(Debug)]
+pub struct Electricity {
+    next_identifier: ElectricalElementIdentifier,
+}
+impl Electricity {
+    pub fn new() -> Self {
+        Self {
+            next_identifier: ElectricalElementIdentifier::first(),
+        }
+    }
+}
+impl ElectricalElementIdentifierProvider for Electricity {
+    fn next(&mut self) -> ElectricalElementIdentifier {
+        let identifier = self.next_identifier;
+        self.next_identifier = identifier.next();
+
+        identifier
+    }
+}
+
+#[cfg(test)]
+mod new_tests {
+    use super::*;
+
+    #[test]
+    fn next_provides_increasing_identifiers() {
+        let mut electricity = Electricity::new();
+        let mut identifier = electricity.next();
+        for _ in 1..=10 {
+            let next_identifier = electricity.next();
+            assert!(identifier.0 < next_identifier.0);
+            identifier = next_identifier;
         }
     }
 }

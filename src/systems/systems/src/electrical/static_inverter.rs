@@ -1,4 +1,5 @@
 use super::{
+    ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
     ProvideFrequency, ProvidePotential,
 };
@@ -9,14 +10,18 @@ use crate::{
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 pub struct StaticInverter {
+    identifier: ElectricalElementIdentifier,
     writer: ElectricalStateWriter,
     input_potential: Potential,
     output_potential: ElectricPotential,
     output_frequency: Frequency,
 }
 impl StaticInverter {
-    pub fn new() -> StaticInverter {
+    pub fn new(
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> StaticInverter {
         StaticInverter {
+            identifier: identifier_provider.next(),
             writer: ElectricalStateWriter::new("STAT_INV"),
             input_potential: Potential::none(),
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -44,6 +49,19 @@ impl PotentialSource for StaticInverter {
 }
 provide_potential!(StaticInverter, (110.0..=120.0));
 provide_frequency!(StaticInverter, (390.0..=410.0));
+impl ElectricalElement for StaticInverter {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        true
+    }
+}
 impl SimulationElement for StaticInverter {
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_alternating(self, writer);
@@ -73,11 +91,6 @@ impl SimulationElement for StaticInverter {
         };
     }
 }
-impl Default for StaticInverter {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 #[cfg(test)]
 mod static_inverter_tests {
@@ -87,7 +100,7 @@ mod static_inverter_tests {
     use crate::{
         electrical::{
             consumption::{PowerConsumer, SuppliedPower},
-            ElectricalBusType,
+            ElectricalBusType, Electricity,
         },
         simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
     };
@@ -139,8 +152,9 @@ mod static_inverter_tests {
     }
     impl TestAircraft {
         fn new() -> Self {
+            let mut electricity = Electricity::new();
             Self {
-                static_inverter: StaticInverter::new(),
+                static_inverter: StaticInverter::new(&mut electricity),
                 consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrentEssential),
                 static_inverter_consumption: Power::new::<watt>(0.),
             }

@@ -3,7 +3,10 @@ use self::{
     electronic_control_box::ElectronicControlBox,
 };
 use crate::{
-    electrical::{Potential, PotentialSource, ProvideFrequency, ProvidePotential},
+    electrical::{
+        ElectricalElementIdentifierProvider, Potential, PotentialSource, ProvideFrequency,
+        ProvidePotential,
+    },
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
     pneumatic::{BleedAirValve, BleedAirValveState},
     shared::{
@@ -27,13 +30,14 @@ pub struct AuxiliaryPowerUnitFactory {}
 impl AuxiliaryPowerUnitFactory {
     pub fn new_aps3200(
         number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
         start_motor_powered_by: ElectricalBusType,
         electronic_control_box_powered_by: ElectricalBusType,
         air_intake_flap_powered_by: ElectricalBusType,
     ) -> AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor> {
         AuxiliaryPowerUnit::new(
             Box::new(ShutdownAps3200Turbine::new()),
-            Aps3200ApuGenerator::new(number),
+            Aps3200ApuGenerator::new(number, identifier_provider),
             Aps3200StartMotor::new(start_motor_powered_by),
             electronic_control_box_powered_by,
             air_intake_flap_powered_by,
@@ -330,7 +334,10 @@ impl Default for AuxiliaryPowerUnitOverheadPanel {
 #[cfg(test)]
 pub mod tests {
     use crate::{
-        electrical::consumption::{PowerConsumer, SuppliedPower},
+        electrical::{
+            consumption::{PowerConsumer, SuppliedPower},
+            Electricity,
+        },
         shared::{to_bool, ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
         simulation::{test::SimulationTestBed, Aircraft},
     };
@@ -402,8 +409,9 @@ pub mod tests {
             ElectricalBusType::DirectCurrentBattery;
 
         fn new() -> Self {
+            let mut electricity = Electricity::new();
             Self {
-                apu: AuxiliaryPowerUnitFactory::new_aps3200(1, Self::START_MOTOR_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY),
+                apu: AuxiliaryPowerUnitFactory::new_aps3200(1, &mut electricity, Self::START_MOTOR_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY),
                 apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
                 apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
                 apu_bleed: OnOffFaultPushButton::new_on("APU_BLEED"),

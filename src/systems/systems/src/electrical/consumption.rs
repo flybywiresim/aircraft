@@ -371,7 +371,7 @@ mod tests {
     #[cfg(test)]
     mod supplied_power_tests {
         use super::*;
-        use crate::electrical::PotentialTarget;
+        use crate::electrical::{Electricity, PotentialTarget};
 
         fn powered_bus(bus_type: ElectricalBusType) -> ElectricalBus {
             let mut bus = unpowered_bus(bus_type);
@@ -381,7 +381,8 @@ mod tests {
         }
 
         fn unpowered_bus(bus_type: ElectricalBusType) -> ElectricalBus {
-            ElectricalBus::new(bus_type)
+            let mut electricity = Electricity::new();
+            ElectricalBus::new(bus_type, &mut electricity)
         }
 
         #[test]
@@ -410,10 +411,11 @@ mod tests {
     #[cfg(test)]
     mod power_consumer_tests {
         use super::*;
-        use crate::electrical::PotentialTarget;
+        use crate::electrical::{Electricity, PotentialTarget};
 
         fn powered_bus(bus_type: ElectricalBusType) -> ElectricalBus {
-            let mut bus = ElectricalBus::new(bus_type);
+            let mut electricity = Electricity::new();
+            let mut bus = ElectricalBus::new(bus_type, &mut electricity);
             bus.powered_by(&ApuStub::new());
 
             bus
@@ -492,7 +494,7 @@ mod tests {
     #[cfg(test)]
     mod flight_phase_power_consumer_tests {
         use crate::{
-            electrical::PotentialTarget,
+            electrical::{Electricity, PotentialTarget},
             simulation::{test::SimulationTestBed, Aircraft},
         };
 
@@ -527,7 +529,8 @@ mod tests {
             }
 
             fn powered_bus(bus_type: ElectricalBusType) -> ElectricalBus {
-                let mut bus = ElectricalBus::new(bus_type);
+                let mut electricity = Electricity::new();
+                let mut bus = ElectricalBus::new(bus_type, &mut electricity);
                 bus.powered_by(&ApuStub::new());
 
                 bus

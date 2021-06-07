@@ -1,4 +1,5 @@
 use super::{
+    ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
     ProvideCurrent, ProvidePotential,
 };
@@ -13,6 +14,7 @@ use uom::si::{
 
 pub struct Battery {
     number: usize,
+    identifier: ElectricalElementIdentifier,
     writer: ElectricalStateWriter,
     input_potential: Potential,
     charge: ElectricCharge,
@@ -22,27 +24,47 @@ pub struct Battery {
 impl Battery {
     const RATED_CAPACITY_AMPERE_HOURS: f64 = 23.;
 
-    pub fn full(number: usize) -> Battery {
+    pub fn full(
+        number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Battery {
         Battery::new(
             number,
             ElectricCharge::new::<ampere_hour>(Battery::RATED_CAPACITY_AMPERE_HOURS),
+            identifier_provider,
         )
     }
 
-    pub fn half(number: usize) -> Battery {
+    pub fn half(
+        number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Battery {
         Battery::new(
             number,
             ElectricCharge::new::<ampere_hour>(Battery::RATED_CAPACITY_AMPERE_HOURS / 2.),
+            identifier_provider,
         )
     }
 
-    pub fn empty(number: usize) -> Battery {
-        Battery::new(number, ElectricCharge::new::<ampere_hour>(0.))
+    pub fn empty(
+        number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Battery {
+        Battery::new(
+            number,
+            ElectricCharge::new::<ampere_hour>(0.),
+            identifier_provider,
+        )
     }
 
-    pub fn new(number: usize, charge: ElectricCharge) -> Self {
+    pub fn new(
+        number: usize,
+        charge: ElectricCharge,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Self {
         Self {
             number,
+            identifier: identifier_provider.next(),
             writer: ElectricalStateWriter::new(&format!("BAT_{}", number)),
             input_potential: Potential::none(),
             charge,
@@ -148,6 +170,19 @@ impl ProvidePotential for Battery {
             .contains(&ProvidePotential::potential(self))
     }
 }
+impl ElectricalElement for Battery {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        true
+    }
+}
 impl SimulationElement for Battery {
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_direct(self, writer);
@@ -199,7 +234,7 @@ mod tests {
         use crate::{
             electrical::{
                 consumption::{PowerConsumer, SuppliedPower},
-                Contactor, ElectricalBus, ElectricalBusType,
+                Contactor, ElectricalBus, ElectricalBusType, Electricity,
             },
             simulation::{
                 test::SimulationTestBed, Aircraft, SimulationElementVisitor, UpdateContext,
@@ -263,12 +298,16 @@ mod tests {
         }
         impl TestAircraft {
             fn new(battery_1: Battery, battery_2: Battery) -> Self {
+                let mut electricity = Electricity::new();
                 let mut aircraft = Self {
                     battery_1,
                     battery_2,
-                    bat_bus: ElectricalBus::new(ElectricalBusType::DirectCurrentBattery),
-                    battery_1_contactor: Contactor::new("BAT1"),
-                    battery_2_contactor: Contactor::new("BAT2"),
+                    bat_bus: ElectricalBus::new(
+                        ElectricalBusType::DirectCurrentBattery,
+                        &mut electricity,
+                    ),
+                    battery_1_contactor: Contactor::new("BAT1", &mut electricity),
+                    battery_2_contactor: Contactor::new("BAT2", &mut electricity),
                     consumer: PowerConsumer::from(ElectricalBusType::DirectCurrentBattery),
                     battery_consumption: Power::new::<watt>(0.),
                     supplied_input_potential: Potential::none(),
@@ -280,33 +319,67 @@ mod tests {
             }
 
             fn with_full_batteries() -> Self {
-                Self::new(Battery::full(1), Battery::full(2))
+                let mut electricity = Electricity::new();
+                Self::new(
+                    Battery::full(1, &mut electricity),
+                    Battery::full(2, &mut electricity),
+                )
             }
 
             fn with_half_charged_batteries() -> Self {
-                Self::new(Battery::half(1), Battery::half(2))
+                let mut electricity = Electricity::new();
+                Self::new(
+                    Battery::half(1, &mut electricity),
+                    Battery::half(2, &mut electricity),
+                )
             }
 
             fn with_nearly_empty_batteries() -> Self {
+                let mut electricity = Electricity::new();
                 Self::new(
-                    Battery::new(1, ElectricCharge::new::<ampere_hour>(0.001)),
-                    Battery::new(2, ElectricCharge::new::<ampere_hour>(0.001)),
+                    Battery::new(
+                        1,
+                        ElectricCharge::new::<ampere_hour>(0.001),
+                        &mut electricity,
+                    ),
+                    Battery::new(
+                        2,
+                        ElectricCharge::new::<ampere_hour>(0.001),
+                        &mut electricity,
+                    ),
                 )
             }
 
             fn with_nearly_empty_dissimilarly_charged_batteries() -> Self {
+                let mut electricity = Electricity::new();
                 Self::new(
-                    Battery::new(1, ElectricCharge::new::<ampere_hour>(0.002)),
-                    Battery::new(2, ElectricCharge::new::<ampere_hour>(0.001)),
+                    Battery::new(
+                        1,
+                        ElectricCharge::new::<ampere_hour>(0.002),
+                        &mut electricity,
+                    ),
+                    Battery::new(
+                        2,
+                        ElectricCharge::new::<ampere_hour>(0.001),
+                        &mut electricity,
+                    ),
                 )
             }
 
             fn with_empty_batteries() -> Self {
-                Self::new(Battery::empty(1), Battery::empty(2))
+                let mut electricity = Electricity::new();
+                Self::new(
+                    Battery::empty(1, &mut electricity),
+                    Battery::empty(2, &mut electricity),
+                )
             }
 
             fn with_full_and_empty_battery() -> Self {
-                Self::new(Battery::full(1), Battery::empty(2))
+                let mut electricity = Electricity::new();
+                Self::new(
+                    Battery::full(1, &mut electricity),
+                    Battery::empty(2, &mut electricity),
+                )
             }
 
             fn supply_input_potential(&mut self, potential: ElectricPotential) {

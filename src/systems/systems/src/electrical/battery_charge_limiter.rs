@@ -541,8 +541,8 @@ mod tests {
             electrical::{
                 battery::Battery,
                 consumption::{PowerConsumer, SuppliedPower},
-                Contactor, ElectricalBus, ElectricalBusType, Potential, PotentialOrigin,
-                PotentialTarget,
+                Contactor, ElectricalBus, ElectricalBusType, Electricity, Potential,
+                PotentialOrigin, PotentialTarget,
             },
             simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
         };
@@ -555,9 +555,10 @@ mod tests {
         }
         impl BatteryChargeLimiterTestBed {
             fn new() -> Self {
+                let mut electricity = Electricity::new();
                 Self {
                     test_bed: SimulationTestBed::new(),
-                    aircraft: TestAircraft::new(Battery::half(1)),
+                    aircraft: TestAircraft::new(Battery::half(1, &mut electricity)),
                 }
             }
 
@@ -896,11 +897,15 @@ mod tests {
         }
         impl TestAircraft {
             fn new(battery: Battery) -> Self {
+                let mut electricity = Electricity::new();
                 Self {
                     battery,
                     battery_charge_limiter: BatteryChargeLimiter::new(1, "TEST"),
-                    battery_bus: ElectricalBus::new(ElectricalBusType::DirectCurrentBattery),
-                    battery_contactor: Contactor::new("TEST"),
+                    battery_bus: ElectricalBus::new(
+                        ElectricalBusType::DirectCurrentBattery,
+                        &mut electricity,
+                    ),
+                    battery_contactor: Contactor::new("TEST", &mut electricity),
                     consumer: PowerConsumer::from(ElectricalBusType::DirectCurrentBattery),
                     apu_master_sw_pb_on: false,
                     apu_start_pb_on: false,

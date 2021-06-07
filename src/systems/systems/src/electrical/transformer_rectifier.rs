@@ -1,4 +1,5 @@
 use super::{
+    ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
     ProvideCurrent, ProvidePotential,
 };
@@ -11,16 +12,23 @@ use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
 pub struct TransformerRectifier {
     writer: ElectricalStateWriter,
     number: usize,
+    input_identifier: ElectricalElementIdentifier,
+    output_identifier: ElectricalElementIdentifier,
     input_potential: Potential,
     failed: bool,
     output_potential: ElectricPotential,
     output_current: ElectricCurrent,
 }
 impl TransformerRectifier {
-    pub fn new(number: usize) -> TransformerRectifier {
+    pub fn new(
+        number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> TransformerRectifier {
         TransformerRectifier {
             writer: ElectricalStateWriter::new(&format!("TR_{}", number)),
             number,
+            input_identifier: identifier_provider.next(),
+            output_identifier: identifier_provider.next(),
             input_potential: Potential::none(),
             failed: false,
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -67,6 +75,19 @@ impl ProvideCurrent for TransformerRectifier {
     }
 }
 provide_potential!(TransformerRectifier, (25.0..=31.0));
+impl ElectricalElement for TransformerRectifier {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.input_identifier
+    }
+
+    fn output_identifier(&self) -> ElectricalElementIdentifier {
+        self.output_identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        !self.failed
+    }
+}
 impl SimulationElement for TransformerRectifier {
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_direct(self, writer);
@@ -104,7 +125,7 @@ mod transformer_rectifier_tests {
     use crate::{
         electrical::{
             consumption::{PowerConsumer, SuppliedPower},
-            ElectricalBusType, PotentialOrigin,
+            ElectricalBusType, Electricity, PotentialOrigin,
         },
         simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
     };
@@ -143,8 +164,9 @@ mod transformer_rectifier_tests {
     }
     impl TestAircraft {
         fn new() -> Self {
+            let mut electricity = Electricity::new();
             Self {
-                transformer_rectifier: TransformerRectifier::new(1),
+                transformer_rectifier: TransformerRectifier::new(1, &mut electricity),
                 consumer: PowerConsumer::from(ElectricalBusType::DirectCurrent(1)),
                 transformer_rectifier_consumption: Power::new::<watt>(0.),
             }

@@ -1,6 +1,7 @@
 use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
 use crate::{
     electrical::{
+        ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
         ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
         ProvidePotential,
     },
@@ -540,6 +541,7 @@ fn calculate_towards_ambient_egt(
 /// APS3200 APU Generator
 pub struct Aps3200ApuGenerator {
     number: usize,
+    identifier: ElectricalElementIdentifier,
     n: Ratio,
     writer: ElectricalStateWriter,
     output_frequency: Frequency,
@@ -550,9 +552,13 @@ pub struct Aps3200ApuGenerator {
 impl Aps3200ApuGenerator {
     const APU_GEN_POWERED_N: f64 = 84.;
 
-    pub fn new(number: usize) -> Aps3200ApuGenerator {
+    pub fn new(
+        number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Aps3200ApuGenerator {
         Aps3200ApuGenerator {
             number,
+            identifier: identifier_provider.next(),
             n: Ratio::new::<percent>(0.),
             writer: ElectricalStateWriter::new(&format!("APU_GEN_{}", number)),
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -653,6 +659,19 @@ impl PotentialSource for Aps3200ApuGenerator {
         }
     }
 }
+impl ElectricalElement for Aps3200ApuGenerator {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        true
+    }
+}
 impl SimulationElement for Aps3200ApuGenerator {
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_alternating_with_load(self, writer);
@@ -750,6 +769,7 @@ mod apu_generator_tests {
 
     use crate::{
         apu::tests::{test_bed, test_bed_with},
+        electrical::Electricity,
         simulation::test::SimulationTestBed,
     };
 
@@ -757,12 +777,15 @@ mod apu_generator_tests {
 
     #[test]
     fn starts_without_output() {
-        assert!(apu_generator().is_unpowered());
+        let mut electricity = Electricity::new();
+        let apu_gen = apu_generator(&mut electricity);
+        assert!(apu_gen.is_unpowered());
     }
 
     #[test]
     fn when_apu_running_provides_output() {
-        let mut generator = apu_generator();
+        let mut electricity = Electricity::new();
+        let mut generator = apu_generator(&mut electricity);
         let mut test_bed = SimulationTestBed::new();
         update_below_threshold(&mut test_bed, &mut generator);
         update_above_threshold(&mut test_bed, &mut generator);
@@ -772,7 +795,8 @@ mod apu_generator_tests {
 
     #[test]
     fn when_apu_shutdown_provides_no_output() {
-        let mut generator = apu_generator();
+        let mut electricity = Electricity::new();
+        let mut generator = apu_generator(&mut electricity);
         let mut test_bed = SimulationTestBed::new();
         update_above_threshold(&mut test_bed, &mut generator);
         update_below_threshold(&mut test_bed, &mut generator);
@@ -932,7 +956,8 @@ mod apu_generator_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut apu_gen = apu_generator();
+        let mut electricity = Electricity::new();
+        let mut apu_gen = apu_generator(&mut electricity);
         let mut test_bed = SimulationTestBed::new();
         test_bed.run_without_update(&mut apu_gen);
 
@@ -944,8 +969,10 @@ mod apu_generator_tests {
         assert!(test_bed.contains_key("ELEC_APU_GEN_1_LOAD_NORMAL"));
     }
 
-    fn apu_generator() -> Aps3200ApuGenerator {
-        Aps3200ApuGenerator::new(1)
+    fn apu_generator(
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Aps3200ApuGenerator {
+        Aps3200ApuGenerator::new(1, identifier_provider)
     }
 
     fn update_above_threshold(

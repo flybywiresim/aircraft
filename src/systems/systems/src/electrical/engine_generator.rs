@@ -1,4 +1,5 @@
 use super::{
+    ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, EngineGeneratorPushButtons, Potential, PotentialOrigin, PotentialSource,
     ProvideFrequency, ProvideLoad, ProvidePotential,
 };
@@ -22,16 +23,21 @@ pub const INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS: u64 = 5
 pub struct EngineGenerator {
     writer: ElectricalStateWriter,
     number: usize,
+    identifier: ElectricalElementIdentifier,
     idg: IntegratedDriveGenerator,
     output_frequency: Frequency,
     output_potential: ElectricPotential,
     load: Ratio,
 }
 impl EngineGenerator {
-    pub fn new(number: usize) -> EngineGenerator {
+    pub fn new(
+        number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> EngineGenerator {
         EngineGenerator {
             writer: ElectricalStateWriter::new(&format!("ENG_GEN_{}", number)),
             number,
+            identifier: identifier_provider.next(),
             idg: IntegratedDriveGenerator::new(number),
             output_frequency: Frequency::new::<hertz>(0.),
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -79,6 +85,19 @@ impl PotentialSource for EngineGenerator {
 provide_potential!(EngineGenerator, (110.0..=120.0));
 provide_frequency!(EngineGenerator, (390.0..=410.0));
 provide_load!(EngineGenerator);
+impl ElectricalElement for EngineGenerator {
+    fn input_identifier(&self) -> super::ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> super::ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        true
+    }
+}
 impl SimulationElement for EngineGenerator {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.idg.accept(visitor);
@@ -327,7 +346,7 @@ mod tests {
         use crate::{
             electrical::{
                 consumption::{PowerConsumer, SuppliedPower},
-                ElectricalBusType,
+                ElectricalBusType, Electricity,
             },
             simulation::{test::SimulationTestBed, Aircraft},
         };
@@ -375,8 +394,9 @@ mod tests {
         }
         impl TestAircraft {
             fn new(running: bool) -> Self {
+                let mut electricity = Electricity::new();
                 Self {
-                    engine_gen: EngineGenerator::new(1),
+                    engine_gen: EngineGenerator::new(1, &mut electricity),
                     running,
                     gen_push_button_on: true,
                     idg_push_button_released: false,

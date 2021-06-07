@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use super::{
+    ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, ProvideFrequency,
     ProvidePotential,
 };
@@ -11,6 +12,7 @@ use crate::{
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 pub struct EmergencyGenerator {
+    identifier: ElectricalElementIdentifier,
     writer: ElectricalStateWriter,
     supplying: bool,
     output_frequency: Frequency,
@@ -19,8 +21,11 @@ pub struct EmergencyGenerator {
     starting_or_started: bool,
 }
 impl EmergencyGenerator {
-    pub fn new() -> EmergencyGenerator {
+    pub fn new(
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> EmergencyGenerator {
         EmergencyGenerator {
+            identifier: identifier_provider.next(),
             writer: ElectricalStateWriter::new("EMER_GEN"),
             supplying: false,
             output_frequency: Frequency::new::<hertz>(0.),
@@ -77,6 +82,19 @@ impl PotentialSource for EmergencyGenerator {
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));
 provide_potential!(EmergencyGenerator, (110.0..=120.0));
+impl ElectricalElement for EmergencyGenerator {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        true
+    }
+}
 impl SimulationElement for EmergencyGenerator {
     fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _report: &T) {
         self.output_frequency = if self.should_provide_output() {
@@ -96,17 +114,13 @@ impl SimulationElement for EmergencyGenerator {
         self.writer.write_alternating(self, writer);
     }
 }
-impl Default for EmergencyGenerator {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 #[cfg(test)]
 mod emergency_generator_tests {
     use super::*;
-    use crate::simulation::{
-        test::SimulationTestBed, Aircraft, SimulationElementVisitor, UpdateContext,
+    use crate::{
+        electrical::Electricity,
+        simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor, UpdateContext},
     };
 
     struct EmergencyGeneratorTestBed {
@@ -160,8 +174,9 @@ mod emergency_generator_tests {
     }
     impl TestAircraft {
         fn new() -> Self {
+            let mut electricity = Electricity::new();
             Self {
-                emer_gen: EmergencyGenerator::new(),
+                emer_gen: EmergencyGenerator::new(&mut electricity),
                 hydraulic: TestHydraulicSystem::new(),
                 generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
