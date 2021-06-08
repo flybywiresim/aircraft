@@ -1365,6 +1365,18 @@ impl Electricity {
         }
     }
 
+    pub fn distribute_to(&self, _: &impl SimulationElement, _: &UpdateContext) {
+        // Once implemented, visits simulation elements to distribute electricity to them.
+    }
+
+    pub fn consume_in(&self, _: &impl SimulationElement) {
+        // Once implemented, visits simulation elements to let them use electricity.
+    }
+
+    pub fn report_consumption_to(&self, _: &impl SimulationElement) {
+        // Once implemented, visits simulation elements to report the electricity consumption per bus.
+    }
+
     #[cfg(test)]
     fn identifier_for(&self, bus_type: ElectricalBusType) -> Option<&ElectricalElementIdentifier> {
         self.buses.get(&bus_type)

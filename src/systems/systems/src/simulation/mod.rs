@@ -46,6 +46,10 @@ pub trait Aircraft: SimulationElement {
     fn get_supplied_power(&mut self) -> SuppliedPower {
         SuppliedPower::new()
     }
+
+    fn distribute_electricity(&mut self, _context: &UpdateContext) {}
+    fn consume_electricity(&mut self) {}
+    fn report_electricity_consumption(&mut self) {}
 }
 
 /// The [`Simulation`] runs across many different [`SimulationElement`]s.
@@ -232,6 +236,7 @@ impl Simulation {
 
         aircraft.update_before_power_distribution(&context);
 
+        // OLD
         let mut electric_power = ElectricPower::from(aircraft.get_supplied_power(), delta);
         electric_power.distribute_to(aircraft);
 
@@ -239,6 +244,14 @@ impl Simulation {
 
         electric_power.consume_in(aircraft);
         electric_power.report_consumption_to(aircraft);
+        // END OLD
+
+        // NEW
+        aircraft.distribute_electricity(&context);
+        //aircraft.update_after_power_distribution(&context);
+        aircraft.consume_electricity();
+        aircraft.report_electricity_consumption();
+        //END NEW
 
         let mut writer = SimulatorWriter::new(simulator_reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);

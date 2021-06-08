@@ -26,6 +26,7 @@ use systems::{
 };
 
 pub struct A320 {
+    electricity: Electricity,
     apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
@@ -69,6 +70,7 @@ impl A320 {
             hydraulic: A320Hydraulic::new(),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(),
             landing_gear: LandingGear::new(),
+            electricity,
         }
     }
 }
@@ -134,6 +136,18 @@ impl Aircraft for A320 {
 
     fn get_supplied_power(&mut self) -> SuppliedPower {
         self.electrical.get_supplied_power()
+    }
+
+    fn distribute_electricity(&mut self, context: &UpdateContext) {
+        self.electricity.distribute_to(self, context);
+    }
+
+    fn consume_electricity(&mut self) {
+        self.electricity.consume_in(self);
+    }
+
+    fn report_electricity_consumption(&mut self) {
+        self.electricity.report_consumption_to(self);
     }
 }
 impl SimulationElement for A320 {
