@@ -3,6 +3,7 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
+#include "AnimationAileronHandler.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
@@ -116,6 +117,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
   std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
   std::unique_ptr<LocalVariable> idFmaApproachCapability;
+  std::unique_ptr<LocalVariable> idFmaTripleClick;
+  std::unique_ptr<LocalVariable> idFmaModeReversion;
 
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
@@ -207,10 +210,15 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
+  std::unique_ptr<LocalVariable> idSpoilersGroundSpoilersActive;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
   std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
+
+  std::unique_ptr<LocalVariable> idAileronPositionLeft;
+  std::unique_ptr<LocalVariable> idAileronPositionRight;
+  std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
 
   void loadConfiguration();
   void setupLocalVariables();

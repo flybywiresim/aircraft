@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearPosition},
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
 use uom::si::{electric_current::ampere, electric_potential::volt, f64::*, velocity::knot};
@@ -130,7 +130,7 @@ impl BatteryChargeLimiter {
 }
 impl SimulationElement for BatteryChargeLimiter {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(
+        writer.write(
             &self.should_show_arrow_when_contactor_closed_id,
             self.arrow.should_show_when_contactor_closed(),
         );

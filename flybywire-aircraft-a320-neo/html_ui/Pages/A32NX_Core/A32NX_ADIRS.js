@@ -1,28 +1,34 @@
-class ADIRS {
-    constructor(num) {
-        this.num = num;
-        // 0 -> OFF
-        // 1 -> NAV
-        // 2 -> ATT
-        this.knob = -1;
+class ADIRU {
+    constructor(number) {
+        this.number = number;
+
+        this.KNOB = Object.freeze({
+            OFF: 0,
+            NAV: 1,
+            ATT: 2
+        });
+        this.knob = this.KNOB.OFF;
 
         // -1 -> no timer
         //  0 -> timer finished
         // >0 -> timer remaining
         this.timer = -1;
-        this.onBatTimer = 0; //start at 0 to prevent light from coming on when starting with ADIRS aligned
+
+        // Start at 0 to prevent light from coming on when starting with ADIRS aligned
+        this.onBatTimer = 0;
     }
 
     init() {
-        this.knob = SimVar.GetSimVarValue(`L:A32NX_ADIRS_KNOB_${this.num}`, 'Enum');
-        SimVar.SetSimVarValue(`L:A32NX_ADIRS_TIMER_${this.num}`, 'Seconds', -1);
+        this.knob = SimVar.GetSimVarValue(`L:A32NX_ADIRS_KNOB_${this.number}`, 'Enum');
+
+        const startingAligned = this.knob === this.KNOB.NAV;
+        this.timer = startingAligned ? 0 : -1;
     }
 
     update(deltaTime) {
-        this.knob = SimVar.GetSimVarValue(`L:A32NX_ADIRS_KNOB_${this.num}`, 'Enum');
-        this.timer = SimVar.GetSimVarValue(`L:A32NX_ADIRS_TIMER_${this.num}`, 'Seconds');
+        this.knob = SimVar.GetSimVarValue(`L:A32NX_ADIRS_KNOB_${this.number}`, 'Enum');
 
-        if (this.knob === 0) {
+        if (this.knob === this.KNOB.OFF) {
             this.timer = -1;
             this.onBatTimer = -1;
         } else {
@@ -42,54 +48,53 @@ class ADIRS {
                 }
 
                 // Flash FAULT light
-                SimVar.SetSimVarValue(`L:A32NX_ADIRS_${this.num}_FAULT`, 'Bool', 1);
+                SimVar.SetSimVarValue(`L:A32NX_ADIRS_${this.number}_FAULT`, 'Bool', 1);
                 setTimeout(() => {
-                    SimVar.SetSimVarValue(`L:A32NX_ADIRS_${this.num}_FAULT`, 'Bool', 0);
+                    SimVar.SetSimVarValue(`L:A32NX_ADIRS_${this.number}_FAULT`, 'Bool', 0);
                 }, 90);
             } else if (this.timer > 0) {
                 this.timer = Math.max(this.timer - (deltaTime / 1000), 0);
             }
+
             if (this.onBatTimer === -1) {
                 this.onBatTimer = 16;
             } else if (this.onBatTimer > 0) {
                 this.onBatTimer = Math.max(this.onBatTimer - (deltaTime / 1000), 0);
             }
         }
-
-        SimVar.SetSimVarValue(`L:A32NX_ADIRS_TIMER_${this.num}`, 'Seconds', this.timer);
     }
 }
 
 class A32NX_ADIRS {
     constructor() {
-        this.ADIRS = [
-            new ADIRS(1),
-            new ADIRS(2),
-            new ADIRS(3),
+        this.adirus = [
+            new ADIRU(1),
+            new ADIRU(2),
+            new ADIRU(3),
         ];
     }
 
     init() {
-        this.ADIRS.forEach((ADIRS) => {
-            ADIRS.init();
+        this.adirus.forEach((adiru) => {
+            adiru.init();
         });
     }
 
     update(deltaTime) {
-        let atLeastOneADIRS = false;
+        let atLeastOneAdiru = false;
         let onBat = false;
         let timeToAlign = Infinity;
-        this.ADIRS.forEach((ADIRS) => {
-            ADIRS.update(deltaTime);
+        this.adirus.forEach((adiru) => {
+            adiru.update(deltaTime);
 
-            if (ADIRS.timer >= 0) {
-                atLeastOneADIRS = true;
+            if (adiru.timer >= 0) {
+                atLeastOneAdiru = true;
             }
-            if (ADIRS.onBatTimer > 0 && ADIRS.onBatTimer < 5) {
+            if (adiru.onBatTimer > 0 && adiru.onBatTimer < 5) {
                 onBat = true;
             }
-            if (ADIRS.timer !== -1 && ADIRS.timer < timeToAlign) {
-                timeToAlign = ADIRS.timer;
+            if (adiru.timer !== -1 && adiru.timer < timeToAlign) {
+                timeToAlign = adiru.timer;
             }
         });
         // ASSERT_IMPLIES(atLeastOneADIRS, timeToAlign !== Infinity)
@@ -99,7 +104,7 @@ class A32NX_ADIRS {
         // 1 -> Aligning
         // 2 -> Aligned
         const state = SimVar.GetSimVarValue('L:A320_Neo_ADIRS_STATE', 'Enum');
-        if (atLeastOneADIRS) {
+        if (atLeastOneAdiru) {
             if (state === 0) {
                 // transition to aligning
                 SimVar.SetSimVarValue('L:A320_Neo_ADIRS_STATE', 'Enum', 1);

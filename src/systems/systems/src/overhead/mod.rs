@@ -1,5 +1,5 @@
-use crate::electrical::{consumption::SuppliedPower, ElectricalBusType};
-use crate::simulation::{SimulationElement, SimulatorReader, SimulatorWriter};
+use crate::shared::{ElectricalBusType, ElectricalBuses};
+use crate::simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, Write};
 
 pub struct OnOffFaultPushButton {
     is_on_id: String,
@@ -56,13 +56,13 @@ impl OnOffFaultPushButton {
 }
 impl SimulationElement for OnOffFaultPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_on_id, self.is_on());
-        writer.write_bool(&self.has_fault_id, self.has_fault());
+        writer.write(&self.is_on_id, self.is_on());
+        writer.write(&self.has_fault_id, self.has_fault());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_on(reader.read_bool(&self.is_on_id));
-        self.set_fault(reader.read_bool(&self.has_fault_id));
+        self.set_on(reader.read(&self.is_on_id));
+        self.set_fault(reader.read(&self.has_fault_id));
     }
 }
 
@@ -121,13 +121,13 @@ impl OnOffAvailablePushButton {
 }
 impl SimulationElement for OnOffAvailablePushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_on_id, self.is_on());
-        writer.write_bool(&self.is_available_id, self.is_available());
+        writer.write(&self.is_on_id, self.is_on());
+        writer.write(&self.is_available_id, self.is_available());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_on(reader.read_bool(&self.is_on_id));
-        self.set_available(reader.read_bool(&self.is_available_id));
+        self.set_on(reader.read(&self.is_on_id));
+        self.set_available(reader.read(&self.is_available_id));
     }
 }
 
@@ -182,13 +182,13 @@ impl NormalAltnFaultPushButton {
 }
 impl SimulationElement for NormalAltnFaultPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_normal_id, self.is_normal());
-        writer.write_bool(&self.has_fault_id, self.has_fault());
+        writer.write(&self.is_normal_id, self.is_normal());
+        writer.write(&self.has_fault_id, self.has_fault());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_normal(reader.read_bool(&self.is_normal_id));
-        self.set_fault(reader.read_bool(&self.has_fault_id));
+        self.set_normal(reader.read(&self.is_normal_id));
+        self.set_fault(reader.read(&self.has_fault_id));
     }
 }
 
@@ -247,13 +247,13 @@ impl AutoOffFaultPushButton {
 }
 impl SimulationElement for AutoOffFaultPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_auto_id, self.is_auto());
-        writer.write_bool(&self.has_fault_id, self.has_fault());
+        writer.write(&self.is_auto_id, self.is_auto());
+        writer.write(&self.has_fault_id, self.has_fault());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_auto(reader.read_bool(&self.is_auto_id));
-        self.set_fault(reader.read_bool(&self.has_fault_id));
+        self.set_auto(reader.read(&self.is_auto_id));
+        self.set_fault(reader.read(&self.has_fault_id));
     }
 }
 
@@ -312,13 +312,13 @@ impl AutoOnFaultPushButton {
 }
 impl SimulationElement for AutoOnFaultPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_auto_id, self.is_auto());
-        writer.write_bool(&self.has_fault_id, self.has_fault());
+        writer.write(&self.is_auto_id, self.is_auto());
+        writer.write(&self.has_fault_id, self.has_fault());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_auto(reader.read_bool(&self.is_auto_id));
-        self.set_fault(reader.read_bool(&self.has_fault_id));
+        self.set_auto(reader.read(&self.is_auto_id));
+        self.set_fault(reader.read(&self.has_fault_id));
     }
 }
 
@@ -365,13 +365,13 @@ impl FaultReleasePushButton {
 }
 impl SimulationElement for FaultReleasePushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_released_id, self.is_released());
-        writer.write_bool(&self.has_fault_id, self.has_fault());
+        writer.write(&self.is_released_id, self.is_released());
+        writer.write(&self.has_fault_id, self.has_fault());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_released(reader.read_bool(&self.is_released_id));
-        self.set_fault(reader.read_bool(&self.has_fault_id));
+        self.set_released(reader.read(&self.is_released_id));
+        self.set_fault(reader.read(&self.has_fault_id));
     }
 }
 
@@ -397,11 +397,11 @@ impl FirePushButton {
 }
 impl SimulationElement for FirePushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_released_id, self.is_released());
+        writer.write(&self.is_released_id, self.is_released());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set(reader.read_bool(&self.is_released_id));
+        self.set(reader.read(&self.is_released_id));
     }
 }
 
@@ -423,7 +423,7 @@ impl FaultIndication {
 }
 impl SimulationElement for FaultIndication {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.has_fault_id, self.has_fault);
+        writer.write(&self.has_fault_id, self.has_fault);
     }
 }
 
@@ -445,7 +445,7 @@ impl MomentaryPushButton {
 }
 impl SimulationElement for MomentaryPushButton {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_pressed = reader.read_bool(&self.is_pressed_id);
+        self.is_pressed = reader.read(&self.is_pressed_id);
     }
 }
 
@@ -486,14 +486,14 @@ impl MomentaryOnPushButton {
 }
 impl SimulationElement for MomentaryOnPushButton {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let new_press_state = reader.read_bool(&self.is_pressed_id);
+        let new_press_state = reader.read(&self.is_pressed_id);
 
         self.has_changed_state = self.is_pressed != new_press_state;
         self.is_pressed = new_press_state;
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_on_id, self.is_on);
+        writer.write(&self.is_on_id, self.is_on);
     }
 }
 impl RelayLatchedButton for MomentaryOnPushButton {
@@ -552,13 +552,10 @@ impl PushButtonElecRelay {
     }
 }
 impl SimulationElement for PushButtonElecRelay {
-    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         // Relay is powered if ALL of its source buses are powered. This allows to reset pump button state if any power
         // bus prevents the pump to run
-        self.relay_is_powered = self
-            .powered_by
-            .iter()
-            .all(|bus| supplied_power.is_powered(&bus));
+        self.relay_is_powered = buses.all_are_powered(&self.powered_by);
     }
 }
 

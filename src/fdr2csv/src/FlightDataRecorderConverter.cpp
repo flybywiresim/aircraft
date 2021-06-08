@@ -189,6 +189,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.output.mode_reversion_lateral" << delimiter;
   out << "ap_sm.output.mode_reversion_vertical" << delimiter;
   out << "ap_sm.output.mode_reversion_TRK_FPA" << delimiter;
+  out << "ap_sm.output.mode_reversion_triple_click" << delimiter;
+  out << "ap_sm.output.mode_reversion_fma" << delimiter;
   out << "ap_sm.output.speed_protection_mode" << delimiter;
   out << "ap_sm.output.autothrust_mode" << delimiter;
   out << "ap_sm.output.Psi_c_deg" << delimiter;
@@ -239,6 +241,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "athr.data_computed.is_FLX_active" << delimiter;
   out << "athr.data_computed.ATHR_push" << delimiter;
   out << "athr.data_computed.ATHR_disabled" << delimiter;
+  out << "athr.data_computed.time_since_touchdown" << delimiter;
   out << "athr.input.ATHR_push" << delimiter;
   out << "athr.input.ATHR_disconnect" << delimiter;
   out << "athr.input.TLA_1_deg" << delimiter;
@@ -266,6 +269,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "athr.input.is_anti_ice_engine_2_active" << delimiter;
   out << "athr.input.is_air_conditioning_1_active" << delimiter;
   out << "athr.input.is_air_conditioning_2_active" << delimiter;
+  out << "athr.input.FD_active" << delimiter;
   out << "athr.output.sim_throttle_lever_1_pos" << delimiter;
   out << "athr.output.sim_throttle_lever_2_pos" << delimiter;
   out << "athr.output.sim_thrust_mode_1" << delimiter;
@@ -646,6 +650,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << ap_sm.output.mode_reversion_lateral << delimiter;
   out << ap_sm.output.mode_reversion_vertical << delimiter;
   out << static_cast<unsigned int>(ap_sm.output.mode_reversion_TRK_FPA) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.output.mode_reversion_triple_click) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.output.mode_reversion_fma) << delimiter;
   out << static_cast<unsigned int>(ap_sm.output.speed_protection_mode) << delimiter;
   out << ap_sm.output.autothrust_mode << delimiter;
   out << ap_sm.output.Psi_c_deg << delimiter;
@@ -696,6 +702,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(athr.data_computed.is_FLX_active) << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.ATHR_push) << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.ATHR_disabled) << delimiter;
+  out << athr.data_computed.time_since_touchdown << delimiter;
   out << static_cast<unsigned int>(athr.input.ATHR_push) << delimiter;
   out << static_cast<unsigned int>(athr.input.ATHR_disconnect) << delimiter;
   out << athr.input.TLA_1_deg << delimiter;
@@ -723,6 +730,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(athr.input.is_anti_ice_engine_2_active) << delimiter;
   out << static_cast<unsigned int>(athr.input.is_air_conditioning_1_active) << delimiter;
   out << static_cast<unsigned int>(athr.input.is_air_conditioning_2_active) << delimiter;
+  out << static_cast<unsigned int>(athr.input.FD_active) << delimiter;
   out << athr.output.sim_throttle_lever_1_pos << delimiter;
   out << athr.output.sim_throttle_lever_2_pos << delimiter;
   out << athr.output.sim_thrust_mode_1 << delimiter;

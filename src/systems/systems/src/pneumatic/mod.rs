@@ -1,16 +1,9 @@
 //! As we've not yet modelled pneumatic systems and some pneumatic things are needed for the APU, for now this implementation will be very simple.
 
+use crate::shared::{ControllerSignal, PneumaticValve, PneumaticValveSignal};
+
 pub trait BleedAirValveState {
     fn bleed_air_valve_is_open(&self) -> bool;
-}
-
-pub trait Valve {
-    fn is_open(&self) -> bool;
-}
-
-/// Signals to the bleed air valve what position it should move towards.
-pub trait BleedAirValveController {
-    fn should_open_bleed_air_valve(&self) -> bool;
 }
 
 pub struct BleedAirValve {
@@ -21,11 +14,21 @@ impl BleedAirValve {
         BleedAirValve { open: false }
     }
 
-    pub fn update(&mut self, controller: &impl BleedAirValveController) {
-        self.open = controller.should_open_bleed_air_valve();
+    pub fn update(&mut self, controller: &impl ControllerSignal<PneumaticValveSignal>) {
+        match controller.signal() {
+            Some(PneumaticValveSignal::Open) => {
+                self.open = true;
+            }
+            // When no signal is received, the valve should automatically close.
+            // Note that when BLEED is implemented this should also take into account
+            // bleed air pressure, as no pressure should also result in the valve closing.
+            Some(PneumaticValveSignal::Close) | None => {
+                self.open = false;
+            }
+        }
     }
 }
-impl Valve for BleedAirValve {
+impl PneumaticValve for BleedAirValve {
     fn is_open(&self) -> bool {
         self.open
     }

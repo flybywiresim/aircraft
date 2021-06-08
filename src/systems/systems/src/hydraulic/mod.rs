@@ -1,6 +1,10 @@
+use self::brake_circuit::Actuator;
+use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
+use crate::simulation::{
+    SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+};
 use std::string::String;
 use std::time::Duration;
-
 use uom::si::{
     f64::*,
     pressure::psi,
@@ -9,14 +13,7 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
-use crate::electrical::consumption::PowerConsumer;
-use crate::electrical::ElectricalBusType;
-use crate::shared::interpolation;
-use crate::simulation::UpdateContext;
-use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
-
 pub mod brake_circuit;
-use crate::hydraulic::brake_circuit::Actuator;
 
 pub trait PressureSource {
     /// Gives the maximum available volume at that time as if it is a variable displacement
@@ -191,10 +188,10 @@ impl PowerTransferUnit {
 }
 impl SimulationElement for PowerTransferUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool("HYD_PTU_ACTIVE_L2R", self.is_active_left);
-        writer.write_bool("HYD_PTU_ACTIVE_R2L", self.is_active_right);
-        writer.write_f64("HYD_PTU_MOTOR_FLOW", self.flow().get::<gallon_per_second>());
-        writer.write_bool("HYD_PTU_VALVE_OPENED", self.is_enabled());
+        writer.write("HYD_PTU_ACTIVE_L2R", self.is_active_left);
+        writer.write("HYD_PTU_ACTIVE_R2L", self.is_active_right);
+        writer.write("HYD_PTU_MOTOR_FLOW", self.flow());
+        writer.write("HYD_PTU_VALVE_OPENED", self.is_enabled());
     }
 }
 impl Default for PowerTransferUnit {
@@ -637,10 +634,10 @@ impl HydraulicLoop {
 }
 impl SimulationElement for HydraulicLoop {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.pressure_id, self.pressure().get::<psi>());
-        writer.write_f64(&self.reservoir_id, self.reservoir_volume().get::<gallon>());
+        writer.write(&self.pressure_id, self.pressure());
+        writer.write(&self.reservoir_id, self.reservoir_volume());
         if self.has_fire_valve {
-            writer.write_bool(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
+            writer.write(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
         }
     }
 }
@@ -727,7 +724,8 @@ pub struct ElectricPump {
     active_id: String,
 
     is_active: bool,
-    power_consumer: PowerConsumer,
+    bus_type: ElectricalBusType,
+    is_powered: bool,
     rpm: f64,
     pump: Pump,
 }
@@ -746,7 +744,8 @@ impl ElectricPump {
         Self {
             active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
             is_active: false,
-            power_consumer: PowerConsumer::from(bus_type),
+            bus_type,
+            is_powered: false,
             rpm: 0.,
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
@@ -766,7 +765,7 @@ impl ElectricPump {
         line: &HydraulicLoop,
         controller: &T,
     ) {
-        self.is_active = controller.should_pressurise() && self.power_consumer.is_powered();
+        self.is_active = controller.should_pressurise() && self.is_powered;
 
         // Pump startup/shutdown process
         if self.is_active && self.rpm < Self::NOMINAL_SPEED {
@@ -790,14 +789,12 @@ impl PressureSource for ElectricPump {
     }
 }
 impl SimulationElement for ElectricPump {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.power_consumer.accept(visitor);
-
-        visitor.visit(self);
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.active_id, self.is_active);
     }
 
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_id, self.is_active);
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.bus_type);
     }
 }
 
@@ -849,7 +846,7 @@ impl PressureSource for EngineDrivenPump {
 }
 impl SimulationElement for EngineDrivenPump {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_id, self.is_active);
+        writer.write(&self.active_id, self.is_active);
     }
 }
 
@@ -941,7 +938,7 @@ impl WindTurbine {
 }
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64("HYD_RAT_RPM", self.rpm());
+        writer.write("HYD_RAT_RPM", self.rpm());
     }
 }
 impl Default for WindTurbine {
@@ -1075,7 +1072,7 @@ impl SimulationElement for RamAirTurbine {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64("HYD_RAT_STOW_POSITION", self.position);
+        writer.write("HYD_RAT_STOW_POSITION", self.position);
     }
 }
 impl Default for RamAirTurbine {

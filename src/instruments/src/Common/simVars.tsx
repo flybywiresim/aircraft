@@ -255,7 +255,7 @@ const SimVarProvider: React.FC = ({ children }) => {
  *
  * @example
  * // only refresh the SimVar every 500ms (unless this SimVar is lower elsewhere)
- * const [lightsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Bool', 500);
+ * const [lightsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 500);
  *
  * @returns {[*, (function(*): void)]}
  *
