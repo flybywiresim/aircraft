@@ -26,8 +26,20 @@ class A32NX_RAAS {
         this.nearestRunwayList = [];
         this.nearestRunwayId = NaN;
 
+        /*
+         * Check Aircraft Is On Runway
+         */
         this.isAircraftOnRunwayBool;
         this.isAircraftOnRunwayValue;
+        this.isAircraftOnRunwayHeadingValue;
+        this.isAircraftOnRunwayLatValue;
+        this.isAircraftOnRunwayLonValue;
+
+        /*
+         * Check Aircraft Approach to Runway
+         */
+        this.approachRunwayBool;
+        this.approachRunwayValues;
     }
 
     update() {
@@ -37,7 +49,7 @@ class A32NX_RAAS {
 
         if (this.savedNearestAirportId !== this.nearestAirport[0].airport_id) {
             this.needUpdate = true;
-            this.savedNearestAirportId = this.nearestAirport[0].airport_id
+            this.savedNearestAirportId = this.nearestAirport[0].airport_id;
         }
 
         if (this.needUpdate) {
@@ -48,6 +60,11 @@ class A32NX_RAAS {
 
         if (this.nearestRunwayList !== null) {
             this.isAircraftOnRunway();
+        }
+
+        const isGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
+        if (isGround) {
+            this.groundBehavior();
         }
 
         console.log(this.isAircraftOnRunwayBool);
@@ -69,7 +86,7 @@ class A32NX_RAAS {
                 }
                 console.log(`Loaded ${name[i]} json`);
             }
-        } catch(err) {
+        } catch (err) {
             console.log("Can't load JSON");
         }
     }
@@ -78,7 +95,7 @@ class A32NX_RAAS {
         const gpsLat = SimVar.GetSimVarValue("A:GPS POSITION LAT", "degrees");
         const gpsLon = SimVar.GetSimVarValue("A:GPS POSITION LON", "degrees");
         const result = this.airportData.filter(data => {
-            const dist = this.calculateDistance(gpsLat, gpsLon, data.laty, data.lonx)
+            const dist = this.calculateDistance(gpsLat, gpsLon, data.laty, data.lonx);
             if (dist < mile) {
                 return data;
             }
@@ -115,7 +132,7 @@ class A32NX_RAAS {
             // Data
             const primaryData = this.searchRunwayFromRunwayId(primaryId);
             const secondaryData = this.searchRunwayFromRunwayId(secondaryId);
-            this.nearestRunwayList.push([primaryData[0].name, primaryData[0].heading, primaryData[0].laty, primaryData[0].lonx, secondaryData[0].name, secondaryData[0].heading, secondaryData[0].laty, secondaryData[0].lonx])
+            this.nearestRunwayList.push([primaryData[0].name, primaryData[0].heading, primaryData[0].laty, primaryData[0].lonx, secondaryData[0].name, secondaryData[0].heading, secondaryData[0].laty, secondaryData[0].lonx]);
         }
     }
 
@@ -136,9 +153,37 @@ class A32NX_RAAS {
                 this.isAircraftOnRunwayBool = true;
                 if (Math.abs(this.nearestRunwayList[i][2] - gpsLat) >= Math.abs(this.nearestRunwayList[i][6] - gpsLat)) {
                     this.isAircraftOnRunwayValue = this.nearestRunwayList[i][4];
+                    this.isAircraftOnRunwayHeadingValue = this.nearestRunwayList[i][5];
+                    this.isAircraftOnRunwayLatValue = this.nearestRunwayList[i][6];
+                    this.isAircraftOnRunwayLonValue = this.nearestRunwayList[i][7];
+
+                    // need to fix
+                    this.isAircraftOnRunwayOppositeLatValue = this.nearestRunwayList[i][2];
+                    this.isAircraftOnRunwayOppositeLonValue = this.nearestRunwayList[i][3];
                 } else {
                     this.isAircraftOnRunwayValue = this.nearestRunwayList[i][0];
+                    this.isAircraftOnRunwayHeadingValue = this.nearestRunwayList[i][1];
+                    this.isAircraftOnRunwayLatValue = this.nearestRunwayList[i][2];
+                    this.isAircraftOnRunwayLonValue = this.nearestRunwayList[i][3];
+
+                    // need to fix
+                    this.isAircraftOnRunwayOppositeLatValue = this.nearestRunwayList[i][6];
+                    this.isAircraftOnRunwayOppositeLonValue = this.nearestRunwayList[i][7];
                 }
+
+                const id = this.savedNearestAirportId;
+                const runwayList = this.findRunwayListByAirportId(id);
+            }
+
+            if (Math.abs(angle) <= 0.1) {
+                this.approachRunwayBool = true;
+                if (Math.abs(this.nearestRunwayList[i][2] - gpsLat) >= Math.abs(this.nearestRunwayList[i][6] - gpsLat)) {
+                    this.approachRunwayValue = this.nearestRunwayList[i][4];
+                } else {
+                    this.approachRunwayValue = this.nearestRunwayList[i][0];
+                }
+            } else {
+                this.approachRunwayBool = false;
             }
         }
 
@@ -156,6 +201,56 @@ class A32NX_RAAS {
             }
         }
     }
+
+    groundBehavior() {
+        this.taxiwayTakeoff();
+        this.groundApproach();
+        this.groundOnRunway();
+    }
+
+    taxiwayTakeoff() {
+        const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+        if (groundSpeed >= 40 && !this.isAircraftOnRunwayBool) {
+            this.taxiwayTakeoffWarning = true;
+            console.log("ON TAXIWAY!");
+        } else {
+            this.taxiwayTakeoffWarning = false;
+        }
+    }
+
+    groundApproach() {
+        const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+        if (groundSpeed >= 40) {
+            return;
+        } else {
+            if (!this.isAircraftOnRunwayBool && this.approachRunwayBool) {
+                const approach = "Approach " + this.approachRunwayValue;
+                console.log(approach);
+            }
+        }
+    }
+
+    groundOnRunway() {
+        const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
+        const headingDiff = Math.abs(this.isAircraftOnRunwayHeadingValue - heading);
+        if (this.isAircraftOnRunwayBool && headingDiff <= 20) {
+            const on = "on Runway " + this.isAircraftOnRunwayValue;
+            console.log(on);
+        }
+
+        this.runwayRemaining();
+    }
+
+    runwayRemaining() {
+        const refLat = this.isAircraftOnRunwayOppositeLatValue;
+        const refLon = this.isAircraftOnRunwayOppositeLonValue;
+
+        const gpsLat = SimVar.GetSimVarValue("A:GPS POSITION LAT", "degrees");
+        const gpsLon = SimVar.GetSimVarValue("A:GPS POSITION LON", "degrees");
+        const remain = Math.abs(this.calculateDistance(refLat, refLon, gpsLat, gpsLon)) * 1609;
+        console.log(remain);
+    }
+
     getAngle(x1, y1, x2, y2) {
         return Math.atan2(y2, x2) - Math.atan2(y1, x1);
     }
