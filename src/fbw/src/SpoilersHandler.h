@@ -11,7 +11,7 @@ class SpoilersHandler {
   void setInitialPosition(double position);
   void setSimulationVariables(double simulationTime_new,
                               bool isAutopilotEngaged_new,
-                              double airspeed_new,
+                              double groundSpeed_new,
                               double thrustLeverAngle_1_new,
                               double thrustLeverAngle_2_new,
                               double landingGearCompression_1_new,
@@ -37,7 +37,7 @@ class SpoilersHandler {
   static constexpr double POSITION_FULL = 1.0;
 
   static constexpr double MINIMUM_AIRBORNE_TIME = 5.0;
-  static constexpr double CONDITION_AIRSPEED = 72.0;
+  static constexpr double CONDITION_GROUND_SPEED = 72.0;
 
   static constexpr double TLA_IDLE = 0.0;
   static constexpr double TLA_CLB = 25.0;
@@ -59,7 +59,7 @@ class SpoilersHandler {
   double simulationTime = 0.0;
   double timeAirborne = 0.0;
   bool isAutopilotEngaged = false;
-  double airspeed = 0.0;
+  double groundSpeed = 0.0;
   double thrustLeverAngle_1 = 0.0;
   double thrustLeverAngle_2 = 0.0;
   double landingGearCompression_1 = 0.0;
@@ -75,7 +75,7 @@ class SpoilersHandler {
               bool isArmed_new,
               double handlePosition_new,
               bool isAutopilotEngaged_new,
-              double airspeed_new,
+              double groundSpeed_new,
               double thrustLeverAngle_1_new,
               double thrustLeverAngle_2_new,
               double landingGearCompression_1_new,
@@ -95,7 +95,7 @@ class SpoilersHandler {
 
   static bool areAboveMct(double thrustLeverAngle_1, double thrustLeverAngle_2);
 
-  static bool isAtLeastOneInReverseAndOtherInIdle(double thrustLeverAngle_1, double thrustLeverAngle_2);
+  static bool isAtLeastOneInReverseAndOtherAtOrBelowIdle(double thrustLeverAngle_1, double thrustLeverAngle_2);
 
   static bool isAtLeastOneInReverseAndOtherBelowMct(double thrustLeverAngle_1, double thrustLeverAngle_2);
 };
