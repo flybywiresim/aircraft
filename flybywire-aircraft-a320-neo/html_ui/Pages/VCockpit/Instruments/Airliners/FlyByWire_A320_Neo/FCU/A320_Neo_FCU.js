@@ -250,7 +250,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     }
 
     shouldEngageManagedSpeed() {
-        const isValidV2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots") > 100;
+        const managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots");
+        const isValidV2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots") >= 90;
         const isVerticalModeSRS = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "enum") === 40;
 
         // V2 is entered into MCDU (was not set -> set)
@@ -261,7 +262,10 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
 
         // store state
-        this.isValidV2 = isValidV2;
+        if (!isValidV2 || managedSpeedTarget >= 90) {
+            // store V2 state only if managed speed target is valid (to debounce)
+            this.isValidV2 = isValidV2;
+        }
         this.isVerticalModeSRS = isVerticalModeSRS;
 
         return shouldEngage;
@@ -269,10 +273,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
 
     isManagedSpeedAvailable() {
         // managed speed is available when flight director or autopilot is engaged, or in approach phase (FMGC flight phase)
-        return Simplane.getAutoPilotFlightDirectorActive(1)
+        return (Simplane.getAutoPilotFlightDirectorActive(1)
                 || Simplane.getAutoPilotFlightDirectorActive(2)
                 || SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "number") === 1
-                || SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === 5;
+                || SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === 5)
+            && SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots") >= 90;
     }
 
     refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _lightsTest, _force = false) {
