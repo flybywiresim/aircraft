@@ -8,7 +8,7 @@ mod engine_generator;
 mod external_power_source;
 mod static_inverter;
 mod transformer_rectifier;
-use std::{cmp::Ordering, fmt::Display, hash::Hash, time::Duration};
+use std::{cmp::Ordering, time::Duration};
 
 pub use battery::Battery;
 pub use battery_charge_limiter::BatteryChargeLimiter;
@@ -21,11 +21,11 @@ use itertools::Itertools;
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 
-use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext};
-use uom::si::{
-    electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, ratio::percent,
-    velocity::knot,
+use crate::{
+    shared::{ElectricalBusType, PotentialOrigin},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
+use uom::si::{electric_potential::volt, f64::*, velocity::knot};
 
 use self::consumption::SuppliedPower;
 
@@ -44,17 +44,6 @@ pub trait EngineGeneratorPushButtons {
 
 pub trait BatteryPushButtons {
     fn bat_is_auto(&self, number: usize) -> bool;
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum PotentialOrigin {
-    EngineGenerator(usize),
-    ApuGenerator(usize),
-    External,
-    EmergencyGenerator,
-    Battery(usize),
-    TransformerRectifier(usize),
-    StaticInverter,
 }
 
 /// Within an electrical system, electric potential is made available by an origin.
@@ -296,41 +285,7 @@ impl PotentialSource for Contactor {
 }
 impl SimulationElement for Contactor {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.closed_id, self.is_closed());
-    }
-}
-
-/// The common types of electrical buses within Airbus aircraft.
-/// These include types such as AC, DC, AC ESS, etc.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum ElectricalBusType {
-    AlternatingCurrent(u8),
-    AlternatingCurrentEssential,
-    AlternatingCurrentEssentialShed,
-    AlternatingCurrentStaticInverter,
-    AlternatingCurrentGndFltService,
-    DirectCurrent(u8),
-    DirectCurrentEssential,
-    DirectCurrentEssentialShed,
-    DirectCurrentBattery,
-    DirectCurrentHot(u8),
-    DirectCurrentGndFltService,
-}
-impl Display for ElectricalBusType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ElectricalBusType::AlternatingCurrent(number) => write!(f, "AC_{}", number),
-            ElectricalBusType::AlternatingCurrentEssential => write!(f, "AC_ESS"),
-            ElectricalBusType::AlternatingCurrentEssentialShed => write!(f, "AC_ESS_SHED"),
-            ElectricalBusType::AlternatingCurrentStaticInverter => write!(f, "AC_STAT_INV"),
-            ElectricalBusType::AlternatingCurrentGndFltService => write!(f, "AC_GND_FLT_SVC"),
-            ElectricalBusType::DirectCurrent(number) => write!(f, "DC_{}", number),
-            ElectricalBusType::DirectCurrentEssential => write!(f, "DC_ESS"),
-            ElectricalBusType::DirectCurrentEssentialShed => write!(f, "DC_ESS_SHED"),
-            ElectricalBusType::DirectCurrentBattery => write!(f, "DC_BAT"),
-            ElectricalBusType::DirectCurrentHot(number) => write!(f, "DC_HOT_{}", number),
-            ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
-        }
+        writer.write(&self.closed_id, self.is_closed());
     }
 }
 
@@ -382,7 +337,13 @@ impl PotentialSource for ElectricalBus {
 }
 impl SimulationElement for ElectricalBus {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.bus_powered_id, self.is_powered());
+        if let ElectricalBusType::Sub(_) = self.bus_type {
+            // Sub buses are not written towards the simulator. See the
+            // description on the sub bus type for details.
+            return;
+        }
+
+        writer.write(&self.bus_powered_id, self.is_powered());
         if self.bus_type == ElectricalBusType::DirectCurrentBattery {
             // It's good to note that in the real aircraft, the battery charge limiters (BCLs) are
             // responsible for supplying this information to the SDAC. When the battery push
@@ -391,7 +352,7 @@ impl SimulationElement for ElectricalBus {
             // on the ECAM screen. For now we just always emit this information here and within
             // the ECAM code check the BAT push button position to see if XX should be presented or not.
             // Once the SDAC is implemented it can be moved there and read this value from the BCLs.
-            writer.write_bool(&self.bus_potential_normal_id, self.potential_normal())
+            writer.write(&self.bus_potential_normal_id, self.potential_normal())
         }
     }
 }
@@ -448,23 +409,23 @@ impl ElectricalStateWriter {
     }
 
     fn write_current(&self, source: &impl ProvideCurrent, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.current_id, source.current().get::<ampere>());
-        writer.write_bool(&self.current_normal_id, source.current_normal());
+        writer.write(&self.current_id, source.current());
+        writer.write(&self.current_normal_id, source.current_normal());
     }
 
     fn write_potential(&self, source: &impl ProvidePotential, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.potential_id, source.potential().get::<volt>());
-        writer.write_bool(&self.potential_normal_id, source.potential_normal());
+        writer.write(&self.potential_id, source.potential());
+        writer.write(&self.potential_normal_id, source.potential_normal());
     }
 
     fn write_frequency(&self, source: &impl ProvideFrequency, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.frequency_id, source.frequency().get::<hertz>());
-        writer.write_bool(&self.frequency_normal_id, source.frequency_normal());
+        writer.write(&self.frequency_id, source.frequency());
+        writer.write(&self.frequency_normal_id, source.frequency_normal());
     }
 
     fn write_load(&self, source: &impl ProvideLoad, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.load_id, source.load().get::<percent>());
-        writer.write_bool(&self.load_normal_id, source.load_normal());
+        writer.write(&self.load_id, source.load());
+        writer.write(&self.load_normal_id, source.load_normal());
     }
 }
 
@@ -529,7 +490,7 @@ impl Default for EmergencyElectrical {
 
 #[cfg(test)]
 mod tests {
-    use uom::si::frequency::hertz;
+    use uom::si::{electric_current::ampere, frequency::hertz, ratio::percent};
 
     use super::*;
     struct Powerless {}
@@ -908,45 +869,6 @@ mod tests {
     }
 
     #[cfg(test)]
-    mod electrical_bus_type_tests {
-        use crate::electrical::ElectricalBusType;
-
-        #[test]
-        fn get_name_returns_name() {
-            assert_eq!(ElectricalBusType::AlternatingCurrent(2).to_string(), "AC_2");
-            assert_eq!(
-                ElectricalBusType::AlternatingCurrentEssential.to_string(),
-                "AC_ESS"
-            );
-            assert_eq!(
-                ElectricalBusType::AlternatingCurrentEssentialShed.to_string(),
-                "AC_ESS_SHED"
-            );
-            assert_eq!(
-                ElectricalBusType::AlternatingCurrentStaticInverter.to_string(),
-                "AC_STAT_INV"
-            );
-            assert_eq!(ElectricalBusType::DirectCurrent(2).to_string(), "DC_2");
-            assert_eq!(
-                ElectricalBusType::DirectCurrentEssential.to_string(),
-                "DC_ESS"
-            );
-            assert_eq!(
-                ElectricalBusType::DirectCurrentEssentialShed.to_string(),
-                "DC_ESS_SHED"
-            );
-            assert_eq!(
-                ElectricalBusType::DirectCurrentBattery.to_string(),
-                "DC_BAT"
-            );
-            assert_eq!(
-                ElectricalBusType::DirectCurrentHot(2).to_string(),
-                "DC_HOT_2"
-            );
-        }
-    }
-
-    #[cfg(test)]
     mod electrical_bus_tests {
         use super::*;
         use crate::simulation::{test::SimulationTestBed, Aircraft};
@@ -958,6 +880,15 @@ mod tests {
             test_bed.run_without_update(&mut bus);
 
             assert!(test_bed.contains_key("ELEC_AC_2_BUS_IS_POWERED"));
+        }
+
+        #[test]
+        fn sub_bus_does_not_write_its_state() {
+            let mut aircraft = ElectricalBusTestAircraft::new(ElectricalBusType::Sub("202PP"));
+            let mut test_bed = SimulationTestBed::new();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!test_bed.contains_key("ELEC_SUB_202PP_BUS_IS_POWERED"));
         }
 
         struct BatteryStub {

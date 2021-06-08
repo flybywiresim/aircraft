@@ -308,7 +308,7 @@ impl Default for TestReaderWriter {
 mod tests {
     use super::*;
     use crate::{
-        electrical::consumption::{PowerConsumption, PowerConsumptionReport, SuppliedPower},
+        shared::{ConsumePower, ElectricalBuses, PowerConsumptionReport},
         simulation::{SimulatorReader, SimulatorWriter},
     };
 
@@ -360,15 +360,15 @@ mod tests {
             // Can't check this as the fn doesn't require mutable self.
         }
 
-        fn receive_power(&mut self, _: &SuppliedPower) {
+        fn receive_power(&mut self, _: &impl ElectricalBuses) {
             self.receive_power_called = true;
         }
 
-        fn consume_power(&mut self, _: &mut PowerConsumption) {
+        fn consume_power<T: ConsumePower>(&mut self, _: &mut T) {
             self.consume_power_called = true;
         }
 
-        fn consume_power_in_converters(&mut self, _consumption: &mut PowerConsumption) {
+        fn consume_power_in_converters<T: ConsumePower>(&mut self, _: &mut T) {
             self.consume_power_in_converters_called = true;
         }
 

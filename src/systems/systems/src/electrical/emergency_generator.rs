@@ -1,11 +1,11 @@
 use std::time::Duration;
 
 use super::{
-    consumption::PowerConsumptionReport, ElectricalStateWriter, Potential, PotentialOrigin,
-    PotentialSource, ProvideFrequency, ProvidePotential,
+    ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, ProvideFrequency,
+    ProvidePotential,
 };
 use crate::{
-    shared::RamAirTurbineHydraulicLoopPressurised,
+    shared::{PowerConsumptionReport, RamAirTurbineHydraulicLoopPressurised},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
