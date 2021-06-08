@@ -98,6 +98,10 @@ impl ElectricalBuses for SuppliedPower {
     fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool {
         bus_types.iter().any(|bus_type| self.is_powered(*bus_type))
     }
+
+    fn all_are_powered(&self, bus_types: &[ElectricalBusType]) -> bool {
+        bus_types.iter().all(|bus_type| self.is_powered(*bus_type))
+    }
 }
 impl Default for SuppliedPower {
     fn default() -> Self {

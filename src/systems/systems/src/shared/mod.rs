@@ -105,6 +105,7 @@ pub trait ElectricalBuses {
     fn potential_of(&self, bus_type: ElectricalBusType) -> Potential;
     fn is_powered(&self, bus_type: ElectricalBusType) -> bool;
     fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool;
+    fn all_are_powered(&self, bus_types: &[ElectricalBusType]) -> bool;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
