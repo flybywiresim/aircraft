@@ -48,11 +48,17 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
 }
 
 void ThrottleAxisMapping::setInFlight() {
-  inFlight = true;
+  if (!inFlight) {
+    inFlight = true;
+    setCurrentValue(currentValue);
+  }
 }
 
 void ThrottleAxisMapping::setOnGround() {
-  inFlight = false;
+  if (inFlight) {
+    inFlight = false;
+    setCurrentValue(currentValue);
+  }
 }
 
 double ThrottleAxisMapping::getValue() {
