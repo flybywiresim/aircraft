@@ -413,7 +413,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._apMasterStatus = false;
         this._lastRequestedFLCModeWaypointIndex = -1;
         this._cruiseFlightLevel = undefined;
-        this._activeCruiseFlightLevel = undefined;
+        this._activeCruiseFlightLevel = 0;
         this._activeCruiseFlightLevelDefaulToFcu = false;
         this._progBrgDist = undefined;
         this.preSelectedClbSpeed = undefined;
