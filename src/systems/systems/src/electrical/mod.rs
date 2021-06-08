@@ -8,7 +8,11 @@ mod engine_generator;
 mod external_power_source;
 mod static_inverter;
 mod transformer_rectifier;
-use std::{cmp::Ordering, collections::HashMap, time::Duration};
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+    time::Duration,
+};
 
 pub use battery::Battery;
 pub use battery_charge_limiter::BatteryChargeLimiter;
@@ -1329,10 +1333,20 @@ mod tests {
     }
 }
 
-pub(super) trait ElectricalElement {
+pub trait ElectricalElement {
     fn input_identifier(&self) -> ElectricalElementIdentifier;
     fn output_identifier(&self) -> ElectricalElementIdentifier;
+
+    /// Returns whether the element is currently capable of conducting electricity.
     fn is_conductive(&self) -> bool;
+}
+
+pub trait ElectricitySource: ElectricalElement {
+    fn output_potential(&self) -> NewPotential;
+}
+
+pub trait ElectricityTransformer: ElectricalElement {
+    fn transform(&self, input: &NewPotential) -> NewPotential;
 }
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
@@ -1356,12 +1370,98 @@ pub trait ElectricalElementIdentifierProvider {
 pub struct Electricity {
     next_identifier: ElectricalElementIdentifier,
     buses: HashMap<ElectricalBusType, ElectricalElementIdentifier>,
+    potential: PotentialCollection,
 }
 impl Electricity {
     pub fn new() -> Self {
         Self {
             next_identifier: ElectricalElementIdentifier::first(),
             buses: HashMap::new(),
+            potential: PotentialCollection::new(),
+        }
+    }
+
+    /// Flows electricity from the given output element to the given input element as long
+    /// as both elements are conductive.
+    ///
+    /// For the vast majority of elements, the order of arguments is irrelevant, as their
+    /// input and output shares the same identifier. However, transformers are split in two:
+    /// the [TransformerRectifiers](TransformerRectifier) have AC input and DC output, and the [StaticInverter] has DC
+    /// input and AC output. Thus for these specific element types, one has to make sure the
+    /// argument order is correct.
+    /// ```rust
+    /// # use systems::{shared::ElectricalBusType, electrical::{Contactor, ElectricalBus, Electricity}};
+    /// let mut electricity = Electricity::new();
+    /// let contactor = Contactor::new("TEST", &mut electricity);
+    /// let bus = ElectricalBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
+    ///
+    /// electricity.flow(&contactor, &bus);
+    /// ```
+    pub fn flow(
+        &mut self,
+        from_output: &impl ElectricalElement,
+        to_input: &impl ElectricalElement,
+    ) {
+        if from_output.is_conductive() && to_input.is_conductive() {
+            self.potential
+                .flow(from_output.output_identifier(), to_input.input_identifier());
+        }
+    }
+
+    /// Takes the output supplied by the given source of electricity, such that
+    /// it can then [flow](`Self::flow()`) through the electrical system.
+    /// ```rust
+    /// # use systems::electrical::{Contactor, Electricity, EngineGenerator};
+    /// let mut electricity = Electricity::new();
+    /// let generator = EngineGenerator::new(1, &mut electricity);
+    /// let contactor = Contactor::new("TEST", &mut electricity);
+    ///
+    /// electricity.supplied_by(&generator);
+    /// electricity.flow(&generator, &contactor);
+    /// ```
+    pub fn supplied_by(&mut self, source: &impl ElectricitySource) {
+        let output_identifier = source.output_identifier();
+        self.potential.supplied_by(
+            output_identifier,
+            source.output_potential().include(output_identifier),
+        )
+    }
+
+    /// Transforms electricity within the given transformer.
+    /// ```rust
+    /// # use systems::{shared::ElectricalBusType, electrical::{TransformerRectifier, ElectricalBus, Electricity}};
+    /// let mut electricity = Electricity::new();
+    /// let ac_bus = ElectricalBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+    /// let tr = TransformerRectifier::new(1, &mut electricity);
+    /// let dc_bus = ElectricalBus::new(ElectricalBusType::DirectCurrent(1), &mut electricity);
+    ///
+    /// electricity.flow(&ac_bus, &tr);
+    /// electricity.transform_in(&tr);
+    /// electricity.flow(&tr, &dc_bus);
+    /// ```
+    pub fn transform_in(&mut self, transformer: &impl ElectricityTransformer) {
+        if let Some(input_potential) = self.potential.get(transformer.input_identifier()) {
+            let output_identifier = transformer.output_identifier();
+            let x = transformer
+                .transform(input_potential)
+                .include(output_identifier);
+            self.potential.supplied_by(output_identifier, x);
+        }
+    }
+
+    /// Returns if the given element is powered or not.
+    #[cfg(test)]
+    fn is_powered(&self, element: &impl ElectricalElement) -> bool {
+        self.potential.is_powered(element.output_identifier())
+    }
+
+    /// Returns if the given electrical bus type is powered or not.
+    #[cfg(test)]
+    fn bus_is_powered(&self, bus_type: ElectricalBusType) -> bool {
+        if let Some(identifier) = self.buses.get(&bus_type) {
+            self.potential.is_powered(*identifier)
+        } else {
+            false
         }
     }
 
@@ -1381,6 +1481,11 @@ impl Electricity {
     fn identifier_for(&self, bus_type: ElectricalBusType) -> Option<&ElectricalElementIdentifier> {
         self.buses.get(&bus_type)
     }
+
+    #[cfg(test)]
+    fn potential(&self, element: &impl ElectricalElement) -> Option<&NewPotential> {
+        self.potential.get(element.output_identifier())
+    }
 }
 impl ElectricalElementIdentifierProvider for Electricity {
     fn next(&mut self) -> ElectricalElementIdentifier {
@@ -1398,9 +1503,348 @@ impl ElectricalElementIdentifierProvider for Electricity {
     }
 }
 
+#[derive(Debug)]
+pub struct NewPotential {
+    origins: HashSet<PotentialOrigin>,
+    elements: HashSet<ElectricalElementIdentifier>,
+    raw: ElectricPotential,
+}
+impl NewPotential {
+    fn new(origin: PotentialOrigin, raw: ElectricPotential) -> Self {
+        let mut origins = HashSet::new();
+        origins.insert(origin);
+
+        Self {
+            origins,
+            elements: HashSet::new(),
+            raw,
+        }
+    }
+
+    fn none() -> Self {
+        Self {
+            origins: HashSet::new(),
+            elements: HashSet::new(),
+            raw: ElectricPotential::new::<volt>(0.),
+        }
+    }
+
+    fn include(mut self, identifier: ElectricalElementIdentifier) -> Self {
+        self.elements.insert(identifier);
+        self
+    }
+
+    fn and_include(self, identifier: ElectricalElementIdentifier) -> Self {
+        self.include(identifier)
+    }
+
+    fn elements(&self) -> impl Iterator<Item = &ElectricalElementIdentifier> + '_ {
+        self.elements.iter()
+    }
+
+    #[cfg(test)]
+    fn origin_count(&self) -> usize {
+        self.origins.iter().count()
+    }
+
+    fn merge(mut self, mut other: NewPotential) -> Self {
+        // As a given simulation tick is not of infinitely small delta time. We need to give
+        // "equality" some slack. This prevents continuously switching between potential
+        // sources, such as the battery.
+        if (self.raw - other.raw).abs() <= ElectricPotential::new::<volt>(0.001) {
+            self.origins.extend(other.origins);
+            self.elements.extend(other.elements.iter());
+
+            // Here we take the minimum of the potentials. To understand why consider
+            // two batteries providing potential. BAT1 at 27.05V and BAT2 at 27.1V.
+            // If we would return the higher potential, BAT1 would start charging itself.
+            self.raw = self.raw.min(other.raw);
+
+            self
+        } else if self.raw > other.raw {
+            self.elements.extend(other.elements.iter());
+            self
+        } else {
+            other.elements.extend(self.elements.iter());
+            other
+        }
+    }
+
+    fn is_powered(&self) -> bool {
+        self.origins.len() > 0
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct PotentialKey(u32);
+impl PotentialKey {
+    fn first() -> Self {
+        Self { 0: 1 }
+    }
+
+    fn next(&self) -> Self {
+        Self { 0: self.0 + 1 }
+    }
+}
+
+#[derive(Debug)]
+struct ElectricalElementToPotentialKeyMap {
+    next_key: PotentialKey,
+    items: HashMap<ElectricalElementIdentifier, PotentialKey>,
+}
+impl ElectricalElementToPotentialKeyMap {
+    fn new() -> Self {
+        Self {
+            next_key: PotentialKey::first(),
+            items: HashMap::new(),
+        }
+    }
+
+    fn get(&self, id: ElectricalElementIdentifier) -> Option<PotentialKey> {
+        match self.items.get(&id) {
+            Some(key) => Some(*key),
+            None => None,
+        }
+    }
+
+    fn get_or_insert(&mut self, identifier: ElectricalElementIdentifier) -> PotentialKey {
+        match self.items.get(&identifier) {
+            Some(key) => *key,
+            None => {
+                let key = self.next_key;
+                self.items.insert(identifier, self.next_key);
+                self.next_key = self.next_key.next();
+
+                key
+            }
+        }
+    }
+
+    fn insert(&mut self, id: ElectricalElementIdentifier, key: PotentialKey) {
+        self.items.insert(id, key);
+    }
+}
+
+/// Maintains the many to one relationship from electrical elements to their electric potential.
+#[derive(Debug)]
+struct PotentialCollection {
+    element_to_potential_key: ElectricalElementToPotentialKeyMap,
+    items: HashMap<PotentialKey, NewPotential>,
+}
+impl PotentialCollection {
+    fn new() -> Self {
+        Self {
+            element_to_potential_key: ElectricalElementToPotentialKeyMap::new(),
+            items: HashMap::new(),
+        }
+    }
+
+    fn flow(
+        &mut self,
+        left_element: ElectricalElementIdentifier,
+        right_element: ElectricalElementIdentifier,
+    ) {
+        let left_key = self.element_to_potential_key.get_or_insert(left_element);
+        let right_key = self.element_to_potential_key.get_or_insert(right_element);
+        match (self.items.remove(&left_key), self.items.remove(&right_key)) {
+            (None, None) => {
+                // Neither element has potential, point them both to an object without potential.
+                self.items.insert(
+                    left_key,
+                    NewPotential::none()
+                        .include(left_element)
+                        .and_include(right_element),
+                );
+                self.element_to_potential_key
+                    .insert(right_element, left_key);
+            }
+            (Some(left_potential), None) => {
+                // The right element doesn't yet have potential, point it to the left element's potential.
+                self.element_to_potential_key
+                    .insert(right_element, left_key);
+                self.items
+                    .insert(left_key, left_potential.include(right_element));
+            }
+            (None, Some(right_potential)) => {
+                // The left element doesn't yet have potential, point it to the right element's potential.
+                self.element_to_potential_key
+                    .insert(left_element, right_key);
+                self.items
+                    .insert(right_key, right_potential.include(left_element));
+            }
+            (Some(left_potential), Some(right_potential)) => {
+                // The right element's potential will merge into the left element's potential.
+                for right_element in right_potential.elements() {
+                    self.element_to_potential_key
+                        .insert(*right_element, left_key);
+                }
+
+                self.items
+                    .insert(left_key, left_potential.merge(right_potential));
+            }
+        };
+    }
+
+    fn supplied_by(&mut self, identifier: ElectricalElementIdentifier, potential: NewPotential) {
+        let key = self.element_to_potential_key.get_or_insert(identifier);
+        self.items.insert(key, potential);
+    }
+
+    #[cfg(test)]
+    fn is_powered(&self, identifier: ElectricalElementIdentifier) -> bool {
+        if let Some(key) = self.element_to_potential_key.get(identifier) {
+            match self.items.get(&key) {
+                Some(potential) => potential.is_powered(),
+                None => false,
+            }
+        } else {
+            false
+        }
+    }
+
+    fn get(&self, identifier: ElectricalElementIdentifier) -> Option<&NewPotential> {
+        if let Some(key) = self.element_to_potential_key.get(identifier) {
+            self.items.get(&key)
+        } else {
+            None
+        }
+    }
+}
+
 #[cfg(test)]
-mod new_tests {
+mod electricity_tests {
     use super::*;
+
+    struct TestElectricalElement {
+        number: usize,
+        identifier: ElectricalElementIdentifier,
+        is_powered: bool,
+        is_conductive: bool,
+    }
+    impl TestElectricalElement {
+        fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+            Self {
+                number: 1,
+                identifier: identifier_provider.next(),
+                is_powered: false,
+                is_conductive: true,
+            }
+        }
+
+        fn unregistered() -> Self {
+            Self {
+                number: 1,
+                identifier: ElectricalElementIdentifier::first(),
+                is_powered: false,
+                is_conductive: true,
+            }
+        }
+
+        fn power(mut self) -> Self {
+            self.is_powered = true;
+            self
+        }
+
+        fn non_conductive(mut self) -> Self {
+            self.is_conductive = false;
+            self
+        }
+
+        fn with_number(mut self, number: usize) -> Self {
+            self.number = number;
+            self
+        }
+    }
+    impl ElectricalElement for TestElectricalElement {
+        fn input_identifier(&self) -> ElectricalElementIdentifier {
+            self.identifier
+        }
+
+        fn output_identifier(&self) -> ElectricalElementIdentifier {
+            self.identifier
+        }
+
+        fn is_conductive(&self) -> bool {
+            self.is_conductive
+        }
+    }
+    impl ElectricitySource for TestElectricalElement {
+        fn output_potential(&self) -> NewPotential {
+            if self.is_powered {
+                NewPotential::new(
+                    PotentialOrigin::EngineGenerator(self.number),
+                    ElectricPotential::new::<volt>(115.),
+                )
+            } else {
+                NewPotential::none()
+            }
+        }
+    }
+
+    struct TestBus {
+        identifier: ElectricalElementIdentifier,
+    }
+    impl TestBus {
+        fn new(
+            bus_type: ElectricalBusType,
+            identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+        ) -> Self {
+            Self {
+                identifier: identifier_provider.next_for_bus(bus_type),
+            }
+        }
+    }
+    impl ElectricalElement for TestBus {
+        fn input_identifier(&self) -> ElectricalElementIdentifier {
+            self.identifier
+        }
+
+        fn output_identifier(&self) -> ElectricalElementIdentifier {
+            self.identifier
+        }
+
+        fn is_conductive(&self) -> bool {
+            true
+        }
+    }
+
+    struct TestTransformer {
+        input_identifier: ElectricalElementIdentifier,
+        output_identifier: ElectricalElementIdentifier,
+    }
+    impl TestTransformer {
+        fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+            Self {
+                input_identifier: identifier_provider.next(),
+                output_identifier: identifier_provider.next(),
+            }
+        }
+    }
+    impl ElectricityTransformer for TestTransformer {
+        fn transform(&self, input: &NewPotential) -> NewPotential {
+            if input.is_powered() {
+                NewPotential::new(
+                    PotentialOrigin::TransformerRectifier(1),
+                    ElectricPotential::new::<volt>(28.),
+                )
+            } else {
+                NewPotential::none()
+            }
+        }
+    }
+    impl ElectricalElement for TestTransformer {
+        fn input_identifier(&self) -> ElectricalElementIdentifier {
+            self.input_identifier
+        }
+
+        fn output_identifier(&self) -> ElectricalElementIdentifier {
+            self.output_identifier
+        }
+
+        fn is_conductive(&self) -> bool {
+            true
+        }
+    }
 
     #[test]
     fn next_provides_increasing_identifiers() {
@@ -1450,5 +1894,230 @@ mod new_tests {
             electricity.identifier_for(ElectricalBusType::DirectCurrentEssential)
                 == Some(&identifier)
         );
+    }
+
+    #[test]
+    fn an_unknown_element_isnt_powered() {
+        let electricity = Electricity::new();
+        let element = TestElectricalElement::unregistered();
+
+        assert!(!electricity.is_powered(&element));
+    }
+
+    #[test]
+    fn a_known_but_unpowered_element_isnt_powered() {
+        let mut electricity = Electricity::new();
+        let element = TestElectricalElement::new(&mut electricity);
+
+        assert!(!electricity.is_powered(&element));
+    }
+
+    #[test]
+    fn a_known_and_powered_element_is_powered() {
+        let mut electricity = Electricity::new();
+        let element = TestElectricalElement::new(&mut electricity).power();
+        electricity.supplied_by(&element);
+
+        assert!(electricity.is_powered(&element));
+    }
+
+    #[test]
+    fn power_doesnt_flow_from_an_unpowered_element_to_another_unpowered_element() {
+        let mut electricity = Electricity::new();
+        let from_element = TestElectricalElement::new(&mut electricity);
+        let to_element = TestElectricalElement::new(&mut electricity);
+        electricity.supplied_by(&from_element);
+        electricity.flow(&from_element, &to_element);
+
+        assert!(!electricity.is_powered(&to_element));
+    }
+
+    #[test]
+    fn power_flows_from_a_powered_to_an_unpowered_element() {
+        let mut electricity = Electricity::new();
+        let from_element = TestElectricalElement::new(&mut electricity).power();
+        let to_element = TestElectricalElement::new(&mut electricity);
+        electricity.supplied_by(&from_element);
+        electricity.flow(&from_element, &to_element);
+
+        assert!(electricity.is_powered(&to_element));
+    }
+
+    #[test]
+    fn power_doesnt_flow_from_a_non_conductive_to_a_conductive_element() {
+        let mut electricity = Electricity::new();
+        let from_element = TestElectricalElement::new(&mut electricity)
+            .power()
+            .non_conductive();
+        let to_element = TestElectricalElement::new(&mut electricity);
+        electricity.supplied_by(&from_element);
+        electricity.flow(&from_element, &to_element);
+
+        assert!(!electricity.is_powered(&to_element));
+    }
+
+    #[test]
+    fn power_doesnt_flow_from_a_conductive_to_a_non_conductive_element() {
+        let mut electricity = Electricity::new();
+        let from_element = TestElectricalElement::new(&mut electricity).power();
+        let to_element = TestElectricalElement::new(&mut electricity).non_conductive();
+        electricity.supplied_by(&from_element);
+        electricity.flow(&from_element, &to_element);
+
+        assert!(!electricity.is_powered(&to_element));
+    }
+
+    #[test]
+    fn an_unknown_bus_isnt_powered() {
+        let electricity = Electricity::new();
+
+        assert!(!electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
+    }
+
+    #[test]
+    fn a_known_but_unpowered_bus_isnt_powered() {
+        let mut electricity = Electricity::new();
+        // Request an identifier, such that the bus type is registered.
+        TestBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
+
+        assert!(!electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
+    }
+
+    #[test]
+    fn a_known_and_powered_bus_is_powered() {
+        let mut electricity = Electricity::new();
+        let element = TestElectricalElement::new(&mut electricity).power();
+        electricity.supplied_by(&element);
+
+        let bus = TestBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
+        electricity.flow(&element, &bus);
+
+        assert!(electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
+    }
+
+    #[test]
+    fn an_unpowered_transformer_does_not_transform_electricity() {
+        let mut electricity = Electricity::new();
+        let transformer = TestTransformer::new(&mut electricity);
+        electricity.transform_in(&transformer);
+
+        assert!(!electricity.is_powered(&transformer));
+    }
+
+    #[test]
+    fn a_powered_transformer_transforms_electricity() {
+        let mut electricity = Electricity::new();
+        let source = TestElectricalElement::new(&mut electricity).power();
+        let transformer = TestTransformer::new(&mut electricity);
+
+        electricity.supplied_by(&source);
+        electricity.flow(&source, &transformer);
+        electricity.transform_in(&transformer);
+
+        assert!(electricity.is_powered(&transformer));
+    }
+
+    #[test]
+    fn transformed_electricity_isnt_the_same_potential() {
+        let mut electricity = Electricity::new();
+        let source = TestElectricalElement::new(&mut electricity).power();
+        let transformer = TestTransformer::new(&mut electricity);
+
+        electricity.supplied_by(&source);
+        electricity.flow(&source, &transformer);
+        electricity.transform_in(&transformer);
+
+        match (
+            electricity.potential(&source),
+            electricity.potential(&transformer),
+        ) {
+            (Some(left), Some(right)) => {
+                assert!(left.origins.contains(&PotentialOrigin::EngineGenerator(1)));
+                assert!(right
+                    .origins
+                    .contains(&PotentialOrigin::TransformerRectifier(1)))
+            }
+            _ => panic!("Potentials were expected but not found."),
+        }
+    }
+
+    #[test]
+    fn electricity_flows_back_through_the_circuit() {
+        let mut electricity = Electricity::new();
+        let first = TestElectricalElement::new(&mut electricity);
+        let second = TestElectricalElement::new(&mut electricity);
+        let third = TestElectricalElement::new(&mut electricity).power();
+
+        electricity.flow(&first, &second);
+        electricity.flow(&second, &third);
+        electricity.supplied_by(&third);
+
+        assert!(electricity.is_powered(&first));
+    }
+
+    #[test]
+    fn electricity_from_multiple_sources_combines() {
+        let mut electricity = Electricity::new();
+        let first = TestElectricalElement::new(&mut electricity).power();
+        let second = TestElectricalElement::new(&mut electricity)
+            .with_number(2)
+            .power();
+
+        electricity.supplied_by(&first);
+        electricity.supplied_by(&second);
+        electricity.flow(&first, &second);
+
+        match electricity.potential(&first) {
+            Some(potential) => {
+                assert_eq!(potential.origin_count(), 2);
+            }
+            None => panic!("Potential was expected but not found."),
+        }
+    }
+
+    #[test]
+    fn flow_right_argument_doesnt_dangle() {
+        let mut electricity = Electricity::new();
+        let first = TestElectricalElement::new(&mut electricity);
+        let second = TestElectricalElement::new(&mut electricity);
+        let third = TestElectricalElement::new(&mut electricity);
+        let fourth = TestElectricalElement::new(&mut electricity);
+        electricity.flow(&first, &second);
+
+        // If the code doesn't add the third element to the potential object during this call...
+        electricity.flow(&second, &third);
+
+        let powered = TestElectricalElement::new(&mut electricity).power();
+        electricity.supplied_by(&powered);
+        electricity.flow(&fourth, &powered);
+
+        // ...then during this call the third element would get lost, as the potential doesn't contain
+        // a reference to the element, and thus there is no way to include that element in the new merged potential.
+        electricity.flow(&fourth, &first);
+
+        assert!(electricity.is_powered(&third));
+    }
+
+    #[test]
+    fn flow_left_argument_doesnt_dangle() {
+        let mut electricity = Electricity::new();
+        let first = TestElectricalElement::new(&mut electricity);
+        let second = TestElectricalElement::new(&mut electricity);
+        let third = TestElectricalElement::new(&mut electricity);
+        let fourth = TestElectricalElement::new(&mut electricity);
+        electricity.flow(&first, &second);
+
+        // If the code doesn't add the third element to the potential object during this call...
+        electricity.flow(&third, &second);
+
+        let powered = TestElectricalElement::new(&mut electricity).power();
+        electricity.supplied_by(&powered);
+        electricity.flow(&fourth, &powered);
+
+        // ...then during this call the third element would get lost, as the potential doesn't contain
+        // a reference to the element, and thus there is no way to include that element in the new merged potential.
+        electricity.flow(&fourth, &first);
+
+        assert!(electricity.is_powered(&third));
     }
 }

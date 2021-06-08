@@ -10,7 +10,8 @@ use crate::{
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 pub struct StaticInverter {
-    identifier: ElectricalElementIdentifier,
+    input_identifier: ElectricalElementIdentifier,
+    output_identifier: ElectricalElementIdentifier,
     writer: ElectricalStateWriter,
     input_potential: Potential,
     output_potential: ElectricPotential,
@@ -21,7 +22,8 @@ impl StaticInverter {
         identifier_provider: &mut impl ElectricalElementIdentifierProvider,
     ) -> StaticInverter {
         StaticInverter {
-            identifier: identifier_provider.next(),
+            input_identifier: identifier_provider.next(),
+            output_identifier: identifier_provider.next(),
             writer: ElectricalStateWriter::new("STAT_INV"),
             input_potential: Potential::none(),
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -51,11 +53,11 @@ provide_potential!(StaticInverter, (110.0..=120.0));
 provide_frequency!(StaticInverter, (390.0..=410.0));
 impl ElectricalElement for StaticInverter {
     fn input_identifier(&self) -> ElectricalElementIdentifier {
-        self.identifier
+        self.input_identifier
     }
 
     fn output_identifier(&self) -> ElectricalElementIdentifier {
-        self.identifier
+        self.output_identifier
     }
 
     fn is_conductive(&self) -> bool {

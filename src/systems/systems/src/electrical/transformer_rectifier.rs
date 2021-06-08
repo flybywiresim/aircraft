@@ -1,7 +1,7 @@
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
-    ProvideCurrent, ProvidePotential,
+    ElectricalStateWriter, ElectricityTransformer, NewPotential, Potential, PotentialOrigin,
+    PotentialSource, PotentialTarget, ProvideCurrent, ProvidePotential,
 };
 use crate::{
     shared::{ConsumePower, PowerConsumptionReport},
@@ -86,6 +86,18 @@ impl ElectricalElement for TransformerRectifier {
 
     fn is_conductive(&self) -> bool {
         !self.failed
+    }
+}
+impl ElectricityTransformer for TransformerRectifier {
+    fn transform(&self, input: &NewPotential) -> super::NewPotential {
+        if !self.failed && input.is_powered() {
+            NewPotential::new(
+                PotentialOrigin::TransformerRectifier(self.number),
+                ElectricPotential::new::<volt>(28.),
+            )
+        } else {
+            NewPotential::none()
+        }
     }
 }
 impl SimulationElement for TransformerRectifier {

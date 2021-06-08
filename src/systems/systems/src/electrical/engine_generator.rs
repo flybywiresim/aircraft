@@ -1,7 +1,7 @@
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, EngineGeneratorPushButtons, Potential, PotentialOrigin, PotentialSource,
-    ProvideFrequency, ProvideLoad, ProvidePotential,
+    ElectricalStateWriter, ElectricitySource, EngineGeneratorPushButtons, NewPotential, Potential,
+    PotentialOrigin, PotentialSource, ProvideFrequency, ProvideLoad, ProvidePotential,
 };
 use crate::{
     shared::{
@@ -68,6 +68,18 @@ impl EngineGenerator {
 
     fn should_provide_output(&self) -> bool {
         self.idg.provides_stable_power_output()
+    }
+}
+impl ElectricitySource for EngineGenerator {
+    fn output_potential(&self) -> NewPotential {
+        if self.should_provide_output() {
+            NewPotential::new(
+                PotentialOrigin::EngineGenerator(self.number),
+                self.output_potential,
+            )
+        } else {
+            NewPotential::none()
+        }
     }
 }
 impl PotentialSource for EngineGenerator {
