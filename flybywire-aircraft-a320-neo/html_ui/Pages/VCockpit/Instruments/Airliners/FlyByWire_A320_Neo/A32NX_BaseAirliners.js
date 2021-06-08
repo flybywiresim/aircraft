@@ -44,7 +44,9 @@ var Airliners;
                 this.setAttribute("index", this.urlConfig.index.toString());
             }
             this.createUpperScreenPage();
-            this.createLowerScreenPages();
+            if (this.urlConfig.index === 2) {
+                this.createLowerScreenPages();
+            }
             this.pageGroups = [new NavSystemPageGroup(BaseEICAS.LOWER_SCREEN_GROUP_NAME, this, this.lowerScreenPages)];
         }
         disconnectedCallback() {

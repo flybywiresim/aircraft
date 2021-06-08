@@ -234,7 +234,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
 
-        if (sFailPage != -1) {
+        if (sFailPage !== -1 && this.lowerScreenPages[sFailPage]) {
             this.pageNameWhenUnselected = this.lowerScreenPages[sFailPage].name;
 
             // Disable user selected page when new failure detected

@@ -432,7 +432,7 @@ class NavSystem extends BaseInstrument {
             }
             if (!this.overridePage) {
                 const currentGroup = this.getCurrentPageGroup();
-                if (currentGroup) {
+                if (currentGroup && currentGroup.pages.length > 0) {
                     const itemId = this.budgetedItemId - this.IndependentsElements.length;
                     if (currentGroup.onUpdateSpecificItem(this.accumulatedDeltaTime, itemId)) {
                         this.budgetedItemId++;
@@ -927,7 +927,9 @@ class NavSystemPageGroup {
         return this.pages[this.pageIndex];
     }
     onEnter() {
-        this.pages[this.pageIndex].onEnter();
+        if (this.pages[this.pageIndex]) {
+            this.pages[this.pageIndex].onEnter();
+        }
     }
     onUpdate(_deltaTime) {
         if (!this._updatingWithBudget) {
@@ -942,10 +944,16 @@ class NavSystemPageGroup {
             }
             this._updatingWithBudget = false;
         }
-        return this.pages[this.pageIndex].onUpdateSpecificItem(_deltaTime, _itemId);
+        if (this.pages[this.pageIndex]) {
+            return this.pages[this.pageIndex].onUpdateSpecificItem(_deltaTime, _itemId);
+        } else {
+            return true;
+        }
     }
     onExit() {
-        this.pages[this.pageIndex].onExit();
+        if (this.pages[this.pageIndex]) {
+            this.pages[this.pageIndex].onExit();
+        }
     }
     nextPage() {
         if (this.pages.length > 1) {
