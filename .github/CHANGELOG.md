@@ -103,6 +103,7 @@
 1. [ATHR] Support flight director off take-off procedure - @aguther (Andreas Guther)
 1. [MCDU] Fixed tropo entry validation - @MisterChocker (Leon)
 1. [AP/FMGC] Improved managed speed and V2 validity - @aguther (Andreas Guther)
+1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
