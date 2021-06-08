@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 /* eslint-disable max-classes-per-file */
 export const calculateHorizonOffsetFromPitch = (pitch) => {
     if (pitch > -5 && pitch <= 20) {
@@ -37,7 +39,7 @@ export const getSmallestAngle = (angle1, angle2) => {
     return smallestAngle;
 };
 
-export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, heading, yOffset = 0 }) => {
+export const HorizontalTape = memo(({ displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, heading, yOffset = 0 }) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
     let leftmostHeading = Math.round((heading - displayRange) / valueSpacing) * valueSpacing;
@@ -76,9 +78,9 @@ export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, gr
             {bugElements}
         </g>
     );
-};
+});
 
-export const VerticalTape = ({
+export const VerticalTape = memo(({
     displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, tapeValue,
     lowerLimit = -Infinity, upperLimit = Infinity,
 }) => {
@@ -115,7 +117,7 @@ export const VerticalTape = ({
             {bugElements}
         </g>
     );
-};
+});
 
 export const BarberpoleIndicator = (
     tapeValue, border, isLowerBorder, displayRange, element, elementSize,
