@@ -72,6 +72,5 @@ const NXFictionalMessages = {
     noRefWpt:               new McduMessage("NO REF WAYPOINT", false, false),
     noWptInfos:             new McduMessage("NO WAYPOINT INFOS", false, false),
     emptyMessage:           new McduMessage(""),
-    weightUnitChanged:      new McduMessage("UNIT CHANGED RELOAD A/C", true, true),
     reloadPlaneApply:       new McduMessage("RELOAD A/C TO APPLY", true, false)
 };
