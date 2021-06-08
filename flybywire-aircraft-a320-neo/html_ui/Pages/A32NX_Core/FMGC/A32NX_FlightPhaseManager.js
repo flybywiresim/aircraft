@@ -366,6 +366,7 @@ class A32NX_FlightPhase_Done {
         _fmc.initVariables();
         _fmc.initMcduVariables();
         _fmc.forceClearScratchpad();
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         CDUIdentPage.ShowPage(_fmc);
     }
 

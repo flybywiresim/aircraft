@@ -7,6 +7,12 @@ class FMCMainDisplay extends BaseAirliners {
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
         this.currentFlightPhase = FmgcFlightPhases.PREFLIGHT;
         this._apCooldown = 500;
+        this._radioNavOn = false;
+        this._vhf1Frequency = 0;
+        this._vhf2Frequency = 0;
+        this._rcl1Frequency = 0;
+        this._pre2Frequency = 0;
+        this._atc1Frequency = 0;
 
         /** Declaration of every variable used (NOT initialization) */
         this.currentFlightPlanWaypointIndex = undefined;
@@ -150,6 +156,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendMach = undefined;
         // this.managedSpeedDescendMachIsPilotEntered = undefined;
         this.cruiseFlightLevelTimeOut = undefined;
+        this.flaps = undefined;
+        this.ths = undefined;
     }
 
     Init() {
@@ -286,8 +294,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._apNavIndex = 1;
         this._apLocalizerOn = false;
         this._canSwitchToNav = false;
-        this._vhf1Frequency = 0;
-        this._vhf2Frequency = 0;
         this._vor1Frequency = 0;
         this._vor1Course = 0;
         this._vor2Frequency = 0;
@@ -297,10 +303,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._ilsCourse = 0;
         this._adf1Frequency = 0;
         this._adf2Frequency = 0;
-        this._rcl1Frequency = 0;
-        this._pre2Frequency = 0;
-        this._atc1Frequency = 0;
-        this._radioNavOn = false;
         this._debug = 0;
         this._checkFlightPlan = 0;
         this.thrustReductionAltitude = NaN;
@@ -434,6 +436,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendMach = .78;
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
+        this.flaps = NaN;
+        this.ths = NaN;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
