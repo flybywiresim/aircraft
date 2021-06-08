@@ -35,7 +35,7 @@ class MapInstrument extends ISvgMapRootElement {
         this.smallCityMaxRange = 100;
         this.medCityMaxRange = 200;
         this.largeCityMaxRange = 1500;
-        this.npcAirplaneMaxRange = 60;
+        this.npcAirplaneMaxRange = 100;
         this.showRoads = true;
         this.showAirspaces = true;
         this.showAirways = true;
