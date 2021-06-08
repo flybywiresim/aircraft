@@ -553,8 +553,6 @@ impl PushButtonElecRelay {
 }
 impl SimulationElement for PushButtonElecRelay {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        // Relay is powered if ALL of its source buses are powered. This allows to reset pump button state if any power
-        // bus prevents the pump to run
         self.relay_is_powered = buses.all_are_powered(&self.powered_by);
     }
 }
