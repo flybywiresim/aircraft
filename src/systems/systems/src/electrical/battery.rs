@@ -1,9 +1,11 @@
 use super::{
-    consumption::{PowerConsumption, PowerConsumptionReport},
     ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
     ProvideCurrent, ProvidePotential,
 };
-use crate::simulation::{SimulationElement, SimulatorWriter};
+use crate::{
+    shared::{ConsumePower, PowerConsumptionReport},
+    simulation::{SimulationElement, SimulatorWriter},
+};
 use uom::si::{
     electric_charge::ampere_hour, electric_current::ampere, electric_potential::volt,
     electrical_resistance::ohm, f64::*, time::second,
@@ -151,7 +153,7 @@ impl SimulationElement for Battery {
         self.writer.write_direct(self, writer);
     }
 
-    fn consume_power(&mut self, consumption: &mut PowerConsumption) {
+    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
         if self.is_powered_by_other_potential() {
             self.current = Battery::calculate_charging_current(
                 self.input_potential.raw(),
@@ -159,7 +161,7 @@ impl SimulationElement for Battery {
             );
 
             let power = self.input_potential.raw() * self.current;
-            consumption.add(&self.input_potential, power);
+            consumption.consume(self.input_potential, power);
 
             let time = Time::new::<second>(consumption.delta().as_secs_f64());
             self.charge +=

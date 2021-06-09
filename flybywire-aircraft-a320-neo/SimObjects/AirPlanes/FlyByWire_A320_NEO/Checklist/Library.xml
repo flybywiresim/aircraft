@@ -99,7 +99,7 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
          <Test>
             <TestValue>
-               <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
          </Test>
@@ -688,7 +688,7 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
          <Test>
             <TestValue>
-               <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
          </Test>
@@ -944,7 +944,7 @@
          <Test>
             <TestValue>
                <Operator OpType="NOT">
-                  <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+                  <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
                </Operator>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
@@ -2122,7 +2122,7 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
          <Test>
             <TestValue>
-               <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
          </Test>
@@ -2231,7 +2231,7 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
          <Test>
             <TestValue>
-               <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
          </Test>

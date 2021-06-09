@@ -14,6 +14,10 @@ bool SpoilersHandler::getIsArmed() const {
   return isArmed;
 }
 
+bool SpoilersHandler::getIsGroundSpoilersActive() const {
+  return isGroundSpoilersActive;
+}
+
 double SpoilersHandler::getHandlePosition() const {
   return handlePosition;
 }
@@ -32,15 +36,15 @@ void SpoilersHandler::setInitialPosition(double position) {
 
 void SpoilersHandler::setSimulationVariables(double simulationTime_new,
                                              bool isAutopilotEngaged_new,
-                                             double airspeed_new,
+                                             double groundSpeed_new,
                                              double thrustLeverAngle_1_new,
                                              double thrustLeverAngle_2_new,
                                              double landingGearCompression_1_new,
                                              double landingGearCompression_2_new,
                                              double flapsHandleIndex_new,
                                              bool isAngleOfAttackProtectionActive_new) {
-  update(simulationTime_new, isArmed, handlePosition, isAutopilotEngaged_new, airspeed_new, thrustLeverAngle_1_new, thrustLeverAngle_2_new,
-         getGearStrutCompressionFromAnimation(landingGearCompression_1_new),
+  update(simulationTime_new, isArmed, handlePosition, isAutopilotEngaged_new, groundSpeed_new, thrustLeverAngle_1_new,
+         thrustLeverAngle_2_new, getGearStrutCompressionFromAnimation(landingGearCompression_1_new),
          getGearStrutCompressionFromAnimation(landingGearCompression_2_new), flapsHandleIndex_new, isAngleOfAttackProtectionActive_new);
 }
 
@@ -81,7 +85,7 @@ void SpoilersHandler::onEventSpoilersArmSet(bool value) {
 }
 
 void SpoilersHandler::update(bool isArmed_new, double handlePosition_new) {
-  update(simulationTime, isArmed_new, handlePosition_new, isAutopilotEngaged, airspeed, thrustLeverAngle_1, thrustLeverAngle_2,
+  update(simulationTime, isArmed_new, handlePosition_new, isAutopilotEngaged, groundSpeed, thrustLeverAngle_1, thrustLeverAngle_2,
          landingGearCompression_1, landingGearCompression_2, flapsHandleIndex, isAngleOfAttackProtectionActive);
 }
 
@@ -89,7 +93,7 @@ void SpoilersHandler::update(double simulationTime_new,
                              bool isArmed_new,
                              double handlePosition_new,
                              bool isAutopilotEngaged_new,
-                             double airspeed_new,
+                             double groundSpeed_new,
                              double thrustLeverAngle_1_new,
                              double thrustLeverAngle_2_new,
                              double landingGearCompression_1_new,
@@ -128,6 +132,7 @@ void SpoilersHandler::update(double simulationTime_new,
       } else {
         simPosition = handlePosition_new;
       }
+      isGroundSpoilersActive = false;
     }
   }
 
@@ -141,7 +146,7 @@ void SpoilersHandler::update(double simulationTime_new,
 
   simulationTime = simulationTime_new;
   isAutopilotEngaged = isAutopilotEngaged_new;
-  airspeed = airspeed_new;
+  groundSpeed = groundSpeed_new;
   thrustLeverAngle_1 = thrustLeverAngle_1_new;
   thrustLeverAngle_2 = thrustLeverAngle_2_new;
   landingGearCompression_1 = landingGearCompression_1_new;
@@ -157,7 +162,7 @@ void SpoilersHandler::update(double simulationTime_new,
 
   // detect landing condition
   if (conditionLanding) {
-    if (airspeed < CONDITION_AIRSPEED) {
+    if (numberOfMainLandingGearsOnGround == 2 && groundSpeed < CONDITION_GROUND_SPEED) {
       conditionLanding = false;
       timeAirborne = 0;
     }
@@ -170,17 +175,18 @@ void SpoilersHandler::update(double simulationTime_new,
   }
 
   // detect take-off condition
-  if (numberOfMainLandingGearsOnGround == 2 && airspeed > CONDITION_AIRSPEED) {
+  if (numberOfMainLandingGearsOnGround == 2 && groundSpeed > CONDITION_GROUND_SPEED) {
     conditionTakeOff = true;
-  } else if (airspeed < CONDITION_AIRSPEED || numberOfMainLandingGearsOnGround == 0) {
+  } else if (groundSpeed < CONDITION_GROUND_SPEED || numberOfMainLandingGearsOnGround == 0) {
     conditionTakeOff = false;
   }
 
   // take-off phase ----------------------------------------------------------------------------------------------------
 
   if (conditionTakeOff) {
-    if ((isArmed && areThrustLeversAtOrBelowIdle) || isAtLeastOneInReverseAndOtherInIdle(thrustLeverAngle_1, thrustLeverAngle_2)) {
+    if ((isArmed && areThrustLeversAtOrBelowIdle) || isAtLeastOneInReverseAndOtherAtOrBelowIdle(thrustLeverAngle_1, thrustLeverAngle_2)) {
       simPosition = POSITION_FULL;
+      isGroundSpoilersActive = true;
     }
   }
 
@@ -198,6 +204,7 @@ void SpoilersHandler::update(double simulationTime_new,
         if (areThrustLeversAtOrBelowIdle || isAtLeastOneThrustLeverInReverseAndOtherBelowMct) {
           // full deployment
           simPosition = POSITION_FULL;
+          isGroundSpoilersActive = true;
         } else if (isArmed && areThrustLeversBelowClimb) {
           // partial deployment
           simPosition = POSITION_PARTIAL;
@@ -214,6 +221,7 @@ void SpoilersHandler::update(double simulationTime_new,
         if (numberOfMainLandingGearsOnGround == 2) {
           // full deployment
           simPosition = POSITION_FULL;
+          isGroundSpoilersActive = true;
         } else if (numberOfMainLandingGearsOnGround >= 1) {
           // partial deployment
           simPosition = POSITION_PARTIAL;
@@ -225,6 +233,7 @@ void SpoilersHandler::update(double simulationTime_new,
     if (numberOfMainLandingGearsOnGround > 0 &&
         (thrustLeverAngle_1 > TLA_CONDITION_TOUCH_GO || thrustLeverAngle_2 > TLA_CONDITION_TOUCH_GO)) {
       simPosition = fmax(handlePosition, POSITION_RETRACTED);
+      isGroundSpoilersActive = false;
     }
   }
 }
@@ -260,9 +269,9 @@ bool SpoilersHandler::areAboveMct(double thrustLeverAngle_1, double thrustLeverA
   return thrustLeverAngle_1 > TLA_MCT && thrustLeverAngle_2 > TLA_MCT;
 }
 
-bool SpoilersHandler::isAtLeastOneInReverseAndOtherInIdle(double thrustLeverAngle_1, double thrustLeverAngle_2) {
-  return (thrustLeverAngle_1 < TLA_IDLE && thrustLeverAngle_2 == TLA_IDLE) ||
-         (thrustLeverAngle_2 < TLA_IDLE && thrustLeverAngle_1 == TLA_IDLE);
+bool SpoilersHandler::isAtLeastOneInReverseAndOtherAtOrBelowIdle(double thrustLeverAngle_1, double thrustLeverAngle_2) {
+  return (thrustLeverAngle_1 < TLA_IDLE && thrustLeverAngle_2 <= TLA_IDLE) ||
+         (thrustLeverAngle_2 < TLA_IDLE && thrustLeverAngle_1 <= TLA_IDLE);
 }
 
 bool SpoilersHandler::isAtLeastOneInReverseAndOtherBelowMct(double thrustLeverAngle_1, double thrustLeverAngle_2) {
