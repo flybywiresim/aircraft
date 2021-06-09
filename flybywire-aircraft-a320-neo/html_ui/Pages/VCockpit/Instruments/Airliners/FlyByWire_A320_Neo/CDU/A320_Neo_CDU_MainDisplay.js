@@ -26,15 +26,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return "A320_Neo_CDU";
     }
     get isInteractive() {
-        const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "NONE");
-        switch (mcduInput) {
-            case "ALL":
-                return true;
-            case "RALT":
-                return false;
-            default:
-                return false;
-        }
+        return NXDataStore.get("MCDU_KB_INPUT", "DISABLED") === "ENABLED";
     }
     connectedCallback() {
         super.connectedCallback();
@@ -909,13 +901,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     initKeyboardScratchpad() {
         window.document.addEventListener('click', () => {
 
-            const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "NONE");
+            const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "DISABLED");
             const mcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
             const isPoweredL = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number");
             const isPoweredR = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Number");
 
             // TODO: L/R MCDU
-            if (mcduInput != "NONE") {
+            if (mcduInput === "ENABLED") {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
 

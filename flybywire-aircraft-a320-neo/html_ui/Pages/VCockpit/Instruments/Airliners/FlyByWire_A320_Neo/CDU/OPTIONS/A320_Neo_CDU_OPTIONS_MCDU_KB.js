@@ -3,29 +3,20 @@ class CDU_OPTIONS_MCDU_KB {
 
         mcdu.clearDisplay();
 
-        const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "NONE");
+        const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "DISABLED");
         let storedMcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
         if (storedMcduTimeout === 0) {
             storedMcduTimeout = "NONE";
         }
 
-        let all = "*ALLOW INPUT[color]cyan";
-        let none = "*NO INPUT[color]cyan";
-
-        switch (mcduInput) {
-            case "ALL":
-                all = "ALLOW INPUT[color]green";
-                break;
-            default:
-                none = "NO INPUT[color]green";
-        }
+        const [enable, disable] = mcduInput === "ENABLED" ? ["{green}ALLOW INPUT{end}", "{cyan}*NO INPUT{end}"] : ["{cyan}*ALLOW INPUT{end}", "{green}NO INPUT{end}"];
 
         mcdu.setTemplate([
             ["A32NX OPTIONS REALISM"],
             ["", "", "MCDU KEYBOARD"],
-            [all],
+            [enable],
             [""],
-            [none],
+            [disable],
             [""],
             [""],
             [""],
@@ -40,9 +31,9 @@ class CDU_OPTIONS_MCDU_KB {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            if (mcduInput !== "ALL") {
+            if (mcduInput !== "ENABLED") {
                 mcdu.clearFocus();
-                NXDataStore.set("MCDU_KB_INPUT", "ALL");
+                NXDataStore.set("MCDU_KB_INPUT", "ENABLED");
                 mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
                 CDU_OPTIONS_MCDU_KB.ShowPage(mcdu);
             }
@@ -51,9 +42,9 @@ class CDU_OPTIONS_MCDU_KB {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            if (mcduInput !== "NONE") {
+            if (mcduInput !== "DISABLED") {
                 mcdu.clearFocus();
-                NXDataStore.set("MCDU_KB_INPUT", "NONE");
+                NXDataStore.set("MCDU_KB_INPUT", "DISABLED");
                 mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
                 CDU_OPTIONS_MCDU_KB.ShowPage(mcdu);
             }
