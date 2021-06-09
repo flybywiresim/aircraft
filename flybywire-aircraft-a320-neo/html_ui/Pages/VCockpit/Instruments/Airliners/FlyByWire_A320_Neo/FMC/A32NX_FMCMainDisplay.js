@@ -3334,13 +3334,12 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Evaluates whether the new performance page is in order and can be shown or the old one can be reloaded instead
-     * Updates the performance page relative to the current flight phase
+     * Switches to the next/new perf page (if new flight phase is in order) or reloads the current page
      * @param _old {FmgcFlightPhases}
      * @param _new {FmgcFlightPhases}
      */
     tryUpdatePerfPage(_old, _new) {
-        const phase = (() => {
+        const curPerfPagePhase = (() => {
             switch (this.page.Current) {
                 case this.page.PerformancePageTakeoff : return FmgcFlightPhases.TAKEOFF;
                 case this.page.PerformancePageClb : return FmgcFlightPhases.CLIMB;
@@ -3348,12 +3347,15 @@ class FMCMainDisplay extends BaseAirliners {
                 case this.page.PerformancePageDes : return FmgcFlightPhases.DESCENT;
                 case this.page.PerformancePageAppr : return FmgcFlightPhases.APPROACH;
                 case this.page.PerformancePageGoAround : return FmgcFlightPhases.GOAROUND;
-                default: return -1;
             }
         })();
 
-        if (phase !== -1 && (_old < _new ? phase <= _new : phase === _old)) {
-            CDUPerformancePage.ShowPage(this, phase === _old ? _old : _new);
+        if (_new > _old) {
+            if (_new >= curPerfPagePhase) {
+                CDUPerformancePage.ShowPage(this, _new);
+            }
+        } else if (_old === curPerfPagePhase) {
+            CDUPerformancePage.ShowPage(this, _old);
         }
     }
 
