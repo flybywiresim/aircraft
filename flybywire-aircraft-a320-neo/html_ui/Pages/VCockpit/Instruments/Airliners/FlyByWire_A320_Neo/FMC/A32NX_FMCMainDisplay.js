@@ -3735,33 +3735,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Returns the ISA temperature for a given altitude
-     * @param alt {number} altitude in ft
-     * @returns {number} ISA temp in C°
-     */
-    //TODO: can this be an util?
-    getIsaTemp(alt = Simplane.getAltitude()) {
-        return alt / 1000 * (-1.98) + 15;
-    }
-
-    /**
-     * Returns the deviation from ISA temperature and OAT at given altitude
-     * @param alt {number} altitude in ft
-     * @returns {number} ISA temp deviation from OAT in C°
-     */
-    //TODO: can this be an util?
-    getIsaTempDeviation(alt = Simplane.getAltitude()) {
-        return SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius") - this.getIsaTemp(alt);
-    }
-
-    /**
      * Returns the maximum cruise FL for ISA temp and GW
      * @param temp {number} ISA in C°
      * @param gw {number} GW in t
      * @returns {number} MAX FL
      */
     //TODO: can this be an util?
-    getMaxFL(temp = this.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
+    getMaxFL(temp = A32NX_Util.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
         return Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * (-0.039) - 2.389) * gw + temp * (-0.667) + 585.334);
     }
 
