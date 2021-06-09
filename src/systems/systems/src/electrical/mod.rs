@@ -26,7 +26,7 @@ pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 
 use crate::{
-    shared::{ElectricalBusType, PotentialOrigin},
+    shared::{ElectricalBusType, ElectricalBuses, PotentialOrigin},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use uom::si::{electric_potential::volt, f64::*, velocity::knot};
@@ -1456,7 +1456,6 @@ impl Electricity {
     }
 
     /// Returns if the given electrical bus type is powered or not.
-    #[cfg(test)]
     fn bus_is_powered(&self, bus_type: ElectricalBusType) -> bool {
         if let Some(identifier) = self.buses.get(&bus_type) {
             self.potential.is_powered(*identifier)
@@ -1500,6 +1499,28 @@ impl ElectricalElementIdentifierProvider for Electricity {
         self.buses.insert(bus_type, identifier);
 
         identifier
+    }
+}
+impl ElectricalBuses for Electricity {
+    fn potential_of(&self, bus_type: ElectricalBusType) -> Potential {
+        if let Some(identifier) = self.buses.get(&bus_type) {
+            match self.potential.get(*identifier) {
+                Some(potential) => potential.into(),
+                None => Potential::none(),
+            }
+        } else {
+            Potential::none()
+        }
+    }
+
+    fn is_powered(&self, bus_type: ElectricalBusType) -> bool {
+        self.bus_is_powered(bus_type)
+    }
+
+    fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool {
+        bus_types
+            .iter()
+            .any(|&bus_type| self.bus_is_powered(bus_type))
     }
 }
 
@@ -1572,6 +1593,18 @@ impl NewPotential {
 
     fn is_powered(&self) -> bool {
         self.origins.len() > 0
+    }
+}
+
+// TODO: Remove this implementation once the migration towards the new electrical model is done.
+impl Into<Potential> for &NewPotential {
+    fn into(self) -> Potential {
+        let mut potential = Potential::none();
+        self.origins
+            .iter()
+            .for_each(|&origin| potential = potential.merge(&Potential::single(origin, self.raw)));
+
+        potential
     }
 }
 
@@ -1690,7 +1723,6 @@ impl PotentialCollection {
         self.items.insert(key, potential);
     }
 
-    #[cfg(test)]
     fn is_powered(&self, identifier: ElectricalElementIdentifier) -> bool {
         if let Some(key) = self.element_to_potential_key.get(identifier) {
             match self.items.get(&key) {
@@ -2119,5 +2151,58 @@ mod electricity_tests {
         electricity.flow(&fourth, &first);
 
         assert!(electricity.is_powered(&third));
+    }
+
+    #[test]
+    fn any_is_powered_returns_true_when_any_of_the_arguments_is_powered() {
+        let mut electricity = Electricity::new();
+        let element = TestElectricalElement::new(&mut electricity).power();
+        electricity.supplied_by(&element);
+
+        let ac_bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+        TestBus::new(ElectricalBusType::DirectCurrent(1), &mut electricity);
+
+        electricity.flow(&element, &ac_bus);
+        // Don't flow to DC BUS on purpose.
+
+        assert!(electricity.any_is_powered(&[
+            ElectricalBusType::AlternatingCurrent(1),
+            ElectricalBusType::DirectCurrent(1),
+        ]));
+    }
+
+    #[test]
+    fn any_is_powered_returns_false_when_none_of_the_arguments_is_powered() {
+        let mut electricity = Electricity::new();
+        TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+        TestBus::new(ElectricalBusType::DirectCurrent(1), &mut electricity);
+
+        assert!(!electricity.any_is_powered(&[
+            ElectricalBusType::AlternatingCurrent(1),
+            ElectricalBusType::DirectCurrent(1),
+        ]));
+    }
+
+    #[test]
+    fn potential_of_returns_a_potential_which_isnt_powered_when_bus_is_unpowered() {
+        let mut electricity = Electricity::new();
+        TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+        let potential = electricity.potential_of(ElectricalBusType::AlternatingCurrent(1));
+
+        assert_eq!(potential.count(), 0);
+    }
+
+    #[test]
+    fn potential_of_returns_a_potential_with_origin_when_bus_is_powered() {
+        let mut electricity = Electricity::new();
+        let element = TestElectricalElement::new(&mut electricity).power();
+        electricity.supplied_by(&element);
+
+        let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+        electricity.flow(&element, &bus);
+
+        let potential = electricity.potential_of(ElectricalBusType::AlternatingCurrent(1));
+
+        assert!(potential.is_single(PotentialOrigin::EngineGenerator(1)));
     }
 }
