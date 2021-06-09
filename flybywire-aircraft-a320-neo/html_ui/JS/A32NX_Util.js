@@ -131,8 +131,7 @@ A32NX_Util.greatCircleIntersection = (latlon1, brg1, latlon2, brg2) => {
  * @returns {number} ISA temp in C°
  */
 A32NX_Util.getIsaTemp = (alt = Simplane.getAltitude()) => {
-    const altOrTropopause = Math.min(alt, 36089);
-    return altOrTropopause / 1000 * (-1.98) + 15;
+    return Math.min(alt, 36089) * -0.0019812 + 15;
 };
 
 /**
