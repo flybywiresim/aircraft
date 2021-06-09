@@ -103,6 +103,9 @@
 1. [ATHR] Support flight director off take-off procedure - @aguther (Andreas Guther)
 1. [MCDU] Fixed tropo entry validation - @MisterChocker (Leon)
 1. [AP/FMGC] Improved managed speed and V2 validity - @aguther (Andreas Guther)
+1. [FCU] Init FCU with SPD 100 kn, HDG = 0° and ALT 100 ft - @aguther (Andreas Guther)
+1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
+1. [ATHR/FADEC] Fixed potential engagement of reverse thrust in flight - @aguther (Andreas Guther)
 1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
 
 ## 0.6.0
