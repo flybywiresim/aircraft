@@ -16,6 +16,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.isaText = this.querySelector("#ISAValue");
         this.isaContainer = this.querySelector("#ISA");
         this.areAdirsAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") == 2;
+        this.isISAVisible = null;
         this.currentSeconds = 0;
         this.currentMinutes = 0;
         this.hoursText = this.querySelector("#HoursValue");
@@ -42,7 +43,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
         this.refreshTAT(Math.round(Simplane.getTotalAirTemperature()));
         this.refreshSAT(Math.round(Simplane.getAmbientTemperature()));
-        this.refreshISA(Math.round(this.getISA()));
+        this.refreshISA(Math.round(A32NX_Util.getIsaTempDeviation()));
         this.refreshClock();
         this.refreshLoadFactor(_deltaTime, SimVar.GetSimVarValue("G FORCE", "GFORCE"));
         this.refreshGrossWeight();
@@ -75,14 +76,12 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     refreshISA(_value, _force = false) {
         //if ((_value != this.currentISA) || _force) {
         const isInStdMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD";
+        const shouldISABeVisible = isInStdMode && this.areAdirsAligned;
 
-        if (this.isaContainer) {
-            if (isInStdMode && this.areAdirsAligned) {
-                this.isaContainer.setAttribute("visibility", "visible");
-            } else {
-                this.isaContainer.setAttribute("visibility", "hidden");
-                return;
-            }
+        // Only perform DOM update if visibility changed
+        if (this.isaContainer && this.isISAVisible !== shouldISABeVisible) {
+            this.isaContainer.setAttribute("visibility", shouldISABeVisible ? "visible" : "hidden");
+            this.isISAVisible = shouldISABeVisible;
         }
 
         this.currentISA = _value;
@@ -180,10 +179,6 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
                 this.isaText.classList.remove("Warning");
             }
         }
-    }
-    getISA() {
-        // EIS2 S13-2 ref
-        return this.currentSAT + (1013 * 2 / 1000) - 15;
     }
 }
 customElements.define("eicas-common-display", EICASCommonDisplay);
