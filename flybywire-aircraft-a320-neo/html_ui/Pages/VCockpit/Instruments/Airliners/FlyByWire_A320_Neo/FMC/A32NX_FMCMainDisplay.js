@@ -3339,6 +3339,11 @@ class FMCMainDisplay extends BaseAirliners {
      * @param _new {FmgcFlightPhases}
      */
     tryUpdatePerfPage(_old, _new) {
+        // Ensure we have a performance page selected...
+        if (this.page.Current < this.page.PerformancePageTakeoff || this.page.Current > this.page.PerformancePageGoAround) {
+            return;
+        }
+
         const curPerfPagePhase = (() => {
             switch (this.page.Current) {
                 case this.page.PerformancePageTakeoff : return FmgcFlightPhases.TAKEOFF;
