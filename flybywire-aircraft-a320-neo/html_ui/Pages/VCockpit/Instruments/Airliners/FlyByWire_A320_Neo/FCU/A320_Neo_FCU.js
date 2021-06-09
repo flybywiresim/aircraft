@@ -170,6 +170,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this._rotaryEncoderTimeout = 300;
         this._rotaryEncoderIncrement = 0.15;
         this._rotaryEncoderPreviousTimestamp = 0;
+
+        this.onPull();
     }
 
     init() {
@@ -186,6 +188,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         Coherent.call("AP_SPD_VAR_SET", 0, this.MIN_SPEED);
         SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
         this.onPull();
+    }
+
+    onFlightStart() {
+        super.onFlightStart();
+        this.init();
     }
 
     update(_deltaTime) {
@@ -523,15 +530,17 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.textTRK = this.getTextElement("TRK");
         this.textLAT = this.getTextElement("LAT");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(true, false, false, false, true, 0, false, true);
-        this.selectedValue = -1;
-        this.isSelectedValueActive = false;
+        this.currentValue = -1;
+        this.selectedValue = Simplane.getAltitudeAboveGround() > 1000 ? this.getCurrentHeading() : 0;
+        this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
+        this.refresh(true, false, false, false, true, 0, false, true);
         this.onPull();
     }
 
     onFlightStart() {
         super.onFlightStart();
+        this.init();
     }
 
     onRotate() {
@@ -828,18 +837,23 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         this.isActive = false;
         this.isManaged = false;
         this.currentValue = 0;
-        let initValue = Simplane.getAltitude();
-        if (initValue <= 5000) {
-            initValue = 5000;
-        } else {
-            initValue = Math.round(initValue / 100) * 100;
+        let initValue = 100;
+        if (Simplane.getAltitudeAboveGround() > 1000) {
+            initValue = Math.min(49000, Math.max(100, Math.round(Simplane.getAltitude() / 100) * 100));
         }
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, initValue, true);
+        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 3, initValue, true);
         this.refresh(false, false, initValue, 0, true);
     }
+
+    onFlightStart() {
+        super.onFlightStart();
+        this.init();
+    }
+
     reboot() {
         this.init();
     }
+
     isManagedModeActiveOrArmed(_mode, _armed) {
         return (
             (_mode >= 20 && _mode <= 34)
@@ -850,6 +864,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             )
         );
     }
+
     update(_deltaTime) {
         const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
         const verticalArmed = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_ARMED", "Number");
@@ -857,6 +872,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
 
         this.refresh(Simplane.getAutoPilotActive(), isManaged, Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()), SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0);
     }
+
     refresh(_isActive, _isManaged, _value, _lightsTest, _force = false) {
         if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.isActive = _isActive;
@@ -873,6 +889,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             this.setElementVisibility(this.illuminator, this.isManaged);
         }
     }
+
     onEvent(_event) {
         if (_event === "ALT_PUSH") {
             SimVar.SetSimVarValue("K:A32NX.FCU_ALT_PUSH", "number", 0);
@@ -921,6 +938,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
 
     onFlightStart() {
         super.onFlightStart();
+        this.init();
     }
 
     onPush() {

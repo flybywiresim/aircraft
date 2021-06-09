@@ -1068,10 +1068,10 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   SimData simData = simConnectInterface.getSimData();
 
   // set ground / flight for throttle handling
-  if (simData.gear_animation_pos_1 > 0.55 || simData.gear_animation_pos_1 > 0.55) {
+  if (flyByWireOutput.sim.data_computed.on_ground) {
     throttleAxis[0]->setOnGround();
     throttleAxis[1]->setOnGround();
-  } else if (simData.gear_animation_pos_1 <= 0.5 && simData.gear_animation_pos_1 <= 0.5) {
+  } else {
     throttleAxis[0]->setInFlight();
     throttleAxis[1]->setInFlight();
   }
