@@ -43,29 +43,25 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.refreshGrossWeight();
         this.refreshADIRS();
     }
+
     refreshTAT(_value, _force = false) {
-        //if ((_value != this.currentTAT) || _force) {
-        this.currentTAT = _value;
-        if (this.tatText != null) {
-            if (this.currentTAT > 0) {
-                this.tatText.textContent = "+" + this.currentTAT.toString();
-            } else {
-                this.tatText.textContent = this.currentTAT.toString();
-            }
+        if (_value > 0) {
+            const textContent = "+" + _value.toString();
+            Avionics.Utils.diffAndSet(this.tatText, textContent);
+        } else {
+            const textContent = _value.toString();
+            Avionics.Utils.diffAndSet(this.tatText, textContent);
         }
-        //}
     }
+
     refreshSAT(_value, _force = false) {
-        //if ((_value != this.currentSAT) || _force) {
-        this.currentSAT = _value;
-        if (this.satText != null) {
-            if (this.currentSAT > 0) {
-                this.satText.textContent = "+" + this.currentSAT.toString();
-            } else {
-                this.satText.textContent = this.currentSAT.toString();
-            }
+        if (_value > 0) {
+            const textContent = "+" + _value.toString();
+            Avionics.Utils.diffAndSet(this.satText, textContent);
+        } else {
+            const textContent = _value.toString();
+            Avionics.Utils.diffAndSet(this.satText, textContent);
         }
-        //}
     }
     refreshLoadFactor(_deltaTime, value) {
         const conditionsMet = value > 1.4 || value < 0.7;
@@ -80,13 +76,13 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
 
         if (this.loadFactorContainer) {
             if (!isVisible) {
-                this.loadFactorContainer.setAttribute("visibility", "hidden");
+                Avionics.Utils.diffAndSetAttribute(this.loadFactorContainer, "visibility", "hidden");
                 if (this.loadFactorText) {
-                    this.loadFactorText.textContent = "";
+                    Avionics.Utils.diffAndSet(this.loadFactorText, "");
                 }
                 return;
             }
-            this.loadFactorContainer.setAttribute("visibility", "visible");
+            Avionics.Utils.diffAndSetAttribute(this.loadFactorContainer, "visibility", "visible");
         }
 
         if (this.loadFactorText) {
