@@ -125,7 +125,7 @@ pub trait PowerConsumptionReport {
 
 pub trait ConsumePower: PowerConsumptionReport {
     fn consume(&mut self, potential: Potential, power: Power);
-    fn consume_from_bus(&mut self, bus: ElectricalBusType, power: Power);
+    fn consume_from_bus(&mut self, bus_type: ElectricalBusType, power: Power);
 }
 
 pub trait ControllerSignal<S> {

@@ -26,10 +26,12 @@ pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 
 use crate::{
-    shared::{ElectricalBusType, ElectricalBuses, PotentialOrigin},
+    shared::{
+        ConsumePower, ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
+    },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
-use uom::si::{electric_potential::volt, f64::*, velocity::knot};
+use uom::si::{electric_potential::volt, f64::*, power::watt, velocity::knot};
 
 use self::consumption::SuppliedPower;
 
@@ -1523,6 +1525,26 @@ impl ElectricalBuses for Electricity {
             .any(|&bus_type| self.bus_is_powered(bus_type))
     }
 }
+impl ConsumePower for Electricity {
+    fn consume(&mut self, _: Potential, _: Power) {
+        todo!("We won't support this particular function anymore. It will be replaced with a version accepting &impl ElectricalElement later in the migration.")
+    }
+
+    fn consume_from_bus(&mut self, bus_type: ElectricalBusType, power: Power) {
+        if let Some(identifier) = self.buses.get(&bus_type) {
+            self.potential.consume_from(*identifier, power);
+        }
+    }
+}
+impl PowerConsumptionReport for Electricity {
+    fn total_consumption_of(&self, origin: PotentialOrigin) -> Power {
+        self.potential.total_consumption_of(origin)
+    }
+
+    fn delta(&self) -> Duration {
+        todo!()
+    }
+}
 
 #[derive(Debug)]
 pub struct NewPotential {
@@ -1563,9 +1585,12 @@ impl NewPotential {
         self.elements.iter()
     }
 
-    #[cfg(test)]
     fn origin_count(&self) -> usize {
         self.origins.iter().count()
+    }
+
+    fn origins(&self) -> std::collections::hash_set::Iter<PotentialOrigin> {
+        self.origins.iter()
     }
 
     fn merge(mut self, mut other: NewPotential) -> Self {
@@ -1663,12 +1688,14 @@ impl ElectricalElementToPotentialKeyMap {
 struct PotentialCollection {
     element_to_potential_key: ElectricalElementToPotentialKeyMap,
     items: HashMap<PotentialKey, NewPotential>,
+    consumption_per_origin: HashMap<PotentialOrigin, Power>,
 }
 impl PotentialCollection {
     fn new() -> Self {
         Self {
             element_to_potential_key: ElectricalElementToPotentialKeyMap::new(),
             items: HashMap::new(),
+            consumption_per_origin: HashMap::new(),
         }
     }
 
@@ -1739,6 +1766,27 @@ impl PotentialCollection {
             self.items.get(&key)
         } else {
             None
+        }
+    }
+
+    fn consume_from(&mut self, identifier: ElectricalElementIdentifier, power: Power) {
+        if let Some(key) = self.element_to_potential_key.get(identifier) {
+            match self.items.get_mut(&key) {
+                Some(potential) => {
+                    for origin in potential.origins() {
+                        let y = self.consumption_per_origin.entry(*origin).or_default();
+                        *y += power / potential.origin_count() as f64;
+                    }
+                }
+                None => {}
+            }
+        }
+    }
+
+    fn total_consumption_of(&self, origin: PotentialOrigin) -> Power {
+        match self.consumption_per_origin.get(&origin) {
+            Some(power) => *power,
+            None => Power::new::<watt>(0.),
         }
     }
 }
@@ -2204,5 +2252,74 @@ mod electricity_tests {
         let potential = electricity.potential_of(ElectricalBusType::AlternatingCurrent(1));
 
         assert!(potential.is_single(PotentialOrigin::EngineGenerator(1)));
+    }
+
+    #[test]
+    fn power_consumed_from_a_powered_bus_is_included_in_the_power_usage() {
+        let mut electricity = Electricity::new();
+        let generator = TestElectricalElement::new(&mut electricity).power();
+        electricity.supplied_by(&generator);
+
+        let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+        electricity.flow(&generator, &bus);
+
+        electricity.consume_from_bus(
+            ElectricalBusType::AlternatingCurrent(1),
+            Power::new::<watt>(400.),
+        );
+        electricity.consume_from_bus(
+            ElectricalBusType::AlternatingCurrent(1),
+            Power::new::<watt>(300.),
+        );
+
+        assert_eq!(
+            electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
+            Power::new::<watt>(700.)
+        );
+    }
+
+    #[test]
+    fn power_consumed_from_an_unpowered_bus_is_not_included_in_the_power_usage() {
+        let mut electricity = Electricity::new();
+        TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+
+        electricity.consume_from_bus(
+            ElectricalBusType::AlternatingCurrent(1),
+            Power::new::<watt>(400.),
+        );
+
+        assert_eq!(
+            electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
+            Power::new::<watt>(0.)
+        );
+    }
+
+    #[test]
+    fn consumption_is_equally_divided_between_all_potential_origins() {
+        let mut electricity = Electricity::new();
+        let generator_1 = TestElectricalElement::new(&mut electricity).power();
+        let generator_2 = TestElectricalElement::new(&mut electricity)
+            .with_number(2)
+            .power();
+        electricity.supplied_by(&generator_1);
+        electricity.supplied_by(&generator_2);
+
+        let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+        electricity.flow(&generator_1, &bus);
+        electricity.flow(&generator_2, &bus);
+
+        electricity.consume_from_bus(
+            ElectricalBusType::AlternatingCurrent(1),
+            Power::new::<watt>(400.),
+        );
+
+        assert_eq!(
+            electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
+            Power::new::<watt>(200.)
+        );
+        assert_eq!(
+            electricity.total_consumption_of(PotentialOrigin::EngineGenerator(2)),
+            Power::new::<watt>(200.)
+        );
     }
 }
