@@ -308,7 +308,6 @@ YokeX=050.00
 Rudder=050.00
 LeftBrake=100.00
 RightBrake=100.00
-ParkingBrake=0
 RudderTrimPct=0
 AileronTrimPct=0
 AileronTrimDisabled=False

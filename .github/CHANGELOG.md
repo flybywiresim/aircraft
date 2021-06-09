@@ -84,6 +84,7 @@
 1. [FLIGHT MODEL] Fix flap transition bounce - @donstim (donbikes#4084)
 1. [FBW] Added visual aileron droop and anti-droop - @aguther (Andreas Guther)
 1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
+1. [MODEL] Reverse thrust animation no longer proportional to thrust lever position - @tracernz (Mike)
 1. [HYD] Brakes are now connected to hydraulic system - @crocket63 (crocket)
 1. [ADIRS] Fix ADIRUs not aligned starting on runway - @davidwalschots (David Walschots)
 1. [FLIGHT MODEL] Adds new parameters introduced by SU4 - @donstim (donbikes#4084)
@@ -101,6 +102,11 @@
 1. [FBW] Improved ground spoiler logic - @aguther (Andreas Guther)
 1. [ATHR] Fixed incorrect THR LK activation when A/THR disconnect buttons have been used - @aguther (Andreas Guther)
 1. [ATHR] Support flight director off take-off procedure - @aguther (Andreas Guther)
+1. [MCDU] Fixed tropo entry validation - @MisterChocker (Leon)
+1. [AP/FMGC] Improved managed speed and V2 validity - @aguther (Andreas Guther)
+1. [FCU] Init FCU with SPD 100 kn, HDG = 0° and ALT 100 ft - @aguther (Andreas Guther)
+1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
+1. [ATHR/FADEC] Fixed potential engagement of reverse thrust in flight - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
