@@ -238,6 +238,7 @@ A32NX_FBW_SEC_SWITCH:2=1
 A32NX_FBW_SEC_SWITCH:3=1
 A32NX_FBW_FAC_SWITCH:1=1
 A32NX_FBW_FAC_SWITCH:2=1
+A32NX_PARK_BRAKE_LEVER_POS=1
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
@@ -330,7 +331,6 @@ YokeX=050.00
 Rudder=050.00
 LeftBrake=100.00
 RightBrake=100.00
-ParkingBrake=100.00
 RudderTrimPct=0
 AileronTrimPct=0
 AileronTrimDisabled=False
