@@ -1510,7 +1510,7 @@ pub struct NewPotential {
     raw: ElectricPotential,
 }
 impl NewPotential {
-    fn new(origin: PotentialOrigin, raw: ElectricPotential) -> Self {
+    pub(crate) fn new(origin: PotentialOrigin, raw: ElectricPotential) -> Self {
         let mut origins = HashSet::new();
         origins.insert(origin);
 
@@ -1521,7 +1521,7 @@ impl NewPotential {
         }
     }
 
-    fn none() -> Self {
+    pub(crate) fn none() -> Self {
         Self {
             origins: HashSet::new(),
             elements: HashSet::new(),

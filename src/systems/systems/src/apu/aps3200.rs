@@ -2,8 +2,8 @@ use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
 use crate::{
     electrical::{
         ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-        ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
-        ProvidePotential,
+        ElectricalStateWriter, ElectricitySource, NewPotential, Potential, PotentialSource,
+        ProvideFrequency, ProvideLoad, ProvidePotential,
     },
     shared::{
         calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
@@ -670,6 +670,18 @@ impl ElectricalElement for Aps3200ApuGenerator {
 
     fn is_conductive(&self) -> bool {
         true
+    }
+}
+impl ElectricitySource for Aps3200ApuGenerator {
+    fn output_potential(&self) -> NewPotential {
+        if self.should_provide_output() {
+            NewPotential::new(
+                PotentialOrigin::ApuGenerator(self.number),
+                self.output_potential,
+            )
+        } else {
+            NewPotential::none()
+        }
     }
 }
 impl SimulationElement for Aps3200ApuGenerator {

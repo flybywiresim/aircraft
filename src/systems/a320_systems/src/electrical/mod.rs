@@ -2246,7 +2246,7 @@ mod a320_electrical_circuit_tests {
             let mut electricity = Electricity::new();
             Self {
                 engines: [TestEngine::new(), TestEngine::new()],
-                ext_pwr: ExternalPowerSource::new(),
+                ext_pwr: ExternalPowerSource::new(&mut electricity),
                 elec: A320Electrical::new(&mut electricity),
                 overhead: A320ElectricalOverheadPanel::new(),
                 emergency_overhead: A320EmergencyElectricalOverheadPanel::new(),

@@ -1,7 +1,7 @@
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
-    ProvideCurrent, ProvidePotential,
+    ElectricalStateWriter, ElectricitySource, NewPotential, Potential, PotentialOrigin,
+    PotentialSource, PotentialTarget, ProvideCurrent, ProvidePotential,
 };
 use crate::{
     shared::{ConsumePower, PowerConsumptionReport},
@@ -181,6 +181,15 @@ impl ElectricalElement for Battery {
 
     fn is_conductive(&self) -> bool {
         true
+    }
+}
+impl ElectricitySource for Battery {
+    fn output_potential(&self) -> NewPotential {
+        if self.output_potential > ElectricPotential::new::<volt>(0.) {
+            NewPotential::new(PotentialOrigin::Battery(self.number), self.output_potential)
+        } else {
+            NewPotential::none()
+        }
     }
 }
 impl SimulationElement for Battery {

@@ -5,19 +5,24 @@ use crate::{
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 use super::{
-    ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, ProvideFrequency,
-    ProvidePotential,
+    ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
+    ElectricalStateWriter, ElectricitySource, NewPotential, Potential, PotentialOrigin,
+    PotentialSource, ProvideFrequency, ProvidePotential,
 };
 
 pub struct ExternalPowerSource {
+    identifier: ElectricalElementIdentifier,
     writer: ElectricalStateWriter,
     is_connected: bool,
     output_frequency: Frequency,
     output_potential: ElectricPotential,
 }
 impl ExternalPowerSource {
-    pub fn new() -> ExternalPowerSource {
+    pub fn new(
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> ExternalPowerSource {
         ExternalPowerSource {
+            identifier: identifier_provider.next(),
             writer: ElectricalStateWriter::new("EXT_PWR"),
             is_connected: false,
             output_frequency: Frequency::new::<hertz>(0.),
@@ -36,6 +41,28 @@ impl ExternalPowerSource {
 
     fn should_provide_output(&self) -> bool {
         self.is_connected
+    }
+}
+impl ElectricalElement for ExternalPowerSource {
+    fn input_identifier(&self) -> super::ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> super::ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        true
+    }
+}
+impl ElectricitySource for ExternalPowerSource {
+    fn output_potential(&self) -> NewPotential {
+        if self.should_provide_output() {
+            NewPotential::new(PotentialOrigin::External, self.output_potential)
+        } else {
+            NewPotential::none()
+        }
     }
 }
 impl PotentialSource for ExternalPowerSource {
@@ -72,16 +99,14 @@ impl SimulationElement for ExternalPowerSource {
         };
     }
 }
-impl Default for ExternalPowerSource {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 #[cfg(test)]
 mod external_power_source_tests {
     use super::*;
-    use crate::simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor};
+    use crate::{
+        electrical::Electricity,
+        simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
+    };
 
     struct ExternalPowerTestBed {
         test_bed: SimulationTestBed,
@@ -127,8 +152,9 @@ mod external_power_source_tests {
     }
     impl TestAircraft {
         fn new() -> Self {
+            let mut electricity = Electricity::new();
             Self {
-                ext_pwr: ExternalPowerSource::new(),
+                ext_pwr: ExternalPowerSource::new(&mut electricity),
                 ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }

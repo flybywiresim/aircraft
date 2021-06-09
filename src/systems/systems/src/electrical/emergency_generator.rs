@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, ProvideFrequency,
-    ProvidePotential,
+    ElectricalStateWriter, ElectricitySource, NewPotential, Potential, PotentialOrigin,
+    PotentialSource, ProvideFrequency, ProvidePotential,
 };
 use crate::{
     shared::{PowerConsumptionReport, RamAirTurbineHydraulicLoopPressurised},
@@ -93,6 +93,15 @@ impl ElectricalElement for EmergencyGenerator {
 
     fn is_conductive(&self) -> bool {
         true
+    }
+}
+impl ElectricitySource for EmergencyGenerator {
+    fn output_potential(&self) -> NewPotential {
+        if self.should_provide_output() {
+            NewPotential::new(PotentialOrigin::EmergencyGenerator, self.output_potential)
+        } else {
+            NewPotential::none()
+        }
     }
 }
 impl SimulationElement for EmergencyGenerator {

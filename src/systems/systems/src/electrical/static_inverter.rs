@@ -1,7 +1,7 @@
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
-    ProvideFrequency, ProvidePotential,
+    ElectricalStateWriter, ElectricityTransformer, NewPotential, Potential, PotentialOrigin,
+    PotentialSource, PotentialTarget, ProvideFrequency, ProvidePotential,
 };
 use crate::{
     shared::{ConsumePower, PowerConsumptionReport},
@@ -62,6 +62,15 @@ impl ElectricalElement for StaticInverter {
 
     fn is_conductive(&self) -> bool {
         true
+    }
+}
+impl ElectricityTransformer for StaticInverter {
+    fn transform(&self, input: &NewPotential) -> super::NewPotential {
+        if input.is_powered() {
+            NewPotential::new(PotentialOrigin::StaticInverter, self.output_potential)
+        } else {
+            NewPotential::none()
+        }
     }
 }
 impl SimulationElement for StaticInverter {

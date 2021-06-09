@@ -66,7 +66,7 @@ impl A320 {
             engine_fire_overhead: EngineFireOverheadPanel::new(),
             electrical: A320Electrical::new(&mut electricity),
             power_consumption: A320PowerConsumption::new(),
-            ext_pwr: ExternalPowerSource::new(),
+            ext_pwr: ExternalPowerSource::new(&mut electricity),
             hydraulic: A320Hydraulic::new(),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(),
             landing_gear: LandingGear::new(),
