@@ -1,3 +1,5 @@
+// TazX - 06/08/2021: Implemented start valve delay
+
 var A320_Neo_LowerECAM_Engine;
 (function (A320_Neo_LowerECAM_Engine) {
     class Definitions {
@@ -72,7 +74,13 @@ var A320_Neo_LowerECAM_Engine;
             let engineStarting = (SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool") === 1) ? true : false;
             let n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:1", "bool") === 1) ? true : false;
             let n2Percent = SimVar.GetSimVarValue("ENG N2 RPM:1", "percent");
-            this.igniterLeft.updateStatus(engineStarting, n2Igniting, n2Percent);
+			let timer = SimVar.GetSimVarValue("L:A32NX_ENGINE_TIMER:1", "number");
+			
+			this.igniterLeft.updateStatus(engineStarting, n2Igniting, n2Percent);
+			if (n2Percent < 50 && timer < 1.2) { // Start Valve Delay
+			    this.engineLeft.setEngineBleedValveState(false, false);
+			}
+
             if (n2Percent > 50) {
                 // Close left valve
                 this.engineLeft.setEngineBleedValveState(false, false);
@@ -81,7 +89,13 @@ var A320_Neo_LowerECAM_Engine;
             engineStarting = (SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "bool") === 1) ? true : false;
             n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:2", "bool") === 1) ? true : false;
             n2Percent = SimVar.GetSimVarValue("ENG N2 RPM:2", "percent");
+			timer = SimVar.GetSimVarValue("L:A32NX_ENGINE_TIMER:2", "number");
+			
             this.igniterRight.updateStatus(engineStarting, n2Igniting, n2Percent);
+			if (n2Percent < 50 && timer < 1.2) { // Start Valve Delay
+			    this.engineRight.setEngineBleedValveState(false, false);
+			}
+			
             if (n2Percent > 50) {
                 // Close right valve
                 this.engineRight.setEngineBleedValveState(false, false);
