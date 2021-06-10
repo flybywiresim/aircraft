@@ -2010,7 +2010,7 @@ var A320_Neo_UpperECAM;
         }
         getN1GaugeValue() {
             const engineId = (this.index + 1);
-            const value = SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:" + engineId, "percent");
+            let value = SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:" + engineId, "percent");
             if (value < 0.0) {
                 value = 0;
             }
