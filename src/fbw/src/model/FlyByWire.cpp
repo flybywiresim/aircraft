@@ -335,7 +335,8 @@ void FlyByWireModelClass::step()
     FlyByWire_DWork.resetEventTime = FlyByWire_U.in.time.simulation_time;
   }
 
-  if ((rtb_on_ground == 0) && (FlyByWire_U.in.data.autopilot_custom_on == 0.0) && (rtb_Limiterxi1 > rtb_Switch)) {
+  if ((rtb_on_ground == 0) && (FlyByWire_U.in.data.autopilot_custom_on == 0.0) && (rtb_Limiterxi1 > rtb_Switch) &&
+      (FlyByWire_DWork.Delay_DSTATE > 10.0)) {
     FlyByWire_DWork.sProtActive_n = 1.0;
   }
 
@@ -430,7 +431,7 @@ void FlyByWireModelClass::step()
       rtb_Y_dd = 0.0;
     }
 
-    if (rtb_Limiterxi1 > rtb_Gain1_h + rtb_Y_dd) {
+    if ((rtb_Limiterxi1 > rtb_Gain1_h + rtb_Y_dd) && (FlyByWire_DWork.Delay_DSTATE > 10.0)) {
       FlyByWire_DWork.sAlphaFloor = 1.0;
     } else {
       guard1 = true;

@@ -1,5 +1,11 @@
 var A320_Neo_ECAM_Common;
 (function (A320_Neo_ECAM_Common) {
+    const absoluteZeroThermodynamicTemperature = -273.15;
+
+    function hasThermodynamicTemperatureValue(value) {
+        return value >= absoluteZeroThermodynamicTemperature;
+    }
+
     function isEngineDisplayActive(_index) {
         return ((SimVar.GetSimVarValue("ENG N1 RPM:" + _index, "percent") >= 0.05) || (SimVar.GetSimVarValue("ENG N2 RPM:" + _index, "percent") >= 0.05));
     }
@@ -173,7 +179,10 @@ var A320_Neo_ECAM_Common;
             if (this.minRedValue != this.maxRedValue) {
                 this.redArc = document.createElementNS(Avionics.SVG.NS, "path");
                 this.redArc.id = "RedArc";
-                this.redArc.setAttribute("d", this.calculateRedArcD());
+
+                const d = hasThermodynamicTemperatureValue(this.minRedValue) ? this.calculateRedArcD() : "";
+                this.redArc.setAttribute("d", d);
+
                 this.rootSVG.appendChild(this.redArc);
             }
             this.graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -412,7 +421,9 @@ var A320_Neo_ECAM_Common;
         }
         refreshRedArc() {
             if (this.redArc) {
-                this.redArc.setAttribute("d", this.calculateRedArcD());
+                const d = hasThermodynamicTemperatureValue(this.minRedValue) ? this.calculateRedArcD() : "";
+                this.redArc.setAttribute("d", d);
+
                 this.previousUpdateMinRedValue = this.minRedValue;
             }
         }
@@ -436,14 +447,18 @@ var A320_Neo_ECAM_Common;
         refreshOuterMarkerFunction(_value, _force = false) {
             if (_value[1] != this.outerMarkerValue) {
                 this.outerMarkerValue = _value[1];
-                const dir = this.valueToDir(_value[1]);
-                const start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
-                const end = new Vec2(this.center.x + (dir.x * this.graduationOuterLineEndOffset), this.center.y + (dir.y * this.graduationOuterLineEndOffset));
                 const marker = document.getElementById(_value[0]);
-                marker.setAttribute("x1", start.x.toString());
-                marker.setAttribute("y1", start.y.toString());
-                marker.setAttribute("x2", end.x.toString());
-                marker.setAttribute("y2", end.y.toString());
+                marker.style.display = hasThermodynamicTemperatureValue(this.outerMarkerValue) ? "block" : "none";
+
+                if (marker.style.display === "block") {
+                    const dir = this.valueToDir(_value[1]);
+                    const start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
+                    const end = new Vec2(this.center.x + (dir.x * this.graduationOuterLineEndOffset), this.center.y + (dir.y * this.graduationOuterLineEndOffset));
+                    marker.setAttribute("x1", start.x.toString());
+                    marker.setAttribute("y1", start.y.toString());
+                    marker.setAttribute("x2", end.x.toString());
+                    marker.setAttribute("y2", end.y.toString());
+                }
             }
         }
         refreshDangerMinFunction(_value, _force = false) {

@@ -7,13 +7,17 @@ use systems::electrical::Potential;
 use systems::{
     electrical::{
         consumption::SuppliedPower, Battery, BatteryChargeLimiter, Contactor, ElectricalBus,
-        ElectricalBusType, EmergencyElectrical, EmergencyGenerator, PotentialSource,
-        PotentialTarget, StaticInverter,
+        EmergencyElectrical, EmergencyGenerator, PotentialSource, PotentialTarget, StaticInverter,
     },
-    shared::{ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, LandingGearPosition},
+    shared::{
+        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
+        LandingGearPosition,
+    },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, velocity::knot};
+
+pub(crate) const APU_START_MOTOR_BUS_TYPE: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
 
 pub(super) struct A320DirectCurrentElectrical {
     dc_bus_1: ElectricalBus,
@@ -40,6 +44,7 @@ pub(super) struct A320DirectCurrentElectrical {
     tr_2_contactor: Contactor,
     tr_ess_contactor: Contactor,
     apu_start_contactors: Contactor,
+    apu_start_motor_bus: ElectricalBus,
     dc_gnd_flt_service_bus: ElectricalBus,
     tr_2_to_dc_gnd_flt_service_bus_contactor: Contactor,
     dc_bus_2_to_dc_gnd_flt_service_bus_contactor: Contactor,
@@ -71,6 +76,7 @@ impl A320DirectCurrentElectrical {
             tr_2_contactor: Contactor::new("5PU2"),
             tr_ess_contactor: Contactor::new("3PE"),
             apu_start_contactors: Contactor::new("10KA_AND_5KA"),
+            apu_start_motor_bus: ElectricalBus::new(APU_START_MOTOR_BUS_TYPE),
             dc_gnd_flt_service_bus: ElectricalBus::new(
                 ElectricalBusType::DirectCurrentGndFltService,
             ),
@@ -196,10 +202,10 @@ impl A320DirectCurrentElectrical {
         self.apu_start_contactors.close_when(
             self.battery_1_contactor.is_closed()
                 && self.battery_2_contactor.is_closed()
-                && apu.should_close_start_contactors(),
+                && matches!(apu.signal(), Some(ContactorSignal::Close)),
         );
-
-        apu.start_motor_powered_by(self.apu_start_contactors.output());
+        self.apu_start_motor_bus
+            .powered_by(&self.apu_start_contactors);
 
         let should_close_2xb_contactor =
             self.should_close_2xb_contactors(context, emergency_generator, ac_state);
@@ -309,6 +315,7 @@ impl A320DirectCurrentElectrical {
         state.add_bus(&self.hot_bus_1);
         state.add_bus(&self.hot_bus_2);
         state.add_bus(&self.dc_gnd_flt_service_bus);
+        state.add_bus(&self.apu_start_motor_bus);
     }
 }
 impl A320DirectCurrentElectricalSystem for A320DirectCurrentElectrical {
@@ -345,6 +352,7 @@ impl SimulationElement for A320DirectCurrentElectrical {
         self.hot_bus_2.accept(visitor);
 
         self.apu_start_contactors.accept(visitor);
+        self.apu_start_motor_bus.accept(visitor);
 
         self.dc_gnd_flt_service_bus.accept(visitor);
         self.tr_2_to_dc_gnd_flt_service_bus_contactor
