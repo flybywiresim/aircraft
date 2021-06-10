@@ -1,5 +1,3 @@
-// TazX - 06/08/2021: Engine imbalance has been hardcoded in the Wasm. All references have been eliminated.
-
 var A320_Neo_UpperECAM;
 (function (A320_Neo_UpperECAM) {
     class Definitions {
@@ -2005,8 +2003,7 @@ var A320_Neo_UpperECAM;
         }
         getEGTGaugeValue() {
             const engineId = this.index + 1;
-            const value = SimVar.GetSimVarValue("L:A32NX_ENGINE_EGT:" + engineId, "celsius");
-            return value;
+            return SimVar.GetSimVarValue("L:A32NX_ENGINE_EGT:" + engineId, "celsius");
         }
         getN1GaugeValue() {
             const engineId = (this.index + 1);
@@ -2196,12 +2193,7 @@ var A320_Neo_UpperECAM;
             return "%";
         }
         getValue(_engine) {
-            const name = "L:A32NX_ENGINE_N2:" + _engine;
-            let percent = SimVar.GetSimVarValue(name, "percent");
-            if (percent < 0.0) {
-                percent = 0;
-            }
-            return percent;
+			return Math.max(SimVar.GetSimVarValue("L:A32NX_ENGINE_N2:" + engineId, "percent"), 0);
         }
         getDisplayActiveEngine(_engine) {
             if (this.getValue(_engine) < 57.8 && this.getEngineStartStatus(_engine) && this.getIgnitionStatus(_engine)) {

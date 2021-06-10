@@ -1,5 +1,3 @@
-// TazX - 06/08/2021: Implemented start valve delay
-
 var A320_Neo_LowerECAM_Engine;
 (function (A320_Neo_LowerECAM_Engine) {
     class Definitions {
