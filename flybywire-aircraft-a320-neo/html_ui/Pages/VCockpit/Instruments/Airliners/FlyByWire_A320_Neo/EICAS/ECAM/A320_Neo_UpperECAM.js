@@ -2005,8 +2005,7 @@ var A320_Neo_UpperECAM;
         }
         getEGTGaugeValue() {
             const engineId = this.index + 1;
-            const value = SimVar.GetSimVarValue("L:A32NX_ENGINE_EGT:" + engineId, "celsius");
-            return value;
+            return SimVar.GetSimVarValue("L:A32NX_ENGINE_EGT:" + engineId, "celsius");
         }
         getN1GaugeValue() {
             const engineId = (this.index + 1);
