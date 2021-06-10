@@ -2230,11 +2230,11 @@ var A320_Neo_UpperECAM;
         getValue(_engine, _conversion) {
             let ff = SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:" + _engine, "number") * this.conversionWeight;
             if (this.conversionWeight == 1) {
-                if(ff % 20 > 0) {
+                if (ff % 20 > 0) {
                     ff = (ff - (ff % 20)) + 20;
                 }
             } else {
-                if(ff % 40 > 0) {
+                if (ff % 40 > 0) {
                     ff = (ff - (ff % 40)) + 40;
                 }
             }
