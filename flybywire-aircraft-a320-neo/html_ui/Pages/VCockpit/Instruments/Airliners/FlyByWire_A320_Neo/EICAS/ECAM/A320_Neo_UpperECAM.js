@@ -2189,6 +2189,7 @@ var A320_Neo_UpperECAM;
             return "%";
         }
         getValue(_engine) {
+            const engineId = this.index + 1;
             return Math.max(SimVar.GetSimVarValue("L:A32NX_ENGINE_N2:" + engineId, "percent"), 0);
         }
         getDisplayActiveEngine(_engine) {
