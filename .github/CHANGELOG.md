@@ -106,7 +106,6 @@
 1. [FCU] Init FCU with SPD 100 kn, HDG = 0° and ALT 100 ft - @aguther (Andreas Guther)
 1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
 1. [ATHR/FADEC] Fixed potential engagement of reverse thrust in flight - @aguther (Andreas Guther)
-1. [MCDU] Clear scratchpad when CLR held down - @tracernz (Mike)
 1. [MCDU] Added clear scratchpad on CLR held down - @tracernz (Mike) and @MisterChocker (Leon)
 
 ## 0.6.0
