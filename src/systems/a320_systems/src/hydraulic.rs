@@ -1267,7 +1267,7 @@ struct A320BrakingForce {
     acceleration: Acceleration,
 }
 impl A320BrakingForce {
-    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
+    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
 
     pub fn new() -> Self {
         A320BrakingForce {
@@ -1286,17 +1286,17 @@ impl A320BrakingForce {
         norm_brakes: &BrakeCircuit,
         altn_brakes: &BrakeCircuit,
     ) {
-        let left_force_norm =
-            norm_brakes.left_brake_pressure().get::<psi>() / self.tunable_brake_press_factor;
-        let left_force_altn =
-            altn_brakes.left_brake_pressure().get::<psi>() / self.tunable_brake_press_factor;
+        let left_force_norm = 50. * norm_brakes.left_brake_pressure().get::<psi>().sqrt()
+            / self.tunable_brake_press_factor;
+        let left_force_altn = 50. * altn_brakes.left_brake_pressure().get::<psi>().sqrt()
+            / self.tunable_brake_press_factor;
         self.left_braking_force = left_force_norm + left_force_altn;
         self.left_braking_force = self.left_braking_force.max(0.).min(1.);
 
-        let right_force_norm =
-            norm_brakes.right_brake_pressure().get::<psi>() / self.tunable_brake_press_factor;
-        let right_force_altn =
-            altn_brakes.right_brake_pressure().get::<psi>() / self.tunable_brake_press_factor;
+        let right_force_norm = 50. * norm_brakes.right_brake_pressure().get::<psi>().sqrt()
+            / self.tunable_brake_press_factor;
+        let right_force_altn = 50. * altn_brakes.right_brake_pressure().get::<psi>().sqrt()
+            / self.tunable_brake_press_factor;
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
 
