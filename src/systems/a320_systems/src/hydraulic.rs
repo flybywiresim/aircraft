@@ -11,9 +11,9 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
     },
     shared::{
-        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineFirePushButtons,
-        LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+        interpolation, DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+        EngineFirePushButtons, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
@@ -1247,19 +1247,84 @@ struct A320BrakingForce {
     left_braking_force: f64,
     right_braking_force: f64,
 
+    left_braking_force_corrected: f64,
+    right_braking_force_corrected: f64,
+
     tunable_brake_press_factor: f64,
     acceleration: Acceleration,
+
+    flap_position: f64,
+    spoiler_position: f64,
+    total_weight: f64,
+    altitude: f64,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
+
+    const ALTITUDE_BREAKPOINTS: [f64; 4] = [0., 2000., 5000., 8000.];
+    const ALTITUDE_PENALTY_FACTOR: [f64; 4] = [1., 0.96, 0.93, 0.9];
+
+    const WEIGHT_BREAKPOINTS: [f64; 3] = [100000., 110000., 128000.];
+    const WEIGHT_PENALTY_FACTOR: [f64; 3] = [1., 0.95, 0.90];
+
+    const SPOILER_BREAKPOINTS: [f64; 3] = [0., 0.5, 1.];
+    const SPOILER_PENALTY_FACTOR: [f64; 3] = [0.9, 0.95, 1.];
+
+    const FLAPS_BREAKPOINTS: [f64; 3] = [0., 50., 100.];
+    const FLAPS_PENALTY_FACTOR: [f64; 3] = [0.9, 0.9, 1.];
+
+    fn update_corrected_force(&mut self) {
+        let weight_correction = interpolation(
+            &Self::WEIGHT_BREAKPOINTS,
+            &Self::WEIGHT_PENALTY_FACTOR,
+            self.total_weight,
+        );
+        let altitude_correction = interpolation(
+            &Self::ALTITUDE_BREAKPOINTS,
+            &Self::ALTITUDE_PENALTY_FACTOR,
+            self.altitude,
+        );
+        let flap_correction = interpolation(
+            &Self::FLAPS_BREAKPOINTS,
+            &Self::FLAPS_PENALTY_FACTOR,
+            self.flap_position,
+        );
+        let spoiler_correction = interpolation(
+            &Self::SPOILER_BREAKPOINTS,
+            &Self::SPOILER_PENALTY_FACTOR,
+            self.spoiler_position,
+        );
+        println!(
+            "CORR W{:.2} ALT{:.2} F{:.2} S{:.2}",
+            weight_correction, altitude_correction, flap_correction, spoiler_correction
+        );
+        self.left_braking_force_corrected = self.left_braking_force
+            * weight_correction
+            * altitude_correction
+            * flap_correction
+            * spoiler_correction;
+        self.right_braking_force_corrected = self.right_braking_force
+            * weight_correction
+            * altitude_correction
+            * flap_correction
+            * spoiler_correction;
+    }
 
     pub fn new() -> Self {
         A320BrakingForce {
             left_braking_force: 0.,
             right_braking_force: 0.,
 
+            left_braking_force_corrected: 0.,
+            right_braking_force_corrected: 0.,
+
             tunable_brake_press_factor: Self::REFERENCE_PRESSURE_FOR_MAX_FORCE,
             acceleration: Acceleration::new::<meter_per_second_squared>(0.),
+
+            flap_position: 0.,
+            spoiler_position: 0.,
+            total_weight: 0.,
+            altitude: 0.,
         }
     }
 
@@ -1283,6 +1348,8 @@ impl A320BrakingForce {
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
 
+        self.update_corrected_force();
+
         let accel = context.long_accel();
         self.acceleration = self.acceleration
             + (accel - self.acceleration)
@@ -1293,11 +1360,34 @@ impl A320BrakingForce {
 impl SimulationElement for A320BrakingForce {
     fn write(&self, writer: &mut SimulatorWriter) {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
-        writer.write("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
-        writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
+        writer.write("BRAKE LEFT FORCE FACTOR", self.left_braking_force_corrected);
+        writer.write(
+            "BRAKE RIGHT FORCE FACTOR",
+            self.right_braking_force_corrected,
+        );
         println!(
             "BRAKE FACTOR SENT TO SIM L{:.1}/R{:.1} ReferencePressure:{:.0}",
-            self.left_braking_force, self.right_braking_force, self.tunable_brake_press_factor
+            self.left_braking_force_corrected,
+            self.right_braking_force_corrected,
+            self.tunable_brake_press_factor
+        );
+    }
+
+    fn read(&mut self, state: &mut SimulatorReader) {
+        let left_flap: f64 = state.read("TRAILING EDGE FLAPS LEFT PERCENT");
+        let right_flap: f64 = state.read("TRAILING EDGE FLAPS RIGHT PERCENT");
+        self.flap_position = (left_flap + right_flap) / 2.;
+
+        let left_spoiler: f64 = state.read("SPOILERS LEFT POSITION");
+        let right_spoiler: f64 = state.read("SPOILERS RIGHT POSITION");
+        self.spoiler_position = (left_spoiler + right_spoiler) / 2.;
+
+        self.total_weight = state.read("TOTAL WEIGHT");
+        self.altitude = state.read("PLANE ALTITUDE");
+
+        println!(
+            "PARAMS:F{:.1} S{:.1} Alt{:.0} W{:.0}",
+            self.flap_position, self.spoiler_position, self.altitude, self.total_weight
         );
     }
 }

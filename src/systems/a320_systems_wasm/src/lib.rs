@@ -86,6 +86,13 @@ fn create_aircraft_variable_reader(
         &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
     );
 
+    reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
+    reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
+    reader.add("SPOILERS LEFT POSITION", "Enum", 0)?;
+    reader.add("SPOILERS RIGHT POSITION", "Enum", 0)?;
+    reader.add("TOTAL WEIGHT", "Pounds", 0)?;
+    reader.add("PLANE ALTITUDE", "Feet", 0)?;
+
     Ok(reader)
 }
 
