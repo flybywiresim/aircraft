@@ -98,7 +98,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
 
         this.currentISA = _value;
-        if (this.isISAVisible && this.isaText != null) {
+        if (this.isaText != null) {
             if (this.currentISA > 0) {
                 this.isaText.textContent = "+" + this.currentISA.toString();
             } else {
