@@ -621,17 +621,14 @@ class FMCMainDisplay extends BaseAirliners {
             this.managedSpeedTargetIsMach = isMach;
         }
 
-        if (!this.isAirspeedManaged()) {
-            return;
-        }
-
         // Overspeed protection
         const Vtap = Math.min(this.managedSpeedTarget, SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number"));
-
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", vPfd);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", Vtap);
 
-        Coherent.call("AP_SPD_VAR_SET", 0, Vtap);
+        if (this.isAirspeedManaged()) {
+            Coherent.call("AP_SPD_VAR_SET", 0, Vtap);
+        }
     }
 
     activatePreSelSpeedMach(preSel) {
@@ -1295,22 +1292,31 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Any tropopause altitude up to 60,000 ft is able to be entered
-     * @param {string | number} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
+     * @param {string} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
      * @return {boolean} Whether tropopause could be set or not
      */
     tryUpdateTropo(tropo) {
-        const _tropo = typeof tropo === 'number' ? tropo.toString() : tropo;
-        if (_tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
-            const value = parseInt(_tropo.padEnd(5, '0'));
-            if (isFinite(value)) {
-                if (value >= 0 && value <= 60000) {
-                    const valueRounded = Math.round(value / 10) * 10;
-                    this.tropo = valueRounded.toString();
-                    return true;
-                }
+        if (tropo === FMCMainDisplay.clrValue) {
+            if (this.tropo) {
+                this.tropo = "";
+                return true;
             }
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
+
+        if (!tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const value = parseInt(tropo);
+        if (isFinite(value) && value >= 0 && value <= 60000) {
+            this.tropo = ("" + Math.round(value / 10) * 10).padStart(5, "0");
+            return true;
+        }
+
+        this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
 
@@ -2071,7 +2077,7 @@ class FMCMainDisplay extends BaseAirliners {
         let [thrRedAlt, accAlt] = s.split("/");
 
         if (thrRedAlt && thrRedAlt.length > 0) {
-            if (!/^\d{4,5}$/.test(thrRedAlt)) {
+            if (!/^\d{3,5}$/.test(thrRedAlt)) {
                 this.addNewMessage(NXSystemMessages.formatError);
                 return false;
             }
@@ -2087,7 +2093,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         if (accAlt && accAlt.length > 0) {
-            if (!/^\d{4,5}$/.test(accAlt)) {
+            if (!/^\d{3,5}$/.test(accAlt)) {
                 this.addNewMessage(NXSystemMessages.formatError);
                 return false;
             }
@@ -2122,7 +2128,7 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
 
-        if (!/^\d{4,5}$/.test(s)) {
+        if (!/^\d{3,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }

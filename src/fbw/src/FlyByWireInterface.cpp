@@ -513,7 +513,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
 
     // input ----------------------------------------------------------------------------------------------------------
-    autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active | simData.ap_fd_2_active;
+    autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
     autopilotStateMachineInput.in.input.AP_ENGAGE_push = simInputAutopilot.AP_engage;
     autopilotStateMachineInput.in.input.AP_1_push = simInputAutopilot.AP_1_push;
     autopilotStateMachineInput.in.input.AP_2_push = simInputAutopilot.AP_2_push;
@@ -1068,10 +1068,10 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   SimData simData = simConnectInterface.getSimData();
 
   // set ground / flight for throttle handling
-  if (simData.gear_animation_pos_1 > 0.55 || simData.gear_animation_pos_1 > 0.55) {
+  if (flyByWireOutput.sim.data_computed.on_ground) {
     throttleAxis[0]->setOnGround();
     throttleAxis[1]->setOnGround();
-  } else if (simData.gear_animation_pos_1 <= 0.5 && simData.gear_animation_pos_1 <= 0.5) {
+  } else {
     throttleAxis[0]->setInFlight();
     throttleAxis[1]->setInFlight();
   }
@@ -1176,6 +1176,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
     autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
+    autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
 
     // step the model -------------------------------------------------------------------------------------------------
     autoThrust.setExternalInputs(&autoThrustInput);
@@ -1270,8 +1271,8 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
 
   // update simulation variables
   spoilersHandler->setSimulationVariables(
-      simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP1 == 1,
-      simData.V_ias_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
+      simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP2 == 1,
+      simData.V_gnd_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
       simData.flaps_handle_index, flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1);
 
   // check state of spoilers and adapt if necessary

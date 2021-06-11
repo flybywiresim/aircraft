@@ -16,8 +16,8 @@ use systems::{
         LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext,
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        UpdateContext, Write,
     },
 };
 use uom::si::{
@@ -693,16 +693,16 @@ impl PumpController for A320EngineDrivenPumpController {
     }
 }
 impl SimulationElement for A320EngineDrivenPumpController {
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.engine_master_on = state.read_bool(&self.engine_master_on_id);
-        self.weight_on_wheels = state.read_bool("SIM ON GROUND");
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.engine_master_on = reader.read(&self.engine_master_on_id);
+        self.weight_on_wheels = reader.read("SIM ON GROUND");
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
         if self.engine_number == 1 {
-            writer.write_bool("HYD_GREEN_EDPUMP_LOW_PRESS", self.is_pressure_low);
+            writer.write("HYD_GREEN_EDPUMP_LOW_PRESS", self.is_pressure_low);
         } else if self.engine_number == 2 {
-            writer.write_bool("HYD_YELLOW_EDPUMP_LOW_PRESS", self.is_pressure_low);
+            writer.write("HYD_YELLOW_EDPUMP_LOW_PRESS", self.is_pressure_low);
         } else {
             panic!("The A320 only supports two engines.");
         }
@@ -801,12 +801,12 @@ impl PumpController for A320BlueElectricPumpController {
 }
 
 impl SimulationElement for A320BlueElectricPumpController {
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.weight_on_wheels = state.read_bool("SIM ON GROUND");
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.weight_on_wheels = reader.read("SIM ON GROUND");
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.is_pressure_low);
+        writer.write("HYD_BLUE_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -890,7 +890,7 @@ impl PumpController for A320YellowElectricPumpController {
 }
 impl SimulationElement for A320YellowElectricPumpController {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.is_pressure_low);
+        writer.write("HYD_YELLOW_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -980,11 +980,11 @@ impl PowerTransferUnitController for A320PowerTransferUnitController {
     }
 }
 impl SimulationElement for A320PowerTransferUnitController {
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_lever_pos = state.read_bool("PARK_BRAKE_LEVER_POS");
-        self.eng_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
-        self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
-        self.weight_on_wheels = state.read_bool("SIM ON GROUND");
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.parking_brake_lever_pos = reader.read("PARK_BRAKE_LEVER_POS");
+        self.eng_1_master_on = reader.read("GENERAL ENG STARTER ACTIVE:1");
+        self.eng_2_master_on = reader.read("GENERAL ENG STARTER ACTIVE:2");
+        self.weight_on_wheels = reader.read("SIM ON GROUND");
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -1041,9 +1041,9 @@ impl RamAirTurbineController for A320RamAirTurbineController {
     }
 }
 impl SimulationElement for A320RamAirTurbineController {
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.eng_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
-        self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.eng_1_master_on = reader.read("GENERAL ENG STARTER ACTIVE:1");
+        self.eng_2_master_on = reader.read("GENERAL ENG STARTER ACTIVE:2");
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -1228,14 +1228,15 @@ impl A320HydraulicBrakingLogic {
 }
 
 impl SimulationElement for A320HydraulicBrakingLogic {
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_demand = state.read_bool("PARK_BRAKE_LEVER_POS");
-        self.weight_on_wheels = state.read_bool("SIM ON GROUND");
-        self.is_gear_lever_down = state.read_bool("GEAR HANDLE POSITION");
-        self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
-        self.left_brake_pilot_input = state.read_f64("LEFT_BRAKE_PEDAL_INPUT");
-        self.right_brake_pilot_input = state.read_f64("RIGHT_BRAKE_PEDAL_INPUT");
-        self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.parking_brake_demand = reader.read("PARK_BRAKE_LEVER_POS");
+        self.weight_on_wheels = reader.read("SIM ON GROUND");
+        self.is_gear_lever_down = reader.read("GEAR HANDLE POSITION");
+        self.anti_skid_activated = reader.read("ANTISKID BRAKES ACTIVE");
+        self.left_brake_pilot_input = reader.read("LEFT_BRAKE_PEDAL_INPUT");
+        self.right_brake_pilot_input = reader.read("RIGHT_BRAKE_PEDAL_INPUT");
+        let autobrakes_setting: f64 = reader.read("AUTOBRAKES SETTING");
+        self.autobrakes_setting = autobrakes_setting.floor() as u8;
     }
 }
 
@@ -1277,13 +1278,13 @@ impl A320BrakingForce {
 impl SimulationElement for A320BrakingForce {
     fn write(&self, writer: &mut SimulatorWriter) {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
-        writer.write_f64("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
-        writer.write_f64("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
+        writer.write("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
+        writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
     }
 
     // We receive here the desired parking brake position. This is the parking brake lever input
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.park_brake_lever_is_set = state.read_bool("PARK_BRAKE_LEVER_POS");
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.park_brake_lever_is_set = reader.read("PARK_BRAKE_LEVER_POS");
     }
 }
 
@@ -1308,7 +1309,7 @@ impl Door {
 impl SimulationElement for Door {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.previous_position = self.position;
-        self.position = state.read_f64(&self.exit_id);
+        self.position = state.read(&self.exit_id);
     }
 }
 
@@ -1357,8 +1358,8 @@ impl PushbackTug {
 impl SimulationElement for PushbackTug {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.previous_angle = self.angle;
-        self.angle = state.read_f64("PUSHBACK ANGLE");
-        self.state = state.read_f64("PUSHBACK STATE");
+        self.angle = state.read("PUSHBACK ANGLE");
+        self.state = state.read("PUSHBACK STATE");
     }
 }
 
