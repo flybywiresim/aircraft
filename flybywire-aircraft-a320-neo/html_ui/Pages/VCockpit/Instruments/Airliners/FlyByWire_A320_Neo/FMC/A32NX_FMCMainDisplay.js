@@ -188,6 +188,12 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendMach = .78;
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
+        this.ilsUpdateThrottler = new UpdateThrottler(5000);
+        this.ilsAutoIdent = '';
+        this.ilsAutoCourse = 0;
+        this.ilsAutoTuned = false;
+        this.ilsTakeoffAutoTuned = false;
+        this.ilsApproachAutoTuned = false;
     }
 
     Init() {
@@ -239,23 +245,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
-                this.flightPlanManager.updateCurrentApproach(() => {
-                    const frequency = this.flightPlanManager.getApproachNavFrequency();
-                    if (isFinite(frequency)) {
-                        const freq = Math.round(frequency * 100) / 100;
-                        if (this.connectIlsFrequency(freq)) {
-                            this._ilsFrequencyPilotEntered = false;
-                            SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
-                            const approach = this.flightPlanManager.getApproach();
-                            if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
-                                const runway = this.flightPlanManager.getApproachRunway();
-                                if (runway) {
-                                    SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_COURSE", "number", runway.direction);
-                                }
-                            }
-                        }
-                    }
-                });
+                this.flightPlanManager.updateCurrentApproach();
                 const callback = () => {
                     this.flightPlanManager.createNewFlightPlan();
                     SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -327,6 +317,10 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (this._flightGuidance) {
             this._flightGuidance.update(_deltaTime);
+        }
+
+        if (this.ilsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            this.updateIls();
         }
     }
 
@@ -1571,6 +1565,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     setOriginRunwayIndex(runwayIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
+            this.clearAutotunedIls();
             this.flightPlanManager.setDepartureProcIndex(-1, () => {
                 this.flightPlanManager.setOriginRunwayIndex(runwayIndex, () => {
                     return callback(true);
@@ -1582,6 +1577,7 @@ class FMCMainDisplay extends BaseAirliners {
     setRunwayIndex(runwayIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             const routeOriginInfo = this.flightPlanManager.getOrigin().infos;
+            this.clearAutotunedIls();
             if (!this.flightPlanManager.getOrigin()) {
                 this.addNewMessage(NXFictionalMessages.noOriginSet);
                 return callback(false);
@@ -1656,24 +1652,89 @@ class FMCMainDisplay extends BaseAirliners {
     setApproachIndex(approachIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
-                const frequency = this.flightPlanManager.getApproachNavFrequency();
-                if (isFinite(frequency)) {
-                    const freq = Math.round(frequency * 100) / 100;
-                    if (this.connectIlsFrequency(freq)) {
-                        this._ilsFrequencyPilotEntered = false;
-                        SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
-                        const approach = this.flightPlanManager.getApproach();
-                        if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
-                            const runway = this.flightPlanManager.getApproachRunway();
-                            if (runway) {
-                                SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_COURSE", "number", runway.direction);
-                            }
-                        }
-                    }
-                }
+                this.clearAutotunedIls();
                 callback(true);
             });
         });
+    }
+
+    async tuneIlsFromApproach(appr) {
+        const finalLeg = appr.wayPoints[appr.wayPoints.length - 1];
+        const ilsIcao = finalLeg.originIcao.trim();
+        if (ilsIcao.length > 0) {
+            try {
+                const ils = await this.facilityLoader.getFacility(ilsIcao);
+                if (ils.infos.frequencyMHz > 1) {
+                    console.log('Auto-tuning ILS', ils);
+                    this.connectIlsFrequency(ils.infos.frequencyMHz);
+                    this.ilsAutoIdent = ils.infos.ident;
+                    this.ilsAutoCourse = finalLeg.bearingInFP;
+                    this.ilsAutoTuned = true;
+                    if (this.currentFlightPhase > FmgcFlightPhases.TAKEOFF) {
+                        this.ilsApproachAutoTuned = true;
+                    } else {
+                        this.ilsTakeoffAutoTuned = true;
+                    }
+                    return true;
+                }
+            } catch (error) {
+                console.log('tuneIlsFromApproach', error);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    clearAutotunedIls() {
+        this.ilsAutoTuned = false;
+        this.ilsApproachAutoTuned = false;
+        this.ilsTakeoffAutoTuned = false;
+        this.ilsAutoIdent = "";
+        this.ilsAutoCourse = 0;
+    }
+
+    async updateIls() {
+        if (this._ilsFrequencyPilotEntered) {
+            return;
+        }
+
+        let airport;
+        let runway;
+
+        if (this.currentFlightPhase > FmgcFlightPhases.TAKEOFF) {
+            if (this.ilsApproachAutoTuned) {
+                return;
+            }
+            this.ilsAutoTuned = false;
+            // for unknown reasons, the approach returned here doesn't have the approach waypoints which we need
+            const appr = this.flightPlanManager.getApproach();
+            if (appr.name.indexOf('ILS') === -1 && appr.name.indexOf('LOC') === -1) {
+                return;
+            }
+            airport = this.flightPlanManager.getDestination();
+            runway = this.flightPlanManager.getApproachRunway();
+        } else {
+            if (this.ilsTakeoffAutoTuned) {
+                return;
+            }
+            this.ilsAutoTuned = false;
+            airport = this.flightPlanManager.getOrigin();
+            runway = this.flightPlanManager.getDepartureRunway();
+        }
+
+        if (airport && airport.infos && runway) {
+            for (let i = 0; i < airport.infos.approaches.length && !this.ilsAutoTuned; i++) {
+                const appr = airport.infos.approaches[i];
+                const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCR]?)$/);
+                if (
+                    match !== null
+                    && Avionics.Utils.formatRunway(match[3]) === Avionics.Utils.formatRunway(runway.designation)
+                    && appr.wayPoints.length > 0
+                ) {
+                    await this.tuneIlsFromApproach(appr);
+                }
+            }
+        }
     }
 
     updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
@@ -2961,6 +3022,7 @@ class FMCMainDisplay extends BaseAirliners {
             const freq = Math.round(v * 100) / 100;
             if (this.connectIlsFrequency(freq)) {
                 this._ilsFrequencyPilotEntered = true;
+                this.clearAutotunedIls();
                 return true;
             }
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
