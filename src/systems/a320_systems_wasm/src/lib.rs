@@ -92,6 +92,7 @@ fn create_aircraft_variable_reader(
     reader.add("SPOILERS RIGHT POSITION", "Enum", 0)?;
     reader.add("TOTAL WEIGHT", "Pounds", 0)?;
     reader.add("PLANE ALTITUDE", "Feet", 0)?;
+    reader.add("AIRSPEED INDICATED", "Knots", 0)?;
 
     Ok(reader)
 }
