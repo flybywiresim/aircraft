@@ -7,6 +7,7 @@ class CDU_OPTIONS_FMGC {
         const storedEoAccelAlt = parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
         const storedInitBaroUnit = NXDataStore.get("CONFIG_INIT_BARO_UNIT", "IN HG");
         const storedUsingMetric = parseInt(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        const storedRaasEnable = parseInt(NXDataStore.get("CONFIG_USE_RAAS", "1"));
 
         mcdu.setTemplate([
             ["A32NX OPTIONS FMGC"],
@@ -16,8 +17,8 @@ class CDU_OPTIONS_FMGC {
             [`*${storedUsingMetric === 1 ? "KG" : "LBS"}[color]cyan`, `{small}[FT]{end}{cyan}${storedAccelAlt}*{end}`],
             ["", "EO ACC H\xa0"],
             ["", `{small}[FT]{end}{cyan}${storedEoAccelAlt}*{end}`],
-            [""],
-            [""],
+            ["USE RAAS\xa0"],
+            [`*${storedRaasEnable === 1 ? "TRUE" : "FALSE"}[color]cyan`],
             [""],
             [""],
             [""],
@@ -106,10 +107,22 @@ class CDU_OPTIONS_FMGC {
             CDU_OPTIONS_FMGC.ShowPage(mcdu);
         };
 
+        mcdu.onLeftInput[3] = (value) => {
+            if (value !== "") {
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
+            } else {
+                NXDataStore.set("CONFIG_USE_RAAS", storedRaasEnable === 1 ? "0" : "1");
+            }
+            CDU_OPTIONS_FMGC.ShowPage(mcdu);
+        };
+
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.leftInputDelay[3] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
