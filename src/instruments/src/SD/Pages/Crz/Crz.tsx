@@ -217,7 +217,7 @@ type GaugeComponentType = {
     startAngle: number,
     endAngle: number,
     verticalSpeed: number,
-    className: string
+    className: string,
 }
 
 const GaugeComponent = ({ x, y, radius, startAngle, endAngle, verticalSpeed, className } : GaugeComponentType) => {
