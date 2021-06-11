@@ -218,7 +218,6 @@ class A32NX_LocalVarUpdater {
     }
 
     _deltaPSI() {
-
         const cabinVs = SimVar.GetSimVarValue('PRESSURIZATION CABIN ALTITUDE RATE', 'feet per second');
         const cabinAlt = SimVar.GetSimVarValue('PRESSURIZATION CABIN ALTITUDE', 'feet');
         const ambPressure = SimVar.GetSimVarValue('AMBIENT PRESSURE', 'inHg');
