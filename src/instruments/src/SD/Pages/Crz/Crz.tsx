@@ -61,7 +61,7 @@ export const OilComponent = () => {
             value = value < 0 ? 0.0 : value;
         }
         const decimalSplit = value.toFixed(1).split('.', 2);
-        return (decimalSplit);
+        return value.toFixed(1).split('.', 2);
     };
 
     const [oilQuantLeft] = useSimVar('ENG OIL QUANTITY:1', 'percent', 1000);
