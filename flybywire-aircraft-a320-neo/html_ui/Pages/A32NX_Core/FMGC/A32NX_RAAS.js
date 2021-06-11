@@ -19,37 +19,35 @@ class A32NX_RAAS {
          * JSON Load Part
          * NOTE : THIS WILL REMOVED WHEN API COMING
          */
-        this.airportData = null;
         this.runwayData = null;
-        this.runwayEndData = null;
-
-        const needToLoad = ['airport', 'runway', 'runway_end'];
-        this.loadJSON(needToLoad);
+        this.loadRunwayData();
 
         /*
          * Nearest Part
          */
-        this.nearestAirport;
+        this.nearestAirport = [];
+        this.nearestRunwayList = [];
         this.savedNearestAirportId;
         this.needUpdate = false;
-        this.nearestRunwayList = [];
         this.nearestRunwayHowFarAway = 50000000;
-        this.nearestRunwayId = NaN;
+        this.nearestRunwayId = null;
 
         this.shouldChangeNearestRunwayThings = true;
 
-        this.nearestRunwayMiddleLat = NaN;
-        this.nearestRunwayMiddleLon = NaN;
+        this.nearestRunwayLength = null;
+        this.nearestRunwayWidth = null;
+        this.nearestRunwayMiddleLat = null;
+        this.nearestRunwayMiddleLon = null;
 
-        this.nearestRunwayName = NaN;
-        this.nearestRunwayHeading = NaN;
-        this.nearestRunwayLatitude = NaN;
-        this.nearestRunwayLongitude = NaN;
+        this.nearestRunwayName = null;
+        this.nearestRunwayHeading = null;
+        this.nearestRunwayLatitude = null;
+        this.nearestRunwayLongitude = null;
 
-        this.nearestoppositeRunwayName = NaN;
-        this.nearestoppositeRunwayHeading = NaN;
-        this.nearestoppositeRunwayLatitude = NaN;
-        this.nearestoppositeRunwayLongitude = NaN;
+        this.nearestoppositeRunwayName = null;
+        this.nearestoppositeRunwayHeading = null;
+        this.nearestoppositeRunwayLatitude = null;
+        this.nearestoppositeRunwayLongitude = null;
 
         // 90sec timer
         this.runwayHoldingTimer = new NXLogic_ConfirmNode(90, false);
@@ -70,8 +68,8 @@ class A32NX_RAAS {
         const gpsLon = SimVar.GetSimVarValue("A:GPS POSITION LON", "degrees");
 
         // Search Nearest Airport
-        if (this.airportData !== null) {
-            this.nearestAirport = this.findNearestAirport(5);
+        if (this.runwayData !== null) {
+            this.nearestAirport = this.findNearestAirport(5, gpsLat, gpsLon);
 
             // If Nearest Airport changed, force update to new airport
             if (this.savedNearestAirportId !== this.nearestAirport[0].airport_id) {
@@ -80,43 +78,30 @@ class A32NX_RAAS {
             }
             if (this.needUpdate) {
                 this.nearestRunwayList = [];
-                if (this.runwayEndData !== null) {
-                    this.updateRunwayList();
-                    this.needUpdate = false;
-                }
+                this.updateRunwayList();
+                this.needUpdate = false;
             }
-        }
-
-        // Add Runway List
-        if (this.runwayData !== null) {
-            this.nearestAirportRunwayList = this.findRunwayListByAirportId(this.nearestAirport[0].airport_id);
         }
 
         this.whoIsNearestRunway(gpsLat, gpsLon);
         this.whichPartIsNearestRunway(gpsLat, gpsLon);
         this.isAircraftOnRunway();
+
+        console.log(this.nearestRunwayName);
     }
 
     /*
      * JSON Load Part
      * NOTE : THIS WILL REMOVED WHEN API COMING
      */
-    async loadJSON(name) {
+    async loadRunwayData() {
         try {
-            for (let i = 0; i < name.length; i++) {
-                const location = `/Database/${name[i]}.json`;
-                const data = await fetch(location);
-                const text = await data.text();
-                if (name[i] === `airport`) {
-                    this.airportData = await JSON.parse(text);
-                } else if (name[i] === 'runway') {
-                    this.runwayData = await JSON.parse(text);
-                } else if (name[i] === 'runway_end') {
-                    this.runwayEndData = await JSON.parse(text);
-                }
-                console.log(`Loaded ${name[i]} json`);
-            }
-        } catch (err) {
+            const location = '/Database/runway.json';
+            const data = await fetch(location);
+            const text = await data.text();
+            this.runwayData = await JSON.parse(text);
+            console.log('Loaded runway json');
+        } catch(err) {
             console.log("Can't load JSON");
         }
     }
@@ -125,30 +110,10 @@ class A32NX_RAAS {
      * Search Part
      * NOTE : THIS WILL CHANGED WHEN API COMING
      */
-    findNearestAirport(mile) {
-        const gpsLat = SimVar.GetSimVarValue("A:GPS POSITION LAT", "degrees");
-        const gpsLon = SimVar.GetSimVarValue("A:GPS POSITION LON", "degrees");
-        const result = this.airportData.filter(data => {
+    findNearestAirport(mile, gpsLat, gpsLon) {
+        const result = this.runwayData.filter(data => {
             const dist = this.calculateDistance(gpsLat, gpsLon, data.laty, data.lonx, "nm");
             if (dist < mile) {
-                return data;
-            }
-        });
-        return result;
-    }
-
-    findRunwayListByAirportId(id) {
-        const result = this.runwayData.filter(data => {
-            if (id === data.airport_id) {
-                return data;
-            }
-        });
-        return result;
-    }
-
-    findRunwayFromRunwayId(id) {
-        const result = this.runwayEndData.filter(data => {
-            if (id === data.runway_end_id) {
                 return data;
             }
         });
@@ -174,23 +139,19 @@ class A32NX_RAAS {
      * this.nearestRunwayList[i][10] = Secondary Runway Latitude
      * this.nearestRunwayList[i][11] = Secondary Runway Longitude
      */
-    updateRunwayList() {
-        const id = this.savedNearestAirportId;
-        const runwayList = this.findRunwayListByAirportId(id);
-        for (let i = 0; i < runwayList.length; i++) {
-            // ID
-            const primaryId = runwayList[i].primary_end_id;
-            const secondaryId = runwayList[i].secondary_end_id;
 
-            // Data
-            const primaryData = this.findRunwayFromRunwayId(primaryId);
-            const secondaryData = this.findRunwayFromRunwayId(secondaryId);
-            this.nearestRunwayList.push([runwayList[i].length, runwayList[i].width, runwayList[i].laty, runwayList[i].lonx, primaryData[0].name, primaryData[0].heading, primaryData[0].laty, primaryData[0].lonx, secondaryData[0].name, secondaryData[0].heading, secondaryData[0].laty, secondaryData[0].lonx]);
+    updateRunwayList() {
+        for (let i = 0; i < this.nearestAirport.length; i++) {
+            this.nearestRunwayList.push(
+                [this.nearestAirport[i].length, this.nearestAirport[i].width, this.nearestAirport[i].laty, this.nearestAirport[i].lonx,
+                this.nearestAirport[0].primary_name, this.nearestAirport[0].primary_heading, this.nearestAirport[0].primary_laty, this.nearestAirport[0].primary_lonx,
+                this.nearestAirport[0].secondary_name, this.nearestAirport[0].secondary_heading, this.nearestAirport[0].secondary_laty, this.nearestAirport[0].secondary_lonx]
+            );
         }
     }
 
     whoIsNearestRunway(gpsLat, gpsLon) {
-        for (let i = 0; i < this.nearestRunwayList.length; i++) {
+        for(let i = 0; i < this.nearestRunwayList.length; i++) {
             const middleOfRunwayLat = this.nearestRunwayList[i][2];
             const middleOfRunwayLon = this.nearestRunwayList[i][3];
             const howFarAway = this.calculateDistance(gpsLat, gpsLon, middleOfRunwayLat, middleOfRunwayLon, "m");
@@ -204,7 +165,7 @@ class A32NX_RAAS {
     }
 
     whichPartIsNearestRunway(gpsLat, gpsLon) {
-        if (this.nearestRunwayId === NaN) {
+        if (this.nearestRunwayId === null) {
             return;
         }
 
@@ -217,7 +178,7 @@ class A32NX_RAAS {
         const primaryDistance = this.calculateDistance(gpsLat, gpsLon, primaryLon, primaryLat, "m");
         const secondaryDistance = this.calculateDistance(gpsLat, gpsLon, secondaryLon, secondaryLat, "m");
 
-        if (this.shouldChangeNearestRunwayThings) {
+        if(this.shouldChangeNearestRunwayThings) {
             this.nearestRunwayLength = this.nearestRunwayList[i][0];
             this.nearestRunwayWidth = this.nearestRunwayList[i][1];
             this.nearestRunwayMiddleLat = this.nearestRunwayList[i][2];
@@ -250,7 +211,6 @@ class A32NX_RAAS {
 
     isAircraftOnRunway() {
         const onRwy = SimVar.GetSimVarValue("ON ANY RUNWAY", "BOOL");
-        console.log(onRwy);
     }
 
     /*
@@ -262,7 +222,7 @@ class A32NX_RAAS {
         if (lat1 == lat2 && lon1 == lon2) {
             return 0;
         }
-        const theta = lon1 - lon2;
+        const theta = lon1-lon2;
         const lat1ToRad = this.degToRad(lat1);
         const lat2ToRad = this.degToRad(lat2);
         const thetaToRad = this.degToRad(theta);
