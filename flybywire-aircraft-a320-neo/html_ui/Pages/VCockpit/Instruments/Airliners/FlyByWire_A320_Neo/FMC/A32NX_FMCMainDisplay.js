@@ -2016,7 +2016,7 @@ class FMCMainDisplay extends BaseAirliners {
         let [thrRedAlt, accAlt] = s.split("/");
 
         if (thrRedAlt && thrRedAlt.length > 0) {
-            if (!/^\d{4,5}$/.test(thrRedAlt)) {
+            if (!/^\d{3,5}$/.test(thrRedAlt)) {
                 this.addNewMessage(NXSystemMessages.formatError);
                 return false;
             }
@@ -2032,7 +2032,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         if (accAlt && accAlt.length > 0) {
-            if (!/^\d{4,5}$/.test(accAlt)) {
+            if (!/^\d{3,5}$/.test(accAlt)) {
                 this.addNewMessage(NXSystemMessages.formatError);
                 return false;
             }
@@ -2067,7 +2067,7 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
 
-        if (!/^\d{4,5}$/.test(s)) {
+        if (!/^\d{3,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
