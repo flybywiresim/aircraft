@@ -1262,11 +1262,11 @@ struct A320BrakingForce {
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
 
-    const ALTITUDE_BREAKPOINTS: [f64; 4] = [0., 2000., 5000., 8000.];
-    const ALTITUDE_PENALTY_PERCENT: [f64; 4] = [0., 5., 10., 15.];
-
     const WEIGHT_BREAKPOINTS: [f64; 3] = [100000., 110000., 128000.];
     const WEIGHT_PENALTY_FACTOR: [f64; 3] = [1., 1., 1.];
+
+    const ALTITUDE_BREAKPOINTS: [f64; 4] = [0., 2000., 5000., 8000.];
+    const ALTITUDE_PENALTY_PERCENT: [f64; 4] = [0., 5., 10., 15.];
 
     const SPOILER_BREAKPOINTS: [f64; 3] = [0., 0.5, 1.];
     const SPOILER_PENALTY_PERCENT: [f64; 3] = [5., 2., 0.];
