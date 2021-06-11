@@ -15,7 +15,9 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.satText = this.querySelector("#SATValue");
         this.isaText = this.querySelector("#ISAValue");
         this.isaContainer = this.querySelector("#ISA");
-        this.areAdirsAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") == 2;
+        this.areAdirsAligned = null;
+        this.isSATVisible = null;
+        this.isTATVisible = null;
         this.isISAVisible = null;
         this.currentSeconds = 0;
         this.currentMinutes = 0;
@@ -30,9 +32,9 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.gwValue = this.querySelector("#GWValue");
         this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
         this.gwUnit.textContent = this.conversionWeight === 1 ? "KG" : "LBS";
-        this.refreshTAT(0, true);
-        this.refreshSAT(0, true);
-        this.refreshISA(0, true);
+        this.refreshTAT(0);
+        this.refreshSAT(0);
+        this.refreshISA(0);
         this.refreshClock();
         this.refreshGrossWeight(true);
         this.isInitialised = true;
@@ -49,32 +51,39 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.refreshGrossWeight();
         this.refreshADIRS();
     }
-    refreshTAT(_value, _force = false) {
-        //if ((_value != this.currentTAT) || _force) {
+    refreshTAT(_value) {
+        if (_value === this.currentTAT && this.areAdirsAligned === this.isTATVisible) {
+            return;
+        }
+
         this.currentTAT = _value;
-        if (this.tatText != null) {
+        this.isTATVisible = this.areAdirsAligned;
+
+        if (this.isTATVisible && this.tatText != null) {
             if (this.currentTAT > 0) {
                 this.tatText.textContent = "+" + this.currentTAT.toString();
             } else {
                 this.tatText.textContent = this.currentTAT.toString();
             }
         }
-        //}
     }
-    refreshSAT(_value, _force = false) {
-        //if ((_value != this.currentSAT) || _force) {
+    refreshSAT(_value) {
+        if (_value === this.currentSAT && this.areAdirsAligned === this.isSATVisible) {
+            return;
+        }
+
         this.currentSAT = _value;
-        if (this.satText != null) {
+        this.isSATVisible = this.areAdirsAligned;
+
+        if (this.isSATVisible && this.satText != null) {
             if (this.currentSAT > 0) {
                 this.satText.textContent = "+" + this.currentSAT.toString();
             } else {
                 this.satText.textContent = this.currentSAT.toString();
             }
         }
-        //}
     }
-    refreshISA(_value, _force = false) {
-        //if ((_value != this.currentISA) || _force) {
+    refreshISA(_value) {
         const isInStdMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD";
         const shouldISABeVisible = isInStdMode && this.areAdirsAligned;
 
@@ -84,15 +93,18 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
             this.isISAVisible = shouldISABeVisible;
         }
 
+        if (_value === this.currentISA) {
+            return;
+        }
+
         this.currentISA = _value;
-        if (this.isaText != null) {
+        if (this.isISAVisible && this.isaText != null) {
             if (this.currentISA > 0) {
                 this.isaText.textContent = "+" + this.currentISA.toString();
             } else {
                 this.isaText.textContent = this.currentISA.toString();
             }
         }
-        //}
     }
     refreshLoadFactor(_deltaTime, value) {
         const conditionsMet = value > 1.4 || value < 0.7;
@@ -161,8 +173,15 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     }
     refreshADIRS() {
         if (this.tatText != null && this.satText != null) {
-            if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
-                this.areAdirsAligned = false;
+            const areAdirsAlignedNow = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") == 2;
+
+            if (areAdirsAlignedNow === this.areAdirsAligned) {
+                return;
+            }
+
+            this.areAdirsAligned = areAdirsAlignedNow;
+
+            if (!this.areAdirsAligned) {
                 this.tatText.textContent = "XX";
                 this.tatText.classList.add("Warning");
                 this.tatText.classList.remove("Value");
@@ -170,7 +189,6 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
                 this.satText.classList.add("Warning");
                 this.satText.classList.remove("Value");
             } else {
-                this.areAdirsAligned = true;
                 this.satText.classList.add("Value");
                 this.satText.classList.remove("Warning");
                 this.tatText.classList.add("Value");
