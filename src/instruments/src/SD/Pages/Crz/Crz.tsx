@@ -288,10 +288,7 @@ const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAn
     };
 
     if (indicator) {
-        start = {
-            x,
-            y,
-        };
+        start = { x, y };
 
         end = {
             x: x + (dir.x * radius * 1.1),
