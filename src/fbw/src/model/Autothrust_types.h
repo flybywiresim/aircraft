@@ -117,6 +117,7 @@ typedef struct {
   boolean_T is_air_conditioning_1_active;
   boolean_T is_air_conditioning_2_active;
   boolean_T FD_active;
+  boolean_T ATHR_reset_disable;
 } athr_input;
 
 #endif
