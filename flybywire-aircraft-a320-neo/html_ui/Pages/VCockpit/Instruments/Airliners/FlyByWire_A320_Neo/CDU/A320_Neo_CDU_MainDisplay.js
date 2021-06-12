@@ -100,6 +100,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             this.tryShowMessage();
         };
+        this.onClrHeld = () => {
+            if (this.inOut === FMCMainDisplay.clrValue || (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage)) {
+                this.inOut = "";
+            }
+            this.tryShowMessage();
+        };
 
         this.PageTimeout = {
             Prog: 2000,
@@ -996,6 +1002,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 setTimeout(() => {
                     this.onClr();
                 }, this.getDelaySwitchPage());
+            } else if (input === "CLR_Held") {
+                this.onClrHeld();
             } else if (input === "DIV") {
                 setTimeout(() => {
                     this.onDiv();
