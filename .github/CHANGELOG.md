@@ -112,6 +112,7 @@
 1. [MCDU] Added clear scratchpad on CLR held down - @tracernz (Mike) and @MisterChocker (Leon)
 1. [MCDU] Fixed performance page refresh on flight phase transition - @MisterChocker (Leon)
 1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
+1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
