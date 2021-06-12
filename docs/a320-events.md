@@ -131,6 +131,9 @@
 - A32NX.FCU_TO_AP_VS_PULL
     - Triggered after V/S knob is **pulled** on FCU to notify autopilot
 
+- A32NX.ATHR_RESET_DISABLE
+    - Resets permanently disabled A/THR system (after pressing ATHR disconnect for at least 15 s)
+
 ## Throttle Mapping System
 
 - A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE
