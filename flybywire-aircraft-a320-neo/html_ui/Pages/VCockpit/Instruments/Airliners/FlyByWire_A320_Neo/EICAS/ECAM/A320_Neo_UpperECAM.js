@@ -105,8 +105,8 @@ var A320_Neo_UpperECAM;
             this.iceNotDetTimer1 = new NXLogic_ConfirmNode(60);
             this.iceNotDetTimer2 = new NXLogic_ConfirmNode(130);
             this.predWsMemo = new NXLogic_MemoryNode(true);
-            this.showHydPtuMemoTimer = new NXLogic_ConfirmNode(1);
-            this.hideHydPtuMemoTimer = new NXLogic_ConfirmNode(1);
+            this.showHydPtuMemoTimer = new NXLogic_ConfirmNode(0);
+            this.hideHydPtuMemoTimer = new NXLogic_ConfirmNode(2);
             this.hydPtuMemoVisible = new NXLogic_MemoryNode(true);
         }
         get templateID() {
@@ -1806,29 +1806,7 @@ var A320_Neo_UpperECAM;
         };
 
         updatePtu(_deltaTime) {
-            const greenPressure = this.getCachedSimVar("L:A32NX_HYD_GREEN_PRESSURE", "psi");
-            const yellowPressure = this.getCachedSimVar("L:A32NX_HYD_YELLOW_PRESSURE", "psi");
-            const isYellowElectricPumpActive = this.getCachedSimVar("L:A32NX_HYD_YELLOW_EPUMP_ACTIVE", "boolean");
-            const isPtuAvailable = this.getCachedSimVar("L:A32NX_HYD_PTU_VALVE_OPENED", "boolean");
-            let showHydPtuMemo = this.hydPtuMemoVisible.read();
-
-            if (isPtuAvailable && !isYellowElectricPumpActive) {
-                // The PTU valve has to be open and the yellow electric pump should not be on
-                const pressureDifferential = Math.abs(greenPressure - yellowPressure);
-                const maxPressure = Math.max(yellowPressure, greenPressure);
-                // const minPressure = Math.min(yellowPressure, greenPressure);
-                if (maxPressure < 1450 || (greenPressure > 2990 && yellowPressure > 2990)) {
-                    showHydPtuMemo = false;
-                } else if (pressureDifferential > 200 && maxPressure > 1450 && !showHydPtuMemo) {
-                    showHydPtuMemo = true;
-                } else if (-pressureDifferential <= -500 && showHydPtuMemo) {
-                    showHydPtuMemo = false;
-                }
-            } else if (isPtuAvailable && isYellowElectricPumpActive && greenPressure <= 2990) {
-                showHydPtuMemo = true;
-            } else {
-                showHydPtuMemo = false;
-            }
+            const showHydPtuMemo = this.getCachedSimVar("L:A32NX_HYD_PTU_ACTIVE_L2R", "bool") || this.getCachedSimVar("L:A32NX_HYD_PTU_ACTIVE_R2L", "bool");
 
             const set = this.showHydPtuMemoTimer.write(showHydPtuMemo, _deltaTime);
             const reset = this.hideHydPtuMemoTimer.write(!showHydPtuMemo, _deltaTime);
