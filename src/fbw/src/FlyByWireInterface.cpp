@@ -1179,6 +1179,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
     autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
+    autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
 
     // step the model -------------------------------------------------------------------------------------------------
     autoThrust.setExternalInputs(&autoThrustInput);
