@@ -572,10 +572,10 @@ class FMCMainDisplay extends BaseAirliners {
 
                 this._destDataChecked = false;
 
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
-                    CDUPerformancePage.ShowCLBPage(this);
-                } else if (this.page.Current === this.page.ProgressPage) {
+                if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
+                } else {
+                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
                 }
 
                 /** Activate pre selected speed/mach */
@@ -592,10 +592,10 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.CRUISE: {
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
-                    CDUPerformancePage.ShowCRZPage(this);
-                } else if (this.page.Current === this.page.ProgressPage) {
+                if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
+                } else {
+                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
                 }
 
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
@@ -613,10 +613,10 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.DESCENT: {
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
-                    CDUPerformancePage.ShowDESPage(this);
-                } else if (this.page.Current === this.page.ProgressPage) {
+                if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
+                } else {
+                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
                 }
 
                 this.checkDestData();
@@ -635,10 +635,10 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.APPROACH: {
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
-                    CDUPerformancePage.ShowAPPRPage(this);
-                } else if (this.page.Current === this.page.ProgressPage) {
+                if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
+                } else {
+                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
                 }
 
                 this.connectIls();
@@ -677,10 +677,10 @@ class FMCMainDisplay extends BaseAirliners {
                 const currentHeading = Simplane.getHeadingMagnetic();
                 Coherent.call("HEADING_BUG_SET", 1, currentHeading);
 
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
-                    CDUPerformancePage.ShowGOAROUNDPage(this);
-                } else if (this.page.Current === this.page.ProgressPage) {
+                if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
+                } else {
+                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
                 }
 
                 break;
@@ -3608,21 +3608,33 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Evaluates whether or not the shown performance page can be updated with the one corresponding to the new flight phase
-     * This function is in place to ensure only switching the performance page when the one currently showing is the one linked to the previous flight phase
-     * @param _lastFlightPhase {FmgcFlightPhases}
-     * @returns {boolean}
+     * Switches to the next/new perf page (if new flight phase is in order) or reloads the current page
+     * @param _old {FmgcFlightPhases}
+     * @param _new {FmgcFlightPhases}
      */
-    canShowNextPerfPage(_lastFlightPhase) {
-        switch (_lastFlightPhase) {
-            case FmgcFlightPhases.TAKEOFF: return this.page.Current === this.page.PerformancePageTakeoff;
-            case FmgcFlightPhases.CLIMB: return this.page.Current === this.page.PerformancePageClb;
-            case FmgcFlightPhases.CRUISE: return this.page.Current === this.page.PerformancePageCrz;
-            case FmgcFlightPhases.DESCENT: return this.page.Current === this.page.PerformancePageDes;
-            case FmgcFlightPhases.APPROACH: return this.page.Current === this.page.PerformancePageAppr;
-            case FmgcFlightPhases.GOAROUND: return this.page.Current === this.page.PerformancePageGoAround;
+    tryUpdatePerfPage(_old, _new) {
+        // Ensure we have a performance page selected...
+        if (this.page.Current < this.page.PerformancePageTakeoff || this.page.Current > this.page.PerformancePageGoAround) {
+            return;
+        }
 
-            default: return false;
+        const curPerfPagePhase = (() => {
+            switch (this.page.Current) {
+                case this.page.PerformancePageTakeoff : return FmgcFlightPhases.TAKEOFF;
+                case this.page.PerformancePageClb : return FmgcFlightPhases.CLIMB;
+                case this.page.PerformancePageCrz : return FmgcFlightPhases.CRUISE;
+                case this.page.PerformancePageDes : return FmgcFlightPhases.DESCENT;
+                case this.page.PerformancePageAppr : return FmgcFlightPhases.APPROACH;
+                case this.page.PerformancePageGoAround : return FmgcFlightPhases.GOAROUND;
+            }
+        })();
+
+        if (_new > _old) {
+            if (_new >= curPerfPagePhase) {
+                CDUPerformancePage.ShowPage(this, _new);
+            }
+        } else if (_old === curPerfPagePhase) {
+            CDUPerformancePage.ShowPage(this, _old);
         }
     }
 
