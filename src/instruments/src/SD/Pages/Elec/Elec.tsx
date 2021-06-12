@@ -240,6 +240,7 @@ interface BusProps {
     isNormal: boolean
     isShed?: boolean
 }
+
 const Bus = ({ x, y, width, name, number, isNormal, isShed } : BusProps) => {
     const busHeight = 26.25;
     return (
@@ -394,6 +395,7 @@ interface TransformerRectifierProps {
     number: number,
     titleOnly?: boolean,
 }
+
 const TransformerRectifier = ({ x, y, number, titleOnly }: TransformerRectifierProps) => {
     const [potential] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL`, 'Volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
@@ -489,6 +491,7 @@ interface ArrowProps {
     amber?: boolean,
     description?: string,
 }
+
 const Arrow = ({ x, y, direction, green, amber }: ArrowProps) => {
     const classes = classNames({ Green: green }, { Amber: amber });
     switch (direction) {
@@ -503,6 +506,7 @@ const Arrow = ({ x, y, direction, green, amber }: ArrowProps) => {
         return <path className={classes} d={`M${x} ${y}v-${arrowSize} l-8.99325 6.8685z`} />;
     }
 };
+
 const arrowSize = 13.737375;
 
 interface WireProps {
@@ -510,6 +514,7 @@ interface WireProps {
     amber?: boolean,
     description?: string,
 }
+
 const Wire = ({ d, amber }: WireProps) => {
     const classes = classNames({ Green: !amber }, { Amber: amber });
     return <path className={classes} d={d} />;

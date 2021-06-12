@@ -2,7 +2,7 @@ use uom::si::{angular_velocity::revolution_per_minute, f64::*, pressure::psi, ra
 
 use crate::{
     shared::EngineCorrectedN2,
-    simulation::{SimulationElement, SimulatorReader, UpdateContext},
+    simulation::{Read, SimulationElement, SimulatorReader, UpdateContext},
 };
 
 use super::Engine;
@@ -55,8 +55,8 @@ impl LeapEngine {
 }
 impl SimulationElement for LeapEngine {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.corrected_n1 = Ratio::new::<percent>(reader.read_f64(&self.corrected_n1_id));
-        self.corrected_n2 = Ratio::new::<percent>(reader.read_f64(&self.corrected_n2_id));
+        self.corrected_n1 = reader.read(&self.corrected_n1_id);
+        self.corrected_n2 = reader.read(&self.corrected_n2_id);
         self.update_parameters();
     }
 }

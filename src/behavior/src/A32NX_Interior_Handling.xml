@@ -179,10 +179,10 @@
                 <ANIM_DELTA>#ANIM_SPEED# (O:Delta_SIMULATION_TIME) * (O:Delta_ANIM_POS) abs min</ANIM_DELTA>
             </Condition>
             <UPDATE_CODE>
-                (A:BRAKE PARKING POSITION, bool) (O:BrakeIsON) != if{
-                    (A:BRAKE PARKING POSITION, bool) (&gt;O:BrakeIsON)
-                    (A:BRAKE PARKING POSITION, bool) ! if{
-                        (A:BRAKE PARKING POSITION, bool) 100 * (&gt;O:BrakePosition)
+                (L:A32NX_PARK_BRAKE_LEVER_POS, bool) (O:BrakeIsON) != if{
+                    (L:A32NX_PARK_BRAKE_LEVER_POS, bool) (&gt;O:BrakeIsON)
+                    (L:A32NX_PARK_BRAKE_LEVER_POS, bool) ! if{
+                        (L:A32NX_PARK_BRAKE_LEVER_POS, bool) 100 * (&gt;O:BrakePosition)
                     } els{
                         (E:SIMULATION TIME, second) #ANIM_DELAY# + (&gt;O:BrakeStartingTime)
                     }
@@ -190,7 +190,7 @@
                 els{
                     (O:BrakeStartingTime) 0 &gt; if{
                         (E:SIMULATION TIME, second) (O:BrakeStartingTime) - 0 &gt; if{
-                            (A:BRAKE PARKING POSITION, bool) 100 * (&gt;O:BrakePosition)
+                            (L:A32NX_PARK_BRAKE_LEVER_POS, bool) 100 * (&gt;O:BrakePosition)
                             0 (&gt;O:BrakeStartingTime)
                         }
                     }
@@ -209,26 +209,26 @@
                         <True>
                             <LEFT_SINGLE_CODE>
                                 (&gt;K:PARKING_BRAKES)
-                                (A:BRAKE PARKING POSITION, bool) ! if{
-                                    (A:BRAKE PARKING POSITION, bool) 100 * (&gt;O:BrakePosition)
-                                    (A:BRAKE PARKING POSITION, bool) (&gt;O:BrakeIsON)
+                                (L:A32NX_PARK_BRAKE_LEVER_POS, bool) ! if{
+                                    (L:A32NX_PARK_BRAKE_LEVER_POS, bool) 100 * (&gt;O:BrakePosition)
+                                    (L:A32NX_PARK_BRAKE_LEVER_POS, bool) (&gt;O:BrakeIsON)
                                 }
                             </LEFT_SINGLE_CODE>
                             <ANIM_CODE>(O:BrakePosition)</ANIM_CODE>
                         </True>
                         <False>
                             <LEFT_SINGLE_CODE>(&gt;K:PARKING_BRAKES)</LEFT_SINGLE_CODE>
-                            <ANIM_CODE>(A:BRAKE PARKING POSITION, bool) 100 *</ANIM_CODE>
+                            <ANIM_CODE>(L:A32NX_PARK_BRAKE_LEVER_POS, bool) 100 *</ANIM_CODE>
                         </False>
                     </Condition>
                     <Condition Valid="INVERT_MOUSEWHEEL_INTERACTION">
                         <True>
-                            <CLOCKWISE_CODE>(A:BRAKE PARKING POSITION, bool) ! if{ (&gt;K:PARKING_BRAKES) }</CLOCKWISE_CODE>
-                            <ANTICLOCKWISE_CODE>(A:BRAKE PARKING POSITION, bool) if{ (&gt;K:PARKING_BRAKES) }</ANTICLOCKWISE_CODE>
+                            <CLOCKWISE_CODE>(L:A32NX_PARK_BRAKE_LEVER_POS, bool) ! if{ (&gt;K:PARKING_BRAKES) }</CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>(L:A32NX_PARK_BRAKE_LEVER_POS, bool) if{ (&gt;K:PARKING_BRAKES) }</ANTICLOCKWISE_CODE>
                         </True>
                         <False>
-                            <CLOCKWISE_CODE>(A:BRAKE PARKING POSITION, bool) if{ (&gt;K:PARKING_BRAKES) }</CLOCKWISE_CODE>
-                            <ANTICLOCKWISE_CODE>(A:BRAKE PARKING POSITION, bool) ! if{ (&gt;K:PARKING_BRAKES) }</ANTICLOCKWISE_CODE>
+                            <CLOCKWISE_CODE>(L:A32NX_PARK_BRAKE_LEVER_POS, bool) if{ (&gt;K:PARKING_BRAKES) }</CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>(L:A32NX_PARK_BRAKE_LEVER_POS, bool) ! if{ (&gt;K:PARKING_BRAKES) }</ANTICLOCKWISE_CODE>
                         </False>
                     </Condition>
                 </False>
@@ -262,7 +262,7 @@
                     <Update Fraquency="0.1">
                         (O:IsInit) ! if{
                             1 (&gt;O:IsInit)
-                            (A:BRAKE PARKING POSITION, bool) 100 * (&gt;O:BrakePosition)
+                            (L:A32NX_PARK_BRAKE_LEVER_POS, bool) 100 * (&gt;O:BrakePosition)
                         }
                     </Update>
                     <Condition>
@@ -298,23 +298,23 @@
                         <RELEASE_CODE>0 (&gt;O:XMLVAR_InteractingWith_Brake)</RELEASE_CODE>
                         <POSITIVE_AXIS_CODE>
                         (O:BrakePosition) #DRAG_SPEED# + #ANIM_LENGTH# min (&gt;O:BrakePosition)
-                        (O:BrakePosition) 100 == (A:BRAKE PARKING POSITION, bool) ! and if{
+                        (O:BrakePosition) 100 == (L:A32NX_PARK_BRAKE_LEVER_POS, bool) ! and if{
                             (&gt;K:PARKING_BRAKES)
-                            (A:BRAKE PARKING POSITION, bool) (&gt;O:BrakeIsON)
+                            (L:A32NX_PARK_BRAKE_LEVER_POS, bool) (&gt;O:BrakeIsON)
                         }
                         </POSITIVE_AXIS_CODE>
                         <NEGATIVE_AXIS_CODE>
                         (O:BrakePosition) #DRAG_SPEED# - 0 max (&gt;O:BrakePosition)
-                        (A:BRAKE PARKING POSITION, bool) if{
+                        (L:A32NX_PARK_BRAKE_LEVER_POS, bool) if{
                             (&gt;K:PARKING_BRAKES)
-                            (A:BRAKE PARKING POSITION, bool) (&gt;O:BrakeIsON)
+                            (L:A32NX_PARK_BRAKE_LEVER_POS, bool) (&gt;O:BrakeIsON)
                         }
                         </NEGATIVE_AXIS_CODE>
                         <DRAG_CODE>
                         (O:BrakePosition) (O:DragScale) + #ANIM_LENGTH# min 0 max (&gt;O:BrakePosition)
-                        (O:BrakePosition) 100 == (A:BRAKE PARKING POSITION, bool) != if{
+                        (O:BrakePosition) 100 == (L:A32NX_PARK_BRAKE_LEVER_POS, bool) != if{
                             (&gt;K:PARKING_BRAKES)
-                            (A:BRAKE PARKING POSITION, bool) (&gt;O:BrakeIsON)
+                            (L:A32NX_PARK_BRAKE_LEVER_POS, bool) (&gt;O:BrakeIsON)
                         }
                         </DRAG_CODE>
                         <AXIS>Y</AXIS>
@@ -613,36 +613,14 @@
             <ANIM_NAME_L>HANDLING_RudderPedals_Brake_L</ANIM_NAME_L>
             <ANIM_NAME_R>HANDLING_RudderPedals_Brake_R</ANIM_NAME_R>
         </DefaultTemplateParameters>
-        <OverrideTemplateParameters>
-            <Condition Valid="DONT_BRAKE_ON_PARKINGBRAKE">
-                <True>
-                    <SIMVAR_END> EX1</SIMVAR_END>
-                </True>
-                <False>
-                    <SIMVAR_END></SIMVAR_END>
-                </False>
-            </Condition>
-        </OverrideTemplateParameters>
-        <Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
-            <True>
-                <UseTemplate Name="ASOBO_GT_Anim_Sim">
-                    <ANIM_NAME>#ANIM_NAME_L#</ANIM_NAME>
-                    <ANIM_SIMVAR>BRAKE LEFT POSITION#SIMVAR_END#</ANIM_SIMVAR>
-                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-                </UseTemplate>
-                <UseTemplate Name="ASOBO_GT_Anim_Sim">
-                    <ANIM_NAME>#ANIM_NAME_R#</ANIM_NAME>
-                    <ANIM_SIMVAR>BRAKE RIGHT POSITION#SIMVAR_END#</ANIM_SIMVAR>
-                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-                </UseTemplate>
-            </True>
-            <False>
-                <UseTemplate Name="ASOBO_GT_Anim_Sim">
-                    <ANIM_SIMVAR>BRAKE LEFT POSITION#SIMVAR_END#</ANIM_SIMVAR>
-                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-                </UseTemplate>
-            </False>
-        </Condition>
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_NAME>#ANIM_NAME_L#</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_LEFT_BRAKE_PEDAL_INPUT, number)</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_NAME>#ANIM_NAME_R#</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_RIGHT_BRAKE_PEDAL_INPUT, number)</ANIM_CODE>
+            </UseTemplate>
     </Template>
 
 </ModelBehaviors>

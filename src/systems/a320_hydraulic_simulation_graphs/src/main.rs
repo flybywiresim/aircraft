@@ -1,10 +1,10 @@
-use systems::simulation::UpdateContext;
-
-pub use systems::hydraulic::*;
-
-use systems::electrical::ElectricalBusType;
-
+use plotlib::page::Page;
+use plotlib::repr::Plot;
+use plotlib::style::LineStyle;
+use plotlib::view::ContinuousView;
 use std::time::Duration;
+pub use systems::hydraulic::*;
+use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
     acceleration::foot_per_second_squared,
     f64::*,
@@ -15,11 +15,6 @@ use uom::si::{
     volume::{gallon, liter},
     volume_rate::gallon_per_second,
 };
-
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::LineStyle;
-use plotlib::view::ContinuousView;
 
 extern crate rustplotlib;
 use rustplotlib::Figure;

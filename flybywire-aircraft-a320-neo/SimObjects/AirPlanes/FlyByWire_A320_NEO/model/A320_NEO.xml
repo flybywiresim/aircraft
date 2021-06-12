@@ -20,7 +20,6 @@
         <!-- Alternatively we could script the angles for the wingflex -->
         <!-- Just define some nodes/bones to move for now (this configuration will likely change at some point) -->
         <!-- 	order	:	node 															-->
-        <!-- 	--------------------------------------------------------------------------- -->
         <!-- 	0	:	the left wing bone closest to the center 							-->
         <!-- 	1	:	in between 															-->
         <!-- 	2	:	in between 															-->
@@ -47,6 +46,7 @@
         <Node>Engine_PIVOT_RIGHT_2</Node> <!-- the right wing engine pivot node furthest from the center -->
     </NodeAnimation>
     <Behaviors>
+        <Include ModelBehaviorFile="A32NX\Exterior\A32NX_Exterior_Includes.xml"/>
         <Include ModelBehaviorFile="Asobo\Exterior.xml"/>
         <Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
         <Include Path="A32NX\generated\A32NX_Exterior.xml"/>
@@ -74,7 +74,7 @@
                 <TRIM_ONLY>True</TRIM_ONLY>
                 <ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Aileron_Template">
+            <UseTemplate Name="FBW_HANDLING_Aileron_Template">
                 <ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
             </UseTemplate>
@@ -175,11 +175,11 @@
                 <BLURRED_NODE_ID>PROP_BLURRED_RIGHT</BLURRED_NODE_ID>
                 <BLURRED_SPINNER_NODE_ID>PROP_BLURRED_CONE_RIGHT</BLURRED_SPINNER_NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
+            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
                 <ID>1</ID>
                 <ANIM_NAME>thrust_rev_1</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
+            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
                 <ID>2</ID>
                 <ANIM_NAME>thrust_rev_2</ANIM_NAME>
             </UseTemplate>

@@ -63,8 +63,7 @@ impl SimulationTestBed {
     /// [`Aircraft`]: ../trait.Aircraft.html
     /// [`Simulation`]: ../struct.Simulation.html
     pub fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
-        let mut simulation = Simulation::new(aircraft, &mut self.reader_writer);
-        simulation.tick(self.delta);
+        Simulation::tick(self.delta, aircraft, &mut self.reader_writer);
     }
 
     /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing
@@ -315,6 +314,7 @@ impl SimulatorReaderWriter for TestReaderWriter {
         self.variables.insert(name.to_owned(), value);
     }
 }
+
 impl Default for TestReaderWriter {
     fn default() -> Self {
         Self::new()
@@ -325,7 +325,7 @@ impl Default for TestReaderWriter {
 mod tests {
     use super::*;
     use crate::{
-        electrical::consumption::{PowerConsumption, PowerConsumptionReport, SuppliedPower},
+        shared::{ConsumePower, ElectricalBuses, PowerConsumptionReport},
         simulation::{SimulatorReader, SimulatorWriter},
     };
 
@@ -377,15 +377,15 @@ mod tests {
             // Can't check this as the fn doesn't require mutable self.
         }
 
-        fn receive_power(&mut self, _: &SuppliedPower) {
+        fn receive_power(&mut self, _: &impl ElectricalBuses) {
             self.receive_power_called = true;
         }
 
-        fn consume_power(&mut self, _: &mut PowerConsumption) {
+        fn consume_power<T: ConsumePower>(&mut self, _: &mut T) {
             self.consume_power_called = true;
         }
 
-        fn consume_power_in_converters(&mut self, _consumption: &mut PowerConsumption) {
+        fn consume_power_in_converters<T: ConsumePower>(&mut self, _: &mut T) {
             self.consume_power_in_converters_called = true;
         }
 

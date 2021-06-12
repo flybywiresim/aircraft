@@ -1,3 +1,5 @@
+#![allow(clippy::suspicious_operation_groupings)]
+
 mod electrical;
 mod fuel;
 mod hydraulic;
@@ -5,13 +7,11 @@ mod pneumatic;
 mod power_consumption;
 
 use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
-
 use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
+    APU_START_MOTOR_BUS_TYPE,
 };
-
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
-
 use power_consumption::A320PowerConsumption;
 use systems::{
     apu::{
@@ -22,6 +22,7 @@ use systems::{
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     landing_gear::LandingGear,
     pressurization::{Pressurization, PressurizationOverheadPanel},
+    shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
@@ -48,7 +49,12 @@ pub struct A320 {
 impl A320 {
     pub fn new() -> A320 {
         A320 {
-            apu: AuxiliaryPowerUnitFactory::new_aps3200(1),
+            apu: AuxiliaryPowerUnitFactory::new_aps3200(
+                1,
+                APU_START_MOTOR_BUS_TYPE,
+                ElectricalBusType::DirectCurrentBattery,
+                ElectricalBusType::DirectCurrentBattery,
+            ),
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(),
@@ -103,7 +109,16 @@ impl Aircraft for A320 {
             &self.landing_gear,
         );
 
-        self.apu.update_after_electrical();
+        self.electrical_overhead
+            .update_after_electrical(&self.electrical);
+        self.emergency_electrical_overhead
+            .update_after_electrical(context, &self.electrical);
+    }
+
+    fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+        self.apu.update_after_power_distribution();
+        self.apu_overhead.update_after_apu(&self.apu);
+
         self.pressurization.update(
             context,
             &self.pressurization_overhead,
@@ -111,14 +126,6 @@ impl Aircraft for A320 {
             self.engine_2.corrected_n1(),
         );
 
-        self.electrical_overhead
-            .update_after_electrical(&self.electrical);
-        self.emergency_electrical_overhead
-            .update_after_electrical(context, &self.electrical);
-        self.apu_overhead.update_after_apu(&self.apu);
-    }
-
-    fn update_after_power_distribution(&mut self, context: &UpdateContext) {
         self.hydraulic.update(
             context,
             &self.engine_1,
