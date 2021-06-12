@@ -464,68 +464,6 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("H:A32NX.ATHR_RESET_DISABLE", "number", 1);
     }
 
-    Init() {
-        super.Init();
-
-        this.A32NXCore = new A32NX_Core();
-        this.A32NXCore.init(this._lastTime);
-
-        this.dataManager = new FMCDataManager(this);
-
-        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
-
-        this.tempCurve = new Avionics.Curve();
-        this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
-        this.tempCurve.add(-10 * 3.28084, 21.50);
-        this.tempCurve.add(0, 15.00);
-        this.tempCurve.add(10 * 3.28084, 8.50);
-        this.tempCurve.add(20 * 3.28084, 2.00);
-        this.tempCurve.add(30 * 3.28084, -4.49);
-        this.tempCurve.add(40 * 3.28084, -10.98);
-        this.tempCurve.add(50 * 3.28084, -17.47);
-        this.tempCurve.add(60 * 3.28084, -23.96);
-        this.tempCurve.add(70 * 3.28084, -30.45);
-        this.tempCurve.add(80 * 3.28084, -36.94);
-        this.tempCurve.add(90 * 3.28084, -43.42);
-        this.tempCurve.add(100 * 3.28084, -49.90);
-        this.tempCurve.add(150 * 3.28084, -56.50);
-        this.tempCurve.add(200 * 3.28084, -56.50);
-        this.tempCurve.add(250 * 3.28084, -51.60);
-        this.tempCurve.add(300 * 3.28084, -46.64);
-        this.tempCurve.add(400 * 3.28084, -22.80);
-        this.tempCurve.add(500 * 3.28084, -2.5);
-        this.tempCurve.add(600 * 3.28084, -26.13);
-        this.tempCurve.add(700 * 3.28084, -53.57);
-        this.tempCurve.add(800 * 3.28084, -74.51);
-
-        this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
-        this.cruiseFlightLevel /= 100;
-
-        // Reset SimVars
-        SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
-
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
-
-        CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
-        CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
-        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
-
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
-
-        SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
-        SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
-
-        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
-
-        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
-        SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
-        SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
-    }
-
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
