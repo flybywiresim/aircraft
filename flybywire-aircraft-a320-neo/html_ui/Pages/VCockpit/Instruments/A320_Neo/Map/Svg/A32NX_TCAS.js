@@ -246,6 +246,7 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
      */constructor(_ID, _lat, _lon, _alt, _heading, _selfLat, _selfLon, _selfAlt) {
         super();
 
+        this.created = false;
         this.ID = _ID;
         this.name = "npc-airplane-" + this.ID;
 
@@ -347,6 +348,7 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
     }
 
     createDraw(map) {
+        this.created = true;
         const template = document.getElementById("TCASTemplate");
 
         const clone = document.importNode(template.content, true);
@@ -373,93 +375,95 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
             this.svgElement.setAttribute("y", fastToFixed((this.screenPos.y - 14.37), 1)); //same here
         }
 
-        //set altitude difference
-        const AltDiffInHundredsFeet = Math.round(Math.abs(this.relativeAlt) / 100).toString();
-        if (this.altText.textContent !== AltDiffInHundredsFeet) {
-            this.altText.textContent = (this.relativeAlt > 0 ? "+" : "-") + (Math.round(Math.abs(this.relativeAlt) / 100) < 10 ? "0" : "") + AltDiffInHundredsFeet;
-        }
-
-        //set vertical speed arrow
-        if (this.vertSpeed > 500) {
-            this.arrowHeadUp.setAttribute("visibility", "shown");
-            this.arrowHeadDown.setAttribute("visibility", "hidden");
-            this.arrowGroup.setAttribute("visibility", "shown");
-            this._lastVertArrowCase = 0;
-        } else if (this.vertSpeed < -500) {
-            this.arrowHeadUp.setAttribute("visibility", "hidden");
-            this.arrowHeadDown.setAttribute("visibility", "shown");
-            this.arrowGroup.setAttribute("visibility", "shown");
-            this._lastVertArrowCase = 1;
-        } else {
-            this.arrowGroup.setAttribute("visibility", "hidden");
-            this._lastVertArrowCase = 2;
-        }
-
-        if (!this.isDisplayed) {
-            if (this._lastIntrusionLevel !== 4) {
-                this.svgElement.setAttribute("visibility", "hidden");
-                //those below shouldn't be needed to hide the entire symbol, but it doesn't work without it
-                this.RASymbol.setAttribute("visibility", "hidden");
-                this.TASymbol.setAttribute("visibility", "hidden");
-                this.ProxSymbol.setAttribute("visibility", "hidden");
-                this.OtherSymbol.setAttribute("visibility", "hidden");
-                this._lastIntrusionLevel = 4;
+        if (this.created) {
+            //set altitude difference
+            const AltDiffInHundredsFeet = Math.round(Math.abs(this.relativeAlt) / 100).toString();
+            if (this.altText.textContent !== AltDiffInHundredsFeet) {
+                this.altText.textContent = (this.relativeAlt > 0 ? "+" : "-") + (Math.round(Math.abs(this.relativeAlt) / 100) < 10 ? "0" : "") + AltDiffInHundredsFeet;
             }
-        } else if (this.intrusionLevel === 3) {
-            if (this._lastIntrusionLevel !== 3) {
-                this.RASymbol.setAttribute("visibility", "visible");
-                this.TASymbol.setAttribute("visibility", "hidden");
-                this.ProxSymbol.setAttribute("visibility", "hidden");
-                this.OtherSymbol.setAttribute("visibility", "hidden");
 
-                this.altText.style.fill = "#ff0000";
-                this.arrowGroup.style.fill = "#ff0000";
-                this.arrowGroup.style.stroke = "#ff0000";
-
-                this.svgElement.setAttribute("visibility", "visible");
-                this._lastIntrusionLevel = 3;
+            //set vertical speed arrow
+            if (this.vertSpeed > 500) {
+                this.arrowHeadUp.setAttribute("visibility", "shown");
+                this.arrowHeadDown.setAttribute("visibility", "hidden");
+                this.arrowGroup.setAttribute("visibility", "shown");
+                this._lastVertArrowCase = 0;
+            } else if (this.vertSpeed < -500) {
+                this.arrowHeadUp.setAttribute("visibility", "hidden");
+                this.arrowHeadDown.setAttribute("visibility", "shown");
+                this.arrowGroup.setAttribute("visibility", "shown");
+                this._lastVertArrowCase = 1;
+            } else {
+                this.arrowGroup.setAttribute("visibility", "hidden");
+                this._lastVertArrowCase = 2;
             }
-        } else if (this.intrusionLevel === 2) {
-            if (this._lastIntrusionLevel !== 2) {
-                this.RASymbol.setAttribute("visibility", "hidden");
-                this.TASymbol.setAttribute("visibility", "visible");
-                this.ProxSymbol.setAttribute("visibility", "hidden");
-                this.OtherSymbol.setAttribute("visibility", "hidden");
 
-                this.altText.style.fill = "#e38c56";
-                this.arrowGroup.style.fill = "#e38c56";
-                this.arrowGroup.style.stroke = "#e38c56";
+            if (!this.isDisplayed) {
+                if (this._lastIntrusionLevel !== 4) {
+                    this.svgElement.setAttribute("visibility", "hidden");
+                    //those below shouldn't be needed to hide the entire symbol, but it doesn't work without it
+                    this.RASymbol.setAttribute("visibility", "hidden");
+                    this.TASymbol.setAttribute("visibility", "hidden");
+                    this.ProxSymbol.setAttribute("visibility", "hidden");
+                    this.OtherSymbol.setAttribute("visibility", "hidden");
+                    this._lastIntrusionLevel = 4;
+                }
+            } else if (this.intrusionLevel === 3) {
+                if (this._lastIntrusionLevel !== 3) {
+                    this.RASymbol.setAttribute("visibility", "visible");
+                    this.TASymbol.setAttribute("visibility", "hidden");
+                    this.ProxSymbol.setAttribute("visibility", "hidden");
+                    this.OtherSymbol.setAttribute("visibility", "hidden");
 
-                this.svgElement.setAttribute("visibility", "visible");
-                this._lastIntrusionLevel = 2;
-            }
-        } else if (this.intrusionLevel === 1) {
-            if (this._lastIntrusionLevel !== 1) {
-                this.RASymbol.setAttribute("visibility", "hidden");
-                this.TASymbol.setAttribute("visibility", "hidden");
-                this.ProxSymbol.setAttribute("visibility", "visible");
-                this.OtherSymbol.setAttribute("visibility", "hidden");
+                    this.altText.style.fill = "#ff0000";
+                    this.arrowGroup.style.fill = "#ff0000";
+                    this.arrowGroup.style.stroke = "#ff0000";
 
-                this.altText.style.fill = "#ffffff";
-                this.arrowGroup.style.fill = "#ffffff";
-                this.arrowGroup.style.stroke = "#ffffff";
+                    this.svgElement.setAttribute("visibility", "visible");
+                    this._lastIntrusionLevel = 3;
+                }
+            } else if (this.intrusionLevel === 2) {
+                if (this._lastIntrusionLevel !== 2) {
+                    this.RASymbol.setAttribute("visibility", "hidden");
+                    this.TASymbol.setAttribute("visibility", "visible");
+                    this.ProxSymbol.setAttribute("visibility", "hidden");
+                    this.OtherSymbol.setAttribute("visibility", "hidden");
 
-                this.svgElement.setAttribute("visibility", "visible");
-                this._lastIntrusionLevel = 1;
-            }
-        } else if (this.intrusionLevel === 0) {
-            if (this._lastIntrusionLevel !== 0) {
-                this.RASymbol.setAttribute("visibility", "hidden");
-                this.TASymbol.setAttribute("visibility", "hidden");
-                this.ProxSymbol.setAttribute("visibility", "hidden");
-                this.OtherSymbol.setAttribute("visibility", "visible");
+                    this.altText.style.fill = "#e38c56";
+                    this.arrowGroup.style.fill = "#e38c56";
+                    this.arrowGroup.style.stroke = "#e38c56";
 
-                this.altText.style.fill = "#ffffff";
-                this.arrowGroup.style.fill = "#ffffff";
-                this.arrowGroup.style.stroke = "#ffffff";
+                    this.svgElement.setAttribute("visibility", "visible");
+                    this._lastIntrusionLevel = 2;
+                }
+            } else if (this.intrusionLevel === 1) {
+                if (this._lastIntrusionLevel !== 1) {
+                    this.RASymbol.setAttribute("visibility", "hidden");
+                    this.TASymbol.setAttribute("visibility", "hidden");
+                    this.ProxSymbol.setAttribute("visibility", "visible");
+                    this.OtherSymbol.setAttribute("visibility", "hidden");
 
-                this.svgElement.setAttribute("visibility", "visible");
-                this._lastIntrusionLevel = 0;
+                    this.altText.style.fill = "#ffffff";
+                    this.arrowGroup.style.fill = "#ffffff";
+                    this.arrowGroup.style.stroke = "#ffffff";
+
+                    this.svgElement.setAttribute("visibility", "visible");
+                    this._lastIntrusionLevel = 1;
+                }
+            } else if (this.intrusionLevel === 0) {
+                if (this._lastIntrusionLevel !== 0) {
+                    this.RASymbol.setAttribute("visibility", "hidden");
+                    this.TASymbol.setAttribute("visibility", "hidden");
+                    this.ProxSymbol.setAttribute("visibility", "hidden");
+                    this.OtherSymbol.setAttribute("visibility", "visible");
+
+                    this.altText.style.fill = "#ffffff";
+                    this.arrowGroup.style.fill = "#ffffff";
+                    this.arrowGroup.style.stroke = "#ffffff";
+
+                    this.svgElement.setAttribute("visibility", "visible");
+                    this._lastIntrusionLevel = 0;
+                }
             }
         }
     }
