@@ -106,6 +106,9 @@
 1. [FCU] Init FCU with SPD 100 kn, HDG = 0° and ALT 100 ft - @aguther (Andreas Guther)
 1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
 1. [ATHR/FADEC] Fixed potential engagement of reverse thrust in flight - @aguther (Andreas Guther)
+1. [ECAM] Fix REFUELG message being shown on ECAM even when refueling is complete - @BlueberryKing (BlueberryKing#6641)
+1. [MCDU] ILS auto-tuning for departure and improved for approach - @tracernz (Mike)
+1. [MCDU] Added clear scratchpad on CLR held down - @tracernz (Mike) and @MisterChocker (Leon)
 1. [MCDU] Fixed performance page refresh on flight phase transition - @MisterChocker (Leon)
 
 ## 0.6.0
