@@ -789,6 +789,72 @@
             "count": 6,
             "type": "SCALAR",
             "name": "x0_PUSH_AUTOPILOT_RR_SEQ1_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1728,
+            "componentType": 5126,
+            "count": 6,
+            "min": [
+                -0.007955111563205719,
+                -0.008057473227381706,
+                -0.0030857636593282223
+            ],
+            "max": [
+                0.00816737487912178,
+                0.007386055309325457,
+                0.0027081253938376904
+            ],
+            "type": "VEC3",
+            "name": "x0_PUSH_AUTOPILOT_AUTOLAND_L_SEQ2_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1740,
+            "componentType": 5120,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_PUSH_AUTOPILOT_AUTOLAND_L_SEQ2_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1744,
+            "componentType": 5120,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_PUSH_AUTOPILOT_AUTOLAND_L_SEQ2_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1748,
+            "componentType": 5122,
+            "count": 6,
+            "type": "VEC2",
+            "name": "x0_PUSH_AUTOPILOT_AUTOLAND_L_SEQ2_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1752,
+            "componentType": 5122,
+            "count": 6,
+            "type": "VEC2",
+            "name": "x0_PUSH_AUTOPILOT_AUTOLAND_L_SEQ2_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1756,
+            "componentType": 5123,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_PUSH_AUTOPILOT_AUTOLAND_L_SEQ2_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 144,
+            "componentType": 5123,
+            "count": 6,
+            "type": "SCALAR",
+            "name": "x0_PUSH_AUTOPILOT_AUTOLAND_L_SEQ2_indices#0"
         }
     ],
     "asset": {
@@ -797,13 +863,13 @@
         "extensions": {
             "ASOBO_asset_optimized": {
                 "BoundingBoxMax": [
-                    0.008150899782776833,
-                    0.0028746789321303368,
+                    0.00816737487912178,
+                    0.007386055309325457,
                     0.00528967659920454
                 ],
                 "BoundingBoxMin": [
                     -0.008150899782776833,
-                    -0.002634874079376459,
+                    -0.008057473227381706,
                     -0.005779704544693232
                 ],
                 "MajorVersion": 4,
@@ -817,15 +883,15 @@
     "bufferViews": [
         {
             "buffer": 0,
-            "byteLength": 1728,
+            "byteLength": 1944,
             "byteStride": 36,
             "target": 34962,
             "name": "BufferViewVertexND"
         },
         {
             "buffer": 0,
-            "byteLength": 144,
-            "byteOffset": 1728,
+            "byteLength": 156,
+            "byteOffset": 1944,
             "target": 34963,
             "name": "BufferViewIndex"
         }
@@ -1139,6 +1205,31 @@
                 }
             ],
             "name": "x0_PUSH_AUTOPILOT_RR_SEQ1"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 89,
+                        "NORMAL": 86,
+                        "POSITION": 84,
+                        "TANGENT": 85,
+                        "TEXCOORD_0": 87,
+                        "TEXCOORD_1": 88
+                    },
+                    "indices": 90,
+                    "material": "TEXT",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_PUSH_AUTOPILOT_AUTOLAND_L_SEQ2"
         }
     ],
     "nodes": [
@@ -1329,6 +1420,38 @@
             "mesh": 11,
             "name": "PUSH_AUTOPILOT_RR_SEQ1",
             "parentNode": "PUSH_AUTOPILOT_RR"
+        },
+        {
+            "translation": [
+                -0.00015372037887573242,
+                0.0034170150756835938,
+                0.0004072189331054687
+            ],
+            "rotation": [
+                0.6213535070419312,
+                -0.04777713865041733,
+                -0.03800356015563011,
+                0.7811484336853027
+            ],
+            "mesh": 12,
+            "name": "PUSH_AUTOPILOT_AUTOLAND_L_SEQ2",
+            "parentNode": "PUSH_AUTOPILOT_AUTOLAND_L"
+        },
+        {
+            "translation": [
+                -0.00015372037887573242,
+                0.0034170150756835938,
+                0.0004072189331054687
+            ],
+            "rotation": [
+                0.6213535070419312,
+                -0.04777713865041733,
+                -0.03800356015563011,
+                0.7811484336853027
+            ],
+            "mesh": 12,
+            "name": "PUSH_AUTOPILOT_AUTOLAND_R_SEQ2",
+            "parentNode": "PUSH_AUTOPILOT_AUTOLAND_R"
         }
     ],
     "scene": 0,
@@ -1346,7 +1469,9 @@
                 8,
                 9,
                 10,
-                11
+                11,
+                12,
+                13
             ],
             "name": "Scene"
         }
@@ -1354,7 +1479,7 @@
     "textures": [],
     "buffers": [
         {
-            "byteLength": 1872,
+            "byteLength": 2100,
             "uri": "buttondecals.bin"
         }
     ],
