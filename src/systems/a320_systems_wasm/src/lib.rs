@@ -53,9 +53,9 @@ fn create_aircraft_variable_reader(
     reader.add("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?;
     reader.add("UNLIMITED FUEL", "Bool", 0)?;
     reader.add("INDICATED ALTITUDE", "Feet", 0)?;
-    reader.add("AMBIENT PRESSURE", "inHg", 0)?,
-    reader.add("SEA LEVEL PRESSURE", "Millibars", 0)?,
-    reader.add("VELOCITY WORLD Y", "Feet per Second", 0)?,
+    reader.add("AMBIENT PRESSURE", "inHg", 0)?;
+    reader.add("SEA LEVEL PRESSURE", "Millibars", 0)?;
+    reader.add("VELOCITY WORLD Y", "Feet per Second", 0)?;
     reader.add("SIM ON GROUND", "Bool", 0)?;
     reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 1)?;
     reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 2)?;

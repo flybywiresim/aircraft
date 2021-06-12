@@ -21,8 +21,8 @@ use systems::{
     },
 };
 use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, pressure::{pascal, hectopascal}, pressure::psi,
-    ratio::percent, velocity::{knot, foot_per_minute}, volume::gallon,
+    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
+    ratio::percent, volume::gallon,
 };
 
 pub(super) struct A320Hydraulic {
@@ -1461,7 +1461,8 @@ mod tests {
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
-            ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot,
+            ratio::percent, thermodynamic_temperature::degree_celsius, velocity::{knot, foot_per_minute},
+            pressure::hectopascal,
         };
 
         struct A320TestEmergencyElectricalOverheadPanel {

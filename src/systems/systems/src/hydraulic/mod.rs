@@ -7,8 +7,8 @@ use std::string::String;
 use std::time::Duration;
 use uom::si::{
     f64::*,
-    pressure::{psi, hectopascal},
-    velocity::{knot, foot_per_minute},
+    pressure::psi,
+    velocity::knot,
     volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
 };
@@ -1088,9 +1088,10 @@ mod tests {
         acceleration::foot_per_second_squared,
         f64::*,
         length::foot,
-        pressure::{pascal, psi},
+        pressure::{pascal, psi, hectopascal},
         thermodynamic_temperature::degree_celsius,
         volume::gallon,
+        velocity::foot_per_minute,
     };
 
     struct TestHydraulicLoopController {

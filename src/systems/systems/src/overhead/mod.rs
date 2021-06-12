@@ -108,11 +108,11 @@ impl OnOffPushButton {
 }
 impl SimulationElement for OnOffPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_on_id, self.is_on());
+        writer.write(&self.is_on_id, self.is_on());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_on(reader.read_bool(&self.is_on_id));
+        self.set_on(reader.read(&self.is_on_id));
     }
 }
 
@@ -427,13 +427,13 @@ impl AutoManFaultPushButton {
 }
 impl SimulationElement for AutoManFaultPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.is_auto_id, self.is_auto());
-        writer.write_bool(&self.has_fault_id, self.has_fault());
+        writer.write(&self.is_auto_id, self.is_auto());
+        writer.write(&self.has_fault_id, self.has_fault());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_auto(reader.read_bool(&self.is_auto_id));
-        self.set_fault(reader.read_bool(&self.has_fault_id));
+        self.set_auto(reader.read(&self.is_auto_id));
+        self.set_fault(reader.read(&self.has_fault_id));
     }
 }
 
@@ -549,11 +549,11 @@ impl ValueKnob {
 }
 impl SimulationElement for ValueKnob {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.value_id, self.value());
+        writer.write(&self.value_id, self.value());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_value(reader.read_f64(&self.value_id));
+        self.set_value(reader.read(&self.value_id));
     }
 }
 

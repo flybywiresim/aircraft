@@ -388,6 +388,12 @@ impl<'a> Read<Length> for SimulatorReader<'a> {
     }
 }
 
+impl<'a> Write<Length> for SimulatorWriter<'a> {
+    fn write(&mut self, name: &str, value: Length) {
+        self.write_f64(name, value.get::<foot>())
+    }
+}
+
 impl<'a> Read<Acceleration> for SimulatorReader<'a> {
     fn read(&mut self, name: &str) -> Acceleration {
         Acceleration::new::<foot_per_second_squared>(self.read_f64(name))
@@ -491,6 +497,12 @@ impl<'a> Write<Frequency> for SimulatorWriter<'a> {
         self.write_f64(name, value.get::<hertz>());
     }
 }
+
+// impl<'a> Read<Pressure> for SimulatorReader<'a> {
+//     fn read(&mut self, name: &str) -> Pressure {
+//         Pressure::new::<psi>(self.read_f64(name))
+//     }
+// }
 
 impl<'a> Write<Pressure> for SimulatorWriter<'a> {
     fn write(&mut self, name: &str, value: Pressure) {

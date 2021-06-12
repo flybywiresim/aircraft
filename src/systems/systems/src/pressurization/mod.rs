@@ -3,11 +3,11 @@ use self::{
     pressure_valve::PressureValve,
 };
 use crate::{
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, SimulatorReader, UpdateContext},
+    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, Write, SimulatorReader, Read, UpdateContext},
     overhead::{AutoManFaultPushButton, OnOffPushButton, ValueKnob},
     shared::random_number,
 };
-use uom::si::{f64::*, ratio::percent, length::foot, pressure::{hectopascal, psi}, velocity::{foot_per_minute}};
+use uom::si::{f64::*, length::foot, pressure::{hectopascal}, velocity::{foot_per_minute}};
 
 mod cabin_pressure_controller;
 mod pressure_valve;
@@ -146,25 +146,24 @@ impl SimulationElement for Pressurization {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool("CPC_SYS1", self.is_sys1_active());
-        writer.write_bool("CPC_SYS2", self.is_sys2_active());
+        writer.write("CPC_SYS1", self.is_sys1_active());
+        writer.write("CPC_SYS2", self.is_sys2_active());
         if self.is_sys1_active() {
-            writer.write_f64("CABIN_ALTITUDE", self.cpc_1.cabin_altitude().get::<foot>());
-            writer.write_f64("CABIN_VS", self.cpc_1.cabin_vs().get::<foot_per_minute>());
-            writer.write_f64("CABIN_DELTA_PRESSURE", self.cpc_1.cabin_delta_p().get::<psi>());
-            writer.write_f64("OUTFLOW_VALVE_OPEN_PERCENTAGE", self.cpc_1.outflow_valve_open_amount().get::<percent>());
+            writer.write("CABIN_ALTITUDE", self.cpc_1.cabin_altitude());
+            writer.write("CABIN_VS", self.cpc_1.cabin_vs().get::<foot_per_minute>());
+            writer.write("CABIN_DELTA_PRESSURE", self.cpc_1.cabin_delta_p());
+            writer.write("OUTFLOW_VALVE_OPEN_PERCENTAGE", self.cpc_1.outflow_valve_open_amount());
         } else if self.is_sys2_active() {
-            writer.write_f64("CABIN_ALTITUDE", self.cpc_2.cabin_altitude().get::<foot>());
-            writer.write_f64("CABIN_VS", self.cpc_2.cabin_vs().get::<foot_per_minute>());
-            writer.write_f64("CABIN_DELTA_PRESSURE", self.cpc_2.cabin_delta_p().get::<psi>());
-            writer.write_f64("OUTFLOW_VALVE_OPEN_PERCENTAGE", self.cpc_2.outflow_valve_open_amount().get::<percent>());
-        }
+            writer.write("CABIN_ALTITUDE", self.cpc_2.cabin_altitude());
+            writer.write("CABIN_VS", self.cpc_2.cabin_vs().get::<foot_per_minute>());
+            writer.write("CABIN_DELTA_PRESSURE", self.cpc_2.cabin_delta_p());
+            writer.write("OUTFLOW_VALVE_OPEN_PERCENTAGE", self.cpc_2.outflow_valve_open_amount());        }
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_landing_elev(Length::new::<foot>(reader.read_f64("AUTO_LANDING_ELEVATION")));
-        self.set_sl_pressure(Pressure::new::<hectopascal>(reader.read_f64("SEA LEVEL PRESSURE")));
-        self.set_dest_qnh(Pressure::new::<hectopascal>(reader.read_f64("DESTINATION_QNH")));
+        self.set_landing_elev(reader.read("AUTO_LANDING_ELEVATION"));
+        self.set_sl_pressure(Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE")));
+        self.set_dest_qnh(Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH")));
     }
 }
 
