@@ -186,7 +186,6 @@ export const PressureComponent = () => {
                 <path d="M433,405 h7 L446,395" className="VsIndicator" strokeLinejoin="miter" />
                 <polygon points="452,388 447,396 457,396" transform="rotate(38,452,388)" className="VsIndicator" />
             </g>
-
         </>
     );
 };
@@ -198,7 +197,7 @@ type GaugeComponentType = {
     startAngle: number,
     endAngle: number,
     verticalSpeed: number,
-    className: string
+    className: string,
 }
 
 const GaugeComponent = ({ x, y, radius, startAngle, endAngle, verticalSpeed, className } : GaugeComponentType) => {
@@ -250,10 +249,7 @@ const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAn
     };
 
     if (indicator) {
-        start = {
-            x,
-            y,
-        };
+        start = { x, y };
 
         end = {
             x: x + (dir.x * radius * 1.1),
