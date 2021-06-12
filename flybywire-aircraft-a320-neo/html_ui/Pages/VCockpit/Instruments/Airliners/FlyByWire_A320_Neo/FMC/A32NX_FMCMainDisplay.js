@@ -436,6 +436,30 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = false;
         this.ilsTakeoffAutoTuned = false;
         this.ilsApproachAutoTuned = false;
+
+        // Reset SimVars
+        SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
+
+        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
+
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
+        CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
+        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
+
+        SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+        SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
+
+        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
+
+        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
+        SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
     }
 
     Init() {
