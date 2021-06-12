@@ -340,7 +340,8 @@ void AutothrustModelClass::step()
   Autothrust_TimeSinceCondition(Autothrust_U.in.time.simulation_time, Autothrust_U.in.input.ATHR_disconnect,
     &rtb_Switch_m, &Autothrust_DWork.sf_TimeSinceCondition_o);
   Autothrust_DWork.Memory_PreviousInput = Autothrust_P.Logic_table[(((static_cast<uint32_T>(rtb_Switch_m >=
-    Autothrust_P.CompareToConstant_const_k) << 1) + false) << 1) + Autothrust_DWork.Memory_PreviousInput];
+    Autothrust_P.CompareToConstant_const_k) << 1) + Autothrust_U.in.input.ATHR_reset_disable) << 1) +
+    Autothrust_DWork.Memory_PreviousInput];
   if (!Autothrust_DWork.eventTime_not_empty_g) {
     Autothrust_DWork.eventTime_f = Autothrust_U.in.time.simulation_time;
     Autothrust_DWork.eventTime_not_empty_g = true;
@@ -438,6 +439,7 @@ void AutothrustModelClass::step()
   rtb_BusAssignment_n.input.is_air_conditioning_1_active = Autothrust_U.in.input.is_air_conditioning_1_active;
   rtb_BusAssignment_n.input.is_air_conditioning_2_active = Autothrust_U.in.input.is_air_conditioning_2_active;
   rtb_BusAssignment_n.input.FD_active = Autothrust_U.in.input.FD_active;
+  rtb_BusAssignment_n.input.ATHR_reset_disable = Autothrust_U.in.input.ATHR_reset_disable;
   rtb_BusAssignment_n.output = Autothrust_P.athr_out_MATLABStruct.output;
   if (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2) {
     rtb_BusAssignment_n.data_computed.TLA_in_active_range = ((Autothrust_U.in.input.TLA_1_deg >= 0.0) &&
@@ -973,6 +975,7 @@ void AutothrustModelClass::step()
   Autothrust_Y.out.input.is_air_conditioning_1_active = Autothrust_U.in.input.is_air_conditioning_1_active;
   Autothrust_Y.out.input.is_air_conditioning_2_active = Autothrust_U.in.input.is_air_conditioning_2_active;
   Autothrust_Y.out.input.FD_active = Autothrust_U.in.input.FD_active;
+  Autothrust_Y.out.input.ATHR_reset_disable = Autothrust_U.in.input.ATHR_reset_disable;
   if (!rtb_Compare_e) {
     Autothrust_Y.out.output.sim_throttle_lever_1_pos = Autothrust_DWork.Delay_DSTATE_n;
   } else {
