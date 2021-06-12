@@ -180,6 +180,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
+  std::unique_ptr<LocalVariable> idAutothrustDisconnect;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_1;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_2;
   InterpolatingLookupTable idThrottlePositionLookupTable3d;

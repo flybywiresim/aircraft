@@ -270,6 +270,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustStatus = make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
   idAutothrustMode = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
   idAutothrustModeMessage = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE_MESSAGE");
+  idAutothrustDisconnect = make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISCONNECT");
 
   idAirConditioningPack_1 = make_unique<LocalVariable>("A32NX_AIRCOND_PACK1_TOGGLE");
   idAirConditioningPack_2 = make_unique<LocalVariable>("A32NX_AIRCOND_PACK2_TOGGLE");
@@ -1068,10 +1069,10 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   SimData simData = simConnectInterface.getSimData();
 
   // set ground / flight for throttle handling
-  if (simData.gear_animation_pos_1 > 0.55 || simData.gear_animation_pos_1 > 0.55) {
+  if (flyByWireOutput.sim.data_computed.on_ground) {
     throttleAxis[0]->setOnGround();
     throttleAxis[1]->setOnGround();
-  } else if (simData.gear_animation_pos_1 <= 0.5 && simData.gear_animation_pos_1 <= 0.5) {
+  } else {
     throttleAxis[0]->setInFlight();
     throttleAxis[1]->setInFlight();
   }
@@ -1084,7 +1085,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   if (!autoThrustEnabled || !autopilotStateMachineEnabled || !flyByWireEnabled) {
     ClientDataLocalVariablesAutothrust ClientDataLocalVariablesAutothrust = {
         simConnectInterface.getSimInputThrottles().ATHR_push,
-        simConnectInterface.getSimInputThrottles().ATHR_disconnect,
+        simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1,
         thrustLeverAngle_1->get(),
         thrustLeverAngle_2->get(),
         simData.ap_V_c_kn,
@@ -1146,7 +1147,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
 
     autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
-    autoThrustInput.in.input.ATHR_disconnect = simConnectInterface.getSimInputThrottles().ATHR_disconnect;
+    autoThrustInput.in.input.ATHR_disconnect =
+        simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
     autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
     autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
@@ -1177,6 +1179,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
     autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
+    autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
 
     // step the model -------------------------------------------------------------------------------------------------
     autoThrust.setExternalInputs(&autoThrustInput);

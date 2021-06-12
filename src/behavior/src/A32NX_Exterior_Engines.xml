@@ -1,0 +1,39 @@
+<ModelBehaviors>
+    <!--
+    Animate a turbine thrust reverser (ID is used to identify which engine to look for)
+
+    Main parameters:
+            - ID        1    Engine number (1-based)
+    -->
+    <Template Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_SubTemplate"></UseTemplate>
+    </Template>
+    <Template Name="FBW_ENGINE_Turbine_ReverseThrust_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>ENGINE_Turbine_ReverseThrust_#ID#</ANIM_NAME>
+            <ANIM_SPEED>50</ANIM_SPEED> <!-- percent per second -->
+        </DefaultTemplateParameters>
+        <Update Once="True" type="rnp">
+            alias animationPos = (O:AnimCode#ID#, number);
+            animationPos = 0;
+        </Update>
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_CODE type="rnp" return="number">
+                alias revLeverPos = (A:TURB ENG REVERSE NOZZLE PERCENT:#ID#, percent);
+                alias animationPos = (O:AnimCode#ID#, number);
+                alias animationDelta = (A:ANIMATION DELTA TIME, seconds);
+
+                let animationChange = animationDelta * #ANIM_SPEED, number#;
+                if (revLeverPos &lt; 1) {
+                    animationChange = -animationChange;
+                }
+                animationPos = (animationPos + animationChange).min(100).max(0);
+
+                animationPos
+            </ANIM_CODE>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

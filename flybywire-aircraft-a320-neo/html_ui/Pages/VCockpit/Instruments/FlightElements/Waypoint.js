@@ -501,6 +501,7 @@ class AirportInfo extends WayPointInfo {
                 for (let i = 0; i < approachData.finalLegs.length; i++) {
                     const waypoint = new ApproachWayPoint(this.instrument);
                     waypoint.icao = approachData.finalLegs[i].fixIcao;
+                    waypoint.originIcao = approachData.finalLegs[i].originIcao;
                     waypoint.ident = waypoint.icao.substr(7, 5);
                     waypoint.bearingInFP = approachData.finalLegs[i].course;
                     waypoint.distanceInFP = approachData.finalLegs[i].distance / 1852;
