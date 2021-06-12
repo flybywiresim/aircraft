@@ -108,6 +108,10 @@
 1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
 1. [ATHR/FADEC] Fixed potential engagement of reverse thrust in flight - @aguther (Andreas Guther)
 1. [ECAM] Fix REFUELG message being shown on ECAM even when refueling is complete - @BlueberryKing (BlueberryKing#6641)
+1. [MCDU] ILS auto-tuning for departure and improved for approach - @tracernz (Mike)
+1. [MCDU] Added clear scratchpad on CLR held down - @tracernz (Mike) and @MisterChocker (Leon)
+1. [MCDU] Fixed performance page refresh on flight phase transition - @MisterChocker (Leon)
+1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

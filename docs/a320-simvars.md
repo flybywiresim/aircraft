@@ -1352,6 +1352,14 @@
     - Number (% N1)
     - Indicates the commanded N1 (either based on TLA or autothrust law) for engine {index}, first engine has index 1
 
+- A32NX_AUTOTHRUST_DISCONNECT
+    - Bool
+    - Indicates if the red disconnect button is pressed on the thrust lever
+      State | Value
+      --- | ---
+      NOT PRESSED | 0
+      PRESSED | 1
+
 ## Throttle Mapping System
 
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
