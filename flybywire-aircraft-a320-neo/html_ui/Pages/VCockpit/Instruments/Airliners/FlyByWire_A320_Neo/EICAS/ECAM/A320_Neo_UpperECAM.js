@@ -105,6 +105,9 @@ var A320_Neo_UpperECAM;
             this.iceNotDetTimer1 = new NXLogic_ConfirmNode(60);
             this.iceNotDetTimer2 = new NXLogic_ConfirmNode(130);
             this.predWsMemo = new NXLogic_MemoryNode(true);
+            this.showHydPtuMemoTimer = new NXLogic_ConfirmNode(1);
+            this.hideHydPtuMemoTimer = new NXLogic_ConfirmNode(1);
+            this.hydPtuMemoVisible = new NXLogic_MemoryNode(true);
         }
         get templateID() {
             return "UpperECAMTemplate";
@@ -1262,7 +1265,7 @@ var A320_Neo_UpperECAM;
                         isActive: () => {
                             // Rough approximation until hydraulic system fully implemented
                             // Needs the last 2 conditions because PTU_ON is (incorrectly) permanently set to true during first engine start
-                            return (this.getCachedSimVar("L:XMLVAR_PTU_ON", "Bool") == 1) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 1 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 1);
+                            return this.hydPtuMemoVisible.read();
                         }
                     },
                     {
@@ -1598,6 +1601,8 @@ var A320_Neo_UpperECAM;
             this.updateInhibitMessages(_deltaTime);
             this.updateIcing(_deltaTime);
 
+            this.updatePtu(_deltaTime);
+
             const memosInhibited = this.leftEcamMessagePanel.hasWarnings || this.leftEcamMessagePanel.hasCautions;
             const showTOMemo = SimVar.GetSimVarValue("L:A32NX_FWC_TOMEMO", "Bool") && !memosInhibited;
             if (this.takeoffMemo != null) {
@@ -1799,6 +1804,36 @@ var A320_Neo_UpperECAM;
         getInfoPanelManager() {
             return this.infoPanelsManager;
         };
+
+        updatePtu(_deltaTime) {
+            const greenPressure = this.getCachedSimVar("L:A32NX_HYD_GREEN_PRESSURE", "psi");
+            const yellowPressure = this.getCachedSimVar("L:A32NX_HYD_YELLOW_PRESSURE", "psi");
+            const isYellowElectricPumpActive = this.getCachedSimVar("L:A32NX_HYD_YELLOW_EPUMP_ACTIVE", "boolean");
+            const isPtuAvailable = this.getCachedSimVar("L:A32NX_HYD_PTU_VALVE_OPENED", "boolean");
+            let showHydPtuMemo = this.hydPtuMemoVisible.read();
+
+            if (isPtuAvailable && !isYellowElectricPumpActive) {
+                // The PTU valve has to be open and the yellow electric pump should not be on
+                const pressureDifferential = Math.abs(greenPressure - yellowPressure);
+                const maxPressure = Math.max(yellowPressure, greenPressure);
+                // const minPressure = Math.min(yellowPressure, greenPressure);
+                if (maxPressure < 1450 || (greenPressure > 2990 && yellowPressure > 2990)) {
+                    showHydPtuMemo = false;
+                } else if (pressureDifferential > 200 && maxPressure > 1450 && !showHydPtuMemo) {
+                    showHydPtuMemo = true;
+                } else if (-pressureDifferential <= -500 && showHydPtuMemo) {
+                    showHydPtuMemo = false;
+                }
+            } else if (isPtuAvailable && isYellowElectricPumpActive && greenPressure <= 2990) {
+                showHydPtuMemo = true;
+            } else {
+                showHydPtuMemo = false;
+            }
+
+            const set = this.showHydPtuMemoTimer.write(showHydPtuMemo, _deltaTime);
+            const reset = this.hideHydPtuMemoTimer.write(!showHydPtuMemo, _deltaTime);
+            this.hydPtuMemoVisible.write(set, reset);
+        }
     }
     A320_Neo_UpperECAM.Display = Display;
     class PanelBase {
