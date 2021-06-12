@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 import { NXDataStore } from '../../../Common/persistence';
+import { splitDecimals, valueRadianAngleConverter, polarToCartesian } from './common';
 
 import './Crz.scss';
 
@@ -29,9 +30,7 @@ export const CrzPage = () => (
 export const FuelComponent = () => {
     const unit = parseFloat(NXDataStore.get('CONFIG_USING_METRIC_UNIT', '1'));
 
-    const fuelConsumptionForDisplay = function (fuelConsumption, unitsC) {
-        return parseInt(((fuelConsumption * unitsC) - (fuelConsumption % 10)).toFixed(0));
-    };
+    const fuelConsumptionForDisplay = (fuelConsumption, unitsC) => parseInt(((fuelConsumption * unitsC) - (fuelConsumption % 10)).toFixed(0));
 
     const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000);
     const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
@@ -54,16 +53,6 @@ export const FuelComponent = () => {
 };
 
 export const OilComponent = () => {
-    const splitDecimals = function (value, type) {
-        if (type === 'oil') {
-            value = value * 0.01 * 25;
-        } else if (type === 'vib') {
-            value = value < 0 ? 0.0 : value;
-        }
-        const decimalSplit = value.toFixed(1).split('.', 2);
-        return (decimalSplit);
-    };
-
     const [oilQuantLeft] = useSimVar('ENG OIL QUANTITY:1', 'percent', 1000);
     const [oilQuantRight] = useSimVar('ENG OIL QUANTITY:2', 'percent', 1000);
 
@@ -132,15 +121,6 @@ export const OilComponent = () => {
 };
 
 export const PressureComponent = () => {
-    const splitDecimals = function (value, type) {
-        if (type === 'oil') {
-            value = value * 0.01 * 25;
-        } else if (type === 'vib') {
-            value = value < 0 ? 0.0 : value;
-        }
-        const decimalSplit = value.toFixed(1).split('.', 2);
-        return (decimalSplit);
-    };
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
     const [landingRunwayElevation] = useSimVar('L:A32NX_DCDU_APPROACH_RUNWAY_ELEVATION', 'Meters', 1000);
     const [manMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'Bool', 1000);
@@ -222,14 +202,6 @@ type GaugeComponentType = {
 }
 
 const GaugeComponent = ({ x, y, radius, startAngle, endAngle, verticalSpeed, className } : GaugeComponentType) => {
-    const polarToCartesian = function (centerX, centerY, radius, angleInDegrees) {
-        const angleInRadians = (angleInDegrees - 90) * (Math.PI / 180.0);
-        return ({
-            x: centerX + (radius * Math.cos(angleInRadians)),
-            y: centerY + (radius * Math.sin(angleInRadians)),
-        });
-    };
-
     const startPos = polarToCartesian(x, y, radius, startAngle);
     const endPos = polarToCartesian(x, y, radius, endAngle);
     const largeArcFlag = ((startAngle - endAngle) <= 180) ? '0' : '1';
@@ -265,18 +237,7 @@ type GaugeMarkerComponentType = {
 };
 
 const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator } : GaugeMarkerComponentType) => {
-    const valueRadianAngleConverter = function (value, min, max, endAngle, startAngle) {
-        const valuePercentage = (value - min) / (max - min);
-        let angle = (startAngle + 90 + (valuePercentage * (endAngle - startAngle)));
-        angle *= (Math.PI / 180.0);
-        return ({
-            x: Math.cos(angle),
-            y: Math.sin(angle),
-        });
-    };
-
     let textValue = value.toString();
-
     const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
 
     let start = {
