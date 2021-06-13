@@ -1439,7 +1439,7 @@ impl A320AutobrakeController {
             ground_spoilers_are_deployed: false,
             last_ground_spoilers_are_deployed: false,
             should_disarm_after_time_in_flight: DelayedTrueLogicGate::new(Duration::from_secs_f64(
-                Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE,
+                Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS,
             )),
             in_flight_disarm_event: false,
         }
