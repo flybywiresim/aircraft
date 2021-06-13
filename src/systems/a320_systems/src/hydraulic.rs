@@ -1414,7 +1414,7 @@ impl A320AutobrakeController {
     const OFF_MODE_DECEL_TARGET: f64 = 5.;
 
     const MARGIN_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
-    const TARGET_TO_SHOW_DECEL_IN_MAX: f64 = -2.7;
+    const TARGET_TO_SHOW_DECEL_IN_MAX_MS2: f64 = -2.7;
 
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
@@ -1437,7 +1437,7 @@ impl A320AutobrakeController {
         self.ground_spoilers_active
     }
 
-    fn spoilers_retracted_event(&self) -> bool {
+    fn spoilers_retracted_during_this_update(&self) -> bool {
         !self.ground_spoilers_active && self.last_ground_spoilers_active
     }
 
