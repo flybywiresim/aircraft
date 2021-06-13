@@ -322,7 +322,7 @@
 
         <UseTemplate Name="FBW_Push_Held">
             <NO_SEQ1/>
-            <SEQ2_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool)</SEQ2_CODE>
+            <SEQ2_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool) (E:ABSOLUTE TIME, seconds) 1 % 0.4 &gt; and</SEQ2_CODE>
             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
             <LEFT_SINGLE_CODE />
             <HOLD_SIMVAR />
