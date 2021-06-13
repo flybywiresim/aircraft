@@ -209,6 +209,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.flightPlanManager.updateCurrentApproach();
                 const callback = () => {
                     this.flightPlanManager.createNewFlightPlan();
+                    SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
                     SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
                     SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
                     SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
@@ -438,8 +439,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsApproachAutoTuned = false;
 
         // Reset SimVars
-        SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
-
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
@@ -1527,6 +1526,7 @@ class FMCMainDisplay extends BaseAirliners {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
                                         this.tmpOrigin = airportTo.ident;
+                                        SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
                                         callback(true);
                                     });
                                 });
