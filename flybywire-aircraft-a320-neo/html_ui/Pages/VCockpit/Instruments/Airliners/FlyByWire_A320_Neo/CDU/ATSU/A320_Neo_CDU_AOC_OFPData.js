@@ -158,8 +158,9 @@ class CDUAocOfpData {
         };
         mcdu.onLeftInput[4] = async () => {
             const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
+            const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
 
-            if (onGround && currentBlockFuel) {
+            if (gs > 0.1 && onGround && currentBlockFuel) {
                 loadFuel(mcdu, updateView);
 
                 updateView();
