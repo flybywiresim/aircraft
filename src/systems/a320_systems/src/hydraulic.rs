@@ -1405,10 +1405,10 @@ impl A320AutobrakeController {
 
     // Dynamic decel target map versus time for any mode that needs it
     const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [5., 5., 0., -2.];
-    const LOW_MODE_DECEL_PROFILE_TIME_MS2: [f64; 4] = [0., 1.99, 2., 6.];
+    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 6.];
 
-    const MED_MODE_DECEL_PROFILE_ACCEL: [f64; 5] = [5., 5., 0., -2., -3.];
-    const MED_MODE_DECEL_PROFILE_TIME: [f64; 5] = [0., 1.99, 2., 5., 6.];
+    const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [5., 5., 0., -2., -3.];
+    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 5., 6.];
 
     const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
     const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
@@ -1535,30 +1535,20 @@ impl A320AutobrakeController {
     }
 
     fn update_target(&mut self) {
-        match self.mode {
-            A320AutobrakeMode::NONE => {
-                self.target =
-                    Acceleration::new::<meter_per_second_squared>(Self::OFF_MODE_DECEL_TARGET_MS2);
-            }
-            A320AutobrakeMode::LOW => {
-                self.target = Acceleration::new::<meter_per_second_squared>(interpolation(
-                    &Self::LOW_MODE_DECEL_PROFILE_TIME_MS2,
-                    &Self::LOW_MODE_DECEL_PROFILE_ACCEL_MS2,
-                    self.deceleration_governor.time_engaged().as_secs_f64(),
-                ));
-            }
-            A320AutobrakeMode::MED => {
-                self.target = Acceleration::new::<meter_per_second_squared>(interpolation(
-                    &Self::MED_MODE_DECEL_PROFILE_TIME,
-                    &Self::MED_MODE_DECEL_PROFILE_ACCEL,
-                    self.deceleration_governor.time_engaged().as_secs_f64(),
-                ));
-            }
-            A320AutobrakeMode::MAX => {
-                self.target =
-                    Acceleration::new::<meter_per_second_squared>(Self::MAX_MODE_DECEL_TARGET_MS2);
-            }
-        }
+        self.target = Acceleration::new::<meter_per_second_squared>(match self.mode {
+            A320AutobrakeMode::NONE => Self::OFF_MODE_DECEL_TARGET_MS2,
+            A320AutobrakeMode::LOW => interpolation(
+                &Self::LOW_MODE_DECEL_PROFILE_TIME_S,
+                &Self::LOW_MODE_DECEL_PROFILE_ACCEL_MS2,
+                self.deceleration_governor.time_engaged().as_secs_f64(),
+            ),
+            A320AutobrakeMode::MED => interpolation(
+                &Self::MED_MODE_DECEL_PROFILE_TIME_S,
+                &Self::MED_MODE_DECEL_PROFILE_ACCEL_MS2,
+                self.deceleration_governor.time_engaged().as_secs_f64(),
+            ),
+            A320AutobrakeMode::MAX => Self::MAX_MODE_DECEL_TARGET_MS2,
+        })
     }
 
     fn disarm(&mut self) {
