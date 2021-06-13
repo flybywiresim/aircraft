@@ -71,6 +71,7 @@
     "aewx-metar-parser": "~0.10.1",
     "byte-data": "^19.0.1",
     "classnames": "^2.2.6",
+    "immer": "^9.0.3",
     "lodash": "^4.17.20",
     "qrcode.react": "^1.0.1",
     "react": "^17.0.0",

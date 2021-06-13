@@ -52,7 +52,8 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                     </div>
 
                     <div className="h-3/5 ml-3 mt-3 rounded-2xl overflow-hidden shadow-lg">
-                        <Map currentFlight={handleGettingCurrentFlightData} disableMenu hideOthers />
+                        <Map currentFlight={handleGettingCurrentFlightData} forceTileset="carto-dark" disableMenu hideOthers />
+
                     </div>
                 </div>
             </div>
