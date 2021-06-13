@@ -111,7 +111,15 @@ impl CabinPressureController {
     fn update_cabin_vs(&mut self, context: &UpdateContext) {
         match self.pressure_schedule() {
             PressureSchedule::Ground => {
-                self.cabin_pressure = self.exterior_pressure;
+                if context.is_on_ground() {
+                    self.cabin_pressure = self.exterior_pressure;
+                } else {
+                    // Formula to simulate pressure start state if starting in flight
+                    let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
+                    self.cabin_pressure = Pressure::new::<hectopascal>(
+                        -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85
+                    );
+                }
                 self.cabin_target_vs = Velocity::new::<foot_per_minute>(0.);
             },
             PressureSchedule::TakeOff => {
