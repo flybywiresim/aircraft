@@ -141,6 +141,7 @@ struct SimInputAutopilot {
 struct SimInputThrottles {
   double ATHR_push;
   double ATHR_disconnect;
+  double ATHR_reset_disable;
 };
 
 struct SimOutput {
@@ -193,6 +194,8 @@ struct ClientDataAutopilotStateMachine {
   double mode_reversion_lateral;
   double mode_reversion_vertical;
   double mode_reversion_TRK_FPA;
+  double mode_reversion_triple_click;
+  double mode_reversion_fma;
   double speed_protection_mode;
   double autothrust_mode;
   double Psi_c_deg;

@@ -1,9 +1,9 @@
 $colour-main: hsl(32, 100%, 69%);
 
 @font-face {
-  font-family: "Digital";
-  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
-  font-weight: 900;
+  font-family: "AirbusRTPI";
+  src: url("/Fonts/AirbusRTPI.ttf") format("truetype");
+  font-weight: 100;
   font-style: normal;
 }
 
@@ -15,10 +15,10 @@ $colour-main: hsl(32, 100%, 69%);
 }
 
 text {
-  font-family: Digital;
-  font-size: 150px;
+  font-family: AirbusRTPI;
+  font-size: 135px;
   fill: $colour-main;
-  letter-spacing: -5px;
+  letter-spacing: 3px;
 }
 .direction {
   text-anchor: start;

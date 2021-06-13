@@ -13,7 +13,7 @@ export type SelectItemProps = { selected?: boolean, onSelect?: () => void, class
 export const SelectItem: React.FC<SelectItemProps> = (props) => (
     <span
         onClick={props.onSelect || (() => {})}
-        className={`${props.classNames} text-lg font-medium ${props.selected ? 'bg-teal-light-contrast text-blue-darkest' : 'text-white'} py-2 px-3.5 rounded-lg`}
+        className={`${props.classNames} text-lg font-medium ${props.selected ? 'bg-teal-light-contrast text-blue-darkest text-white' : 'text-white'} py-2 px-3.5 rounded-lg`}
     >
         {props.children}
     </span>

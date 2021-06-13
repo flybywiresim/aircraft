@@ -13,6 +13,7 @@ import NavigraphClient, {
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 import navigraphLogo from '../Assets/navigraph-logo.svg';
 import { usePersistentProperty } from '../../Common/persistence';
+import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 
 type Chart = NavigraphChart | ChartFoxChart;
 
@@ -404,14 +405,13 @@ const ChartsUi = (props: ChartsUiProps) => {
                 ? (
                     <>
                         <div className="flex flex-col w-1/3 bg-navy-lighter p-6">
-                            <input
-                                type="text"
+                            <SimpleInput
                                 placeholder="ICAO"
                                 value={props.icao}
+                                noLabel
                                 maxLength={4}
-                                className="w-full px-5 py-1.5 text-xl text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light
-                                focus-within:outline-none focus-within:border-teal-light-contrast"
-                                onChange={(event) => handleIcaoChange(event.target.value)}
+                                className="w-full"
+                                onChange={(event) => handleIcaoChange(event)}
                             />
                             <div className="flex items-center w-full mt-6 h-9 bg-teal-light-contrast px-6 rounded-lg">
                                 {props.icao.length !== 4

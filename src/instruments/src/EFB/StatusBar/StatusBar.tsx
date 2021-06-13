@@ -55,9 +55,9 @@ class StatusBar extends React.Component<Props, TimeState> {
         const { efbClearState } = this.props;
 
         return (
-            <div className="fixed w-full py-2 px-8 flex items-center justify-between bg-navy-medium text-white font-medium leading-none">
+            <div className="fixed w-full py-2 px-8 flex items-center justify-between bg-navy-medium text-white font-medium leading-none text-lg">
                 <div className="flex items-center">
-                    <IconAccessPoint className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
+                    <IconAccessPoint className="mr-2 animate-pulse" size={30} stroke={1.5} strokeLinejoin="miter" />
                     flyPad
                 </div>
                 <div>{`${formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getUTCMinutes()]))}z`}</div>
@@ -71,7 +71,7 @@ class StatusBar extends React.Component<Props, TimeState> {
                             SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
                         }}
                         className="ml-2"
-                        size={25}
+                        size={30}
                         stroke={1.5}
                         strokeLinejoin="miter"
                     />

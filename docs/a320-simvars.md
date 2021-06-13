@@ -360,22 +360,22 @@
 - A32NX_APU_EGT_CAUTION
     - Celsius
     - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit,
-      when f64::MIN/-Number.MAX_VALUE the ECB isn't supplying information, for example due to being unpowered.
+      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_EGT_WARNING
     - Celsius
     - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit,
-      when f64::MIN/-Number.MAX_VALUE the ECB isn't supplying information, for example due to being unpowered.
+      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_EGT
     - Celsius
     - The APU's exhaust gas temperature,
-      when f64::MIN/-Number.MAX_VALUE the ECB isn't supplying information, for example due to being unpowered.
+      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_N
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM,
-      when f64::MIN/-Number.MAX_VALUE the ECB isn't supplying information, for example due to being unpowered.
+      when < 0 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
@@ -383,7 +383,7 @@
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
     - Number
-        - f64::MIN/-Number.MAX_VALUE: The ECB isn't supplying information, for example due to being unpowered.
+        - -1: The ECB isn't supplying information, for example due to being unpowered.
         - 0: The APU doesn't have an active LOW FUEL PRESSURE fault.
         - 1: Indicates the APU has an active LOW FUEL PRESSURE fault.
 
@@ -405,7 +405,7 @@
 
 - A32NX_APU_FLAP_FULLY_OPEN
     - Number
-        - f64::MIN/-Number.MAX_VALUE: The ECB isn't supplying information, for example due to being unpowered.
+        - -1: The ECB isn't supplying information, for example due to being unpowered.
         - 0: The APU air intake flap isn't fully open.
         - 1: The APU air intake flap is fully open.
 
@@ -947,6 +947,14 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE
+    - Bool
+    - Indicates if the ground spoilers are active (fully deployed)
+      Value | Position
+      --- | ---
+      0 | Inactive
+      1 | Active
+
 - A32NX_PERFORMANCE_WARNING_ACTIVE
     - Bool
     - Indicates if performance warning is active
@@ -1319,6 +1327,14 @@
 - A32NX_AUTOTHRUST_N1_COMMANDED:{index}
     - Number (% N1)
     - Indicates the commanded N1 (either based on TLA or autothrust law) for engine {index}, first engine has index 1
+
+- A32NX_AUTOTHRUST_DISCONNECT
+    - Bool
+    - Indicates if the red disconnect button is pressed on the thrust lever
+      State | Value
+      --- | ---
+      NOT PRESSED | 0
+      PRESSED | 1
 
 ## Throttle Mapping System
 

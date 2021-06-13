@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { Toggle } from '../Components/Form/Toggle';
+import React, { useState } from 'react';
+import { Slider, Toggle } from '@flybywiresim/react-components';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
-import { Slider } from '../Components/Form/Slider';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
+import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 
 type ButtonType = {
     name: string,
@@ -25,7 +25,6 @@ const PlaneSettings = () => {
     const [accelerationOutAltSetting, setAccelerationOutAltSetting] = useState(accelerationOutAlt);
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
     const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
 
     const adirsAlignTimeButtons: ButtonType[] = [
         { name: 'Instant', setting: 'INSTANT' },
@@ -69,11 +68,6 @@ const PlaneSettings = () => {
         { name: 'lbs', setting: '0' },
     ];
 
-    const paxSignsButtons: ButtonType[] = [
-        { name: 'No Smoking', setting: '0' },
-        { name: 'No Portable Device', setting: '1' },
-    ];
-
     const handleSetThrustReductionAlt = (value: string) => {
         setThrustReductionAltSetting(value);
 
@@ -104,34 +98,9 @@ const PlaneSettings = () => {
         }
     };
 
-    const position = useRef({ top: 0, y: 0 });
-    const ref = useRef<HTMLDivElement>(null);
-
-    const mouseDownHandler = (event) => {
-        position.current.top = ref.current ? ref.current.scrollTop : 0;
-        position.current.y = event.clientY;
-
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
-    };
-
-    const mouseMoveHandler = (event) => {
-        const dy = event.clientY - position.current.y;
-        if (ref.current) {
-            ref.current.scrollTop = position.current.top - dy;
-        }
-    };
-
-    const mouseUpHandler = () => {
-        document.removeEventListener('mousemove', mouseMoveHandler);
-        document.removeEventListener('mouseup', mouseUpHandler);
-    };
-
     return (
         <div
-            className="bg-navy-lighter rounded-2xl p-6 shadow-lg overflow-x-hidden overflow-y-scroll h-efb grabbable no-scrollbar"
-            ref={ref}
-            onMouseDown={mouseDownHandler}
+            className="bg-navy-lighter rounded-2xl p-6 shadow-lg overflow-hidden h-efb"
         >
             <h1 className="text-xl font-medium text-white mb-4">Realism</h1>
 
@@ -149,7 +118,7 @@ const PlaneSettings = () => {
                         ))}
                     </SelectGroup>
                 </div>
-                <div className="pt-3 flex flex-row justify-between items-center">
+                <div className="pt-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">DMC Self Test Time</span>
                     <SelectGroup>
                         {dmcSelfTestTimeButtons.map((button) => (
@@ -180,7 +149,7 @@ const PlaneSettings = () => {
                         ))}
                     </SelectGroup>
                 </div>
-                <div className="mb-3.5 pt-3 flex flex-row justify-between items-center">
+                <div className="mb-3.5 pt-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">METAR Source</span>
                     <SelectGroup>
                         {metarSourceButtons.map((button) => (
@@ -193,7 +162,7 @@ const PlaneSettings = () => {
                         ))}
                     </SelectGroup>
                 </div>
-                <div className="pt-3 flex flex-row justify-between items-center">
+                <div className="pt-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">TAF Source</span>
                     <SelectGroup>
                         {tafSourceButtons.map((button) => (
@@ -214,39 +183,39 @@ const PlaneSettings = () => {
                 <div className="mb-3.5 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Thrust Reduction Altitude (ft)</span>
                     <div className="flex flex-row">
-                        <input
-                            type="text"
+                        <SimpleInput
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={thrustReductionAlt}
+                            noLabel
                             value={thrustReductionAltSetting}
-                            onChange={(event) => handleSetThrustReductionAlt(event.target.value)}
+                            onChange={(event) => handleSetThrustReductionAlt(event)}
                         />
                     </div>
                 </div>
-                <div className="mb-3.5 pt-3 flex flex-row justify-between items-center">
+                <div className="mb-3.5 pt-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Acceleration Altitude (ft)</span>
                     <div className="flex flex-row">
-                        <input
-                            type="text"
+                        <SimpleInput
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={accelerationAlt}
+                            noLabel
                             value={accelerationAltSetting}
-                            onChange={(event) => handleSetAccelerationAlt(event.target.value)}
+                            onChange={(event) => handleSetAccelerationAlt(event)}
                         />
                     </div>
                 </div>
-                <div className="mb-3.5 pt-3 flex flex-row justify-between items-center">
+                <div className="mb-3.5 pt-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Acceleration Out Altitude (ft)</span>
                     <div className="flex flex-row">
-                        <input
-                            type="text"
+                        <SimpleInput
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={accelerationOutAlt}
+                            noLabel
                             value={accelerationOutAltSetting}
-                            onChange={(event) => handleSetAccelerationOutAlt(event.target.value)}
+                            onChange={(event) => handleSetAccelerationOutAlt(event)}
                         />
                     </div>
                 </div>
@@ -280,11 +249,84 @@ const PlaneSettings = () => {
                     </div>
                 </div>
             </div>
+        </div>
+    );
+};
+
+const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
+    const [ptuAudible, setPtuAudible] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool', 'SOUND_PTU_AUDIBLE_COCKPIT');
+    const [exteriorVolume, setExteriorVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_EXTERIOR_MASTER', 'number', 'SOUND_EXTERIOR_MASTER');
+    const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
+    const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
+    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
+    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+
+    const paxSignsButtons: ButtonType[] = [
+        { name: 'No Smoking', setting: '0' },
+        { name: 'No Portable Device', setting: '1' },
+    ];
+
+    return (
+        <div className="bg-navy-lighter rounded-2xl p-6 shadow-lg mb-6">
+            <h1 className="text-xl font-medium text-white mb-4">Audio & Display</h1>
+
+            <div className="divide-y divide-gray-700 flex flex-col">
+                <div className="mb-4 flex flex-row justify-between items-center">
+                    <span>
+                        <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>
+                        <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
+                    </span>
+                    <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
+                </div>
+                <div className="mb-4 pt-4 flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Exterior Master Volume</span>
+                    <div className="flex flex-row items-center py-1.5">
+                        <span className="text-base pr-3">{exteriorVolume}</span>
+                        <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
+                    </div>
+                </div>
+                <div className="mb-4 pt-4 flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Engine Interior Volume</span>
+                    <div className="flex flex-row items-center py-1.5">
+                        <span className="text-base pr-3">{engineVolume}</span>
+                        <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
+                    </div>
+                </div>
+                <div className="mb-4 pt-4 flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Wind Interior Volume</span>
+                    <div className="flex flex-row items-center py-1.5">
+                        <span className="text-base pr-3">{windVolume}</span>
+                        <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
+                    </div>
+                </div>
+                <div className="pt-4 flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Brightness</span>
+                    <div className="flex flex-row items-center py-1.5">
+                        <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                    </div>
+                </div>
+            </div>
+
+            <h1 className="text-xl text-white font-medium mt-6 mb-4">Integration</h1>
+
+            <div className="divide-y divide-gray-700 flex flex-col">
+                <div className="flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Simbrief Username</span>
+                    <div className="flex flex-row items-center">
+                        <SimpleInput
+                            className="w-30"
+                            value={props.simbriefUsername}
+                            noLabel
+                            onChange={(event) => props.setSimbriefUsername(event)}
+                        />
+                    </div>
+                </div>
+            </div>
 
             <h1 className="text-xl text-white font-medium my-4">CIDS</h1>
 
             <div className="divide-y divide-gray-700 flex flex-col">
-                <div className="mb-3.5 flex flex-row justify-between items-center">
+                <div className="flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">PAX Signs</span>
                     <SelectGroup>
                         {paxSignsButtons.map((button) => (
@@ -302,48 +344,6 @@ const PlaneSettings = () => {
     );
 };
 
-const SoundSettings = () => {
-    const [ptuAudible, setPtuAudible] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool', 'SOUND_PTU_AUDIBLE_COCKPIT');
-    const [exteriorVolume, setExteriorVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_EXTERIOR_MASTER', 'number', 'SOUND_EXTERIOR_MASTER');
-    const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
-    const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
-
-    return (
-        <div className="bg-navy-lighter rounded-2xl p-6 shadow-lg mb-6">
-            <div className="divide-y divide-gray-700 flex flex-col">
-                <div className="mb-4 flex flex-row justify-between items-center">
-                    <span>
-                        <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>
-                        <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
-                    </span>
-                    <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
-                </div>
-                <div className="mb-4 pt-3 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Exterior Master Volume</span>
-                    <div className="flex flex-row items-center">
-                        <span className="text-base pr-3">{exteriorVolume}</span>
-                        <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
-                    </div>
-                </div>
-                <div className="mb-4 pt-3 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Engine Interior Volume</span>
-                    <div className="flex flex-row items-center">
-                        <span className="text-base pr-3">{engineVolume}</span>
-                        <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
-                    </div>
-                </div>
-                <div className="pt-3 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Wind Interior Volume</span>
-                    <div className="flex flex-row items-center">
-                        <span className="text-base pr-3">{windVolume}</span>
-                        <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const ControlSettings = ({ setShowSettings }) => (
     <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg">
         <div className="flex flex-row justify-between items-center">
@@ -351,33 +351,6 @@ const ControlSettings = ({ setShowSettings }) => (
             <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
         </div>
 
-    </div>
-);
-
-const FlyPadSettings = () => {
-    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
-
-    return (
-        <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg mb-6">
-            <div className="flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Brightness</span>
-                <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
-            </div>
-        </div>
-    );
-};
-
-const IntegrationSettings = (props: {simbriefUsername, setSimbriefUsername}) => (
-    <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg mb-6">
-        <div className="flex flex-row justify-between items-center">
-            <span className="text-lg text-gray-300">Simbrief Username</span>
-            <input
-                type="text"
-                className="w-30 px-5 py-1.5 text-xl text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast"
-                value={props.simbriefUsername}
-                onChange={(event) => props.setSimbriefUsername(event.target.value)}
-            />
-        </div>
     </div>
 );
 
@@ -395,23 +368,19 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                                 <PlaneSettings />
                             </div>
                             <div className="w-1/2 ml-3">
-                                <SoundSettings />
-
-                                <FlyPadSettings />
-
-                                <IntegrationSettings
+                                <OtherSettings
                                     simbriefUsername={props.simbriefUsername}
                                     setSimbriefUsername={props.setSimbriefUsername}
                                 />
 
                                 <ControlSettings setShowSettings={setShowThrottleSettings} />
 
-                                <h1 className="text-4xl text-center text-gray-400 mt-14">flyPadOS</h1>
+                                {/* <h1 className="text-4xl text-center text-gray-400 mt-14">flyPadOS</h1>
                                 <h1 className="text-xl text-center text-gray-500 my-2">v2.0.1-alpha</h1>
                                 <h1 className="text-md text-center text-gray-500 my-2">
                                     Copyright 2020-2021, FlyByWire
                                     Simulations.
-                                </h1>
+                                </h1> */}
                             </div>
                         </div>
                     </>

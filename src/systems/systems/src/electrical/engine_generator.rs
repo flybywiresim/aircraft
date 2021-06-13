@@ -7,7 +7,9 @@ use crate::{
         calculate_towards_target_temperature, EngineCorrectedN2, EngineFirePushButtons,
         PowerConsumptionReport,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
+    simulation::{
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    },
 };
 use std::cmp::min;
 use uom::si::{
@@ -244,11 +246,8 @@ impl IntegratedDriveGenerator {
 }
 impl SimulationElement for IntegratedDriveGenerator {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(
-            &self.oil_outlet_temperature_id,
-            self.oil_outlet_temperature.get::<degree_celsius>(),
-        );
-        writer.write_bool(&self.is_connected_id, self.connected);
+        writer.write(&self.oil_outlet_temperature_id, self.oil_outlet_temperature);
+        writer.write(&self.is_connected_id, self.connected);
     }
 }
 

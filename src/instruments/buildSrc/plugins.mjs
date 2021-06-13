@@ -7,11 +7,12 @@ import { typescriptPaths } from 'rollup-plugin-typescript-paths';
 import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from 'tailwindcss';
+import dotenv from 'dotenv';
 import { Directories } from './directories.mjs';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
 
-require('dotenv').config();
+dotenv.config();
 
 function babel() {
     return babelPlugin({

@@ -30,8 +30,17 @@ class A320_Neo_FCU extends BaseAirliners {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
-        this.electricity.style.display = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
+        const newStyle = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
             SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
+        if (newStyle === "block" && newStyle !== this.electricity.style.display) {
+            if (!SimVar.GetSimVarValue("AUTOPILOT FLIGHT DIRECTOR ACTIVE:1", "bool")) {
+                SimVar.SetSimVarValue("K:TOGGLE_FLIGHT_DIRECTOR", "number", 1);
+            }
+            if (!SimVar.GetSimVarValue("AUTOPILOT FLIGHT DIRECTOR ACTIVE:2", "bool")) {
+                SimVar.SetSimVarValue("K:TOGGLE_FLIGHT_DIRECTOR", "number", 2);
+            }
+        }
+        this.electricity.style.display = newStyle;
     }
     onEvent(_event) {
     }
@@ -161,6 +170,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this._rotaryEncoderTimeout = 300;
         this._rotaryEncoderIncrement = 0.15;
         this._rotaryEncoderPreviousTimestamp = 0;
+
+        this.onPull();
     }
 
     init() {
@@ -177,6 +188,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         Coherent.call("AP_SPD_VAR_SET", 0, this.MIN_SPEED);
         SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
         this.onPull();
+    }
+
+    onFlightStart() {
+        super.onFlightStart();
+        this.init();
     }
 
     update(_deltaTime) {
@@ -241,7 +257,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     }
 
     shouldEngageManagedSpeed() {
-        const isValidV2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots") > 100;
+        const managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots");
+        const isValidV2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots") >= 90;
         const isVerticalModeSRS = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "enum") === 40;
 
         // V2 is entered into MCDU (was not set -> set)
@@ -252,7 +269,10 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
 
         // store state
-        this.isValidV2 = isValidV2;
+        if (!isValidV2 || managedSpeedTarget >= 90) {
+            // store V2 state only if managed speed target is valid (to debounce)
+            this.isValidV2 = isValidV2;
+        }
         this.isVerticalModeSRS = isVerticalModeSRS;
 
         return shouldEngage;
@@ -260,10 +280,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
 
     isManagedSpeedAvailable() {
         // managed speed is available when flight director or autopilot is engaged, or in approach phase (FMGC flight phase)
-        return Simplane.getAutoPilotFlightDirectorActive(1)
+        return (Simplane.getAutoPilotFlightDirectorActive(1)
                 || Simplane.getAutoPilotFlightDirectorActive(2)
                 || SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "number") === 1
-                || SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === 5;
+                || SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === 5)
+            && SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots") >= 90;
     }
 
     refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _lightsTest, _force = false) {
@@ -509,15 +530,17 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.textTRK = this.getTextElement("TRK");
         this.textLAT = this.getTextElement("LAT");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(true, false, false, false, true, 0, false, true);
-        this.selectedValue = -1;
-        this.isSelectedValueActive = false;
+        this.currentValue = -1;
+        this.selectedValue = Simplane.getAltitudeAboveGround() > 1000 ? this.getCurrentHeading() : 0;
+        this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
+        this.refresh(true, false, false, false, true, 0, false, true);
         this.onPull();
     }
 
     onFlightStart() {
         super.onFlightStart();
+        this.init();
     }
 
     onRotate() {
@@ -619,6 +642,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 this.selectedValue = _value;
                 this.isSelectedValueActive = false;
                 this.isPreselectionModeActive = false;
+                SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 2);
             }
             if (_isManagedActive !== this.isManagedActive) {
                 if (_isManagedActive) {
@@ -813,18 +837,23 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         this.isActive = false;
         this.isManaged = false;
         this.currentValue = 0;
-        let initValue = Simplane.getAltitude();
-        if (initValue <= 5000) {
-            initValue = 5000;
-        } else {
-            initValue = Math.round(initValue / 100) * 100;
+        let initValue = 100;
+        if (Simplane.getAltitudeAboveGround() > 1000) {
+            initValue = Math.min(49000, Math.max(100, Math.round(Simplane.getAltitude() / 100) * 100));
         }
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, initValue, true);
+        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 3, initValue, true);
         this.refresh(false, false, initValue, 0, true);
     }
+
+    onFlightStart() {
+        super.onFlightStart();
+        this.init();
+    }
+
     reboot() {
         this.init();
     }
+
     isManagedModeActiveOrArmed(_mode, _armed) {
         return (
             (_mode >= 20 && _mode <= 34)
@@ -835,6 +864,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             )
         );
     }
+
     update(_deltaTime) {
         const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
         const verticalArmed = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_ARMED", "Number");
@@ -842,6 +872,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
 
         this.refresh(Simplane.getAutoPilotActive(), isManaged, Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()), SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0);
     }
+
     refresh(_isActive, _isManaged, _value, _lightsTest, _force = false) {
         if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.isActive = _isActive;
@@ -858,6 +889,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             this.setElementVisibility(this.illuminator, this.isManaged);
         }
     }
+
     onEvent(_event) {
         if (_event === "ALT_PUSH") {
             SimVar.SetSimVarValue("K:A32NX.FCU_ALT_PUSH", "number", 0);
@@ -906,6 +938,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
 
     onFlightStart() {
         super.onFlightStart();
+        this.init();
     }
 
     onPush() {

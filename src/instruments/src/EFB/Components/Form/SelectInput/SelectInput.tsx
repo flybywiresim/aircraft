@@ -1,3 +1,4 @@
+import { IconChevronDown } from '@tabler/icons';
 import React from 'react';
 
 type Option = {
@@ -70,7 +71,7 @@ export default class SelectInput extends React.Component<SelectInputProps, Selec
 
         for (const option of this.props.options) {
             optionElements.push((
-                <div className="p-5 border-t border-b border-white" onClick={() => this.onOptionClicked(option)}>
+                <div className="text-white hover:bg-white hover:bg-opacity-5 transition duration-300 rounded-lg px-5 py-1.5" onClick={() => this.onOptionClicked(option)}>
                     {option.displayValue}
                 </div>
             ));
@@ -80,15 +81,17 @@ export default class SelectInput extends React.Component<SelectInputProps, Selec
 
     render() {
         return (
-            <div className={`flex ${this.props.className} ${this.props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
-                <div className={`flex flex-grow m-2.5 items-center ${this.props.reverse ? 'justify-start' : 'justify-end'}`}>{this.props.label}</div>
+            <div className={`flex ${this.props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`text-lg flex flex-grow m-2.5 items-center ${this.props.reverse ? 'justify-start' : 'justify-end'}`}>{this.props.label}</div>
                 <div className="flex items-center cursor-pointer relative" onClick={this.onClicked}>
-                    <div className="w-28 text-lg bg-gray-900 flex rounded">
-                        <div className="px-3 py-1.5 flex-grow">{this.state.value}</div>
-                        <div className="flex bg-gray-500 p-1 items-center rounded rounded-l-none justify-center">v</div>
+                    <div className={`relative flex px-5 py-1.5 text-lg text-white rounded-lg bg-navy-light border-2 border-navy-light
+                        focus-within:outline-none focus-within:border-teal-light-contrast ${this.props.className}`}
+                    >
+                        {this.state.value}
+                        <IconChevronDown className="text-white absolute right-4 top-2.5" size={20} />
                     </div>
                     {this.state.showDropdown && (
-                        <div className={`w-full border border-white bg-gray-900 rounded z-10 absolute transform ${
+                        <div className={`p-3 text-lg w-full border-none bg-navy-medium rounded-lg z-10 absolute transform ${
                             this.props.dropdownOnTop ? 'top-0 -translate-y-full' : 'bottom-0 translate-y-full'}`}
                         >
                             { this.dropdownElements() }

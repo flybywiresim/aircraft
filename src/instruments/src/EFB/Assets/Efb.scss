@@ -89,8 +89,12 @@
 
 /* ---- Dashboard Components ---- */
 
-.flip-vertical {
+.flip-horizontal {
   transform: scaleX(-1);
+}
+
+.leaflet-container {
+  @apply rounded-2xl;
 }
 
 /* ---- Dispatch Components ---- */

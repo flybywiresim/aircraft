@@ -297,6 +297,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_TO_GA, "AUTO_THROTTLE_TO_GA", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_ATHR_RESET_DISABLE, "A32NX.ATHR_RESET_DISABLE", false);
 
   result &=
       addInputDataDefinition(hSimConnect, 0, Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE, "A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE", false);
@@ -409,6 +410,10 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_INT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -822,6 +827,7 @@ void SimConnectInterface::resetSimInputAutopilot() {
 void SimConnectInterface::resetSimInputThrottles() {
   simInputThrottles.ATHR_push = 0;
   simInputThrottles.ATHR_disconnect = 0;
+  simInputThrottles.ATHR_reset_disable = 0;
 }
 
 bool SimConnectInterface::setClientDataAutopilotLaws(ClientDataAutopilotLaws output) {
@@ -1386,6 +1392,12 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::AUTO_THROTTLE_DISCONNECT: {
       simInputThrottles.ATHR_disconnect = 1;
       cout << "WASM: event triggered: AUTO_THROTTLE_DISCONNECT" << endl;
+      break;
+    }
+
+    case Events::A32NX_ATHR_RESET_DISABLE: {
+      simInputThrottles.ATHR_reset_disable = 1;
+      cout << "WASM: event triggered: ATHR_RESET_DISABLE" << endl;
       break;
     }
 

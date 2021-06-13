@@ -117,6 +117,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
   std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
   std::unique_ptr<LocalVariable> idFmaApproachCapability;
+  std::unique_ptr<LocalVariable> idFmaTripleClick;
+  std::unique_ptr<LocalVariable> idFmaModeReversion;
 
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
@@ -178,6 +180,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
+  std::unique_ptr<LocalVariable> idAutothrustDisconnect;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_1;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_2;
   InterpolatingLookupTable idThrottlePositionLookupTable3d;
@@ -208,6 +211,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
+  std::unique_ptr<LocalVariable> idSpoilersGroundSpoilersActive;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
