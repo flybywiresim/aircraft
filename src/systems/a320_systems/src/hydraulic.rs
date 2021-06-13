@@ -1406,8 +1406,8 @@ pub struct A320AutobrakeController {
     left_brake_pedal_input: f64,
     right_brake_pedal_input: f64,
 
-    ground_spoilers_active: bool,
-    last_ground_spoilers_active: bool,
+    ground_spoilers_are_deployed: bool,
+    last_ground_spoilers_are_deployed: bool,
 
     should_disarm_after_time_in_flight: DelayedTrueLogicGate,
     in_flight_disarm_event: bool,
@@ -1436,8 +1436,8 @@ impl A320AutobrakeController {
             arming_is_allowed_by_bcu: false,
             left_brake_pedal_input: 0.,
             right_brake_pedal_input: 0.,
-            ground_spoilers_active: false,
-            last_ground_spoilers_active: false,
+            ground_spoilers_are_deployed: false,
+            last_ground_spoilers_are_deployed: false,
             should_disarm_after_time_in_flight: DelayedTrueLogicGate::new(Duration::from_secs_f64(
                 Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE,
             )),
@@ -1446,11 +1446,11 @@ impl A320AutobrakeController {
     }
 
     fn ground_spoilers_are_deployed(&self) -> bool {
-        self.ground_spoilers_active
+        self.ground_spoilers_are_deployed
     }
 
     fn spoilers_retracted_during_this_update(&self) -> bool {
-        !self.ground_spoilers_active && self.last_ground_spoilers_active
+        !self.ground_spoilers_are_deployed && self.last_ground_spoilers_are_deployed
     }
 
     fn brake_output(&self) -> f64 {
@@ -1478,7 +1478,7 @@ impl A320AutobrakeController {
             }
         }
 
-        if !self.allow_arming() || self.should_disarm() {
+        if self.should_disarm() {
             self.disarm();
         }
     }
@@ -1487,21 +1487,17 @@ impl A320AutobrakeController {
         self.is_armed() && self.ground_spoilers_are_deployed() && !self.should_disarm()
     }
 
-    fn allow_arming(&self) -> bool {
-        self.arming_is_allowed_by_bcu
-    }
-
     fn is_armed(&self) -> bool {
         self.mode != A320AutobrakeMode::NONE
     }
 
-    fn control_is_engaged(&self) -> bool {
+    fn deceleration_governor_is_engaged(&self) -> bool {
         self.deceleration_governor.is_engaged()
     }
 
     fn is_decelerating(&self) -> bool {
-        let deceleration_demanded =
-            self.control_is_engaged() && self.target.get::<meter_per_second_squared>() < 0.;
+        let deceleration_demanded = self.deceleration_governor_is_engaged()
+            && self.target.get::<meter_per_second_squared>() < 0.;
 
         if self.mode == A320AutobrakeMode::NONE {
             false
@@ -1539,9 +1535,9 @@ impl A320AutobrakeController {
     }
 
     fn should_disarm(&self) -> bool {
-        (self.control_is_engaged() && self.pedal_input_should_disarm())
+        (self.deceleration_governor_is_engaged() && self.pedal_input_should_disarm())
             || !self.is_armed()
-            || !self.allow_arming()
+            || !self.arming_is_allowed_by_bcu
             || self.spoilers_retracted_during_this_update()
             || self.in_flight_disarm_event
     }
@@ -1631,8 +1627,8 @@ impl SimulationElement for A320AutobrakeController {
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.last_ground_spoilers_active = self.ground_spoilers_active;
-        self.ground_spoilers_active = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
+        self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
+        self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         self.mode = (state.read_f64("AUTOBRAKES_ARMED_MODE") as u8).into();
