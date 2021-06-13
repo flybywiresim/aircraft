@@ -1378,13 +1378,25 @@ impl SimulationElement for PushbackTug {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 enum A320AutobrakeMode {
     NONE = 0,
     LOW = 1,
     MED = 2,
     MAX = 3,
 }
+impl From<u8> for A320AutobrakeMode {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => A320AutobrakeMode::NONE,
+            1 => A320AutobrakeMode::LOW,
+            2 => A320AutobrakeMode::MED,
+            3 => A320AutobrakeMode::MAX,
+            _ => A320AutobrakeMode::NONE,
+        }
+    }
+}
+
 pub struct A320AutobrakeController {
     deceleration_governor: AutobrakeDecelerationGovernor,
     target: Acceleration,
@@ -1623,19 +1635,7 @@ impl SimulationElement for A320AutobrakeController {
         self.ground_spoilers_active = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        let sim_mode = state.read_f64("AUTOBRAKES_ARMED_MODE") as u8;
-        let sim_mode_enum;
-        match sim_mode {
-            0 => sim_mode_enum = A320AutobrakeMode::NONE,
-            1 => sim_mode_enum = A320AutobrakeMode::LOW,
-            2 => sim_mode_enum = A320AutobrakeMode::MED,
-            3 => sim_mode_enum = A320AutobrakeMode::MAX,
-            _ => sim_mode_enum = A320AutobrakeMode::NONE,
-        }
-
-        if sim_mode_enum != self.mode {
-            self.mode = sim_mode_enum;
-        }
+        self.mode = (state.read_f64("AUTOBRAKES_ARMED_MODE") as u8).into();
     }
 }
 
