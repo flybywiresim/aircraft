@@ -1504,7 +1504,7 @@ impl A320AutobrakeController {
                     .deceleration_governor
                     .deceleration_value()
                     .get::<meter_per_second_squared>()
-                    < Self::TARGET_TO_SHOW_DECEL_IN_MAX
+                    < Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2
         }
     }
 
@@ -1530,7 +1530,7 @@ impl A320AutobrakeController {
         (self.control_is_engaged() && self.pedal_input_should_disarm())
             || !self.is_armed()
             || !self.allow_arming()
-            || self.spoilers_retracted_event()
+            || self.spoilers_retracted_during_this_update()
             || self.in_flight_disarm_event
     }
 
