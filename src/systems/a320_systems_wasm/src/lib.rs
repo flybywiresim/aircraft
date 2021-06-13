@@ -184,7 +184,7 @@ impl ElectricalBusConnection {
     }
 }
 
-struct AutoBrakes {
+struct Autobrakes {
     id_mode_max: sys::DWORD,
     id_mode_med: sys::DWORD,
     id_mode_low: sys::DWORD,
