@@ -6,8 +6,8 @@ use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, ElectricitySource, NewPotential, Potential, PotentialOrigin,
-    PotentialSource, ProvideFrequency, ProvidePotential,
+    ElectricalStateWriter, ElectricitySource, NewPotential, PotentialOrigin, ProvideFrequency,
+    ProvidePotential,
 };
 
 pub struct ExternalPowerSource {
@@ -62,15 +62,6 @@ impl ElectricitySource for ExternalPowerSource {
             NewPotential::new(PotentialOrigin::External, self.output_potential)
         } else {
             NewPotential::none()
-        }
-    }
-}
-impl PotentialSource for ExternalPowerSource {
-    fn output(&self) -> Potential {
-        if self.should_provide_output() {
-            Potential::single(PotentialOrigin::External, self.output_potential)
-        } else {
-            Potential::none()
         }
     }
 }
@@ -144,6 +135,10 @@ mod external_power_source_tests {
         fn potential_is_normal(&mut self) -> bool {
             self.test_bed.read_bool("ELEC_EXT_PWR_POTENTIAL_NORMAL")
         }
+
+        fn electricity_mut(&mut self) -> &mut Electricity {
+            self.test_bed.electricity_mut()
+        }
     }
 
     struct TestAircraft {
@@ -151,16 +146,15 @@ mod external_power_source_tests {
         ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
-        fn new() -> Self {
-            let mut electricity = Electricity::new();
+        fn new(electricity: &mut Electricity) -> Self {
             Self {
-                ext_pwr: ExternalPowerSource::new(&mut electricity),
+                ext_pwr: ExternalPowerSource::new(electricity),
                 ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }
 
-        fn ext_pwr_is_powered(&self) -> bool {
-            self.ext_pwr.is_powered()
+        fn ext_pwr_is_powered(&self, electricity: &Electricity) -> bool {
+            electricity.is_powered(&self.ext_pwr)
         }
 
         fn ext_pwr_output_within_normal_parameters_after_processing_power_consumption_report(
@@ -176,7 +170,12 @@ mod external_power_source_tests {
         }
     }
     impl Aircraft for TestAircraft {
-        fn update_before_power_distribution(&mut self, _context: &UpdateContext) {
+        fn update_before_power_distribution(
+            &mut self,
+            _context: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            electricity.supplied_by(&self.ext_pwr);
             self.ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report = self.ext_pwr.output_within_normal_parameters();
         }
     }
@@ -189,28 +188,28 @@ mod external_power_source_tests {
 
     #[test]
     fn when_disconnected_provides_no_output() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_disconnected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 
-        assert!(!aircraft.ext_pwr_is_powered());
+        assert!(!aircraft.ext_pwr_is_powered(test_bed.electricity_mut()));
     }
 
     #[test]
     fn when_connected_provides_output() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_connected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 
-        assert!(aircraft.ext_pwr_is_powered());
+        assert!(aircraft.ext_pwr_is_powered(test_bed.electricity_mut()));
     }
 
     #[test]
     fn when_disconnected_frequency_not_normal() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_disconnected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 
@@ -219,8 +218,8 @@ mod external_power_source_tests {
 
     #[test]
     fn when_connected_frequency_normal() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_connected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 
@@ -229,8 +228,8 @@ mod external_power_source_tests {
 
     #[test]
     fn when_disconnected_potential_not_normal() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_disconnected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 
@@ -239,8 +238,8 @@ mod external_power_source_tests {
 
     #[test]
     fn when_connected_potential_normal() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_connected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 
@@ -249,8 +248,8 @@ mod external_power_source_tests {
 
     #[test]
     fn output_not_within_normal_parameters_when_disconnected() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_disconnected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 
@@ -260,8 +259,8 @@ mod external_power_source_tests {
 
     #[test]
     fn output_within_normal_parameters_when_connected() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_connected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 
@@ -278,8 +277,8 @@ mod external_power_source_tests {
         // supplies potential but the previous tick's frequency and potential are still normal.
         // With this test we ensure that an EXT PWR source which is no longer supplying power is
         // immediately noticed.
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = ExternalPowerTestBed::new().with_connected_external_power();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
         test_bed.run_aircraft(&mut aircraft);
 
         test_bed.disconnect_external_power();
@@ -291,8 +290,8 @@ mod external_power_source_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = SimulationTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 

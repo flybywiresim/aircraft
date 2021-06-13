@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, ElectricitySource, NewPotential, Potential, PotentialOrigin,
-    PotentialSource, ProvideFrequency, ProvidePotential,
+    ElectricalStateWriter, ElectricitySource, NewPotential, PotentialOrigin, ProvideFrequency,
+    ProvidePotential,
 };
 use crate::{
     shared::{PowerConsumptionReport, RamAirTurbineHydraulicLoopPressurised},
@@ -69,15 +69,6 @@ impl EmergencyGenerator {
 
     fn should_provide_output(&self) -> bool {
         self.supplying
-    }
-}
-impl PotentialSource for EmergencyGenerator {
-    fn output(&self) -> Potential {
-        if self.should_provide_output() {
-            Potential::single(PotentialOrigin::EmergencyGenerator, self.output_potential)
-        } else {
-            Potential::none()
-        }
     }
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));
@@ -154,6 +145,10 @@ mod emergency_generator_tests {
         fn potential_is_normal(&mut self) -> bool {
             self.test_bed.read_bool("ELEC_EMER_GEN_POTENTIAL_NORMAL")
         }
+
+        fn electricity_mut(&mut self) -> &mut Electricity {
+            self.test_bed.electricity_mut()
+        }
     }
 
     struct TestHydraulicSystem {
@@ -182,17 +177,16 @@ mod emergency_generator_tests {
         generator_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
-        fn new() -> Self {
-            let mut electricity = Electricity::new();
+        fn new(electricity: &mut Electricity) -> Self {
             Self {
-                emer_gen: EmergencyGenerator::new(&mut electricity),
+                emer_gen: EmergencyGenerator::new(electricity),
                 hydraulic: TestHydraulicSystem::new(),
                 generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }
 
-        fn emer_gen_is_powered(&self) -> bool {
-            self.emer_gen.is_powered()
+        fn emer_gen_is_powered(&self, electricity: &Electricity) -> bool {
+            electricity.is_powered(&self.emer_gen)
         }
 
         fn attempt_emer_gen_start(&mut self) {
@@ -221,8 +215,13 @@ mod emergency_generator_tests {
         }
     }
     impl Aircraft for TestAircraft {
-        fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+        fn update_before_power_distribution(
+            &mut self,
+            context: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
             self.emer_gen.update(context, &self.hydraulic);
+            electricity.supplied_by(&self.emer_gen);
 
             self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.emer_gen.output_within_normal_parameters();
         }
@@ -237,41 +236,41 @@ mod emergency_generator_tests {
 
     #[test]
     fn when_shutdown_has_no_output() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
-        assert!(!aircraft.emer_gen_is_powered());
+        assert!(!aircraft.emer_gen_is_powered(test_bed.electricity_mut()));
     }
 
     #[test]
     fn when_started_provides_output() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         aircraft.attempt_emer_gen_start();
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
-        assert!(aircraft.emer_gen_is_powered());
+        assert!(aircraft.emer_gen_is_powered(test_bed.electricity_mut()));
     }
 
     #[test]
     fn when_started_without_hydraulic_pressure_is_unpowered() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         aircraft.attempt_emer_gen_start();
         aircraft.set_rat_hydraulic_loop_pressurised(false);
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
-        assert!(!aircraft.emer_gen_is_powered());
+        assert!(!aircraft.emer_gen_is_powered(test_bed.electricity_mut()));
     }
 
     #[test]
     fn when_shutdown_frequency_not_normal() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
@@ -280,8 +279,8 @@ mod emergency_generator_tests {
 
     #[test]
     fn when_started_frequency_normal() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         aircraft.attempt_emer_gen_start();
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
@@ -291,8 +290,8 @@ mod emergency_generator_tests {
 
     #[test]
     fn when_shutdown_potential_not_normal() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
@@ -301,8 +300,8 @@ mod emergency_generator_tests {
 
     #[test]
     fn when_started_potential_normal() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         aircraft.attempt_emer_gen_start();
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
@@ -312,8 +311,8 @@ mod emergency_generator_tests {
 
     #[test]
     fn output_not_within_normal_parameters_when_shutdown() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
@@ -323,8 +322,8 @@ mod emergency_generator_tests {
 
     #[test]
     fn output_within_normal_parameters_when_started() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         aircraft.attempt_emer_gen_start();
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
@@ -342,8 +341,8 @@ mod emergency_generator_tests {
         // supplies potential but the previous tick's frequency and potential are still normal.
         // With this test we ensure that a generator which is no longer supplying power is
         // immediately noticed.
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = EmergencyGeneratorTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         aircraft.attempt_emer_gen_start();
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
@@ -358,8 +357,8 @@ mod emergency_generator_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut aircraft = TestAircraft::new();
         let mut test_bed = SimulationTestBed::new();
+        let mut aircraft = TestAircraft::new(test_bed.electricity_mut());
 
         test_bed.run_aircraft(&mut aircraft);
 

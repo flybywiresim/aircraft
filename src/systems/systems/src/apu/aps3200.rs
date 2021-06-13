@@ -2,8 +2,8 @@ use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
 use crate::{
     electrical::{
         ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-        ElectricalStateWriter, ElectricitySource, NewPotential, Potential, PotentialSource,
-        ProvideFrequency, ProvideLoad, ProvidePotential,
+        ElectricalStateWriter, ElectricitySource, NewPotential, ProvideFrequency, ProvideLoad,
+        ProvidePotential,
     },
     shared::{
         calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
@@ -647,18 +647,6 @@ impl ApuGenerator for Aps3200ApuGenerator {
 provide_potential!(Aps3200ApuGenerator, (110.0..=120.0));
 provide_frequency!(Aps3200ApuGenerator, (390.0..=410.0));
 provide_load!(Aps3200ApuGenerator);
-impl PotentialSource for Aps3200ApuGenerator {
-    fn output(&self) -> Potential {
-        if self.should_provide_output() {
-            Potential::single(
-                PotentialOrigin::ApuGenerator(self.number),
-                self.output_potential,
-            )
-        } else {
-            Potential::none()
-        }
-    }
-}
 impl ElectricalElement for Aps3200ApuGenerator {
     fn input_identifier(&self) -> ElectricalElementIdentifier {
         self.identifier
@@ -739,7 +727,7 @@ impl ApuStartMotor for Aps3200StartMotor {
 }
 impl SimulationElement for Aps3200StartMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by);
+        self.is_powered = buses.bus_is_powered(self.powered_by);
     }
 
     fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
@@ -782,6 +770,7 @@ mod apu_generator_tests {
     use crate::{
         apu::tests::{test_bed, test_bed_with},
         electrical::Electricity,
+        shared,
         simulation::test::SimulationTestBed,
     };
 
@@ -789,31 +778,38 @@ mod apu_generator_tests {
 
     #[test]
     fn starts_without_output() {
-        let mut electricity = Electricity::new();
-        let apu_gen = apu_generator(&mut electricity);
-        assert!(apu_gen.is_unpowered());
+        let mut test_bed = SimulationTestBed::new();
+        let generator = apu_generator(test_bed.electricity_mut());
+        assert!(!shared::PowerConsumptionReport::is_powered(
+            test_bed.electricity_mut(),
+            &generator
+        ));
     }
 
     #[test]
     fn when_apu_running_provides_output() {
-        let mut electricity = Electricity::new();
-        let mut generator = apu_generator(&mut electricity);
         let mut test_bed = SimulationTestBed::new();
+        let mut generator = apu_generator(test_bed.electricity_mut());
         update_below_threshold(&mut test_bed, &mut generator);
         update_above_threshold(&mut test_bed, &mut generator);
 
-        assert!(generator.is_powered());
+        assert!(shared::PowerConsumptionReport::is_powered(
+            test_bed.electricity_mut(),
+            &generator
+        ));
     }
 
     #[test]
     fn when_apu_shutdown_provides_no_output() {
-        let mut electricity = Electricity::new();
-        let mut generator = apu_generator(&mut electricity);
         let mut test_bed = SimulationTestBed::new();
+        let mut generator = apu_generator(test_bed.electricity_mut());
         update_above_threshold(&mut test_bed, &mut generator);
         update_below_threshold(&mut test_bed, &mut generator);
 
-        assert!(generator.is_unpowered());
+        assert!(!shared::PowerConsumptionReport::is_powered(
+            test_bed.electricity_mut(),
+            &generator
+        ));
     }
 
     #[test]
@@ -991,8 +987,9 @@ mod apu_generator_tests {
         test_bed: &mut SimulationTestBed,
         generator: &mut Aps3200ApuGenerator,
     ) {
-        test_bed.run_before_power_distribution(generator, |gen, _| {
+        test_bed.run_before_power_distribution(generator, |gen, _, electricity| {
             gen.update(Ratio::new::<percent>(100.), false);
+            electricity.supplied_by(gen);
         });
     }
 
@@ -1000,8 +997,9 @@ mod apu_generator_tests {
         test_bed: &mut SimulationTestBed,
         generator: &mut Aps3200ApuGenerator,
     ) {
-        test_bed.run_before_power_distribution(generator, |gen, _| {
+        test_bed.run_before_power_distribution(generator, |gen, _, electricity| {
             gen.update(Ratio::new::<percent>(0.), false);
+            electricity.supplied_by(gen);
         });
     }
 }

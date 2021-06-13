@@ -1,7 +1,7 @@
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, ElectricitySource, NewPotential, Potential, PotentialOrigin,
-    PotentialSource, PotentialTarget, ProvideCurrent, ProvidePotential,
+    ElectricalStateWriter, ElectricitySource, NewPotential, PotentialOrigin, ProvideCurrent,
+    ProvidePotential,
 };
 use crate::{
     shared::{ConsumePower, PowerConsumptionReport},
@@ -16,8 +16,8 @@ pub struct Battery {
     number: usize,
     identifier: ElectricalElementIdentifier,
     writer: ElectricalStateWriter,
-    input_potential: Potential,
     charge: ElectricCharge,
+    input_potential: ElectricPotential,
     output_potential: ElectricPotential,
     current: ElectricCurrent,
 }
@@ -66,8 +66,8 @@ impl Battery {
             number,
             identifier: identifier_provider.next(),
             writer: ElectricalStateWriter::new(&format!("BAT_{}", number)),
-            input_potential: Potential::none(),
             charge,
+            input_potential: ElectricPotential::new::<volt>(0.),
             output_potential: Battery::calculate_output_potential_for_charge(charge),
             current: ElectricCurrent::new::<ampere>(0.),
         }
@@ -78,11 +78,7 @@ impl Battery {
     }
 
     fn is_powered_by_other_potential(&self) -> bool {
-        self.input_potential.raw() > self.output_potential
-    }
-
-    pub fn input_potential(&self) -> Potential {
-        self.input_potential
+        self.input_potential > self.output_potential
     }
 
     #[cfg(test)]
@@ -140,16 +136,6 @@ impl Battery {
             .max(ElectricCurrent::new::<ampere>(0.))
     }
 }
-potential_target!(Battery);
-impl PotentialSource for Battery {
-    fn output(&self) -> Potential {
-        if self.output_potential > ElectricPotential::new::<volt>(0.) {
-            Potential::single(PotentialOrigin::Battery(self.number), self.output_potential)
-        } else {
-            Potential::none()
-        }
-    }
-}
 impl ProvideCurrent for Battery {
     fn current(&self) -> ElectricCurrent {
         self.current
@@ -162,7 +148,7 @@ impl ProvideCurrent for Battery {
 }
 impl ProvidePotential for Battery {
     fn potential(&self) -> ElectricPotential {
-        self.output_potential.max(self.input_potential.raw())
+        self.output_potential.max(self.input_potential)
     }
 
     fn potential_normal(&self) -> bool {
@@ -198,18 +184,17 @@ impl SimulationElement for Battery {
     }
 
     fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
-        if self.is_powered_by_other_potential() {
-            self.current = Battery::calculate_charging_current(
-                self.input_potential.raw(),
-                self.output_potential,
-            );
+        self.input_potential = consumption.input_of(self).raw();
 
-            let power = self.input_potential.raw() * self.current;
-            consumption.consume(self.input_potential, power);
+        if self.is_powered_by_other_potential() {
+            self.current =
+                Battery::calculate_charging_current(self.input_potential, self.output_potential);
+
+            let power = self.input_potential * self.current;
+            consumption.consume_from_input(self, power);
 
             let time = Time::new::<second>(consumption.delta().as_secs_f64());
-            self.charge +=
-                ((self.input_potential.raw() * self.current) * time) / self.input_potential.raw();
+            self.charge += ((self.input_potential * self.current) * time) / self.input_potential;
         }
     }
 
@@ -242,8 +227,8 @@ mod tests {
         use super::*;
         use crate::{
             electrical::{
-                consumption::{PowerConsumer, SuppliedPower},
-                Contactor, ElectricalBus, ElectricalBusType, Electricity,
+                consumption::PowerConsumer, test::TestElectricitySource, Contactor, ElectricalBus,
+                ElectricalBusType, Electricity,
             },
             simulation::{
                 test::SimulationTestBed, Aircraft, SimulationElementVisitor, UpdateContext,
@@ -293,9 +278,14 @@ mod tests {
                         .read_f64(&format!("ELEC_BAT_{}_POTENTIAL", number)),
                 )
             }
+
+            fn electricity(&mut self) -> &mut Electricity {
+                self.test_bed.electricity_mut()
+            }
         }
 
         struct TestAircraft {
+            electricity_source: TestElectricitySource,
             bat_bus: ElectricalBus,
             battery_1: Battery,
             battery_1_contactor: Contactor,
@@ -303,23 +293,24 @@ mod tests {
             battery_2_contactor: Contactor,
             consumer: PowerConsumer,
             battery_consumption: Power,
-            supplied_input_potential: Potential,
         }
         impl TestAircraft {
-            fn new(battery_1: Battery, battery_2: Battery) -> Self {
-                let mut electricity = Electricity::new();
+            fn new(battery_1: Battery, battery_2: Battery, electricity: &mut Electricity) -> Self {
                 let mut aircraft = Self {
+                    electricity_source: TestElectricitySource::unpowered(
+                        PotentialOrigin::TransformerRectifier(1),
+                        electricity,
+                    ),
                     battery_1,
                     battery_2,
                     bat_bus: ElectricalBus::new(
                         ElectricalBusType::DirectCurrentBattery,
-                        &mut electricity,
+                        electricity,
                     ),
-                    battery_1_contactor: Contactor::new("BAT1", &mut electricity),
-                    battery_2_contactor: Contactor::new("BAT2", &mut electricity),
+                    battery_1_contactor: Contactor::new("BAT1", electricity),
+                    battery_2_contactor: Contactor::new("BAT2", electricity),
                     consumer: PowerConsumer::from(ElectricalBusType::DirectCurrentBattery),
                     battery_consumption: Power::new::<watt>(0.),
-                    supplied_input_potential: Potential::none(),
                 };
 
                 aircraft.battery_1_contactor.close_when(true);
@@ -327,73 +318,58 @@ mod tests {
                 aircraft
             }
 
-            fn with_full_batteries() -> Self {
-                let mut electricity = Electricity::new();
+            fn with_full_batteries(electricity: &mut Electricity) -> Self {
                 Self::new(
-                    Battery::full(1, &mut electricity),
-                    Battery::full(2, &mut electricity),
+                    Battery::full(1, electricity),
+                    Battery::full(2, electricity),
+                    electricity,
                 )
             }
 
-            fn with_half_charged_batteries() -> Self {
-                let mut electricity = Electricity::new();
+            fn with_half_charged_batteries(electricity: &mut Electricity) -> Self {
                 Self::new(
-                    Battery::half(1, &mut electricity),
-                    Battery::half(2, &mut electricity),
+                    Battery::half(1, electricity),
+                    Battery::half(2, electricity),
+                    electricity,
                 )
             }
 
-            fn with_nearly_empty_batteries() -> Self {
-                let mut electricity = Electricity::new();
+            fn with_nearly_empty_batteries(electricity: &mut Electricity) -> Self {
                 Self::new(
-                    Battery::new(
-                        1,
-                        ElectricCharge::new::<ampere_hour>(0.001),
-                        &mut electricity,
-                    ),
-                    Battery::new(
-                        2,
-                        ElectricCharge::new::<ampere_hour>(0.001),
-                        &mut electricity,
-                    ),
+                    Battery::new(1, ElectricCharge::new::<ampere_hour>(0.001), electricity),
+                    Battery::new(2, ElectricCharge::new::<ampere_hour>(0.001), electricity),
+                    electricity,
                 )
             }
 
-            fn with_nearly_empty_dissimilarly_charged_batteries() -> Self {
-                let mut electricity = Electricity::new();
+            fn with_nearly_empty_dissimilarly_charged_batteries(
+                electricity: &mut Electricity,
+            ) -> Self {
                 Self::new(
-                    Battery::new(
-                        1,
-                        ElectricCharge::new::<ampere_hour>(0.002),
-                        &mut electricity,
-                    ),
-                    Battery::new(
-                        2,
-                        ElectricCharge::new::<ampere_hour>(0.001),
-                        &mut electricity,
-                    ),
+                    Battery::new(1, ElectricCharge::new::<ampere_hour>(0.002), electricity),
+                    Battery::new(2, ElectricCharge::new::<ampere_hour>(0.001), electricity),
+                    electricity,
                 )
             }
 
-            fn with_empty_batteries() -> Self {
-                let mut electricity = Electricity::new();
+            fn with_empty_batteries(electricity: &mut Electricity) -> Self {
                 Self::new(
-                    Battery::empty(1, &mut electricity),
-                    Battery::empty(2, &mut electricity),
+                    Battery::empty(1, electricity),
+                    Battery::empty(2, electricity),
+                    electricity,
                 )
             }
 
-            fn with_full_and_empty_battery() -> Self {
-                let mut electricity = Electricity::new();
+            fn with_full_and_empty_battery(electricity: &mut Electricity) -> Self {
                 Self::new(
-                    Battery::full(1, &mut electricity),
-                    Battery::empty(2, &mut electricity),
+                    Battery::full(1, electricity),
+                    Battery::empty(2, electricity),
+                    electricity,
                 )
             }
 
             fn supply_input_potential(&mut self, potential: ElectricPotential) {
-                self.supplied_input_potential =
-                    Potential::single(PotentialOrigin::TransformerRectifier(1), potential);
+                self.electricity_source.set_potential(potential);
             }
 
             fn close_battery_2_contactor(&mut self) {
@@ -412,36 +388,25 @@ mod tests {
                 self.battery_2.charge()
             }
 
-            fn bat_bus_is_powered(&self) -> bool {
-                self.bat_bus.is_powered()
+            fn bat_bus_is_powered(&self, electricity: &Electricity) -> bool {
+                electricity.is_powered(&self.bat_bus)
             }
         }
         impl Aircraft for TestAircraft {
-            fn get_supplied_power(&mut self) -> SuppliedPower {
-                let mut supplied_power = SuppliedPower::new();
-                supplied_power.add(
-                    ElectricalBusType::DirectCurrentBattery,
-                    self.bat_bus.output(),
-                );
+            fn update_before_power_distribution(
+                &mut self,
+                _: &UpdateContext,
+                electricity: &mut Electricity,
+            ) {
+                electricity.supplied_by(&self.battery_1);
+                electricity.supplied_by(&self.battery_2);
+                electricity.flow(&self.battery_1, &self.battery_1_contactor);
+                electricity.flow(&self.battery_2, &self.battery_2_contactor);
 
-                supplied_power
-            }
-
-            fn update_before_power_distribution(&mut self, _: &UpdateContext) {
-                self.battery_1_contactor.powered_by(&self.battery_1);
-                self.battery_2_contactor.powered_by(&self.battery_2);
-
-                self.bat_bus.powered_by(&self.supplied_input_potential);
-                self.bat_bus.or_powered_by_both_batteries(
-                    &self.battery_1_contactor,
-                    &self.battery_2_contactor,
-                );
-
-                self.battery_1_contactor.or_powered_by(&self.bat_bus);
-                self.battery_1.powered_by(&self.battery_1_contactor);
-
-                self.battery_2_contactor.or_powered_by(&self.bat_bus);
-                self.battery_2.powered_by(&self.battery_2_contactor);
+                electricity.supplied_by(&self.electricity_source);
+                electricity.flow(&self.electricity_source, &self.bat_bus);
+                electricity.flow(&self.battery_1_contactor, &self.bat_bus);
+                electricity.flow(&self.battery_2_contactor, &self.bat_bus);
             }
         }
         impl SimulationElement for TestAircraft {
@@ -461,17 +426,10 @@ mod tests {
             }
         }
 
-        struct Powerless {}
-        impl PotentialSource for Powerless {
-            fn output(&self) -> Potential {
-                Potential::none()
-            }
-        }
-
         #[test]
         fn when_full_has_potential() {
-            let mut aircraft = TestAircraft::with_full_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_full_batteries(test_bed.electricity());
 
             test_bed.run_aircraft(&mut aircraft);
 
@@ -480,8 +438,8 @@ mod tests {
 
         #[test]
         fn when_full_potential_is_normal() {
-            let mut aircraft = TestAircraft::with_full_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_full_batteries(test_bed.electricity());
 
             test_bed.run_aircraft(&mut aircraft);
 
@@ -490,8 +448,8 @@ mod tests {
 
         #[test]
         fn when_empty_has_no_potential() {
-            let mut aircraft = TestAircraft::with_empty_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_empty_batteries(test_bed.electricity());
 
             test_bed.run_aircraft(&mut aircraft);
 
@@ -500,8 +458,8 @@ mod tests {
 
         #[test]
         fn when_empty_potential_is_abnormal() {
-            let mut aircraft = TestAircraft::with_empty_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_empty_batteries(test_bed.electricity());
 
             test_bed.run_aircraft(&mut aircraft);
 
@@ -511,8 +469,8 @@ mod tests {
         #[test]
         fn when_input_potential_is_greater_than_output_potential_returns_input_potential_for_ecam_and_overhead_indication(
         ) {
-            let mut aircraft = TestAircraft::with_half_charged_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_half_charged_batteries(test_bed.electricity());
 
             test_bed.run_aircraft(&mut aircraft);
 
@@ -529,8 +487,8 @@ mod tests {
         #[test]
         fn when_input_potential_is_less_than_output_potential_returns_output_potential_for_ecam_and_overhead_indication(
         ) {
-            let mut aircraft = TestAircraft::with_full_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_full_batteries(test_bed.electricity());
 
             test_bed.run_aircraft(&mut aircraft);
 
@@ -546,8 +504,8 @@ mod tests {
 
         #[test]
         fn when_charging_current_is_normal() {
-            let mut aircraft = TestAircraft::with_empty_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_empty_batteries(test_bed.electricity());
 
             aircraft.supply_input_potential(ElectricPotential::new::<volt>(28.));
             test_bed.run_aircraft(&mut aircraft);
@@ -557,8 +515,8 @@ mod tests {
 
         #[test]
         fn when_charging_battery_current_is_charge_current() {
-            let mut aircraft = TestAircraft::with_half_charged_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_half_charged_batteries(test_bed.electricity());
 
             aircraft.supply_input_potential(ElectricPotential::new::<volt>(28.));
             test_bed.run_aircraft(&mut aircraft);
@@ -568,8 +526,8 @@ mod tests {
 
         #[test]
         fn when_discharging_slowly_current_is_normal() {
-            let mut aircraft = TestAircraft::with_full_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_full_batteries(test_bed.electricity());
 
             aircraft.power_demand(Power::new::<watt>(40.));
             test_bed.run_aircraft(&mut aircraft);
@@ -579,8 +537,8 @@ mod tests {
 
         #[test]
         fn when_discharging_quickly_current_is_abnormal() {
-            let mut aircraft = TestAircraft::with_full_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_full_batteries(test_bed.electricity());
 
             aircraft.power_demand(Power::new::<watt>(500.));
             test_bed.run_aircraft(&mut aircraft);
@@ -590,8 +548,8 @@ mod tests {
 
         #[test]
         fn when_discharging_battery_current_is_discharge_current() {
-            let mut aircraft = TestAircraft::with_full_batteries();
             let mut test_bed = BatteryTestBed::new();
+            let mut aircraft = TestAircraft::with_full_batteries(test_bed.electricity());
 
             aircraft.power_demand(Power::new::<watt>(100.));
             test_bed.run_aircraft(&mut aircraft);
@@ -601,8 +559,8 @@ mod tests {
 
         #[test]
         fn when_discharging_loses_charge() {
-            let mut aircraft = TestAircraft::with_full_batteries();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(60));
+            let mut aircraft = TestAircraft::with_full_batteries(test_bed.electricity());
 
             let charge_prior_to_run = aircraft.battery_1_charge();
 
@@ -614,8 +572,8 @@ mod tests {
 
         #[test]
         fn when_charging_gains_charge() {
-            let mut aircraft = TestAircraft::with_empty_batteries();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(60));
+            let mut aircraft = TestAircraft::with_empty_batteries(test_bed.electricity());
 
             let charge_prior_to_run = aircraft.battery_1_charge();
 
@@ -627,8 +585,8 @@ mod tests {
 
         #[test]
         fn can_charge_beyond_rated_capacity() {
-            let mut aircraft = TestAircraft::with_full_batteries();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(1_000));
+            let mut aircraft = TestAircraft::with_full_batteries(test_bed.electricity());
 
             let charge_prior_to_run = aircraft.battery_1_charge();
 
@@ -640,8 +598,8 @@ mod tests {
 
         #[test]
         fn does_not_charge_when_input_potential_lower_than_battery_potential() {
-            let mut aircraft = TestAircraft::with_half_charged_batteries();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(1_000));
+            let mut aircraft = TestAircraft::with_half_charged_batteries(test_bed.electricity());
 
             let charge_prior_to_run = aircraft.battery_1_charge();
 
@@ -653,8 +611,8 @@ mod tests {
 
         #[test]
         fn when_neither_charging_nor_discharging_charge_remains_equal() {
-            let mut aircraft = TestAircraft::with_half_charged_batteries();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(1_000));
+            let mut aircraft = TestAircraft::with_half_charged_batteries(test_bed.electricity());
 
             let charge_prior_to_run = aircraft.battery_1_charge();
 
@@ -665,8 +623,8 @@ mod tests {
 
         #[test]
         fn when_neither_charging_nor_discharging_current_is_zero() {
-            let mut aircraft = TestAircraft::with_half_charged_batteries();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(1_000));
+            let mut aircraft = TestAircraft::with_half_charged_batteries(test_bed.electricity());
 
             test_bed.run_aircraft(&mut aircraft);
 
@@ -675,8 +633,8 @@ mod tests {
 
         #[test]
         fn cannot_discharge_below_zero() {
-            let mut aircraft = TestAircraft::with_nearly_empty_batteries();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(50));
+            let mut aircraft = TestAircraft::with_nearly_empty_batteries(test_bed.electricity());
 
             aircraft.power_demand(Power::new::<watt>(5000.));
             test_bed.run_aircraft(&mut aircraft);
@@ -689,8 +647,10 @@ mod tests {
 
         #[test]
         fn dissimilar_charged_batteries_in_parallel_deplete() {
-            let mut aircraft = TestAircraft::with_nearly_empty_dissimilarly_charged_batteries();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(1));
+            let mut aircraft = TestAircraft::with_nearly_empty_dissimilarly_charged_batteries(
+                test_bed.electricity(),
+            );
 
             aircraft.power_demand(Power::new::<watt>(10.));
             aircraft.close_battery_2_contactor();
@@ -701,13 +661,13 @@ mod tests {
 
             assert!(aircraft.battery_1_charge() < ElectricCharge::new::<ampere_hour>(0.000000001));
             assert!(aircraft.battery_2_charge() < ElectricCharge::new::<ampere_hour>(0.000000001));
-            assert!(!aircraft.bat_bus_is_powered());
+            assert!(!aircraft.bat_bus_is_powered(test_bed.electricity()));
         }
 
         #[test]
         fn batteries_charge_each_other_until_relatively_equal_charge() {
-            let mut aircraft = TestAircraft::with_full_and_empty_battery();
             let mut test_bed = BatteryTestBed::new_with_delta(Duration::from_secs(120));
+            let mut aircraft = TestAircraft::with_full_and_empty_battery(test_bed.electricity());
 
             let original_charge = aircraft.battery_1_charge();
 

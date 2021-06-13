@@ -794,7 +794,7 @@ impl SimulationElement for ElectricPump {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.bus_type);
+        self.is_powered = buses.bus_is_powered(self.bus_type);
     }
 }
 

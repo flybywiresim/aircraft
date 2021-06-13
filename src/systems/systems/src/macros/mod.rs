@@ -1,17 +1,3 @@
-macro_rules! potential_target {
-    ($t: ty) => {
-        impl PotentialTarget for $t {
-            fn powered_by<T: PotentialSource + ?Sized>(&mut self, source: &T) {
-                self.input_potential = source.output();
-            }
-
-            fn or_powered_by<T: PotentialSource + ?Sized>(&mut self, source: &T) {
-                self.input_potential = self.input_potential.merge(&source.output());
-            }
-        }
-    };
-}
-
 /// Provide potential with the given normal range.
 macro_rules! provide_frequency {
     ($t: ty, $normal_range: expr) => {
@@ -56,5 +42,49 @@ macro_rules! provide_potential {
                 $normal_range.contains(&volts)
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! assert_is_powered {
+    ($tb:expr, $bus_type:expr) => {
+        assert!(
+            $tb.is_powered($bus_type),
+            "Expected the {} bus to be powered, but it is unpowered.",
+            $bus_type.to_string()
+        );
+    };
+}
+
+#[macro_export]
+macro_rules! assert_is_unpowered {
+    ($tb:expr, $bus_type:expr) => {
+        assert!(
+            !$tb.is_powered($bus_type),
+            "Expected the {} bus to be unpowered, but it is powered.",
+            $bus_type.to_string()
+        );
+    };
+}
+
+#[macro_export]
+macro_rules! assert_is_powered_by {
+    ($tb:expr, $bus_type:expr, $origin:expr) => {
+        let potential = $tb.potential_of($bus_type);
+        let origins = potential.origins();
+        if origins.count() == 0 {
+            panic!(
+                "Expected the {} bus to be powered by {}, but it is unpowered.",
+                $bus_type.to_string(),
+                $origin.to_string(),
+            )
+        }
+
+        assert!(
+            $tb.is_single_origin($bus_type, $origin),
+            "Expected the {} bus to be powered by {}, but it is powered.",
+            $bus_type.to_string(),
+            $origin.to_string()
+        );
     };
 }

@@ -1,5 +1,5 @@
 use crate::{
-    electrical::{Potential, PotentialSource},
+    electrical::{ElectricalElement, ElectricitySource, NewPotential},
     simulation::UpdateContext,
 };
 use num_derive::FromPrimitive;
@@ -8,9 +8,11 @@ use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
 
 mod random;
 pub use random::*;
+mod iterator;
+pub use iterator::*;
 
 pub trait AuxiliaryPowerUnitElectrical:
-    ControllerSignal<ContactorSignal> + PotentialSource + ApuAvailable
+    ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
 {
     fn output_within_normal_parameters(&self) -> bool;
 }
@@ -102,8 +104,9 @@ impl Display for ElectricalBusType {
 }
 
 pub trait ElectricalBuses {
-    fn potential_of(&self, bus_type: ElectricalBusType) -> Potential;
-    fn is_powered(&self, bus_type: ElectricalBusType) -> bool;
+    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> &NewPotential;
+    fn bus_is_powered(&self, bus_type: ElectricalBusType) -> bool;
+    fn is_powered(&self, element: &impl ElectricalElement) -> bool;
     fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool;
 }
 
@@ -117,14 +120,31 @@ pub enum PotentialOrigin {
     TransformerRectifier(usize),
     StaticInverter,
 }
+impl Display for PotentialOrigin {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PotentialOrigin::EngineGenerator(number) => write!(f, "EngineGenerator({})", number),
+            PotentialOrigin::ApuGenerator(number) => write!(f, "ApuGenerator({})", number),
+            PotentialOrigin::External => write!(f, "ExternalPower"),
+            PotentialOrigin::EmergencyGenerator => write!(f, "EmergencyGenerator"),
+            PotentialOrigin::Battery(number) => write!(f, "Battery({})", number),
+            PotentialOrigin::TransformerRectifier(number) => {
+                write!(f, "TransformerRectifier({})", number)
+            }
+            PotentialOrigin::StaticInverter => write!(f, "StaticInverter"),
+        }
+    }
+}
 
 pub trait PowerConsumptionReport {
+    fn is_powered(&self, element: &impl ElectricalElement) -> bool;
     fn total_consumption_of(&self, potential_origin: PotentialOrigin) -> Power;
     fn delta(&self) -> Duration;
 }
 
 pub trait ConsumePower: PowerConsumptionReport {
-    fn consume(&mut self, potential: Potential, power: Power);
+    fn input_of(&self, element: &impl ElectricalElement) -> &NewPotential;
+    fn consume_from_input(&mut self, element: &impl ElectricalElement, power: Power);
     fn consume_from_bus(&mut self, bus_type: ElectricalBusType, power: Power);
 }
 
@@ -278,6 +298,7 @@ pub(crate) fn to_bool(value: f64) -> bool {
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;
+    use crate::electrical::Electricity;
     use crate::simulation::test::SimulationTestBed;
     use crate::simulation::{Aircraft, SimulationElement};
 
@@ -302,7 +323,11 @@ mod delayed_true_logic_gate_tests {
         }
     }
     impl Aircraft for TestAircraft {
-        fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+        fn update_before_power_distribution(
+            &mut self,
+            context: &UpdateContext,
+            _: &mut Electricity,
+        ) {
             self.gate.update(context, self.expression_result);
         }
     }
@@ -374,6 +399,7 @@ mod delayed_true_logic_gate_tests {
 #[cfg(test)]
 mod delayed_false_logic_gate_tests {
     use super::*;
+    use crate::electrical::Electricity;
     use crate::simulation::test::SimulationTestBed;
     use crate::simulation::{Aircraft, SimulationElement};
 
@@ -398,7 +424,11 @@ mod delayed_false_logic_gate_tests {
         }
     }
     impl Aircraft for TestAircraft {
-        fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+        fn update_before_power_distribution(
+            &mut self,
+            context: &UpdateContext,
+            _: &mut Electricity,
+        ) {
             self.gate.update(context, self.expression_result);
         }
     }

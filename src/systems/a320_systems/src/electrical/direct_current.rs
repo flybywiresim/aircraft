@@ -2,17 +2,15 @@ use super::{
     A320AlternatingCurrentElectricalSystem, A320DirectCurrentElectricalSystem,
     A320ElectricalOverheadPanel,
 };
-#[cfg(test)]
-use systems::electrical::Potential;
 use systems::{
     electrical::{
-        consumption::SuppliedPower, Battery, BatteryChargeLimiter, Contactor, ElectricalBus,
-        ElectricalElementIdentifierProvider, EmergencyElectrical, EmergencyGenerator,
-        PotentialSource, PotentialTarget, StaticInverter,
+        Battery, BatteryChargeLimiter, Contactor, ElectricalBus,
+        ElectricalElementIdentifierProvider, Electricity, EmergencyElectrical, EmergencyGenerator,
+        StaticInverter,
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
-        LandingGearPosition,
+        ElectricalBuses, LandingGearPosition,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -109,6 +107,7 @@ impl A320DirectCurrentElectrical {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        electricity: &mut Electricity,
         overhead: &A320ElectricalOverheadPanel,
         ac_state: &impl A320AlternatingCurrentElectricalSystem,
         emergency_elec: &EmergencyElectrical,
@@ -117,58 +116,69 @@ impl A320DirectCurrentElectrical {
         apu_overhead: &(impl ApuMaster + ApuStart),
         landing_gear: &impl LandingGearPosition,
     ) {
-        self.tr_1_contactor.close_when(ac_state.tr_1().is_powered());
-        self.tr_1_contactor.powered_by(ac_state.tr_1());
+        self.tr_1_contactor
+            .close_when(electricity.is_powered(ac_state.tr_1()));
+        electricity.flow(ac_state.tr_1(), &self.tr_1_contactor);
 
-        self.tr_2_contactor
-            .close_when(ac_state.tr_2().is_powered() && ac_state.ac_bus_2_powered());
-        self.tr_2_contactor.powered_by(ac_state.tr_2());
+        self.tr_2_contactor.close_when(
+            electricity.is_powered(ac_state.tr_2()) && ac_state.ac_bus_2_powered(electricity),
+        );
+        electricity.flow(ac_state.tr_2(), &self.tr_2_contactor);
 
-        self.tr_2_to_dc_gnd_flt_service_bus_contactor
-            .close_when(ac_state.tr_2().is_powered() && !ac_state.ac_bus_2_powered());
-        self.tr_2_to_dc_gnd_flt_service_bus_contactor
-            .powered_by(ac_state.tr_2());
-
-        self.tr_ess_contactor
-            .close_when(!ac_state.tr_1_and_2_available() && ac_state.tr_ess().is_powered());
-        self.tr_ess_contactor.powered_by(ac_state.tr_ess());
-
-        self.dc_bus_1.powered_by(&self.tr_1_contactor);
-        self.dc_bus_2.powered_by(&self.tr_2_contactor);
-
-        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
-            .close_when(ac_state.tr_2().is_powered() && ac_state.ac_bus_2_powered());
-        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
-            .powered_by(&self.dc_bus_2);
-
-        self.dc_gnd_flt_service_bus
-            .powered_by(&self.tr_2_to_dc_gnd_flt_service_bus_contactor);
-        self.dc_gnd_flt_service_bus
-            .or_powered_by(&self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor);
-
-        self.dc_bus_1_tie_contactor.powered_by(&self.dc_bus_1);
-        self.dc_bus_2_tie_contactor.powered_by(&self.dc_bus_2);
-
-        self.dc_bus_1_tie_contactor
-            .close_when(self.dc_bus_1.is_powered() || self.dc_bus_2.is_powered());
-        self.dc_bus_2_tie_contactor.close_when(
-            (!self.dc_bus_1.is_powered() && self.dc_bus_2.is_powered())
-                || (!self.dc_bus_2.is_powered() && self.dc_bus_1.is_powered()),
+        self.tr_2_to_dc_gnd_flt_service_bus_contactor.close_when(
+            electricity.is_powered(ac_state.tr_2()) && !ac_state.ac_bus_2_powered(electricity),
+        );
+        electricity.flow(
+            ac_state.tr_2(),
+            &self.tr_2_to_dc_gnd_flt_service_bus_contactor,
         );
 
-        self.dc_bat_bus.powered_by(&self.dc_bus_1_tie_contactor);
-        self.dc_bat_bus.or_powered_by(&self.dc_bus_2_tie_contactor);
+        self.tr_ess_contactor.close_when(
+            !ac_state.tr_1_and_2_available(electricity)
+                && electricity.is_powered(ac_state.tr_ess()),
+        );
+        electricity.flow(ac_state.tr_ess(), &self.tr_ess_contactor);
 
-        self.dc_bus_1_tie_contactor.or_powered_by(&self.dc_bat_bus);
-        self.dc_bus_2_tie_contactor.or_powered_by(&self.dc_bat_bus);
-        self.dc_bus_1.or_powered_by(&self.dc_bus_1_tie_contactor);
-        self.dc_bus_2.or_powered_by(&self.dc_bus_2_tie_contactor);
+        electricity.flow(&self.tr_1_contactor, &self.dc_bus_1);
+        electricity.flow(&self.tr_2_contactor, &self.dc_bus_2);
 
-        self.battery_1_contactor.powered_by(&self.dc_bat_bus);
-        self.battery_2_contactor.powered_by(&self.dc_bat_bus);
+        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
+            .close_when(
+                electricity.is_powered(ac_state.tr_2()) && ac_state.ac_bus_2_powered(electricity),
+            );
+        electricity.flow(
+            &self.dc_bus_2,
+            &self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor,
+        );
 
+        electricity.flow(
+            &self.tr_2_to_dc_gnd_flt_service_bus_contactor,
+            &self.dc_gnd_flt_service_bus,
+        );
+        electricity.flow(
+            &self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor,
+            &self.dc_gnd_flt_service_bus,
+        );
+
+        electricity.flow(&self.dc_bus_1, &self.dc_bus_1_tie_contactor);
+        electricity.flow(&self.dc_bus_2, &self.dc_bus_2_tie_contactor);
+
+        let dc_bus_1_is_powered = electricity.is_powered(&self.dc_bus_1);
+        let dc_bus_2_is_powered = electricity.is_powered(&self.dc_bus_2);
+        self.dc_bus_1_tie_contactor
+            .close_when(dc_bus_1_is_powered || dc_bus_2_is_powered);
+        self.dc_bus_2_tie_contactor.close_when(
+            (!dc_bus_1_is_powered && dc_bus_2_is_powered)
+                || (!dc_bus_2_is_powered && dc_bus_1_is_powered),
+        );
+
+        electricity.flow(&self.dc_bus_1_tie_contactor, &self.dc_bat_bus);
+        electricity.flow(&self.dc_bus_2_tie_contactor, &self.dc_bat_bus);
+
+        electricity.supplied_by(&self.battery_1);
         self.battery_1_charge_limiter.update(
             context,
+            electricity,
             emergency_elec,
             emergency_generator,
             &self.battery_1,
@@ -181,9 +191,14 @@ impl A320DirectCurrentElectrical {
         );
         self.battery_1_contactor
             .close_when(self.battery_1_charge_limiter.should_close_contactor());
+        electricity.flow(&self.dc_bat_bus, &self.battery_1_contactor);
+        electricity.flow(&self.battery_1_contactor, &self.hot_bus_1);
+        electricity.flow(&self.hot_bus_1, &self.battery_1);
 
+        electricity.supplied_by(&self.battery_2);
         self.battery_2_charge_limiter.update(
             context,
+            electricity,
             emergency_elec,
             emergency_generator,
             &self.battery_2,
@@ -196,66 +211,46 @@ impl A320DirectCurrentElectrical {
         );
         self.battery_2_contactor
             .close_when(self.battery_2_charge_limiter.should_close_contactor());
+        electricity.flow(&self.dc_bat_bus, &self.battery_2_contactor);
+        electricity.flow(&self.battery_2_contactor, &self.hot_bus_2);
+        electricity.flow(&self.hot_bus_2, &self.battery_2);
 
-        self.battery_1.powered_by(&self.battery_1_contactor);
-        self.battery_2.powered_by(&self.battery_2_contactor);
-
-        self.battery_1_contactor.or_powered_by(&self.battery_1);
-        self.battery_2_contactor.or_powered_by(&self.battery_2);
-
-        self.dc_bat_bus
-            .or_powered_by_both_batteries(&self.battery_1_contactor, &self.battery_2_contactor);
-
-        // Power the contactors and batteries again, for situations
-        // where BAT 1 powers BAT 2 or vice versa.
-        self.battery_1_contactor.or_powered_by(&self.dc_bat_bus);
-        self.battery_2_contactor.or_powered_by(&self.dc_bat_bus);
-        self.battery_1.or_powered_by(&self.battery_1_contactor);
-        self.battery_2.or_powered_by(&self.battery_2_contactor);
-
-        self.hot_bus_1.powered_by(&self.battery_1_contactor);
-        self.hot_bus_1.or_powered_by(&self.battery_1);
-        self.hot_bus_2.powered_by(&self.battery_2_contactor);
-        self.hot_bus_2.or_powered_by(&self.battery_2);
-
-        self.apu_start_contactors.powered_by(&self.dc_bat_bus);
         self.apu_start_contactors.close_when(
             self.battery_1_contactor.is_closed()
                 && self.battery_2_contactor.is_closed()
                 && matches!(apu.signal(), Some(ContactorSignal::Close)),
         );
-        self.apu_start_motor_bus
-            .powered_by(&self.apu_start_contactors);
+        electricity.flow(&self.dc_bat_bus, &self.apu_start_contactors);
+        electricity.flow(&self.apu_start_contactors, &self.apu_start_motor_bus);
 
         let should_close_2xb_contactor =
-            self.should_close_2xb_contactors(context, emergency_generator, ac_state);
+            self.should_close_2xb_contactors(context, electricity, emergency_generator, ac_state);
         self.hot_bus_1_to_static_inv_contactor
             .close_when(should_close_2xb_contactor);
-        self.hot_bus_1_to_static_inv_contactor
-            .powered_by(&self.hot_bus_1);
-        self.static_inverter
-            .powered_by(&self.hot_bus_1_to_static_inv_contactor);
+        electricity.flow(&self.hot_bus_1, &self.hot_bus_1_to_static_inv_contactor);
+        electricity.flow(
+            &self.hot_bus_1_to_static_inv_contactor,
+            &self.static_inverter,
+        );
+        electricity.transform_in(&self.static_inverter);
 
         self.hot_bus_2_to_dc_ess_bus_contactor
             .close_when(should_close_2xb_contactor);
-        self.hot_bus_2_to_dc_ess_bus_contactor
-            .powered_by(&self.hot_bus_2);
+        electricity.flow(&self.hot_bus_2, &self.hot_bus_2_to_dc_ess_bus_contactor);
 
         self.dc_bat_bus_to_dc_ess_bus_contactor
-            .powered_by(&self.dc_bat_bus);
-        self.dc_bat_bus_to_dc_ess_bus_contactor
-            .close_when(ac_state.tr_1_and_2_available());
+            .close_when(ac_state.tr_1_and_2_available(electricity));
+        electricity.flow(&self.dc_bat_bus, &self.dc_bat_bus_to_dc_ess_bus_contactor);
 
-        self.dc_ess_bus
-            .powered_by(&self.dc_bat_bus_to_dc_ess_bus_contactor);
-        self.dc_ess_bus.or_powered_by(&self.tr_ess_contactor);
-        self.dc_ess_bus
-            .or_powered_by(&self.hot_bus_2_to_dc_ess_bus_contactor);
+        electricity.flow(&self.dc_bat_bus_to_dc_ess_bus_contactor, &self.dc_ess_bus);
+        electricity.flow(&self.tr_ess_contactor, &self.dc_ess_bus);
+        electricity.flow(&self.hot_bus_2_to_dc_ess_bus_contactor, &self.dc_ess_bus);
 
-        self.dc_ess_shed_contactor.powered_by(&self.dc_ess_bus);
         self.dc_ess_shed_contactor
             .close_when(self.hot_bus_2_to_dc_ess_bus_contactor.is_open());
-        self.dc_ess_shed_bus.powered_by(&self.dc_ess_shed_contactor);
+        electricity.flow(&self.dc_ess_bus, &self.dc_ess_shed_contactor);
+
+        electricity.flow(&self.dc_ess_shed_contactor, &self.dc_ess_shed_bus);
     }
 
     /// Determines if the 2XB contactors should be closed. 2XB are the two contactors
@@ -263,11 +258,12 @@ impl A320DirectCurrentElectrical {
     fn should_close_2xb_contactors(
         &self,
         context: &UpdateContext,
+        eletricity: &Electricity,
         emergency_generator: &EmergencyGenerator,
         ac_state: &impl A320AlternatingCurrentElectricalSystem,
     ) -> bool {
-        !ac_state.any_non_essential_bus_powered()
-            && !emergency_generator.is_powered()
+        !ac_state.any_non_essential_bus_powered(eletricity)
+            && !eletricity.is_powered(emergency_generator)
             && ((context.indicated_airspeed() < Velocity::new::<knot>(50.)
                 && self.batteries_connected_to_bat_bus())
                 || context.indicated_airspeed() >= Velocity::new::<knot>(50.))
@@ -307,13 +303,13 @@ impl A320DirectCurrentElectrical {
     }
 
     #[cfg(test)]
-    pub fn battery_1_input_potential(&self) -> Potential {
-        self.battery_1.input_potential()
+    pub fn battery_1(&self) -> &Battery {
+        &self.battery_1
     }
 
     #[cfg(test)]
-    pub fn battery_2_input_potential(&self) -> Potential {
-        self.battery_2.input_potential()
+    pub fn battery_2(&self) -> &Battery {
+        &self.battery_2
     }
 
     #[cfg(test)]
@@ -330,18 +326,6 @@ impl A320DirectCurrentElectrical {
         identifier_provider: &mut impl ElectricalElementIdentifierProvider,
     ) {
         self.battery_2 = Battery::empty(2, identifier_provider);
-    }
-
-    pub fn add_supplied_power(&self, state: &mut SuppliedPower) {
-        state.add_bus(&self.dc_bus_1);
-        state.add_bus(&self.dc_bus_2);
-        state.add_bus(&self.dc_ess_bus);
-        state.add_bus(&self.dc_ess_shed_bus);
-        state.add_bus(&self.dc_bat_bus);
-        state.add_bus(&self.hot_bus_1);
-        state.add_bus(&self.hot_bus_2);
-        state.add_bus(&self.dc_gnd_flt_service_bus);
-        state.add_bus(&self.apu_start_motor_bus);
     }
 }
 impl A320DirectCurrentElectricalSystem for A320DirectCurrentElectrical {
