@@ -1404,16 +1404,16 @@ impl A320AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: f64 = 10.;
 
     // Dynamic decel target map versus time for any mode that needs it
-    const LOW_MODE_DECEL_PROFILE_ACCEL: [f64; 4] = [5., 5., 0., -2.];
-    const LOW_MODE_DECEL_PROFILE_TIME: [f64; 4] = [0., 1.99, 2., 6.];
+    const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [5., 5., 0., -2.];
+    const LOW_MODE_DECEL_PROFILE_TIME_MS2: [f64; 4] = [0., 1.99, 2., 6.];
 
     const MED_MODE_DECEL_PROFILE_ACCEL: [f64; 5] = [5., 5., 0., -2., -3.];
     const MED_MODE_DECEL_PROFILE_TIME: [f64; 5] = [0., 1.99, 2., 5., 6.];
 
-    const MAX_MODE_DECEL_TARGET: f64 = -6.;
-    const OFF_MODE_DECEL_TARGET: f64 = 5.;
+    const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
+    const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
 
-    const MARGIN_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
+    const MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
     const TARGET_TO_SHOW_DECEL_IN_MAX_MS2: f64 = -2.7;
 
     fn new() -> A320AutobrakeController {
@@ -1497,7 +1497,7 @@ impl A320AutobrakeController {
             deceleration_demanded
                 && self
                     .deceleration_governor
-                    .is_on_target(Self::MARGIN_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED)
+                    .is_on_target(Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED)
         } else {
             deceleration_demanded
                 && self
@@ -1538,12 +1538,12 @@ impl A320AutobrakeController {
         match self.mode {
             A320AutobrakeMode::NONE => {
                 self.target =
-                    Acceleration::new::<meter_per_second_squared>(Self::OFF_MODE_DECEL_TARGET);
+                    Acceleration::new::<meter_per_second_squared>(Self::OFF_MODE_DECEL_TARGET_MS2);
             }
             A320AutobrakeMode::LOW => {
                 self.target = Acceleration::new::<meter_per_second_squared>(interpolation(
-                    &Self::LOW_MODE_DECEL_PROFILE_TIME,
-                    &Self::LOW_MODE_DECEL_PROFILE_ACCEL,
+                    &Self::LOW_MODE_DECEL_PROFILE_TIME_MS2,
+                    &Self::LOW_MODE_DECEL_PROFILE_ACCEL_MS2,
                     self.deceleration_governor.time_engaged().as_secs_f64(),
                 ));
             }
@@ -1556,7 +1556,7 @@ impl A320AutobrakeController {
             }
             A320AutobrakeMode::MAX => {
                 self.target =
-                    Acceleration::new::<meter_per_second_squared>(Self::MAX_MODE_DECEL_TARGET);
+                    Acceleration::new::<meter_per_second_squared>(Self::MAX_MODE_DECEL_TARGET_MS2);
             }
         }
     }
