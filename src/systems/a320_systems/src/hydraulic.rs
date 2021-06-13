@@ -1437,7 +1437,7 @@ impl A320AutobrakeController {
         self.ground_spoilers_active
     }
 
-    fn spoilers_retracted_event(&self) -> bool {
+    fn spoilers_retracted_during_this_update(&self) -> bool {
         !self.ground_spoilers_active && self.last_ground_spoilers_active
     }
 
