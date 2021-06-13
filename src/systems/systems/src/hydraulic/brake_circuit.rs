@@ -2,7 +2,6 @@ use crate::{
     hydraulic::HydraulicLoop,
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
-//use crate::simulation::SimulatorReader;
 use std::f64::consts::E;
 use std::string::String;
 use std::time::Duration;
