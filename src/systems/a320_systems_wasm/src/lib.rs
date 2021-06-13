@@ -21,7 +21,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut msfs_simulation_handler = MsfsSimulationHandler::new(vec![
         Box::new(ElectricalBuses::new()),
         Box::new(Brakes::new(&mut sim_connect.as_mut())?),
-        Box::new(AutoBrakes::new(&mut sim_connect.as_mut())?),
+        Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
         Box::new(create_aircraft_variable_reader()?),
         Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
     ]);
@@ -195,7 +195,7 @@ struct Autobrakes {
     max_mode_requested: bool,
     disarm_requested: bool,
 }
-impl AutoBrakes {
+impl Autobrakes {
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
             // SimConnect inputs masking
@@ -234,8 +234,8 @@ impl AutoBrakes {
         self.disarm_requested = true;
     }
 }
-impl SimulatorAspect for AutoBrakes {}
-impl ReadWrite for AutoBrakes {
+impl SimulatorAspect for Autobrakes {}
+impl ReadWrite for Autobrakes {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
             "KEY_AUTOBRAKE_DISARM" => Some(self.disarm_requested as u8 as f64),
@@ -246,7 +246,7 @@ impl ReadWrite for AutoBrakes {
         }
     }
 }
-impl HandleMessage for AutoBrakes {
+impl HandleMessage for Autobrakes {
     fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
         match message {
             SimConnectRecv::Event(e) => {
@@ -270,7 +270,7 @@ impl HandleMessage for AutoBrakes {
         }
     }
 }
-impl PrePostTick for AutoBrakes {
+impl PrePostTick for Autobrakes {
     fn pre_tick(&mut self, delta: Duration) {}
 
     fn post_tick(
