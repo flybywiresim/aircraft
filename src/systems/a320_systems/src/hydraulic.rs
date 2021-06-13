@@ -1526,7 +1526,7 @@ impl A320AutobrakeController {
                     || (self.left_brake_pedal_input > 0.11 && self.right_brake_pedal_input > 0.11)
             }
             A320AutobrakeMode::MAX => {
-                // MAX desactivates if one pedal over 77% or two over 11%
+                // MAX deactivates if one pedal over 77% or two over 11%.
                 self.left_brake_pedal_input > 0.77
                     || self.right_brake_pedal_input > 0.77
                     || (self.left_brake_pedal_input > 0.53 && self.right_brake_pedal_input > 0.53)
