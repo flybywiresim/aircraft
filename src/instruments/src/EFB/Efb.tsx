@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 
 import { Provider } from 'react-redux';
 import { Route, Switch, useHistory } from 'react-router-dom';
@@ -14,6 +14,7 @@ import Performance from './Performance/Performance';
 import Navigation from './Navigation/Navigation';
 import Settings from './Settings/Settings';
 import Checklists from './Checklists';
+import { ChecklistContext, ChecklistReducer } from './Store/checklists-context';
 import store from './Store';
 
 type TimeState = {
@@ -114,6 +115,7 @@ const Efb = () => {
     const history = useHistory();
     const [navigraph] = useState(() => new NavigraphClient());
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
+    const [checklistState, checklistDispatch] = useReducer(ChecklistReducer, {});
     const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
     const [timeState, setTimeState] = useState<TimeState>({
         currentTime: new Date(),
@@ -224,56 +226,59 @@ const Efb = () => {
     return (
         <Provider store={store}>
             <NavigraphContext.Provider value={navigraph}>
-                <div className="flex flex-col">
-                    <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
-                    <div className="flex flex-row">
-                        <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
-                        <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen overflow-hidden flex flex-col">
-                            <Switch>
-                                <Route path="/dashboard">
-                                    <Dashboard
-                                        simbriefData={simbriefData}
-                                        fetchSimbrief={fetchSimbriefData}
-                                    />
-                                </Route>
-                                <Route path="/dispatch">
-                                    <Dispatch
-                                        loadsheet={simbriefData.loadsheet}
-                                        weights={simbriefData.weights}
-                                        fuels={simbriefData.fuels}
-                                        units={simbriefData.units}
-                                        arrivingAirport={simbriefData.arrivingAirport}
-                                        arrivingIata={simbriefData.arrivingIata}
-                                        departingAirport={simbriefData.departingAirport}
-                                        departingIata={simbriefData.departingIata}
-                                        altBurn={simbriefData.altBurn}
-                                        altIcao={simbriefData.altIcao}
-                                        altIata={simbriefData.altIata}
-                                        tripTime={simbriefData.tripTime}
-                                        contFuelTime={simbriefData.contFuelTime}
-                                        resFuelTime={simbriefData.resFuelTime}
-                                        taxiOutTime={simbriefData.taxiOutTime}
-                                    />
-                                </Route>
-                                <Route path="/ground">
-                                    <Ground />
-                                </Route>
-                                <Route path="/performance">
-                                    <Performance />
-                                </Route>
-                                <Route path="/navigation">
-                                    <Navigation />
-                                </Route>
-                                <Route path="/checklist">
-                                    <Checklists />
-                                </Route>
-                                <Route path="/settings">
-                                    <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
-                                </Route>
-                            </Switch>
+                <ChecklistContext.Provider value={{ checklistState, checklistDispatch }}>
+                    <div className="flex flex-col">
+                        <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
+                        <div className="flex flex-row">
+                            <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
+                            <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen overflow-hidden flex flex-col">
+                                <Switch>
+                                    <Route path="/dashboard">
+                                        <Dashboard
+                                            simbriefData={simbriefData}
+                                            fetchSimbrief={fetchSimbriefData}
+                                        />
+                                    </Route>
+                                    <Route path="/dispatch">
+                                        <Dispatch
+                                            loadsheet={simbriefData.loadsheet}
+                                            weights={simbriefData.weights}
+                                            fuels={simbriefData.fuels}
+                                            units={simbriefData.units}
+                                            arrivingAirport={simbriefData.arrivingAirport}
+                                            arrivingIata={simbriefData.arrivingIata}
+                                            departingAirport={simbriefData.departingAirport}
+                                            departingIata={simbriefData.departingIata}
+                                            altBurn={simbriefData.altBurn}
+                                            altIcao={simbriefData.altIcao}
+                                            altIata={simbriefData.altIata}
+                                            tripTime={simbriefData.tripTime}
+                                            contFuelTime={simbriefData.contFuelTime}
+                                            resFuelTime={simbriefData.resFuelTime}
+                                            taxiOutTime={simbriefData.taxiOutTime}
+                                        />
+                                    </Route>
+                                    <Route path="/ground">
+                                        <Ground />
+                                    </Route>
+                                    <Route path="/performance">
+                                        <Performance />
+                                    </Route>
+                                    <Route path="/navigation">
+                                        <Navigation />
+                                    </Route>
+                                    <Route path="/checklist">
+                                        <Checklists />
+                                    </Route>
+                                    <Route path="/settings">
+                                        <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
+                                    </Route>
+                                </Switch>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </ChecklistContext.Provider>
+                `
             </NavigraphContext.Provider>
         </Provider>
     );

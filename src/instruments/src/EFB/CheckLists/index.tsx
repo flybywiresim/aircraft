@@ -1,10 +1,10 @@
 import React, { useState, useContext, useRef } from 'react';
 import { IconCheck } from '@tabler/icons';
-import { checklistCollection, ECheckListTypes } from './data';
+import { checklistCollection, EChecklistTypes } from './data';
 import { Navbar } from '../Components/Navbar';
 import ChecklistStep from './ChecklistStep';
 import ChecklistTheLine from './ChecklistTheLine';
-import { EChecklistActions, ChecklistContext } from '../Store/checklist-context';
+import { EChecklistActions, ChecklistContext } from '../Store/checklists-context';
 
 enum EChecklistStates {
     INCOMPLETE = 'incomplete',
@@ -12,56 +12,35 @@ enum EChecklistStates {
     CHECKLIST_DONE = 'checklist-done'
 }
 
-// const initialiseChecks = (() => {
-//     const checks = {};
-//     for (let i = 0; i < checklists.length; i++) {
-//         checks[i] = { isCompleted: false };
-//     }
-//     return checks;
-// })();
-
 const Checklists: React.FC = () => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
     const [currentChecklist, setCurrentChecklist] = useState(0);
-
     const { checklistState, checklistDispatch } = useContext(ChecklistContext);
 
     const isChecklistComplete = (() => {
-        // const stepCount = checklistCollection[currentChecklist].items.filter(({ type }) => type === ECheckListTypes.STEP).length;
-        // const checkCount = Object.keys(checklistState[currentChecklist]).filter((key) => key !== 'isCompleted' && checklistState[currentChecklist][key] !== false).length;
-        // if (checklistState[currentChecklist].isCompleted === true) return EChecklistStates.CHECKLIST_DONE;
-        // if (stepCount === checkCount) return EChecklistStates.CHECKS_DONE;
-        // return EChecklistStates.INCOMPLETE;
+        if (checklistState[currentChecklist]) {
+            if (checklistState[currentChecklist].isCompleted) return EChecklistStates.CHECKLIST_DONE;
+            const stepCount = checklistCollection[currentChecklist].items.filter(({ type }) => type === EChecklistTypes.STEP).length;
+            const checkCount = Object.keys(checklistState[currentChecklist]).filter((key) => key !== 'isCompleted' && checklistState[currentChecklist][key] !== false).length;
+            if (checklistState[currentChecklist].isCompleted === true) return EChecklistStates.CHECKLIST_DONE;
+            if (stepCount === checkCount) return EChecklistStates.CHECKS_DONE;
+            return EChecklistStates.INCOMPLETE;
+        }
+        return EChecklistStates.INCOMPLETE;
     })();
 
     // marks entire checklist
     const switchChecklistState = () => {
-        console.log('switch check list state');
-
-        // // capture initial state of checklist completion
-        // const initialState = checklistState[currentChecklist].isCompleted;
-        // // clone checks
-        // const newChecks = Object.assign(checklistState);
-        // // switch value of current checklist
-        // newChecks[currentChecklist].isCompleted = !checklistState[currentChecklist].isCompleted;
-        // // set new checks to state
-        // checklistDispatch(newChecks, ChecklistActions.SET_CHECKLIST);
-        // // if isCompleted, then change checklist to the next one
-        // if (!initialState && currentChecklist !== checklists.length - 1) setCurrentChecklist(currentChecklist + 1);
+        checklistDispatch({ type: EChecklistActions.SET_LIST_CHECK, payload: { checklistIndex: currentChecklist } });
+        // if isCompleted, then change checklist to the next one
+        if (currentChecklist !== checklistCollection.length - 1) setCurrentChecklist(currentChecklist + 1);
     };
 
     // marks single step
     const switchStepState = (stepIndex) => {
-        console.log('switchStepState');
-
-        // // clone checks
-        // const newChecks = Object.assign(checklistState);
-        // // switch value of check
-        // newChecks[currentChecklist][stepIndex] = !checklistState[currentChecklist][stepIndex];
-        // // set new checks to state
-        checklistDispatch({ state: checklistState, stepIndex, checklistIndex: currentChecklist }, EChecklistActions.SET_CHECKLIST);
+        checklistDispatch({ type: EChecklistActions.SET_STEP_CHECK, payload: { stepIndex, checklistIndex: currentChecklist } });
     };
 
     const mouseDownHandler = (event) => {
@@ -98,18 +77,20 @@ const Checklists: React.FC = () => {
                 w-1/2 grabbable show-scrollbar overflow-y-auto"
             >
                 {
-                    checklistCollection[currentChecklist].items.map((item, index) => {
-                        const checksExist = checklistState[currentChecklist];
-                        const isChecked = (checksExist) ? checklistState[currentChecklist][index] : false;
+                    checklistCollection[currentChecklist].items.map((item, stepIndex) => {
+                        const check = checklistState[currentChecklist];
+                        const stepCheck = check && checklistState[currentChecklist][stepIndex];
+                        const isChecked = stepCheck ? stepCheck.isCompleted : false;
                         switch (item.type) {
                         case 'step': {
                             return (
                                 <ChecklistStep
-                                    key={index.toString() + isChecked.toString()}
+                                    key={stepIndex.toString() + isChecked.toString()}
                                     {...item}
-                                    isChecked={checksExist && checklistState[currentChecklist][index]}
+                                    isDisabled={checklistState[currentChecklist]?.isCompleted || false}
+                                    isChecked={isChecked}
                                     // if current checklist isCompleted, then don't allow changing step states
-                                    onChecked={() => !checklistState[currentChecklist]?.isCompleted && switchStepState(index)}
+                                    onChecked={() => switchStepState(stepIndex)}
                                 />
                             );
                         }

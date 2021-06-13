@@ -1,8 +1,9 @@
-import React, { createContext } from 'react';
+import React, { Context, createContext } from 'react';
 import { produce } from 'immer';
 
 export enum EChecklistActions {
-    SET_CHECKLIST
+    SET_LIST_CHECK,
+    SET_STEP_CHECK
 }
 
 export type TChecklistItem = {
@@ -19,25 +20,36 @@ export type TChecklistContext = {
     checklistDispatch: React.Dispatch<any>;
 }
 
-export const ChecklistReducer = (state, action: EChecklistActions) => {
-    console.log('1', state, action);
+const Reducer = (state, action) => {
+    const { checklistIndex, stepIndex } = action.payload;
+
     switch (action.type) {
-    case EChecklistActions.SET_CHECKLIST:
-
-        console.log('2', state);
-
-        const newState = produce(state.checklistState, (draft) => {
-            draft.team.teamFoo.matthew = {};
-
-            draft.team.newTeam = {
-                joel: {},
-                adam: {},
-            };
+    case EChecklistActions.SET_LIST_CHECK: {
+        const newState = produce(state, (draft) => {
+            draft[checklistIndex].isCompleted = !draft[checklistIndex].isCompleted;
         });
         return newState;
-    default:
-        throw new Error();
+    }
+
+    case EChecklistActions.SET_STEP_CHECK: {
+        const newState = produce(state, (draft) => {
+            if (!draft[checklistIndex]) draft[checklistIndex] = { isCompleted: false };
+            if (!draft[checklistIndex][stepIndex]) {
+                draft[checklistIndex][stepIndex] = { isCompleted: true };
+            } else {
+                draft[checklistIndex][stepIndex].isCompleted = !draft[checklistIndex][stepIndex].isCompleted;
+            }
+        });
+        return newState;
+    }
+
+    default: {
+        throw new Error('No valid action provided');
+    }
     }
 };
 
-export const ChecklistContext = createContext<TChecklistContext>({ checklistState: {}, checklistDispatch: () => {} });
+// Curried
+export const ChecklistReducer = produce(Reducer);
+
+export const ChecklistContext:Context<TChecklistContext> = createContext<TChecklistContext>({ checklistState: {}, checklistDispatch: () => {} });
