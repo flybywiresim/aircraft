@@ -84,6 +84,14 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
         return split.join('.');
     };
 
+    useEffect(() => {
+        if (focused) {
+            Coherent.trigger('FOCUS_INPUT_FIELD');
+        } else {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        }
+    }, [focused]);
+
     return (
         <>
             {props.noLabel
