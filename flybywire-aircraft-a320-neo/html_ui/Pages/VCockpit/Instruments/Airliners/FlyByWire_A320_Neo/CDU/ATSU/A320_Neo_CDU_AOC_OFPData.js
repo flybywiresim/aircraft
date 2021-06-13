@@ -157,10 +157,13 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[4] = async () => {
-            if (currentBlockFuel) {
-                loadFuel(mcdu, updateView);
+            const isOnGround = SimVar.GetSimVarValue('L:A32NX_RCDR_GROUND_CONTROL_ON', 'bool');
+            if (isOnGround) {
+                if (currentBlockFuel) {
+                    loadFuel(mcdu, updateView);
 
-                updateView();
+                    updateView();
+                }
             }
         };
 
