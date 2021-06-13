@@ -1413,7 +1413,7 @@ pub struct A320AutobrakeController {
     in_flight_disarm_event: bool,
 }
 impl A320AutobrakeController {
-    const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE: f64 = 10.;
+    const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
 
     // Dynamic decel target map versus time for any mode that needs it
     const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [5., 5., 0., -2.];
