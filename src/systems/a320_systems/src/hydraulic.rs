@@ -1520,7 +1520,7 @@ impl A320AutobrakeController {
         match self.mode {
             A320AutobrakeMode::NONE => false,
             A320AutobrakeMode::LOW | A320AutobrakeMode::MED => {
-                // LOW and MED desactivates if one pedal over 53% or two over 11%
+                // LOW and MED deactivates if one pedal over 53% or two over 11%.
                 self.left_brake_pedal_input > 0.53
                     || self.right_brake_pedal_input > 0.53
                     || (self.left_brake_pedal_input > 0.11 && self.right_brake_pedal_input > 0.11)
