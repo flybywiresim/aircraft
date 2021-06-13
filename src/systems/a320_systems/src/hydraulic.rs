@@ -1624,14 +1624,7 @@ impl A320AutobrakeController {
 }
 impl SimulationElement for A320AutobrakeController {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let mode_num: u8;
-        match self.mode {
-            A320AutobrakeMode::NONE => mode_num = 0,
-            A320AutobrakeMode::LOW => mode_num = 1,
-            A320AutobrakeMode::MED => mode_num = 2,
-            A320AutobrakeMode::MAX => mode_num = 3,
-        }
-        writer.write("AUTOBRAKES_ARMED_MODE", mode_num as f64);
+        writer.write("AUTOBRAKES_ARMED_MODE", self.mode as u8 as f64);
         writer.write("AUTOBRAKES_BRAKING", self.is_decelerating());
     }
 
