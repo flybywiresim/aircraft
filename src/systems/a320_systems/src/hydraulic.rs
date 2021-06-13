@@ -389,13 +389,11 @@ impl A320Hydraulic {
     fn update_green_actuators_volume(&mut self) {
         self.green_loop
             .update_actuator_volumes(&self.braking_circuit_norm);
-        self.braking_circuit_norm.reset_accumulators();
     }
 
     fn update_yellow_actuators_volume(&mut self) {
         self.yellow_loop
             .update_actuator_volumes(&self.braking_circuit_altn);
-        self.braking_circuit_altn.reset_accumulators();
     }
 
     fn update_blue_actuators_volume(&mut self) {}

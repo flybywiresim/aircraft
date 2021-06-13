@@ -98,6 +98,8 @@ fn main() {
     green_loop_edp_simulation(path);
     yellow_green_ptu_loop_simulation(path);
     yellow_epump_plus_edp2_with_ptu(path);
+
+    section_basic_tests(path);
 }
 
 fn make_figure(h: &History) -> Figure {
@@ -593,6 +595,69 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
 
     accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc", &path);
     accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc", &path);
+}
+fn section_basic_tests(path: &str) {
+    let edp_section_names = vec![
+        "EDP section Pressure".to_string(),
+        "EDP section volume".to_string(),
+        "EDP section flow".to_string(),
+        "EDP pump rpm".to_string(),
+        "EDP max vol".to_string(),
+        "EDP displacement".to_string(),
+    ];
+
+    let mut edp_section_history = History::new(edp_section_names);
+
+    let edp = EngineDrivenPump::new(1);
+    let mut edp_controller = TestPumpController::command_depressurise();
+
+    let mut edp_section = Section::New();
+
+    let context = context(Duration::from_millis(100));
+
+    edp_section_history.init(
+        0.0,
+        vec![
+            edp_section.pressure().get::<psi>(),
+            edp_section.volume().get::<gallon>(),
+            edp_section.flow().get::<gallon_per_second>(),
+            edp.rpm(),
+            edp.max_vol(),
+            edp.displacement(),
+        ],
+    );
+
+    for x in 0..800 {
+        if x == 10 {
+            // After 1s pressurising edp
+            edp_controller.command_pressurise();
+        }
+
+        edp.update(&context, &yellow_loop, edp_rpm, &edp_controller);
+
+        edp_section.update(
+            &context,
+            vec![&epump],
+            vec![&edp2],
+            Vec::new(),
+            vec![&ptu],
+            &loop_controller,
+        );
+
+        edp_section_history.update(
+            context.delta_as_secs_f64(),
+            vec![
+                edp_section.pressure().get::<psi>(),
+                edp_section.volume().get::<gallon>(),
+                edp_section.flow().get::<gallon_per_second>(),
+                edp.rpm(),
+                edp.max_vol(),
+                edp.displacement(),
+            ],
+        );
+    }
+
+    edp_section_history.show_matplotlib("basic_section_tests", &path);
 }
 
 fn yellow_epump_plus_edp2_with_ptu(path: &str) {
