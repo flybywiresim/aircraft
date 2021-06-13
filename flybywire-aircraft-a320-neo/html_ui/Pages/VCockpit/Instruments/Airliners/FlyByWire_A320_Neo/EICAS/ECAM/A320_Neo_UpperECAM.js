@@ -1897,11 +1897,12 @@ var A320_Neo_UpperECAM;
             this.checkIgnitionPhaseForAVAIL(_deltaTime);
         }
         checkIgnitionPhaseForAVAIL(_deltaTime) {
+            let idleN1 = SimVar.GetSimVarValue("L:A32NX_ENGINE_IDLE_N1", "number") - 0.3;
             if (this.getN1GaugeValue() < 1) {
                 this.timerAvailFlag = 1;
             }
             if (this.getEngineStartStatus() && this.getIgnitionStatus()) {
-                if (this.getN1GaugeValue() > 18.3 && this.timerAvailFlag == 1) {
+                if (this.getN1GaugeValue() > idleN1 && this.timerAvailFlag == 1) { // JMR
                     if (this.timerAvail == -1) {
                         this.timerAvail = 10;
                     } else if (this.timerAvail >= 0) {
