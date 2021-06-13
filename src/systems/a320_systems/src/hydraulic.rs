@@ -12,9 +12,10 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
     },
     shared::{
-        interpolation, DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType,
-        ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
-        EngineFirePushButtons, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+        interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
+        ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
+        EmergencyElectricalState, EngineFirePushButtons, LandingGearPosition,
+        RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
@@ -1409,8 +1410,7 @@ pub struct A320AutobrakeController {
     ground_spoilers_are_deployed: bool,
     last_ground_spoilers_are_deployed: bool,
 
-    should_disarm_after_time_in_flight: DelayedTrueLogicGate,
-    in_flight_disarm_event: bool,
+    should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
 }
 impl A320AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
@@ -1438,10 +1438,9 @@ impl A320AutobrakeController {
             right_brake_pedal_input: 0.,
             ground_spoilers_are_deployed: false,
             last_ground_spoilers_are_deployed: false,
-            should_disarm_after_time_in_flight: DelayedTrueLogicGate::new(Duration::from_secs_f64(
-                Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS,
-            )),
-            in_flight_disarm_event: false,
+            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
+                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
+            ),
         }
     }
 
@@ -1539,7 +1538,7 @@ impl A320AutobrakeController {
             || !self.is_armed()
             || !self.arming_is_allowed_by_bcu
             || self.spoilers_retracted_during_this_update()
-            || self.in_flight_disarm_event
+            || self.should_disarm_after_time_in_flight.output()
     }
 
     fn update_target(&mut self) {
@@ -1562,7 +1561,6 @@ impl A320AutobrakeController {
     fn disarm(&mut self) {
         self.mode = A320AutobrakeMode::NONE;
         self.deceleration_governor.disable();
-        self.in_flight_disarm_event = false;
     }
 
     fn engage(&mut self) {
@@ -1578,12 +1576,8 @@ impl A320AutobrakeController {
         pedal_input_right: f64,
         weight_on_wheels: bool,
     ) {
-        let in_flight_disarm_event_last = self.should_disarm_after_time_in_flight.output();
         self.should_disarm_after_time_in_flight
             .update(context, !weight_on_wheels);
-
-        self.in_flight_disarm_event =
-            !in_flight_disarm_event_last && self.should_disarm_after_time_in_flight.output();
 
         self.arming_is_allowed_by_bcu = allow_arming && !external_disarm_request;
         self.left_brake_pedal_input = pedal_input_left;

@@ -191,6 +191,39 @@ impl DelayedTrueLogicGate {
     }
 }
 
+pub struct DelayedPulseTrueLogicGate {
+    output: bool,
+    last_gate_output: bool,
+    true_delayed_gate: DelayedTrueLogicGate,
+}
+impl DelayedPulseTrueLogicGate {
+    pub fn new(delay: Duration) -> DelayedPulseTrueLogicGate {
+        DelayedPulseTrueLogicGate {
+            output: false,
+            last_gate_output: false,
+            true_delayed_gate: DelayedTrueLogicGate::new(delay),
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
+        self.true_delayed_gate.update(&context, expression_result);
+
+        let gate_out = self.true_delayed_gate.output();
+
+        if gate_out && !self.last_gate_output {
+            self.output = true;
+        } else {
+            self.output = false;
+        }
+
+        self.last_gate_output = gate_out;
+    }
+
+    pub fn output(&self) -> bool {
+        self.output
+    }
+}
+
 /// The delay logic gate delays the false result of a given expression by the given amount of time.
 /// True results are output immediately. Starts with a false result state.
 pub struct DelayedFalseLogicGate {
@@ -480,6 +513,123 @@ mod delayed_false_logic_gate_tests {
     }
 }
 
+#[cfg(test)]
+mod delayed_pulse_true_logic_gate_tests {
+    use super::*;
+    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::{Aircraft, SimulationElement};
+
+    struct TestAircraft {
+        gate: DelayedPulseTrueLogicGate,
+        expression_result: bool,
+    }
+    impl TestAircraft {
+        fn new(gate: DelayedPulseTrueLogicGate) -> Self {
+            Self {
+                gate,
+                expression_result: false,
+            }
+        }
+
+        fn set_expression(&mut self, value: bool) {
+            self.expression_result = value;
+        }
+
+        fn gate_output(&mut self) -> bool {
+            self.gate.output()
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+            self.gate.update(context, self.expression_result);
+        }
+    }
+    impl SimulationElement for TestAircraft {}
+
+    #[test]
+    fn when_the_expression_is_false_initially_returns_false() {
+        let mut aircraft =
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(100)));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(1_000));
+
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), false);
+    }
+
+    #[test]
+    fn when_the_expression_is_true_returns_false_if_less_than_delay() {
+        let mut aircraft =
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(100)));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(50));
+
+        aircraft.set_expression(true);
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), false);
+    }
+
+    #[test]
+    fn when_the_expression_is_false_and_delay_hasnt_passed_returns_false() {
+        let mut aircraft = TestAircraft::new(DelayedPulseTrueLogicGate::new(
+            Duration::from_millis(10_000),
+        ));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(0));
+
+        aircraft.set_expression(false);
+        test_bed.run_aircraft(&mut aircraft);
+        aircraft.set_expression(false);
+        test_bed.set_delta(Duration::from_millis(1_000));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), false);
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_becomes_false_before_delay_has_passed_returns_false_once_delay_passed(
+    ) {
+        let mut aircraft =
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(1_000)));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(0));
+
+        aircraft.set_expression(true);
+        test_bed.run_aircraft(&mut aircraft);
+        test_bed.set_delta(Duration::from_millis(800));
+        test_bed.run_aircraft(&mut aircraft);
+
+        aircraft.set_expression(false);
+        test_bed.set_delta(Duration::from_millis(100));
+        test_bed.run_aircraft(&mut aircraft);
+        test_bed.set_delta(Duration::from_millis(200));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), false);
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_stays_true_until_delay_has_passed_returns_true_on_one_update_only(
+    ) {
+        let mut aircraft =
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(1_000)));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(0));
+
+        aircraft.set_expression(true);
+        test_bed.run_aircraft(&mut aircraft);
+        test_bed.set_delta(Duration::from_millis(1200));
+        test_bed.run_aircraft(&mut aircraft);
+        assert_eq!(aircraft.gate_output(), true);
+
+        test_bed.set_delta(Duration::from_millis(100));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), false);
+
+        test_bed.set_delta(Duration::from_millis(1200));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), false);
+    }
+}
 #[cfg(test)]
 mod interpolation_tests {
     use super::*;
