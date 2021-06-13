@@ -50,7 +50,7 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
         const constrainedValue = getConstrainedValue(value);
 
         setDisplayValue(constrainedValue);
-        setFocused(true);
+        setFocused(false);
     };
 
     const getConstrainedValue = (value: string): string => {
