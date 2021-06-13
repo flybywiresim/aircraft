@@ -1,5 +1,7 @@
 # Instruments
 
+## Creating an instrument
+
 To create a new instrument, create a folder in `/src/instruments/src`, with a `config.json` file, for example:
 
 ```json
@@ -25,3 +27,16 @@ ReactDOM.render(<MyAwesomeThing/>, renderTarget);
 
 // or something else!
 ```
+
+## Build process
+
+The build process is based on `rollup` and has two configurations:
+
+- `buildSrc/simulatorBuild.mjs` - this creates a configuration which includes both the base compile (babel, postcss, ...) and the MSFS VCockpit template generation;
+- `buildSrc/browserBuild.mjs` - this creates a configuration which includes both the base compile (babel, postcss, ...), without any MSFS extras.
+
+The instruments and ECAM pages to build are provided by `buildSrc/igniter/tasks.mjs`.
+
+### Igniter task generation
+
+For `igniter` builds, `buildSrc/igniter/tasks.mjs` generates a list of `igniter` tasks which are run by the aircraft build.
