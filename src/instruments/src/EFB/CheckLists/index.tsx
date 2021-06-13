@@ -4,7 +4,8 @@ import { checklistCollection, EChecklistTypes } from './data';
 import { Navbar } from '../Components/Navbar';
 import ChecklistStep from './ChecklistStep';
 import ChecklistTheLine from './ChecklistTheLine';
-import { EChecklistActions, ChecklistContext } from '../Store/checklists-context';
+import { EChecklistActions } from '../Store/checklists-reducer';
+import { GlobalContext } from '../Store/global-context';
 
 enum EChecklistStates {
     INCOMPLETE = 'incomplete',
@@ -17,7 +18,7 @@ const Checklists: React.FC = () => {
     const ref = useRef<HTMLDivElement>(null);
 
     const [currentChecklist, setCurrentChecklist] = useState(0);
-    const { checklistState, checklistDispatch } = useContext(ChecklistContext);
+    const { checklistState, checklistDispatch } = useContext(GlobalContext);
 
     const isChecklistComplete = (() => {
         if (checklistState[currentChecklist]) {

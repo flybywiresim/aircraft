@@ -2,10 +2,10 @@
   "name": "a32nx",
   "version": "0.7.0-dev",
   "scripts": {
-    "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
+    "lint": "npx eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
     "lint-fix": "npm run lint -- --fix",
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
-    "serve:efb": "cd src/instruments/src/EFB/ && rollup -wc ./rollup.development.config.js",
+    "serve:efb": "cd src/instruments/src/EFB/ && npx rollup -wc ./rollup.development.config.js",
     "build:fbw": "cd src/fbw && ./build.sh",
     "build:fadec": "cd src/fadec && ./build.sh"
   },

@@ -1,4 +1,3 @@
-import React, { Context, createContext } from 'react';
 import { produce } from 'immer';
 
 export enum EChecklistActions {
@@ -15,10 +14,9 @@ export type TChecklist = {
     isComplete: boolean
 };
 
-export type TChecklistContext = {
-    checklistState: object;
-    checklistDispatch: React.Dispatch<any>;
-}
+export const checklistInitialState = {};
+
+export type TChecklistState = {};
 
 const Reducer = (state, action) => {
     const { checklistIndex, stepIndex } = action.payload;
@@ -51,5 +49,3 @@ const Reducer = (state, action) => {
 
 // Curried
 export const ChecklistReducer = produce(Reducer);
-
-export const ChecklistContext:Context<TChecklistContext> = createContext<TChecklistContext>({ checklistState: {}, checklistDispatch: () => {} });

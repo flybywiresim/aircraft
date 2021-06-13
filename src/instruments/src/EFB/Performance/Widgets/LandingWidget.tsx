@@ -26,14 +26,15 @@ import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
-import { EPerformanceActions, PerformanceContext, performanceInitialState } from '../../Store/performance-context';
+import { EPerformanceActions, performanceInitialState } from '../../Store/performance-reducer';
+import { GlobalContext } from '../../Store/global-context';
 
 const poundsToKgs = 0.453592;
 
 export const LandingWidget = () => {
     const calculator: LandingCalculator = new LandingCalculator();
 
-    const { performanceState, performanceDispatch } = useContext(PerformanceContext);
+    const { performanceState, performanceDispatch } = useContext(GlobalContext);
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
 
