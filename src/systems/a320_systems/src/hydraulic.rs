@@ -2,7 +2,7 @@ use std::time::Duration;
 use systems::{
     engine::Engine,
     hydraulic::{
-        brake_circuit::{Autobrake, BrakeCircuit},
+        brake_circuit::{AutobrakeDecelerationGovernor, BrakeCircuit},
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
@@ -1386,7 +1386,7 @@ enum A320AutobrakeMode {
     MAX = 3,
 }
 pub struct A320AutobrakeController {
-    controller: Autobrake,
+    deceleration_governor: AutobrakeDecelerationGovernor,
     target: Acceleration,
     mode: A320AutobrakeMode,
 
@@ -1418,7 +1418,7 @@ impl A320AutobrakeController {
 
     fn new() -> A320AutobrakeController {
         A320AutobrakeController {
-            controller: Autobrake::new(),
+            deceleration_governor: AutobrakeDecelerationGovernor::new(),
             target: Acceleration::new::<meter_per_second_squared>(0.),
             mode: A320AutobrakeMode::NONE,
             arming_is_allowed_by_bcu: false,
@@ -1442,7 +1442,7 @@ impl A320AutobrakeController {
     }
 
     fn brake_output(&self) -> f64 {
-        self.controller.output()
+        self.deceleration_governor.output()
     }
 
     fn update_mode_state_machine(&mut self, autobrake_panel: &A320AutobrakePanel) {
@@ -1484,7 +1484,7 @@ impl A320AutobrakeController {
     }
 
     fn control_is_engaged(&self) -> bool {
-        self.controller.is_engaged()
+        self.deceleration_governor.is_engaged()
     }
 
     fn is_decelerating(&self) -> bool {
@@ -1496,12 +1496,12 @@ impl A320AutobrakeController {
         } else if self.mode == A320AutobrakeMode::LOW || self.mode == A320AutobrakeMode::MED {
             deceleration_demanded
                 && self
-                    .controller
+                    .deceleration_governor
                     .is_on_target(Self::MARGIN_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED)
         } else {
             deceleration_demanded
                 && self
-                    .controller
+                    .deceleration_governor
                     .deceleration_value()
                     .get::<meter_per_second_squared>()
                     < Self::TARGET_TO_SHOW_DECEL_IN_MAX
@@ -1544,14 +1544,14 @@ impl A320AutobrakeController {
                 self.target = Acceleration::new::<meter_per_second_squared>(interpolation(
                     &Self::LOW_MODE_DECEL_PROFILE_TIME,
                     &Self::LOW_MODE_DECEL_PROFILE_ACCEL,
-                    self.controller.time_engaged().as_secs_f64(),
+                    self.deceleration_governor.time_engaged().as_secs_f64(),
                 ));
             }
             A320AutobrakeMode::MED => {
                 self.target = Acceleration::new::<meter_per_second_squared>(interpolation(
                     &Self::MED_MODE_DECEL_PROFILE_TIME,
                     &Self::MED_MODE_DECEL_PROFILE_ACCEL,
-                    self.controller.time_engaged().as_secs_f64(),
+                    self.deceleration_governor.time_engaged().as_secs_f64(),
                 ));
             }
             A320AutobrakeMode::MAX => {
@@ -1563,12 +1563,12 @@ impl A320AutobrakeController {
 
     fn disarm(&mut self) {
         self.mode = A320AutobrakeMode::NONE;
-        self.controller.disable();
+        self.deceleration_governor.disable();
         self.in_flight_disarm_event = false;
     }
 
     fn engage(&mut self) {
-        self.controller.engage();
+        self.deceleration_governor.engage();
     }
 
     fn update_bcu_inputs(
@@ -1614,12 +1614,12 @@ impl A320AutobrakeController {
         if self.should_engage() {
             self.engage();
         } else {
-            self.controller.disable();
+            self.deceleration_governor.disable();
         }
 
         self.update_target();
-        self.controller.update_target(self.target);
-        self.controller.update(&context);
+        self.deceleration_governor.update_target(self.target);
+        self.deceleration_governor.update(&context);
     }
 }
 impl SimulationElement for A320AutobrakeController {

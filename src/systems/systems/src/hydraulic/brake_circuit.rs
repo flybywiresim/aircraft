@@ -311,10 +311,10 @@ impl SimulationElement for BrakeCircuit {
     }
 }
 
-pub struct Autobrake {
+pub struct AutobrakeDecelerationGovernor {
     target: Acceleration,
-    ki: f64,
-    kp: f64,
+    i_gain: f64,
+    p_gain: f64,
     last_error: f64,
 
     current_output: f64,
@@ -324,20 +324,20 @@ pub struct Autobrake {
     time_engaged: Duration,
     filter: f64,
 }
-impl Default for Autobrake {
+impl Default for AutobrakeDecelerationGovernor {
     fn default() -> Self {
         Self::new()
     }
 }
-impl Autobrake {
+impl AutobrakeDecelerationGovernor {
     // Low pass filter for controller acceleration input, time constant in second
     const ACCELERATION_INPUT_FILTER: f64 = 0.15;
 
-    pub fn new() -> Autobrake {
+    pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
-            ki: 0.02,
-            kp: 0.2,
+            i_gain: 0.02,
+            p_gain: 0.2,
             last_error: 0.,
 
             current_output: 0.,
@@ -386,8 +386,8 @@ impl Autobrake {
             let target_error = self.acceleration.get::<meter_per_second_squared>()
                 - self.target.get::<meter_per_second_squared>();
 
-            let p_term = self.kp * (target_error - self.last_error);
-            let i_term = self.ki * target_error;
+            let p_term = self.p_gain * (target_error - self.last_error);
+            let i_term = self.i_gain * target_error;
             self.current_output += p_term + i_term;
 
             self.last_error = target_error;
