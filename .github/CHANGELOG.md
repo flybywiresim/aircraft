@@ -106,6 +106,7 @@
 1. [AP/FMGC] Improved managed speed and V2 validity - @aguther (Andreas Guther)
 1. [FCU] Init FCU with SPD 100 kn, HDG = 0° and ALT 100 ft - @aguther (Andreas Guther)
 1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
+1. [FLIGHT MODEL] Increased gear drag, reduced flap drag - @donstim (donbikes#4084)
 1. [ATHR/FADEC] Fixed potential engagement of reverse thrust in flight - @aguther (Andreas Guther)
 1. [ECAM] Fix REFUELG message being shown on ECAM even when refueling is complete - @BlueberryKing (BlueberryKing#6641)
 1. [MCDU] ILS auto-tuning for departure and improved for approach - @tracernz (Mike)
