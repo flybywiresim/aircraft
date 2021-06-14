@@ -30,15 +30,15 @@ export const WindIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ adirsState, ta
                 )}
             </text>
 
-            {windInfoShown && (
-                <path
-                    className="Green"
-                    strokeWidth={2.25}
-                    strokeLinecap="round"
-                    d="M 0 30 v -20 m -7 8 l 7 -8 l 7 8"
-                    transform={`rotate(${(mod(windDirection - planeHeading + 180, 360))} 0 20)`}
-                />
-            )}
+            <path
+                className="Green"
+                strokeWidth={2.25}
+                strokeLinecap="round"
+                d="M 0 30 v -20 m -7 8 l 7 -8 l 7 8"
+                transform={`rotate(${(mod(Math.round(windDirection) - Math.round(planeHeading) + 180, 360))} 0 20)`}
+                visibility={windInfoShown ? 'visible' : 'hidden'}
+            />
+
         </Layer>
     );
 };
