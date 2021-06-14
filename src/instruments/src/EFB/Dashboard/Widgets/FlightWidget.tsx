@@ -6,9 +6,7 @@ import {
     IconPlaneDeparture,
     IconPlaneArrival,
 } from '@tabler/icons';
-
 import { SimbriefData } from '../../Efb';
-
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 
 type FlightWidgetProps = {
@@ -129,7 +127,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         <button
                             type="button"
                             onClick={() => props.fetchSimbrief()}
-                            className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none"
+                            className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
                         >
                             <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                             {' '}
@@ -137,7 +135,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         </button>
                         <button
                             type="button"
-                            className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none opacity-50"
+                            className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none opacity-50 text-lg"
                         >
                             <IconLink className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                             {' '}
