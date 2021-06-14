@@ -1501,7 +1501,7 @@ impl A320AutobrakeController {
                     || (self.left_brake_pedal_input > 0.11 && self.right_brake_pedal_input > 0.11)
             }
             AutobrakeMode::MAX => {
-                // MAX deactivates if one pedal over 77% or two over 11%.
+                // MAX deactivates if one pedal over 77% or two over 53%.
                 self.left_brake_pedal_input > 0.77
                     || self.right_brake_pedal_input > 0.77
                     || (self.left_brake_pedal_input > 0.53 && self.right_brake_pedal_input > 0.53)
@@ -1545,11 +1545,10 @@ impl A320AutobrakeController {
         self.deceleration_governor.engage();
     }
 
-    fn update_bcu_inputs(
+    fn update_input_conditions(
         &mut self,
         context: &UpdateContext,
         allow_arming: bool,
-        external_disarm_request: bool,
         pedal_input_left: f64,
         pedal_input_right: f64,
         weight_on_wheels: bool,
@@ -1559,7 +1558,7 @@ impl A320AutobrakeController {
         self.should_reject_max_mode_after_time_in_flight
             .update(context, !weight_on_wheels);
 
-        self.arming_is_allowed_by_bcu = allow_arming && !external_disarm_request;
+        self.arming_is_allowed_by_bcu = allow_arming;
         self.left_brake_pedal_input = pedal_input_left;
         self.right_brake_pedal_input = pedal_input_right;
     }
@@ -1573,10 +1572,9 @@ impl A320AutobrakeController {
         pedal_input_right: f64,
         weight_on_wheels: bool,
     ) {
-        self.update_bcu_inputs(
+        self.update_input_conditions(
             &context,
-            allow_arming,
-            autobrake_panel.disarm_event(),
+            allow_arming && !autobrake_panel.disarm_event(),
             pedal_input_left,
             pedal_input_right,
             weight_on_wheels,
