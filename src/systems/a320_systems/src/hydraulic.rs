@@ -1411,6 +1411,7 @@ pub struct A320AutobrakeController {
     last_ground_spoilers_are_deployed: bool,
 
     should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
+    should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate,
 }
 impl A320AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
@@ -1439,6 +1440,9 @@ impl A320AutobrakeController {
             ground_spoilers_are_deployed: false,
             last_ground_spoilers_are_deployed: false,
             should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
+                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
+            ),
+            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
             ),
         }
@@ -1472,7 +1476,7 @@ impl A320AutobrakeController {
         } else if autobrake_panel.max_pressed() {
             if self.mode == A320AutobrakeMode::MAX {
                 self.mode = A320AutobrakeMode::NONE
-            } else if !self.should_disarm_after_time_in_flight.output() {
+            } else if !self.should_reject_max_mode_after_time_in_flight.output() {
                 self.mode = A320AutobrakeMode::MAX;
             }
         }
@@ -1577,6 +1581,8 @@ impl A320AutobrakeController {
         weight_on_wheels: bool,
     ) {
         self.should_disarm_after_time_in_flight
+            .update(context, !weight_on_wheels);
+        self.should_reject_max_mode_after_time_in_flight
             .update(context, !weight_on_wheels);
 
         self.arming_is_allowed_by_bcu = allow_arming && !external_disarm_request;
