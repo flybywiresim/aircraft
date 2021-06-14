@@ -311,6 +311,31 @@ impl SimulationElement for BrakeCircuit {
     }
 }
 
+#[derive(PartialEq, Clone, Copy)]
+pub enum AutobrakeMode {
+    NONE = 0,
+    LOW = 1,
+    MED = 2,
+    MAX = 3,
+    HIGH = 4,
+    RTO = 5,
+    BTV = 6,
+}
+impl From<u8> for AutobrakeMode {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => AutobrakeMode::NONE,
+            1 => AutobrakeMode::LOW,
+            2 => AutobrakeMode::MED,
+            3 => AutobrakeMode::MAX,
+            4 => AutobrakeMode::HIGH,
+            5 => AutobrakeMode::RTO,
+            6 => AutobrakeMode::BTV,
+            _ => AutobrakeMode::NONE,
+        }
+    }
+}
+
 pub struct AutobrakeDecelerationGovernor {
     target: Acceleration,
     i_gain: f64,
