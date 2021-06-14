@@ -447,6 +447,43 @@ var A320_Neo_UpperECAM;
                             }
                         ]
                     },
+                    {
+                        name: "ENG",
+                        messages: [
+                            {
+                                id: "thr_levers_not_set_flex",
+                                message: "THR LEVERS NOT SET",
+                                level: 2,
+                                alwaysShowCategory: true,
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX", "Bool")
+                                ),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "THR LEVERS",
+                                        action: "MCT/FLX",
+                                    }
+                                ]
+                            },
+                            {
+                                id: "thr_levers_not_set_toga",
+                                message: "THR LEVERS NOT SET",
+                                level: 2,
+                                alwaysShowCategory: true,
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA", "Bool")
+                                ),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "THR LEVERS",
+                                        action: "TOGA",
+                                    }
+                                ]
+                            },
+                        ]
+                    },
                     //Airborne
                     {
                         name: "OVERSPEED",

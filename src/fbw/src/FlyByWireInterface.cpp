@@ -270,6 +270,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustStatus = make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
   idAutothrustMode = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
   idAutothrustModeMessage = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE_MESSAGE");
+  idAutothrustThrustLeverWarningFlex = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX");
+  idAutothrustThrustLeverWarningToga = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA");
   idAutothrustDisconnect = make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISCONNECT");
 
   idAirConditioningPack_1 = make_unique<LocalVariable>("A32NX_AIRCOND_PACK1_TOGGLE");
@@ -1254,6 +1256,16 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   idAutothrustStatus->set(autoThrustOutput.status);
   idAutothrustMode->set(autoThrustOutput.mode);
   idAutothrustModeMessage->set(autoThrustOutput.mode_message);
+
+  // update warnings
+  auto fwcFlightPhase = idFwcFlightPhase->get();
+  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 9) {
+    idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
+    idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
+  } else {
+    idAutothrustThrustLeverWarningFlex->set(0);
+    idAutothrustThrustLeverWarningToga->set(0);
+  }
 
   // reset button state
   simConnectInterface.resetSimInputThrottles();

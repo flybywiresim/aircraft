@@ -1337,6 +1337,22 @@
       NOT PRESSED | 0
       PRESSED | 1
 
+- A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX
+    - Bool
+    - Indicates if the thrust lever warning for FLEX take-off is active
+      State | Value
+      --- | ---
+      NOT ACTIVE | 0
+      ACTIVE | 1
+
+- A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA
+    - Bool
+    - Indicates if the thrust lever warning for TOGA take-off is active
+      State | Value
+      --- | ---
+      NOT ACTIVE | 0
+      ACTIVE | 1
+
 ## Throttle Mapping System
 
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
@@ -1370,10 +1386,10 @@
 - A32NX_ENGINE_CYCLE_TIME
     - Number (seconds)
     - Sum of Engine 1 & 2 cycle times to detect when engines are alive (pause/ slew management)
-    
+
 - A32NX_ENGINE_STATE:{index}
     - Number
-    - Defines actual engine state 
+    - Defines actual engine state
       State | Value
       --- | ---
       OFF | 0
