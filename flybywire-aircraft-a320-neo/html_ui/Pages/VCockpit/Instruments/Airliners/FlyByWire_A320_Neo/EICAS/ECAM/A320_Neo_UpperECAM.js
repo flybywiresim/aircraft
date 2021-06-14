@@ -105,9 +105,9 @@ var A320_Neo_UpperECAM;
             this.iceNotDetTimer1 = new NXLogic_ConfirmNode(60);
             this.iceNotDetTimer2 = new NXLogic_ConfirmNode(130);
             this.predWsMemo = new NXLogic_MemoryNode(true);
-            this.showHydPtuMemoTimer = new NXLogic_ConfirmNode(0);
-            this.hideHydPtuMemoTimer = new NXLogic_ConfirmNode(2);
-            this.hydPtuMemoVisible = new NXLogic_MemoryNode(true);
+            this.ptuOnTimer = new NXLogic_ConfirmNode(0);
+            this.ptuOffTimer = new NXLogic_ConfirmNode(2);
+            this.isPtuOnMemory = new NXLogic_MemoryNode(true);
         }
         get templateID() {
             return "UpperECAMTemplate";
@@ -1263,9 +1263,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "HYD PTU",
                         isActive: () => {
-                            // Rough approximation until hydraulic system fully implemented
-                            // Needs the last 2 conditions because PTU_ON is (incorrectly) permanently set to true during first engine start
-                            return this.hydPtuMemoVisible.read();
+                            return this.getCachedSimVar("L:A32NX_FWC_FLIGHT_PHASE", "Enum") >= 2 && this.isPtuOnMemory.read();
                         }
                     },
                     {
@@ -1808,9 +1806,9 @@ var A320_Neo_UpperECAM;
         updatePtu(_deltaTime) {
             const showHydPtuMemo = this.getCachedSimVar("L:A32NX_HYD_PTU_ACTIVE_L2R", "bool") || this.getCachedSimVar("L:A32NX_HYD_PTU_ACTIVE_R2L", "bool");
 
-            const set = this.showHydPtuMemoTimer.write(showHydPtuMemo, _deltaTime);
-            const reset = this.hideHydPtuMemoTimer.write(!showHydPtuMemo, _deltaTime);
-            this.hydPtuMemoVisible.write(set, reset);
+            const set = this.ptuOnTimer.write(showHydPtuMemo, _deltaTime);
+            const reset = this.ptuOffTimer.write(!showHydPtuMemo, _deltaTime);
+            this.isPtuOnMemory.write(set, reset);
         }
     }
     A320_Neo_UpperECAM.Display = Display;
