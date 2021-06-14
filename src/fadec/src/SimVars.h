@@ -3,7 +3,11 @@
 // SimConnect data types for sending the sim updates.
 enum DataTypesID {
   FuelControls,
-  EngineStartControls,
+  OilControls,
+  OilPsiLeft,
+  OilPsiRight,
+  StartCN2Left,
+  StartCN2Right,
 };
 
 // Fuel controls.
@@ -18,13 +22,9 @@ struct FuelControlData {
   double FuelCenter;
 };
 
-// Engine Start controls.
-struct EngineStartData {
-    // CN2 start-up behaviour
-    double StartCN2Left;
-
-    // CN2 start-up behaviour
-    double StartCN2Right;
+struct OilControlData {
+  double OilTempLeft;
+  double OilTempRight;
 };
 
 // A collection of SimVar unit enums.
@@ -32,6 +32,7 @@ class Units {
  public:
   ENUM Percent = get_units_enum("Percent");
   ENUM Pounds = get_units_enum("Pounds");
+  ENUM Psi = get_units_enum("Psi");
   ENUM Pph = get_units_enum("Pounds per hour");
   ENUM Gallons = get_units_enum("Gallons");
   ENUM Feet = get_units_enum("Feet");
@@ -56,6 +57,9 @@ class SimVars {
   ENUM correctedN2 = get_aircraft_var_enum("TURB ENG CORRECTED N2");
   ENUM N1 = get_aircraft_var_enum("TURB ENG N1");
   ENUM N2 = get_aircraft_var_enum("TURB ENG N2");
+  ENUM OilPSI = get_aircraft_var_enum("GENERAL ENG OIL PRESSURE");
+  ENUM OilTemp = get_aircraft_var_enum("GENERAL ENG OIL TEMPERATURE");
+  ENUM Thrust = get_aircraft_var_enum("TURB ENG JET THRUST");
   ENUM correctedFF = get_aircraft_var_enum("TURB ENG CORRECTED FF");
   ENUM PlaneAltitude = get_aircraft_var_enum("PLANE ALTITUDE");
   ENUM PlaneAltitudeAGL = get_aircraft_var_enum("PLANE ALT ABOVE GROUND");
@@ -66,9 +70,9 @@ class SimVars {
   ENUM StdTemp = get_aircraft_var_enum("STANDARD ATM TEMPERATURE");
   ENUM SimOnGround = get_aircraft_var_enum("SIM ON GROUND");
   ENUM EngineTime = get_aircraft_var_enum("GENERAL ENG ELAPSED TIME");
-  ENUM EngineCombustion = get_aircraft_var_enum("GENERAL ENG COMBUSTION");
   ENUM EngineStarter = get_aircraft_var_enum("GENERAL ENG STARTER");
-  ENUM EngineIgniter = get_aircraft_var_enum("TURB ENG IS IGNITING");
+  ENUM EngineIgniter = get_aircraft_var_enum("TURB ENG IGNITION SWITCH EX1");
+  ENUM EngineCombustion = get_aircraft_var_enum("GENERAL ENG COMBUSTION");
 
   ENUM TankLeftAuxCapacity = get_aircraft_var_enum("FUEL TANK LEFT AUX CAPACITY");
   ENUM TankRightAuxCapacity = get_aircraft_var_enum("FUEL TANK RIGHT AUX CAPACITY");
@@ -87,10 +91,18 @@ class SimVars {
   // Collection of local variables for the FADEC model.
   ID Engine1N2;
   ID Engine2N2;
+  ID Engine1N1;
+  ID Engine2N1;
   ID EngineIdleN1;
   ID EngineIdleN2;
+  ID EngineIdleFF;
+  ID EngineIdleEGT;
   ID Engine1EGT;
   ID Engine2EGT;
+  ID Engine1Oil;
+  ID Engine2Oil;
+  ID Engine1TotalOil;
+  ID Engine2TotalOil;
   ID Engine1FF;
   ID Engine2FF;
   ID Engine1PreFF;
@@ -108,6 +120,8 @@ class SimVars {
   ID FuelOverflowRight;
   ID Engine1State;
   ID Engine2State;
+  ID Engine1Timer;
+  ID Engine2Timer;
 
   SimVars() { this->initializeVars(); }
 
@@ -115,10 +129,18 @@ class SimVars {
     // Initializing LVars
     Engine1N2 = register_named_variable("A32NX_ENGINE_N2:1");
     Engine2N2 = register_named_variable("A32NX_ENGINE_N2:2");
+    Engine1N1 = register_named_variable("A32NX_ENGINE_N1:1");
+    Engine2N1 = register_named_variable("A32NX_ENGINE_N1:2");
     EngineIdleN1 = register_named_variable("A32NX_ENGINE_IDLE_N1");
     EngineIdleN2 = register_named_variable("A32NX_ENGINE_IDLE_N2");
+    EngineIdleFF = register_named_variable("A32NX_ENGINE_IDLE_FF");
+    EngineIdleEGT = register_named_variable("A32NX_ENGINE_IDLE_EGT");
     Engine1EGT = register_named_variable("A32NX_ENGINE_EGT:1");
     Engine2EGT = register_named_variable("A32NX_ENGINE_EGT:2");
+    Engine1Oil = register_named_variable("A32NX_ENGINE_TANK_OIL:1");
+    Engine2Oil = register_named_variable("A32NX_ENGINE_TANK_OIL:2");
+    Engine1TotalOil = register_named_variable("A32NX_ENGINE_TOTAL_OIL:1");
+    Engine2TotalOil = register_named_variable("A32NX_ENGINE_TOTAL_OIL:2");
     Engine1FF = register_named_variable("A32NX_ENGINE_FF:1");
     Engine2FF = register_named_variable("A32NX_ENGINE_FF:2");
     Engine1PreFF = register_named_variable("A32NX_ENGINE_PRE_FF:1");
@@ -134,13 +156,23 @@ class SimVars {
     EngineCycleTime = register_named_variable("A32NX_ENGINE_CYCLE_TIME");
     Engine1State = register_named_variable("A32NX_ENGINE_STATE:1");
     Engine2State = register_named_variable("A32NX_ENGINE_STATE:2");
+    Engine1Timer = register_named_variable("A32NX_ENGINE_TIMER:1");
+    Engine2Timer = register_named_variable("A32NX_ENGINE_TIMER:2");
 
     this->setEngine1N2(0);
     this->setEngine2N2(0);
+    this->setEngine1N1(0);
+    this->setEngine2N1(0);
     this->setEngineIdleN1(0);
     this->setEngineIdleN2(0);
+    this->setEngineIdleFF(0);
+    this->setEngineIdleEGT(0);
     this->setEngine1EGT(0);
     this->setEngine2EGT(0);
+    this->setEngine1Oil(0);
+    this->setEngine2Oil(0);
+    this->setEngine1TotalOil(0);
+    this->setEngine2TotalOil(0);
     this->setEngine1FF(0);
     this->setEngine2FF(0);
     this->setEngine1PreFF(0);
@@ -156,6 +188,8 @@ class SimVars {
     this->setEngineCycleTime(0);
     this->setEngine1State(0);
     this->setEngine2State(0);
+    this->setEngine1Timer(0);
+    this->setEngine2Timer(0);
 
     m_Units = new Units();
   }
@@ -163,10 +197,18 @@ class SimVars {
   // Collection of LVar 'set' Functions
   void setEngine1N2(FLOAT64 value) { set_named_variable_value(Engine1N2, value); }
   void setEngine2N2(FLOAT64 value) { set_named_variable_value(Engine2N2, value); }
+  void setEngine1N1(FLOAT64 value) { set_named_variable_value(Engine1N1, value); }
+  void setEngine2N1(FLOAT64 value) { set_named_variable_value(Engine2N1, value); }
   void setEngineIdleN1(FLOAT64 value) { set_named_variable_value(EngineIdleN1, value); }
   void setEngineIdleN2(FLOAT64 value) { set_named_variable_value(EngineIdleN2, value); }
+  void setEngineIdleFF(FLOAT64 value) { set_named_variable_value(EngineIdleFF, value); }
+  void setEngineIdleEGT(FLOAT64 value) { set_named_variable_value(EngineIdleEGT, value); }
   void setEngine1EGT(FLOAT64 value) { set_named_variable_value(Engine1EGT, value); }
   void setEngine2EGT(FLOAT64 value) { set_named_variable_value(Engine2EGT, value); }
+  void setEngine1Oil(FLOAT64 value) { set_named_variable_value(Engine1Oil, value); }
+  void setEngine2Oil(FLOAT64 value) { set_named_variable_value(Engine2Oil, value); }
+  void setEngine1TotalOil(FLOAT64 value) { set_named_variable_value(Engine1TotalOil, value); }
+  void setEngine2TotalOil(FLOAT64 value) { set_named_variable_value(Engine2TotalOil, value); }
   void setEngine1FF(FLOAT64 value) { set_named_variable_value(Engine1FF, value); }
   void setEngine2FF(FLOAT64 value) { set_named_variable_value(Engine2FF, value); }
   void setEngine1PreFF(FLOAT64 value) { set_named_variable_value(Engine1PreFF, value); }
@@ -182,14 +224,26 @@ class SimVars {
   void setEngineCycleTime(FLOAT64 value) { set_named_variable_value(EngineCycleTime, value); }
   void setEngine1State(FLOAT64 value) { set_named_variable_value(Engine1State, value); }
   void setEngine2State(FLOAT64 value) { set_named_variable_value(Engine2State, value); }
+  void setEngine1Timer(FLOAT64 value) { set_named_variable_value(Engine1Timer, value); }
+  void setEngine2Timer(FLOAT64 value) { set_named_variable_value(Engine2Timer, value); }
 
   // Collection of SimVar/LVar 'get' Functions
   FLOAT64 getEngine1N2() { return get_named_variable_value(Engine1N2); }
   FLOAT64 getEngine2N2() { return get_named_variable_value(Engine2N2); }
+  FLOAT64 getEngine1N1() { return get_named_variable_value(Engine1N1); }
+  FLOAT64 getEngine2N1() { return get_named_variable_value(Engine2N1); }
   FLOAT64 getEngineIdleN1() { return get_named_variable_value(EngineIdleN1); }
   FLOAT64 getEngineIdleN2() { return get_named_variable_value(EngineIdleN2); }
+  FLOAT64 getEngineIdleFF() { return get_named_variable_value(EngineIdleFF); }
+  FLOAT64 getEngineIdleEGT() { return get_named_variable_value(EngineIdleEGT); }
   FLOAT64 getEngine1FF() { return get_named_variable_value(Engine1FF); }
   FLOAT64 getEngine2FF() { return get_named_variable_value(Engine2FF); }
+  FLOAT64 getEngine1EGT() { return get_named_variable_value(Engine1EGT); }
+  FLOAT64 getEngine2EGT() { return get_named_variable_value(Engine2EGT); }
+  FLOAT64 getEngine1Oil() { return get_named_variable_value(Engine1Oil); }
+  FLOAT64 getEngine2Oil() { return get_named_variable_value(Engine2Oil); }
+  FLOAT64 getEngine1TotalOil() { return get_named_variable_value(Engine1TotalOil); }
+  FLOAT64 getEngine2TotalOil() { return get_named_variable_value(Engine2TotalOil); }
   FLOAT64 getEngine1PreFF() { return get_named_variable_value(Engine1PreFF); }
   FLOAT64 getEngine2PreFF() { return get_named_variable_value(Engine2PreFF); }
   FLOAT64 getEngineImbalance() { return get_named_variable_value(EngineImbalance); }
@@ -205,8 +259,13 @@ class SimVars {
   FLOAT64 getCN2(int index) { return aircraft_varget(correctedN2, m_Units->Percent, index); }
   FLOAT64 getN1(int index) { return aircraft_varget(N1, m_Units->Percent, index); }
   FLOAT64 getN2(int index) { return aircraft_varget(N2, m_Units->Percent, index); }
+  FLOAT64 getOilPsi(int index) { return aircraft_varget(OilPSI, m_Units->Psi, index); }
+  FLOAT64 getOilTemp(int index) { return aircraft_varget(OilTemp, m_Units->Celsius, index); }
+  FLOAT64 getThrust(int index) { return aircraft_varget(Thrust, m_Units->Pounds, index); }
   FLOAT64 getEngine1State() { return get_named_variable_value(Engine1State); }
   FLOAT64 getEngine2State() { return get_named_variable_value(Engine2State); }
+  FLOAT64 getEngine1Timer() { return get_named_variable_value(Engine1Timer); }
+  FLOAT64 getEngine2Timer() { return get_named_variable_value(Engine2Timer); }
   FLOAT64 getFF(int index) { return aircraft_varget(correctedFF, m_Units->Pph, index); }
   FLOAT64 getMach() { return aircraft_varget(AirSpeedMach, m_Units->Mach, 0); }
   FLOAT64 getPlaneAltitude() { return aircraft_varget(PlaneAltitude, m_Units->Feet, 0); }
@@ -229,7 +288,7 @@ class SimVars {
   FLOAT64 getFuelTotalQuantity() { return aircraft_varget(FuelTotalQuantity, m_Units->Gallons, 0); }
   FLOAT64 getFuelWeightGallon() { return aircraft_varget(FuelWeightGallon, m_Units->Pounds, 0); }
   FLOAT64 getEngineTime(int index) { return aircraft_varget(EngineTime, m_Units->Seconds, index); }
-  FLOAT64 getEngineCombustion(int index) { return aircraft_varget(EngineCombustion, m_Units->Bool, index); }
   FLOAT64 getEngineStarter(int index) { return aircraft_varget(EngineStarter, m_Units->Bool, index); }
-  FLOAT64 getEngineIgniter(int index) { return aircraft_varget(EngineIgniter, m_Units->Bool, index); }
+  FLOAT64 getEngineIgniter(int index) { return aircraft_varget(EngineIgniter, m_Units->Number, index); }
+  FLOAT64 getEngineCombustion(int index) { return aircraft_varget(EngineCombustion, m_Units->Bool, index); }
 };
