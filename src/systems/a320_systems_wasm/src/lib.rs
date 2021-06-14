@@ -190,6 +190,10 @@ struct Autobrakes {
     id_mode_low: sys::DWORD,
     id_disarm: sys::DWORD,
 
+    low_mode_panel_pushbutton: NamedVariable,
+    med_mode_panel_pushbutton: NamedVariable,
+    max_mode_panel_pushbutton: NamedVariable,
+
     low_mode_requested: bool,
     med_mode_requested: bool,
     max_mode_requested: bool,
@@ -204,11 +208,27 @@ impl Autobrakes {
             id_mode_low: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_LO_SET", false)?,
             id_disarm: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_DISARM", false)?,
 
+            low_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
+            med_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
+            max_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
+
             low_mode_requested: false,
             med_mode_requested: false,
             max_mode_requested: false,
             disarm_requested: false,
         })
+    }
+
+    fn synchronise_with_sim(&mut self) {
+        if self.low_mode_panel_pushbutton.get_value() {
+            self.set_mode_low();
+        }
+        if self.med_mode_panel_pushbutton.get_value() {
+            self.set_mode_med();
+        }
+        if self.max_mode_panel_pushbutton.get_value() {
+            self.set_mode_max();
+        }
     }
 
     fn reset_events(&mut self) {
@@ -238,10 +258,10 @@ impl SimulatorAspect for Autobrakes {}
 impl ReadWrite for Autobrakes {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
-            "KEY_AUTOBRAKE_DISARM" => Some(self.disarm_requested as u8 as f64),
-            "KEY_AUTOBRAKE_LOW" => Some(self.low_mode_requested as u8 as f64),
-            "KEY_AUTOBRAKE_MED" => Some(self.med_mode_requested as u8 as f64),
-            "KEY_AUTOBRAKE_MAX" => Some(self.max_mode_requested as u8 as f64),
+            "AUTOBRAKE_DISARM" => Some(self.disarm_requested as u8 as f64),
+            "OVHD_AUTOBRK_LOW_ON_IS_PRESSED" => Some(self.low_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MED_ON_IS_PRESSED" => Some(self.med_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MAX_ON_IS_PRESSED" => Some(self.max_mode_requested as u8 as f64),
             _ => None,
         }
     }
@@ -271,7 +291,9 @@ impl HandleMessage for Autobrakes {
     }
 }
 impl PrePostTick for Autobrakes {
-    fn pre_tick(&mut self, delta: Duration) {}
+    fn pre_tick(&mut self, delta: Duration) {
+        self.synchronise_with_sim();
+    }
 
     fn post_tick(
         &mut self,
