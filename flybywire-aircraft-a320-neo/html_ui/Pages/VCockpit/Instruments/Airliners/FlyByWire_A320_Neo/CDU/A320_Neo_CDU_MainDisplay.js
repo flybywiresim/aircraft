@@ -33,6 +33,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             });
         });
     }
+
+    initMcduVariables() {
+        this.messageQueue = [];
+    }
+
     Init() {
         super.Init();
 
