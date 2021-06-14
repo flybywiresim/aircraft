@@ -148,9 +148,9 @@ export const ATC = () => {
                                     {currentAtc && currentAtc.callsign}
                                 </div>
                             </div>
-                            <div className="active-atis mt-8 text-2xl">
+                            <div className="active-atis flex-wrap mt-8 text-2xl">
                                 { currentAtc?.textAtis && currentAtc.textAtis.map((line) => (
-                                    <p className="mt-2">{line}</p>
+                                    <p className="flex flex-wrap mt-2">{line}</p>
                                 )) }
                             </div>
                         </div>
