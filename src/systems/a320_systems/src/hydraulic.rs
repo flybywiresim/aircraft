@@ -4,7 +4,7 @@ use systems::{
     hydraulic::{
         brake_circuit::BrakeCircuit, ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop,
         HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
-        PumpController, RamAirTurbine, RamAirTurbineController,
+        PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
     },
     landing_gear::LandingGear,
     overhead::{
@@ -388,12 +388,12 @@ impl A320Hydraulic {
 
     fn update_green_actuators_volume(&mut self) {
         self.green_loop
-            .update_actuator_volumes(&self.braking_circuit_norm);
+            .update_actuator_volumes(&mut self.braking_circuit_norm);
     }
 
     fn update_yellow_actuators_volume(&mut self) {
         self.yellow_loop
-            .update_actuator_volumes(&self.braking_circuit_altn);
+            .update_actuator_volumes(&mut self.braking_circuit_altn);
     }
 
     fn update_blue_actuators_volume(&mut self) {}
@@ -408,6 +408,8 @@ impl A320Hydraulic {
         engine_fire_push_buttons: &U,
         landing_gear: &LandingGear,
     ) {
+        //TODO REMOVE
+        let reservoir = Reservoir::new(Volume::new::<gallon>(5.), Volume::new::<gallon>(5.));
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic.update_brake_demands(
             context,
@@ -449,7 +451,8 @@ impl A320Hydraulic {
 
         self.engine_driven_pump_1.update(
             context,
-            &self.green_loop,
+            self.green_loop.pressure(),
+            &reservoir,
             engine1
                 .hydraulic_pump_output_speed()
                 .get::<revolution_per_minute>(),
@@ -468,7 +471,8 @@ impl A320Hydraulic {
 
         self.engine_driven_pump_2.update(
             context,
-            &self.yellow_loop,
+            self.yellow_loop.pressure(),
+            &reservoir,
             engine2
                 .hydraulic_pump_output_speed()
                 .get::<revolution_per_minute>(),
@@ -486,6 +490,7 @@ impl A320Hydraulic {
         self.blue_electric_pump.update(
             context,
             &self.blue_loop,
+            &reservoir,
             &self.blue_electric_pump_controller,
         );
 
@@ -499,11 +504,16 @@ impl A320Hydraulic {
         self.yellow_electric_pump.update(
             context,
             &self.yellow_loop,
+            &reservoir,
             &self.yellow_electric_pump_controller,
         );
 
-        self.ram_air_turbine
-            .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
+        self.ram_air_turbine.update(
+            context,
+            self.blue_loop.pressure(),
+            &reservoir,
+            &self.ram_air_turbine_controller,
+        );
 
         self.green_loop_controller.update(engine_fire_push_buttons);
         self.green_loop.update(
