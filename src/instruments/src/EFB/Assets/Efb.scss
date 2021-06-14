@@ -122,6 +122,12 @@ html body {
 
 .loadsheet-container {
   height: 685px;
+
+  /* fbw flypad theme for simbrief maps */
+  & img {
+    width: 70.5%;
+    filter: brightness(110%) hue-rotate(210deg) saturate(26%) invert(100%);
+  }
 }
 
 .grabbable {
