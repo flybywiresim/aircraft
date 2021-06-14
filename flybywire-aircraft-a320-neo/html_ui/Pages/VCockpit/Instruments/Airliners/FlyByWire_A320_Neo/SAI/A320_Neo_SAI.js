@@ -1125,6 +1125,10 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         this.maximum = 0.99;
         this.minimum = 0.15;
         this.bright_gran = 0.05;
+        this.dayBrightness = 0.85;
+        this.nightBrightness = 0.45;
+        this.isDaytime = this.getIsDaytime();
+        this.updateThrottler = new UpdateThrottler(3000);
     }
     onEnter() {
     }
@@ -1132,6 +1136,12 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
+        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+            return;
+        }
+
+        this.isDaytime = this.getIsDaytime();
+        this.autoSetBrightness();
     }
     onExit() {
     }
@@ -1143,16 +1153,61 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         this.brightnessElement.updateBrightness(b); //TODO: Remove line on model update
     }
     brightnessUp() {
-        const brightness = this.getBrightness();
-        if (this.bugsElement.getDisplay() === "none" && brightness < this.maximum) {
-            this.setBrightness(brightness + this.bright_gran);
+        if (this.bugsElement.getDisplay() !== "none") {
+            return;
         }
+
+        if (this.isDaytime && this.dayBrightness < this.maximum) {
+            this.dayBrightness += this.bright_gran;
+        } else if (!this.isDaytime && this.nightBrightness < this.maximum) {
+            this.nightBrightness += this.bright_gran;
+        }
+
+        this.autoSetBrightness();
     }
     brightnessDown() {
-        const brightness = this.getBrightness();
-        if (this.bugsElement.getDisplay() === "none" && brightness > this.minimum) {
-            this.setBrightness(brightness - this.bright_gran);
+        if (this.bugsElement.getDisplay() !== "none") {
+            return;
         }
+
+        if (this.isDaytime && this.dayBrightness > this.minimum) {
+            this.dayBrightness -= this.bright_gran;
+        } else if (!this.isDaytime && this.nightBrightness > this.minimum) {
+            this.nightBrightness -= this.bright_gran;
+        }
+
+        this.autoSetBrightness();
+    }
+    getIsDaytime() {
+        const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+        const lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+
+        const dayOfMonth = SimVar.GetSimVarValue("E:ZULU DAY OF MONTH", "number");
+        const monthOfYear = SimVar.GetSimVarValue("E:ZULU MONTH OF YEAR", "number");
+        const year = SimVar.GetSimVarValue("E:ZULU YEAR", "number");
+
+        const sunrise = A32NX_Util.computeSunriseTime(lat, lon, dayOfMonth, monthOfYear, year);
+        const sunset = A32NX_Util.computeSunsetTime(lat, lon, dayOfMonth, monthOfYear, year);
+
+        if (sunset === Number.NEGATIVE_INFINITY || sunrise === Number.NEGATIVE_INFINITY) {
+            // Polar day
+            return true;
+        } else if (sunset === Number.POSITIVE_INFINITY || sunrise === Number.POSITIVE_INFINITY) {
+            // Polar night
+            return false;
+        }
+
+        const localTime = SimVar.GetSimVarValue("E:LOCAL TIME", "seconds");
+        const localHour = Math.floor(localTime / 3600);
+
+        return (localHour >= sunrise && localHour <= sunset);
+    }
+    autoSetBrightness() {
+        console.log("dayBrightness:", this.dayBrightness);
+        console.log("nightBrightness:", this.nightBrightness);
+        console.log("isDaytime:", this.isDaytime);
+
+        this.setBrightness(this.isDaytime ? this.dayBrightness : this.nightBrightness);
     }
     onEvent(_event) {
         switch (_event) {
