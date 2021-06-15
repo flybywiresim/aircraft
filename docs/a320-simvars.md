@@ -10,6 +10,10 @@
 
 ## Uncategorized
 
+- A32NX_APPROACH_RUNWAY_ELEVATION
+    - Meters
+    - Elevation of approach runway once this is set in the MCDU
+
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
     - Also is used for knowing when to play the no smoking chime sound

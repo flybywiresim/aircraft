@@ -122,7 +122,7 @@ export const OilComponent = () => {
 
 export const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
-    const [landingRunwayElevation] = useSimVar('L:A32NX_DCDU_APPROACH_RUNWAY_ELEVATION', 'Meters', 1000);
+    const [landingRunwayElevation] = useSimVar('L:A32NX_APPROACH_RUNWAY_ELEVATION', 'Meters', 1000);
     const [manMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
@@ -159,7 +159,7 @@ export const PressureComponent = () => {
                 <text className="Standard Cyan" x="530" y="335">FT</text>
             </g>
             <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
-                <GaugeComponent x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs * 60 / 1000} className="Gauge" />
+                <GaugeComponentMemo x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs * 60 / 1000} className="Gauge" />
             </g>
 
             <text className="standard" x="218" y="370">@P</text>
@@ -200,7 +200,7 @@ type GaugeComponentType = {
     className: string,
 }
 
-const GaugeComponent = ({ x, y, radius, startAngle, endAngle, verticalSpeed, className } : GaugeComponentType) => {
+export const GaugeComponent = ({ x, y, radius, startAngle, endAngle, verticalSpeed, className } : GaugeComponentType) => {
     const startPos = polarToCartesian(x, y, radius, startAngle);
     const endPos = polarToCartesian(x, y, radius, endAngle);
     const largeArcFlag = ((startAngle - endAngle) <= 180) ? '0' : '1';
@@ -209,17 +209,19 @@ const GaugeComponent = ({ x, y, radius, startAngle, endAngle, verticalSpeed, cla
     return (
         <>
             <path d={d} className={className} />
-            <GaugeMarkerComponent value={2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
-            <GaugeMarkerComponent value={1} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
-            <GaugeMarkerComponent value={0} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
-            <GaugeMarkerComponent value={-1} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
-            <GaugeMarkerComponent value={-2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+            <GaugeMarkerComponentMemo value={2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+            <GaugeMarkerComponentMemo value={1} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
+            <GaugeMarkerComponentMemo value={0} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+            <GaugeMarkerComponentMemo value={-1} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
+            <GaugeMarkerComponentMemo value={-2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
 
-            <GaugeMarkerComponent value={verticalSpeed} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeIndicator" showValue={false} indicator />
+            <GaugeMarkerComponentMemo value={verticalSpeed} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeIndicator" showValue={false} indicator />
 
         </>
     );
 };
+
+export const GaugeComponentMemo = React.memo(GaugeComponent);
 
 type GaugeMarkerComponentType = {
     value: number,
@@ -232,10 +234,10 @@ type GaugeMarkerComponentType = {
     endAngle: number,
     className: string,
     showValue: boolean,
-    indicator: boolean
+    indicator: boolean,
 };
 
-const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator } : GaugeMarkerComponentType) => {
+export const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator } : GaugeMarkerComponentType) => {
     let textValue = value.toString();
     const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
 
@@ -273,6 +275,8 @@ const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAn
         </>
     );
 };
+
+export const GaugeMarkerComponentMemo = React.memo(GaugeMarkerComponent);
 
 export const CondComponent = () => {
     const [cockpitCabinTemp] = useSimVar('L:A32NX_CKPT_TEMP', 'celsius', 1000);
