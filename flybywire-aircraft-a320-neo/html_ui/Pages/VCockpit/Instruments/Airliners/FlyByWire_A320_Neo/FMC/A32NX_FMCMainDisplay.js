@@ -2593,7 +2593,11 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number} Returns EFOB when arriving at the alternate dest
      */
     getAltEFOB(useFOB = false) {
-        return this.getDestEFOB(useFOB) - this._routeAltFuelWeight;
+        const altEFOB = this.getDestEFOB(useFOB) - this._routeAltFuelWeight;
+        if (altEFOB <= 0) {
+            return 0;
+        }
+        return altEFOB;
     }
 
     trySetBlockFuel(s) {
