@@ -41,6 +41,8 @@ module.exports = {
                 '-26.5': '-26.5deg',
             }),
         },
+        fontFamily: { mono: ['IBMPlexMono'], efb: ['NunitoSans'] },
+        letterSpacing: { nunito: '0.35px' },
     },
     variants: { extend: {} },
     // eslint-disable-next-line global-require

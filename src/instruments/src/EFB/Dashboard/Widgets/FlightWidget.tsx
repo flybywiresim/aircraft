@@ -6,9 +6,7 @@ import {
     IconPlaneDeparture,
     IconPlaneArrival,
 } from '@tabler/icons';
-
 import { SimbriefData } from '../../Efb';
-
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 
 type FlightWidgetProps = {
@@ -102,34 +100,34 @@ const FlightWidget = (props: FlightWidgetProps) => {
                     <div className="grid grid-cols-3 gap-4 text-center mb-10">
                         <div className="mb-3">
                             <h3 className="text-xl font-medium">ALTN</h3>
-                            <span className="text-lg font-mono font-thin">{simbriefData.altIcao}</span>
+                            <span className="text-lg font-mono font-light">{simbriefData.altIcao}</span>
                         </div>
                         <div className="mb-3">
                             <h3 className="text-xl font-medium">CO RTE</h3>
-                            <span className="text-lg font-mono font-thin">{simbriefData.departingIata + simbriefData.arrivingIata}</span>
+                            <span className="text-lg font-mono font-light">{simbriefData.departingIata + simbriefData.arrivingIata}</span>
                         </div>
                         <div className="mb-3">
                             <h3 className="text-xl font-medium">ZFW</h3>
-                            <span className="text-lg font-mono font-thin">{estimatedZfw}</span>
+                            <span className="text-lg font-mono font-light">{estimatedZfw}</span>
                         </div>
                         <div>
                             <h3 className="text-xl font-medium">AVG WIND</h3>
-                            <span className="text-lg font-mono font-thin">{avgWind}</span>
+                            <span className="text-lg font-mono font-light">{avgWind}</span>
                         </div>
                         <div>
                             <h3 className="text-xl font-medium">CI</h3>
-                            <span className="text-lg font-mono font-thin">{simbriefData.costInd}</span>
+                            <span className="text-lg font-mono font-light">{simbriefData.costInd}</span>
                         </div>
                         <div>
                             <h3 className="text-xl font-medium">CRZ</h3>
-                            <span className="text-lg font-mono font-thin">{crzAlt}</span>
+                            <span className="text-lg font-mono font-light">{crzAlt}</span>
                         </div>
                     </div>
                     <div className="flex">
                         <button
                             type="button"
                             onClick={() => props.fetchSimbrief()}
-                            className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none"
+                            className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
                         >
                             <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                             {' '}
@@ -137,7 +135,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         </button>
                         <button
                             type="button"
-                            className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none opacity-50"
+                            className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none opacity-50 text-lg"
                         >
                             <IconLink className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                             {' '}

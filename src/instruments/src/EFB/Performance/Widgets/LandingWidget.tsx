@@ -329,7 +329,7 @@ export const LandingWidget = () => {
             && pressure !== undefined
             && runwayLength !== undefined;
 
-    const calculateButtonClass = `my-3 mx-2 w-1/2 font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none ${areInputsValid() ? '' : 'disabled'}`;
+    const calculateButtonClass = `mx-2 w-2/4 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${areInputsValid() ? '' : 'opacity-50'}`;
 
     return (
         <div className="flex flex-grow">
@@ -338,14 +338,7 @@ export const LandingWidget = () => {
                     <div className="text-center mb-4">
                         <div className="flex mx-2 flex-1 justify-center">
                             <SimpleInput className="uppercase" label="Airport ICAO" value={icao} onChange={handleICAOChange} maxLength={4} />
-                            <button
-                                onClick={syncValues}
-                                className={`mx-2 font-medium p-2 bg-blue-500 text-white flex items-center justify-center rounded-lg focus:outline-none ${isValidIcao() ? '' : 'disabled'}`}
-                                type="button"
-                                disabled={!isValidIcao()}
-                            >
-                                Auto-fill
-                            </button>
+
                         </div>
                         <div className="flex">
                             <div className="flex-1 m-2.5 column-left">
@@ -523,8 +516,16 @@ export const LandingWidget = () => {
                                 Calculate
                             </button>
                             <button
+                                onClick={syncValues}
+                                className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
+                                type="button"
+                                disabled={!isValidIcao()}
+                            >
+                                Get METAR
+                            </button>
+                            <button
                                 onClick={clearInputs}
-                                className="my-3 mx-2 w-1/2 font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
+                                className="mx-2 w-1/4 font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
                                 type="button"
                             >
                                 Clear
