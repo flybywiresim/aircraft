@@ -9,14 +9,15 @@ mod external_power_source;
 mod static_inverter;
 mod transformer_rectifier;
 use std::{
+    cell::{Ref, RefCell},
     collections::{HashMap, HashSet},
+    rc::Rc,
     time::Duration,
 };
 
 use crate::{
     shared::{
-        ConsumePower, ElectricalBusType, ElectricalBuses, OptionIterator, PotentialOrigin,
-        PowerConsumptionReport,
+        ConsumePower, ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -739,7 +740,7 @@ pub trait ElectricitySource: ElectricalElement {
 }
 
 pub trait ElectricityTransformer: ElectricalElement {
-    fn transform(&self, input: &Potential) -> Potential;
+    fn transform(&self, input: Ref<Potential>) -> Potential;
 }
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
@@ -764,7 +765,7 @@ pub struct Electricity {
     next_identifier: ElectricalElementIdentifier,
     buses: HashMap<ElectricalBusType, ElectricalElementIdentifier>,
     potential: PotentialCollection,
-    none_potential: Potential,
+    none_potential: RefCell<Potential>,
     tick_delta: Duration,
 }
 impl Electricity {
@@ -773,7 +774,7 @@ impl Electricity {
             next_identifier: ElectricalElementIdentifier::first(),
             buses: HashMap::new(),
             potential: PotentialCollection::new(),
-            none_potential: Potential::none(),
+            none_potential: RefCell::new(Potential::none()),
             tick_delta: Duration::from_secs(0),
         }
     }
@@ -842,13 +843,16 @@ impl Electricity {
     /// electricity.flow(&tr, &dc_bus);
     /// ```
     pub fn transform_in(&mut self, transformer: &impl ElectricityTransformer) {
-        if let Some(input_potential) = self.potential.get(transformer.input_identifier()) {
-            let output_identifier = transformer.output_identifier();
-            let x = transformer
+        let output_identifier = transformer.output_identifier();
+        let transformed_potential = match self.potential.get(transformer.input_identifier()) {
+            Some(input_potential) => transformer
                 .transform(input_potential)
-                .include(output_identifier);
-            self.potential.supplied_by(output_identifier, x);
-        }
+                .include(output_identifier),
+            None => Potential::none(),
+        };
+
+        self.potential
+            .supplied_by(output_identifier, transformed_potential);
     }
 
     /// Returns if the given element is powered or not.
@@ -865,27 +869,27 @@ impl Electricity {
         }
     }
 
-    pub fn output_of(&self, element: &impl ElectricalElement) -> &Potential {
+    pub fn output_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
         self.potential
             .get(element.output_identifier())
-            .unwrap_or(&self.none_potential)
+            .unwrap_or_else(|| self.none_potential.borrow())
     }
 
-    pub fn input_of(&self, element: &impl ElectricalElement) -> &Potential {
+    pub fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
         self.potential
             .get(element.input_identifier())
-            .unwrap_or(&self.none_potential)
+            .unwrap_or_else(|| self.none_potential.borrow())
     }
 
-    pub fn is_powered_by(
-        &self,
-        element: &impl ElectricalElement,
-    ) -> OptionIterator<impl Iterator<Item = &PotentialOrigin>> {
-        OptionIterator::new(match self.potential.get(element.output_identifier()) {
-            Some(potential) => Some(potential.origins()),
-            None => None,
-        })
-    }
+    // pub fn is_powered_by(
+    //     &self,
+    //     element: &impl ElectricalElement,
+    // ) -> OptionIterator<impl Iterator<Item = PotentialOrigin>> {
+    //     OptionIterator::new(match self.potential.get(element.output_identifier()) {
+    //         Some(potential) => Some(potential.origins()),
+    //         None => None,
+    //     })
+    // }
 
     pub fn distribute_to(&self, element: &mut impl SimulationElement, _: &UpdateContext) {
         let mut visitor = ReceivePowerVisitor::new(&self);
@@ -926,13 +930,13 @@ impl ElectricalElementIdentifierProvider for Electricity {
     }
 }
 impl ElectricalBuses for Electricity {
-    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> &Potential {
+    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> Ref<Potential> {
         if let Some(identifier) = self.buses.get(&bus_type) {
             self.potential
                 .get(*identifier)
-                .unwrap_or(&self.none_potential)
+                .unwrap_or_else(|| self.none_potential.borrow())
         } else {
-            &self.none_potential
+            self.none_potential.borrow()
         }
     }
 
@@ -951,7 +955,7 @@ impl ElectricalBuses for Electricity {
     }
 }
 impl ConsumePower for Electricity {
-    fn input_of(&self, element: &impl ElectricalElement) -> &Potential {
+    fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential> {
         self.input_of(element)
     }
 
@@ -1147,7 +1151,7 @@ impl Potential {
             )
     }
 
-    pub fn is_powered_by_same_single_source(&self, other: &Potential) -> bool {
+    pub fn is_powered_by_same_single_source(&self, other: Ref<Potential>) -> bool {
         self.origins.len() == 1
             && other.origins.len() == 1
             && self.origins.iter().next() == other.origins.iter().next()
@@ -1173,80 +1177,27 @@ impl Potential {
         self.origins.symmetric_difference(&set).count() == 0
     }
 }
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-struct PotentialKey(u32);
-impl PotentialKey {
-    fn first() -> Self {
-        Self { 0: 1 }
-    }
-
-    fn next(&self) -> Self {
-        Self { 0: self.0 + 1 }
-    }
-}
-
-#[derive(Debug)]
-struct ElectricalElementToPotentialKeyMap {
-    next_key: PotentialKey,
-    items: HashMap<ElectricalElementIdentifier, PotentialKey>,
-}
-impl ElectricalElementToPotentialKeyMap {
-    fn new() -> Self {
-        Self {
-            next_key: PotentialKey::first(),
-            items: HashMap::new(),
-        }
-    }
-
-    fn clear(&mut self) {
-        self.next_key = PotentialKey::first();
-        self.items.clear();
-    }
-
-    fn get(&self, id: ElectricalElementIdentifier) -> Option<PotentialKey> {
-        match self.items.get(&id) {
-            Some(key) => Some(*key),
-            None => None,
-        }
-    }
-
-    fn get_or_insert(&mut self, identifier: ElectricalElementIdentifier) -> PotentialKey {
-        match self.items.get(&identifier) {
-            Some(key) => *key,
-            None => {
-                let key = self.next_key;
-                self.items.insert(identifier, self.next_key);
-                self.next_key = self.next_key.next();
-
-                key
-            }
-        }
-    }
-
-    fn insert(&mut self, id: ElectricalElementIdentifier, key: PotentialKey) {
-        self.items.insert(id, key);
+impl Default for Potential {
+    fn default() -> Self {
+        Self::none()
     }
 }
 
 /// Maintains the many to one relationship from electrical elements to their electric potential.
 #[derive(Debug)]
 struct PotentialCollection {
-    element_to_potential_key: ElectricalElementToPotentialKeyMap,
-    items: HashMap<PotentialKey, Potential>,
+    items: HashMap<ElectricalElementIdentifier, Rc<RefCell<Potential>>>,
     consumption_per_origin: HashMap<PotentialOrigin, Power>,
 }
 impl PotentialCollection {
     fn new() -> Self {
         Self {
-            element_to_potential_key: ElectricalElementToPotentialKeyMap::new(),
             items: HashMap::new(),
             consumption_per_origin: HashMap::new(),
         }
     }
 
     fn clear(&mut self) {
-        self.element_to_potential_key.clear();
         self.items.clear();
         self.consumption_per_origin.clear();
     }
@@ -1256,82 +1207,79 @@ impl PotentialCollection {
         left_element: ElectricalElementIdentifier,
         right_element: ElectricalElementIdentifier,
     ) {
-        let left_key = self.element_to_potential_key.get_or_insert(left_element);
-        let right_key = self.element_to_potential_key.get_or_insert(right_element);
-        match (self.items.remove(&left_key), self.items.remove(&right_key)) {
+        match (
+            self.items.remove(&left_element),
+            self.items.remove(&right_element),
+        ) {
             (None, None) => {
                 // Neither element has potential, point them both to an object without potential.
-                self.items.insert(
-                    left_key,
+                let potential = Rc::new(RefCell::new(
                     Potential::none()
                         .include(left_element)
                         .and_include(right_element),
-                );
-                self.element_to_potential_key
-                    .insert(right_element, left_key);
+                ));
+                self.items.insert(left_element, Rc::clone(&potential));
+                self.items.insert(right_element, potential);
             }
             (Some(left_potential), None) => {
                 // The right element doesn't yet have potential, point it to the left element's potential.
-                self.element_to_potential_key
-                    .insert(right_element, left_key);
-                self.items
-                    .insert(left_key, left_potential.include(right_element));
+                left_potential.replace(left_potential.take().include(right_element));
+                self.items.insert(right_element, Rc::clone(&left_potential));
+                self.items.insert(left_element, left_potential);
             }
             (None, Some(right_potential)) => {
                 // The left element doesn't yet have potential, point it to the right element's potential.
-                self.element_to_potential_key
-                    .insert(left_element, right_key);
-                self.items
-                    .insert(right_key, right_potential.include(left_element));
+                right_potential.replace(right_potential.take().include(left_element));
+                self.items.insert(left_element, Rc::clone(&right_potential));
+                self.items.insert(right_element, right_potential);
             }
             (Some(left_potential), Some(right_potential)) => {
                 // The right element's potential will merge into the left element's potential.
-                for right_element in right_potential.elements() {
-                    self.element_to_potential_key
-                        .insert(*right_element, left_key);
+                left_potential.replace(left_potential.take().merge(right_potential.take()));
+                for element in left_potential.as_ref().borrow().elements() {
+                    self.items.insert(*element, Rc::clone(&left_potential));
                 }
-
-                self.items
-                    .insert(left_key, left_potential.merge(right_potential));
             }
         };
     }
 
-    fn supplied_by(&mut self, identifier: ElectricalElementIdentifier, potential: Potential) {
-        let key = self.element_to_potential_key.get_or_insert(identifier);
-        self.items.insert(key, potential);
-    }
-
-    fn is_powered(&self, identifier: ElectricalElementIdentifier) -> bool {
-        if let Some(key) = self.element_to_potential_key.get(identifier) {
-            match self.items.get(&key) {
-                Some(potential) => potential.is_powered(),
-                None => false,
-            }
+    fn supplied_by(
+        &mut self,
+        identifier: ElectricalElementIdentifier,
+        supplied_potential: Potential,
+    ) {
+        if let Some(potential) = self.items.get(&identifier) {
+            potential.replace(potential.take().merge(supplied_potential));
         } else {
-            false
+            self.items
+                .insert(identifier, Rc::new(RefCell::new(supplied_potential)));
         }
     }
 
-    fn get(&self, identifier: ElectricalElementIdentifier) -> Option<&Potential> {
-        if let Some(key) = self.element_to_potential_key.get(identifier) {
-            self.items.get(&key)
-        } else {
-            None
+    fn is_powered(&self, identifier: ElectricalElementIdentifier) -> bool {
+        match self.items.get(&identifier) {
+            Some(potential) => potential.as_ref().borrow().is_powered(),
+            None => false,
+        }
+    }
+
+    fn get(&self, identifier: ElectricalElementIdentifier) -> Option<Ref<Potential>> {
+        match self.items.get(&identifier) {
+            Some(potential) => Some(potential.as_ref().borrow()),
+            None => None,
         }
     }
 
     fn consume_from(&mut self, identifier: ElectricalElementIdentifier, power: Power) {
-        if let Some(key) = self.element_to_potential_key.get(identifier) {
-            match self.items.get_mut(&key) {
-                Some(potential) => {
-                    for origin in potential.origins() {
-                        let y = self.consumption_per_origin.entry(*origin).or_default();
-                        *y += power / potential.origin_count() as f64;
-                    }
+        match self.items.get_mut(&identifier) {
+            Some(potential) => {
+                let potential = potential.as_ref().borrow_mut();
+                for origin in potential.origins() {
+                    let y = self.consumption_per_origin.entry(*origin).or_default();
+                    *y += power / potential.origin_count() as f64;
                 }
-                None => {}
             }
+            None => {}
         }
     }
 
@@ -1670,7 +1618,7 @@ mod electricity_tests {
         }
     }
     impl ElectricityTransformer for TestTransformer {
-        fn transform(&self, input: &Potential) -> Potential {
+        fn transform(&self, input: Ref<Potential>) -> Potential {
             if input.is_powered() {
                 Potential::new(
                     PotentialOrigin::TransformerRectifier(1),

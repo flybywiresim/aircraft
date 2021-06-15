@@ -427,7 +427,7 @@ mod a320_electrical {
 mod a320_electrical_circuit_tests {
     use super::{alternating_current::A320AcEssFeedContactors, *};
     use rstest::rstest;
-    use std::time::Duration;
+    use std::{cell::Ref, time::Duration};
     use systems::{
         electrical::{
             ElectricalElement, ElectricalElementIdentifier, Electricity, ElectricitySource,
@@ -2302,27 +2302,27 @@ mod a320_electrical_circuit_tests {
             self.elec.attempt_emergency_gen_start();
         }
 
-        fn static_inverter_input<'a>(&self, electricity: &'a Electricity) -> &'a Potential {
+        fn static_inverter_input<'a>(&self, electricity: &'a Electricity) -> Ref<'a, Potential> {
             electricity.input_of(self.elec.direct_current.static_inverter())
         }
 
-        fn tr_1_input<'a>(&self, electricity: &'a Electricity) -> &'a Potential {
+        fn tr_1_input<'a>(&self, electricity: &'a Electricity) -> Ref<'a, Potential> {
             electricity.input_of(self.elec.tr_1())
         }
 
-        fn tr_2_input<'a>(&self, electricity: &'a Electricity) -> &'a Potential {
+        fn tr_2_input<'a>(&self, electricity: &'a Electricity) -> Ref<'a, Potential> {
             electricity.input_of(self.elec.tr_2())
         }
 
-        fn tr_ess_input<'a>(&self, electricity: &'a Electricity) -> &'a Potential {
+        fn tr_ess_input<'a>(&self, electricity: &'a Electricity) -> Ref<'a, Potential> {
             electricity.input_of(self.elec.tr_ess())
         }
 
-        fn battery_1_input<'a>(&self, electricity: &'a Electricity) -> &'a Potential {
+        fn battery_1_input<'a>(&self, electricity: &'a Electricity) -> Ref<'a, Potential> {
             electricity.input_of(self.elec.battery_1())
         }
 
-        fn battery_2_input<'a>(&self, electricity: &'a Electricity) -> &'a Potential {
+        fn battery_2_input<'a>(&self, electricity: &'a Electricity) -> Ref<'a, Potential> {
             electricity.input_of(self.elec.battery_2())
         }
 
@@ -2580,92 +2580,92 @@ mod a320_electrical_circuit_tests {
             self.aircraft.apu_start_motor_is_powered()
         }
 
-        fn ac_bus_output(&self, number: u8) -> &Potential {
+        fn ac_bus_output(&self, number: u8) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::AlternatingCurrent(number))
         }
 
-        fn ac_ess_bus_output(&self) -> &Potential {
+        fn ac_ess_bus_output(&self) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::AlternatingCurrentEssential)
         }
 
-        fn ac_ess_shed_bus_output(&self) -> &Potential {
+        fn ac_ess_shed_bus_output(&self) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::AlternatingCurrentEssentialShed)
         }
 
-        fn ac_stat_inv_bus_output(&self) -> &Potential {
+        fn ac_stat_inv_bus_output(&self) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::AlternatingCurrentStaticInverter)
         }
 
-        fn ac_gnd_flt_service_bus_output(&self) -> &Potential {
+        fn ac_gnd_flt_service_bus_output(&self) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::AlternatingCurrentGndFltService)
         }
 
-        fn static_inverter_input(&self) -> &Potential {
+        fn static_inverter_input(&self) -> Ref<Potential> {
             self.aircraft
                 .static_inverter_input(self.test_bed.electricity())
         }
 
-        fn tr_1_input(&self) -> &Potential {
+        fn tr_1_input(&self) -> Ref<Potential> {
             self.aircraft.tr_1_input(self.test_bed.electricity())
         }
 
-        fn tr_2_input(&self) -> &Potential {
+        fn tr_2_input(&self) -> Ref<Potential> {
             self.aircraft.tr_2_input(self.test_bed.electricity())
         }
 
-        fn tr_ess_input(&self) -> &Potential {
+        fn tr_ess_input(&self) -> Ref<Potential> {
             self.aircraft.tr_ess_input(self.test_bed.electricity())
         }
 
-        fn battery_1_input(&self) -> &Potential {
+        fn battery_1_input(&self) -> Ref<Potential> {
             self.aircraft.battery_1_input(self.test_bed.electricity())
         }
 
-        fn battery_2_input(&self) -> &Potential {
+        fn battery_2_input(&self) -> Ref<Potential> {
             self.aircraft.battery_2_input(self.test_bed.electricity())
         }
 
-        fn dc_bus_output(&self, number: u8) -> &Potential {
+        fn dc_bus_output(&self, number: u8) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::DirectCurrent(number))
         }
 
-        fn dc_bat_bus_output(&self) -> &Potential {
+        fn dc_bat_bus_output(&self) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::DirectCurrentBattery)
         }
 
-        fn dc_ess_bus_output(&self) -> &Potential {
+        fn dc_ess_bus_output(&self) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::DirectCurrentEssential)
         }
 
-        fn dc_ess_shed_bus_output(&self) -> &Potential {
+        fn dc_ess_shed_bus_output(&self) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::DirectCurrentEssentialShed)
         }
 
-        fn hot_bus_output(&self, number: u8) -> &Potential {
+        fn hot_bus_output(&self, number: u8) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::DirectCurrentHot(number))
         }
 
-        fn dc_gnd_flt_service_bus_output(&self) -> &Potential {
+        fn dc_gnd_flt_service_bus_output(&self) -> Ref<Potential> {
             self.test_bed
                 .electricity()
                 .potential_of_bus(ElectricalBusType::DirectCurrentGndFltService)

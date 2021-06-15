@@ -3,7 +3,7 @@ use crate::{
     simulation::UpdateContext,
 };
 use num_derive::FromPrimitive;
-use std::{fmt::Display, time::Duration};
+use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
 
 mod random;
@@ -104,7 +104,7 @@ impl Display for ElectricalBusType {
 }
 
 pub trait ElectricalBuses {
-    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> &Potential;
+    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> Ref<Potential>;
     fn bus_is_powered(&self, bus_type: ElectricalBusType) -> bool;
     fn is_powered(&self, element: &impl ElectricalElement) -> bool;
     fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool;
@@ -143,7 +143,7 @@ pub trait PowerConsumptionReport {
 }
 
 pub trait ConsumePower: PowerConsumptionReport {
-    fn input_of(&self, element: &impl ElectricalElement) -> &Potential;
+    fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential>;
     fn consume_from_input(&mut self, element: &impl ElectricalElement, power: Power);
     fn consume_from_bus(&mut self, bus_type: ElectricalBusType, power: Power);
 }

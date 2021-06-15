@@ -459,8 +459,8 @@ pub mod tests {
                 .set_turbine(Some(Box::new(InfinitelyAtNTestTurbine::new(n))));
         }
 
-        pub fn generator_output<'a>(&self, electricity: &'a Electricity) -> &'a Potential {
-            electricity.output_of(&self.apu)
+        pub fn generator_is_unpowered(&self, electricity: &Electricity) -> bool {
+            electricity.output_of(&self.apu).is_unpowered()
         }
 
         fn set_power_demand(&mut self, power: Power) {
@@ -851,8 +851,9 @@ pub mod tests {
             self.test_bed.read_bool("OVHD_APU_MASTER_SW_PB_HAS_FAULT")
         }
 
-        pub fn generator_output(&self) -> &Potential {
-            self.aircraft.generator_output(self.test_bed.electricity())
+        pub fn generator_is_unpowered(&self) -> bool {
+            self.aircraft
+                .generator_is_unpowered(self.test_bed.electricity())
         }
 
         pub fn potential(&mut self) -> ElectricPotential {

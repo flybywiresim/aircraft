@@ -959,7 +959,7 @@ mod apu_generator_tests {
             .released_apu_fire_pb()
             .run(Duration::from_secs(1));
 
-        assert!(test_bed.generator_output().is_unpowered());
+        assert!(test_bed.generator_is_unpowered());
     }
 
     #[test]

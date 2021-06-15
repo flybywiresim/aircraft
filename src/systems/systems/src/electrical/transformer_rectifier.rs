@@ -1,3 +1,5 @@
+use std::cell::Ref;
+
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, ElectricityTransformer, Potential, PotentialOrigin, ProvideCurrent,
@@ -66,7 +68,7 @@ impl ElectricalElement for TransformerRectifier {
     }
 }
 impl ElectricityTransformer for TransformerRectifier {
-    fn transform(&self, input: &Potential) -> Potential {
+    fn transform(&self, input: Ref<Potential>) -> Potential {
         if !self.failed && input.is_powered() {
             Potential::new(
                 PotentialOrigin::TransformerRectifier(self.number),

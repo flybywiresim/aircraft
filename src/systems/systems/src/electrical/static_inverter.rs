@@ -1,3 +1,5 @@
+use std::cell::Ref;
+
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, ElectricityTransformer, Potential, PotentialOrigin, ProvideFrequency,
@@ -45,7 +47,7 @@ impl ElectricalElement for StaticInverter {
     }
 }
 impl ElectricityTransformer for StaticInverter {
-    fn transform(&self, input: &Potential) -> super::Potential {
+    fn transform(&self, input: Ref<Potential>) -> super::Potential {
         if input.is_powered() {
             Potential::new(PotentialOrigin::StaticInverter, self.output_potential)
         } else {
