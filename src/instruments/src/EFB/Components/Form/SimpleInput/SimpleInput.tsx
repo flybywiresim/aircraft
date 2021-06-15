@@ -50,7 +50,7 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
         const constrainedValue = getConstrainedValue(value);
 
         setDisplayValue(constrainedValue);
-        setFocused(true);
+        setFocused(false);
     };
 
     const getConstrainedValue = (value: string): string => {
@@ -83,6 +83,14 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
         }
         return split.join('.');
     };
+
+    useEffect(() => {
+        if (focused) {
+            Coherent.trigger('FOCUS_INPUT_FIELD');
+        } else {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        }
+    }, [focused]);
 
     return (
         <>

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode.react';
-import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMoon, IconSun } from '@tabler/icons';
+import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMoon, IconSun, IconPlus, IconMinus } from '@tabler/icons';
 import useInterval from '../../Common/useInterval';
 import NavigraphClient, {
     AirportInfo,
@@ -114,12 +114,14 @@ const AuthUi = () => {
 };
 
 const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
-    const position = useRef({ top: 0, y: 0 });
+    const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
     const mouseDownHandler = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
+        position.current.left = ref.current ? ref.current.scrollLeft : 0;
+        position.current.x = event.clientX;
 
         document.addEventListener('mousemove', mouseMoveHandler);
         document.addEventListener('mouseup', mouseUpHandler);
@@ -127,8 +129,10 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
 
     const mouseMoveHandler = (event) => {
         const dy = event.clientY - position.current.y;
+        const dx = event.clientX - position.current.x;
         if (ref.current) {
             ref.current.scrollTop = position.current.top - dy;
+            ref.current.scrollLeft = position.current.left - dx;
         }
     };
 
@@ -137,28 +141,59 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
         document.removeEventListener('mouseup', mouseUpHandler);
     };
 
+    const zoomin = () => {
+        const chart: any = document.getElementById('chart');
+        const currWidth = chart.clientWidth;
+        if (currWidth !== 2500) chart.style.width = `${currWidth + 100}px`;
+    };
+
+    const zoomout = () => {
+        const chart :any = document.getElementById('chart');
+        const currWidth = chart.clientWidth;
+        if (currWidth !== 100) chart.style.width = `${currWidth - 100}px`;
+    };
+
     return (
         <div
             className={props.isFullscreen
-                ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-full grabbable no-scrollbar'
-                : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3 grabbable no-scrollbar'}
+                ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-full max-w-6xl mx-auto grabbable no-scrollbar'
+                : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3 max-w-3xl mx-auto grabbable no-scrollbar'}
             ref={ref}
             onMouseDown={mouseDownHandler}
         >
-            <div className="absolute z-10 m-3 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
-                <div onClick={() => props.setIsFullscreen(!props.isFullscreen)}>
-                    {!props.isFullscreen
-                        ? <IconArrowsMaximize size={30} />
-                        : <IconArrowsMinimize size={30} />}
+            <div className="z-40 flex flex-col justify-end fixed top-40 right-12">
+                <div className="mb-2 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
+                    <div onClick={() => props.setIsFullscreen(!props.isFullscreen)}>
+                        {!props.isFullscreen
+                            ? <IconArrowsMaximize size={30} />
+                            : <IconArrowsMinimize size={30} />}
+                    </div>
+                </div>
+
+                <div className="bg-navy-lighter p-2 rounded-lg bg-opacity-50">
+                    <div onClick={() => props.setEnableDarkCharts(!props.enableDarkCharts)}>
+                        {!props.enableDarkCharts
+                            ? <IconMoon size={30} />
+                            : <IconSun size={30} />}
+                    </div>
                 </div>
             </div>
 
-            <div className="absolute top-0 right-0 z-10 m-3 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
-                <div onClick={() => props.setEnableDarkCharts(!props.enableDarkCharts)}>
-                    {!props.enableDarkCharts
-                        ? <IconMoon size={30} />
-                        : <IconSun size={30} />}
-                </div>
+            <div className="z-40 flex flex-col justify-end fixed bottom-16 right-12">
+                <button
+                    type="button"
+                    onClick={zoomin}
+                    className="mb-2 bg-navy-regular p-2 rounded-lg bg-opacity-50"
+                >
+                    <IconPlus size={30} />
+                </button>
+                <button
+                    type="button"
+                    onClick={zoomout}
+                    className="bg-navy-regular p-2 rounded-lg bg-opacity-50"
+                >
+                    <IconMinus size={30} />
+                </button>
             </div>
 
             <div className="m-auto relative">
@@ -166,8 +201,8 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
                     {`This chart is linked to ${props.userInfo}`}
                 </span>
                 {!props.enableDarkCharts
-                    ? <img draggable={false} src={props.chartLink.light} alt="chart" />
-                    : <img draggable={false} src={props.chartLink.dark} alt="chart" />}
+                    ? <img className="max-w-none" id="chart" draggable={false} src={props.chartLink.light} alt="chart" />
+                    : <img className="max-w-none" id="chart" draggable={false} src={props.chartLink.dark} alt="chart" />}
             </div>
         </div>
     );
@@ -419,11 +454,11 @@ const ChartsUi = (props: ChartsUiProps) => {
                                     : <span className="text-xl">{airportInfo.name.slice(0, 20)}</span>}
                             </div>
                             <div className="flex flex-col mt-6">
-                                <div className="flex flex-row justify-around bg-navy-lighter rounded-lg">
+                                <div className="flex flex-row justify-around bg-navy-lighter rounded-lg text-base">
                                     {organizedCharts.map((organizedChart) => (organizedChart.name === selectedTab.name
                                         ? (
                                             <span
-                                                className="flex items-center px-4 py-2 text-white bg-white bg-opacity-5 rounded-lg mr-2"
+                                                className={`flex items-center px-4 py-2 text-white bg-white bg-opacity-5 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
                                                 onClick={() => setSelectedTab(organizedChart)}
                                                 key={organizedChart.name}
                                             >
@@ -432,7 +467,8 @@ const ChartsUi = (props: ChartsUiProps) => {
                                         )
                                         : (
                                             <span
-                                                className="flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition duration-300 rounded-lg mr-2"
+                                                className={`flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 
+                                                    transition duration-300 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
                                                 onClick={() => setSelectedTab(organizedChart)}
                                                 key={organizedChart.name}
                                             >

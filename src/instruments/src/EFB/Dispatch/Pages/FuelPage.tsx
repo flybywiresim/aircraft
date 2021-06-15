@@ -231,7 +231,7 @@ export const FuelPage = () => {
                                     completed={(Math.max(LInnCurrent, 0) / innerCellGallon) * 100}
                                 />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label" htmlFor="fuel-label">
+                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
                                         {convertFuelValue(LInnCurrent)}
                                         /
                                         {round(innerCell())}
@@ -256,7 +256,7 @@ export const FuelPage = () => {
                                     completed={(Math.max(centerCurrent, 0) / centerTankGallon) * 100}
                                 />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label" htmlFor="fuel-label">
+                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
                                         {convertFuelValueCenter(centerCurrent)}
                                         /
                                         {round(centerTank())}
@@ -281,7 +281,7 @@ export const FuelPage = () => {
                                     completed={(Math.max(RInnCurrent, 0) / innerCellGallon) * 100}
                                 />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label" htmlFor="fuel-label">
+                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
                                         {convertFuelValue(RInnCurrent)}
                                         /
                                         {round(innerCell())}
@@ -308,7 +308,7 @@ export const FuelPage = () => {
                                     completed={(Math.max(LOutCurrent, 0) / outerCellGallon) * 100}
                                 />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label" htmlFor="fuel-label">
+                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
                                         {convertFuelValue(LOutCurrent)}
                                         /
                                         {round(outerCell())}
@@ -351,18 +351,18 @@ export const FuelPage = () => {
                                             <IconHandStop className={refuelStartedByUser ? '' : 'hidden'} />
                                         </Button>
                                     </div>
-                                    <div className="mt-4">
+                                    <div className="mt-4 text-base">
                                         Est:
                                         {calculateEta()}
                                         Min
                                     </div>
                                 </div>
                             </div>
-                            <span className="fuel-content-label">Current Fuel:</span>
+                            <span className="fuel-content-label text-base">Current Fuel:</span>
                             <div className="flex current-fuel-line">
                                 <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(totalCurrent() / round(totalFuel())) * 100} />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label" htmlFor="fuel-label">
+                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
                                         {totalCurrent()}
                                         /
                                         {round(totalFuel())}
