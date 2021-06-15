@@ -192,22 +192,14 @@
 
 ## Fly-By-Wire System
 
-| A32NX_SIDESTICK_POSITION_X |Number<br/>Provides the direct sidestick position (lateral) Value | Meaning --- |
-    | --<br/>-1 | full left 0 | neutral 1 | full right
-
-| A32NX_SIDESTICK_POSITION_Y |Number<br/>Provides the direct sidestick position (longitudinal) Value | |
-    Meaning --<br/>| --<br/>-1 | full forward 0 | neutral 1 | full backward
-
-| A32NX_RUDDER_PEDAL_POSITION |Number<br/>Provides the rudder pedal position Value | Meaning --<br/>| --<br/>-100 | |
-    full left 0 | neutral 100 | full right
-
+| Name/ID                     | Description                                                                                                                                         |
+|:----------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| A32NX_SIDESTICK_POSITION_X  | Number<br/>Provides the direct sidestick position (lateral) <br/>Value = Meaning <br/>-1 = full left<br/> 0 = neutral<br/>1 = full right            |
+| A32NX_SIDESTICK_POSITION_Y  | Number<br/>Provides the direct sidestick position (longitudinal) <br/>Value = Meaning <br/>-1 = full forward<br/>0 = neutral<br/> 1 = full backward |
+| A32NX_RUDDER_PEDAL_POSITION | Number<br/>Provides the rudder pedal position Value = Meaning <br/> -100 = full left<br/> 0 = neutral<br/> 100 = full right                         |
 | A32NX_ALPHA_MAX_PERCENTAGE |Number (0.0 -> 1.0)<br/>Percentage of current (filtered) alpha to alpha max<br/>alpha max can be overshoot so values beyond 1.0 should be expected |
-
-| A32NX_3D_AILERON_LEFT_DEFLECTION |Number<br/>Provides the left aileron position Value | Meaning --<br/>| --<br/>-1.0 | |
-    full up 0.0 | neutral 1.0 | full down
-
-| A32NX_3D_AILERON_RIGHT_DEFLECTION |Number<br/>Provides the right aileron position Value | Meaning --<br/>| --<br/>-1.0 | |
-    full down 0.0 | neutral 1.0 | full up
+| A32NX_3D_AILERON_LEFT_DEFLECTION |Number<br/>Provides the left aileron position <br/>Value = Meaning <br/>-1.0 = full up<br/> 0.0 = neutral<br/> 1.0 = full down|
+| A32NX_3D_AILERON_RIGHT_DEFLECTION |Number<br/>Provides the right aileron position <br/>Value = Meaning <br/>-1.0 = full down<br/> 0.0 = neutral<br/> 1.0 = full up|
 
 ## Autopilot System
 
@@ -360,26 +352,15 @@
     burn
 
 | A32NX_ENGINE_IDLE_N1 |Number (% N1)<br/>Expected idle N1 as a function of temperature and pressure |
-
 | A32NX_ENGINE_IDLE_N2 |Number (% N2)<br/>Expected idle N2 as a function of temperature and pressure |
-
 | A32NX_ENGINE_IDLE_EGT |Number (degrees Celsius)<br/>Expected idle EGT as a function of temperature and pressure |
-
 | A32NX_ENGINE_IDLE_FF |Number (Kg/h)<br/>Expected idle fuel flow as a function of temperature and pressure |
-
 | A32NX_FUEL_USED:{index} |Number (Kg)<br/>Fuel burnt by engine {index} on deltaTime |
-
 | A32NX_FUEL_LEFT_PRE |Number (lbs)<br/>Previous deltaTime fuel for the main left tank |
-
 | A32NX_FUEL_RIGHT_PRE |Number (lbs)<br/>Previous deltaTime fuel for the main right tank |
-
 | A32NX_FUEL_AUX_LEFT_PRE |Number (lbs)<br/>Previous deltaTime fuel for the aux left tank |
-
 | A32NX_FUEL_AUX_RIGHT_PRE |Number (lbs)<br/>Previous deltaTime fuel for the aux right tank |
-
 | A32NX_FUEL_CENTER_PRE |Number (lbs)<br/>Previous deltaTime fuel for the center tank |
-
 | A32NX_ENGINE_TOTAL_OIL:{index} |Number (quarts)<br/>Total engine {index} oil quantity in the oil system (tank + circuit) |
-
 | A32NX_ENGINE_TANK_OIL:{index} |Number (quarts)<br/>Total engine {index} oil quantity in the oil tank |
 
