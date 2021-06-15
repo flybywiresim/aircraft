@@ -1,0 +1,20 @@
+name: Move assigned pull requests into To do
+
+on:
+  pull_request:
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - ready_for_review
+
+jobs:
+  automate-project-columns:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: alex-page/github-project-automation-plus@v0.7.1
+        with:
+          project: Quality Assurance
+          column: "🟡 Code Review: Ready for Review"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
