@@ -2846,7 +2846,6 @@
 
                 <Component ID="Overhead_Back_Panel">
                     <!-- "BLUE PUMP OVRD" -->
-                    <!-- This name is wrong, but it refers to the node we want -->
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</LOCK_NODE_ID>
