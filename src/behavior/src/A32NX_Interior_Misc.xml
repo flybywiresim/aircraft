@@ -105,7 +105,7 @@
 
     Clone of Asobo template to fix broken logic
 
-    Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
+    Takes into account the value of L:A32NX_OVHD_INTLT_ANN.
     -->
     <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
         <DefaultTemplateParameters>
@@ -117,6 +117,7 @@
             <TOOLTIPID>%((L:XMLVAR_RTO_Level) #AUTOBRAKE_LEVEL# ==)%{if}TT:COCKPIT.TOOLTIPS.AUTO_BRK_TURN_OFF%{else}TT:#OFF_TOOLTIP#%{end}</TOOLTIPID>
             <ENGINES_COUNT>2</ENGINES_COUNT>
             <REF_DECEL_FPSS>-7</REF_DECEL_FPSS>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <!--XMLVAR_Autobrakes_Level it the SIMVAR that tracks the position of the autobrake pushbutton switches in A32NX.
@@ -234,7 +235,7 @@
         <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
                 </EMISSIVE_CODE>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
             </UseTemplate>
@@ -242,7 +243,7 @@
         <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -329,11 +330,12 @@
             <PART_ID>LANDING_GEAR_Light</PART_ID>
             <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
             <SEQ_POWERED>1</SEQ_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 
@@ -631,7 +633,7 @@
                     #GROUP_INDEX# -1 &gt; if{
                         (L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) #GROUP_INDEX# ==
                     }
-                    (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                    (L:A32NX_OVHD_INTLT_ANN) 0 == or
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -641,5 +643,41 @@
             <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
             </UseTemplate>
         </Component>
+    </Template>
+
+    <!--
+    Main Parameters:
+        - NODE_ID
+    -->
+    <Template Name="FBW_Airbus_ATC_MSG_Button">
+        <UseTemplate Name="FBW_Push_Held">
+            <TOOLTIP>Acknowledge ATC message.</TOOLTIP>
+            <SEQ1_CODE>(L:A32NX_DCDU_ATC_MSG_WAITING, Bool)</SEQ1_CODE>
+            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_DCDU_ATC_MSG_ACK, Bool)</LEFT_SINGLE_CODE>
+            <NO_SEQ2/>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Main Parameters:
+        - NODE_ID
+    -->
+    <Template Name="FBW_Airbus_PA_Button">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ1_CODE type="rnp" return="boolean">
+                alias cabinReady = (L:A32NX_CABIN_READY, bool);
+                alias toConfigNormal = (L:A32NX_TO_CONFIG_NORMAL, bool);
+                alias absTime = (E:ABSOLUTE TIME, seconds);
+                alias callStart = (O:CALL_START_#NODE_ID#, seconds);
+                alias cabinWasReady = (O:WAS_READY_#NODE_ID#, bool);
+
+                if (cabinReady and toConfigNormal and !cabinWasReady) {
+                    callStart = absTime;
+                }
+                cabinWasReady = cabinReady and toConfigNormal;
+
+                cabinReady and (absTime - callStart) &lt; 5
+            </SEQ1_CODE>
+        </UseTemplate>
     </Template>
 </ModelBehaviors>

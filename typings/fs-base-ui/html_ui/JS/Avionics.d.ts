@@ -47,7 +47,7 @@ declare global {
 
             static meanAngle(a: number, b: number): number;
 
-            static angleDiff(a: number, b: number): number;
+            static diffAngle(a: number, b: number): number;
 
             static fmod(a: number, b: number): number;
 

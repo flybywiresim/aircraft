@@ -33,6 +33,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             });
         });
     }
+
+    initMcduVariables() {
+        this.messageQueue = [];
+    }
+
     Init() {
         super.Init();
 
@@ -97,6 +102,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.isDisplayingTypeTwoMessage = false;
             } else {
                 this.inOut = this.inOut.slice(0, -1);
+            }
+            this.tryShowMessage();
+        };
+        this.onClrHeld = () => {
+            if (this.inOut === FMCMainDisplay.clrValue || (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage)) {
+                this.inOut = "";
             }
             this.tryShowMessage();
         };
@@ -334,7 +345,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         if (!this.aocTimes.out) {
-            const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
+            const currentPKGBrakeState = SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool");
             if (this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT && !currentPKGBrakeState) {
                 // Out: is when you set the brakes to off
                 this.aocTimes.out = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
@@ -350,7 +361,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         if (!this.aocTimes.in) {
-            const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
+            const currentPKGBrakeState = SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool");
             const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
             if (this.aocTimes.on && currentPKGBrakeState && cabinDoorPctOpen > 20) {
                 // In: remains blank until brakes set to park AND the first door opens
@@ -996,6 +1007,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 setTimeout(() => {
                     this.onClr();
                 }, this.getDelaySwitchPage());
+            } else if (input === "CLR_Held") {
+                this.onClrHeld();
             } else if (input === "DIV") {
                 setTimeout(() => {
                     this.onDiv();

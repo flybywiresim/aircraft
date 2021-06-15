@@ -1,8 +1,5 @@
-use systems::simulation::{SimulationElement, SimulatorReader};
-use uom::si::{
-    f64::*,
-    mass::{kilogram, pound},
-};
+use systems::simulation::{Read, SimulationElement, SimulatorReader};
+use uom::si::{f64::*, mass::kilogram};
 
 pub struct A320Fuel {
     unlimited_fuel: bool,
@@ -22,8 +19,7 @@ impl A320Fuel {
 }
 impl SimulationElement for A320Fuel {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.unlimited_fuel = reader.read_bool("UNLIMITED FUEL");
-        self.left_inner_tank_fuel_quantity =
-            Mass::new::<pound>(reader.read_f64("FUEL TANK LEFT MAIN QUANTITY"));
+        self.unlimited_fuel = reader.read("UNLIMITED FUEL");
+        self.left_inner_tank_fuel_quantity = reader.read("FUEL TANK LEFT MAIN QUANTITY");
     }
 }

@@ -17,6 +17,7 @@ module.exports = {
             height: () => ({
                 'efb': '50rem',
                 'efb-nav': '45.75rem',
+                '124': '34.75rem',
             }),
             inset: () => ({
                 'ctr-tk-y': '18.75rem',
@@ -40,6 +41,8 @@ module.exports = {
                 '-26.5': '-26.5deg',
             }),
         },
+        fontFamily: { mono: ['IBMPlexMono'], efb: ['NunitoSans'] },
+        letterSpacing: { nunito: '0.35px' },
     },
     variants: { extend: {} },
     // eslint-disable-next-line global-require

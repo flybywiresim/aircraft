@@ -1,6 +1,6 @@
 'use strict';
 
-require('dotenv').config();
+import dotenv from 'dotenv';
 
 const image = require('@rollup/plugin-image');
 const babel = require('@rollup/plugin-babel').default;
@@ -19,6 +19,7 @@ module.exports = {
     input: `${__dirname}/index-web.tsx`,
     plugins: [
         image(),
+        dotenv.config({ path: '../../../../.env' }),
         nodeResolve({ extensions }),
         commonjs({ include: /node_modules/ }),
         babel({

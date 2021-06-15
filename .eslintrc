@@ -6,7 +6,7 @@
   },
   "ignorePatterns": [
     "/flybywire-aircraft-a320-neo/html_ui/JS/fmgc/**",
-    "/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/generated/**",
+    "/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/**",
     "typings/**"
   ],
   // DO NOT CHANGE THIS FILE (unless you are an admin) (if admin, make sure you change the same file in the latest asobo branch as well)

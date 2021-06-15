@@ -7,6 +7,7 @@
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
+1. [Engine and FADEC System](#engine-fadec-system)
 
 ## Uncategorized
 
@@ -359,27 +360,33 @@
 
 - A32NX_APU_EGT_CAUTION
     - Celsius
-    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit
+    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit,
+      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_EGT_WARNING
     - Celsius
-    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit
+    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit,
+      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_EGT
     - Celsius
-    - The APU's exhaust gas temperature
+    - The APU's exhaust gas temperature,
+      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_N
     - Percent
-    - The APU's rotations per minute in percentage of the maximum RPM
+    - The APU's rotations per minute in percentage of the maximum RPM,
+      when < 0 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
-    - Bool
-    - Indicates if the APU has an active LOW FUEL PRESSURE fault
+    - Number
+        - -1: The ECB isn't supplying information, for example due to being unpowered.
+        - 0: The APU doesn't have an active LOW FUEL PRESSURE fault.
+        - 1: Indicates the APU has an active LOW FUEL PRESSURE fault.
 
 - A32NX_APU_IS_AUTO_SHUTDOWN
     - Bool
@@ -396,6 +403,12 @@
 - A32NX_APU_FLAP_OPEN_PERCENTAGE
     - Percent
     - Indicates the percentage the APU air intake flap is open
+
+- A32NX_APU_FLAP_FULLY_OPEN
+    - Number
+        - -1: The ECB isn't supplying information, for example due to being unpowered.
+        - 0: The APU air intake flap isn't fully open.
+        - 1: The APU air intake flap is fully open.
 
 - A32NX_FIRE_BUTTON_APU
     - Bool
@@ -844,6 +857,10 @@
     - Gallon per second
     - Power Transfer Unit instantaneous flow in motor side
 
+- A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
+    - Bool
+    - Deploys the RAT manually
+
 - A32NX_HYD_RAT_STOW_POSITION
     - Percent over 100
     - RAT position, from fully stowed (0) to fully deployed (1)
@@ -869,6 +886,17 @@
 - A32NX_HYD_BRAKE_ALTN_ACC_PRESS
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
+
+- A32NX_PARK_BRAKE_LEVER_POS
+    - Bool
+    - Current position of the parking brake lever
+
+- A32NX_{brake_side}_BRAKE_PEDAL_INPUT
+    - Percent
+    - Current position of the toe brake pedal animation
+    - {brake_side}
+        - LEFT
+        - RIGHT
 
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
@@ -920,6 +948,14 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE
+    - Bool
+    - Indicates if the ground spoilers are active (fully deployed)
+      Value | Position
+      --- | ---
+      0 | Inactive
+      1 | Active
+
 - A32NX_PERFORMANCE_WARNING_ACTIVE
     - Bool
     - Indicates if performance warning is active
@@ -961,6 +997,24 @@
     - Number (0.0 -> 1.0)
     - Percentage of current (filtered) alpha to alpha max
     - alpha max can be overshoot so values beyond 1.0 should be expected
+
+- A32NX_3D_AILERON_LEFT_DEFLECTION
+    - Number
+    - Provides the left aileron position
+      Value | Meaning
+      --- | ---
+      -1.0 | full up
+       0.0 | neutral
+      1.0 | full down
+
+- A32NX_3D_AILERON_RIGHT_DEFLECTION
+    - Number
+    - Provides the right aileron position
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+       0.0 | neutral
+      1.0 | full up
 
 ## Autopilot System
 
@@ -1275,6 +1329,14 @@
     - Number (% N1)
     - Indicates the commanded N1 (either based on TLA or autothrust law) for engine {index}, first engine has index 1
 
+- A32NX_AUTOTHRUST_DISCONNECT
+    - Bool
+    - Indicates if the red disconnect button is pressed on the thrust lever
+      State | Value
+      --- | ---
+      NOT PRESSED | 0
+      PRESSED | 1
+
 ## Throttle Mapping System
 
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
@@ -1302,3 +1364,104 @@
     - Number
     - Indicates the low or high value to latch into the given detent
     - Range is from -1 to 1
+
+## Engine and FADEC System
+
+- A32NX_ENGINE_CYCLE_TIME
+    - Number (seconds)
+    - Sum of Engine 1 & 2 cycle times to detect when engines are alive (pause/ slew management)
+    
+- A32NX_ENGINE_STATE:{index}
+    - Number
+    - Defines actual engine state 
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
+      STARTING | 2
+      SHUTTING | 3
+
+- A32NX_ENGINE_TIMER:{index}
+    - Number (seconds)
+    - Sets a timer to control engine {index} start-up/shutdown events
+
+- A32NX_ENGINE_IMBALANCE
+    - Number (2-bit coded decimal)
+    - Defines random engine imbalance of parameters
+      Bits (from Left) | Parameter
+      --- | ---
+      0-1 | Engine affected (01 or 02)
+      2-3 | EGT (max 20º imbalance)
+      4-5 | FF (max 36 Kg/h imbalance)
+      6-7 | N2 (max 0.3% imbalance)
+      8-9 | Oil Qty (max 2 Qt imbalance)
+      10-11 | Oil Pressure (max 3 psi imbalance)
+      12-13 | Idle Oil Pressure (+/- 6 psi imbalance)
+
+- A32NX_ENGINE_N1:{index}
+    - Number (% N1)
+    - Custom engine {index} N1 to model realistic start-up & shutdown, although equal to Sim's N2 for other flight phases.
+
+- A32NX_ENGINE_N2:{index}
+    - Number (% N2)
+    - Custom engine N2 {index} to model realistic start-up & shutdown, although equal to Sim's N2 for other flight phases.
+
+- A32NX_ENGINE_EGT:{index}
+    - Number (degrees Celsius)
+    - Custom engine {index} EGT to model realistic behavior throughout all flight phases
+
+- A32NX_ENGINE_FF:{index}
+    - Number (Kg/h)
+    - Custom engine {index} fuel flow to model realistic behavior throughout all flight phases
+
+- A32NX_ENGINE_PRE_FF:{index}
+    - Number (Kg/h)
+    - Previous engine {index} deltaTime fuel flow to calculate spot fuel burn
+
+- A32NX_ENGINE_IDLE_N1
+    - Number (% N1)
+    - Expected idle N1 as a function of temperature and pressure
+
+- A32NX_ENGINE_IDLE_N2
+    - Number (% N2)
+    - Expected idle N2 as a function of temperature and pressure
+
+- A32NX_ENGINE_IDLE_EGT
+    - Number (degrees Celsius)
+    - Expected idle EGT as a function of temperature and pressure
+
+- A32NX_ENGINE_IDLE_FF
+    - Number (Kg/h)
+    - Expected idle fuel flow as a function of temperature and pressure
+
+- A32NX_FUEL_USED:{index}
+    - Number (Kg)
+    - Fuel burnt by engine {index} on deltaTime
+
+- A32NX_FUEL_LEFT_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the main left tank
+
+- A32NX_FUEL_RIGHT_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the main right tank
+
+- A32NX_FUEL_AUX_LEFT_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the aux left tank
+
+- A32NX_FUEL_AUX_RIGHT_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the aux right tank
+
+- A32NX_FUEL_CENTER_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the center tank
+
+- A32NX_ENGINE_TOTAL_OIL:{index}
+    - Number (quarts)
+    - Total engine {index} oil quantity in the oil system (tank + circuit)
+
+- A32NX_ENGINE_TANK_OIL:{index}
+    - Number (quarts)
+    - Total engine {index} oil quantity in the oil tank
