@@ -192,21 +192,21 @@
 
 ## Fly-By-Wire System
 
-| Name/ID                     | Description                                                                                                                                         |
-|:----------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| A32NX_SIDESTICK_POSITION_X  | Number<br/>Provides the direct sidestick position (lateral) <br/>Value = Meaning <br/>-1 = full left<br/> 0 = neutral<br/>1 = full right            |
-| A32NX_SIDESTICK_POSITION_Y  | Number<br/>Provides the direct sidestick position (longitudinal) <br/>Value = Meaning <br/>-1 = full forward<br/>0 = neutral<br/> 1 = full backward |
-| A32NX_RUDDER_PEDAL_POSITION | Number<br/>Provides the rudder pedal position Value = Meaning <br/> -100 = full left<br/> 0 = neutral<br/> 100 = full right                         |
-| A32NX_ALPHA_MAX_PERCENTAGE |Number (0.0 -> 1.0)<br/>Percentage of current (filtered) alpha to alpha max<br/>alpha max can be overshoot so values beyond 1.0 should be expected |
-| A32NX_3D_AILERON_LEFT_DEFLECTION |Number<br/>Provides the left aileron position <br/>Value = Meaning <br/>-1.0 = full up<br/> 0.0 = neutral<br/> 1.0 = full down|
-| A32NX_3D_AILERON_RIGHT_DEFLECTION |Number<br/>Provides the right aileron position <br/>Value = Meaning <br/>-1.0 = full down<br/> 0.0 = neutral<br/> 1.0 = full up|
+| Name/ID                           | Description                                                                                                                                         |
+|:----------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| A32NX_SIDESTICK_POSITION_X        | Number<br/>Provides the direct sidestick position (lateral) <br/>Value = Meaning <br/>-1 = full left<br/> 0 = neutral<br/>1 = full right            |
+| A32NX_SIDESTICK_POSITION_Y        | Number<br/>Provides the direct sidestick position (longitudinal) <br/>Value = Meaning <br/>-1 = full forward<br/>0 = neutral<br/> 1 = full backward |
+| A32NX_RUDDER_PEDAL_POSITION       | Number<br/>Provides the rudder pedal position Value = Meaning <br/> -100 = full left<br/> 0 = neutral<br/> 100 = full right                         |
+| A32NX_ALPHA_MAX_PERCENTAGE        | Number (0.0 -> 1.0)<br/>Percentage of current (filtered) alpha to alpha max<br/>alpha max can be overshoot so values beyond 1.0 should be expected  |
+| A32NX_3D_AILERON_LEFT_DEFLECTION  | Number<br/>Provides the left aileron position <br/>Value = Meaning <br/>-1.0 = full up<br/> 0.0 = neutral<br/> 1.0 = full down                      |
+| A32NX_3D_AILERON_RIGHT_DEFLECTION | Number<br/>Provides the right aileron position <br/>Value = Meaning <br/>-1.0 = full down<br/> 0.0 = neutral<br/> 1.0 = full up                     |
 
 ## Autopilot System
 
-| A32NX_FMA_LATERAL_MODE |Enum<br/>Indicates **engaged** lateral mode of the Flight Director / |
-    Autopilot Mode | Value --<br/>| --<br/>NONE | 0 HDG | 10 TRACK | 11 NAV |
-    20 LOC_CPT | 30 LOC_TRACK | 31 LAND | 32 FLARE | 33 ROLL_OUT | 34
-    RWY | 40 RWY_TRACK | 41 GA_TRACK | 50
+| Name/ID                | Description                                                                                                                                                                                                                                                                                            |
+|:-----------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| A32NX_FMA_LATERAL_MODE | Enum<br/>Indicates **engaged** lateral mode of the Flight Director / Autopilot <br/>Mode = Value <br/>NONE = 0 <br/>HDG = 10 <br/>TRACK = 11 <br/>NAV = 20 <br/>LOC_CPT = 30 <br/>LOC_TRACK = 31 <br/>LAND = 32 <br/>FLARE = 33 <br/>ROLL_OUT = 34<br/>RWY = 40 <br/>RWY_TRACK = 41 <br/>GA_TRACK = 50 |
+|                        |                                                                                                                                                                                                                                                                                                        |
 
 | A32NX_FMA_LATERAL_ARMED |Bitmask<br/>Indicates **armed** lateral mode of the Flight Director / Autopilot |
     Mode | Bit --<br/>| --<br/>NAV | 0 LOC | 1
@@ -308,59 +308,36 @@
 
 ## Throttle Mapping System
 
-| A32NX_THROTTLE_MAPPING_INPUT:{index} |Number<br/>Indicates the raw input values for throttle axis {index}, first axis |
-    has index 1<br/>Range is from -1 to 1
-
-| A32NX_AUTOTHRUST_TLA:{index} |Number (Degrees)<br/>Indicates the TLA of the throttle lever {index}, first throttle |
-    lever has index 1 Position | Value --<br/>| --<br/>REVERSE | -20 REV_IDLE
-    | -6 IDLE | 0 CLB | 25 FLX/MCT | 35 TOGA | 45
-
-| A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:{index}| Bool: Indicates if reverse area should be mapped on axis |
-
-| A32NX_THROTTLE_MAPPING_{REVERSE|REVERSE_IDLE|IDLE|CLIMB|FLEXMCT|TOGA}_{LOW|HIGH}:{index} |Number<br/>Indicates the low or high value to latch into the given detent<br/>Range is from -1 to 1
+| Name/ID                                                                                                  | Description                                                                                                                                                                                                                     |
+|:---------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| A32NX_THROTTLE_MAPPING_INPUT:{index}                                                                     | Number<br/>Indicates the raw input values for throttle axis {index}, first axis has index 1<br/>Range is from -1 to 1                                                                                                           |
+| A32NX_AUTOTHRUST_TLA:{index}                                                                             | Number (Degrees)<br/>Indicates the TLA of the throttle lever {index}, first throttle lever has index 1 <br/>Position = Value <br/>REVERSE = -20 <br/>REV_IDLE = -6 <br/>IDLE = 0 <br/>CLB = 25 <br/>FLX/MCT = 35 <br/>TOGA = 45 |
+| A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:{index}                                                       | Bool: Indicates if reverse area should be mapped on axis                                                                                                                                                                        |
+| A32NX_THROTTLE_MAPPING_<br/>{REVERSE\|REVERSE_IDLE\|IDLE\|CLIMB\|FLEXMCT\|TOGA}<br/>_{LOW\|HIGH}:{index} | Number<br/>Indicates the low or high value to latch into the given detent<br/>Range is from -1 to 1                                                                                                                             |
 
 ## Engine and FADEC System
 
-| A32NX_ENGINE_CYCLE_TIME |Number (seconds)<br/>Sum of Engine 1 & 2 cycle times to detect when engines are alive |
-    (pause/ slew management)
-
-| A32NX_ENGINE_STATE:{index} |Number<br/>Defines actual engine state State | Value --<br/>| --<br/>OFF | 0 ON | 1 |
-    STARTING | 2 SHUTTING | 3
-
-| A32NX_ENGINE_TIMER:{index} |Number (seconds)<br/>Sets a timer to control engine {index} start-up/shutdown events |
-
-| A32NX_ENGINE_IMBALANCE |Number (2-bit coded decimal)<br/>Defines random engine imbalance of parameters Bits (from Left) | |
-    Parameter --<br/>| --<br/>0-1 | Engine affected (01 or 02) 2-3 | EGT (max
-    20º imbalance) 4-5 | FF (max 36 Kg/h imbalance) 6-7 | N2 (max 0.3%
-    imbalance) 8-9 | Oil Qty (max 2 Qt imbalance) 10-11 | Oil Pressure
-    (max 3 psi imbalance) 12-13 | Idle Oil Pressure (+/<br/>6 psi
-    imbalance)
-
-| A32NX_ENGINE_N1:{index} |Number (% N1)<br/>Custom engine {index} N1 to model realistic start-up & shutdown, |
-    although equal to Sim's N2 for other flight phases.
-
-| A32NX_ENGINE_N2:{index} |Number (% N2)<br/>Custom engine N2 {index} to model realistic start-up & shutdown, |
-    although equal to Sim's N2 for other flight phases.
-
-| A32NX_ENGINE_EGT:{index} |Number (degrees Celsius)<br/>Custom engine {index} EGT to model realistic behavior throughout all |
-    flight phases
-
-| A32NX_ENGINE_FF:{index} |Number (Kg/h)<br/>Custom engine {index} fuel flow to model realistic behavior |
-    throughout all flight phases
-
-| A32NX_ENGINE_PRE_FF:{index} |Number (Kg/h)<br/>Previous engine {index} deltaTime fuel flow to calculate spot fuel |
-    burn
-
-| A32NX_ENGINE_IDLE_N1 |Number (% N1)<br/>Expected idle N1 as a function of temperature and pressure |
-| A32NX_ENGINE_IDLE_N2 |Number (% N2)<br/>Expected idle N2 as a function of temperature and pressure |
-| A32NX_ENGINE_IDLE_EGT |Number (degrees Celsius)<br/>Expected idle EGT as a function of temperature and pressure |
-| A32NX_ENGINE_IDLE_FF |Number (Kg/h)<br/>Expected idle fuel flow as a function of temperature and pressure |
-| A32NX_FUEL_USED:{index} |Number (Kg)<br/>Fuel burnt by engine {index} on deltaTime |
-| A32NX_FUEL_LEFT_PRE |Number (lbs)<br/>Previous deltaTime fuel for the main left tank |
-| A32NX_FUEL_RIGHT_PRE |Number (lbs)<br/>Previous deltaTime fuel for the main right tank |
-| A32NX_FUEL_AUX_LEFT_PRE |Number (lbs)<br/>Previous deltaTime fuel for the aux left tank |
-| A32NX_FUEL_AUX_RIGHT_PRE |Number (lbs)<br/>Previous deltaTime fuel for the aux right tank |
-| A32NX_FUEL_CENTER_PRE |Number (lbs)<br/>Previous deltaTime fuel for the center tank |
-| A32NX_ENGINE_TOTAL_OIL:{index} |Number (quarts)<br/>Total engine {index} oil quantity in the oil system (tank + circuit) |
-| A32NX_ENGINE_TANK_OIL:{index} |Number (quarts)<br/>Total engine {index} oil quantity in the oil tank |
+| Name/ID                        | Description                                                                                                                                                                                                                                                                                                                                                                                                           |
+|:-------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| A32NX_ENGINE_CYCLE_TIME        | Number (seconds)<br/>Sum of Engine 1 & 2 cycle times to detect when engines are alive (pause/ slew management)                                                                                                                                                                                                                                                                                                        |
+| A32NX_ENGINE_STATE:{index}     | Number<br/>Defines actual engine state <br/>State = Value <br/>OFF = 0 <br/>ON = 1 <br/>STARTING = 2<br/> SHUTTING = 3                                                                                                                                                                                                                                                                                                |
+| A32NX_ENGINE_TIMER:{index}     | Number (seconds)<br/>Sets a timer to control engine {index} start-up/shutdown events                                                                                                                                                                                                                                                                                                                                  |
+| A32NX_ENGINE_IMBALANCE         | Number (2-bit coded decimal)<br/>Defines random engine imbalance of parameters<br/> Bits (from Left) = Parameter <br/>0-1 = Engine affected (01 or 02)<br/> 2-3 = EGT (max 20º imbalance) <br/>4-5 = FF (max 36 Kg/h imbalance) <br/>6-7 = N2 (max 0.3%    imbalance) <br/>8-9 = Oil Qty (max 2 Qt imbalance) <br/>10-11 = Oil Pressure    (max 3 psi imbalance) <br/>12-13 = Idle Oil Pressure (+/- 6 psi imbalance) |
+| A32NX_ENGINE_N1:{index}        | Number (% N1)<br/>Custom engine {index} N1 to model realistic start-up & shutdown, although equal to Sim's N2 for other flight phases.                                                                                                                                                                                                                                                                                |
+| A32NX_ENGINE_N2:{index}        | Number (% N2)<br/>Custom engine N2 {index} to model realistic start-up & shutdown, although equal to Sim's N2 for other flight phases.                                                                                                                                                                                                                                                                                |
+| A32NX_ENGINE_EGT:{index}       | Number (degrees Celsius)<br/>Custom engine {index} EGT to model realistic behavior throughout all flight phases                                                                                                                                                                                                                                                                                                       |
+| A32NX_ENGINE_FF:{index}        | Number (Kg/h)<br/>Custom engine {index} fuel flow to model realistic behavior throughout all flight phases                                                                                                                                                                                                                                                                                                            |
+| A32NX_ENGINE_PRE_FF:{index}    | Number (Kg/h)<br/>Previous engine {index} deltaTime fuel flow to calculate spot fuel burn                                                                                                                                                                                                                                                                                                                             |
+| A32NX_ENGINE_IDLE_N1           | Number (% N1)<br/>Expected idle N1 as a function of temperature and pressure                                                                                                                                                                                                                                                                                                                                          |
+| A32NX_ENGINE_IDLE_N2           | Number (% N2)<br/>Expected idle N2 as a function of temperature and pressure                                                                                                                                                                                                                                                                                                                                          |
+| A32NX_ENGINE_IDLE_EGT          | Number (degrees Celsius)<br/>Expected idle EGT as a function of temperature and pressure                                                                                                                                                                                                                                                                                                                              |
+| A32NX_ENGINE_IDLE_FF           | Number (Kg/h)<br/>Expected idle fuel flow as a function of temperature and pressure                                                                                                                                                                                                                                                                                                                                   |
+| A32NX_FUEL_USED:{index}        | Number (Kg)<br/>Fuel burnt by engine {index} on deltaTime                                                                                                                                                                                                                                                                                                                                                             |
+| A32NX_FUEL_LEFT_PRE            | Number (lbs)<br/>Previous deltaTime fuel for the main left tank                                                                                                                                                                                                                                                                                                                                                       |
+| A32NX_FUEL_RIGHT_PRE           | Number (lbs)<br/>Previous deltaTime fuel for the main right tank                                                                                                                                                                                                                                                                                                                                                      |
+| A32NX_FUEL_AUX_LEFT_PRE        | Number (lbs)<br/>Previous deltaTime fuel for the aux left tank                                                                                                                                                                                                                                                                                                                                                        |
+| A32NX_FUEL_AUX_RIGHT_PRE       | Number (lbs)<br/>Previous deltaTime fuel for the aux right tank                                                                                                                                                                                                                                                                                                                                                       |
+| A32NX_FUEL_CENTER_PRE          | Number (lbs)<br/>Previous deltaTime fuel for the center tank                                                                                                                                                                                                                                                                                                                                                          |
+| A32NX_ENGINE_TOTAL_OIL:{index} | Number (quarts)<br/>Total engine {index} oil quantity in the oil system (tank + circuit)                                                                                                                                                                                                                                                                                                                              |
+| A32NX_ENGINE_TANK_OIL:{index}  | Number (quarts)<br/>Total engine {index} oil quantity in the oil tank                                                                                                                                                                                                                                                                                                                                                 |
 
