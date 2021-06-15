@@ -104,12 +104,12 @@ export const ATC = () => {
                                 >
                                     <div className="flex w-full justify-start text-base">
                                         <div>
-                                            { atc.type === apiClient.AtcType.radar && <IconChartRadar size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.ground && <IconTrafficLights size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.departure && <IconPlaneDeparture size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.approach && <IconPlaneArrival size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.tower && <IconBuildingLighthouse size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.delivery && <IconCircleCheck size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.RADAR && <IconChartRadar size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.GROUND && <IconTrafficLights size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.DEPARTURE && <IconPlaneDeparture size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.APPROACH && <IconPlaneArrival size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.TOWER && <IconBuildingLighthouse size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.DELIVERY && <IconCircleCheck size="2rem" /> }
                                         </div>
                                         <div className="flex flex-col flex-grow text-center justify-center items-center">
                                             <div>
