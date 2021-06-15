@@ -33,9 +33,7 @@ const poundsToKgs = 0.453592;
 
 export const LandingWidget = () => {
     const calculator: LandingCalculator = new LandingCalculator();
-
     const { performanceState, performanceDispatch } = useContext(GlobalContext);
-
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
 
     const {
