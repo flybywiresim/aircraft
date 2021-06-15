@@ -14,7 +14,6 @@ use systems::{
     landing_gear::LandingGear,
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
-        PushButtonElecRelay,
     },
     shared::{
         DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
@@ -1373,7 +1372,7 @@ pub(super) struct A320HydraulicOverheadPanel {
     rat_push_button: MomentaryPushButton,
     yellow_epump_push_button: AutoOnFaultPushButton,
     blue_epump_override_push_button: MomentaryOnPushButton,
-    blue_epump_override_relay: PushButtonElecRelay,
+    blue_epump_override_push_button_last_pressed_state: bool,
 }
 impl A320HydraulicOverheadPanel {
     pub(super) fn new() -> A320HydraulicOverheadPanel {
@@ -1385,11 +1384,23 @@ impl A320HydraulicOverheadPanel {
             rat_push_button: MomentaryPushButton::new("HYD_RAT_MAN_ON"),
             yellow_epump_push_button: AutoOnFaultPushButton::new_auto("HYD_EPUMPY"),
             blue_epump_override_push_button: MomentaryOnPushButton::new("HYD_EPUMPY_OVRD"),
-            blue_epump_override_relay: PushButtonElecRelay::new(vec![
-                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
-                A320Hydraulic::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
-            ]),
+            blue_epump_override_push_button_last_pressed_state: false,
         }
+    }
+
+    fn update_blue_override_state(&mut self) {
+        self.blue_epump_override_push_button.set_on(
+            self.blue_epump_override_push_button.is_on()
+                ^ (self.blue_epump_override_push_button.is_pressed()
+                    && !self.blue_epump_override_push_button_last_pressed_state),
+        );
+
+        if self.blue_epump_push_button.is_off() {
+            self.blue_epump_override_push_button.turn_off();
+        }
+
+        self.blue_epump_override_push_button_last_pressed_state =
+            self.blue_epump_override_push_button.is_pressed();
     }
 
     pub(super) fn update(&mut self, hyd: &A320Hydraulic) {
@@ -1402,10 +1413,7 @@ impl A320HydraulicOverheadPanel {
         self.yellow_epump_push_button
             .set_fault(hyd.yellow_epump_has_low_press_fault());
 
-        self.blue_epump_override_relay.update(
-            &mut self.blue_epump_override_push_button,
-            self.blue_epump_push_button.is_off(),
-        );
+        self.update_blue_override_state();
     }
 
     fn yellow_epump_push_button_is_auto(&self) -> bool {
@@ -1453,9 +1461,16 @@ impl SimulationElement for A320HydraulicOverheadPanel {
         self.rat_push_button.accept(visitor);
         self.yellow_epump_push_button.accept(visitor);
         self.blue_epump_override_push_button.accept(visitor);
-        self.blue_epump_override_relay.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        if !buses.is_powered(A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS)
+            || !buses.is_powered(A320Hydraulic::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS)
+        {
+            self.blue_epump_override_push_button.turn_off();
+        }
     }
 }
 
