@@ -208,6 +208,7 @@ struct Brakes {
     brake_right_output_to_sim: f64,
 
     parking_brake_lever_is_set: bool,
+    last_transmitted_park_brake_lever_position: f64,
 }
 impl Brakes {
     const KEYBOARD_PRESS_SPEED: f64 = 0.6;
@@ -246,6 +247,8 @@ impl Brakes {
             brake_right_output_to_sim: 0.,
 
             parking_brake_lever_is_set: true,
+
+            last_transmitted_park_brake_lever_position: 1.,
         })
     }
 
@@ -259,6 +262,15 @@ impl Brakes {
 
     fn set_brake_right_key_pressed(&mut self) {
         self.right_key_pressed = true;
+    }
+
+    fn synchronise_with_sim(&mut self) {
+        // Synchronising WASM park brake state with simulator park brake lever variable
+        let mut current_in_sim_park_brake: f64 = self.park_brake_lever_masked_input.get_value();
+
+        if current_in_sim_park_brake != self.last_transmitted_park_brake_lever_position {
+            self.receive_a_park_brake_set_event(current_in_sim_park_brake as u32);
+        }
     }
 
     fn update_keyboard_inputs(&mut self, delta: Duration) {
@@ -287,9 +299,11 @@ impl Brakes {
 
     fn transmit_masked_inputs(&mut self) {
         let park_is_set = self.parking_brake_lever_is_set as u32 as f64;
+        self.last_transmitted_park_brake_lever_position = park_is_set;
+        self.park_brake_lever_masked_input.set_value(park_is_set);
+
         let brake_right = self.brake_right() * 100.;
         let brake_left = self.brake_left() * 100.;
-        self.park_brake_lever_masked_input.set_value(park_is_set);
         self.right_pedal_brake_masked_input.set_value(brake_right);
         self.left_pedal_brake_masked_input.set_value(brake_left);
     }
@@ -421,6 +435,7 @@ impl HandleMessage for Brakes {
 }
 impl PrePostTick for Brakes {
     fn pre_tick(&mut self, delta: Duration) {
+        self.synchronise_with_sim();
         self.update_keyboard_inputs(delta);
     }
 

@@ -163,5 +163,8 @@ class A32NX_Refuel {
                 return;
             }
         }
+
+        // DONE FUELING
+        SimVar.SetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool", false);
     }
 }
