@@ -1,6 +1,6 @@
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, ElectricitySource, NewPotential, PotentialOrigin, ProvideCurrent,
+    ElectricalStateWriter, ElectricitySource, Potential, PotentialOrigin, ProvideCurrent,
     ProvidePotential,
 };
 use crate::{
@@ -170,11 +170,11 @@ impl ElectricalElement for Battery {
     }
 }
 impl ElectricitySource for Battery {
-    fn output_potential(&self) -> NewPotential {
+    fn output_potential(&self) -> Potential {
         if self.output_potential > ElectricPotential::new::<volt>(0.) {
-            NewPotential::new(PotentialOrigin::Battery(self.number), self.output_potential)
+            Potential::new(PotentialOrigin::Battery(self.number), self.output_potential)
         } else {
-            NewPotential::none()
+            Potential::none()
         }
     }
 }

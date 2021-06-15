@@ -1,6 +1,6 @@
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, ElectricityTransformer, NewPotential, PotentialOrigin, ProvideCurrent,
+    ElectricalStateWriter, ElectricityTransformer, Potential, PotentialOrigin, ProvideCurrent,
     ProvidePotential,
 };
 use crate::{
@@ -66,14 +66,14 @@ impl ElectricalElement for TransformerRectifier {
     }
 }
 impl ElectricityTransformer for TransformerRectifier {
-    fn transform(&self, input: &NewPotential) -> NewPotential {
+    fn transform(&self, input: &Potential) -> Potential {
         if !self.failed && input.is_powered() {
-            NewPotential::new(
+            Potential::new(
                 PotentialOrigin::TransformerRectifier(self.number),
                 ElectricPotential::new::<volt>(28.),
             )
         } else {
-            NewPotential::none()
+            Potential::none()
         }
     }
 }

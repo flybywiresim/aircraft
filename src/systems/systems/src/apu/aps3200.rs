@@ -2,7 +2,7 @@ use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
 use crate::{
     electrical::{
         ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-        ElectricalStateWriter, ElectricitySource, NewPotential, ProvideFrequency, ProvideLoad,
+        ElectricalStateWriter, ElectricitySource, Potential, ProvideFrequency, ProvideLoad,
         ProvidePotential,
     },
     shared::{
@@ -661,14 +661,14 @@ impl ElectricalElement for Aps3200ApuGenerator {
     }
 }
 impl ElectricitySource for Aps3200ApuGenerator {
-    fn output_potential(&self) -> NewPotential {
+    fn output_potential(&self) -> Potential {
         if self.should_provide_output() {
-            NewPotential::new(
+            Potential::new(
                 PotentialOrigin::ApuGenerator(self.number),
                 self.output_potential,
             )
         } else {
-            NewPotential::none()
+            Potential::none()
         }
     }
 }

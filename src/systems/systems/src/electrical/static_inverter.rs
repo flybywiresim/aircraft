@@ -1,6 +1,6 @@
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, ElectricityTransformer, NewPotential, PotentialOrigin, ProvideFrequency,
+    ElectricalStateWriter, ElectricityTransformer, Potential, PotentialOrigin, ProvideFrequency,
     ProvidePotential,
 };
 use crate::{
@@ -45,11 +45,11 @@ impl ElectricalElement for StaticInverter {
     }
 }
 impl ElectricityTransformer for StaticInverter {
-    fn transform(&self, input: &NewPotential) -> super::NewPotential {
+    fn transform(&self, input: &Potential) -> super::Potential {
         if input.is_powered() {
-            NewPotential::new(PotentialOrigin::StaticInverter, self.output_potential)
+            Potential::new(PotentialOrigin::StaticInverter, self.output_potential)
         } else {
-            NewPotential::none()
+            Potential::none()
         }
     }
 }

@@ -398,11 +398,11 @@ mod tests {
             }
         }
         impl ElectricitySource for BatteryStub {
-            fn output_potential(&self) -> NewPotential {
+            fn output_potential(&self) -> Potential {
                 if self.potential > ElectricPotential::new::<volt>(0.) {
-                    NewPotential::new(PotentialOrigin::Battery(1), self.potential)
+                    Potential::new(PotentialOrigin::Battery(1), self.potential)
                 } else {
-                    NewPotential::none()
+                    Potential::none()
                 }
             }
         }
@@ -735,11 +735,11 @@ pub trait ElectricalElement {
 }
 
 pub trait ElectricitySource: ElectricalElement {
-    fn output_potential(&self) -> NewPotential;
+    fn output_potential(&self) -> Potential;
 }
 
 pub trait ElectricityTransformer: ElectricalElement {
-    fn transform(&self, input: &NewPotential) -> NewPotential;
+    fn transform(&self, input: &Potential) -> Potential;
 }
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
@@ -764,7 +764,7 @@ pub struct Electricity {
     next_identifier: ElectricalElementIdentifier,
     buses: HashMap<ElectricalBusType, ElectricalElementIdentifier>,
     potential: PotentialCollection,
-    none_potential: NewPotential,
+    none_potential: Potential,
     tick_delta: Duration,
 }
 impl Electricity {
@@ -773,7 +773,7 @@ impl Electricity {
             next_identifier: ElectricalElementIdentifier::first(),
             buses: HashMap::new(),
             potential: PotentialCollection::new(),
-            none_potential: NewPotential::none(),
+            none_potential: Potential::none(),
             tick_delta: Duration::from_secs(0),
         }
     }
@@ -865,13 +865,13 @@ impl Electricity {
         }
     }
 
-    pub fn output_of(&self, element: &impl ElectricalElement) -> &NewPotential {
+    pub fn output_of(&self, element: &impl ElectricalElement) -> &Potential {
         self.potential
             .get(element.output_identifier())
             .unwrap_or(&self.none_potential)
     }
 
-    pub fn input_of(&self, element: &impl ElectricalElement) -> &NewPotential {
+    pub fn input_of(&self, element: &impl ElectricalElement) -> &Potential {
         self.potential
             .get(element.input_identifier())
             .unwrap_or(&self.none_potential)
@@ -926,7 +926,7 @@ impl ElectricalElementIdentifierProvider for Electricity {
     }
 }
 impl ElectricalBuses for Electricity {
-    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> &NewPotential {
+    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> &Potential {
         if let Some(identifier) = self.buses.get(&bus_type) {
             self.potential
                 .get(*identifier)
@@ -951,7 +951,7 @@ impl ElectricalBuses for Electricity {
     }
 }
 impl ConsumePower for Electricity {
-    fn input_of(&self, element: &impl ElectricalElement) -> &NewPotential {
+    fn input_of(&self, element: &impl ElectricalElement) -> &Potential {
         self.input_of(element)
     }
 
@@ -1058,12 +1058,12 @@ impl<'a> SimulationElementVisitor for ProcessPowerConsumptionReportVisitor<'a> {
 /// `Potential::new(PotentialOrigin::EngineGenerator(1), ElectricPotential::new::<volt>(115.))`
 /// when it is.
 #[derive(Debug)]
-pub struct NewPotential {
+pub struct Potential {
     origins: HashSet<PotentialOrigin>,
     elements: HashSet<ElectricalElementIdentifier>,
     raw: ElectricPotential,
 }
-impl NewPotential {
+impl Potential {
     pub fn new(origin: PotentialOrigin, raw: ElectricPotential) -> Self {
         let mut origins = HashSet::new();
         origins.insert(origin);
@@ -1108,7 +1108,7 @@ impl NewPotential {
         self.origins.iter()
     }
 
-    fn merge(mut self, mut other: NewPotential) -> Self {
+    fn merge(mut self, mut other: Potential) -> Self {
         // As a given simulation tick is not of infinitely small delta time. We need to give
         // "equality" some slack. This prevents continuously switching between potential
         // sources, such as the battery.
@@ -1147,7 +1147,7 @@ impl NewPotential {
             )
     }
 
-    pub fn is_powered_by_same_single_source(&self, other: &NewPotential) -> bool {
+    pub fn is_powered_by_same_single_source(&self, other: &Potential) -> bool {
         self.origins.len() == 1
             && other.origins.len() == 1
             && self.origins.iter().next() == other.origins.iter().next()
@@ -1233,7 +1233,7 @@ impl ElectricalElementToPotentialKeyMap {
 #[derive(Debug)]
 struct PotentialCollection {
     element_to_potential_key: ElectricalElementToPotentialKeyMap,
-    items: HashMap<PotentialKey, NewPotential>,
+    items: HashMap<PotentialKey, Potential>,
     consumption_per_origin: HashMap<PotentialOrigin, Power>,
 }
 impl PotentialCollection {
@@ -1263,7 +1263,7 @@ impl PotentialCollection {
                 // Neither element has potential, point them both to an object without potential.
                 self.items.insert(
                     left_key,
-                    NewPotential::none()
+                    Potential::none()
                         .include(left_element)
                         .and_include(right_element),
                 );
@@ -1297,7 +1297,7 @@ impl PotentialCollection {
         };
     }
 
-    fn supplied_by(&mut self, identifier: ElectricalElementIdentifier, potential: NewPotential) {
+    fn supplied_by(&mut self, identifier: ElectricalElementIdentifier, potential: Potential) {
         let key = self.element_to_potential_key.get_or_insert(identifier);
         self.items.insert(key, potential);
     }
@@ -1313,7 +1313,7 @@ impl PotentialCollection {
         }
     }
 
-    fn get(&self, identifier: ElectricalElementIdentifier) -> Option<&NewPotential> {
+    fn get(&self, identifier: ElectricalElementIdentifier) -> Option<&Potential> {
         if let Some(key) = self.element_to_potential_key.get(identifier) {
             self.items.get(&key)
         } else {
@@ -1369,11 +1369,11 @@ mod new_potential_tests {
 
     #[test]
     fn merge_ignores_none() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.),
         )
-        .merge(NewPotential::none());
+        .merge(Potential::none());
 
         assert!(potential.is_only_powered_by_apu());
         assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
@@ -1381,11 +1381,11 @@ mod new_potential_tests {
 
     #[test]
     fn merge_returns_the_callee_when_its_potential_is_greater_than_that_of_the_argument() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.),
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::EngineGenerator(1),
             ElectricPotential::new::<volt>(40.),
         ));
@@ -1396,11 +1396,11 @@ mod new_potential_tests {
 
     #[test]
     fn merge_returns_the_argument_when_its_potential_is_greater_than_that_of_the_callee() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::EngineGenerator(1),
             ElectricPotential::new::<volt>(40.),
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.),
         ));
@@ -1411,11 +1411,11 @@ mod new_potential_tests {
 
     #[test]
     fn merge_returns_a_merged_result_when_both_callee_and_argument_have_equal_potential() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.),
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::EngineGenerator(1),
             ElectricPotential::new::<volt>(115.),
         ));
@@ -1430,11 +1430,11 @@ mod new_potential_tests {
 
     #[test]
     fn merge_combines_equal_origins() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.),
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.),
         ));
@@ -1445,11 +1445,11 @@ mod new_potential_tests {
 
     #[test]
     fn merge_considers_miniscule_potential_differences_equal() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::EngineGenerator(1),
             ElectricPotential::new::<volt>(115.0011),
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.002),
         ));
@@ -1463,11 +1463,11 @@ mod new_potential_tests {
 
     #[test]
     fn merge_considers_larger_potential_differences_inequal() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::EngineGenerator(1),
             ElectricPotential::new::<volt>(115.001),
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.0021),
         ));
@@ -1481,11 +1481,11 @@ mod new_potential_tests {
 
     #[test]
     fn merge_takes_the_lowest_raw_potential_from_two_potentials_it_considers_equal() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::EngineGenerator(1),
             ElectricPotential::new::<volt>(115.0011),
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.002),
         ));
@@ -1495,16 +1495,16 @@ mod new_potential_tests {
 
     #[test]
     fn origin_count_returns_0_when_none() {
-        assert_eq!(NewPotential::none().origin_count(), 0);
+        assert_eq!(Potential::none().origin_count(), 0);
     }
 
     #[test]
     fn origin_count_returns_the_number_of_origins() {
-        let potential = NewPotential::new(
+        let potential = Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.),
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::EngineGenerator(1),
             ElectricPotential::new::<volt>(115.),
         ));
@@ -1514,12 +1514,12 @@ mod new_potential_tests {
 
     #[test]
     fn is_only_powered_by_single_engine_generator_returns_false_when_none() {
-        assert!(!NewPotential::none().is_only_powered_by_single_engine_generator());
+        assert!(!Potential::none().is_only_powered_by_single_engine_generator());
     }
 
     #[test]
     fn is_only_powered_by_single_engine_generator_returns_false_when_different_origin() {
-        assert!(!NewPotential::new(
+        assert!(!Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.)
         )
@@ -1528,7 +1528,7 @@ mod new_potential_tests {
 
     #[test]
     fn is_only_powered_by_single_engine_generator_returns_true_when_engine_generator() {
-        assert!(NewPotential::new(
+        assert!(Potential::new(
             PotentialOrigin::EngineGenerator(2),
             ElectricPotential::new::<volt>(115.)
         )
@@ -1537,26 +1537,26 @@ mod new_potential_tests {
 
     #[test]
     fn is_only_powered_by_single_engine_generator_returns_false_when_pair_of_engine_generators() {
-        assert!(!NewPotential::new(
+        assert!(!Potential::new(
             PotentialOrigin::EngineGenerator(1),
             ElectricPotential::new::<volt>(115.)
         )
-        .merge(NewPotential::new(
+        .merge(Potential::new(
             PotentialOrigin::EngineGenerator(2),
             ElectricPotential::new::<volt>(115.)
         ))
         .is_only_powered_by_single_engine_generator());
     }
 
-    fn some_potential() -> NewPotential {
-        NewPotential::new(
+    fn some_potential() -> Potential {
+        Potential::new(
             PotentialOrigin::ApuGenerator(1),
             ElectricPotential::new::<volt>(115.),
         )
     }
 
-    fn none_potential() -> NewPotential {
-        NewPotential::none()
+    fn none_potential() -> Potential {
+        Potential::none()
     }
 }
 
@@ -1618,14 +1618,14 @@ mod electricity_tests {
         }
     }
     impl ElectricitySource for TestElectricalElement {
-        fn output_potential(&self) -> NewPotential {
+        fn output_potential(&self) -> Potential {
             if self.is_powered {
-                NewPotential::new(
+                Potential::new(
                     PotentialOrigin::EngineGenerator(self.number),
                     ElectricPotential::new::<volt>(115.),
                 )
             } else {
-                NewPotential::none()
+                Potential::none()
             }
         }
     }
@@ -1670,14 +1670,14 @@ mod electricity_tests {
         }
     }
     impl ElectricityTransformer for TestTransformer {
-        fn transform(&self, input: &NewPotential) -> NewPotential {
+        fn transform(&self, input: &Potential) -> Potential {
             if input.is_powered() {
-                NewPotential::new(
+                Potential::new(
                     PotentialOrigin::TransformerRectifier(1),
                     ElectricPotential::new::<volt>(28.),
                 )
             } else {
-                NewPotential::none()
+                Potential::none()
             }
         }
     }

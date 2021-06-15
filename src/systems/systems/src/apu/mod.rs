@@ -5,7 +5,7 @@ use self::{
 use crate::{
     electrical::{
         ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-        ElectricitySource, NewPotential, ProvideFrequency, ProvidePotential,
+        ElectricitySource, Potential, ProvideFrequency, ProvidePotential,
     },
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
     pneumatic::{BleedAirValve, BleedAirValveState},
@@ -195,7 +195,7 @@ impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ContactorSignal>
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> ElectricitySource for AuxiliaryPowerUnit<T, U> {
-    fn output_potential(&self) -> NewPotential {
+    fn output_potential(&self) -> Potential {
         self.generator.output_potential()
     }
 }
@@ -459,7 +459,7 @@ pub mod tests {
                 .set_turbine(Some(Box::new(InfinitelyAtNTestTurbine::new(n))));
         }
 
-        pub fn generator_output<'a>(&self, electricity: &'a Electricity) -> &'a NewPotential {
+        pub fn generator_output<'a>(&self, electricity: &'a Electricity) -> &'a Potential {
             electricity.output_of(&self.apu)
         }
 
@@ -851,7 +851,7 @@ pub mod tests {
             self.test_bed.read_bool("OVHD_APU_MASTER_SW_PB_HAS_FAULT")
         }
 
-        pub fn generator_output(&self) -> &NewPotential {
+        pub fn generator_output(&self) -> &Potential {
             self.aircraft.generator_output(self.test_bed.electricity())
         }
 

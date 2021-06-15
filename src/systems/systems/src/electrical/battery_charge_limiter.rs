@@ -570,7 +570,7 @@ mod tests {
                 battery::Battery, consumption::PowerConsumer, test::TestElectricitySource,
                 Contactor, ElectricalBus, ElectricalBusType, ElectricalElement,
                 ElectricalElementIdentifier, ElectricalElementIdentifierProvider, Electricity,
-                NewPotential, PotentialOrigin,
+                Potential, PotentialOrigin,
             },
             simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
         };
@@ -869,14 +869,14 @@ mod tests {
             }
         }
         impl ElectricitySource for TestEmergencyGenerator {
-            fn output_potential(&self) -> NewPotential {
+            fn output_potential(&self) -> Potential {
                 if self.is_available {
-                    NewPotential::new(
+                    Potential::new(
                         PotentialOrigin::EmergencyGenerator,
                         ElectricPotential::new::<volt>(115.),
                     )
                 } else {
-                    NewPotential::none()
+                    Potential::none()
                 }
             }
         }

@@ -2,7 +2,7 @@ use crate::shared::PotentialOrigin;
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricitySource, NewPotential,
+    ElectricitySource, Potential,
 };
 use uom::si::{electric_potential::volt, f64::*};
 
@@ -60,11 +60,11 @@ impl ElectricalElement for TestElectricitySource {
     }
 }
 impl ElectricitySource for TestElectricitySource {
-    fn output_potential(&self) -> NewPotential {
+    fn output_potential(&self) -> Potential {
         if self.potential > ElectricPotential::new::<volt>(0.) {
-            NewPotential::new(self.origin, self.potential)
+            Potential::new(self.origin, self.potential)
         } else {
-            NewPotential::none()
+            Potential::none()
         }
     }
 }

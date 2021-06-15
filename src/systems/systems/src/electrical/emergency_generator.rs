@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricalStateWriter, ElectricitySource, NewPotential, PotentialOrigin, ProvideFrequency,
+    ElectricalStateWriter, ElectricitySource, Potential, PotentialOrigin, ProvideFrequency,
     ProvidePotential,
 };
 use crate::{
@@ -87,11 +87,11 @@ impl ElectricalElement for EmergencyGenerator {
     }
 }
 impl ElectricitySource for EmergencyGenerator {
-    fn output_potential(&self) -> NewPotential {
+    fn output_potential(&self) -> Potential {
         if self.should_provide_output() {
-            NewPotential::new(PotentialOrigin::EmergencyGenerator, self.output_potential)
+            Potential::new(PotentialOrigin::EmergencyGenerator, self.output_potential)
         } else {
-            NewPotential::none()
+            Potential::none()
         }
     }
 }
