@@ -13,7 +13,7 @@ type Option = {
  */
 type SelectInputProps = {
     label: string,
-    onChange?: (newValue: number | string) => void,
+    onChange?: (newValue: number | string | boolean) => void,
     defaultValue?: any,
     reverse?: boolean, // Flips label/input order
     options: Option[],

@@ -16,45 +16,50 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import metarParser from 'aewx-metar-parser';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
-import RunwayVisualizationWidget, { DistanceLabel, LabelType } from './RunwayVisualizationWidget';
+import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
+import { EPerformanceActions, PerformanceContext, performanceInitialState } from '../../Store/performance-context';
 
 const poundsToKgs = 0.453592;
 
 export const LandingWidget = () => {
     const calculator: LandingCalculator = new LandingCalculator();
 
+    const { performanceState, performanceDispatch } = useContext(PerformanceContext);
+
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
 
-    const [icao, setIcao] = useState<string>('');
-    const [windDirection, setWindDirection] = useState<number>();
-    const [windMagnitude, setWindMagnitude] = useState<number>();
-    const [weight, setWeight] = useState<number>();
-    const [runwayHeading, setRunwayHeading] = useState<number>();
-    const [approachSpeed, setApproachSpeed] = useState<number>();
-    const [flaps, setFlaps] = useState(LandingFlapsConfig.Full);
-    const [runwayCondition, setRunwayCondition] = useState(LandingRunwayConditions.Dry);
-    const [reverseThrust, setReverseThrust] = useState(false);
-    const [altitude, setAltitude] = useState<number>();
-    const [slope, setSlope] = useState<number>();
-    const [temperature, setTemperature] = useState<number>();
-    const [overweightProcedure, setOverweightProcedure] = useState(false);
-    const [pressure, setPressure] = useState<number>();
-    const [runwayLength, setRunwayLength] = useState<number>();
-    const [maxAutobrakeLandingDist, setMaxAutobrakeLandingDist] = useState<number>(0);
-    const [mediumAutobrakeLandingDist, setMediumAutobrakeLandingDist] = useState<number>(0);
-    const [lowAutobrakeLandingDist, setLowAutobrakeLandingDist] = useState<number>(0);
-    const [runwayVisualizationLabels, setRunwayVisualizationLabels] = useState<DistanceLabel[]>([]);
-    const [runwayNumber, setRunwayNumber] = useState<number>();
-    const [displayedRunwayLength, setDisplayedRunwayLength] = useState<number>(0);
+    const {
+        icao,
+        windDirection,
+        windMagnitude,
+        weight,
+        runwayHeading,
+        approachSpeed,
+        flaps,
+        runwayCondition,
+        reverseThrust,
+        altitude,
+        slope,
+        temperature,
+        overweightProcedure,
+        pressure,
+        runwayLength,
+        maxAutobrakeLandingDist,
+        mediumAutobrakeLandingDist,
+        lowAutobrakeLandingDist,
+        runwayVisualizationLabels,
+        runwayNumber,
+        displayedRunwayLength,
+    } = performanceState.landing;
 
     const calculateLanding = (): void => {
         if (!areInputsValid()) return;
@@ -74,30 +79,33 @@ export const LandingWidget = () => {
             pressure ?? 0,
         );
 
-        setMaxAutobrakeLandingDist(Math.round(landingDistances.maxAutobrakeDist));
-        setMediumAutobrakeLandingDist(Math.round(landingDistances.mediumAutobrakeDist));
-        setLowAutobrakeLandingDist(Math.round(landingDistances.lowAutobrakeDist));
-
-        setRunwayVisualizationLabels([
-            {
-                label: 'MAX MANUAL',
-                distance: landingDistances.maxAutobrakeDist,
-                type: LabelType.Main,
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: {
+                maxAutobrakeLandingDist: Math.round(landingDistances.maxAutobrakeDist),
+                mediumAutobrakeLandingDist: Math.round(landingDistances.mediumAutobrakeDist),
+                lowAutobrakeLandingDist: Math.round(landingDistances.lowAutobrakeDist),
+                runwayVisualizationLabels: [
+                    {
+                        label: 'MAX MANUAL',
+                        distance: landingDistances.maxAutobrakeDist,
+                        type: LabelType.Main,
+                    },
+                    {
+                        label: 'MEDIUM',
+                        distance: landingDistances.mediumAutobrakeDist,
+                        type: LabelType.Main,
+                    },
+                    {
+                        label: 'LOW',
+                        distance: landingDistances.lowAutobrakeDist,
+                        type: LabelType.Main,
+                    },
+                ],
+                runwayNumber: Math.round((runwayHeading ?? 0) / 10),
+                displayedRunwayLength: runwayLength ?? 0,
             },
-            {
-                label: 'MEDIUM',
-                distance: landingDistances.mediumAutobrakeDist,
-                type: LabelType.Main,
-            },
-            {
-                label: 'LOW',
-                distance: landingDistances.lowAutobrakeDist,
-                type: LabelType.Main,
-            },
-        ]);
-
-        setRunwayNumber(Math.round((runwayHeading ?? 0) / 10));
-        setDisplayedRunwayLength(runwayLength ?? 0);
+        });
     };
 
     const syncValues = async (): Promise<void> => {
@@ -107,23 +115,39 @@ export const LandingWidget = () => {
 
         const weightKgs = Math.round(totalWeight * poundsToKgs);
 
-        setWeight(weightKgs);
-        setWindDirection(parsedMetar.wind.degrees);
-        setWindMagnitude(parsedMetar.wind.speed_kts);
-        setTemperature(parsedMetar.temperature.celsius);
-        setPressure(parsedMetar.barometer.mb);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: {
+                weight: weightKgs,
+                windDirection: parsedMetar.wind.degrees,
+                windMagnitude: parsedMetar.wind.speed_kts,
+                temperature: parsedMetar.temperature.celsius,
+                pressure: parsedMetar.barometer.mb,
+            },
+        });
     };
 
     const isValidIcao = (): boolean => icao.length === 4;
 
-    const handleWindDirectionChange = (value: string): void => {
-        let direction: number | undefined = parseInt(value);
+    const handleICAOChange = (icao: string): void => {
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { icao },
 
-        if (Number.isNaN(direction)) {
-            direction = undefined;
+        });
+    };
+
+    const handleWindDirectionChange = (value: string): void => {
+        let windDirection: number | undefined = parseInt(value);
+
+        if (Number.isNaN(windDirection)) {
+            windDirection = undefined;
         }
 
-        setWindDirection(direction);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { windDirection },
+        });
     };
 
     const handleWindMagnitudeChange = (value: string): void => {
@@ -133,7 +157,10 @@ export const LandingWidget = () => {
             magnitude = undefined;
         }
 
-        setWindMagnitude(magnitude);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { magnitude },
+        });
     };
 
     const handleWeightChange = (value: string): void => {
@@ -143,7 +170,10 @@ export const LandingWidget = () => {
             weight = undefined;
         }
 
-        setWeight(weight);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { weight },
+        });
     };
 
     const handleRunwayHeadingChange = (value: string): void => {
@@ -153,17 +183,23 @@ export const LandingWidget = () => {
             runwayHeading = undefined;
         }
 
-        setRunwayHeading(runwayHeading);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { runwayHeading },
+        });
     };
 
     const handleApproachSpeedChange = (value: string): void => {
-        let speed: number | undefined = parseInt(value);
+        let approachSpeed: number | undefined = parseInt(value);
 
-        if (Number.isNaN(speed)) {
-            speed = undefined;
+        if (Number.isNaN(approachSpeed)) {
+            approachSpeed = undefined;
         }
 
-        setApproachSpeed(speed);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { approachSpeed },
+        });
     };
 
     const handleAltitudeChange = (value: string): void => {
@@ -173,7 +209,10 @@ export const LandingWidget = () => {
             altitude = undefined;
         }
 
-        setAltitude(altitude);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { altitude },
+        });
     };
 
     const handleTemperatureChange = (value: string): void => {
@@ -183,7 +222,10 @@ export const LandingWidget = () => {
             temperature = undefined;
         }
 
-        setTemperature(temperature);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { temperature },
+        });
     };
 
     const handleFlapsChange = (newValue: number | string): void => {
@@ -193,7 +235,10 @@ export const LandingWidget = () => {
             flaps = LandingFlapsConfig.Full;
         }
 
-        setFlaps(flaps);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { flaps },
+        });
     };
 
     const handleRunwayConditionChange = (newValue: number | string): void => {
@@ -203,13 +248,19 @@ export const LandingWidget = () => {
             runwayCondition = LandingRunwayConditions.Dry;
         }
 
-        setRunwayCondition(runwayCondition);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { runwayCondition },
+        });
     };
 
-    const handleReverseThrustChange = (newValue: number | string): void => {
-        const reverseThrust: boolean = parseInt(newValue.toString()) === 1;
+    const handleReverseThrustChange = (newValue: boolean): void => {
+        const reverseThrust: boolean = newValue;
 
-        setReverseThrust(reverseThrust);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { reverseThrust },
+        });
     };
 
     const handleRunwaySlopeChange = (value: string): void => {
@@ -219,7 +270,10 @@ export const LandingWidget = () => {
             slope = undefined;
         }
 
-        setSlope(slope);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { slope },
+        });
     };
 
     const handleRunwayLengthChange = (value: string): void => {
@@ -229,13 +283,19 @@ export const LandingWidget = () => {
             runwayLength = undefined;
         }
 
-        setRunwayLength(runwayLength);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { runwayLength },
+        });
     };
 
-    const handleOverweightProcedureChange = (newValue: number | string): void => {
-        const overweightProcedure: boolean = parseInt(newValue.toString()) === 1;
+    const handleOverweightProcedureChange = (newValue: boolean): void => {
+        const overweightProcedure: boolean = newValue;
 
-        setOverweightProcedure(overweightProcedure);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { overweightProcedure },
+        });
     };
 
     const handlePressureChange = (value: string): void => {
@@ -245,21 +305,17 @@ export const LandingWidget = () => {
             pressure = undefined;
         }
 
-        setPressure(pressure);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { pressure },
+        });
     };
 
     const clearInputs = (): void => {
-        setIcao('');
-        setWindDirection(undefined);
-        setWindMagnitude(undefined);
-        setWeight(undefined);
-        setRunwayHeading(undefined);
-        setApproachSpeed(undefined);
-        setAltitude(undefined);
-        setSlope(undefined);
-        setTemperature(undefined);
-        setPressure(undefined);
-        setRunwayLength(undefined);
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: { ...performanceInitialState },
+        });
     };
 
     const areInputsValid = (): boolean => windDirection !== undefined
@@ -281,7 +337,8 @@ export const LandingWidget = () => {
                 <div className="w-full">
                     <div className="text-center mb-4">
                         <div className="flex mx-2 flex-1 justify-center">
-                            <SimpleInput className="uppercase" label="Airport ICAO" value={icao} onChange={(value) => setIcao(value)} maxLength={4} />
+                            <SimpleInput className="uppercase" label="Airport ICAO" value={icao} onChange={handleICAOChange} maxLength={4} />
+
                         </div>
                         <div className="flex">
                             <div className="flex-1 m-2.5 column-left">
@@ -353,7 +410,7 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Rwy Condition"
-                                    defaultValue={0}
+                                    defaultValue={runwayCondition}
                                     onChange={handleRunwayConditionChange}
                                     dropdownOnTop
                                     options={[
@@ -418,7 +475,7 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Flaps"
-                                    defaultValue={1}
+                                    defaultValue={flaps}
                                     onChange={handleFlapsChange}
                                     reverse
                                     options={[
@@ -429,23 +486,23 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Overweight Proc"
-                                    defaultValue={0}
+                                    defaultValue={overweightProcedure}
                                     onChange={handleOverweightProcedureChange}
                                     reverse
                                     options={[
-                                        { value: 0, displayValue: 'No' },
-                                        { value: 1, displayValue: 'Yes' },
+                                        { value: false, displayValue: 'No' },
+                                        { value: true, displayValue: 'Yes' },
                                     ]}
                                 />
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Reverse Thrust"
-                                    defaultValue={0}
+                                    defaultValue={reverseThrust}
                                     onChange={handleReverseThrustChange}
                                     reverse
                                     options={[
-                                        { value: 0, displayValue: 'No' },
-                                        { value: 1, displayValue: 'Yes' },
+                                        { value: false, displayValue: 'No' },
+                                        { value: true, displayValue: 'Yes' },
                                     ]}
                                 />
                             </div>
