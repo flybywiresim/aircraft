@@ -7,6 +7,7 @@
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
+1. [Engine and FADEC System](#engine-fadec-system)
 
 ## Uncategorized
 
@@ -1367,3 +1368,104 @@
     - Number
     - Indicates the low or high value to latch into the given detent
     - Range is from -1 to 1
+
+## Engine and FADEC System
+
+- A32NX_ENGINE_CYCLE_TIME
+    - Number (seconds)
+    - Sum of Engine 1 & 2 cycle times to detect when engines are alive (pause/ slew management)
+    
+- A32NX_ENGINE_STATE:{index}
+    - Number
+    - Defines actual engine state 
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
+      STARTING | 2
+      SHUTTING | 3
+
+- A32NX_ENGINE_TIMER:{index}
+    - Number (seconds)
+    - Sets a timer to control engine {index} start-up/shutdown events
+
+- A32NX_ENGINE_IMBALANCE
+    - Number (2-bit coded decimal)
+    - Defines random engine imbalance of parameters
+      Bits (from Left) | Parameter
+      --- | ---
+      0-1 | Engine affected (01 or 02)
+      2-3 | EGT (max 20º imbalance)
+      4-5 | FF (max 36 Kg/h imbalance)
+      6-7 | N2 (max 0.3% imbalance)
+      8-9 | Oil Qty (max 2 Qt imbalance)
+      10-11 | Oil Pressure (max 3 psi imbalance)
+      12-13 | Idle Oil Pressure (+/- 6 psi imbalance)
+
+- A32NX_ENGINE_N1:{index}
+    - Number (% N1)
+    - Custom engine {index} N1 to model realistic start-up & shutdown, although equal to Sim's N2 for other flight phases.
+
+- A32NX_ENGINE_N2:{index}
+    - Number (% N2)
+    - Custom engine N2 {index} to model realistic start-up & shutdown, although equal to Sim's N2 for other flight phases.
+
+- A32NX_ENGINE_EGT:{index}
+    - Number (degrees Celsius)
+    - Custom engine {index} EGT to model realistic behavior throughout all flight phases
+
+- A32NX_ENGINE_FF:{index}
+    - Number (Kg/h)
+    - Custom engine {index} fuel flow to model realistic behavior throughout all flight phases
+
+- A32NX_ENGINE_PRE_FF:{index}
+    - Number (Kg/h)
+    - Previous engine {index} deltaTime fuel flow to calculate spot fuel burn
+
+- A32NX_ENGINE_IDLE_N1
+    - Number (% N1)
+    - Expected idle N1 as a function of temperature and pressure
+
+- A32NX_ENGINE_IDLE_N2
+    - Number (% N2)
+    - Expected idle N2 as a function of temperature and pressure
+
+- A32NX_ENGINE_IDLE_EGT
+    - Number (degrees Celsius)
+    - Expected idle EGT as a function of temperature and pressure
+
+- A32NX_ENGINE_IDLE_FF
+    - Number (Kg/h)
+    - Expected idle fuel flow as a function of temperature and pressure
+
+- A32NX_FUEL_USED:{index}
+    - Number (Kg)
+    - Fuel burnt by engine {index} on deltaTime
+
+- A32NX_FUEL_LEFT_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the main left tank
+
+- A32NX_FUEL_RIGHT_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the main right tank
+
+- A32NX_FUEL_AUX_LEFT_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the aux left tank
+
+- A32NX_FUEL_AUX_RIGHT_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the aux right tank
+
+- A32NX_FUEL_CENTER_PRE
+    - Number (lbs)
+    - Previous deltaTime fuel for the center tank
+
+- A32NX_ENGINE_TOTAL_OIL:{index}
+    - Number (quarts)
+    - Total engine {index} oil quantity in the oil system (tank + circuit)
+
+- A32NX_ENGINE_TANK_OIL:{index}
+    - Number (quarts)
+    - Total engine {index} oil quantity in the oil tank

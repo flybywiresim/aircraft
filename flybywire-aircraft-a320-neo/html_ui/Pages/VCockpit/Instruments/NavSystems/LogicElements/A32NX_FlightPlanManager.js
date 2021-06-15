@@ -706,6 +706,7 @@ class FlightPlanManager {
     }
     clearFlightPlan(callback = EmptyCallback.Void) {
         Coherent.call("CLEAR_CURRENT_FLIGHT_PLAN").then(() => {
+            SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 0);
             this._incrementFlightPlanVersion();
             this.updateFlightPlan(() => {
                 this.updateCurrentApproach(() => {
