@@ -1197,6 +1197,54 @@
     - Indicates the selected heading on the FCU, instantly updated
     - In case of managed heading mode, the value is -1
 
+- A32NX_FCU_SPD_MANAGED
+  - Boolean
+  - Indicates if managed speed/mach mode is active (dashes and dot)
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_HDG_MANAGED_DASHES
+  - Boolean
+  - Indicates if managed heading mode is active
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_HDG_MANAGED_DOT
+  - Boolean
+  - Indicates if managed heading mode is active or armed
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED/ARMED | 1
+
+- A32NX_FCU_ALT_MANAGED
+  - Boolean
+  - Indicates if managed altitude mode is active (dot)
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_VS_MANAGED
+  - Boolean
+  - Indicates if managed VS/FPA mode is active
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_VS_POSITIVE
+  - Boolean
+  - Indicates if vertical speed/FPA is a nonnegative value
+    State | Value
+      --- | ---
+      NEGATIVE | 0
+      ZERO OR POSITIVE | 1
+
 - A32NX_FCU_LOC_MODE_ACTIVE
     - Boolean
     - Indicates if LOC button on the FCU is illuminated
