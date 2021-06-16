@@ -29,10 +29,17 @@ export const ATC = () => {
     }, [frequency]);
 
     useEffect(() => {
+        if (frequency) {
+            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
+        }
+    }, [controllers]);
+
+    useEffect(() => {
         loadAtc();
     }, [atisSource]);
 
     const loadAtc = () => {
+        console.log('load atc');
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
@@ -43,9 +50,6 @@ export const ATC = () => {
             allAtc = allAtc.slice(0, 26);
             allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.RADAR, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
             setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
-            if (frequency) {
-                setCurrentAtc(allAtc.find((c) => c.frequency === fromFrequency(frequency)));
-            }
         });
     };
 
