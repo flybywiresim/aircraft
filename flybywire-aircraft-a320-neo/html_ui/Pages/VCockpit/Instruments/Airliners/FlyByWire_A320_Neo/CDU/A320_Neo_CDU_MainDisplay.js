@@ -39,6 +39,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             });
         });
     }
+
+    initMcduVariables() {
+        this.messageQueue = [];
+    }
+
     Init() {
         super.Init();
         Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
