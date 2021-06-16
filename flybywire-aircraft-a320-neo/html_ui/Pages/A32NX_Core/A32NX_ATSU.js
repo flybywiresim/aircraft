@@ -37,7 +37,7 @@ function fetchTimeValue() {
     return null;
 }
 
-const getMETAR = async (icaos, lines, store, updateView) => {
+const getMETAR = async (icaos, lines, sendStatus, updateView) => {
     const storedMetarSrc = NXDataStore.get("CONFIG_METAR_SRC", "MSFS");
     for (const icao of icaos) {
         if (icao !== "") {
@@ -55,11 +55,11 @@ const getMETAR = async (icaos, lines, store, updateView) => {
                 });
         }
     }
-    store["sendStatus"] = "SENT";
+    sendStatus = "SENT";
     updateView();
 };
 
-const getTAF = async (icaos, lines, store, updateView) => {
+const getTAF = async (icaos, lines, sendStatus, updateView) => {
     const storedTafSrc = NXDataStore.get("CONFIG_TAF_SRC", "NOAA");
     for (const icao of icaos) {
         if (icao !== "") {
@@ -77,7 +77,7 @@ const getTAF = async (icaos, lines, store, updateView) => {
                 });
         }
     }
-    store["sendStatus"] = "SENT";
+    sendStatus = "SENT";
     updateView();
 };
 
