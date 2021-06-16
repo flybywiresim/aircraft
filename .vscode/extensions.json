@@ -4,6 +4,7 @@
     "esbenp.prettier-vscode",
     "matklad.rust-analyzer",
     "vadimcn.vscode-lldb",
-    "xaver.clang-format"
+    "xaver.clang-format",
+    "takumii.markdowntable"
   ]
 }
