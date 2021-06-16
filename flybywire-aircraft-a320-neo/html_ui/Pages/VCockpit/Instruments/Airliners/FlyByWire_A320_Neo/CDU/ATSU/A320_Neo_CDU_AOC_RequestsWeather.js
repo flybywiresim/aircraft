@@ -52,9 +52,9 @@ class CDUAocRequestsWeather {
 
             const getInfo = async () => {
                 if (reqID === 0) {
-                    getMETAR(icaos, lines, sendStatus, updateView);
+                    getMETAR(icaos, lines, updateView);
                 } else {
-                    getTAF(icaos, lines, sendStatus, updateView);
+                    getTAF(icaos, lines, updateView);
                 }
             };
 
