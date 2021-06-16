@@ -39,7 +39,6 @@ export const ATC = () => {
     }, [atisSource]);
 
     const loadAtc = () => {
-        console.log('load atc');
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
