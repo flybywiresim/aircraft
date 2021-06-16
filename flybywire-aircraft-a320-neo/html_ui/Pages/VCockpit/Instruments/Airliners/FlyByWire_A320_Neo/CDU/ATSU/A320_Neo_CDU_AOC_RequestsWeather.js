@@ -27,25 +27,12 @@ class CDUAocRequestsWeather {
         };
         updateView();
 
-        mcdu.onRightInput[0] = (value) => {
-            mcdu.aocAirportList.set(0, value);
-            CDUAocRequestsWeather.ShowPage(mcdu, reqID, sendStatus);
-        };
-
-        mcdu.onRightInput[1] = (value) => {
-            mcdu.aocAirportList.set(1, value);
-            CDUAocRequestsWeather.ShowPage(mcdu, reqID, sendStatus);
-        };
-
-        mcdu.onRightInput[2] = (value) => {
-            mcdu.aocAirportList.set(2, value);
-            CDUAocRequestsWeather.ShowPage(mcdu, reqID, sendStatus);
-        };
-
-        mcdu.onRightInput[3] = (value) => {
-            mcdu.aocAirportList.set(3, value);
-            CDUAocRequestsWeather.ShowPage(mcdu, reqID, sendStatus);
-        };
+        for (let i = 0; i < 4; i++) {
+            mcdu.onRightInput[i] = (value) => {
+                mcdu.aocAirportList.set(i, value);
+                CDUAocRequestsWeather.ShowPage(mcdu, reqID, sendStatus);
+            };
+        }
 
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();

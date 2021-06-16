@@ -53,12 +53,12 @@ class CDUAocAirportList {
      */
     canUpdate(_index, _value) {
         if (this.rows[_index].isManaged || (!this.rows[_index].isManaged && !this.rows[_index].icao)) {
-            this.set(_index, _value, true);
+            this.rows[_index] = assembleAirportInfo(_value, true);
         }
     }
 
-    set(_index, _value, _isManaged = false) {
-        this.rows[_index] = _value === FMCMainDisplay.clrValue ? defaultRow : assembleAirportInfo(_value, _isManaged);
+    set(_index, _value) {
+        this.rows[_index] = _value === FMCMainDisplay.clrValue ? defaultRow : assembleAirportInfo(_value);
     }
 
     /**
