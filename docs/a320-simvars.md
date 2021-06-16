@@ -7,7 +7,7 @@
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
-1. [Engine and FADEC System](#engine-fadec-system)
+1. [Engine and FADEC System](#engine-and-fadec-system)
 
 ## Uncategorized
 
@@ -1370,10 +1370,10 @@
 - A32NX_ENGINE_CYCLE_TIME
     - Number (seconds)
     - Sum of Engine 1 & 2 cycle times to detect when engines are alive (pause/ slew management)
-    
+
 - A32NX_ENGINE_STATE:{index}
     - Number
-    - Defines actual engine state 
+    - Defines actual engine state
       State | Value
       --- | ---
       OFF | 0
