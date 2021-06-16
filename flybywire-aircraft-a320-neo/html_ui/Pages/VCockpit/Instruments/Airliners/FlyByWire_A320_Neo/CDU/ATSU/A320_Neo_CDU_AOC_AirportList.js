@@ -66,12 +66,6 @@ class CDUAocAirportList {
      * @returns string[]
      */
     get icaos() {
-        const icaos = [];
-        this.rows.forEach(({icao}) => {
-            if (icao) {
-                icaos.push(icao);
-            }
-        });
-        return icaos;
+        return this.rows.reduce((result, {icao}) => icao ? result.concat(icao) : result, []);
     }
 }
