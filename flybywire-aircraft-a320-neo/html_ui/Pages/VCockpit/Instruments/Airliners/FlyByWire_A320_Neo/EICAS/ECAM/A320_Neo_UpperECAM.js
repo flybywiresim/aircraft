@@ -454,6 +454,7 @@ var A320_Neo_UpperECAM;
                                 id: "thr_levers_not_set_flex",
                                 message: "THR LEVERS NOT SET",
                                 level: 2,
+                                flightPhasesInhib: [1, 4, 5, 6, 7, 8, 10],
                                 alwaysShowCategory: true,
                                 isActive: () => (
                                     this.getCachedSimVar("L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX", "Bool")
