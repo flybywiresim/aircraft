@@ -42,7 +42,7 @@ export const ATC = () => {
             allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
             allAtc = allAtc.slice(0, 26);
             allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.RADAR, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
-            setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
+            setControllers(allAtc.filter((a) => a.distance <= a.visualRange * 1.2)); // extends the range by 20% to increase the number of controllers displayed
             if (frequency) {
                 setCurrentAtc(allAtc.find((c) => c.frequency === fromFrequency(frequency)));
             }
