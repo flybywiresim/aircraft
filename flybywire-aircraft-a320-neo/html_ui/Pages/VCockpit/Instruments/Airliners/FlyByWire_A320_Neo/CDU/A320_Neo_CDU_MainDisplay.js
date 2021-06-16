@@ -19,7 +19,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
-        this.aocAirportList = undefined;
+        this.aocAirportList = new CDUAocAirportList;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -37,12 +37,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     initMcduVariables() {
         this.messageQueue = [];
-        this.aocAirportList = new CDUAocAirportList;
+        this.aocAirportList.init();
     }
 
     Init() {
         super.Init();
-        this.initMcduVariables();
 
         let mainFrame = this.getChildById("Mainframe");
         if (mainFrame == null) {

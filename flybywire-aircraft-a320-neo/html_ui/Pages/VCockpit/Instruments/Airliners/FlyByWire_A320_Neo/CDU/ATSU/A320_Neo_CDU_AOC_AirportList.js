@@ -58,7 +58,7 @@ class CDUAocAirportList {
     }
 
     set(_index, _value, _type = airportTypes.Selected) {
-        this.rows[_index] = _value === FMCMainDisplay.clrValue ? defaultRow : assembleAirportInfo(_value);
+        this.rows[_index] = _value === FMCMainDisplay.clrValue ? defaultRow : assembleAirportInfo(_value, _type);
     }
 
     /**
