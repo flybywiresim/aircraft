@@ -55,7 +55,6 @@ const getMETAR = async (icaos, lines, sendStatus, updateView) => {
                 });
         }
     }
-    sendStatus = "SENT";
     updateView();
 };
 
@@ -77,7 +76,6 @@ const getTAF = async (icaos, lines, sendStatus, updateView) => {
                 });
         }
     }
-    sendStatus = "SENT";
     updateView();
 };
 

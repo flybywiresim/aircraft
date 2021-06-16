@@ -1,18 +1,11 @@
-const airportTypes = {
-    Departure: 0,
-    Arrival: 1,
-    Alternate: 2,
-    Selected: 3
-};
-
 /**
  * This method assembles the airport data which contains the raw data as well as the OutPut that can be seen on the page
  * @param _icao {string}
- * @param _type {airportTypes}
- * @returns {{outPut: string, icao: string, type: airportTypes}}
+ * @param _isManaged {boolean}
+ * @returns {{outPut: string, icao: string, isManaged: boolean}}
  */
-function assembleAirportInfo(_icao = "", _type = airportTypes.Selected) {
-    return { icao: _icao, type: _type, outPut: `{${_type === airportTypes.Selected || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
+function assembleAirportInfo(_icao = "", _isManaged = false) {
+    return { icao: _icao, isManaged: _isManaged, outPut: `{${!_isManaged || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
 }
 
 const defaultRow = assembleAirportInfo();
@@ -30,9 +23,9 @@ class CDUAocAirportList {
      */
     init(_dep = undefined, _arr = undefined, _alt = undefined) {
         this.rows = [
-            _dep ? assembleAirportInfo(_dep, airportTypes.Departure) : defaultRow,
-            _arr ? assembleAirportInfo(_arr, airportTypes.Arrival) : defaultRow,
-            _alt ? assembleAirportInfo(_alt, airportTypes.Alternate) : defaultRow,
+            _dep ? assembleAirportInfo(_dep, true) : defaultRow,
+            _arr ? assembleAirportInfo(_arr, true) : defaultRow,
+            _alt ? assembleAirportInfo(_alt, true) : defaultRow,
             defaultRow
         ];
     }
@@ -42,9 +35,7 @@ class CDUAocAirportList {
      * @param _value {string}
      */
     set arrival(_value) {
-        if (this.rows[1].type === airportTypes.Arrival || (this.rows[1].type === airportTypes.Selected && !this.rows[1].icao)) {
-            this.set(1, _value, airportTypes.Arrival);
-        }
+        this.canUpdate(1, _value);
     }
 
     /**
@@ -52,13 +43,22 @@ class CDUAocAirportList {
      * @param _value {string}
      */
     set alternate(_value) {
-        if (this.rows[2].type === airportTypes.Alternate || (this.rows[2].type === airportTypes.Selected && !this.rows[2].icao)) {
-            this.set(2, _value, airportTypes.Alternate);
+        this.canUpdate(2, _value);
+    }
+
+    /**
+     * Ensure either a managed value or none is currently present in the target row (Honeywell doesn't override pilot entered airports)
+     * @param _index {number}
+     * @param _value {string}
+     */
+    canUpdate(_index, _value) {
+        if (this.rows[_index].isManaged || (!this.rows[_index].isManaged && !this.rows[_index].icao)) {
+            this.set(_index, _value, true);
         }
     }
 
-    set(_index, _value, _type = airportTypes.Selected) {
-        this.rows[_index] = _value === FMCMainDisplay.clrValue ? defaultRow : assembleAirportInfo(_value, _type);
+    set(_index, _value, _isManaged = false) {
+        this.rows[_index] = _value === FMCMainDisplay.clrValue ? defaultRow : assembleAirportInfo(_value, _isManaged);
     }
 
     /**
