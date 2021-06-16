@@ -3,14 +3,6 @@ class CDUAocRequestsWeather {
         mcdu.clearDisplay();
         let labelTimeout;
         let sendStatus = _sendStatus;
-
-        // if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
-        //     if (setArpts) {
-        //         store.arpt1 = mcdu.flightPlanManager.getOrigin().ident;
-        //         store.arpt2 = mcdu.flightPlanManager.getDestination().ident;
-        //     }
-        // }
-
         const reqTypes = [
             'METAR',
             'TAF'
