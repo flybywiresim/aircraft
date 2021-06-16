@@ -1237,14 +1237,6 @@
       SELECTED | 0
       MANAGED | 1
 
-- A32NX_FCU_VS_POSITIVE
-  - Boolean
-  - Indicates if vertical speed/FPA is a nonnegative value
-    State | Value
-      --- | ---
-      NEGATIVE | 0
-      ZERO OR POSITIVE | 1
-
 - A32NX_FCU_LOC_MODE_ACTIVE
     - Boolean
     - Indicates if LOC button on the FCU is illuminated
