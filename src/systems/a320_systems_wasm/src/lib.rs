@@ -7,6 +7,7 @@ use msfs::{
     sys,
 };
 use std::{pin::Pin, time::Duration};
+use systems::electrical::Electricity;
 use systems_wasm::{
     f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, HandleMessage,
     MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter, MsfsSimulationHandler, PrePostTick,
@@ -27,7 +28,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     ]);
 
     while let Some(event) = gauge.next_event().await {
-        msfs_simulation_handler.handle(event, &mut aircraft, &mut sim_connect.as_mut())?;
+        msfs_simulation_handler.handle(
+            event,
+            &mut aircraft,
+            &mut electricity,
+            &mut sim_connect.as_mut(),
+        )?;
     }
 
     Ok(())
