@@ -1087,7 +1087,7 @@ impl Potential {
         }
     }
 
-    pub fn raw(&self) -> ElectricPotential {
+    pub(super) fn raw(&self) -> ElectricPotential {
         self.raw
     }
 
@@ -1273,7 +1273,7 @@ impl PotentialCollection {
     fn consume_from(&mut self, identifier: ElectricalElementIdentifier, power: Power) {
         match self.items.get_mut(&identifier) {
             Some(potential) => {
-                let potential = potential.as_ref().borrow_mut();
+                let potential = potential.as_ref().borrow();
                 for origin in potential.origins() {
                     let y = self.consumption_per_origin.entry(*origin).or_default();
                     *y += power / potential.origin_count() as f64;
