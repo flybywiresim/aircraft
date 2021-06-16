@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
-import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconTrafficLights } from '@tabler/icons';
+import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconRadio, IconTrafficLights } from '@tabler/icons';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
@@ -39,11 +39,15 @@ export const ATC = () => {
     }, [atisSource]);
 
     const loadAtc = () => {
+        console.log('load atc');
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
             for (const a of allAtc) {
                 a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude) * 1.3;
+                if (a.visualRange === 0 && a.type === apiClient.AtcType.ATIS) {
+                    a.visualRange = 50;
+                }
             }
             allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
             allAtc = allAtc.slice(0, 26);
@@ -113,6 +117,7 @@ export const ATC = () => {
                                             { atc.type === apiClient.AtcType.APPROACH && <IconPlaneArrival size="2rem" /> }
                                             { atc.type === apiClient.AtcType.TOWER && <IconBuildingLighthouse size="2rem" /> }
                                             { atc.type === apiClient.AtcType.DELIVERY && <IconCircleCheck size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.ATIS && <IconRadio size="2rem" /> }
                                         </div>
                                         <div className="flex flex-col flex-grow text-center justify-center items-center">
                                             <div>
