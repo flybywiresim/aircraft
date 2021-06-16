@@ -303,6 +303,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 console.warn("reset due to _isManaged == true");
             }
             this.isManaged = _isManaged;
+            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED", "boolean", this.isManaged);
             if (_showSelectedSpeed !== this.showSelectedSpeed && !_showSelectedSpeed) {
                 this.inSelection = false;
                 this.isSelectedValueActive = false;
@@ -341,8 +342,6 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 }
             }
             this.setElementVisibility(this.illuminator, this.isManaged);
-
-            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED", "boolean", this.isManaged);
         }
     }
 
@@ -1118,11 +1117,9 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                     }
                 }
                 SimVar.SetSimVarValue("L:A32NX_FCU_VS_MANAGED", "boolean", false);
-                SimVar.SetSimVarValue("L:A32NX_FCU_VS_POSITIVE", "boolean", this.currentValue >= 0);
             } else {
                 this.textValueContent = "~----";
                 SimVar.SetSimVarValue("L:A32NX_FCU_VS_MANAGED", "boolean", true);
-                SimVar.SetSimVarValue("L:A32NX_FCU_VS_POSITIVE", "boolean", false);
             }
         }
     }
