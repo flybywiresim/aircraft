@@ -1263,6 +1263,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "HYD PTU",
                         isActive: () => {
+                            // There are no references indicating that the HYD PTU message should not show up during engine start. However, multiple pilots have pointed out that the PTU comes on during the second engine startup, but no memo is seen on the ECAM.
                             return this.getCachedSimVar("L:A32NX_FWC_FLIGHT_PHASE", "Enum") >= 2 && this.isPtuOnMemory.read();
                         }
                     },
