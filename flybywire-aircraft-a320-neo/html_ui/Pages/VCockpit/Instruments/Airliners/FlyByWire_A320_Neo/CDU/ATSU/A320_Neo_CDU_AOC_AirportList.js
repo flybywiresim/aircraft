@@ -1,11 +1,11 @@
 /**
- * This method assembles the airport data which contains the raw data as well as the OutPut that can be seen on the page
+ * This method assembles the airport data which contains the raw data as well as the output that can be seen on the page
  * @param _icao {string}
  * @param _isManaged {boolean}
- * @returns {{outPut: string, icao: string, isManaged: boolean}}
+ * @returns {{output: string, icao: string, isManaged: boolean}}
  */
 function assembleAirportInfo(_icao = "", _isManaged = false) {
-    return { icao: _icao, isManaged: _isManaged, outPut: `{${!_isManaged || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
+    return { icao: _icao, isManaged: _isManaged, output: `{${!_isManaged || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
 }
 
 const defaultRow = assembleAirportInfo();
