@@ -782,7 +782,7 @@ mod apu_generator_tests {
 
         assert!(!shared::PowerConsumptionReport::is_powered(
             test_bed.electricity(),
-            test_bed.aircraft().element()
+            test_bed.element()
         ));
     }
 
@@ -796,7 +796,7 @@ mod apu_generator_tests {
 
         assert!(shared::PowerConsumptionReport::is_powered(
             test_bed.electricity(),
-            test_bed.aircraft().element()
+            test_bed.element()
         ));
     }
 
@@ -810,7 +810,7 @@ mod apu_generator_tests {
 
         assert!(!shared::PowerConsumptionReport::is_powered(
             test_bed.electricity(),
-            test_bed.aircraft().element()
+            test_bed.element()
         ));
     }
 

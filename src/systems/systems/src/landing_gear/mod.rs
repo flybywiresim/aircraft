@@ -49,42 +49,42 @@ mod tests {
     fn is_up_and_locked_returns_false_when_fully_down() {
         let test_bed = run_test_bed_on(100.);
 
-        assert!(!test_bed.aircraft().element().is_up_and_locked());
+        assert!(!test_bed.element().is_up_and_locked());
     }
 
     #[test]
     fn is_up_and_locked_returns_false_when_somewhat_down() {
         let test_bed = run_test_bed_on(1.);
 
-        assert!(!test_bed.aircraft().element().is_up_and_locked());
+        assert!(!test_bed.element().is_up_and_locked());
     }
 
     #[test]
     fn is_up_and_locked_returns_true_when_fully_up() {
         let test_bed = run_test_bed_on(0.);
 
-        assert!(test_bed.aircraft().element().is_up_and_locked());
+        assert!(test_bed.element().is_up_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_fully_up() {
         let test_bed = run_test_bed_on(0.);
 
-        assert!(!test_bed.aircraft().element().is_down_and_locked());
+        assert!(!test_bed.element().is_down_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_somewhat_up() {
         let test_bed = run_test_bed_on(99.);
 
-        assert!(!test_bed.aircraft().element().is_down_and_locked());
+        assert!(!test_bed.element().is_down_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_true_when_fully_down() {
         let test_bed = run_test_bed_on(100.);
 
-        assert!(test_bed.aircraft().element().is_down_and_locked());
+        assert!(test_bed.element().is_down_and_locked());
     }
 
     fn run_test_bed_on(position: f64) -> SimulationTestBed<TestAircraft<LandingGear>> {

@@ -821,10 +821,7 @@ mod tests {
             .with_delta(Duration::from_millis(500));
             test_bed.run();
 
-            assert_eq!(
-                test_bed.aircraft().element().provides_stable_power_output(),
-                true
-            );
+            assert_eq!(test_bed.element().provides_stable_power_output(), true);
         }
 
         #[test]
@@ -842,10 +839,7 @@ mod tests {
             .with_delta(Duration::from_millis(499));
             test_bed.run();
 
-            assert_eq!(
-                test_bed.aircraft().element().provides_stable_power_output(),
-                false
-            );
+            assert_eq!(test_bed.element().provides_stable_power_output(), false);
         }
 
         #[test]
@@ -875,10 +869,7 @@ mod tests {
                 });
             test_bed.run();
 
-            assert_eq!(
-                test_bed.aircraft().element().provides_stable_power_output(),
-                false
-            );
+            assert_eq!(test_bed.element().provides_stable_power_output(), false);
         }
 
         #[test]
@@ -959,7 +950,7 @@ mod tests {
 
             test_bed.run();
 
-            assert!(test_bed.aircraft().element().oil_outlet_temperature < starting_temperature);
+            assert!(test_bed.element().oil_outlet_temperature < starting_temperature);
         }
     }
 }

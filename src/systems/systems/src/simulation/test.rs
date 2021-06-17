@@ -137,6 +137,15 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.reader_writer.contains_key(name)
     }
 }
+impl<U: SimulationElement> SimulationTestBed<TestAircraft<U>> {
+    pub fn element_mut(&mut self) -> &mut U {
+        self.aircraft_mut().element_mut()
+    }
+
+    pub fn element(&self) -> &U {
+        self.aircraft().element()
+    }
+}
 
 pub struct TestAircraft<T: SimulationElement> {
     element: T,
@@ -348,7 +357,7 @@ mod tests {
         });
         test_bed.run();
 
-        assert!(test_bed.aircraft().element().all_functions_called());
+        assert!(test_bed.element().all_functions_called());
     }
 
     #[test]
@@ -364,7 +373,6 @@ mod tests {
 
         assert_eq!(
             test_bed
-                .aircraft()
                 .element()
                 .update_called_before_or_after_receive_power(),
             Some(CallOrder::After)
@@ -385,7 +393,6 @@ mod tests {
 
         assert_eq!(
             test_bed
-                .aircraft()
                 .element()
                 .update_called_before_or_after_receive_power(),
             Some(CallOrder::Before)
