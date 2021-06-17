@@ -783,7 +783,7 @@ mod tests {
 
     #[cfg(test)]
     mod integrated_drive_generator_tests {
-        use crate::simulation::test::{SimulationTestBed, TestAircraft};
+        use crate::simulation::test::SimulationTestBed;
 
         use super::*;
         use std::time::Duration;
@@ -794,7 +794,7 @@ mod tests {
 
         #[test]
         fn writes_its_state() {
-            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(idg()));
+            let mut test_bed = SimulationTestBed::from(idg());
             test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_ENG_GEN_1_IDG_OIL_OUTLET_TEMPERATURE"));
@@ -808,8 +808,8 @@ mod tests {
 
         #[test]
         fn becomes_stable_once_engine_above_threshold_for_500_milliseconds() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                TestAircraft::new(idg()).with_update_after_power_distribution(|idg, context| {
+            let mut test_bed = SimulationTestBed::from(idg())
+                .with_update_after_power_distribution(|idg, context| {
                     idg.update(
                         context,
                         &TestEngine::new(Ratio::new::<percent>(80.)),
@@ -817,8 +817,7 @@ mod tests {
                         &TestFireOverhead::new(false),
                     )
                 })
-            })
-            .with_delta(Duration::from_millis(500));
+                .with_delta(Duration::from_millis(500));
             test_bed.run();
 
             assert_eq!(test_bed.element().provides_stable_power_output(), true);
@@ -826,8 +825,8 @@ mod tests {
 
         #[test]
         fn does_not_become_stable_before_engine_above_threshold_for_500_milliseconds() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                TestAircraft::new(idg()).with_update_after_power_distribution(|idg, context| {
+            let mut test_bed = SimulationTestBed::from(idg())
+                .with_update_after_power_distribution(|idg, context| {
                     idg.update(
                         context,
                         &TestEngine::new(Ratio::new::<percent>(80.)),
@@ -835,8 +834,7 @@ mod tests {
                         &TestFireOverhead::new(false),
                     )
                 })
-            })
-            .with_delta(Duration::from_millis(499));
+                .with_delta(Duration::from_millis(499));
             test_bed.run();
 
             assert_eq!(test_bed.element().provides_stable_power_output(), false);
@@ -844,8 +842,8 @@ mod tests {
 
         #[test]
         fn cannot_reconnect_once_disconnected() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                TestAircraft::new(idg()).with_update_after_power_distribution(|idg, context| {
+            let mut test_bed = SimulationTestBed::from(idg())
+                .with_update_after_power_distribution(|idg, context| {
                     idg.update(
                         context,
                         &TestEngine::new(Ratio::new::<percent>(80.)),
@@ -853,20 +851,17 @@ mod tests {
                         &TestFireOverhead::new(false),
                     )
                 })
-            })
-            .with_delta(Duration::from_millis(500));
+                .with_delta(Duration::from_millis(500));
             test_bed.run();
 
-            test_bed
-                .aircraft_mut()
-                .set_update_after_power_distribution(|idg, context| {
-                    idg.update(
-                        context,
-                        &TestEngine::new(Ratio::new::<percent>(80.)),
-                        &TestOverhead::new(true, false),
-                        &TestFireOverhead::new(false),
-                    )
-                });
+            test_bed.set_update_after_power_distribution(|idg, context| {
+                idg.update(
+                    context,
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
+                )
+            });
             test_bed.run();
 
             assert_eq!(test_bed.element().provides_stable_power_output(), false);
@@ -874,8 +869,8 @@ mod tests {
 
         #[test]
         fn running_engine_warms_up_idg() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                TestAircraft::new(idg()).with_update_after_power_distribution(|idg, context| {
+            let mut test_bed = SimulationTestBed::from(idg())
+                .with_update_after_power_distribution(|idg, context| {
                     idg.update(
                         context,
                         &TestEngine::new(Ratio::new::<percent>(80.)),
@@ -883,8 +878,7 @@ mod tests {
                         &TestFireOverhead::new(false),
                     )
                 })
-            })
-            .with_delta(Duration::from_secs(10));
+                .with_delta(Duration::from_secs(10));
 
             let starting_temperature = test_bed.aircraft_mut().element_mut().oil_outlet_temperature;
 
@@ -897,8 +891,8 @@ mod tests {
 
         #[test]
         fn running_engine_does_not_warm_up_idg_when_disconnected() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                TestAircraft::new(idg()).with_update_after_power_distribution(|idg, context| {
+            let mut test_bed = SimulationTestBed::from(idg())
+                .with_update_after_power_distribution(|idg, context| {
                     idg.update(
                         context,
                         &TestEngine::new(Ratio::new::<percent>(80.)),
@@ -906,8 +900,7 @@ mod tests {
                         &TestFireOverhead::new(false),
                     )
                 })
-            })
-            .with_delta(Duration::from_secs(10));
+                .with_delta(Duration::from_secs(10));
 
             let starting_temperature = test_bed.aircraft_mut().element_mut().oil_outlet_temperature;
 
@@ -921,8 +914,8 @@ mod tests {
 
         #[test]
         fn shutdown_engine_cools_down_idg() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                TestAircraft::new(idg()).with_update_after_power_distribution(|idg, context| {
+            let mut test_bed = SimulationTestBed::from(idg())
+                .with_update_after_power_distribution(|idg, context| {
                     idg.update(
                         context,
                         &TestEngine::new(Ratio::new::<percent>(80.)),
@@ -930,23 +923,20 @@ mod tests {
                         &TestFireOverhead::new(false),
                     )
                 })
-            })
-            .with_delta(Duration::from_secs(10));
+                .with_delta(Duration::from_secs(10));
 
             test_bed.run();
 
             let starting_temperature = test_bed.aircraft_mut().element_mut().oil_outlet_temperature;
 
-            test_bed
-                .aircraft_mut()
-                .set_update_after_power_distribution(|idg, context| {
-                    idg.update(
-                        context,
-                        &TestEngine::new(Ratio::new::<percent>(0.)),
-                        &TestOverhead::new(true, false),
-                        &TestFireOverhead::new(false),
-                    )
-                });
+            test_bed.set_update_after_power_distribution(|idg, context| {
+                idg.update(
+                    context,
+                    &TestEngine::new(Ratio::new::<percent>(0.)),
+                    &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
+                )
+            });
 
             test_bed.run();
 

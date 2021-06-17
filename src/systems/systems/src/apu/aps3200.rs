@@ -986,22 +986,18 @@ mod apu_generator_tests {
     }
 
     fn update_above_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Aps3200ApuGenerator>>) {
-        test_bed
-            .aircraft_mut()
-            .set_update_before_power_distribution(|generator, _, electricity| {
-                generator.update(Ratio::new::<percent>(100.), false);
-                electricity.supplied_by(generator);
-            });
+        test_bed.set_update_before_power_distribution(|generator, _, electricity| {
+            generator.update(Ratio::new::<percent>(100.), false);
+            electricity.supplied_by(generator);
+        });
         test_bed.run();
     }
 
     fn update_below_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Aps3200ApuGenerator>>) {
-        test_bed
-            .aircraft_mut()
-            .set_update_before_power_distribution(|generator, _, electricity| {
-                generator.update(Ratio::new::<percent>(0.), false);
-                electricity.supplied_by(generator);
-            });
+        test_bed.set_update_before_power_distribution(|generator, _, electricity| {
+            generator.update(Ratio::new::<percent>(0.), false);
+            electricity.supplied_by(generator);
+        });
         test_bed.run();
     }
 }

@@ -1459,7 +1459,6 @@ mod tests {
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
         use systems::shared::EmergencyElectricalState;
         use systems::shared::PotentialOrigin;
-        use systems::simulation::test::TestAircraft;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, length::foot, ratio::percent,
@@ -4229,7 +4228,7 @@ mod tests {
             );
             assert!(edp1_controller.should_pressurise());
 
-            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(fire_overhead_panel));
+            let mut test_bed = SimulationTestBed::from(fire_overhead_panel);
             test_bed.write_bool("FIRE_BUTTON_ENG1", true);
             test_bed.run();
 
@@ -4321,7 +4320,7 @@ mod tests {
             );
             assert!(edp2_controller.should_pressurise());
 
-            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(fire_overhead_panel));
+            let mut test_bed = SimulationTestBed::from(fire_overhead_panel);
             test_bed.write_bool("FIRE_BUTTON_ENG2", true);
             test_bed.run();
 

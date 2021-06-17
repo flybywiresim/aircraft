@@ -88,7 +88,7 @@ mod tests {
     }
 
     fn run_test_bed_on(position: f64) -> SimulationTestBed<TestAircraft<LandingGear>> {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(LandingGear::new()));
+        let mut test_bed = SimulationTestBed::from(LandingGear::new());
         test_bed.write_f64(LandingGear::GEAR_CENTER_POSITION, position);
 
         test_bed.run();

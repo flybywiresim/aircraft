@@ -137,13 +137,58 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.reader_writer.contains_key(name)
     }
 }
-impl<U: SimulationElement> SimulationTestBed<TestAircraft<U>> {
-    pub fn element_mut(&mut self) -> &mut U {
+impl<T: SimulationElement> SimulationTestBed<TestAircraft<T>> {
+    pub fn element_mut(&mut self) -> &mut T {
         self.aircraft_mut().element_mut()
     }
 
-    pub fn element(&self) -> &U {
+    pub fn element(&self) -> &T {
         self.aircraft().element()
+    }
+
+    pub fn with_update_before_power_distribution<
+        U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
+    >(
+        mut self,
+        func: U,
+    ) -> Self {
+        self.aircraft_mut()
+            .set_update_before_power_distribution(func);
+
+        self
+    }
+
+    pub fn with_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
+        mut self,
+        func: U,
+    ) -> Self {
+        self.aircraft_mut()
+            .set_update_after_power_distribution(func);
+
+        self
+    }
+
+    pub fn set_update_before_power_distribution<
+        U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
+    >(
+        &mut self,
+        func: U,
+    ) {
+        self.aircraft_mut()
+            .set_update_before_power_distribution(func);
+    }
+
+    pub fn set_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
+        &mut self,
+        func: U,
+    ) {
+        self.aircraft_mut()
+            .set_update_after_power_distribution(func);
+    }
+}
+impl<U: SimulationElement> From<U> for SimulationTestBed<TestAircraft<U>> {
+    fn from(element: U) -> Self {
+        Self::new(|_| TestAircraft::new(element))
     }
 }
 
@@ -162,27 +207,7 @@ impl<T: SimulationElement> TestAircraft<T> {
         }
     }
 
-    pub fn with_update_before_power_distribution<
-        U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
-    >(
-        mut self,
-        func: U,
-    ) -> Self {
-        self.set_update_before_power_distribution(func);
-
-        self
-    }
-
-    pub fn with_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
-        mut self,
-        func: U,
-    ) -> Self {
-        self.set_update_after_power_distribution(func);
-
-        self
-    }
-
-    pub fn set_update_before_power_distribution<
+    fn set_update_before_power_distribution<
         U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
     >(
         &mut self,
@@ -191,7 +216,7 @@ impl<T: SimulationElement> TestAircraft<T> {
         self.update_before_power_distribution_fn = Box::new(func);
     }
 
-    pub fn set_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
+    fn set_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
         &mut self,
         func: U,
     ) {
@@ -348,13 +373,10 @@ mod tests {
 
     #[test]
     fn test_aircraft_can_run_in_simulation() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(ElementUnderTest::default()).with_update_before_power_distribution(
-                |el, context, _| {
-                    el.update(context);
-                },
-            )
-        });
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
         test_bed.run();
 
         assert!(test_bed.element().all_functions_called());
@@ -362,13 +384,10 @@ mod tests {
 
     #[test]
     fn defaults_to_receiving_power_before_update() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(ElementUnderTest::default()).with_update_after_power_distribution(
-                |el, context| {
-                    el.update(context);
-                },
-            )
-        });
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_after_power_distribution(|el, context| {
+                el.update(context);
+            });
         test_bed.run();
 
         assert_eq!(
@@ -381,13 +400,10 @@ mod tests {
 
     #[test]
     fn when_update_before_receive_power_requested_executes_update_before_receive_power() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(ElementUnderTest::default()).with_update_before_power_distribution(
-                |el, context, _| {
-                    el.update(context);
-                },
-            )
-        });
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
 
         test_bed.run();
 
