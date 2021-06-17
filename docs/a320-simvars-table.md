@@ -421,6 +421,8 @@ ON<br/>MSFS:TOGGLE_EXTERNAL_POWER
 |:------------------------|:--------|:------------------------------------|
 | A32NX_METRIC_ALT_TOGGLE | Boolean | True if PFD metric altitude enabled |
 
+Feature Request: [Additional push events for glareshield buttons #4718](https://github.com/flybywiresim/a32nx/issues/4718)
+
 ## Hydraulic System
 
 | Name                                   | Type           | Description                                                                                    |
