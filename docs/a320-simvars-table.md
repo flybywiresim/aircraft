@@ -84,9 +84,9 @@ are renamed to be more logical and consistent.
 | Name                                                | Type    | Description                                                                                      |
 |:----------------------------------------------------|:--------|:-------------------------------------------------------------------------------------------------|
 | A32NX_PITOT_HEAT_AUTO                               | Boolean | True if pitot heating auto                                                                       |
-| SIMCONNECT:STRUCTURAL DEICE SWITCH                  | Boolean | State of A/ICR Wings (read only)<br/>Use event SIMCONNECT:TOGGLE_STRUCTURAL_DEICE to change      |
+| SIMCONNECT:STRUCTURAL DEICE SWITCH                  | Boolean | State of A/ICE Wings (read only)<br/>Use event SIMCONNECT:TOGGLE_STRUCTURAL_DEICE to change      |
 | XMLVAR_MOMENTARY_PUSH_OVHD_ANTIICE_WING_PRESSED     | Boolean | A/ICE WING switch ON or OFF (switch position only)                                               |
-| SIMCONNECT:ENG ANTI ICE:{1,2}                       | Boolean | State of A/ICR ENG {1,2} (read only)<br/>Use event SIMCONNECT:ANTI_ICE_TOGGLE_ENG{1,2} to change |
+| SIMCONNECT:ENG ANTI ICE:{1,2}                       | Boolean | State of A/ICE ENG {1,2} (read only)<br/>Use event SIMCONNECT:ANTI_ICE_TOGGLE_ENG{1,2} to change |
 | XMLVAR_MOMENTARY_PUSH_OVHD_ANTIICE_ENG{1,2}_PRESSED | Boolean | A/ICE END{1,2} switch ON or OFF (switch position only)                                           |
 
 ## APU
@@ -389,20 +389,20 @@ SIMCONNECT:LIGHT_NAV or MSFS:LIGHT_POTENTIOMETER:{1...}
 
 ## Speeds
 
-| Name                          | Type    | Description                                                                                       |
-|:------------------------------|:--------|:--------------------------------------------------------------------------------------------------|
-| A32NX_SPEEDS_ALPHA_MAX        | Knots   | speed where alpha max is reached with 1g                                                          |
-| A32NX_SPEEDS_ALPHA_PROTECTION | Knots   | speed where alpha protection is reached with 1g                                                   |
-| A32NX_VSPEEDS_F               | Knots   | F-Speed (approach)                                                                                |
-| A32NX_VSPEEDS_GD              | Knots   | Green Dot speed (clean config or O)<br/>is mach corrected                                         |
-| A32NX_VSPEEDS_LANDING_CONF3   | Boolean | True if FLAPS 3 is selected in perf page                                                          |
-| A32NX_VSPEEDS_S               | Knots   | S-Speed (approach)                                                                                |
-| A32NX_VSPEEDS_TO_CONF         | Number  | Flaps config for TakeOff, 1, 2 or 3                                                               |
-| A32NX_VSPEEDS_V2              | Knots   | TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config                                 |
-| A32NX_VSPEEDS_VAPP            | Knots   | vapp calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3  or not<br/>is mach corrected |
-| A32NX_VSPEEDS_VLS             | Knots   | Current config minimum selectable speed (is mach corrected)                                       |
-| A32NX_VSPEEDS_VLS_APP         | Knots   | VLS calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not<br/>is mach corrected   |
-| A32NX_VSPEEDS_VS              | Knots   | Current config stall speed (is mach corrected)                                                    |
+| Name                          | Type    | Description                                                                                    |
+|:------------------------------|:--------|:-----------------------------------------------------------------------------------------------|
+| A32NX_SPEEDS_ALPHA_MAX        | Knots   | speed where alpha max is reached with 1g                                                       |
+| A32NX_SPEEDS_ALPHA_PROTECTION | Knots   | speed where alpha protection is reached with 1g                                                |
+| A32NX_VSPEEDS_F               | Knots   | F-Speed (approach)                                                                             |
+| A32NX_VSPEEDS_GD              | Knots   | Green Dot speed (clean config or O) (is mach corrected)                                        |
+| A32NX_VSPEEDS_LANDING_CONF3   | Boolean | True if FLAPS 3 is selected in perf page                                                       |
+| A32NX_VSPEEDS_S               | Knots   | S-Speed (approach)                                                                             |
+| A32NX_VSPEEDS_TO_CONF         | Number  | Flaps config for TakeOff, 1, 2 or 3                                                            |
+| A32NX_VSPEEDS_V2              | Knots   | TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config                              |
+| A32NX_VSPEEDS_VAPP            | Knots   | vapp calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not (is mach corrected) |
+| A32NX_VSPEEDS_VLS             | Knots   | Current config minimum selectable speed (is mach corrected)                                    |
+| A32NX_VSPEEDS_VLS_APP         | Knots   | VLS calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not (is mach corrected)  |
+| A32NX_VSPEEDS_VS              | Knots   | Current config stall speed (is mach corrected)                                                 |
 
 ## Throttle Mapping System
 
