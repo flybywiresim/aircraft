@@ -63,13 +63,13 @@ std::string to_string_with_zero_padding(const T& value, std::size_t total_length
 double imbalance_extractor(double imbalance, int parameter) {
   double reg = 0;
 
-  parameter = 4 - parameter;
+  parameter = 8 - parameter;
 
   while (parameter > 0) {
-    reg = int(imbalance) % 100;
+    reg = fmod(imbalance, 100);
     imbalance /= 100;
     parameter--;
   }
 
-  return reg;
+  return int(reg);
 }
