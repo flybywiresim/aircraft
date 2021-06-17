@@ -769,46 +769,48 @@ mod apu_generator_tests {
 
     use crate::{
         apu::tests::{test_bed, test_bed_with},
-        electrical::Electricity,
         shared,
-        simulation::test::SimulationTestBed,
+        simulation::test::{SimulationTestBed, TestAircraft},
     };
 
     use super::*;
 
     #[test]
     fn starts_without_output() {
-        let mut test_bed = SimulationTestBed::new();
-        let generator = apu_generator(test_bed.electricity_mut());
+        let test_bed =
+            SimulationTestBed::new(|electricity| TestAircraft::new(apu_generator(electricity)));
+
         assert!(!shared::PowerConsumptionReport::is_powered(
-            test_bed.electricity_mut(),
-            &generator
+            test_bed.electricity(),
+            test_bed.aircraft().element()
         ));
     }
 
     #[test]
     fn when_apu_running_provides_output() {
-        let mut test_bed = SimulationTestBed::new();
-        let mut generator = apu_generator(test_bed.electricity_mut());
-        update_below_threshold(&mut test_bed, &mut generator);
-        update_above_threshold(&mut test_bed, &mut generator);
+        let mut test_bed =
+            SimulationTestBed::new(|electricity| TestAircraft::new(apu_generator(electricity)));
+
+        update_below_threshold(&mut test_bed);
+        update_above_threshold(&mut test_bed);
 
         assert!(shared::PowerConsumptionReport::is_powered(
-            test_bed.electricity_mut(),
-            &generator
+            test_bed.electricity(),
+            test_bed.aircraft().element()
         ));
     }
 
     #[test]
     fn when_apu_shutdown_provides_no_output() {
-        let mut test_bed = SimulationTestBed::new();
-        let mut generator = apu_generator(test_bed.electricity_mut());
-        update_above_threshold(&mut test_bed, &mut generator);
-        update_below_threshold(&mut test_bed, &mut generator);
+        let mut test_bed =
+            SimulationTestBed::new(|electricity| TestAircraft::new(apu_generator(electricity)));
+
+        update_above_threshold(&mut test_bed);
+        update_below_threshold(&mut test_bed);
 
         assert!(!shared::PowerConsumptionReport::is_powered(
-            test_bed.electricity_mut(),
-            &generator
+            test_bed.electricity(),
+            test_bed.aircraft().element()
         ));
     }
 
@@ -964,10 +966,10 @@ mod apu_generator_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut electricity = Electricity::new();
-        let mut apu_gen = apu_generator(&mut electricity);
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.run_without_update(&mut apu_gen);
+        let mut test_bed =
+            SimulationTestBed::new(|electricity| TestAircraft::new(apu_generator(electricity)));
+
+        test_bed.run();
 
         assert!(test_bed.contains_key("ELEC_APU_GEN_1_POTENTIAL"));
         assert!(test_bed.contains_key("ELEC_APU_GEN_1_POTENTIAL_NORMAL"));
@@ -983,23 +985,23 @@ mod apu_generator_tests {
         Aps3200ApuGenerator::new(1, identifier_provider)
     }
 
-    fn update_above_threshold(
-        test_bed: &mut SimulationTestBed,
-        generator: &mut Aps3200ApuGenerator,
-    ) {
-        test_bed.run_before_power_distribution(generator, |gen, _, electricity| {
-            gen.update(Ratio::new::<percent>(100.), false);
-            electricity.supplied_by(gen);
-        });
+    fn update_above_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Aps3200ApuGenerator>>) {
+        test_bed
+            .aircraft_mut()
+            .set_update_before_power_distribution(|generator, _, electricity| {
+                generator.update(Ratio::new::<percent>(100.), false);
+                electricity.supplied_by(generator);
+            });
+        test_bed.run();
     }
 
-    fn update_below_threshold(
-        test_bed: &mut SimulationTestBed,
-        generator: &mut Aps3200ApuGenerator,
-    ) {
-        test_bed.run_before_power_distribution(generator, |gen, _, electricity| {
-            gen.update(Ratio::new::<percent>(0.), false);
-            electricity.supplied_by(gen);
-        });
+    fn update_below_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Aps3200ApuGenerator>>) {
+        test_bed
+            .aircraft_mut()
+            .set_update_before_power_distribution(|generator, _, electricity| {
+                generator.update(Ratio::new::<percent>(0.), false);
+                electricity.supplied_by(generator);
+            });
+        test_bed.run();
     }
 }

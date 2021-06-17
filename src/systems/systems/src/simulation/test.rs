@@ -16,21 +16,17 @@ use super::{
 ///
 /// [`Aircraft`]: ../trait.Aircraft.html
 /// [`SimulationElement`]: ../trait.SimulationElement.html
-pub struct SimulationTestBed {
+pub struct SimulationTestBed<T: Aircraft> {
     reader_writer: TestReaderWriter,
     delta: Duration,
-    electricity: Electricity,
+    simulation: Simulation<T>,
 }
-impl SimulationTestBed {
-    pub fn new() -> Self {
-        Self::new_with_delta(Duration::from_secs(1))
-    }
-
-    pub fn new_with_delta(delta: Duration) -> Self {
+impl<T: Aircraft> SimulationTestBed<T> {
+    pub fn new<U: FnOnce(&mut Electricity) -> T>(aircraft_ctor_fn: U) -> Self {
         let mut test_bed = Self {
             reader_writer: TestReaderWriter::new(),
-            delta,
-            electricity: Electricity::new(),
+            delta: Duration::from_secs(1),
+            simulation: Simulation::new(aircraft_ctor_fn),
         };
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
@@ -41,97 +37,40 @@ impl SimulationTestBed {
         test_bed
     }
 
+    pub fn with_delta(mut self, delta: Duration) -> Self {
+        self.delta = delta;
+        self
+    }
+
     /// Creates an instance seeded with the state found in the given element.
     ///
     /// By default the unseeded simulation will return 0.0 or false for any requested
     /// variables. If this is a problem for your test, then use this function.
-    pub fn seed_with(&mut self, element: &mut impl SimulationElement) {
+    pub fn seed(&mut self) {
         let mut writer = SimulatorWriter::new(&mut self.reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
-        element.accept(&mut visitor);
+        self.simulation.accept(&mut visitor);
     }
 
-    pub fn electricity_mut(&mut self) -> &mut Electricity {
-        &mut self.electricity
+    /// Runs a single [Simulation] tick on the contained [Aircraft].
+    pub fn run(&mut self) {
+        self.simulation.tick(self.delta, &mut self.reader_writer)
     }
 
     pub fn electricity(&self) -> &Electricity {
-        &self.electricity
+        self.simulation.electricity()
     }
 
-    /// Runs a single [`Simulation`] tick on the provided [`Aircraft`].
-    ///
-    /// [`Aircraft`]: ../trait.Aircraft.html
-    /// [`Simulation`]: ../struct.Simulation.html
-    pub fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
-        Simulation::tick(
-            self.delta,
-            aircraft,
-            &mut self.electricity,
-            &mut self.reader_writer,
-        );
+    pub fn electricity_mut(&mut self) -> &mut Electricity {
+        self.simulation.electricity_mut()
     }
 
-    /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing
-    /// the given update before electrical power is distributed.
-    ///
-    /// Prefer using [`run`] over this if electrical power distribution does not
-    /// matter for the test you're executing.
-    ///
-    /// [`Simulation`]: ../struct.Simulation.html
-    /// [`SimulationElement`]: ../trait.SimulationElement.html
-    /// [`run`]: #method.run
-    pub fn run_before_power_distribution<
-        T: SimulationElement,
-        U: Fn(&mut T, &UpdateContext, &mut Electricity),
-    >(
-        &mut self,
-        element: &mut T,
-        update_before_power_distribution_fn: U,
-    ) {
-        let mut aircraft =
-            TestAircraft::new(element, update_before_power_distribution_fn, |_, _| {});
-
-        self.run_aircraft(&mut aircraft);
+    pub fn aircraft(&self) -> &T {
+        self.simulation.aircraft()
     }
 
-    /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`].
-    ///
-    /// Prefer using [`run_without_update`] over this if electrical power distribution does not
-    /// matter for the test you're executing.
-    ///
-    /// [`Simulation`]: ../struct.Simulation.html
-    /// [`SimulationElement`]: ../trait.SimulationElement.html
-    /// [`run_without_update`]: #method.run_without_update
-    pub fn run_before_power_distribution_without_update<T: SimulationElement>(
-        &mut self,
-        element: &mut T,
-    ) {
-        self.run_before_power_distribution(element, |_, _, _| {});
-    }
-
-    /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing
-    /// the given update after electrical power is distributed.
-    ///
-    /// [`Simulation`]: ../struct.Simulation.html
-    /// [`SimulationElement`]: ../trait.SimulationElement.html
-    pub fn run<T: SimulationElement, U: Fn(&mut T, &UpdateContext)>(
-        &mut self,
-        element: &mut T,
-        update_after_power_distribution_fn: U,
-    ) {
-        let mut aircraft =
-            TestAircraft::new(element, |_, _, _| {}, update_after_power_distribution_fn);
-
-        self.run_aircraft(&mut aircraft);
-    }
-
-    /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`].
-    ///
-    /// [`Simulation`]: ../struct.Simulation.html
-    /// [`SimulationElement`]: ../trait.SimulationElement.html
-    pub fn run_without_update(&mut self, element: &mut impl SimulationElement) {
-        self.run(element, |_, _| {});
+    pub fn aircraft_mut(&mut self) -> &mut T {
+        self.simulation.aircraft_mut()
     }
 
     pub fn set_delta(&mut self, delta: Duration) {
@@ -198,48 +137,67 @@ impl SimulationTestBed {
         self.reader_writer.contains_key(name)
     }
 }
-impl Default for SimulationTestBed {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
-struct TestAircraft<
-    'a,
-    T: SimulationElement,
-    U: Fn(&mut T, &UpdateContext, &mut Electricity),
-    V: Fn(&mut T, &UpdateContext),
-> {
-    element: &'a mut T,
-    update_before_power_distribution_fn: U,
-    update_after_power_distribution_fn: V,
+pub struct TestAircraft<T: SimulationElement> {
+    element: T,
+    update_before_power_distribution_fn:
+        Box<dyn Fn(&mut T, &UpdateContext, &mut Electricity) + 'static>,
+    update_after_power_distribution_fn: Box<dyn Fn(&mut T, &UpdateContext) + 'static>,
 }
-impl<
-        'a,
-        T: SimulationElement,
-        U: Fn(&mut T, &UpdateContext, &mut Electricity),
-        V: Fn(&mut T, &UpdateContext),
-    > TestAircraft<'a, T, U, V>
-{
-    fn new(
-        element: &'a mut T,
-        update_before_power_distribution_fn: U,
-        update_after_power_distribution_fn: V,
-    ) -> Self {
+impl<T: SimulationElement> TestAircraft<T> {
+    pub fn new(element: T) -> Self {
         Self {
             element,
-            update_before_power_distribution_fn,
-            update_after_power_distribution_fn,
+            update_before_power_distribution_fn: Box::new(|_, _, _| {}),
+            update_after_power_distribution_fn: Box::new(|_, _| {}),
         }
     }
+
+    pub fn with_update_before_power_distribution<
+        U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
+    >(
+        mut self,
+        func: U,
+    ) -> Self {
+        self.set_update_before_power_distribution(func);
+
+        self
+    }
+
+    pub fn with_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
+        mut self,
+        func: U,
+    ) -> Self {
+        self.set_update_after_power_distribution(func);
+
+        self
+    }
+
+    pub fn set_update_before_power_distribution<
+        U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
+    >(
+        &mut self,
+        func: U,
+    ) {
+        self.update_before_power_distribution_fn = Box::new(func);
+    }
+
+    pub fn set_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
+        &mut self,
+        func: U,
+    ) {
+        self.update_after_power_distribution_fn = Box::new(func);
+    }
+
+    pub fn element_mut(&mut self) -> &mut T {
+        &mut self.element
+    }
+
+    pub fn element(&self) -> &T {
+        &self.element
+    }
 }
-impl<
-        'a,
-        T: SimulationElement,
-        U: Fn(&mut T, &UpdateContext, &mut Electricity),
-        V: Fn(&mut T, &UpdateContext),
-    > Aircraft for TestAircraft<'a, T, U, V>
-{
+impl<T: SimulationElement> Aircraft for TestAircraft<T> {
     fn update_before_power_distribution(
         &mut self,
         context: &UpdateContext,
@@ -252,13 +210,7 @@ impl<
         (self.update_after_power_distribution_fn)(&mut self.element, context);
     }
 }
-impl<
-        'a,
-        T: SimulationElement,
-        U: Fn(&mut T, &UpdateContext, &mut Electricity),
-        V: Fn(&mut T, &UpdateContext),
-    > SimulationElement for TestAircraft<'a, T, U, V>
-{
+impl<T: SimulationElement> SimulationElement for TestAircraft<T> {
     fn accept<W: SimulationElementVisitor>(&mut self, visitor: &mut W) {
         self.element.accept(visitor);
 
@@ -387,39 +339,55 @@ mod tests {
 
     #[test]
     fn test_aircraft_can_run_in_simulation() {
-        let mut element = ElementUnderTest::default();
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.run_before_power_distribution(&mut element, |el, context, _| {
-            el.update(context);
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(ElementUnderTest::default()).with_update_before_power_distribution(
+                |el, context, _| {
+                    el.update(context);
+                },
+            )
         });
+        test_bed.run();
 
-        assert!(element.all_functions_called());
+        assert!(test_bed.aircraft().element().all_functions_called());
     }
 
     #[test]
     fn defaults_to_receiving_power_before_update() {
-        let mut element = ElementUnderTest::default();
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.run(&mut element, |el, context| {
-            el.update(context);
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(ElementUnderTest::default()).with_update_after_power_distribution(
+                |el, context| {
+                    el.update(context);
+                },
+            )
         });
+        test_bed.run();
 
         assert_eq!(
-            element.update_called_before_or_after_receive_power(),
+            test_bed
+                .aircraft()
+                .element()
+                .update_called_before_or_after_receive_power(),
             Some(CallOrder::After)
         );
     }
 
     #[test]
     fn when_update_before_receive_power_requested_executes_update_before_receive_power() {
-        let mut element = ElementUnderTest::default();
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.run_before_power_distribution(&mut element, |el, context, _| {
-            el.update(context);
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(ElementUnderTest::default()).with_update_before_power_distribution(
+                |el, context, _| {
+                    el.update(context);
+                },
+            )
         });
 
+        test_bed.run();
+
         assert_eq!(
-            element.update_called_before_or_after_receive_power(),
+            test_bed
+                .aircraft()
+                .element()
+                .update_called_before_or_after_receive_power(),
             Some(CallOrder::Before)
         );
     }

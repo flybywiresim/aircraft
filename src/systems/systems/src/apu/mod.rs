@@ -554,19 +554,18 @@ pub mod tests {
     }
 
     pub struct AuxiliaryPowerUnitTestBed {
-        aircraft: AuxiliaryPowerUnitTestAircraft,
         ambient_temperature: ThermodynamicTemperature,
         indicated_altitude: Length,
-        test_bed: SimulationTestBed,
+        test_bed: SimulationTestBed<AuxiliaryPowerUnitTestAircraft>,
     }
     impl AuxiliaryPowerUnitTestBed {
         fn new() -> Self {
-            let mut test_bed = SimulationTestBed::new();
             let mut apu_test_bed = Self {
-                aircraft: AuxiliaryPowerUnitTestAircraft::new(test_bed.electricity_mut()),
                 ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
                 indicated_altitude: Length::new::<foot>(5000.),
-                test_bed,
+                test_bed: SimulationTestBed::new(|electricity| {
+                    AuxiliaryPowerUnitTestAircraft::new(electricity)
+                }),
             };
 
             apu_test_bed
@@ -577,12 +576,14 @@ pub mod tests {
         }
 
         fn air_intake_flap_that_opens_in(mut self, duration: Duration) -> Self {
-            self.aircraft.set_air_intake_flap_travel_time(duration);
+            self.test_bed
+                .aircraft_mut()
+                .set_air_intake_flap_travel_time(duration);
             self
         }
 
         pub fn power_demand(mut self, power: Power) -> Self {
-            self.aircraft.set_power_demand(power);
+            self.test_bed.aircraft_mut().set_power_demand(power);
             self
         }
 
@@ -625,12 +626,12 @@ pub mod tests {
         }
 
         fn apu_gen_not_used(mut self) -> Self {
-            self.aircraft.set_apu_gen_is_used(false);
+            self.test_bed.aircraft_mut().set_apu_gen_is_used(false);
             self
         }
 
         fn no_fuel_available(mut self) -> Self {
-            self.aircraft.set_has_fuel_remaining(false);
+            self.test_bed.aircraft_mut().set_has_fuel_remaining(false);
             self
         }
 
@@ -658,7 +659,9 @@ pub mod tests {
         }
 
         fn turbine_infinitely_running_at(mut self, n: Ratio) -> Self {
-            self.aircraft.set_turbine_infinitely_running_at(n);
+            self.test_bed
+                .aircraft_mut()
+                .set_turbine_infinitely_running_at(n);
             self
         }
 
@@ -711,17 +714,17 @@ pub mod tests {
         }
 
         fn unpowered_start_motor(mut self) -> Self {
-            self.aircraft.cut_start_motor_power();
+            self.test_bed.aircraft_mut().cut_start_motor_power();
             self
         }
 
         fn unpowered_dc_bat_bus(mut self) -> Self {
-            self.aircraft.unpower_dc_bat_bus();
+            self.test_bed.aircraft_mut().unpower_dc_bat_bus();
             self
         }
 
         fn powered_dc_bat_bus(mut self) -> Self {
-            self.aircraft.power_dc_bat_bus();
+            self.test_bed.aircraft_mut().power_dc_bat_bus();
             self
         }
 
@@ -743,10 +746,10 @@ pub mod tests {
             // the aircraft, not all elements have received power yet if only one run
             // is performed. Thus we execute two runs, one without any time passing.
             self.test_bed.set_delta(Duration::from_secs(0));
-            self.test_bed.run_aircraft(&mut self.aircraft);
+            self.test_bed.run();
 
             self.test_bed.set_delta(delta);
-            self.test_bed.run_aircraft(&mut self.aircraft);
+            self.test_bed.run();
 
             self
         }
@@ -852,7 +855,8 @@ pub mod tests {
         }
 
         pub fn generator_is_unpowered(&self) -> bool {
-            self.aircraft
+            self.test_bed
+                .aircraft()
                 .generator_is_unpowered(self.test_bed.electricity())
         }
 
@@ -882,13 +886,13 @@ pub mod tests {
 
         fn should_close_start_contactors_commanded(&self) -> bool {
             matches!(
-                self.aircraft.close_start_contactors_signal(),
+                self.test_bed.aircraft().close_start_contactors_signal(),
                 Some(ContactorSignal::Close)
             )
         }
 
         fn close_start_contactors_signal(&self) -> Option<ContactorSignal> {
-            self.aircraft.close_start_contactors_signal()
+            self.test_bed.aircraft().close_start_contactors_signal()
         }
 
         fn has_fuel_low_pressure_fault(&mut self) -> bool {
@@ -916,17 +920,17 @@ pub mod tests {
         }
 
         fn apu_generator_output_within_normal_parameters(&self) -> bool {
-            self.aircraft.apu_generator_output_within_normal_parameters_after_processing_power_consumption_report()
+            self.test_bed.aircraft().apu_generator_output_within_normal_parameters_after_processing_power_consumption_report()
         }
 
         fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
             &self,
         ) -> bool {
-            self.aircraft.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report()
+            self.test_bed.aircraft().apu_generator_output_within_normal_parameters_before_processing_power_consumption_report()
         }
 
         fn power_consumption(&self) -> Power {
-            self.aircraft.power_consumption()
+            self.test_bed.aircraft().power_consumption()
         }
     }
 

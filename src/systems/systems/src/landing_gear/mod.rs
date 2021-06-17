@@ -43,60 +43,56 @@ impl Default for LandingGear {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestAircraft};
 
     #[test]
     fn is_up_and_locked_returns_false_when_fully_down() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 100.);
+        let test_bed = run_test_bed_on(100.);
 
-        assert!(!landing_gear.is_up_and_locked());
+        assert!(!test_bed.aircraft().element().is_up_and_locked());
     }
 
     #[test]
     fn is_up_and_locked_returns_false_when_somewhat_down() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 1.);
+        let test_bed = run_test_bed_on(1.);
 
-        assert!(!landing_gear.is_up_and_locked());
+        assert!(!test_bed.aircraft().element().is_up_and_locked());
     }
 
     #[test]
     fn is_up_and_locked_returns_true_when_fully_up() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 0.);
+        let test_bed = run_test_bed_on(0.);
 
-        assert!(landing_gear.is_up_and_locked());
+        assert!(test_bed.aircraft().element().is_up_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_fully_up() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 0.);
+        let test_bed = run_test_bed_on(0.);
 
-        assert!(!landing_gear.is_down_and_locked());
+        assert!(!test_bed.aircraft().element().is_down_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_somewhat_up() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 99.);
+        let test_bed = run_test_bed_on(99.);
 
-        assert!(!landing_gear.is_down_and_locked());
+        assert!(!test_bed.aircraft().element().is_down_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_true_when_fully_down() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 100.);
+        let test_bed = run_test_bed_on(100.);
 
-        assert!(landing_gear.is_down_and_locked());
+        assert!(test_bed.aircraft().element().is_down_and_locked());
     }
 
-    fn run_test_bed_on(landing_gear: &mut LandingGear, position: f64) {
-        let mut test_bed = SimulationTestBed::new();
+    fn run_test_bed_on(position: f64) -> SimulationTestBed<TestAircraft<LandingGear>> {
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(LandingGear::new()));
         test_bed.write_f64(LandingGear::GEAR_CENTER_POSITION, position);
 
-        test_bed.run_without_update(landing_gear);
+        test_bed.run();
+
+        test_bed
     }
 }

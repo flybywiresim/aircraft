@@ -578,18 +578,14 @@ mod tests {
         use uom::si::{length::foot, power::watt};
 
         struct BatteryChargeLimiterTestBed {
-            test_bed: SimulationTestBed,
-            aircraft: TestAircraft,
+            test_bed: SimulationTestBed<TestAircraft>,
         }
         impl BatteryChargeLimiterTestBed {
             fn new() -> Self {
-                let mut test_bed = SimulationTestBed::new();
                 Self {
-                    aircraft: TestAircraft::new(
-                        Battery::half(1, test_bed.electricity_mut()),
-                        test_bed.electricity_mut(),
-                    ),
-                    test_bed,
+                    test_bed: SimulationTestBed::new(|electricity| {
+                        TestAircraft::new(Battery::half(1, electricity), electricity)
+                    }),
                 }
             }
 
@@ -609,29 +605,31 @@ mod tests {
             fn run(mut self, delta: Duration) -> Self {
                 // The battery's current is updated after the BCL, thus we need two ticks.
                 self.test_bed.set_delta(Duration::from_secs(0));
-                self.test_bed.run_aircraft(&mut self.aircraft);
+                self.test_bed.run();
 
                 self.test_bed.set_delta(delta);
-                self.test_bed.run_aircraft(&mut self.aircraft);
+                self.test_bed.run();
 
                 // Run once more to detect programming errors where the state goes from
                 // open to closed (or vice versa) and then back to the other state within
                 // the next tick while this shouldn't happen.
                 self.test_bed.set_delta(Duration::from_secs(0));
-                self.test_bed.run_aircraft(&mut self.aircraft);
+                self.test_bed.run();
 
                 self
             }
 
             fn wait_for_closed_contactor(mut self, assert_is_closed: bool) -> Self {
-                self.aircraft.set_battery_bus_at_minimum_charging_voltage();
+                self.test_bed
+                    .aircraft_mut()
+                    .set_battery_bus_at_minimum_charging_voltage();
                 self = self.run(Duration::from_millis(
                     Open::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
                 ));
 
                 if assert_is_closed {
                     assert!(
-                        self.aircraft.battery_contactor_is_closed(),
+                        self.test_bed.aircraft_mut().battery_contactor_is_closed(),
                         "Battery contactor didn't close within the expected time frame.
                             Is the battery bus at a high enough voltage and the battery not full?"
                     );
@@ -686,41 +684,43 @@ mod tests {
             }
 
             fn battery_push_button_off(mut self) -> Self {
-                self.aircraft.set_battery_push_button_off();
+                self.test_bed.aircraft_mut().set_battery_push_button_off();
                 self = self.run(Duration::from_secs(0));
 
                 self
             }
 
             fn battery_push_button_auto(mut self) -> Self {
-                self.aircraft.set_battery_push_button_auto();
+                self.test_bed.aircraft_mut().set_battery_push_button_auto();
                 self = self.run(Duration::from_secs(0));
 
                 self
             }
 
             fn available_emergency_generator(mut self) -> Self {
-                self.aircraft.set_emergency_generator_available();
+                self.test_bed
+                    .aircraft_mut()
+                    .set_emergency_generator_available();
                 self
             }
 
             fn started_apu(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_on();
-                self.aircraft.set_apu_start_pb_on();
+                self.test_bed.aircraft_mut().set_apu_master_sw_pb_on();
+                self.test_bed.aircraft_mut().set_apu_start_pb_on();
 
                 self = self.run(Duration::from_secs(0));
 
-                self.aircraft.set_apu_available();
-                self.aircraft.set_apu_start_pb_off();
+                self.test_bed.aircraft_mut().set_apu_available();
+                self.test_bed.aircraft_mut().set_apu_start_pb_off();
 
                 self
             }
 
             fn stopped_apu(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_off();
+                self.test_bed.aircraft_mut().set_apu_master_sw_pb_off();
                 self = self.run(Duration::from_secs(0));
 
-                self.aircraft.set_apu_unavailable();
+                self.test_bed.aircraft_mut().set_apu_unavailable();
 
                 self
             }
@@ -734,33 +734,38 @@ mod tests {
             }
 
             fn full_battery_charge(mut self) -> Self {
-                self.aircraft.set_full_battery_charge();
+                self.test_bed.aircraft_mut().set_full_battery_charge();
                 self
             }
 
             fn nearly_empty_battery_charge(mut self) -> Self {
-                self.aircraft.set_nearly_empty_battery_charge();
+                self.test_bed
+                    .aircraft_mut()
+                    .set_nearly_empty_battery_charge();
                 self
             }
 
             fn no_power_outside_of_battery(mut self) -> Self {
-                self.aircraft.set_battery_bus_unpowered();
-                self.aircraft.set_both_ac_buses_unpowered();
+                self.test_bed.aircraft_mut().set_battery_bus_unpowered();
+                self.test_bed.aircraft_mut().set_both_ac_buses_unpowered();
                 self
             }
 
             fn power_demand_of(mut self, power: Power) -> Self {
-                self.aircraft.set_power_demand(power);
+                self.test_bed.aircraft_mut().set_power_demand(power);
                 self
             }
 
             fn battery_bus_at_minimum_charging_voltage(mut self) -> Self {
-                self.aircraft.set_battery_bus_at_minimum_charging_voltage();
+                self.test_bed
+                    .aircraft_mut()
+                    .set_battery_bus_at_minimum_charging_voltage();
                 self
             }
 
             fn battery_bus_below_minimum_charging_voltage(mut self) -> Self {
-                self.aircraft
+                self.test_bed
+                    .aircraft_mut()
                     .set_battery_bus_below_minimum_charging_voltage();
                 self
             }
@@ -772,16 +777,16 @@ mod tests {
             }
 
             fn battery_contactor_is_closed(&self) -> bool {
-                self.aircraft.battery_contactor_is_closed()
+                self.test_bed.aircraft().battery_contactor_is_closed()
             }
 
             fn apu_master_sw_pb_on(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_on();
+                self.test_bed.aircraft_mut().set_apu_master_sw_pb_on();
                 self
             }
 
             fn apu_master_sw_pb_off(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_off();
+                self.test_bed.aircraft_mut().set_apu_master_sw_pb_off();
                 self
             }
 
@@ -799,7 +804,7 @@ mod tests {
             }
 
             fn gear_down(mut self) -> Self {
-                self.aircraft.set_gear_down();
+                self.test_bed.aircraft_mut().set_gear_down();
 
                 self
             }

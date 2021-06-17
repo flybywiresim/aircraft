@@ -313,19 +313,13 @@ impl A320DirectCurrentElectrical {
     }
 
     #[cfg(test)]
-    pub fn empty_battery_1(
-        &mut self,
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) {
-        self.battery_1 = Battery::empty(1, identifier_provider);
+    pub fn empty_battery_1(&mut self) {
+        self.battery_1.set_empty_battery_charge();
     }
 
     #[cfg(test)]
-    pub fn empty_battery_2(
-        &mut self,
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) {
-        self.battery_2 = Battery::empty(2, identifier_provider);
+    pub fn empty_battery_2(&mut self) {
+        self.battery_2.set_empty_battery_charge();
     }
 }
 impl A320DirectCurrentElectricalSystem for A320DirectCurrentElectrical {

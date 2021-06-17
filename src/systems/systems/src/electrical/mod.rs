@@ -344,25 +344,27 @@ mod tests {
     #[cfg(test)]
     mod electrical_bus_tests {
         use super::*;
-        use crate::simulation::{test::SimulationTestBed, Aircraft};
+        use crate::simulation::{
+            test::{SimulationTestBed, TestAircraft},
+            Aircraft,
+        };
 
         #[test]
         fn writes_its_state() {
-            let mut test_bed = SimulationTestBed::new();
-            let mut bus = electrical_bus(test_bed.electricity_mut());
-            test_bed.run_without_update(&mut bus);
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                TestAircraft::new(electrical_bus(electricity))
+            });
+            test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_AC_2_BUS_IS_POWERED"));
         }
 
         #[test]
         fn sub_bus_does_not_write_its_state() {
-            let mut test_bed = SimulationTestBed::new();
-            let mut aircraft = ElectricalBusTestAircraft::new(
-                ElectricalBusType::Sub("202PP"),
-                test_bed.electricity_mut(),
-            );
-            test_bed.run_aircraft(&mut aircraft);
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                ElectricalBusTestAircraft::new(ElectricalBusType::Sub("202PP"), electricity)
+            });
+            test_bed.run();
 
             assert!(!test_bed.contains_key("ELEC_SUB_202PP_BUS_IS_POWERED"));
         }
@@ -443,14 +445,14 @@ mod tests {
 
         #[test]
         fn bat_bus_at_25_volt_is_abnormal() {
-            let mut test_bed = SimulationTestBed::new();
-            let mut aircraft = ElectricalBusTestAircraft::new(
-                ElectricalBusType::DirectCurrentBattery,
-                test_bed.electricity_mut(),
-            );
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
+            });
 
-            aircraft.powered_by_battery_at(ElectricPotential::new::<volt>(25.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed
+                .aircraft_mut()
+                .powered_by_battery_at(ElectricPotential::new::<volt>(25.));
+            test_bed.run();
 
             assert_eq!(
                 test_bed.read_bool("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"),
@@ -460,40 +462,40 @@ mod tests {
 
         #[test]
         fn bat_bus_above_25_volt_is_abnormal() {
-            let mut test_bed = SimulationTestBed::new();
-            let mut aircraft = ElectricalBusTestAircraft::new(
-                ElectricalBusType::DirectCurrentBattery,
-                test_bed.electricity_mut(),
-            );
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
+            });
 
-            aircraft.powered_by_battery_at(ElectricPotential::new::<volt>(25.01));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed
+                .aircraft_mut()
+                .powered_by_battery_at(ElectricPotential::new::<volt>(25.01));
+            test_bed.run();
 
             assert_eq!(test_bed.read_bool("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"), true);
         }
 
         #[test]
         fn writes_potential_normal_when_bat_bus() {
-            let mut electricity = Electricity::new();
-            let mut bus =
-                ElectricalBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
-
-            let mut test_bed = SimulationTestBed::new();
-            test_bed.run_without_update(&mut bus);
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                TestAircraft::new(ElectricalBus::new(
+                    ElectricalBusType::DirectCurrentBattery,
+                    electricity,
+                ))
+            });
+            test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"));
         }
 
         #[test]
         fn does_not_write_potential_normal_when_not_bat_bus() {
-            let mut electricity = Electricity::new();
-            let mut bus = ElectricalBus::new(
-                ElectricalBusType::AlternatingCurrentEssential,
-                &mut electricity,
-            );
-
-            let mut test_bed = SimulationTestBed::new();
-            test_bed.run_without_update(&mut bus);
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                TestAircraft::new(ElectricalBus::new(
+                    ElectricalBusType::AlternatingCurrentEssential,
+                    electricity,
+                ))
+            });
+            test_bed.run();
 
             assert!(!test_bed.contains_key("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"));
         }
@@ -506,7 +508,10 @@ mod tests {
     #[cfg(test)]
     mod contactor_tests {
         use super::*;
-        use crate::{electrical::test::TestElectricitySource, simulation::test::SimulationTestBed};
+        use crate::{
+            electrical::test::TestElectricitySource,
+            simulation::test::{SimulationTestBed, TestAircraft},
+        };
 
         #[test]
         fn contactor_starts_open() {
@@ -617,9 +622,9 @@ mod tests {
 
         #[test]
         fn writes_its_state() {
-            let mut test_bed = SimulationTestBed::new();
-            let mut contactor = contactor(test_bed.electricity_mut());
-            test_bed.run_without_update(&mut contactor);
+            let mut test_bed =
+                SimulationTestBed::new(|electricity| TestAircraft::new(contactor(electricity)));
+            test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_CONTACTOR_TEST_IS_CLOSED"));
         }
@@ -685,10 +690,11 @@ mod tests {
 
         #[test]
         fn writes_direct_current_state() {
-            let mut aircraft = CurrentStateWriterTestAircraft::new(WriteType::DirectCurrent);
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| {
+                CurrentStateWriterTestAircraft::new(WriteType::DirectCurrent)
+            });
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_TEST_CURRENT"));
             assert!(test_bed.contains_key("ELEC_TEST_CURRENT_NORMAL"));
@@ -698,10 +704,11 @@ mod tests {
 
         #[test]
         fn writes_alternating_current_state() {
-            let mut aircraft = CurrentStateWriterTestAircraft::new(WriteType::AlternatingCurrent);
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| {
+                CurrentStateWriterTestAircraft::new(WriteType::AlternatingCurrent)
+            });
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL"));
             assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL_NORMAL"));
@@ -711,11 +718,11 @@ mod tests {
 
         #[test]
         fn writes_alternating_current_with_load_state() {
-            let mut aircraft =
-                CurrentStateWriterTestAircraft::new(WriteType::AlternatingCurrentWithLoad);
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| {
+                CurrentStateWriterTestAircraft::new(WriteType::AlternatingCurrentWithLoad)
+            });
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL"));
             assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL_NORMAL"));

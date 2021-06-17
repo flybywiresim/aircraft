@@ -122,17 +122,27 @@ mod transformer_rectifier_tests {
     };
 
     struct TransformerRectifierTestBed {
-        test_bed: SimulationTestBed,
+        test_bed: SimulationTestBed<TestAircraft>,
     }
     impl TransformerRectifierTestBed {
-        fn new() -> Self {
+        fn with_unpowered_transformer_rectifier() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(),
+                test_bed: SimulationTestBed::new(|electricity| {
+                    TestAircraft::new(electricity).with_unpowered_transformer_rectifier()
+                }),
             }
         }
 
-        fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
-            self.test_bed.run_aircraft(aircraft);
+        fn with_powered_transformer_rectifier() -> Self {
+            Self {
+                test_bed: SimulationTestBed::new(|electricity| {
+                    TestAircraft::new(electricity).with_powered_transformer_rectifier()
+                }),
+            }
+        }
+
+        fn run(&mut self) {
+            self.test_bed.run();
         }
 
         fn current_is_normal(&mut self) -> bool {
@@ -147,8 +157,18 @@ mod transformer_rectifier_tests {
             ElectricCurrent::new::<ampere>(self.test_bed.read_f64("ELEC_TR_1_CURRENT"))
         }
 
-        fn electricity_mut(&mut self) -> &mut Electricity {
-            self.test_bed.electricity_mut()
+        fn aircraft_mut(&mut self) -> &mut TestAircraft {
+            self.test_bed.aircraft_mut()
+        }
+
+        fn transformer_rectifier_is_powered(&self) -> bool {
+            self.test_bed
+                .aircraft()
+                .transformer_rectifier_is_powered(self.test_bed.electricity())
+        }
+
+        fn contains_key(&self, name: &str) -> bool {
+            self.test_bed.contains_key(name)
         }
     }
 
@@ -227,147 +247,131 @@ mod transformer_rectifier_tests {
 
     #[test]
     fn when_unpowered_has_no_output() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_unpowered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_unpowered_transformer_rectifier();
 
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
-        assert!(!aircraft.transformer_rectifier_is_powered(test_bed.electricity_mut()));
+        assert!(!test_bed.transformer_rectifier_is_powered());
     }
 
     #[test]
     fn when_powered_has_output() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
-        assert!(aircraft.transformer_rectifier_is_powered(test_bed.electricity_mut()));
+        assert!(test_bed.transformer_rectifier_is_powered());
     }
 
     #[test]
     fn when_powered_but_failed_has_no_output() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        aircraft.fail_transformer_rectifier();
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.aircraft_mut().fail_transformer_rectifier();
+        test_bed.run();
 
-        assert!(!aircraft.transformer_rectifier_is_powered(test_bed.electricity_mut()));
+        assert!(!test_bed.transformer_rectifier_is_powered());
     }
 
     #[test]
     fn when_unpowered_current_is_not_normal() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_unpowered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_unpowered_transformer_rectifier();
 
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
         assert!(!test_bed.current_is_normal());
     }
 
     #[test]
     fn when_powered_with_too_little_demand_current_is_not_normal() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        aircraft.power_demand(Power::new::<watt>(5. * 28.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed
+            .aircraft_mut()
+            .power_demand(Power::new::<watt>(5. * 28.));
+        test_bed.run();
 
         assert!(!test_bed.current_is_normal());
     }
 
     #[test]
     fn when_powered_with_enough_demand_current_is_normal() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        aircraft.power_demand(Power::new::<watt>((5. * 28.) + 1.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed
+            .aircraft_mut()
+            .power_demand(Power::new::<watt>((5. * 28.) + 1.));
+        test_bed.run();
 
         assert!(test_bed.current_is_normal());
     }
 
     #[test]
     fn when_unpowered_potential_is_not_normal() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_unpowered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_unpowered_transformer_rectifier();
 
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
         assert!(!test_bed.potential_is_normal());
     }
 
     #[test]
     fn when_powered_potential_is_normal() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
         assert!(test_bed.potential_is_normal());
     }
 
     #[test]
     fn when_unpowered_has_no_consumption() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_unpowered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_unpowered_transformer_rectifier();
 
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
         assert_eq!(
-            aircraft.transformer_rectifier_consumption(),
+            test_bed.aircraft_mut().transformer_rectifier_consumption(),
             Power::new::<watt>(0.)
         );
     }
 
     #[test]
     fn when_powered_without_demand_has_no_consumption() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        aircraft.power_demand(Power::new::<watt>(0.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.aircraft_mut().power_demand(Power::new::<watt>(0.));
+        test_bed.run();
 
         assert_eq!(
-            aircraft.transformer_rectifier_consumption(),
+            test_bed.aircraft_mut().transformer_rectifier_consumption(),
             Power::new::<watt>(0.)
         );
     }
 
     #[test]
     fn when_powered_with_demand_has_consumption() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        aircraft.power_demand(Power::new::<watt>(200.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed
+            .aircraft_mut()
+            .power_demand(Power::new::<watt>(200.));
+        test_bed.run();
 
         assert_eq!(
-            aircraft.transformer_rectifier_consumption(),
+            test_bed.aircraft_mut().transformer_rectifier_consumption(),
             Power::new::<watt>(200.)
         );
     }
 
     #[test]
     fn when_powered_with_demand_current_is_based_on_demand() {
-        let mut test_bed = TransformerRectifierTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        aircraft.power_demand(Power::new::<watt>(200.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed
+            .aircraft_mut()
+            .power_demand(Power::new::<watt>(200.));
+        test_bed.run();
 
         assert_eq!(
             test_bed.current(),
@@ -377,11 +381,9 @@ mod transformer_rectifier_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::new();
-        let mut aircraft =
-            TestAircraft::new(test_bed.electricity_mut()).with_powered_transformer_rectifier();
+        let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
         assert!(test_bed.contains_key("ELEC_TR_1_CURRENT"));
         assert!(test_bed.contains_key("ELEC_TR_1_CURRENT_NORMAL"));

@@ -196,8 +196,19 @@ pub trait SimulationElementVisitor {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T);
 }
 
-pub struct Simulation {}
-impl Simulation {
+pub struct Simulation<T: Aircraft> {
+    aircraft: T,
+    electricity: Electricity,
+}
+impl<T: Aircraft> Simulation<T> {
+    pub fn new<U: FnOnce(&mut Electricity) -> T>(aircraft_ctor_fn: U) -> Self {
+        let mut electricity = Electricity::new();
+        Self {
+            aircraft: (aircraft_ctor_fn)(&mut electricity),
+            electricity,
+        }
+    }
+
     /// Execute a single run of the simulation using the specified `delta` duration
     /// as the amount of time that has passed since the previous run.
     ///
@@ -239,30 +250,55 @@ impl Simulation {
     /// ```
     /// [`tick`]: #method.tick
     pub fn tick(
+        &mut self,
         delta: Duration,
-        aircraft: &mut impl Aircraft,
-        electricity: &mut Electricity,
         simulator_reader_writer: &mut impl SimulatorReaderWriter,
     ) {
-        electricity.pre_tick(delta);
+        self.electricity.pre_tick(delta);
 
         let mut reader = SimulatorReader::new(simulator_reader_writer);
         let context = UpdateContext::from_reader(&mut reader, delta);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
-        aircraft.accept(&mut visitor);
+        self.aircraft.accept(&mut visitor);
 
-        aircraft.update_before_power_distribution(&context, electricity);
+        self.aircraft
+            .update_before_power_distribution(&context, &mut self.electricity);
 
-        aircraft.distribute_electricity(&context, electricity);
+        self.aircraft
+            .distribute_electricity(&context, &self.electricity);
 
-        aircraft.update_after_power_distribution(&context);
-        aircraft.consume_electricity(electricity);
-        aircraft.report_electricity_consumption(electricity);
+        self.aircraft.update_after_power_distribution(&context);
+        self.aircraft.consume_electricity(&mut self.electricity);
+        self.aircraft
+            .report_electricity_consumption(&self.electricity);
 
         let mut writer = SimulatorWriter::new(simulator_reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
-        aircraft.accept(&mut visitor);
+        self.aircraft.accept(&mut visitor);
+    }
+
+    fn electricity(&self) -> &Electricity {
+        &self.electricity
+    }
+
+    fn electricity_mut(&mut self) -> &mut Electricity {
+        &mut self.electricity
+    }
+
+    fn aircraft(&self) -> &T {
+        &self.aircraft
+    }
+
+    fn aircraft_mut(&mut self) -> &mut T {
+        &mut self.aircraft
+    }
+
+    fn accept<U: SimulationElementVisitor>(&mut self, visitor: &mut U)
+    where
+        Self: Sized,
+    {
+        self.aircraft.accept(visitor);
     }
 }
 

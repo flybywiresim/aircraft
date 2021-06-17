@@ -5,10 +5,7 @@ use msfs::{
     MSFSEvent,
 };
 use std::{collections::HashMap, pin::Pin, time::Duration};
-use systems::{
-    electrical::Electricity,
-    simulation::{Aircraft, Simulation, SimulatorReaderWriter},
-};
+use systems::simulation::{Aircraft, Simulation, SimulatorReaderWriter};
 
 /// Used to combine all the traits that together make up
 /// an aspect of the simulator.
@@ -70,14 +67,13 @@ impl MsfsSimulationHandler {
     pub fn handle<T: Aircraft>(
         &mut self,
         event: MSFSEvent,
-        aircraft: &mut T,
-        electricity: &mut Electricity,
+        simulation: &mut Simulation<T>,
         sim_connect: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         match event {
             MSFSEvent::PreDraw(d) => {
                 self.pre_tick(d.delta_time());
-                Simulation::tick(d.delta_time(), aircraft, electricity, self);
+                simulation.tick(d.delta_time(), self);
                 self.post_tick(&mut sim_connect.as_mut())?;
             }
             MSFSEvent::SimConnect(message) => {
