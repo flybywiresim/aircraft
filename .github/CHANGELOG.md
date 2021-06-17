@@ -116,6 +116,7 @@
 1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
 1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
 1. [TEXTURE] Added a white dot to the test button and corrected DISCH alignment on the fire panel - @ImenesFBW (Imenes)
+1. [ECAM] Added ISA DEV to ECAM - @BlueberryKing (BlueberryKing#6641)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
