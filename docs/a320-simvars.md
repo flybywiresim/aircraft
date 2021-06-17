@@ -1197,9 +1197,17 @@
     - Indicates the selected heading on the FCU, instantly updated
     - In case of managed heading mode, the value is -1
 
-- A32NX_FCU_SPD_MANAGED
+- A32NX_FCU_SPD_MANAGED_DASHES
   - Boolean
-  - Indicates if managed speed/mach mode is active (dashes and dot)
+  - Indicates if managed speed/mach mode is active and a numerical value is not displayed
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+      
+- A32NX_FCU_SPD_MANAGED_DOT
+  - Boolean
+  - Indicates if managed speed/mach mode is active
     State | Value
       --- | ---
       SELECTED | 0
@@ -1207,7 +1215,7 @@
 
 - A32NX_FCU_HDG_MANAGED_DASHES
   - Boolean
-  - Indicates if managed heading mode is active
+  - Indicates if managed heading mode is active and a numerical value is not displayed
     State | Value
       --- | ---
       SELECTED | 0
