@@ -27,7 +27,7 @@ export const ATC = (props: ATCProps) => {
     const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
-    const [currentFlightPhase, setCurrentFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum', 5000);
+    const [currentFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [atcMode, setAtcMode] = usePersistentProperty('CONFIG_ATC_MODE', 'RANGE');
 
