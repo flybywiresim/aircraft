@@ -153,7 +153,7 @@ class CDUAocRequestsAtis {
                         setTimeout(() => {
                             const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
                             SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
-                        }, 5000);
+                        }, 20000);
                     } else {
                         mcdu.addMessage(newMessage);
                     }
