@@ -254,7 +254,13 @@ impl Accumulator {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, delta_vol: &mut Volume, loop_pressure: Pressure) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        delta_vol: &mut Volume,
+        loop_pressure: Pressure,
+        max_volume_to_target: Volume,
+    ) {
         let accumulator_delta_press = self.gas_pressure - loop_pressure;
         let mut flow_variation = VolumeRate::new::<gallon_per_second>(interpolation(
             &self.press_breakpoints,
@@ -264,22 +270,27 @@ impl Accumulator {
         flow_variation = flow_variation * Self::FLOW_DYNAMIC_LOW_PASS
             + (1. - Self::FLOW_DYNAMIC_LOW_PASS) * self.current_flow;
 
-        // TODO HANDLE OR CHECK IF RESERVOIR AVAILABILITY is OK
-        // TODO check if accumulator can be used as a min/max flow producer to
-        // avoid it being a consumer that might unsettle pressure
         if accumulator_delta_press.get::<psi>() > 0.0 && !self.has_control_valve {
             let volume_from_acc = self
                 .fluid_volume
-                .min(flow_variation * context.delta_as_time());
+                .min(flow_variation * context.delta_as_time())
+                .min(max_volume_to_target);
             self.fluid_volume -= volume_from_acc;
             self.gas_volume += volume_from_acc;
             self.current_delta_vol = -volume_from_acc;
 
             *delta_vol += volume_from_acc;
         } else if accumulator_delta_press.get::<psi>() < 0.0 {
+            let fluid_volume_to_reach_equilibrium = self.total_volume
+                - Volume::new::<gallon>(
+                    (self.gas_init_precharge.get::<psi>() * self.total_volume.get::<gallon>())
+                        / 3000.,
+                );
+            let max_delta_vol = fluid_volume_to_reach_equilibrium - self.fluid_volume;
             let volume_to_acc = delta_vol
                 .max(Volume::new::<gallon>(0.0))
-                .max(flow_variation * context.delta_as_time());
+                .max(flow_variation * context.delta_as_time())
+                .min(max_delta_vol);
             self.fluid_volume += volume_to_acc;
             self.gas_volume -= volume_to_acc;
             self.current_delta_vol = volume_to_acc;
@@ -572,8 +583,12 @@ impl HydraulicLoop {
         self.update_ptu_flows(context, ptus, &mut delta_vol, &mut reservoir_return);
 
         // Updates current accumulator state and updates loop delta_vol
-        self.accumulator
-            .update(context, &mut delta_vol, self.loop_pressure);
+        self.accumulator.update(
+            context,
+            &mut delta_vol,
+            self.loop_pressure,
+            Volume::new::<gallon>(1.),
+        );
 
         // Priming the loop if not filled in yet
         // TODO bug, ptu can't prime the loop as it is not providing flow through delta_vol_max
@@ -906,6 +921,7 @@ impl Section {
                 context,
                 &mut delta_vol,
                 self.current_pressure,
+                self.volume_target,
             );
         }
 

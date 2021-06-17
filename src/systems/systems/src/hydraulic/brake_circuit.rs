@@ -241,6 +241,7 @@ impl BrakeCircuit {
                 context,
                 &mut volume_into_accumulator,
                 hyd_loop.loop_pressure,
+                Volume::new::<gallon>(1.),
             );
 
             // Volume that just came into accumulator is taken from hydraulic loop through volume_to_actuator interface
