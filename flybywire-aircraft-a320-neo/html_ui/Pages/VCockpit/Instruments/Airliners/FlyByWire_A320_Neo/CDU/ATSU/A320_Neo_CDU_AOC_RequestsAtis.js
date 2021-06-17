@@ -143,10 +143,17 @@ class CDUAocRequestsAtis {
             getATIS(icao, lines, store.reqID, store, updateView).then(() => {
                 store["sendStatus"] = "SENT";
                 setTimeout(() => {
-                    newMessage["time"] = fetchTimeValue();
+                    const time = fetchTimeValue();
+                    newMessage["time"] = time;
                     // Messages go straight to the printer if FORMAT FOR PRINTER is selected.
                     if (store.formatID === 0) {
+                        newMessage["opened"] = time;
+                        mcdu.addMessage(newMessage);
                         mcdu.printPage([lines.join(' ')]);
+                        setTimeout(() => {
+                            const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+                            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
+                        }, 5000);
                     } else {
                         mcdu.addMessage(newMessage);
                     }
