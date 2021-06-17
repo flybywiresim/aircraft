@@ -303,7 +303,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 console.warn("reset due to _isManaged == true");
             }
             this.isManaged = _isManaged;
-            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED", "boolean", this.isManaged);
+            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED_DOT", "boolean", this.isManaged);
             if (_showSelectedSpeed !== this.showSelectedSpeed && !_showSelectedSpeed) {
                 this.inSelection = false;
                 this.isSelectedValueActive = false;
@@ -311,6 +311,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 console.warn("reset due to _showSelectedSpeed == false");
             }
             this.showSelectedSpeed = _showSelectedSpeed;
+            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED_DASHES", "boolean", this.isManaged && !this.showSelectedSpeed);
             this.currentValue = _machActive ? _value * 100 : _value;
             this.isMachActive = _machActive;
             this.setTextElementActive(this.textSPD, !_machActive);
