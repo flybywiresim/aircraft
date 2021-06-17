@@ -11,7 +11,7 @@ use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
-use hydraulic::{A320AutobrakePanel, A320Hydraulic, A320HydraulicOverheadPanel};
+use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use power_consumption::A320PowerConsumption;
 use systems::{
     apu::{
@@ -20,6 +20,7 @@ use systems::{
     },
     electrical::{consumption::SuppliedPower, ElectricalSystem, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+    hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::LandingGear,
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -41,7 +42,7 @@ pub struct A320 {
     ext_pwr: ExternalPowerSource,
     hydraulic: A320Hydraulic,
     hydraulic_overhead: A320HydraulicOverheadPanel,
-    autobrake_panel: A320AutobrakePanel,
+    autobrake_panel: AutobrakePanel,
     landing_gear: LandingGear,
 }
 impl A320 {
@@ -67,7 +68,7 @@ impl A320 {
             ext_pwr: ExternalPowerSource::new(),
             hydraulic: A320Hydraulic::new(),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(),
-            autobrake_panel: A320AutobrakePanel::new(),
+            autobrake_panel: AutobrakePanel::new(),
             landing_gear: LandingGear::new(),
         }
     }

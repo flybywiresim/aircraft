@@ -2,7 +2,9 @@ use std::time::Duration;
 use systems::{
     engine::Engine,
     hydraulic::{
-        brake_circuit::{AutobrakeDecelerationGovernor, AutobrakeMode, BrakeCircuit},
+        brake_circuit::{
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
+        },
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
@@ -232,7 +234,7 @@ impl A320Hydraulic {
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
-        autobrake_panel: &A320AutobrakePanel,
+        autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &U,
         landing_gear: &LandingGear,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
@@ -359,7 +361,7 @@ impl A320Hydraulic {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        autobrake_panel: &A320AutobrakePanel,
+        autobrake_panel: &AutobrakePanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
         landing_gear: &LandingGear,
@@ -1159,7 +1161,7 @@ impl A320HydraulicBrakeComputerUnit {
         green_loop: &HydraulicLoop,
         alternate_circuit: &BrakeCircuit,
         landing_gear: &LandingGear,
-        autobrake_panel: &A320AutobrakePanel,
+        autobrake_panel: &AutobrakePanel,
     ) {
         self.update_normal_braking_availability(&green_loop.pressure());
         self.update_brake_pressure_limitation();
@@ -1441,7 +1443,7 @@ impl A320AutobrakeController {
         self.deceleration_governor.output()
     }
 
-    fn update_mode_state_machine(&mut self, autobrake_panel: &A320AutobrakePanel) {
+    fn update_mode_state_machine(&mut self, autobrake_panel: &AutobrakePanel) {
         if let Some(mode) = autobrake_panel.pressed_mode() {
             if self.mode == mode {
                 self.mode = AutobrakeMode::NONE;
@@ -1566,7 +1568,7 @@ impl A320AutobrakeController {
     fn update(
         &mut self,
         context: &UpdateContext,
-        autobrake_panel: &A320AutobrakePanel,
+        autobrake_panel: &AutobrakePanel,
         allow_arming: bool,
         pedal_input_left: f64,
         pedal_input_right: f64,
@@ -1604,76 +1606,6 @@ impl SimulationElement for A320AutobrakeController {
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         self.mode = (state.read_f64("AUTOBRAKES_ARMED_MODE") as u8).into();
-    }
-}
-
-pub(super) struct A320AutobrakePanel {
-    lo_button: MomentaryPushButton,
-    med_button: MomentaryPushButton,
-    max_button: MomentaryPushButton,
-    last_lo_state: bool,
-    last_med_state: bool,
-    last_max_state: bool,
-
-    disarm_request: bool,
-}
-impl A320AutobrakePanel {
-    pub(super) fn new() -> A320AutobrakePanel {
-        A320AutobrakePanel {
-            lo_button: MomentaryPushButton::new("AUTOBRK_LOW_ON"),
-            med_button: MomentaryPushButton::new("AUTOBRK_MED_ON"),
-            max_button: MomentaryPushButton::new("AUTOBRK_MAX_ON"),
-            last_lo_state: false,
-            last_med_state: false,
-            last_max_state: false,
-
-            disarm_request: false,
-        }
-    }
-
-    fn disarm_event(&self) -> bool {
-        self.disarm_request
-    }
-
-    fn low_pressed(&self) -> bool {
-        self.lo_button.is_pressed() && !self.last_lo_state
-    }
-
-    fn med_pressed(&self) -> bool {
-        self.med_button.is_pressed() && !self.last_med_state
-    }
-
-    fn max_pressed(&self) -> bool {
-        self.max_button.is_pressed() && !self.last_max_state
-    }
-
-    fn pressed_mode(&self) -> Option<AutobrakeMode> {
-        if self.low_pressed() {
-            Some(AutobrakeMode::LOW)
-        } else if self.med_pressed() {
-            Some(AutobrakeMode::MED)
-        } else if self.max_pressed() {
-            Some(AutobrakeMode::MAX)
-        } else {
-            None
-        }
-    }
-}
-impl SimulationElement for A320AutobrakePanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-
-        self.lo_button.accept(visitor);
-        self.med_button.accept(visitor);
-        self.max_button.accept(visitor);
-    }
-
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.last_lo_state = self.lo_button.is_pressed();
-        self.last_med_state = self.med_button.is_pressed();
-        self.last_max_state = self.max_button.is_pressed();
-
-        self.disarm_request = state.read("AUTOBRAKE_DISARM");
     }
 }
 
@@ -1834,7 +1766,7 @@ mod tests {
             engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
-            autobrake_panel: A320AutobrakePanel,
+            autobrake_panel: AutobrakePanel,
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
@@ -1858,7 +1790,7 @@ mod tests {
                     engine_2: LeapEngine::new(2),
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
-                    autobrake_panel: A320AutobrakePanel::new(),
+                    autobrake_panel: AutobrakePanel::new(),
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     engine_fire_overhead: EngineFireOverheadPanel::new(),
                     landing_gear: LandingGear::new(),

@@ -1,7 +1,12 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+    overhead::MomentaryPushButton,
+    simulation::{
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        UpdateContext, Write,
+    },
 };
+
 use std::f64::consts::E;
 use std::string::String;
 use std::time::Duration;
@@ -333,6 +338,81 @@ impl From<u8> for AutobrakeMode {
             6 => AutobrakeMode::BTV,
             _ => AutobrakeMode::NONE,
         }
+    }
+}
+
+impl Default for AutobrakePanel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+pub struct AutobrakePanel {
+    lo_button: MomentaryPushButton,
+    med_button: MomentaryPushButton,
+    max_button: MomentaryPushButton,
+    last_lo_state: bool,
+    last_med_state: bool,
+    last_max_state: bool,
+
+    disarm_request: bool,
+}
+impl AutobrakePanel {
+    pub fn new() -> AutobrakePanel {
+        AutobrakePanel {
+            lo_button: MomentaryPushButton::new("AUTOBRK_LOW_ON"),
+            med_button: MomentaryPushButton::new("AUTOBRK_MED_ON"),
+            max_button: MomentaryPushButton::new("AUTOBRK_MAX_ON"),
+            last_lo_state: false,
+            last_med_state: false,
+            last_max_state: false,
+
+            disarm_request: false,
+        }
+    }
+
+    pub fn disarm_event(&self) -> bool {
+        self.disarm_request
+    }
+
+    fn low_pressed(&self) -> bool {
+        self.lo_button.is_pressed() && !self.last_lo_state
+    }
+
+    fn med_pressed(&self) -> bool {
+        self.med_button.is_pressed() && !self.last_med_state
+    }
+
+    fn max_pressed(&self) -> bool {
+        self.max_button.is_pressed() && !self.last_max_state
+    }
+
+    pub fn pressed_mode(&self) -> Option<AutobrakeMode> {
+        if self.low_pressed() {
+            Some(AutobrakeMode::LOW)
+        } else if self.med_pressed() {
+            Some(AutobrakeMode::MED)
+        } else if self.max_pressed() {
+            Some(AutobrakeMode::MAX)
+        } else {
+            None
+        }
+    }
+}
+impl SimulationElement for AutobrakePanel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+
+        self.lo_button.accept(visitor);
+        self.med_button.accept(visitor);
+        self.max_button.accept(visitor);
+    }
+
+    fn read(&mut self, state: &mut SimulatorReader) {
+        self.last_lo_state = self.lo_button.is_pressed();
+        self.last_med_state = self.med_button.is_pressed();
+        self.last_max_state = self.max_button.is_pressed();
+
+        self.disarm_request = state.read("AUTOBRAKE_DISARM");
     }
 }
 
