@@ -191,6 +191,9 @@ impl DelayedTrueLogicGate {
     }
 }
 
+/// The delay pulse logic gate delays the true result of a given expression by the given amount of time.
+/// True will be set as output when time delay is over for one update only, then false.
+/// False results are output immediately.
 pub struct DelayedPulseTrueLogicGate {
     output: bool,
     last_gate_output: bool,
