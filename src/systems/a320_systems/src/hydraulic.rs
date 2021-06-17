@@ -2279,12 +2279,11 @@ mod tests {
                 self
             }
 
-            fn press_blue_epump_override_button_once(mut self) -> Self {
-                self = self.set_blue_e_pump_ovrd_pressed(true).run_one_tick();
-
-                self = self.set_blue_e_pump_ovrd_pressed(false).run_one_tick();
-
-                self
+            fn press_blue_epump_override_button_once(self) -> Self {
+                self.set_blue_e_pump_ovrd_pressed(true)
+                    .run_one_tick()
+                    .set_blue_e_pump_ovrd_pressed(false)
+                    .run_one_tick()
             }
         }
 
