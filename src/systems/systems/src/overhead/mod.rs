@@ -766,7 +766,7 @@ mod momentary_on_push_button_tests {
     }
 
     #[test]
-    fn update_to_on_when_pressed_stays_on_while_kept_pressed() {
+    fn stays_on_while_kept_pressed() {
         let mut button = MomentaryOnPushButton::new("TEST");
         let mut test_bed = SimulationTestBed::new();
         test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
@@ -779,7 +779,7 @@ mod momentary_on_push_button_tests {
     }
 
     #[test]
-    fn update_to_on_when_pressed_and_to_off_if_forced_off() {
+    fn can_be_forced_off() {
         let mut button = MomentaryOnPushButton::new("TEST");
         let mut test_bed = SimulationTestBed::new();
         test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
