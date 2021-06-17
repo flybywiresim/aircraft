@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
+1. [ENGINE] Cold Engine start-up model (primary parameters) - @Taz5150 (TazX [Z+2]#0405)
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
@@ -106,13 +107,16 @@
 1. [AP/FMGC] Improved managed speed and V2 validity - @aguther (Andreas Guther)
 1. [FCU] Init FCU with SPD 100 kn, HDG = 0° and ALT 100 ft - @aguther (Andreas Guther)
 1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
+1. [FLIGHT MODEL] Increased gear drag, reduced flap drag - @donstim (donbikes#4084)
 1. [ATHR/FADEC] Fixed potential engagement of reverse thrust in flight - @aguther (Andreas Guther)
 1. [ECAM] Fix REFUELG message being shown on ECAM even when refueling is complete - @BlueberryKing (BlueberryKing#6641)
 1. [MCDU] ILS auto-tuning for departure and improved for approach - @tracernz (Mike)
 1. [MCDU] Added clear scratchpad on CLR held down - @tracernz (Mike) and @MisterChocker (Leon)
 1. [MCDU] Fixed performance page refresh on flight phase transition - @MisterChocker (Leon)
+1. [FMGC] Added reset of fmgc variables - @MisterChocker (Leon)
 1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
 1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
+1. [TEXTURE] Added a white dot to the test button and corrected DISCH alignment on the fire panel - @ImenesFBW (Imenes)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
