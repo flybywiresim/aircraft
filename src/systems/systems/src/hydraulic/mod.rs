@@ -925,7 +925,6 @@ impl Section {
             );
         }
 
-        // ACTUATORS
         delta_vol -= self.total_actuator_consumed_volume;
         reservoir.add_return_volume(self.total_actuator_returned_volume);
 
