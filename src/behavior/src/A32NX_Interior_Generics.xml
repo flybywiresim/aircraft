@@ -126,7 +126,7 @@
     <!--
     Template for rigging uncovered push buttons
 
-    Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position, for the annotated light test.
+    Takes into account the value of L:A32NX_OVHD_INTLT_ANN, for the annotated light test.
 
     Use SEQ_POWERED when both emissives are powered by the same power source. Use SEQ1_POWERED and SEQ2_POWERED otherwise.
 
@@ -154,6 +154,7 @@
             <SEQ_POWERED>1</SEQ_POWERED>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <NODE_ID>#NODE_ID#</NODE_ID>
@@ -238,10 +239,10 @@
                 <False>
                     <Condition Check="SEQ1_CODE">
                         <True>
-                            <SEQ1_EMISSIVE_CODE>#SEQ1_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
+                            <SEQ1_EMISSIVE_CODE>#SEQ1_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
                         </True>
                         <False>
-                            <SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
+                            <SEQ1_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
                         </False>
                     </Condition>
                 </False>
@@ -254,22 +255,22 @@
                 <False>
                     <Condition Check="SEQ2_CODE">
                         <True>
-                            <SEQ2_EMISSIVE_CODE>#SEQ2_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+                            <SEQ2_EMISSIVE_CODE>#SEQ2_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
                         </True>
                         <False>
                             <Condition Check="TOGGLE_SIMVAR">
                                 <True>
                                     <Condition Check="INVERTED">
                                         <True>
-                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
                                         </True>
                                         <false>
-                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
                                         </false>
                                     </Condition>
                                 </True>
                                 <False>
-                                    <SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+                                    <SEQ2_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
                                 </False>
                             </Condition>
                         </False>
@@ -286,7 +287,7 @@
     <!--
     Template for rigging covered push buttons
 
-    Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
+    Takes into account the value of L:A32NX_OVHD_INTLT_ANN.
 
     Main Parameters:
            - NODE_ID            <no default>    Switch node ID                              (anim name will be same)
@@ -341,6 +342,7 @@
 
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
 
             <SEQ1_NODE_ID>#NODE_ID#_SEQ1</SEQ1_NODE_ID>
             <SEQ2_NODE_ID>#NODE_ID#_SEQ2</SEQ2_NODE_ID>
@@ -369,7 +371,7 @@
             <True>
                 <Component ID="#SEQ1_NODE_ID#" Node="#SEQ1_NODE_ID#">
                     <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                        <EMISSIVE_CODE>#SEQ1_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ1_POWERED# and #SEQ_POWERED# and</EMISSIVE_CODE>
+                        <EMISSIVE_CODE>#SEQ1_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
 
                         <Condition Valid="SEQ1_EMISSIVE_DRIVES_VISIBILITY">
                             <True>
@@ -385,7 +387,7 @@
             <True>
                 <Component ID="#SEQ2_NODE_ID#" Node="#SEQ2_NODE_ID#">
                     <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                        <EMISSIVE_CODE>#SEQ2_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and</EMISSIVE_CODE>
+                        <EMISSIVE_CODE>#SEQ2_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
 
                         <Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
                             <True>

@@ -19,6 +19,7 @@ clang++ \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \

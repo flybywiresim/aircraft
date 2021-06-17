@@ -17,7 +17,7 @@ const Performance = () => {
         <div className="w-full">
             <h1 className="text-3xl pt-6 text-white">Performance</h1>
             <Navbar tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
-            <div className="px-6 pt-2">
+            <div className="mt-6">
                 {tabs[activeIndex].renderComponent()}
             </div>
         </div>

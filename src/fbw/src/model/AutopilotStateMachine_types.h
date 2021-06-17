@@ -427,6 +427,8 @@ typedef struct {
   real_T mode_reversion_lateral;
   real_T mode_reversion_vertical;
   boolean_T mode_reversion_TRK_FPA;
+  boolean_T mode_reversion_triple_click;
+  boolean_T mode_reversion_fma;
   boolean_T speed_protection_mode;
   real_T autothrust_mode;
   real_T Psi_c_deg;

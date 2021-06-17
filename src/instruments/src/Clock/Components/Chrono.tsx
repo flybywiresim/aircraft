@@ -6,7 +6,7 @@ const getDisplayString = (seconds: number | null, running: boolean) : string => 
     : `${Math.floor(Math.min(seconds, 5999) / 60).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor(Math.min(seconds, 5999) % 60)).toString().padStart(2, '0')}`);
 
 export const Chrono = () => {
-    const [ltsTest] = useSimVar('L:XMLVAR_LTS_Test', 'bool', 250);
+    const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 200);
     const [prevTime, setPrevTime] = useState(absTime);
 
@@ -36,6 +36,6 @@ export const Chrono = () => {
     });
 
     return (
-        <text x="47" y="60" className="fontBig">{ltsTest ? '88:88' : getDisplayString(elapsedTime, running)}</text>
+        <text x="47" y="60" className="fontBig">{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, running)}</text>
     );
 };

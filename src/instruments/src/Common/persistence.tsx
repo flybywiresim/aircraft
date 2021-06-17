@@ -89,7 +89,7 @@ export const useSimVarSyncedPersistentProperty: SimVarSyncedPersistentPropertyTy
     const [simVarValue, setSimVarValue] = useSimVar(simVarName, simVarUnit, 1_000);
 
     useEffect(() => {
-        if (simVarValue) {
+        if (simVarValue || simVarValue === 0) {
             setPropertyValue((simVarValue as number).toString());
         }
     }, [simVarValue]);

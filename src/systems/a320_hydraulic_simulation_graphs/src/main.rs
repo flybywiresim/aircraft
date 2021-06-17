@@ -1,8 +1,10 @@
-use systems::simulation::UpdateContext;
-
-pub use systems::hydraulic::*;
-
+use plotlib::page::Page;
+use plotlib::repr::Plot;
+use plotlib::style::LineStyle;
+use plotlib::view::ContinuousView;
 use std::time::Duration;
+pub use systems::hydraulic::*;
+use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
     acceleration::foot_per_second_squared,
     f64::*,
@@ -13,11 +15,6 @@ use uom::si::{
     volume::{gallon, liter},
     volume_rate::gallon_per_second,
 };
-
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::LineStyle;
-use plotlib::view::ContinuousView;
 
 extern crate rustplotlib;
 use rustplotlib::Figure;
@@ -818,7 +815,7 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
 }
 
 fn electric_pump() -> ElectricPump {
-    ElectricPump::new("DEFAULT")
+    ElectricPump::new("DEFAULT", ElectricalBusType::AlternatingCurrentEssential)
 }
 
 fn engine_driven_pump() -> EngineDrivenPump {
