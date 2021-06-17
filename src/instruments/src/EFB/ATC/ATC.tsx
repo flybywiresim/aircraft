@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
-import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconInfoCircle, IconPlaneArrival, IconPlaneDeparture, IconTrafficLights } from '@tabler/icons';
+import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconInfoCircle, IconPlaneArrival, IconPlaneDeparture, IconRadio, IconTrafficLights } from '@tabler/icons';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
@@ -27,11 +27,11 @@ export const ATC = (props: ATCProps) => {
     const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
-    const [currentFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum', 5000);
+    const [currentFlightPhase, setCurrentFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [atcMode, setAtcMode] = usePersistentProperty('CONFIG_ATC_MODE', 'RANGE');
 
-    const unicom : ATCInfoExtended = { callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.radar, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] };
+    const unicom : ATCInfoExtended = { callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.RADAR, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] };
 
     useEffect(() => {
         loadAtc();
@@ -43,16 +43,27 @@ export const ATC = (props: ATCProps) => {
     }, [frequency]);
 
     useEffect(() => {
+        if (frequency) {
+            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
+        }
+    }, [controllers]);
+
+    useEffect(() => {
         loadAtc();
     }, [atisSource]);
 
     useEffect(() => {
         setCurrentFilter();
+        setAtc();
     }, [controllers]);
 
     useEffect(() => {
         setCurrentFilter();
     }, [atcMode]);
+
+    useEffect(() => {
+        setCurrentFilter();
+    }, [currentFlightPhase]);
 
     const loadAtc = () => {
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
@@ -62,12 +73,16 @@ export const ATC = (props: ATCProps) => {
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
             for (const a of allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975)) {
                 a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude) * 1.3;
+                if (a.visualRange === 0 && a.type === apiClient.AtcType.ATIS) {
+                    a.visualRange = 50;
+                }
             }
-            setControllers(allAtc);
 
-            if (frequency) {
-                setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
-            }
+            allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
+            allAtc = allAtc.slice(0, 26);
+            allAtc.push(unicom);
+            setCurrentFlightPhase(FmgcFlightPhases.TAKEOFF);
+            setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
         });
     };
 
@@ -87,11 +102,85 @@ export const ATC = (props: ATCProps) => {
 
             if (atcMode === 'CURRENT') {
                 if (props.simbriefData.departingAirport !== '----') {
-                    const departures = controllers.filter((a) => a.callsign.indexOf(props.simbriefData.departingAirport) === 0);
-                    const arrivals = controllers.filter((a) => a.callsign.indexOf(props.simbriefData.arrivingAirport) === 0);
-                    const centers = controllers.filter((a) => a.callsign.indexOf('_CTR') > -1 && a.distance <= a.visualRange);
+                    const departures = controllers.filter((a) => a.callsign.indexOf(props.simbriefData.departingAirport) === 0
+                    || a.callsign.indexOf(`${props.simbriefData.departingAirport.substr(2, 2)}_`) === 0);
+                    const arrivals = controllers.filter((a) => a.callsign.indexOf(props.simbriefData.arrivingAirport) === 0
+                    || a.callsign.indexOf(`${props.simbriefData.arrivingAirport.substr(2, 2)}_`) === 0);
+                    const centers = controllers.filter((a) => a.type === apiClient.AtcType.RADAR && a.distance <= a.visualRange);
 
-                    setControllersToDisplay([...departures, ...centers, ...arrivals]);
+                    // filter for phase
+                    const phase : FmgcFlightPhases = currentFlightPhase;
+
+                    const AtcToDisplay : ATCInfoExtended[] = [];
+
+                    if (phase === FmgcFlightPhases.PREFLIGHT) {
+                        AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.DELIVERY || c.type === apiClient.AtcType.GROUND));
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.TOWER));
+                        }
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.DEPARTURE));
+                        }
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.APPROACH));
+                        }
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...centers);
+                        }
+                        AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.ATIS));
+                    } else if (phase === FmgcFlightPhases.TAKEOFF) {
+                        AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.TOWER));
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.DEPARTURE));
+                        }
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.APPROACH));
+                        }
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...centers);
+                        }
+                    } else if (phase === FmgcFlightPhases.CLIMB) {
+                        AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.DEPARTURE));
+
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...departures.filter((c) => c.type === apiClient.AtcType.APPROACH));
+                        }
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...centers);
+                        }
+                    } else if (phase === FmgcFlightPhases.CRUISE) {
+                        AtcToDisplay.push(...centers);
+                        AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.APPROACH));
+                    } else if (phase === FmgcFlightPhases.DESCENT) {
+                        AtcToDisplay.push(...centers);
+                        AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.APPROACH));
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.TOWER));
+                        }
+                    } else if (phase === FmgcFlightPhases.APPROACH || FmgcFlightPhases.GOAROUND) {
+                        AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.APPROACH));
+                        AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.TOWER));
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...centers);
+                        }
+                        AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.GROUND));
+                    } else if (phase === FmgcFlightPhases.DONE) {
+                        AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.GROUND));
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.TOWER));
+                        }
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...arrivals.filter((c) => c.type === apiClient.AtcType.APPROACH));
+                        }
+                        if (AtcToDisplay.length === 0) {
+                            AtcToDisplay.push(...centers);
+                        }
+                    } else {
+                        AtcToDisplay.push(...departures, ...centers, ...arrivals);
+                    }
+
+                    AtcToDisplay.push(unicom);
+                    setControllersToDisplay(AtcToDisplay);
                 } else {
                     setMessages(['You have to import your flight from simBrief first']);
                     setControllersToDisplay([]);
@@ -205,12 +294,13 @@ export const ATC = (props: ATCProps) => {
                                 >
                                     <div className="flex w-full justify-start text-base">
                                         <div>
-                                            { atc.type === apiClient.AtcType.radar && <IconChartRadar size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.ground && <IconTrafficLights size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.departure && <IconPlaneDeparture size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.approach && <IconPlaneArrival size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.tower && <IconBuildingLighthouse size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.delivery && <IconCircleCheck size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.RADAR && <IconChartRadar size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.GROUND && <IconTrafficLights size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.DEPARTURE && <IconPlaneDeparture size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.APPROACH && <IconPlaneArrival size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.TOWER && <IconBuildingLighthouse size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.DELIVERY && <IconCircleCheck size="2rem" /> }
+                                            { atc.type === apiClient.AtcType.ATIS && <IconRadio size="2rem" /> }
                                         </div>
                                         <div className="flex flex-col flex-grow text-center justify-center items-center">
                                             <div>
@@ -249,9 +339,9 @@ export const ATC = (props: ATCProps) => {
                                     {currentAtc && currentAtc.callsign}
                                 </div>
                             </div>
-                            <div className="active-atis mt-8 text-2xl">
+                            <div className="active-atis flex-wrap mt-8 text-2xl">
                                 { currentAtc?.textAtis && currentAtc.textAtis.map((line) => (
-                                    <p className="mt-2">{line}</p>
+                                    <p className="flex flex-wrap mt-2">{line}</p>
                                 )) }
                             </div>
                         </div>
