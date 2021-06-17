@@ -693,6 +693,6 @@ mod momentary_push_button_tests {
 
         test_bed.run();
 
-        assert!(test_bed.aircraft_mut().element_mut().is_pressed());
+        assert!(test_bed.element().is_pressed());
     }
 }

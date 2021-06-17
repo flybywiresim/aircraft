@@ -4234,7 +4234,7 @@ mod tests {
 
             edp1_controller.update(
                 &overhead_panel,
-                test_bed.aircraft_mut().element_mut(),
+                test_bed.element(),
                 Ratio::new::<percent>(50.),
                 Pressure::new::<psi>(10.),
                 true,

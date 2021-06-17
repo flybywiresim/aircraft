@@ -880,13 +880,11 @@ mod tests {
                 })
                 .with_delta(Duration::from_secs(10));
 
-            let starting_temperature = test_bed.aircraft_mut().element_mut().oil_outlet_temperature;
+            let starting_temperature = test_bed.element().oil_outlet_temperature;
 
             test_bed.run();
 
-            assert!(
-                test_bed.aircraft_mut().element_mut().oil_outlet_temperature > starting_temperature
-            );
+            assert!(test_bed.element().oil_outlet_temperature > starting_temperature);
         }
 
         #[test]
@@ -902,12 +900,12 @@ mod tests {
                 })
                 .with_delta(Duration::from_secs(10));
 
-            let starting_temperature = test_bed.aircraft_mut().element_mut().oil_outlet_temperature;
+            let starting_temperature = test_bed.element().oil_outlet_temperature;
 
             test_bed.run();
 
             assert_eq!(
-                test_bed.aircraft_mut().element_mut().oil_outlet_temperature,
+                test_bed.element().oil_outlet_temperature,
                 starting_temperature
             );
         }
@@ -927,7 +925,7 @@ mod tests {
 
             test_bed.run();
 
-            let starting_temperature = test_bed.aircraft_mut().element_mut().oil_outlet_temperature;
+            let starting_temperature = test_bed.element().oil_outlet_temperature;
 
             test_bed.set_update_after_power_distribution(|idg, context| {
                 idg.update(
