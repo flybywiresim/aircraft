@@ -80,7 +80,6 @@ export const ATC = (props: ATCProps) => {
 
             allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
             allAtc = allAtc.slice(0, 26);
-            setCurrentFlightPhase(FmgcFlightPhases.TAKEOFF);
             setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
         });
     };
