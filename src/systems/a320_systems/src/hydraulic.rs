@@ -1372,7 +1372,6 @@ pub(super) struct A320HydraulicOverheadPanel {
     rat_push_button: MomentaryPushButton,
     yellow_epump_push_button: AutoOnFaultPushButton,
     blue_epump_override_push_button: MomentaryOnPushButton,
-    blue_epump_override_push_button_last_pressed_state: bool,
 }
 impl A320HydraulicOverheadPanel {
     pub(super) fn new() -> A320HydraulicOverheadPanel {
@@ -1384,23 +1383,13 @@ impl A320HydraulicOverheadPanel {
             rat_push_button: MomentaryPushButton::new("HYD_RAT_MAN_ON"),
             yellow_epump_push_button: AutoOnFaultPushButton::new_auto("HYD_EPUMPY"),
             blue_epump_override_push_button: MomentaryOnPushButton::new("HYD_EPUMPY_OVRD"),
-            blue_epump_override_push_button_last_pressed_state: false,
         }
     }
 
     fn update_blue_override_state(&mut self) {
-        self.blue_epump_override_push_button.set_on(
-            self.blue_epump_override_push_button.is_on()
-                ^ (self.blue_epump_override_push_button.is_pressed()
-                    && !self.blue_epump_override_push_button_last_pressed_state),
-        );
-
         if self.blue_epump_push_button.is_off() {
             self.blue_epump_override_push_button.turn_off();
         }
-
-        self.blue_epump_override_push_button_last_pressed_state =
-            self.blue_epump_override_push_button.is_pressed();
     }
 
     pub(super) fn update(&mut self, hyd: &A320Hydraulic) {
@@ -4122,7 +4111,7 @@ mod tests {
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.set_on(true);
+            overhead_panel.blue_epump_override_push_button.turn_on();
             blue_epump_controller.update(
                 &overhead_panel,
                 true,
@@ -4135,7 +4124,7 @@ mod tests {
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.set_on(false);
+            overhead_panel.blue_epump_override_push_button.turn_off();
             blue_epump_controller.update(
                 &overhead_panel,
                 false,
@@ -4158,7 +4147,7 @@ mod tests {
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.set_on(true);
+            overhead_panel.blue_epump_override_push_button.turn_on();
 
             blue_epump_controller.receive_power(&test_supplied_power(
                 ElectricalBusType::DirectCurrentEssential,
