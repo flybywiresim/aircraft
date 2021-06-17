@@ -466,7 +466,7 @@ impl MomentaryOnPushButton {
         }
     }
 
-    pub fn is_pressed(&self) -> bool {
+    fn is_pressed(&self) -> bool {
         self.is_pressed
     }
 
@@ -484,11 +484,6 @@ impl MomentaryOnPushButton {
 
     pub fn turn_on(&mut self) {
         self.is_on = true;
-    }
-
-    #[cfg(test)]
-    pub fn pressed(&mut self) {
-        self.is_pressed = true;
     }
 }
 impl SimulationElement for MomentaryOnPushButton {
@@ -768,6 +763,79 @@ mod momentary_on_push_button_tests {
         test_bed.run_without_update(&mut button);
 
         assert!(button.is_pressed());
+    }
+
+    #[test]
+    fn update_to_on_when_pressed_stays_on_while_kept_pressed() {
+        let mut button = MomentaryOnPushButton::new("TEST");
+        let mut test_bed = SimulationTestBed::new();
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run_without_update(&mut button);
+        assert!(button.is_on());
+
+        test_bed.run_without_update(&mut button);
+        assert!(button.is_on());
+    }
+
+    #[test]
+    fn update_to_on_when_pressed_and_to_off_if_forced_off() {
+        let mut button = MomentaryOnPushButton::new("TEST");
+        let mut test_bed = SimulationTestBed::new();
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run_without_update(&mut button);
+        assert!(button.is_on());
+
+        button.turn_off();
+
+        test_bed.run_without_update(&mut button);
+        assert!(!button.is_on());
+    }
+
+    #[test]
+    fn stays_off_when_pressed_and_forced_off() {
+        let mut button = MomentaryOnPushButton::new("TEST");
+        let mut test_bed = SimulationTestBed::new();
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        test_bed.run_without_update(&mut button);
+        button.turn_off();
+
+        assert!(!button.is_on());
+
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", false);
+        test_bed.run_without_update(&mut button);
+
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        test_bed.run_without_update(&mut button);
+        button.turn_off();
+
+        assert!(!button.is_on());
+    }
+
+    #[test]
+    fn update_to_on_when_pressed_then_to_off_if_pressed_again_and_stays_off() {
+        let mut button = MomentaryOnPushButton::new("TEST");
+        let mut test_bed = SimulationTestBed::new();
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run_without_update(&mut button);
+        assert!(button.is_on());
+
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", false);
+
+        test_bed.run_without_update(&mut button);
+        assert!(button.is_on());
+
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run_without_update(&mut button);
+        assert!(!button.is_on());
+
+        test_bed.write_bool("OVHD_TEST_IS_PRESSED", false);
+
+        test_bed.run_without_update(&mut button);
+        assert!(!button.is_on());
     }
 
     #[test]
