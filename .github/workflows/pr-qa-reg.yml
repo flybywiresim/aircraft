@@ -1,4 +1,4 @@
-name: Register Quality Assurance
+name: project automation
 on:
   pull_request:
     types:
@@ -9,8 +9,11 @@ jobs:
   ready-for-review:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    permissions:
+      pull-requests: write
+      repository-projects: write
     steps:
-      - name: ready for code review
+      - name: code - ready for review
         uses: takanabe/github-actions-automate-projects@v0.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
