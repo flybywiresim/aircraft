@@ -1576,7 +1576,7 @@ impl A320AutobrakeController {
     ) {
         self.update_input_conditions(
             &context,
-            allow_arming && !autobrake_panel.disarm_event(),
+            allow_arming,
             pedal_input_left,
             pedal_input_right,
             weight_on_wheels,

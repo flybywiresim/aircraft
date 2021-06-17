@@ -2,7 +2,7 @@ use crate::{
     hydraulic::HydraulicLoop,
     overhead::MomentaryPushButton,
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext, Write,
     },
 };
@@ -353,8 +353,6 @@ pub struct AutobrakePanel {
     last_lo_state: bool,
     last_med_state: bool,
     last_max_state: bool,
-
-    disarm_request: bool,
 }
 impl AutobrakePanel {
     pub fn new() -> AutobrakePanel {
@@ -365,13 +363,7 @@ impl AutobrakePanel {
             last_lo_state: false,
             last_med_state: false,
             last_max_state: false,
-
-            disarm_request: false,
         }
-    }
-
-    pub fn disarm_event(&self) -> bool {
-        self.disarm_request
     }
 
     fn low_pressed(&self) -> bool {
@@ -407,12 +399,10 @@ impl SimulationElement for AutobrakePanel {
         self.max_button.accept(visitor);
     }
 
-    fn read(&mut self, state: &mut SimulatorReader) {
+    fn read(&mut self, _state: &mut SimulatorReader) {
         self.last_lo_state = self.lo_button.is_pressed();
         self.last_med_state = self.med_button.is_pressed();
         self.last_max_state = self.max_button.is_pressed();
-
-        self.disarm_request = state.read("AUTOBRAKE_DISARM");
     }
 }
 
