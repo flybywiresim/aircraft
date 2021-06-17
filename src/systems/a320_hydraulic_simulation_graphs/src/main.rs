@@ -3,10 +3,15 @@ use plotlib::repr::Plot;
 use plotlib::style::LineStyle;
 use plotlib::view::ContinuousView;
 use std::time::Duration;
+use systems::electrical::consumption::SuppliedPower;
+use systems::electrical::Potential;
 pub use systems::hydraulic::*;
+use systems::shared::PotentialOrigin;
+use systems::simulation::SimulationElement;
 use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
     acceleration::foot_per_second_squared,
+    electric_potential::volt,
     f64::*,
     length::foot,
     pressure::{pascal, psi},
@@ -100,6 +105,8 @@ fn main() {
     //yellow_epump_plus_edp2_with_ptu(path);
 
     section_basic_tests(path);
+
+    two_sections_basic_tests(path);
 }
 
 fn make_figure(h: &History) -> Figure {
@@ -607,6 +614,11 @@ fn section_basic_tests(path: &str) {
         "EDP displacement".to_string(),
     ];
 
+    let reservoir_names = vec![
+        "Reservoir volume".to_string(),
+        "EDP section Pressure".to_string(),
+    ];
+
     let mut fluid = Fluid::new(Pressure::new::<pascal>(1450000000.0));
     let mut edp_section_history = History::new(edp_section_names);
 
@@ -615,6 +627,7 @@ fn section_basic_tests(path: &str) {
 
     let mut edp_section = Section::new(Volume::new::<gallon>(3.), Volume::new::<gallon>(3.));
     let mut reservoir = Reservoir::new(Volume::new::<gallon>(3.), Volume::new::<gallon>(3.));
+    let mut reservoir_history = History::new(reservoir_names);
 
     let context = context(Duration::from_millis(100));
 
@@ -630,11 +643,25 @@ fn section_basic_tests(path: &str) {
         ],
     );
 
+    reservoir_history.init(
+        0.0,
+        vec![
+            reservoir.level().get::<gallon>(),
+            edp_section.pressure().get::<psi>(),
+        ],
+    );
+
     let mut edp_rpm = 0.;
     for x in 0..800 {
         if x >= 100 {
             // After 1s pressurising edp
             edp_controller.command_pressurise();
+            edp_rpm = 4000.;
+        }
+
+        if x >= 300 {
+            // After 1s pressurising edp
+            edp_controller.command_depressurise();
             edp_rpm = 4000.;
         }
 
@@ -659,8 +686,8 @@ fn section_basic_tests(path: &str) {
         ///
         edp_section.update_actual_pumping_states(
             &mut edp,
-            &Vec::new(),
-            &Vec::new(),
+            Vec::new(),
+            Vec::new(),
             &mut reservoir,
             &context,
             &fluid,
@@ -686,11 +713,185 @@ fn section_basic_tests(path: &str) {
                 edp.displacement().get::<gallon>(),
             ],
         );
+        reservoir_history.update(
+            context.delta_as_secs_f64(),
+            vec![
+                reservoir.level().get::<gallon>(),
+                edp_section.pressure().get::<psi>(),
+            ],
+        );
     }
 
     edp_section_history.show_matplotlib("basic_section_tests", &path);
+    reservoir_history.show_matplotlib("basic_section_reservoir_tests", &path);
 }
 
+fn two_sections_basic_tests(path: &str) {
+    let both_section_names = vec![
+        "EDP section Pressure".to_string(),
+        "System section Pressure".to_string(),
+        "EDP section flow".to_string(),
+        "System section flow".to_string(),
+        "EDP displacement".to_string(),
+    ];
+
+    let reservoir_names = vec![
+        "Reservoir volume".to_string(),
+        "EDP section Pressure".to_string(),
+        "System section Pressure".to_string(),
+    ];
+
+    let mut fluid = Fluid::new(Pressure::new::<pascal>(1450000000.0));
+    let mut both_section_history = History::new(both_section_names);
+
+    let mut edp = EngineDrivenPump::new("EDP");
+    let mut edp_controller = TestPumpController::commanding_depressurise();
+
+    let mut epump = electric_pump();
+    let mut epump_controller = TestPumpController::commanding_depressurise();
+
+    let mut edp_section = Section::new(Volume::new::<gallon>(3.), Volume::new::<gallon>(3.));
+    let mut main_section = Section::new(Volume::new::<gallon>(10.), Volume::new::<gallon>(10.));
+
+    let mut check_valve = CheckValve::new(VolumeRate::new::<gallon_per_second>(1.));
+
+    let mut reservoir = Reservoir::new(Volume::new::<gallon>(3.), Volume::new::<gallon>(3.));
+    let mut reservoir_history = History::new(reservoir_names);
+
+    let context = context(Duration::from_millis(100));
+
+    both_section_history.init(
+        0.0,
+        vec![
+            edp_section.pressure().get::<psi>(),
+            main_section.volume().get::<gallon>(),
+            edp_section.flow().get::<gallon_per_second>(),
+            main_section.flow().get::<gallon_per_second>(),
+            edp.displacement().get::<gallon>(),
+        ],
+    );
+
+    reservoir_history.init(
+        0.0,
+        vec![
+            reservoir.level().get::<gallon>(),
+            edp_section.pressure().get::<psi>(),
+        ],
+    );
+
+    let mut edp_rpm = 0.;
+    let mut epump_rpm = 0.;
+    for x in 0..800 {
+        if x >= 100 {
+            // After 1s pressurising edp
+            edp_controller.command_pressurise();
+            edp_rpm = 4000.;
+        }
+
+        if x >= 300 {
+            // After 1s pressurising edp
+            edp_controller.command_depressurise();
+            edp_rpm = 4000.;
+        }
+
+        if x >= 350 {
+            // After 1s pressurising edp
+            epump_controller.command_pressurise();
+            epump_rpm = 7200.;
+        }
+
+        edp.update(
+            &context,
+            edp_section.pressure(),
+            &reservoir,
+            edp_rpm,
+            &edp_controller,
+        );
+
+        epump.receive_power(&test_supplied_power(
+            ElectricalBusType::AlternatingCurrentEssential,
+            true,
+        ));
+        epump.update(
+            &context,
+            edp_section.pressure(),
+            &reservoir,
+            &epump_controller,
+        );
+
+        edp_section.update_target_volume(&fluid, Pressure::new::<psi>(3000.));
+        main_section.update_target_volume(&fluid, Pressure::new::<psi>(3000.));
+
+        edp_section.update_delta_vol(&mut reservoir, &context);
+        main_section.update_delta_vol(&mut reservoir, &context);
+
+        edp_section.update_target_volume_after_consumer_pass(&fluid, Pressure::new::<psi>(3000.));
+        main_section.update_target_volume_after_consumer_pass(&fluid, Pressure::new::<psi>(3000.));
+
+        edp_section.update_max_pump_capacity(&edp);
+        main_section.update_max_pump_capacity(&epump);
+
+        //VALVES
+        check_valve.update_forward_pass(&edp_section, &main_section, &context);
+        check_valve.update_backward_pass(&edp_section, &main_section, &context);
+        ///
+        edp_section.update_actual_pumping_states(
+            &mut edp,
+            Vec::new(),
+            vec![&check_valve],
+            &mut reservoir,
+            &context,
+            &fluid,
+        );
+
+        main_section.update_actual_pumping_states(
+            &mut epump,
+            vec![&check_valve],
+            Vec::new(),
+            &mut reservoir,
+            &context,
+            &fluid,
+        );
+
+        both_section_history.update(
+            context.delta_as_secs_f64(),
+            vec![
+                edp_section.pressure().get::<psi>(),
+                main_section.volume().get::<gallon>(),
+                edp_section.flow().get::<gallon_per_second>(),
+                main_section.flow().get::<gallon_per_second>(),
+                edp.displacement().get::<gallon>(),
+            ],
+        );
+        reservoir_history.update(
+            context.delta_as_secs_f64(),
+            vec![
+                reservoir.level().get::<gallon>(),
+                edp_section.pressure().get::<psi>(),
+            ],
+        );
+    }
+
+    both_section_history.show_matplotlib("two_section_tests", &path);
+    reservoir_history.show_matplotlib("two_section_reservoir_tests", &path);
+}
+
+fn test_supplied_power(bus_id: ElectricalBusType, is_powered: bool) -> SuppliedPower {
+    let mut supplied_power = SuppliedPower::new();
+    supplied_power.add(
+        bus_id,
+        if is_powered {
+            Potential::single(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            )
+        } else {
+            Potential::none()
+        },
+    );
+
+    supplied_power
+}
 // fn yellow_epump_plus_edp2_with_ptu(path: &str) {
 //     let loop_var_names = vec![
 //         "GREEN Loop Pressure".to_string(),

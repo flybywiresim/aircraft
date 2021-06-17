@@ -489,7 +489,7 @@ impl A320Hydraulic {
         );
         self.blue_electric_pump.update(
             context,
-            &self.blue_loop,
+            self.blue_loop.pressure(),
             &reservoir,
             &self.blue_electric_pump_controller,
         );
@@ -503,7 +503,7 @@ impl A320Hydraulic {
         );
         self.yellow_electric_pump.update(
             context,
-            &self.yellow_loop,
+            self.yellow_loop.pressure(),
             &reservoir,
             &self.yellow_electric_pump_controller,
         );

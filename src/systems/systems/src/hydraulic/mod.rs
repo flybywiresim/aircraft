@@ -745,8 +745,8 @@ impl Section {
     pub fn update_actual_pumping_states(
         &mut self,
         pump: &mut impl PressureSource,
-        upstream_valves: &Vec<CheckValve>,
-        downstream_valves: &Vec<CheckValve>,
+        upstream_valves: Vec<&CheckValve>,
+        downstream_valves: Vec<&CheckValve>,
         reservoir: &mut Reservoir,
         context: &UpdateContext,
         fluid: &Fluid,
@@ -836,7 +836,7 @@ impl CheckValve {
         }
     }
 
-    fn update_forward_pass(
+    pub fn update_forward_pass(
         &mut self,
         upstream_section: &Section,
         downstream_section: &Section,
@@ -856,7 +856,7 @@ impl CheckValve {
         }
     }
 
-    fn update_backward_pass(
+    pub fn update_backward_pass(
         &mut self,
         upstream_section: &Section,
         downstream_section: &Section,
@@ -867,6 +867,7 @@ impl CheckValve {
                 .max_virtual_volume
                 .min(downstream_section.volume_target)
                 .max(Volume::new::<gallon>(0.));
+            self.current_volume = used_volume_downstream;
         } else {
             self.current_volume = Volume::new::<gallon>(0.);
         }
@@ -916,6 +917,10 @@ impl Reservoir {
 
     fn add_return_volume(&mut self, volume: Volume) {
         self.current_level = (self.current_level + volume).min(self.max_capacity);
+    }
+
+    pub fn level(&self) -> Volume {
+        self.current_level
     }
 }
 
@@ -1083,7 +1088,7 @@ impl ElectricPump {
     pub fn update<T: PumpController>(
         &mut self,
         context: &UpdateContext,
-        line: &HydraulicLoop,
+        loop_pressure: Pressure,
         reservoir: &Reservoir,
         controller: &T,
     ) {
@@ -1100,7 +1105,7 @@ impl ElectricPump {
         self.rpm = self.rpm.min(Self::NOMINAL_SPEED).max(0.0);
 
         self.pump
-            .update(context, line.pressure(), &reservoir, self.rpm, controller);
+            .update(context, loop_pressure, &reservoir, self.rpm, controller);
     }
 }
 impl PressureSource for ElectricPump {
