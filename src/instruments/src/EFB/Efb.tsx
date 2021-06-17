@@ -16,6 +16,7 @@ import Settings from './Settings/Settings';
 
 import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
 import store from './Store';
+import ATC from './ATC/ATC';
 
 type TimeState = {
     currentTime: Date,
@@ -123,7 +124,7 @@ const Efb = () => {
         initTime: new Date(),
         timeSinceStart: '00:00',
     });
-    const [currentPageIndex, setCurrentPageIndex] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6>(0);
+    const [currentPageIndex, setCurrentPageIndex] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>(0);
 
     useEffect(() => {
         switch (currentPageIndex) {
@@ -140,6 +141,9 @@ const Efb = () => {
             history.push('/navigation');
             break;
         case 5:
+            history.push('/atc');
+            break;
+        case 6:
             history.push('/settings');
             break;
         default:
@@ -264,6 +268,9 @@ const Efb = () => {
                                     </Route>
                                     <Route path="/navigation">
                                         <Navigation />
+                                    </Route>
+                                    <Route path="/atc">
+                                        <ATC />
                                     </Route>
                                     <Route path="/settings">
                                         <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
