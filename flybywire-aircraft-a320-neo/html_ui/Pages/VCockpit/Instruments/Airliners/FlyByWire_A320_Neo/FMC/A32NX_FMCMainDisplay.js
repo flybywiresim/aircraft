@@ -165,6 +165,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsTakeoffAutoTuned = undefined;
         this.ilsApproachAutoTuned = undefined;
         this.climbTransitionGroundAltitude = undefined;
+        this.altDestination = undefined;
+        this.flightNumber = undefined;
+        this.cruiseTemperature = undefined;
+        this.taxiFuelWeight = undefined;
+        this.blockFuel = undefined;
+        this.zeroFuelWeight = undefined;
+        this.zeroFuelWeightMassCenter = undefined;
     }
 
     Init() {
@@ -449,6 +456,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsTakeoffAutoTuned = false;
         this.ilsApproachAutoTuned = false;
         this.climbTransitionGroundAltitude = null;
+        this.altDestination = undefined;
+        this.flightNumber = undefined;
+        this.cruiseTemperature = undefined;
+        this.taxiFuelWeight = 0.2;
+        this.blockFuel = undefined;
+        this.zeroFuelWeight = undefined;
+        this.zeroFuelWeightMassCenter = undefined;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
