@@ -225,7 +225,7 @@ impl<T: Aircraft> Simulation<T> {
     /// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation, UpdateContext};
     /// # struct MyAircraft {}
     /// # impl MyAircraft {
-    /// #     fn new() -> Self {
+    /// #     fn new(_: &mut Electricity) -> Self {
     /// #         Self {}
     /// #     }
     /// # }
@@ -242,11 +242,10 @@ impl<T: Aircraft> Simulation<T> {
     /// #     fn read(&mut self, name: &str) -> f64 { 0.0 }
     /// #     fn write(&mut self, name: &str, value: f64) { }
     /// # }
-    /// let mut aircraft = MyAircraft::new();
-    /// let mut electricity = Electricity::new();
+    /// let mut simulation = Simulation::new(|electricity| MyAircraft::new(electricity));
     /// let mut reader_writer = MySimulatorReaderWriter::new();
     /// // For each frame, call the tick function.
-    /// Simulation::tick(Duration::from_millis(50), &mut aircraft, &mut electricity, &mut reader_writer);
+    /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
     /// ```
     /// [`tick`]: #method.tick
     pub fn tick(
