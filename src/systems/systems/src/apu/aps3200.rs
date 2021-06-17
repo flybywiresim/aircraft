@@ -770,15 +770,14 @@ mod apu_generator_tests {
     use crate::{
         apu::tests::{test_bed, test_bed_with},
         shared,
-        simulation::test::{SimulationTestBed, TestAircraft},
+        simulation::test::{ElementCtorFn, SimulationTestBed, TestAircraft},
     };
 
     use super::*;
 
     #[test]
     fn starts_without_output() {
-        let test_bed =
-            SimulationTestBed::new(|electricity| TestAircraft::new(apu_generator(electricity)));
+        let test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
 
         assert!(!shared::PowerConsumptionReport::is_powered(
             test_bed.electricity(),
@@ -788,8 +787,7 @@ mod apu_generator_tests {
 
     #[test]
     fn when_apu_running_provides_output() {
-        let mut test_bed =
-            SimulationTestBed::new(|electricity| TestAircraft::new(apu_generator(electricity)));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
 
         update_below_threshold(&mut test_bed);
         update_above_threshold(&mut test_bed);
@@ -802,8 +800,7 @@ mod apu_generator_tests {
 
     #[test]
     fn when_apu_shutdown_provides_no_output() {
-        let mut test_bed =
-            SimulationTestBed::new(|electricity| TestAircraft::new(apu_generator(electricity)));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
 
         update_above_threshold(&mut test_bed);
         update_below_threshold(&mut test_bed);
@@ -966,8 +963,7 @@ mod apu_generator_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed =
-            SimulationTestBed::new(|electricity| TestAircraft::new(apu_generator(electricity)));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
 
         test_bed.run();
 

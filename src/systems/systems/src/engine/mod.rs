@@ -48,7 +48,7 @@ impl Default for EngineFireOverheadPanel {
 
 #[cfg(test)]
 mod engine_fire_overhead_panel_tests {
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -62,8 +62,7 @@ mod engine_fire_overhead_panel_tests {
 
     #[test]
     fn fire_push_button_is_released_returns_false_when_not_released() {
-        let mut test_bed =
-            SimulationTestBed::new(|_| TestAircraft::new(EngineFireOverheadPanel::new()));
+        let mut test_bed = SimulationTestBed::from(EngineFireOverheadPanel::new());
         test_bed.write_bool("FIRE_BUTTON_ENG1", false);
         test_bed.run();
 
@@ -72,8 +71,7 @@ mod engine_fire_overhead_panel_tests {
 
     #[test]
     fn fire_push_button_is_released_returns_true_when_released() {
-        let mut test_bed =
-            SimulationTestBed::new(|_| TestAircraft::new(EngineFireOverheadPanel::new()));
+        let mut test_bed = SimulationTestBed::from(EngineFireOverheadPanel::new());
         test_bed.write_bool("FIRE_BUTTON_ENG1", true);
         test_bed.run();
 

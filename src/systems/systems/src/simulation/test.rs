@@ -186,8 +186,19 @@ impl<T: SimulationElement> SimulationTestBed<TestAircraft<T>> {
             .set_update_after_power_distribution(func);
     }
 }
-impl<U: SimulationElement> From<U> for SimulationTestBed<TestAircraft<U>> {
-    fn from(element: U) -> Self {
+
+/// Wrapper for converting the given constructor function to
+/// a [`SimulationTestBed<TestAircraft<T>>`] instance.
+pub struct ElementCtorFn<T: SimulationElement, U: Fn(&mut Electricity) -> T>(pub U);
+impl<T: SimulationElement, U: Fn(&mut Electricity) -> T> From<ElementCtorFn<T, U>>
+    for SimulationTestBed<TestAircraft<T>>
+{
+    fn from(func: ElementCtorFn<T, U>) -> Self {
+        Self::new(|electricity| TestAircraft::new((func.0)(electricity)))
+    }
+}
+impl<T: SimulationElement> From<T> for SimulationTestBed<TestAircraft<T>> {
+    fn from(element: T) -> Self {
         Self::new(|_| TestAircraft::new(element))
     }
 }

@@ -404,13 +404,11 @@ impl EmergencyElectricalRatPushButton for A320EmergencyElectricalOverheadPanel {
 #[cfg(test)]
 mod a320_electrical {
     use super::*;
-    use systems::simulation::test::{SimulationTestBed, TestAircraft};
+    use systems::simulation::test::{ElementCtorFn, SimulationTestBed};
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::new(|electricity| {
-            TestAircraft::new(A320Electrical::new(electricity))
-        });
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(A320Electrical::new));
 
         test_bed.run();
 

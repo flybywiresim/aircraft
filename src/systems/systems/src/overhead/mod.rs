@@ -450,7 +450,7 @@ impl SimulationElement for MomentaryPushButton {
 
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -466,9 +466,7 @@ mod on_off_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(OnOffFaultPushButton::new_on("ELEC_GEN_1"))
-        });
+        let mut test_bed = SimulationTestBed::from(OnOffFaultPushButton::new_on("ELEC_GEN_1"));
 
         test_bed.run();
 
@@ -479,7 +477,7 @@ mod on_off_fault_push_button_tests {
 
 #[cfg(test)]
 mod on_off_available_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -495,9 +493,8 @@ mod on_off_available_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(OnOffAvailablePushButton::new_on("ELEC_EXT_PWR"))
-        });
+        let mut test_bed =
+            SimulationTestBed::from(OnOffAvailablePushButton::new_on("ELEC_EXT_PWR"));
 
         test_bed.run();
 
@@ -508,7 +505,7 @@ mod on_off_available_push_button_tests {
 
 #[cfg(test)]
 mod normal_altn_fault_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -524,9 +521,8 @@ mod normal_altn_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED"))
-        });
+        let mut test_bed =
+            SimulationTestBed::from(NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED"));
 
         test_bed.run();
 
@@ -537,7 +533,7 @@ mod normal_altn_fault_push_button_tests {
 
 #[cfg(test)]
 mod auto_off_fault_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -553,9 +549,8 @@ mod auto_off_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE"))
-        });
+        let mut test_bed =
+            SimulationTestBed::from(AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE"));
 
         test_bed.run();
 
@@ -566,7 +561,7 @@ mod auto_off_fault_push_button_tests {
 
 #[cfg(test)]
 mod fault_release_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -603,8 +598,7 @@ mod fault_release_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed =
-            SimulationTestBed::new(|_| TestAircraft::new(FaultReleasePushButton::new_in("IDG_1")));
+        let mut test_bed = SimulationTestBed::from(FaultReleasePushButton::new_in("IDG_1"));
 
         test_bed.run();
 
@@ -615,7 +609,7 @@ mod fault_release_push_button_tests {
 
 #[cfg(test)]
 mod fire_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -645,8 +639,7 @@ mod fire_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed =
-            SimulationTestBed::new(|_| TestAircraft::new(FirePushButton::new("APU")));
+        let mut test_bed = SimulationTestBed::from(FirePushButton::new("APU"));
 
         test_bed.run();
 
@@ -657,7 +650,7 @@ mod fire_push_button_tests {
 #[cfg(test)]
 mod fault_indication_tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     #[test]
     fn new_does_not_have_fault() {
@@ -666,8 +659,7 @@ mod fault_indication_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed =
-            SimulationTestBed::new(|_| TestAircraft::new(FaultIndication::new("TEST")));
+        let mut test_bed = SimulationTestBed::from(FaultIndication::new("TEST"));
 
         test_bed.run();
 
@@ -678,7 +670,7 @@ mod fault_indication_tests {
 #[cfg(test)]
 mod momentary_push_button_tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::SimulationTestBed;
 
     #[test]
     fn new_is_not_pressed() {
@@ -687,8 +679,7 @@ mod momentary_push_button_tests {
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed =
-            SimulationTestBed::new(|_| TestAircraft::new(MomentaryPushButton::new("TEST")));
+        let mut test_bed = SimulationTestBed::from(MomentaryPushButton::new("TEST"));
         test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();

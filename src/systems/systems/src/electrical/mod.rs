@@ -345,15 +345,13 @@ mod tests {
     mod electrical_bus_tests {
         use super::*;
         use crate::simulation::{
-            test::{SimulationTestBed, TestAircraft},
+            test::{ElementCtorFn, SimulationTestBed, TestAircraft},
             Aircraft,
         };
 
         #[test]
         fn writes_its_state() {
-            let mut test_bed = SimulationTestBed::new(|electricity| {
-                TestAircraft::new(electrical_bus(electricity))
-            });
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(electrical_bus));
             test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_AC_2_BUS_IS_POWERED"));
@@ -510,7 +508,7 @@ mod tests {
         use super::*;
         use crate::{
             electrical::test::TestElectricitySource,
-            simulation::test::{SimulationTestBed, TestAircraft},
+            simulation::test::{ElementCtorFn, SimulationTestBed},
         };
 
         #[test]
@@ -622,8 +620,7 @@ mod tests {
 
         #[test]
         fn writes_its_state() {
-            let mut test_bed =
-                SimulationTestBed::new(|electricity| TestAircraft::new(contactor(electricity)));
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(contactor));
             test_bed.run();
 
             assert!(test_bed.contains_key("ELEC_CONTACTOR_TEST_IS_CLOSED"));
