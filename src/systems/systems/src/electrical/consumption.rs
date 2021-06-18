@@ -258,7 +258,7 @@ mod tests {
             test_bed.run();
 
             assert!(test_bed
-                .aircraft_mut()
+                .aircraft()
                 .consumption_equals(Power::new::<watt>(0.)));
         }
 
@@ -291,7 +291,7 @@ mod tests {
             test_bed.run();
 
             assert!(test_bed
-                .aircraft_mut()
+                .aircraft()
                 .consumption_within_range(input * 0.9, input * 1.1));
         }
 
@@ -330,7 +330,7 @@ mod tests {
             test_bed.run();
 
             assert!(test_bed
-                .aircraft_mut()
+                .aircraft()
                 .consumption_equals(Power::new::<watt>(0.)));
         }
     }

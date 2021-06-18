@@ -161,6 +161,10 @@ mod transformer_rectifier_tests {
             self.test_bed.aircraft_mut()
         }
 
+        fn aircraft(&mut self) -> &TestAircraft {
+            self.test_bed.aircraft()
+        }
+
         fn transformer_rectifier_is_powered(&self) -> bool {
             self.test_bed
                 .aircraft()
@@ -331,7 +335,7 @@ mod transformer_rectifier_tests {
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft_mut().transformer_rectifier_consumption(),
+            test_bed.aircraft().transformer_rectifier_consumption(),
             Power::new::<watt>(0.)
         );
     }
@@ -344,7 +348,7 @@ mod transformer_rectifier_tests {
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft_mut().transformer_rectifier_consumption(),
+            test_bed.aircraft().transformer_rectifier_consumption(),
             Power::new::<watt>(0.)
         );
     }
@@ -359,7 +363,7 @@ mod transformer_rectifier_tests {
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft_mut().transformer_rectifier_consumption(),
+            test_bed.aircraft().transformer_rectifier_consumption(),
             Power::new::<watt>(200.)
         );
     }

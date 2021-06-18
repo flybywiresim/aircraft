@@ -1766,8 +1766,8 @@ mod tests {
                 Self { test_bed }
             }
 
-            fn aircraft_mut(&mut self) -> &mut A320HydraulicsTestAircraft {
-                self.test_bed.aircraft_mut()
+            fn aircraft(&self) -> &A320HydraulicsTestAircraft {
+                self.test_bed.aircraft()
             }
 
             fn run_one_tick(self) -> Self {
@@ -1892,8 +1892,8 @@ mod tests {
                 self.test_bed.read_f64("A32NX_HYD_RAT_RPM")
             }
 
-            fn rat_deploy_commanded(&mut self) -> bool {
-                self.test_bed.aircraft_mut().is_rat_commanded_to_deploy()
+            fn rat_deploy_commanded(&self) -> bool {
+                self.test_bed.aircraft().is_rat_commanded_to_deploy()
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -2341,21 +2341,21 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            assert!(!test_bed.aircraft_mut().is_nws_pin_inserted());
+            assert!(!test_bed.aircraft().is_nws_pin_inserted());
 
             test_bed = test_bed.set_pushback_state(true).run_one_tick();
-            assert!(test_bed.aircraft_mut().is_nws_pin_inserted());
+            assert!(test_bed.aircraft().is_nws_pin_inserted());
 
             test_bed = test_bed
                 .set_pushback_state(false)
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.aircraft_mut().is_nws_pin_inserted());
+            assert!(test_bed.aircraft().is_nws_pin_inserted());
 
             test_bed = test_bed.set_pushback_state(false).run_waiting_for(
                 A320PowerTransferUnitController::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
             );
 
-            assert!(!test_bed.aircraft_mut().is_nws_pin_inserted());
+            assert!(!test_bed.aircraft().is_nws_pin_inserted());
         }
 
         #[test]
@@ -2366,19 +2366,19 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            assert!(!test_bed.aircraft_mut().is_cargo_powering_yellow_epump());
+            assert!(!test_bed.aircraft().is_cargo_powering_yellow_epump());
 
             test_bed = test_bed.set_cargo_door_state(1.0).run_one_tick();
-            assert!(test_bed.aircraft_mut().is_cargo_powering_yellow_epump());
+            assert!(test_bed.aircraft().is_cargo_powering_yellow_epump());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.aircraft_mut().is_cargo_powering_yellow_epump());
+            assert!(test_bed.aircraft().is_cargo_powering_yellow_epump());
 
             test_bed = test_bed.run_waiting_for(
                 A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             );
 
-            assert!(!test_bed.aircraft_mut().is_cargo_powering_yellow_epump());
+            assert!(!test_bed.aircraft().is_cargo_powering_yellow_epump());
         }
 
         #[test]

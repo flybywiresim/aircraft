@@ -629,7 +629,7 @@ mod tests {
 
                 if assert_is_closed {
                     assert!(
-                        self.test_bed.aircraft_mut().battery_contactor_is_closed(),
+                        self.test_bed.aircraft().battery_contactor_is_closed(),
                         "Battery contactor didn't close within the expected time frame.
                             Is the battery bus at a high enough voltage and the battery not full?"
                     );

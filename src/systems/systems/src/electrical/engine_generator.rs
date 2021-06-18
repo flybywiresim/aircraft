@@ -390,8 +390,12 @@ mod tests {
                 Ratio::new::<percent>(self.test_bed.read_f64("ELEC_ENG_GEN_1_LOAD"))
             }
 
-            fn aircraft(&mut self) -> &mut TestAircraft {
+            fn aircraft_mut(&mut self) -> &mut TestAircraft {
                 self.test_bed.aircraft_mut()
+            }
+
+            fn aircraft(&self) -> &TestAircraft {
+                self.test_bed.aircraft()
             }
 
             fn generator_is_powered(&mut self) -> bool {
@@ -521,7 +525,7 @@ mod tests {
         fn when_engine_running_but_idg_disconnected_provides_no_output() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().disconnect_idg();
+            test_bed.aircraft_mut().disconnect_idg();
             test_bed.run();
 
             assert!(!test_bed.generator_is_powered());
@@ -531,7 +535,7 @@ mod tests {
         fn when_engine_running_but_generator_off_provides_no_output() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().gen_push_button_off();
+            test_bed.aircraft_mut().gen_push_button_off();
             test_bed.run();
 
             assert!(!test_bed.generator_is_powered());
@@ -541,7 +545,7 @@ mod tests {
         fn when_engine_running_but_fire_push_button_released_provides_no_output() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().release_fire_push_button();
+            test_bed.aircraft_mut().release_fire_push_button();
             test_bed.run();
 
             assert!(!test_bed.generator_is_powered());
@@ -559,7 +563,7 @@ mod tests {
         fn when_engine_running_but_idg_disconnected_frequency_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().disconnect_idg();
+            test_bed.aircraft_mut().disconnect_idg();
             test_bed.run();
 
             assert!(!test_bed.frequency_is_normal());
@@ -569,7 +573,7 @@ mod tests {
         fn when_engine_running_but_generator_off_frequency_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().gen_push_button_off();
+            test_bed.aircraft_mut().gen_push_button_off();
             test_bed.run();
 
             assert!(!test_bed.frequency_is_normal());
@@ -579,7 +583,7 @@ mod tests {
         fn when_engine_running_but_fire_push_button_released_frequency_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().release_fire_push_button();
+            test_bed.aircraft_mut().release_fire_push_button();
             test_bed.run();
 
             assert!(!test_bed.frequency_is_normal());
@@ -605,7 +609,7 @@ mod tests {
         fn when_engine_running_but_idg_disconnected_potential_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().disconnect_idg();
+            test_bed.aircraft_mut().disconnect_idg();
             test_bed.run();
 
             assert!(!test_bed.potential_is_normal());
@@ -615,7 +619,7 @@ mod tests {
         fn when_engine_running_but_generator_off_provides_potential_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().gen_push_button_off();
+            test_bed.aircraft_mut().gen_push_button_off();
             test_bed.run();
 
             assert!(!test_bed.potential_is_normal());
@@ -625,7 +629,7 @@ mod tests {
         fn when_engine_running_but_fire_push_button_released_potential_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().release_fire_push_button();
+            test_bed.aircraft_mut().release_fire_push_button();
             test_bed.run();
 
             assert!(!test_bed.potential_is_normal());
@@ -651,7 +655,7 @@ mod tests {
         fn when_engine_running_but_idg_disconnected_has_no_load() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().disconnect_idg();
+            test_bed.aircraft_mut().disconnect_idg();
             test_bed.run();
 
             assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
@@ -661,7 +665,7 @@ mod tests {
         fn when_engine_running_but_generator_off_has_no_load() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().gen_push_button_off();
+            test_bed.aircraft_mut().gen_push_button_off();
             test_bed.run();
 
             assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
@@ -671,7 +675,7 @@ mod tests {
         fn when_engine_running_but_fire_push_button_released_has_no_load() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().release_fire_push_button();
+            test_bed.aircraft_mut().release_fire_push_button();
             test_bed.run();
 
             assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
@@ -689,7 +693,9 @@ mod tests {
         fn when_engine_running_and_potential_used_has_load() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.aircraft().power_demand(Power::new::<watt>(50000.));
+            test_bed
+                .aircraft_mut()
+                .power_demand(Power::new::<watt>(50000.));
             test_bed.run();
 
             assert!(test_bed.load() > Ratio::new::<percent>(0.));
@@ -700,7 +706,7 @@ mod tests {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
             test_bed
-                .aircraft()
+                .aircraft_mut()
                 .power_demand(Power::new::<watt>(90000. / 0.8));
             test_bed.run();
 
@@ -712,7 +718,7 @@ mod tests {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
             test_bed
-                .aircraft()
+                .aircraft_mut()
                 .power_demand(Power::new::<watt>((90000. / 0.8) + 1.));
             test_bed.run();
 
@@ -724,7 +730,7 @@ mod tests {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
             test_bed
-                .aircraft()
+                .aircraft_mut()
                 .power_demand(Power::new::<watt>((90000. / 0.8) + 1.));
 
             test_bed.run();
@@ -760,7 +766,7 @@ mod tests {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
             test_bed.run();
 
-            test_bed.aircraft().shutdown_engine();
+            test_bed.aircraft_mut().shutdown_engine();
 
             test_bed.run();
 

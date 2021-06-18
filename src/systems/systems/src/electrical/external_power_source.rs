@@ -142,8 +142,8 @@ mod external_power_source_tests {
                 .ext_pwr_is_powered(self.test_bed.electricity())
         }
 
-        fn aircraft(&mut self) -> &mut TestAircraft {
-            self.test_bed.aircraft_mut()
+        fn aircraft(&mut self) -> &TestAircraft {
+            self.test_bed.aircraft()
         }
     }
 

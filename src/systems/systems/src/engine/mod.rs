@@ -66,7 +66,7 @@ mod engine_fire_overhead_panel_tests {
         test_bed.write_bool("FIRE_BUTTON_ENG1", false);
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().element().is_released(1), false);
+        assert_eq!(test_bed.element().is_released(1), false);
     }
 
     #[test]

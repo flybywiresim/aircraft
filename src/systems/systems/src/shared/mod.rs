@@ -344,7 +344,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.set_delta(Duration::from_millis(1_000));
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().gate_output(), false);
+        assert_eq!(test_bed.aircraft().gate_output(), false);
     }
 
     #[test]
@@ -360,7 +360,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.set_delta(Duration::from_millis(1_000));
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().gate_output(), false);
+        assert_eq!(test_bed.aircraft().gate_output(), false);
     }
 
     #[test]
@@ -376,7 +376,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.set_delta(Duration::from_millis(1_000));
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().gate_output(), true);
+        assert_eq!(test_bed.aircraft().gate_output(), true);
     }
 
     #[test]
@@ -398,7 +398,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.set_delta(Duration::from_millis(200));
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().gate_output(), false);
+        assert_eq!(test_bed.aircraft().gate_output(), false);
     }
 }
 
@@ -462,7 +462,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.aircraft_mut().set_expression(true);
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().gate_output(), true);
+        assert_eq!(test_bed.aircraft().gate_output(), true);
     }
 
     #[test]
@@ -478,7 +478,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.set_delta(Duration::from_millis(1_000));
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().gate_output(), true);
+        assert_eq!(test_bed.aircraft().gate_output(), true);
     }
 
     #[test]
@@ -495,7 +495,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.set_delta(Duration::from_millis(1_000));
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().gate_output(), false);
+        assert_eq!(test_bed.aircraft().gate_output(), false);
     }
 
     #[test]
@@ -517,7 +517,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.set_delta(Duration::from_millis(200));
         test_bed.run();
 
-        assert_eq!(test_bed.aircraft_mut().gate_output(), true);
+        assert_eq!(test_bed.aircraft().gate_output(), true);
     }
 }
 
