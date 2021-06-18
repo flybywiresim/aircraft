@@ -1,7 +1,12 @@
 import {Feet, Latitude, Longitude} from "../../../types";
 
 declare global {
-    class LatLong {
+    interface LatLongData {
+        lat: Latitude,
+        long: Longitude,
+    }
+
+    class LatLong implements LatLongData {
         constructor(latitude: Latitude, longitude: Longitude);
         constructor(data: { lat: Latitude, long: Longitude });
 
