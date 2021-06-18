@@ -348,7 +348,7 @@ mod tests {
                 consumption::PowerConsumer, ElectricalBus, ElectricalBusType, Electricity,
             },
             simulation::{
-                test::{SimulationTestBed, TestBed, TestBedFns},
+                test::{SimulationTestBed, TestBed},
                 Aircraft,
             },
         };
@@ -393,7 +393,9 @@ mod tests {
                 self.query_elec(|a, elec| a.generator_is_powered(elec))
             }
         }
-        impl TestBed<TestAircraft> for EngineGeneratorTestBed {
+        impl TestBed for EngineGeneratorTestBed {
+            type Aircraft = TestAircraft;
+
             fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
                 &self.test_bed
             }
@@ -775,7 +777,7 @@ mod tests {
 
     #[cfg(test)]
     mod integrated_drive_generator_tests {
-        use crate::simulation::test::{SimulationTestBed, TestBedFns};
+        use crate::simulation::test::{SimulationTestBed, TestBed};
 
         use super::*;
         use std::time::Duration;

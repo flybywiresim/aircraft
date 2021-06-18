@@ -97,7 +97,7 @@ mod static_inverter_tests {
             ElectricalBusType, Electricity,
         },
         simulation::{
-            test::{SimulationTestBed, TestBed, TestBedFns},
+            test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElementVisitor, UpdateContext,
         },
     };
@@ -134,7 +134,9 @@ mod static_inverter_tests {
             self.query_elec(|a, elec| a.static_inverter_is_powered(elec))
         }
     }
-    impl TestBed<TestAircraft> for StaticInverterTestBed {
+    impl TestBed for StaticInverterTestBed {
+        type Aircraft = TestAircraft;
+
         fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
             &self.test_bed
         }

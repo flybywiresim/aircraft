@@ -352,7 +352,7 @@ pub mod tests {
         },
         shared::{to_bool, ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
         simulation::{
-            test::{SimulationTestBed, TestBed, TestBedFns},
+            test::{SimulationTestBed, TestBed},
             Aircraft,
         },
     };
@@ -404,7 +404,7 @@ pub mod tests {
         }
     }
 
-    struct AuxiliaryPowerUnitTestAircraft {
+    pub struct AuxiliaryPowerUnitTestAircraft {
         dc_bat_bus_electricity_source: TestElectricitySource,
         dc_bat_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
@@ -919,7 +919,9 @@ pub mod tests {
             self.query(|a| a.power_consumption())
         }
     }
-    impl TestBed<AuxiliaryPowerUnitTestAircraft> for AuxiliaryPowerUnitTestBed {
+    impl TestBed for AuxiliaryPowerUnitTestBed {
+        type Aircraft = AuxiliaryPowerUnitTestAircraft;
+
         fn test_bed(&self) -> &SimulationTestBed<AuxiliaryPowerUnitTestAircraft> {
             &self.test_bed
         }

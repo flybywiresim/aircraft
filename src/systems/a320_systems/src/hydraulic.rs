@@ -1460,7 +1460,6 @@ mod tests {
         use systems::shared::EmergencyElectricalState;
         use systems::shared::PotentialOrigin;
         use systems::simulation::test::TestBed;
-        use systems::simulation::test::TestBedFns;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, length::foot, ratio::percent,
@@ -2173,7 +2172,9 @@ mod tests {
                 self
             }
         }
-        impl TestBed<A320HydraulicsTestAircraft> for A320HydraulicsTestBed {
+        impl TestBed for A320HydraulicsTestBed {
+            type Aircraft = A320HydraulicsTestAircraft;
+
             fn test_bed(&self) -> &SimulationTestBed<A320HydraulicsTestAircraft> {
                 &self.test_bed
             }

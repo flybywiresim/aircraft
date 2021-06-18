@@ -8,37 +8,12 @@ use super::{
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext,
 };
 
-pub trait TestBed<T: Aircraft> {
-    fn test_bed(&self) -> &SimulationTestBed<T>;
-    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<T>;
-}
+pub trait TestBed {
+    type Aircraft: Aircraft;
 
-pub trait TestBedFns<T> {
-    /// Runs a single [Simulation] tick on the contained [Aircraft].
-    fn run(&mut self);
-    fn run_with_delta(&mut self, delta: Duration);
+    fn test_bed(&self) -> &SimulationTestBed<Self::Aircraft>;
+    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<Self::Aircraft>;
 
-    fn command<U: FnOnce(&mut T)>(&mut self, func: U);
-    fn query<U: Fn(&T) -> V, V>(&self, func: U) -> V;
-    fn query_elec<U: Fn(&T, &Electricity) -> V, V>(&self, func: U) -> V;
-
-    fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity);
-    fn indicated_airspeed(&mut self) -> Velocity;
-    fn set_indicated_altitude(&mut self, indicated_altitude: Length);
-    fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature);
-    fn set_on_ground(&mut self, on_ground: bool);
-
-    fn write_bool(&mut self, name: &str, value: bool);
-    fn write_f64(&mut self, name: &str, value: f64);
-    fn read_bool(&mut self, name: &str) -> bool;
-    fn read_f64(&mut self, name: &str) -> f64;
-    fn contains_key(&self, name: &str) -> bool;
-}
-
-impl<T: Aircraft, U> TestBedFns<T> for U
-where
-    U: TestBed<T>,
-{
     fn run(&mut self) {
         self.test_bed_mut().run();
     }
@@ -47,15 +22,15 @@ where
         self.test_bed_mut().run_with_delta(delta);
     }
 
-    fn command<V: FnOnce(&mut T)>(&mut self, func: V) {
+    fn command<V: FnOnce(&mut Self::Aircraft)>(&mut self, func: V) {
         self.test_bed_mut().command(func);
     }
 
-    fn query<V: Fn(&T) -> W, W>(&self, func: V) -> W {
+    fn query<V: Fn(&Self::Aircraft) -> W, W>(&self, func: V) -> W {
         self.test_bed().query(func)
     }
 
-    fn query_elec<V: Fn(&T, &Electricity) -> W, W>(&self, func: V) -> W {
+    fn query_elec<V: Fn(&Self::Aircraft, &Electricity) -> W, W>(&self, func: V) -> W {
         self.test_bed().query_elec(func)
     }
 
@@ -223,7 +198,9 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.reader_writer.contains_key(name)
     }
 }
-impl<T: Aircraft> TestBed<T> for SimulationTestBed<T> {
+impl<T: Aircraft> TestBed for SimulationTestBed<T> {
+    type Aircraft = T;
+
     fn test_bed(&self) -> &SimulationTestBed<T> {
         self
     }

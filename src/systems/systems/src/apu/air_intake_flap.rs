@@ -112,7 +112,7 @@ mod air_intake_flap_tests {
     use crate::electrical::ElectricalBus;
     use crate::electrical::Electricity;
     use crate::shared::{ElectricalBusType, PotentialOrigin, PowerConsumptionReport};
-    use crate::simulation::test::TestBedFns;
+    use crate::simulation::test::TestBed;
     use crate::simulation::SimulationElementVisitor;
     use crate::simulation::{test::SimulationTestBed, Aircraft, SimulationElement};
     use ntest::assert_about_eq;

@@ -151,7 +151,7 @@ mod tests {
         use crate::{
             electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
             simulation::{
-                test::{SimulationTestBed, TestBedFns},
+                test::{SimulationTestBed, TestBed},
                 Aircraft,
             },
         };

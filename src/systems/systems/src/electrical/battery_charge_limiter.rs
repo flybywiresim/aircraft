@@ -573,7 +573,7 @@ mod tests {
                 Potential, PotentialOrigin,
             },
             simulation::{
-                test::{SimulationTestBed, TestBed, TestBedFns},
+                test::{SimulationTestBed, TestBed},
                 Aircraft, SimulationElementVisitor,
             },
         };
@@ -793,7 +793,9 @@ mod tests {
                 self
             }
         }
-        impl TestBed<TestAircraft> for BatteryChargeLimiterTestBed {
+        impl TestBed for BatteryChargeLimiterTestBed {
+            type Aircraft = TestAircraft;
+
             fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
                 &self.test_bed
             }

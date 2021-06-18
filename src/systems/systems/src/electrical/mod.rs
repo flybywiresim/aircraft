@@ -345,7 +345,7 @@ mod tests {
     mod electrical_bus_tests {
         use super::*;
         use crate::simulation::{
-            test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBedFns},
+            test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBed},
             Aircraft,
         };
 
@@ -504,7 +504,7 @@ mod tests {
         use super::*;
         use crate::{
             electrical::test::TestElectricitySource,
-            simulation::test::{ElementCtorFn, SimulationTestBed, TestBedFns},
+            simulation::test::{ElementCtorFn, SimulationTestBed, TestBed},
         };
 
         #[test]
@@ -645,7 +645,7 @@ mod tests {
     mod current_state_writer_tests {
         use super::*;
         use crate::simulation::{
-            test::{SimulationTestBed, TestBedFns},
+            test::{SimulationTestBed, TestBed},
             Aircraft,
         };
 

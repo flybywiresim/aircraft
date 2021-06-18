@@ -97,7 +97,7 @@ mod external_power_source_tests {
     use crate::{
         electrical::Electricity,
         simulation::{
-            test::{SimulationTestBed, TestBed, TestBedFns},
+            test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElementVisitor,
         },
     };
@@ -138,7 +138,9 @@ mod external_power_source_tests {
             self.query_elec(|a, elec| a.ext_pwr_is_powered(elec))
         }
     }
-    impl TestBed<TestAircraft> for ExternalPowerTestBed {
+    impl TestBed for ExternalPowerTestBed {
+        type Aircraft = TestAircraft;
+
         fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
             &self.test_bed
         }

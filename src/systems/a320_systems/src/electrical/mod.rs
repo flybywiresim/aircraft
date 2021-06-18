@@ -404,7 +404,7 @@ impl EmergencyElectricalRatPushButton for A320EmergencyElectricalOverheadPanel {
 #[cfg(test)]
 mod a320_electrical {
     use super::*;
-    use systems::simulation::test::{ElementCtorFn, SimulationTestBed, TestBedFns};
+    use systems::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
     #[test]
     fn writes_its_state() {
@@ -432,7 +432,7 @@ mod a320_electrical_circuit_tests {
             PotentialOrigin,
         },
         simulation::{
-            test::{SimulationTestBed, TestBed, TestBedFns},
+            test::{SimulationTestBed, TestBed},
             Aircraft,
         },
     };
@@ -2744,7 +2744,9 @@ mod a320_electrical_circuit_tests {
             )
         }
     }
-    impl TestBed<A320ElectricalTestAircraft> for A320ElectricalTestBed {
+    impl TestBed for A320ElectricalTestBed {
+        type Aircraft = A320ElectricalTestAircraft;
+
         fn test_bed(&self) -> &SimulationTestBed<A320ElectricalTestAircraft> {
             &self.test_bed
         }

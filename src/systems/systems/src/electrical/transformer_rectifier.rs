@@ -119,7 +119,7 @@ mod transformer_rectifier_tests {
             ElectricalBusType, Electricity, PotentialOrigin,
         },
         simulation::{
-            test::{SimulationTestBed, TestBed, TestBedFns},
+            test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElementVisitor, UpdateContext,
         },
     };
@@ -160,7 +160,9 @@ mod transformer_rectifier_tests {
             self.query_elec(|a, elec| a.transformer_rectifier_is_powered(elec))
         }
     }
-    impl TestBed<TestAircraft> for TransformerRectifierTestBed {
+    impl TestBed for TransformerRectifierTestBed {
+        type Aircraft = TestAircraft;
+
         fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
             &self.test_bed
         }

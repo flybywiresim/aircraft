@@ -48,7 +48,7 @@ impl Default for EngineFireOverheadPanel {
 
 #[cfg(test)]
 mod engine_fire_overhead_panel_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBedFns};
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     use super::*;
 

@@ -299,7 +299,7 @@ pub(crate) fn to_bool(value: f64) -> bool {
 mod delayed_true_logic_gate_tests {
     use super::*;
     use crate::electrical::Electricity;
-    use crate::simulation::test::{SimulationTestBed, TestBedFns};
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement};
 
     struct TestAircraft {
@@ -396,7 +396,7 @@ mod delayed_true_logic_gate_tests {
 mod delayed_false_logic_gate_tests {
     use super::*;
     use crate::electrical::Electricity;
-    use crate::simulation::test::{SimulationTestBed, TestBedFns};
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement};
 
     struct TestAircraft {

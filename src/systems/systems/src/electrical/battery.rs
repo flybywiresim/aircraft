@@ -243,7 +243,7 @@ mod tests {
                 ElectricalBusType, Electricity,
             },
             simulation::{
-                test::{SimulationTestBed, TestBed, TestBedFns},
+                test::{SimulationTestBed, TestBed},
                 Aircraft, SimulationElementVisitor, UpdateContext,
             },
         };
@@ -346,7 +346,9 @@ mod tests {
                 )
             }
         }
-        impl TestBed<TestAircraft> for BatteryTestBed {
+        impl TestBed for BatteryTestBed {
+            type Aircraft = TestAircraft;
+
             fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
                 &self.test_bed
             }

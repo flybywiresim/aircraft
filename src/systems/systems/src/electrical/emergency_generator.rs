@@ -121,7 +121,7 @@ mod emergency_generator_tests {
     use crate::{
         electrical::Electricity,
         simulation::{
-            test::{SimulationTestBed, TestBed, TestBedFns},
+            test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElementVisitor, UpdateContext,
         },
     };
@@ -148,7 +148,9 @@ mod emergency_generator_tests {
             self.query(|a| a.emer_gen_is_powered(self.test_bed.electricity()))
         }
     }
-    impl TestBed<TestAircraft> for EmergencyGeneratorTestBed {
+    impl TestBed for EmergencyGeneratorTestBed {
+        type Aircraft = TestAircraft;
+
         fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
             &self.test_bed
         }
