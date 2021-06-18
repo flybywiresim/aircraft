@@ -118,6 +118,7 @@
 1. [ATHR/FWC] Adapted take-off A/THR engagement and added thrust lever not set warning - @aguther (Andreas Guther)
 1. [TEXTURE] Added a white dot to the test button and corrected DISCH alignment on the fire panel - @ImenesFBW (Imenes)
 1. [ECAM] Added ISA DEV to ECAM - @BlueberryKing (BlueberryKing#6641)
+1. [AOC] Reworked airport handling on AOC Weather Request Page - @MisterChocker (Leon)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
