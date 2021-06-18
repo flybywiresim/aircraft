@@ -1,16 +1,17 @@
-# A320neo Custom Events
+# FlyByWire A32NX Custom K-Events
 
 ## Contents
 
 1. [Autopilot](#autopilot)
-    1. [Non internal events](#non-internal-events)
-    1. [Internal events - not to be used for mapping](#internal-events---not-to-be-used-for-mapping)
-1. [Throttle Mapping System](#throttle-mapping-system)
+   1. [Non internal events](#non-internal-events)
+   2. [Internal events - not to be used for mapping](#internal-events---not-to-be-used-for-mapping)
+2. [Throttle Mapping System](#throttle-mapping-system)
 
 ## Autopilot
+
 ### Non internal events
 
-| Name/ID                        | Description                                                                                                                                                                                           |
+| Name                           | Description                                                                                                                                                                                           |
 |:-------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | A32NX.FCU_AP_{index}_PUSH      | Trigger when button AP {index} is pushed on FCU                                                                                                                                                       |
 | A32NX.FCU_AP_DISCONNECT_PUSH   | Trigger of red AP disconnection button (sidestick)                                                                                                                                                    |
@@ -45,17 +46,17 @@
 
 ### Internal events - not to be used for mapping
 
-| Name/ID                        | Description                                                                                                                                                                                           |
-|:-------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| A32NX.FCU_TO_AP_HDG_PUSH| Triggered after HDG knob is **pushed** on FCU to notify autopilot |
-| A32NX.FCU_TO_AP_HDG_PULL| Triggered after HDG knob is **pulled** on FCU to notify autopilot |
-| A32NX.FCU_TO_AP_VS_PUSH| Triggered after V/S knob is **pushed** on FCU to notify autopilot |
-| A32NX.FCU_TO_AP_VS_PULL| Triggered after V/S knob is **pulled** on FCU to notify autopilot |
-| A32NX.ATHR_RESET_DISABLE| Resets permanently disabled A/THR system (after pressing ATHR disconnect for at least 15 s)
+| Name                     | Description                                                                                 |
+|:-------------------------|:--------------------------------------------------------------------------------------------|
+| A32NX.FCU_TO_AP_HDG_PUSH | Triggered after HDG knob is **pushed** on FCU to notify autopilot                           |
+| A32NX.FCU_TO_AP_HDG_PULL | Triggered after HDG knob is **pulled** on FCU to notify autopilot                           |
+| A32NX.FCU_TO_AP_VS_PUSH  | Triggered after V/S knob is **pushed** on FCU to notify autopilot                           |
+| A32NX.FCU_TO_AP_VS_PULL  | Triggered after V/S knob is **pulled** on FCU to notify autopilot                           |
+| A32NX.ATHR_RESET_DISABLE | Resets permanently disabled A/THR system (after pressing ATHR disconnect for at least 15 s) |
 
 ## Throttle Mapping System
 
-| Name/ID                                          | Description                                                                                             |
+| Name                                             | Description                                                                                             |
 |:-------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
 | A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE            | When triggered the throttle mapping configuration is loaded from **file**                               |
 | A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES | When triggered the throttle mapping configuration is **loaded** from **local variables** (to test them) |
