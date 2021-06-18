@@ -234,6 +234,15 @@ class FMCMainDisplay extends BaseAirliners {
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
 
+        /** It takes some time until origin and destination are known, placing this inside callback of the flight plan loader doesn't work */
+        setTimeout(() => {
+            const origin = this.flightPlanManager.getOrigin();
+            const dest = this.flightPlanManager.getDestination();
+            if (origin && origin.ident && dest && dest.ident) {
+                this.aocAirportList.init(origin.ident, dest.ident);
+            }
+        }, 1000);
+
         // Start the check routine for system health and status
         setInterval(() => {
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE && !this._destDataChecked) {
@@ -1525,6 +1534,7 @@ class FMCMainDisplay extends BaseAirliners {
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
+                                        this.aocAirportList.init(this.tmpOrigin, airportTo.ident);
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
                                         callback(true);
@@ -1621,6 +1631,7 @@ class FMCMainDisplay extends BaseAirliners {
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent);
         if (airportAltDest) {
             this.altDestination = airportAltDest;
+            this.aocAirportList.alternate = altDestIdent;
             this.tryUpdateDistanceToAlt();
             return true;
         }
