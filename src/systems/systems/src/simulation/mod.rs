@@ -281,10 +281,6 @@ impl<T: Aircraft> Simulation<T> {
         &self.electricity
     }
 
-    fn electricity_mut(&mut self) -> &mut Electricity {
-        &mut self.electricity
-    }
-
     fn aircraft(&self) -> &T {
         &self.aircraft
     }

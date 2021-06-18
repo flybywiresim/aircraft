@@ -43,7 +43,7 @@ impl Default for LandingGear {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestAircraft};
+    use crate::simulation::test::{SimulationTestBed, TestAircraft, TestBedFns};
 
     #[test]
     fn is_up_and_locked_returns_false_when_fully_down() {

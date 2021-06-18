@@ -450,7 +450,7 @@ impl SimulationElement for MomentaryPushButton {
 
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBedFns};
 
     use super::*;
 
@@ -477,7 +477,7 @@ mod on_off_fault_push_button_tests {
 
 #[cfg(test)]
 mod on_off_available_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBedFns};
 
     use super::*;
 
@@ -505,7 +505,7 @@ mod on_off_available_push_button_tests {
 
 #[cfg(test)]
 mod normal_altn_fault_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBedFns};
 
     use super::*;
 
@@ -533,7 +533,7 @@ mod normal_altn_fault_push_button_tests {
 
 #[cfg(test)]
 mod auto_off_fault_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBedFns};
 
     use super::*;
 
@@ -561,7 +561,7 @@ mod auto_off_fault_push_button_tests {
 
 #[cfg(test)]
 mod fault_release_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBedFns};
 
     use super::*;
 
@@ -609,7 +609,7 @@ mod fault_release_push_button_tests {
 
 #[cfg(test)]
 mod fire_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBedFns};
 
     use super::*;
 
@@ -650,7 +650,7 @@ mod fire_push_button_tests {
 #[cfg(test)]
 mod fault_indication_tests {
     use super::*;
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBedFns};
 
     #[test]
     fn new_does_not_have_fault() {
@@ -670,7 +670,7 @@ mod fault_indication_tests {
 #[cfg(test)]
 mod momentary_push_button_tests {
     use super::*;
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBedFns};
 
     #[test]
     fn new_is_not_pressed() {

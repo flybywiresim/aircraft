@@ -243,7 +243,8 @@ mod tests {
                 ElectricalBusType, Electricity,
             },
             simulation::{
-                test::SimulationTestBed, Aircraft, SimulationElementVisitor, UpdateContext,
+                test::{SimulationTestBed, TestBed, TestBedFns},
+                Aircraft, SimulationElementVisitor, UpdateContext,
             },
         };
         use std::time::Duration;
@@ -325,49 +326,33 @@ mod tests {
                 }
             }
 
-            fn with_delta(mut self, delta: Duration) -> Self {
-                self.test_bed = self.test_bed.with_delta(delta);
-                self
-            }
-
-            fn aircraft_mut(&mut self) -> &mut TestAircraft {
-                self.test_bed.aircraft_mut()
-            }
-
-            fn aircraft(&self) -> &TestAircraft {
-                self.test_bed.aircraft()
-            }
-
-            fn run(&mut self) {
-                self.test_bed.run();
-            }
-
             fn current_is_normal(&mut self, number: usize) -> bool {
-                self.test_bed
-                    .read_bool(&format!("ELEC_BAT_{}_CURRENT_NORMAL", number))
+                self.read_bool(&format!("ELEC_BAT_{}_CURRENT_NORMAL", number))
             }
 
             fn current(&mut self, number: usize) -> ElectricCurrent {
                 ElectricCurrent::new::<ampere>(
-                    self.test_bed
-                        .read_f64(&format!("ELEC_BAT_{}_CURRENT", number)),
+                    self.read_f64(&format!("ELEC_BAT_{}_CURRENT", number)),
                 )
             }
 
             fn potential_is_normal(&mut self, number: usize) -> bool {
-                self.test_bed
-                    .read_bool(&format!("ELEC_BAT_{}_POTENTIAL_NORMAL", number))
+                self.read_bool(&format!("ELEC_BAT_{}_POTENTIAL_NORMAL", number))
             }
 
             fn potential(&mut self, number: usize) -> ElectricPotential {
                 ElectricPotential::new::<volt>(
-                    self.test_bed
-                        .read_f64(&format!("ELEC_BAT_{}_POTENTIAL", number)),
+                    self.read_f64(&format!("ELEC_BAT_{}_POTENTIAL", number)),
                 )
             }
+        }
+        impl TestBed<TestAircraft> for BatteryTestBed {
+            fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
+                &self.test_bed
+            }
 
-            fn electricity(&self) -> &Electricity {
-                self.test_bed.electricity()
+            fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
+                &mut self.test_bed
             }
         }
 
@@ -510,9 +495,8 @@ mod tests {
             assert!(test_bed.potential(1) < input_potential,
                 "This test assumes the battery's potential is lower than the given input potential.");
 
-            test_bed
-                .aircraft_mut()
-                .supply_input_potential(input_potential);
+            test_bed.execute(|a| a.supply_input_potential(input_potential));
+
             test_bed.run();
 
             assert_eq!(test_bed.potential(1), input_potential);
@@ -529,9 +513,7 @@ mod tests {
             assert!(input_potential < test_bed.potential(1),
                 "This test assumes the battery's potential is higher than the given input potential.");
 
-            test_bed
-                .aircraft_mut()
-                .supply_input_potential(input_potential);
+            test_bed.execute(|a| a.supply_input_potential(input_potential));
             test_bed.run();
 
             assert!(input_potential < test_bed.potential(1));
@@ -541,9 +523,7 @@ mod tests {
         fn when_charging_current_is_normal() {
             let mut test_bed = BatteryTestBed::with_empty_batteries();
 
-            test_bed
-                .aircraft_mut()
-                .supply_input_potential(ElectricPotential::new::<volt>(28.));
+            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run();
 
             assert!(test_bed.current_is_normal(1));
@@ -553,9 +533,7 @@ mod tests {
         fn when_charging_battery_current_is_charge_current() {
             let mut test_bed = BatteryTestBed::with_half_charged_batteries();
 
-            test_bed
-                .aircraft_mut()
-                .supply_input_potential(ElectricPotential::new::<volt>(28.));
+            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run();
 
             assert!(test_bed.current(1) > ElectricCurrent::new::<ampere>(0.));
@@ -565,9 +543,7 @@ mod tests {
         fn when_discharging_slowly_current_is_normal() {
             let mut test_bed = BatteryTestBed::with_full_batteries();
 
-            test_bed
-                .aircraft_mut()
-                .power_demand(Power::new::<watt>(40.));
+            test_bed.execute(|a| a.power_demand(Power::new::<watt>(40.)));
             test_bed.run();
 
             assert!(test_bed.current_is_normal(1));
@@ -577,9 +553,7 @@ mod tests {
         fn when_discharging_quickly_current_is_abnormal() {
             let mut test_bed = BatteryTestBed::with_full_batteries();
 
-            test_bed
-                .aircraft_mut()
-                .power_demand(Power::new::<watt>(500.));
+            test_bed.execute(|a| a.power_demand(Power::new::<watt>(500.)));
             test_bed.run();
 
             assert!(!test_bed.current_is_normal(1));
@@ -589,9 +563,7 @@ mod tests {
         fn when_discharging_battery_current_is_discharge_current() {
             let mut test_bed = BatteryTestBed::with_full_batteries();
 
-            test_bed
-                .aircraft_mut()
-                .power_demand(Power::new::<watt>(100.));
+            test_bed.execute(|a| a.power_demand(Power::new::<watt>(100.)));
             test_bed.run();
 
             assert!(test_bed.current(1) < ElectricCurrent::new::<ampere>(0.))
@@ -599,150 +571,135 @@ mod tests {
 
         #[test]
         fn when_discharging_loses_charge() {
-            let mut test_bed =
-                BatteryTestBed::with_full_batteries().with_delta(Duration::from_secs(60));
+            let mut test_bed = BatteryTestBed::with_full_batteries();
 
-            let charge_prior_to_run = test_bed.aircraft_mut().battery_1_charge();
+            let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed
-                .aircraft_mut()
-                .power_demand(Power::new::<watt>(28. * 5.));
-            test_bed.run();
+            test_bed.execute(|a| a.power_demand(Power::new::<watt>(28. * 5.)));
+            test_bed.run_with_delta(Duration::from_secs(60));
 
-            assert!(test_bed.aircraft_mut().battery_1_charge() < charge_prior_to_run);
+            assert!(test_bed.query(|a| a.battery_1_charge()) < charge_prior_to_run);
         }
 
         #[test]
         fn when_charging_gains_charge() {
-            let mut test_bed =
-                BatteryTestBed::with_empty_batteries().with_delta(Duration::from_secs(60));
+            let mut test_bed = BatteryTestBed::with_empty_batteries();
 
-            let charge_prior_to_run = test_bed.aircraft().battery_1_charge();
+            let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed
-                .aircraft_mut()
-                .supply_input_potential(ElectricPotential::new::<volt>(28.));
-            test_bed.run();
+            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
+            test_bed.run_with_delta(Duration::from_secs(60));
 
-            assert!(test_bed.aircraft().battery_1_charge() > charge_prior_to_run);
+            assert!(test_bed.query(|a| a.battery_1_charge()) > charge_prior_to_run);
         }
 
         #[test]
         fn can_charge_beyond_rated_capacity() {
-            let mut test_bed =
-                BatteryTestBed::with_full_batteries().with_delta(Duration::from_secs(1_000));
+            let mut test_bed = BatteryTestBed::with_full_batteries();
 
-            let charge_prior_to_run = test_bed.aircraft().battery_1_charge();
+            let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed
-                .aircraft_mut()
-                .supply_input_potential(ElectricPotential::new::<volt>(28.));
-            test_bed.run();
+            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
+            test_bed.run_with_delta(Duration::from_secs(1_000));
 
-            assert!(test_bed.aircraft().battery_1_charge() > charge_prior_to_run);
+            assert!(test_bed.query(|a| a.battery_1_charge()) > charge_prior_to_run);
         }
 
         #[test]
         fn does_not_charge_when_input_potential_lower_than_battery_potential() {
-            let mut test_bed = BatteryTestBed::with_half_charged_batteries()
-                .with_delta(Duration::from_secs(1_000));
+            let mut test_bed = BatteryTestBed::with_half_charged_batteries();
 
-            let charge_prior_to_run = test_bed.aircraft().battery_1_charge();
+            let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed
-                .aircraft_mut()
-                .supply_input_potential(ElectricPotential::new::<volt>(10.));
-            test_bed.run();
+            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(10.)));
+            test_bed.run_with_delta(Duration::from_secs(1_000));
 
-            assert_eq!(test_bed.aircraft().battery_1_charge(), charge_prior_to_run);
+            assert_eq!(
+                test_bed.query(|a| a.battery_1_charge()),
+                charge_prior_to_run
+            );
         }
 
         #[test]
         fn when_neither_charging_nor_discharging_charge_remains_equal() {
-            let mut test_bed = BatteryTestBed::with_half_charged_batteries()
-                .with_delta(Duration::from_secs(1_000));
+            let mut test_bed = BatteryTestBed::with_half_charged_batteries();
 
-            let charge_prior_to_run = test_bed.aircraft().battery_1_charge();
+            let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs(1_000));
 
-            assert_eq!(test_bed.aircraft().battery_1_charge(), charge_prior_to_run);
+            assert_eq!(
+                test_bed.query(|a| a.battery_1_charge()),
+                charge_prior_to_run
+            );
         }
 
         #[test]
         fn when_neither_charging_nor_discharging_current_is_zero() {
-            let mut test_bed = BatteryTestBed::with_half_charged_batteries()
-                .with_delta(Duration::from_secs(1_000));
+            let mut test_bed = BatteryTestBed::with_half_charged_batteries();
 
-            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs(1_000));
 
             assert_eq!(test_bed.current(1), ElectricCurrent::new::<ampere>(0.));
         }
 
         #[test]
         fn cannot_discharge_below_zero() {
-            let mut test_bed =
-                BatteryTestBed::with_nearly_empty_batteries().with_delta(Duration::from_secs(50));
+            let mut test_bed = BatteryTestBed::with_nearly_empty_batteries();
 
-            test_bed
-                .aircraft_mut()
-                .power_demand(Power::new::<watt>(5000.));
-            test_bed.run();
+            test_bed.execute(|a| a.power_demand(Power::new::<watt>(5000.)));
+            test_bed.run_with_delta(Duration::from_secs(50));
 
             assert_eq!(
-                test_bed.aircraft().battery_1_charge(),
+                test_bed.query(|a| a.battery_1_charge()),
                 ElectricCharge::new::<ampere_hour>(0.)
             );
         }
 
         #[test]
         fn dissimilar_charged_batteries_in_parallel_deplete() {
-            let mut test_bed = BatteryTestBed::with_nearly_empty_dissimilarly_charged_batteries()
-                .with_delta(Duration::from_secs(1));
+            let mut test_bed = BatteryTestBed::with_nearly_empty_dissimilarly_charged_batteries();
 
-            test_bed
-                .aircraft_mut()
-                .power_demand(Power::new::<watt>(10.));
-            test_bed.aircraft_mut().close_battery_2_contactor();
+            test_bed.execute(|a| a.power_demand(Power::new::<watt>(10.)));
+            test_bed.execute(|a| a.close_battery_2_contactor());
 
             for _ in 0..15 {
-                test_bed.run();
+                test_bed.run_with_delta(Duration::from_secs(1));
             }
 
             assert!(
-                test_bed.aircraft().battery_1_charge()
+                test_bed.query(|a| a.battery_1_charge())
                     < ElectricCharge::new::<ampere_hour>(0.000000001)
             );
             assert!(
-                test_bed.aircraft().battery_2_charge()
+                test_bed.query(|a| a.battery_2_charge())
                     < ElectricCharge::new::<ampere_hour>(0.000000001)
             );
-            assert!(!test_bed
-                .aircraft()
-                .bat_bus_is_powered(test_bed.electricity()));
+            assert!(!test_bed.query_elec(|a, elec| a.bat_bus_is_powered(elec)));
         }
 
         #[test]
         fn batteries_charge_each_other_until_relatively_equal_charge() {
-            let mut test_bed =
-                BatteryTestBed::with_full_and_empty_battery().with_delta(Duration::from_secs(120));
+            let mut test_bed = BatteryTestBed::with_full_and_empty_battery();
 
-            let original_charge = test_bed.aircraft().battery_1_charge();
+            let original_charge = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed.aircraft_mut().close_battery_2_contactor();
+            test_bed.execute(|a| a.close_battery_2_contactor());
 
             for _ in 0..100 {
-                test_bed.run();
+                test_bed.run_with_delta(Duration::from_secs(120));
             }
 
             // For now we assume the batteries are perfect at charging and discharging without any power loss.
             assert!(
-                (test_bed.aircraft().battery_1_charge() - test_bed.aircraft().battery_2_charge())
-                    .abs()
+                (test_bed.query(|a| a.battery_1_charge())
+                    - test_bed.query(|a| a.battery_2_charge()))
+                .abs()
                     < ElectricCharge::new::<ampere_hour>(0.1)
             );
             assert!(
-                (test_bed.aircraft().battery_1_charge() + test_bed.aircraft().battery_2_charge()
+                (test_bed.query(|a| a.battery_1_charge())
+                    + test_bed.query(|a| a.battery_2_charge())
                     - original_charge)
                     .abs()
                     < ElectricCharge::new::<ampere_hour>(0.001)

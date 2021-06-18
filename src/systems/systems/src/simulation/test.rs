@@ -1,8 +1,5 @@
 use std::{collections::HashMap, time::Duration};
-use uom::si::{
-    acceleration::foot_per_second_squared, f64::*, length::foot,
-    thermodynamic_temperature::degree_celsius, velocity::knot,
-};
+use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
 
 use crate::electrical::Electricity;
 
@@ -11,6 +8,101 @@ use super::{
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext,
 };
 
+pub trait TestBed<T: Aircraft> {
+    fn test_bed(&self) -> &SimulationTestBed<T>;
+    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<T>;
+}
+
+pub trait TestBedFns<T> {
+    /// Runs a single [Simulation] tick on the contained [Aircraft].
+    fn run(&mut self);
+    fn run_with_delta(&mut self, delta: Duration);
+
+    fn execute<U: FnOnce(&mut T)>(&mut self, func: U);
+    fn query<U: Fn(&T) -> V, V>(&self, func: U) -> V;
+    fn query_elec<U: Fn(&T, &Electricity) -> V, V>(&self, func: U) -> V;
+
+    fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity);
+    fn indicated_airspeed(&mut self) -> Velocity;
+    fn set_indicated_altitude(&mut self, indicated_altitude: Length);
+    fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature);
+    fn set_on_ground(&mut self, on_ground: bool);
+
+    fn write_bool(&mut self, name: &str, value: bool);
+    fn write_f64(&mut self, name: &str, value: f64);
+    fn read_bool(&mut self, name: &str) -> bool;
+    fn read_f64(&mut self, name: &str) -> f64;
+    fn contains_key(&self, name: &str) -> bool;
+}
+
+impl<T: Aircraft, U> TestBedFns<T> for U
+where
+    U: TestBed<T>,
+{
+    fn run(&mut self) {
+        self.test_bed_mut().run();
+    }
+
+    fn run_with_delta(&mut self, delta: Duration) {
+        self.test_bed_mut().run_with_delta(delta);
+    }
+
+    fn execute<V: FnOnce(&mut T)>(&mut self, func: V) {
+        self.test_bed_mut().execute(func);
+    }
+
+    fn query<V: Fn(&T) -> W, W>(&self, func: V) -> W {
+        self.test_bed().query(func)
+    }
+
+    fn query_elec<V: Fn(&T, &Electricity) -> W, W>(&self, func: V) -> W {
+        self.test_bed().query_elec(func)
+    }
+
+    fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
+        self.test_bed_mut()
+            .set_indicated_airspeed(indicated_airspeed);
+    }
+
+    fn indicated_airspeed(&mut self) -> Velocity {
+        self.test_bed_mut().indicated_airspeed()
+    }
+
+    fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
+        self.test_bed_mut()
+            .set_indicated_altitude(indicated_altitude);
+    }
+
+    fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
+        self.test_bed_mut()
+            .set_ambient_temperature(ambient_temperature);
+    }
+
+    fn set_on_ground(&mut self, on_ground: bool) {
+        self.test_bed_mut().set_on_ground(on_ground);
+    }
+
+    fn write_bool(&mut self, name: &str, value: bool) {
+        self.test_bed_mut().write_bool(name, value);
+    }
+
+    fn write_f64(&mut self, name: &str, value: f64) {
+        self.test_bed_mut().write_f64(name, value);
+    }
+
+    fn read_bool(&mut self, name: &str) -> bool {
+        self.test_bed_mut().read_bool(name)
+    }
+
+    fn read_f64(&mut self, name: &str) -> f64 {
+        self.test_bed_mut().read_f64(name)
+    }
+
+    fn contains_key(&self, name: &str) -> bool {
+        self.test_bed().contains_key(name)
+    }
+}
+
 /// The simulation test bed handles the testing of [`Aircraft`] and [`SimulationElement`]
 /// by running a full simulation tick on them.
 ///
@@ -18,14 +110,12 @@ use super::{
 /// [`SimulationElement`]: ../trait.SimulationElement.html
 pub struct SimulationTestBed<T: Aircraft> {
     reader_writer: TestReaderWriter,
-    delta: Duration,
     simulation: Simulation<T>,
 }
 impl<T: Aircraft> SimulationTestBed<T> {
     pub fn new<U: FnOnce(&mut Electricity) -> T>(aircraft_ctor_fn: U) -> Self {
         let mut test_bed = Self {
             reader_writer: TestReaderWriter::new(),
-            delta: Duration::from_secs(1),
             simulation: Simulation::new(aircraft_ctor_fn),
         };
 
@@ -35,11 +125,6 @@ impl<T: Aircraft> SimulationTestBed<T> {
         test_bed.set_on_ground(false);
 
         test_bed
-    }
-
-    pub fn with_delta(mut self, delta: Duration) -> Self {
-        self.delta = delta;
-        self
     }
 
     /// Creates an instance seeded with the state found in the given element.
@@ -52,89 +137,99 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.simulation.accept(&mut visitor);
     }
 
-    /// Runs a single [Simulation] tick on the contained [Aircraft].
-    pub fn run(&mut self) {
-        self.simulation.tick(self.delta, &mut self.reader_writer)
+    /// Runs a single 1 second duration [Simulation] tick on the contained [Aircraft].
+    fn run(&mut self) {
+        self.run_with_delta(Duration::from_secs(1))
+    }
+
+    fn run_with_delta(&mut self, delta: Duration) {
+        self.simulation.tick(delta, &mut self.reader_writer);
     }
 
     pub fn electricity(&self) -> &Electricity {
         self.simulation.electricity()
     }
 
-    pub fn electricity_mut(&mut self) -> &mut Electricity {
-        self.simulation.electricity_mut()
-    }
-
     pub fn aircraft(&self) -> &T {
         self.simulation.aircraft()
     }
 
-    pub fn aircraft_mut(&mut self) -> &mut T {
+    fn aircraft_mut(&mut self) -> &mut T {
         self.simulation.aircraft_mut()
     }
 
-    pub fn set_delta(&mut self, delta: Duration) {
-        self.delta = delta;
+    fn execute<U: FnOnce(&mut T)>(&mut self, func: U) {
+        (func)(self.simulation.aircraft_mut())
     }
 
-    pub fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
+    fn query<U: Fn(&T) -> V, V>(&self, func: U) -> V {
+        (func)(self.simulation.aircraft())
+    }
+
+    fn query_elec<U: Fn(&T, &Electricity) -> V, V>(&self, func: U) -> V {
+        (func)(self.simulation.aircraft(), self.simulation.electricity())
+    }
+
+    fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
         self.reader_writer.write_f64(
             UpdateContext::INDICATED_AIRSPEED_KEY,
             indicated_airspeed.get::<knot>(),
         );
     }
 
-    pub fn indicated_airspeed(&mut self) -> Velocity {
+    fn indicated_airspeed(&mut self) -> Velocity {
         Velocity::new::<knot>(
             self.reader_writer
                 .read_f64(UpdateContext::INDICATED_AIRSPEED_KEY),
         )
     }
 
-    pub fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
+    fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
         self.reader_writer.write_f64(
             UpdateContext::INDICATED_ALTITUDE_KEY,
             indicated_altitude.get::<foot>(),
         );
     }
 
-    pub fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
+    fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
         self.reader_writer.write_f64(
             UpdateContext::AMBIENT_TEMPERATURE_KEY,
             ambient_temperature.get::<degree_celsius>(),
         );
     }
 
-    pub fn set_on_ground(&mut self, on_ground: bool) {
+    fn set_on_ground(&mut self, on_ground: bool) {
         self.reader_writer
             .write_bool(UpdateContext::IS_ON_GROUND_KEY, on_ground);
     }
 
-    pub fn set_long_acceleration(&mut self, accel: Acceleration) {
-        self.reader_writer.write_f64(
-            UpdateContext::ACCEL_BODY_Z_KEY,
-            accel.get::<foot_per_second_squared>(),
-        );
-    }
-
-    pub fn write_bool(&mut self, name: &str, value: bool) {
+    fn write_bool(&mut self, name: &str, value: bool) {
         self.reader_writer.write_bool(name, value);
     }
 
-    pub fn write_f64(&mut self, name: &str, value: f64) {
+    fn write_f64(&mut self, name: &str, value: f64) {
         self.reader_writer.write_f64(name, value);
     }
 
-    pub fn read_bool(&mut self, name: &str) -> bool {
+    fn read_bool(&mut self, name: &str) -> bool {
         self.reader_writer.read_bool(name)
     }
 
-    pub fn read_f64(&mut self, name: &str) -> f64 {
+    fn read_f64(&mut self, name: &str) -> f64 {
         self.reader_writer.read_f64(name)
     }
 
-    pub fn contains_key(&self, name: &str) -> bool {
+    fn contains_key(&self, name: &str) -> bool {
         self.reader_writer.contains_key(name)
+    }
+}
+impl<T: Aircraft> TestBed<T> for SimulationTestBed<T> {
+    fn test_bed(&self) -> &SimulationTestBed<T> {
+        self
+    }
+
+    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<T> {
+        self
     }
 }
 impl<T: SimulationElement> SimulationTestBed<TestAircraft<T>> {

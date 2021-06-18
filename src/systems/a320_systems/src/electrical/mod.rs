@@ -404,7 +404,7 @@ impl EmergencyElectricalRatPushButton for A320EmergencyElectricalOverheadPanel {
 #[cfg(test)]
 mod a320_electrical {
     use super::*;
-    use systems::simulation::test::{ElementCtorFn, SimulationTestBed};
+    use systems::simulation::test::{ElementCtorFn, SimulationTestBed, TestBedFns};
 
     #[test]
     fn writes_its_state() {
@@ -431,7 +431,10 @@ mod a320_electrical_circuit_tests {
             ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
             PotentialOrigin,
         },
-        simulation::{test::SimulationTestBed, Aircraft},
+        simulation::{
+            test::{SimulationTestBed, TestBed, TestBedFns},
+            Aircraft,
+        },
     };
     use uom::si::f64::*;
     use uom::si::{electric_potential::volt, length::foot, ratio::percent, velocity::knot};
@@ -2375,7 +2378,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn running_engine(mut self, number: usize) -> Self {
-            self.test_bed.aircraft_mut().running_engine(number);
+            self.execute(|a| a.running_engine(number));
 
             self = self.without_triggering_emergency_elec(|x| {
                 x.run_waiting_for(Duration::from_millis(
@@ -2387,7 +2390,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn stopped_engine(mut self, number: usize) -> Self {
-            self.test_bed.aircraft_mut().stopped_engine(number);
+            self.execute(|a| a.stopped_engine(number));
             self
         }
 
@@ -2396,35 +2399,34 @@ mod a320_electrical_circuit_tests {
         }
 
         fn running_apu(mut self) -> Self {
-            self.test_bed.aircraft_mut().running_apu();
+            self.execute(|a| a.running_apu());
             self
         }
 
         fn connected_external_power(mut self) -> Self {
-            self.test_bed.write_bool("EXTERNAL POWER AVAILABLE:1", true);
+            self.write_bool("EXTERNAL POWER AVAILABLE:1", true);
 
             self.without_triggering_emergency_elec(|x| x.run())
         }
 
         fn empty_battery_1(mut self) -> Self {
-            self.test_bed.aircraft_mut().empty_battery_1();
+            self.execute(|a| a.empty_battery_1());
             self
         }
 
         fn empty_battery_2(mut self) -> Self {
-            self.test_bed.aircraft_mut().empty_battery_2();
+            self.execute(|a| a.empty_battery_2());
             self
         }
 
         fn airspeed(mut self, ias: Velocity) -> Self {
-            self.test_bed.set_indicated_airspeed(ias);
+            self.set_indicated_airspeed(ias);
             self
         }
 
         fn on_the_ground(mut self) -> Self {
-            self.test_bed
-                .set_indicated_altitude(Length::new::<foot>(0.));
-            self.test_bed.set_on_ground(true);
+            self.set_indicated_altitude(Length::new::<foot>(0.));
+            self.set_on_ground(true);
             self
         }
 
@@ -2446,59 +2448,52 @@ mod a320_electrical_circuit_tests {
         }
 
         fn failed_tr_1(mut self) -> Self {
-            self.test_bed.aircraft_mut().failed_tr_1();
+            self.execute(|a| a.failed_tr_1());
             self
         }
 
         fn failed_tr_2(mut self) -> Self {
-            self.test_bed.aircraft_mut().failed_tr_2();
+            self.execute(|a| a.failed_tr_2());
             self
         }
 
         fn running_emergency_generator(mut self) -> Self {
-            self.test_bed.aircraft_mut().running_emergency_generator();
+            self.execute(|a| a.running_emergency_generator());
             self.run_waiting_for(Duration::from_secs(100))
         }
 
         fn gen_off(mut self, number: usize) -> Self {
-            self.test_bed
-                .write_bool(&format!("OVHD_ELEC_ENG_GEN_{}_PB_IS_ON", number), false);
+            self.write_bool(&format!("OVHD_ELEC_ENG_GEN_{}_PB_IS_ON", number), false);
             self
         }
 
         fn released_engine_fire_push_button(mut self, engine_number: usize) -> Self {
-            self.test_bed
-                .aircraft_mut()
-                .release_engine_fire_push_button(engine_number);
+            self.execute(|a| a.release_engine_fire_push_button(engine_number));
             self
         }
 
         fn gen_1_line_off(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON", false);
+            self.write_bool("OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON", false);
             self
         }
 
         fn apu_gen_off(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_ELEC_APU_GEN_PB_IS_ON", false);
+            self.write_bool("OVHD_ELEC_APU_GEN_PB_IS_ON", false);
             self
         }
 
         fn ext_pwr_on(mut self) -> Self {
-            self.test_bed.write_bool("OVHD_ELEC_EXT_PWR_PB_IS_ON", true);
+            self.write_bool("OVHD_ELEC_EXT_PWR_PB_IS_ON", true);
             self
         }
 
         fn ext_pwr_off(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_ELEC_EXT_PWR_PB_IS_ON", false);
+            self.write_bool("OVHD_ELEC_EXT_PWR_PB_IS_ON", false);
             self
         }
 
         fn ac_ess_feed_altn(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL", false);
+            self.write_bool("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL", false);
             self
         }
 
@@ -2511,14 +2506,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn bat(mut self, number: usize, auto: bool) -> Self {
-            self.test_bed
-                .write_bool(&format!("OVHD_ELEC_BAT_{}_PB_IS_AUTO", number), auto);
+            self.write_bool(&format!("OVHD_ELEC_BAT_{}_PB_IS_AUTO", number), auto);
             self
         }
 
         fn bus_tie(mut self, auto: bool) -> Self {
-            self.test_bed
-                .write_bool("OVHD_ELEC_BUS_TIE_PB_IS_AUTO", auto);
+            self.write_bool("OVHD_ELEC_BUS_TIE_PB_IS_AUTO", auto);
             self
         }
 
@@ -2531,47 +2524,41 @@ mod a320_electrical_circuit_tests {
         }
 
         fn commercial_off(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_ELEC_COMMERCIAL_PB_IS_ON", false);
+            self.write_bool("OVHD_ELEC_COMMERCIAL_PB_IS_ON", false);
             self
         }
 
         fn galy_and_cab_off(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO", false);
+            self.write_bool("OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO", false);
             self
         }
 
         fn apu_master_sw_pb_on(mut self) -> Self {
-            self.test_bed.aircraft_mut().set_apu_master_sw_pb_on();
+            self.execute(|a| a.set_apu_master_sw_pb_on());
             self
         }
 
         fn apu_start_pb_on(mut self) -> Self {
-            self.test_bed.aircraft_mut().set_apu_start_pb_on();
+            self.execute(|a| a.set_apu_start_pb_on());
             self
         }
 
         fn rat_and_emer_gen_man_on_pressed(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED", true);
+            self.write_bool("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED", true);
             self
         }
 
         fn command_closing_of_start_contactors(mut self) -> Self {
-            self.test_bed
-                .aircraft_mut()
-                .command_closing_of_start_contactors();
+            self.execute(|a| a.command_closing_of_start_contactors());
             self
         }
 
         fn apu_start_contactors_closed(&mut self) -> bool {
-            self.test_bed
-                .read_bool("ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED")
+            self.read_bool("ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED")
         }
 
         fn apu_start_motor_is_powered(&self) -> bool {
-            self.test_bed.aircraft().apu_start_motor_is_powered()
+            self.query(|a| a.apu_start_motor_is_powered())
         }
 
         fn ac_bus_output(&self, number: u8) -> Ref<Potential> {
@@ -2677,31 +2664,28 @@ mod a320_electrical_circuit_tests {
         }
 
         fn ac_ess_feed_has_fault(&mut self) -> bool {
-            self.test_bed
-                .read_bool("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT")
+            self.read_bool("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT")
         }
 
         fn gen_has_fault(&mut self, number: usize) -> bool {
-            self.test_bed
-                .read_bool(&format!("OVHD_ELEC_ENG_GEN_{}_PB_HAS_FAULT", number))
+            self.read_bool(&format!("OVHD_ELEC_ENG_GEN_{}_PB_HAS_FAULT", number))
         }
 
         fn rat_and_emer_gen_has_fault(&mut self) -> bool {
-            self.test_bed
-                .read_bool("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT")
+            self.read_bool("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT")
         }
 
         fn galley_is_shed(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_GALLEY_IS_SHED")
+            self.read_bool("ELEC_GALLEY_IS_SHED")
         }
 
         fn both_ac_ess_feed_contactors_open(&mut self) -> bool {
-            !self.test_bed.read_bool("ELEC_CONTACTOR_3XC1_IS_CLOSED")
-                && !self.test_bed.read_bool("ELEC_CONTACTOR_3XC2_IS_CLOSED")
+            !self.read_bool("ELEC_CONTACTOR_3XC1_IS_CLOSED")
+                && !self.read_bool("ELEC_CONTACTOR_3XC2_IS_CLOSED")
         }
 
         fn dc_bus_2_tie_contactor_is_open(&mut self) -> bool {
-            !self.test_bed.read_bool("ELEC_CONTACTOR_1PC2_IS_CLOSED")
+            !self.read_bool("ELEC_CONTACTOR_1PC2_IS_CLOSED")
         }
 
         fn run(self) -> Self {
@@ -2709,8 +2693,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn run_waiting_for(mut self, delta: Duration) -> Self {
-            self.test_bed.set_delta(delta);
-            self.test_bed.run();
+            self.run_with_delta(delta);
 
             // Sadly it's impossible for some electrical origins such as
             // the generators to know their output potential before a single
@@ -2720,8 +2703,7 @@ mod a320_electrical_circuit_tests {
             // generator contactor to close when its electrical parameters are
             // outside of normal parameters, we have to run a second tick before
             // the potential has flown through the system in the way we expected.
-            self.test_bed.set_delta(Duration::from_secs(0));
-            self.test_bed.run();
+            self.run_with_delta(Duration::from_secs(0));
 
             self
         }
@@ -2731,8 +2713,7 @@ mod a320_electrical_circuit_tests {
         /// which only occurs in a single tick and would be hidden by
         /// run or run_waiting_for, which executes two ticks.
         fn run_once(mut self) -> Self {
-            self.test_bed.set_delta(Duration::from_secs(1));
-            self.test_bed.run();
+            self.run_with_delta(Duration::from_secs(1));
 
             self
         }
@@ -2742,13 +2723,12 @@ mod a320_electrical_circuit_tests {
         /// by wrapping the functions that enable such a power sources we ensure it cannot
         /// trigger the deployment of the RAT or start of EMER GEN.
         fn without_triggering_emergency_elec(mut self, mut func: impl FnMut(Self) -> Self) -> Self {
-            let ias = self.test_bed.indicated_airspeed();
-            self.test_bed
-                .set_indicated_airspeed(Velocity::new::<knot>(0.));
+            let ias = self.indicated_airspeed();
+            self.set_indicated_airspeed(Velocity::new::<knot>(0.));
 
             self = func(self);
 
-            self.test_bed.set_indicated_airspeed(ias);
+            self.set_indicated_airspeed(ias);
 
             self
         }
@@ -2762,6 +2742,15 @@ mod a320_electrical_circuit_tests {
                 A320AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS
                     - Duration::from_millis(1),
             )
+        }
+    }
+    impl TestBed<A320ElectricalTestAircraft> for A320ElectricalTestBed {
+        fn test_bed(&self) -> &SimulationTestBed<A320ElectricalTestAircraft> {
+            &self.test_bed
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<A320ElectricalTestAircraft> {
+            &mut self.test_bed
         }
     }
 }

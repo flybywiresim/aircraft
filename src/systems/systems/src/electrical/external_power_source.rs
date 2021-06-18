@@ -96,7 +96,10 @@ mod external_power_source_tests {
     use super::*;
     use crate::{
         electrical::Electricity,
-        simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
+        simulation::{
+            test::{SimulationTestBed, TestBed, TestBedFns},
+            Aircraft, SimulationElementVisitor,
+        },
     };
 
     struct ExternalPowerTestBed {
@@ -115,35 +118,33 @@ mod external_power_source_tests {
         }
 
         fn with_connected_external_power(mut self) -> Self {
-            self.test_bed.write_bool("EXTERNAL POWER AVAILABLE:1", true);
+            self.write_bool("EXTERNAL POWER AVAILABLE:1", true);
             self
         }
 
         fn disconnect_external_power(&mut self) {
-            self.test_bed
-                .write_bool("EXTERNAL POWER AVAILABLE:1", false);
-        }
-
-        fn run(&mut self) {
-            self.test_bed.run();
+            self.write_bool("EXTERNAL POWER AVAILABLE:1", false);
         }
 
         fn frequency_is_normal(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_EXT_PWR_FREQUENCY_NORMAL")
+            self.read_bool("ELEC_EXT_PWR_FREQUENCY_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_EXT_PWR_POTENTIAL_NORMAL")
+            self.read_bool("ELEC_EXT_PWR_POTENTIAL_NORMAL")
         }
 
         fn ext_pwr_is_powered(&self) -> bool {
-            self.test_bed
-                .aircraft()
-                .ext_pwr_is_powered(self.test_bed.electricity())
+            self.query_elec(|a, elec| a.ext_pwr_is_powered(elec))
+        }
+    }
+    impl TestBed<TestAircraft> for ExternalPowerTestBed {
+        fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
+            &self.test_bed
         }
 
-        fn aircraft(&mut self) -> &TestAircraft {
-            self.test_bed.aircraft()
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
+            &mut self.test_bed
         }
     }
 
@@ -252,9 +253,8 @@ mod external_power_source_tests {
 
         test_bed.run();
 
-        assert!(!test_bed
-            .aircraft()
-            .ext_pwr_output_within_normal_parameters_after_processing_power_consumption_report());
+        assert!(!test_bed.query(|a| a
+            .ext_pwr_output_within_normal_parameters_after_processing_power_consumption_report()));
     }
 
     #[test]
@@ -263,9 +263,8 @@ mod external_power_source_tests {
 
         test_bed.run();
 
-        assert!(test_bed
-            .aircraft()
-            .ext_pwr_output_within_normal_parameters_after_processing_power_consumption_report());
+        assert!(test_bed.query(|a| a
+            .ext_pwr_output_within_normal_parameters_after_processing_power_consumption_report()));
     }
 
     #[test]
@@ -283,9 +282,8 @@ mod external_power_source_tests {
         test_bed.disconnect_external_power();
         test_bed.run();
 
-        assert!(!test_bed
-            .aircraft()
-            .ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report());
+        assert!(!test_bed.query(|a| a
+            .ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report()));
     }
 
     #[test]

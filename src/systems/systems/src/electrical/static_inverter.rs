@@ -96,7 +96,10 @@ mod static_inverter_tests {
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus,
             ElectricalBusType, Electricity,
         },
-        simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor, UpdateContext},
+        simulation::{
+            test::{SimulationTestBed, TestBed, TestBedFns},
+            Aircraft, SimulationElementVisitor, UpdateContext,
+        },
     };
 
     struct StaticInverterTestBed {
@@ -119,30 +122,25 @@ mod static_inverter_tests {
             }
         }
 
-        fn run(&mut self) {
-            self.test_bed.run();
-        }
-
         fn frequency_is_normal(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_STAT_INV_FREQUENCY_NORMAL")
+            self.read_bool("ELEC_STAT_INV_FREQUENCY_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_STAT_INV_POTENTIAL_NORMAL")
+            self.read_bool("ELEC_STAT_INV_POTENTIAL_NORMAL")
         }
 
         fn static_inverter_is_powered(&self) -> bool {
-            self.test_bed
-                .aircraft()
-                .static_inverter_is_powered(self.test_bed.electricity())
+            self.query_elec(|a, elec| a.static_inverter_is_powered(elec))
+        }
+    }
+    impl TestBed<TestAircraft> for StaticInverterTestBed {
+        fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
+            &self.test_bed
         }
 
-        fn aircraft_mut(&mut self) -> &mut TestAircraft {
-            self.test_bed.aircraft_mut()
-        }
-
-        fn aircraft(&mut self) -> &TestAircraft {
-            self.test_bed.aircraft()
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
+            &mut self.test_bed
         }
     }
 
@@ -279,7 +277,7 @@ mod static_inverter_tests {
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft().static_inverter_consumption(),
+            test_bed.query(|a| a.static_inverter_consumption()),
             Power::new::<watt>(0.)
         );
     }
@@ -288,11 +286,11 @@ mod static_inverter_tests {
     fn when_powered_without_demand_has_no_consumption() {
         let mut test_bed = StaticInverterTestBed::with_powered_static_inverter();
 
-        test_bed.aircraft_mut().power_demand(Power::new::<watt>(0.));
+        test_bed.execute(|a| a.power_demand(Power::new::<watt>(0.)));
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft().static_inverter_consumption(),
+            test_bed.query(|a| a.static_inverter_consumption()),
             Power::new::<watt>(0.)
         );
     }
@@ -301,13 +299,11 @@ mod static_inverter_tests {
     fn when_powered_with_demand_has_consumption() {
         let mut test_bed = StaticInverterTestBed::with_powered_static_inverter();
 
-        test_bed
-            .aircraft_mut()
-            .power_demand(Power::new::<watt>(200.));
+        test_bed.execute(|a| a.power_demand(Power::new::<watt>(200.)));
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft().static_inverter_consumption(),
+            test_bed.query(|a| a.static_inverter_consumption()),
             Power::new::<watt>(200.)
         );
     }

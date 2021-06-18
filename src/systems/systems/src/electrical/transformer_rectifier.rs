@@ -118,7 +118,10 @@ mod transformer_rectifier_tests {
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus,
             ElectricalBusType, Electricity, PotentialOrigin,
         },
-        simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor, UpdateContext},
+        simulation::{
+            test::{SimulationTestBed, TestBed, TestBedFns},
+            Aircraft, SimulationElementVisitor, UpdateContext,
+        },
     };
 
     struct TransformerRectifierTestBed {
@@ -141,38 +144,29 @@ mod transformer_rectifier_tests {
             }
         }
 
-        fn run(&mut self) {
-            self.test_bed.run();
-        }
-
         fn current_is_normal(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_TR_1_CURRENT_NORMAL")
+            self.read_bool("ELEC_TR_1_CURRENT_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_TR_1_POTENTIAL_NORMAL")
+            self.read_bool("ELEC_TR_1_POTENTIAL_NORMAL")
         }
 
         fn current(&mut self) -> ElectricCurrent {
-            ElectricCurrent::new::<ampere>(self.test_bed.read_f64("ELEC_TR_1_CURRENT"))
-        }
-
-        fn aircraft_mut(&mut self) -> &mut TestAircraft {
-            self.test_bed.aircraft_mut()
-        }
-
-        fn aircraft(&mut self) -> &TestAircraft {
-            self.test_bed.aircraft()
+            ElectricCurrent::new::<ampere>(self.read_f64("ELEC_TR_1_CURRENT"))
         }
 
         fn transformer_rectifier_is_powered(&self) -> bool {
-            self.test_bed
-                .aircraft()
-                .transformer_rectifier_is_powered(self.test_bed.electricity())
+            self.query_elec(|a, elec| a.transformer_rectifier_is_powered(elec))
+        }
+    }
+    impl TestBed<TestAircraft> for TransformerRectifierTestBed {
+        fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
+            &self.test_bed
         }
 
-        fn contains_key(&self, name: &str) -> bool {
-            self.test_bed.contains_key(name)
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
+            &mut self.test_bed
         }
     }
 
@@ -271,7 +265,7 @@ mod transformer_rectifier_tests {
     fn when_powered_but_failed_has_no_output() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.aircraft_mut().fail_transformer_rectifier();
+        test_bed.execute(|a| a.fail_transformer_rectifier());
         test_bed.run();
 
         assert!(!test_bed.transformer_rectifier_is_powered());
@@ -290,9 +284,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_too_little_demand_current_is_not_normal() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed
-            .aircraft_mut()
-            .power_demand(Power::new::<watt>(5. * 28.));
+        test_bed.execute(|a| a.power_demand(Power::new::<watt>(5. * 28.)));
         test_bed.run();
 
         assert!(!test_bed.current_is_normal());
@@ -302,9 +294,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_enough_demand_current_is_normal() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed
-            .aircraft_mut()
-            .power_demand(Power::new::<watt>((5. * 28.) + 1.));
+        test_bed.execute(|a| a.power_demand(Power::new::<watt>((5. * 28.) + 1.)));
         test_bed.run();
 
         assert!(test_bed.current_is_normal());
@@ -335,7 +325,7 @@ mod transformer_rectifier_tests {
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft().transformer_rectifier_consumption(),
+            test_bed.query(|a| a.transformer_rectifier_consumption()),
             Power::new::<watt>(0.)
         );
     }
@@ -344,11 +334,11 @@ mod transformer_rectifier_tests {
     fn when_powered_without_demand_has_no_consumption() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.aircraft_mut().power_demand(Power::new::<watt>(0.));
+        test_bed.execute(|a| a.power_demand(Power::new::<watt>(0.)));
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft().transformer_rectifier_consumption(),
+            test_bed.query(|a| a.transformer_rectifier_consumption()),
             Power::new::<watt>(0.)
         );
     }
@@ -357,13 +347,11 @@ mod transformer_rectifier_tests {
     fn when_powered_with_demand_has_consumption() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed
-            .aircraft_mut()
-            .power_demand(Power::new::<watt>(200.));
+        test_bed.execute(|a| a.power_demand(Power::new::<watt>(200.)));
         test_bed.run();
 
         assert_eq!(
-            test_bed.aircraft().transformer_rectifier_consumption(),
+            test_bed.query(|a| a.transformer_rectifier_consumption()),
             Power::new::<watt>(200.)
         );
     }
@@ -372,9 +360,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_demand_current_is_based_on_demand() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed
-            .aircraft_mut()
-            .power_demand(Power::new::<watt>(200.));
+        test_bed.execute(|a| a.power_demand(Power::new::<watt>(200.)));
         test_bed.run();
 
         assert_eq!(

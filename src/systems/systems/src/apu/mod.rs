@@ -351,7 +351,10 @@ pub mod tests {
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus, Electricity,
         },
         shared::{to_bool, ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
-        simulation::{test::SimulationTestBed, Aircraft},
+        simulation::{
+            test::{SimulationTestBed, TestBed, TestBedFns},
+            Aircraft,
+        },
     };
 
     use super::*;
@@ -576,41 +579,37 @@ pub mod tests {
         }
 
         fn air_intake_flap_that_opens_in(mut self, duration: Duration) -> Self {
-            self.test_bed
-                .aircraft_mut()
-                .set_air_intake_flap_travel_time(duration);
+            self.execute(|a| a.set_air_intake_flap_travel_time(duration));
             self
         }
 
         pub fn power_demand(mut self, power: Power) -> Self {
-            self.test_bed.aircraft_mut().set_power_demand(power);
+            self.execute(|a| a.set_power_demand(power));
             self
         }
 
         fn master_on(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_APU_MASTER_SW_PB_IS_ON", true);
+            self.write_bool("OVHD_APU_MASTER_SW_PB_IS_ON", true);
             self
         }
 
         fn master_off(mut self) -> Self {
-            self.test_bed
-                .write_bool("OVHD_APU_MASTER_SW_PB_IS_ON", false);
+            self.write_bool("OVHD_APU_MASTER_SW_PB_IS_ON", false);
             self
         }
 
         fn start_on(mut self) -> Self {
-            self.test_bed.write_bool("OVHD_APU_START_PB_IS_ON", true);
+            self.write_bool("OVHD_APU_START_PB_IS_ON", true);
             self
         }
 
         fn start_off(mut self) -> Self {
-            self.test_bed.write_bool("OVHD_APU_START_PB_IS_ON", false);
+            self.write_bool("OVHD_APU_START_PB_IS_ON", false);
             self
         }
 
         fn bleed_air_off(mut self) -> Self {
-            self.test_bed.write_bool("OVHD_APU_BLEED_PB_IS_ON", false);
+            self.write_bool("OVHD_APU_BLEED_PB_IS_ON", false);
             self
         }
 
@@ -626,17 +625,17 @@ pub mod tests {
         }
 
         fn apu_gen_not_used(mut self) -> Self {
-            self.test_bed.aircraft_mut().set_apu_gen_is_used(false);
+            self.execute(|a| a.set_apu_gen_is_used(false));
             self
         }
 
         fn no_fuel_available(mut self) -> Self {
-            self.test_bed.aircraft_mut().set_has_fuel_remaining(false);
+            self.execute(|a| a.set_has_fuel_remaining(false));
             self
         }
 
         pub fn released_apu_fire_pb(mut self) -> Self {
-            self.test_bed.write_bool("FIRE_BUTTON_APU", true);
+            self.write_bool("FIRE_BUTTON_APU", true);
             self
         }
 
@@ -659,9 +658,7 @@ pub mod tests {
         }
 
         fn turbine_infinitely_running_at(mut self, n: Ratio) -> Self {
-            self.test_bed
-                .aircraft_mut()
-                .set_turbine_infinitely_running_at(n);
+            self.execute(|a| a.set_turbine_infinitely_running_at(n));
             self
         }
 
@@ -694,12 +691,12 @@ pub mod tests {
         }
 
         fn running_apu_with_bleed_air(mut self) -> Self {
-            self.test_bed.write_bool("OVHD_APU_BLEED_PB_IS_ON", true);
+            self.write_bool("OVHD_APU_BLEED_PB_IS_ON", true);
             self.running_apu()
         }
 
         fn running_apu_without_bleed_air(mut self) -> Self {
-            self.test_bed.write_bool("OVHD_APU_BLEED_PB_IS_ON", false);
+            self.write_bool("OVHD_APU_BLEED_PB_IS_ON", false);
             self.running_apu()
         }
 
@@ -714,17 +711,17 @@ pub mod tests {
         }
 
         fn unpowered_start_motor(mut self) -> Self {
-            self.test_bed.aircraft_mut().cut_start_motor_power();
+            self.execute(|a| a.cut_start_motor_power());
             self
         }
 
         fn unpowered_dc_bat_bus(mut self) -> Self {
-            self.test_bed.aircraft_mut().unpower_dc_bat_bus();
+            self.execute(|a| a.unpower_dc_bat_bus());
             self
         }
 
         fn powered_dc_bat_bus(mut self) -> Self {
-            self.test_bed.aircraft_mut().power_dc_bat_bus();
+            self.execute(|a| a.power_dc_bat_bus());
             self
         }
 
@@ -737,19 +734,14 @@ pub mod tests {
         }
 
         pub fn run(mut self, delta: Duration) -> Self {
-            self.test_bed
-                .set_ambient_temperature(self.ambient_temperature);
-            self.test_bed
-                .set_indicated_altitude(self.indicated_altitude);
+            self.set_ambient_temperature(self.ambient_temperature);
+            self.set_indicated_altitude(self.indicated_altitude);
 
             // As the APU update executes before power is distributed throughout
             // the aircraft, not all elements have received power yet if only one run
             // is performed. Thus we execute two runs, one without any time passing.
-            self.test_bed.set_delta(Duration::from_secs(0));
-            self.test_bed.run();
-
-            self.test_bed.set_delta(delta);
-            self.test_bed.run();
+            self.run_with_delta(Duration::from_secs(0));
+            self.run_with_delta(delta);
 
             self
         }
@@ -803,7 +795,7 @@ pub mod tests {
         }
 
         fn air_intake_flap_fully_open_raw(&mut self) -> f64 {
-            self.test_bed.read_f64("APU_FLAP_FULLY_OPEN")
+            self.read_f64("APU_FLAP_FULLY_OPEN")
         }
 
         fn is_air_intake_flap_fully_closed(&mut self) -> bool {
@@ -811,11 +803,11 @@ pub mod tests {
         }
 
         fn air_intake_flap_open_amount(&mut self) -> Ratio {
-            Ratio::new::<percent>(self.test_bed.read_f64("APU_FLAP_OPEN_PERCENTAGE"))
+            Ratio::new::<percent>(self.read_f64("APU_FLAP_OPEN_PERCENTAGE"))
         }
 
         pub fn n(&mut self) -> Ratio {
-            Ratio::new::<percent>(self.test_bed.read_f64("APU_N"))
+            Ratio::new::<percent>(self.read_f64("APU_N"))
         }
 
         fn turbine_is_shutdown(&mut self) -> bool {
@@ -823,19 +815,15 @@ pub mod tests {
         }
 
         fn egt(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(self.test_bed.read_f64("APU_EGT"))
+            ThermodynamicTemperature::new::<degree_celsius>(self.read_f64("APU_EGT"))
         }
 
         fn egt_warning_temperature(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(
-                self.test_bed.read_f64("APU_EGT_WARNING"),
-            )
+            ThermodynamicTemperature::new::<degree_celsius>(self.read_f64("APU_EGT_WARNING"))
         }
 
         fn egt_caution_temperature(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(
-                self.test_bed.read_f64("APU_EGT_CAUTION"),
-            )
+            ThermodynamicTemperature::new::<degree_celsius>(self.read_f64("APU_EGT_CAUTION"))
         }
 
         fn apu_is_available(&mut self) -> bool {
@@ -843,56 +831,54 @@ pub mod tests {
         }
 
         fn start_is_on(&mut self) -> bool {
-            self.test_bed.read_bool("OVHD_APU_START_PB_IS_ON")
+            self.read_bool("OVHD_APU_START_PB_IS_ON")
         }
 
         fn start_shows_available(&mut self) -> bool {
-            self.test_bed.read_bool("OVHD_APU_START_PB_IS_AVAILABLE")
+            self.read_bool("OVHD_APU_START_PB_IS_AVAILABLE")
         }
 
         fn master_has_fault(&mut self) -> bool {
-            self.test_bed.read_bool("OVHD_APU_MASTER_SW_PB_HAS_FAULT")
+            self.read_bool("OVHD_APU_MASTER_SW_PB_HAS_FAULT")
         }
 
         pub fn generator_is_unpowered(&self) -> bool {
-            self.test_bed
-                .aircraft()
-                .generator_is_unpowered(self.test_bed.electricity())
+            self.query_elec(|a, elec| a.generator_is_unpowered(elec))
         }
 
         pub fn potential(&mut self) -> ElectricPotential {
-            ElectricPotential::new::<volt>(self.test_bed.read_f64("ELEC_APU_GEN_1_POTENTIAL"))
+            ElectricPotential::new::<volt>(self.read_f64("ELEC_APU_GEN_1_POTENTIAL"))
         }
 
         pub fn potential_within_normal_range(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_APU_GEN_1_POTENTIAL_NORMAL")
+            self.read_bool("ELEC_APU_GEN_1_POTENTIAL_NORMAL")
         }
 
         pub fn frequency(&mut self) -> Frequency {
-            Frequency::new::<hertz>(self.test_bed.read_f64("ELEC_APU_GEN_1_FREQUENCY"))
+            Frequency::new::<hertz>(self.read_f64("ELEC_APU_GEN_1_FREQUENCY"))
         }
 
         pub fn frequency_within_normal_range(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_APU_GEN_1_FREQUENCY_NORMAL")
+            self.read_bool("ELEC_APU_GEN_1_FREQUENCY_NORMAL")
         }
 
         pub fn load(&mut self) -> Ratio {
-            Ratio::new::<percent>(self.test_bed.read_f64("ELEC_APU_GEN_1_LOAD"))
+            Ratio::new::<percent>(self.read_f64("ELEC_APU_GEN_1_LOAD"))
         }
 
         pub fn load_within_normal_range(&mut self) -> bool {
-            self.test_bed.read_bool("ELEC_APU_GEN_1_LOAD_NORMAL")
+            self.read_bool("ELEC_APU_GEN_1_LOAD_NORMAL")
         }
 
         fn should_close_start_contactors_commanded(&self) -> bool {
             matches!(
-                self.test_bed.aircraft().close_start_contactors_signal(),
+                self.query(|a| a.close_start_contactors_signal()),
                 Some(ContactorSignal::Close)
             )
         }
 
         fn close_start_contactors_signal(&self) -> Option<ContactorSignal> {
-            self.test_bed.aircraft().close_start_contactors_signal()
+            self.query(|a| a.close_start_contactors_signal())
         }
 
         fn has_fuel_low_pressure_fault(&mut self) -> bool {
@@ -900,37 +886,46 @@ pub mod tests {
         }
 
         fn fuel_low_pressure_fault_raw(&mut self) -> f64 {
-            self.test_bed.read_f64("APU_LOW_FUEL_PRESSURE_FAULT")
+            self.read_f64("APU_LOW_FUEL_PRESSURE_FAULT")
         }
 
         fn is_auto_shutdown(&mut self) -> bool {
-            self.test_bed.read_bool("APU_IS_AUTO_SHUTDOWN")
+            self.read_bool("APU_IS_AUTO_SHUTDOWN")
         }
 
         fn is_emergency_shutdown(&mut self) -> bool {
-            self.test_bed.read_bool("APU_IS_EMERGENCY_SHUTDOWN")
+            self.read_bool("APU_IS_EMERGENCY_SHUTDOWN")
         }
 
         fn is_inoperable(&mut self) -> bool {
-            self.test_bed.read_bool("ECAM_INOP_SYS_APU")
+            self.read_bool("ECAM_INOP_SYS_APU")
         }
 
         fn bleed_air_valve_is_open(&mut self) -> bool {
-            self.test_bed.read_bool("APU_BLEED_AIR_VALVE_OPEN")
+            self.read_bool("APU_BLEED_AIR_VALVE_OPEN")
         }
 
         fn apu_generator_output_within_normal_parameters(&self) -> bool {
-            self.test_bed.aircraft().apu_generator_output_within_normal_parameters_after_processing_power_consumption_report()
+            self.query(|a| a.apu_generator_output_within_normal_parameters_after_processing_power_consumption_report())
         }
 
         fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
             &self,
         ) -> bool {
-            self.test_bed.aircraft().apu_generator_output_within_normal_parameters_before_processing_power_consumption_report()
+            self.query(|a| a.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report())
         }
 
         fn power_consumption(&self) -> Power {
-            self.test_bed.aircraft().power_consumption()
+            self.query(|a| a.power_consumption())
+        }
+    }
+    impl TestBed<AuxiliaryPowerUnitTestAircraft> for AuxiliaryPowerUnitTestBed {
+        fn test_bed(&self) -> &SimulationTestBed<AuxiliaryPowerUnitTestAircraft> {
+            &self.test_bed
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<AuxiliaryPowerUnitTestAircraft> {
+            &mut self.test_bed
         }
     }
 

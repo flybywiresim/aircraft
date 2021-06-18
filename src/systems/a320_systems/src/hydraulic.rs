@@ -1459,6 +1459,8 @@ mod tests {
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
         use systems::shared::EmergencyElectricalState;
         use systems::shared::PotentialOrigin;
+        use systems::simulation::test::TestBed;
+        use systems::simulation::test::TestBedFns;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, length::foot, ratio::percent,
@@ -1766,10 +1768,6 @@ mod tests {
                 Self { test_bed }
             }
 
-            fn aircraft(&self) -> &A320HydraulicsTestAircraft {
-                self.test_bed.aircraft()
-            }
-
             fn run_one_tick(self) -> Self {
                 self.run_waiting_for(Duration::from_millis(
                     A320Hydraulic::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS,
@@ -1777,143 +1775,130 @@ mod tests {
             }
 
             fn run_waiting_for(mut self, delta: Duration) -> Self {
-                self.test_bed.set_delta(delta);
-                self.test_bed.run();
+                self.run_with_delta(delta);
                 self
             }
 
             fn is_green_edp_commanded_on(&self) -> bool {
-                self.test_bed.aircraft().is_green_edp_commanded_on()
+                self.query(|a| a.is_green_edp_commanded_on())
             }
 
             fn is_yellow_edp_commanded_on(&self) -> bool {
-                self.test_bed.aircraft().is_yellow_edp_commanded_on()
+                self.query(|a| a.is_yellow_edp_commanded_on())
             }
 
             fn is_ptu_enabled(&self) -> bool {
-                self.test_bed.aircraft().is_ptu_enabled()
+                self.query(|a| a.is_ptu_enabled())
             }
 
             fn is_blue_pressurised(&self) -> bool {
-                self.test_bed.aircraft().is_blue_pressurised()
+                self.query(|a| a.is_blue_pressurised())
             }
 
             fn is_green_pressurised(&self) -> bool {
-                self.test_bed.aircraft().is_green_pressurised()
+                self.query(|a| a.is_green_pressurised())
             }
 
             fn is_yellow_pressurised(&self) -> bool {
-                self.test_bed.aircraft().is_yellow_pressurised()
+                self.query(|a| a.is_yellow_pressurised())
             }
 
             fn green_pressure(&mut self) -> Pressure {
-                Pressure::new::<psi>(self.test_bed.read_f64("HYD_GREEN_PRESSURE"))
+                Pressure::new::<psi>(self.read_f64("HYD_GREEN_PRESSURE"))
             }
 
             fn blue_pressure(&mut self) -> Pressure {
-                Pressure::new::<psi>(self.test_bed.read_f64("HYD_BLUE_PRESSURE"))
+                Pressure::new::<psi>(self.read_f64("HYD_BLUE_PRESSURE"))
             }
 
             fn yellow_pressure(&mut self) -> Pressure {
-                Pressure::new::<psi>(self.test_bed.read_f64("HYD_YELLOW_PRESSURE"))
+                Pressure::new::<psi>(self.read_f64("HYD_YELLOW_PRESSURE"))
             }
 
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
-                Volume::new::<gallon>(self.test_bed.read_f64("HYD_YELLOW_RESERVOIR"))
+                Volume::new::<gallon>(self.read_f64("HYD_YELLOW_RESERVOIR"))
             }
 
             fn is_green_edp_press_low(&mut self) -> bool {
-                self.test_bed.read_bool("HYD_GREEN_EDPUMP_LOW_PRESS")
+                self.read_bool("HYD_GREEN_EDPUMP_LOW_PRESS")
             }
 
             fn is_green_edp_press_low_fault(&mut self) -> bool {
-                self.test_bed.read_bool("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT")
+                self.read_bool("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT")
             }
 
             fn is_yellow_edp_press_low_fault(&mut self) -> bool {
-                self.test_bed.read_bool("OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT")
+                self.read_bool("OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT")
             }
 
             fn is_yellow_edp_press_low(&mut self) -> bool {
-                self.test_bed.read_bool("HYD_YELLOW_EDPUMP_LOW_PRESS")
+                self.read_bool("HYD_YELLOW_EDPUMP_LOW_PRESS")
             }
 
             fn is_yellow_epump_press_low(&mut self) -> bool {
-                self.test_bed.read_bool("HYD_YELLOW_EPUMP_LOW_PRESS")
+                self.read_bool("HYD_YELLOW_EPUMP_LOW_PRESS")
             }
 
             fn is_blue_epump_press_low(&mut self) -> bool {
-                self.test_bed.read_bool("HYD_BLUE_EPUMP_LOW_PRESS")
+                self.read_bool("HYD_BLUE_EPUMP_LOW_PRESS")
             }
 
             fn is_blue_epump_press_low_fault(&mut self) -> bool {
-                self.test_bed.read_bool("OVHD_HYD_EPUMPB_PB_HAS_FAULT")
+                self.read_bool("OVHD_HYD_EPUMPB_PB_HAS_FAULT")
             }
 
             fn get_brake_left_yellow_pressure(&mut self) -> Pressure {
-                Pressure::new::<psi>(self.test_bed.read_f64("HYD_BRAKE_ALTN_LEFT_PRESS"))
+                Pressure::new::<psi>(self.read_f64("HYD_BRAKE_ALTN_LEFT_PRESS"))
             }
 
             fn get_brake_right_yellow_pressure(&mut self) -> Pressure {
-                Pressure::new::<psi>(self.test_bed.read_f64("HYD_BRAKE_ALTN_RIGHT_PRESS"))
+                Pressure::new::<psi>(self.read_f64("HYD_BRAKE_ALTN_RIGHT_PRESS"))
             }
 
             fn get_green_reservoir_volume(&mut self) -> Volume {
-                Volume::new::<gallon>(self.test_bed.read_f64("HYD_GREEN_RESERVOIR"))
+                Volume::new::<gallon>(self.read_f64("HYD_GREEN_RESERVOIR"))
             }
 
             fn get_blue_reservoir_volume(&mut self) -> Volume {
-                Volume::new::<gallon>(self.test_bed.read_f64("HYD_BLUE_RESERVOIR"))
+                Volume::new::<gallon>(self.read_f64("HYD_BLUE_RESERVOIR"))
             }
 
             fn get_brake_left_green_pressure(&mut self) -> Pressure {
-                Pressure::new::<psi>(self.test_bed.read_f64("HYD_BRAKE_NORM_LEFT_PRESS"))
+                Pressure::new::<psi>(self.read_f64("HYD_BRAKE_NORM_LEFT_PRESS"))
             }
 
             fn get_brake_right_green_pressure(&mut self) -> Pressure {
-                Pressure::new::<psi>(self.test_bed.read_f64("HYD_BRAKE_NORM_RIGHT_PRESS"))
+                Pressure::new::<psi>(self.read_f64("HYD_BRAKE_NORM_RIGHT_PRESS"))
             }
 
             fn get_brake_yellow_accumulator_pressure(&mut self) -> Pressure {
-                Pressure::new::<psi>(self.test_bed.read_f64("HYD_BRAKE_ALTN_ACC_PRESS"))
+                Pressure::new::<psi>(self.read_f64("HYD_BRAKE_ALTN_ACC_PRESS"))
             }
 
             fn get_brake_yellow_accumulator_fluid_volume(&self) -> Volume {
-                self.test_bed
-                    .aircraft()
-                    .get_yellow_brake_accumulator_fluid_volume()
+                self.query(|a| a.get_yellow_brake_accumulator_fluid_volume())
             }
 
             fn get_rat_position(&mut self) -> f64 {
-                self.test_bed.read_f64("HYD_RAT_STOW_POSITION")
+                self.read_f64("HYD_RAT_STOW_POSITION")
             }
 
             fn get_rat_rpm(&mut self) -> f64 {
-                self.test_bed.read_f64("A32NX_HYD_RAT_RPM")
+                self.read_f64("A32NX_HYD_RAT_RPM")
             }
 
             fn rat_deploy_commanded(&self) -> bool {
-                self.test_bed.aircraft().is_rat_commanded_to_deploy()
+                self.query(|a| a.is_rat_commanded_to_deploy())
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
-                !self.test_bed.read_bool("HYD_GREEN_FIRE_VALVE_OPENED")
-                    && !self
-                        .test_bed
-                        .aircraft()
-                        .hydraulics
-                        .green_loop
-                        .is_fire_shutoff_valve_opened()
+                !self.read_bool("HYD_GREEN_FIRE_VALVE_OPENED")
+                    && !self.query(|a| a.hydraulics.green_loop.is_fire_shutoff_valve_opened())
             }
 
             fn is_fire_valve_eng2_closed(&mut self) -> bool {
-                !self.test_bed.read_bool("HYD_YELLOW_FIRE_VALVE_OPENED")
-                    && !self
-                        .test_bed
-                        .aircraft()
-                        .hydraulics
-                        .yellow_loop
-                        .is_fire_shutoff_valve_opened()
+                !self.read_bool("HYD_YELLOW_FIRE_VALVE_OPENED")
+                    && !self.query(|a| a.hydraulics.yellow_loop.is_fire_shutoff_valve_opened())
             }
 
             fn engines_off(self) -> Self {
@@ -1921,20 +1906,16 @@ mod tests {
             }
 
             fn on_the_ground(mut self) -> Self {
-                self.test_bed
-                    .set_indicated_altitude(Length::new::<foot>(0.));
-                self.test_bed.set_on_ground(true);
-                self.test_bed
-                    .set_indicated_airspeed(Velocity::new::<knot>(5.));
+                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_on_ground(true);
+                self.set_indicated_airspeed(Velocity::new::<knot>(5.));
                 self
             }
 
             fn in_flight(mut self) -> Self {
-                self.test_bed.set_on_ground(false);
-                self.test_bed
-                    .set_indicated_altitude(Length::new::<foot>(2500.));
-                self.test_bed
-                    .set_indicated_airspeed(Velocity::new::<knot>(180.));
+                self.set_on_ground(false);
+                self.set_indicated_altitude(Length::new::<foot>(2500.));
+                self.set_indicated_airspeed(Velocity::new::<knot>(180.));
                 self.start_eng1(Ratio::new::<percent>(80.))
                     .start_eng2(Ratio::new::<percent>(80.))
                     .set_gear_up()
@@ -1942,22 +1923,22 @@ mod tests {
             }
 
             fn set_gear_compressed_switch(mut self, is_compressed: bool) -> Self {
-                self.test_bed.set_on_ground(is_compressed);
+                self.set_on_ground(is_compressed);
                 self
             }
 
             fn set_eng1_fire_button(mut self, is_active: bool) -> Self {
-                self.test_bed.write_bool("FIRE_BUTTON_ENG1", is_active);
+                self.write_bool("FIRE_BUTTON_ENG1", is_active);
                 self
             }
 
             fn set_eng2_fire_button(mut self, is_active: bool) -> Self {
-                self.test_bed.write_bool("FIRE_BUTTON_ENG2", is_active);
+                self.write_bool("FIRE_BUTTON_ENG2", is_active);
                 self
             }
 
             fn set_cargo_door_state(mut self, position: f64) -> Self {
-                self.test_bed.write_f64("EXIT OPEN:5", position);
+                self.write_f64("EXIT OPEN:5", position);
                 self
             }
 
@@ -1965,161 +1946,141 @@ mod tests {
                 if is_pushed_back {
                     let mut rng = rand::thread_rng();
 
-                    self.test_bed
-                        .write_f64("PUSHBACK ANGLE", rng.gen_range(0.0..0.1));
-                    self.test_bed.write_f64("PUSHBACK STATE", 0.);
+                    self.write_f64("PUSHBACK ANGLE", rng.gen_range(0.0..0.1));
+                    self.write_f64("PUSHBACK STATE", 0.);
                 } else {
-                    self.test_bed.write_f64("PUSHBACK STATE", 3.);
+                    self.write_f64("PUSHBACK STATE", 3.);
                 }
                 self
             }
 
             fn start_eng1(mut self, n2: Ratio) -> Self {
-                self.test_bed
-                    .write_bool("GENERAL ENG STARTER ACTIVE:1", true);
-                self.test_bed
-                    .write_f64("TURB ENG CORRECTED N2:1", n2.get::<percent>());
+                self.write_bool("GENERAL ENG STARTER ACTIVE:1", true);
+                self.write_f64("TURB ENG CORRECTED N2:1", n2.get::<percent>());
 
                 self
             }
 
             fn start_eng2(mut self, n2: Ratio) -> Self {
-                self.test_bed
-                    .write_bool("GENERAL ENG STARTER ACTIVE:2", true);
-                self.test_bed
-                    .write_f64("TURB ENG CORRECTED N2:2", n2.get::<percent>());
+                self.write_bool("GENERAL ENG STARTER ACTIVE:2", true);
+                self.write_f64("TURB ENG CORRECTED N2:2", n2.get::<percent>());
 
                 self
             }
 
             fn stop_eng1(mut self) -> Self {
-                self.test_bed
-                    .write_bool("GENERAL ENG STARTER ACTIVE:1", false);
-                self.test_bed.write_f64("TURB ENG CORRECTED N2:1", 0.);
+                self.write_bool("GENERAL ENG STARTER ACTIVE:1", false);
+                self.write_f64("TURB ENG CORRECTED N2:1", 0.);
 
                 self
             }
 
             fn stopping_eng1(mut self) -> Self {
-                self.test_bed
-                    .write_bool("GENERAL ENG STARTER ACTIVE:1", false);
-                self.test_bed.write_f64("TURB ENG CORRECTED N2:1", 25.);
+                self.write_bool("GENERAL ENG STARTER ACTIVE:1", false);
+                self.write_f64("TURB ENG CORRECTED N2:1", 25.);
 
                 self
             }
 
             fn stop_eng2(mut self) -> Self {
-                self.test_bed
-                    .write_bool("GENERAL ENG STARTER ACTIVE:2", false);
-                self.test_bed.write_f64("TURB ENG CORRECTED N2:2", 0.);
+                self.write_bool("GENERAL ENG STARTER ACTIVE:2", false);
+                self.write_f64("TURB ENG CORRECTED N2:2", 0.);
 
                 self
             }
 
             fn stopping_eng2(mut self) -> Self {
-                self.test_bed
-                    .write_bool("GENERAL ENG STARTER ACTIVE:2", false);
-                self.test_bed.write_f64("TURB ENG CORRECTED N2:2", 25.);
+                self.write_bool("GENERAL ENG STARTER ACTIVE:2", false);
+                self.write_f64("TURB ENG CORRECTED N2:2", 25.);
 
                 self
             }
 
             fn set_park_brake(mut self, is_set: bool) -> Self {
-                self.test_bed.write_bool("PARK_BRAKE_LEVER_POS", is_set);
+                self.write_bool("PARK_BRAKE_LEVER_POS", is_set);
                 self
             }
 
             fn set_gear_up(mut self) -> Self {
-                self.test_bed.write_f64("GEAR CENTER POSITION", 0.);
-                self.test_bed.write_bool("GEAR HANDLE POSITION", false);
+                self.write_f64("GEAR CENTER POSITION", 0.);
+                self.write_bool("GEAR HANDLE POSITION", false);
 
                 self
             }
 
             fn set_gear_down(mut self) -> Self {
-                self.test_bed.write_f64("GEAR CENTER POSITION", 100.);
-                self.test_bed.write_bool("GEAR HANDLE POSITION", true);
+                self.write_f64("GEAR CENTER POSITION", 100.);
+                self.write_bool("GEAR HANDLE POSITION", true);
 
                 self
             }
 
             fn set_anti_skid(mut self, is_set: bool) -> Self {
-                self.test_bed.write_bool("ANTISKID BRAKES ACTIVE", is_set);
+                self.write_bool("ANTISKID BRAKES ACTIVE", is_set);
                 self
             }
 
             fn set_yellow_e_pump(mut self, is_auto: bool) -> Self {
-                self.test_bed
-                    .write_bool("OVHD_HYD_EPUMPY_PB_IS_AUTO", is_auto);
+                self.write_bool("OVHD_HYD_EPUMPY_PB_IS_AUTO", is_auto);
                 self
             }
 
             fn set_blue_e_pump(mut self, is_auto: bool) -> Self {
-                self.test_bed
-                    .write_bool("OVHD_HYD_EPUMPB_PB_IS_AUTO", is_auto);
+                self.write_bool("OVHD_HYD_EPUMPB_PB_IS_AUTO", is_auto);
                 self
             }
 
             fn set_blue_e_pump_ovrd(mut self, is_on: bool) -> Self {
-                self.test_bed
-                    .write_bool("OVHD_HYD_EPUMPY_OVRD_PB_IS_ON", is_on);
+                self.write_bool("OVHD_HYD_EPUMPY_OVRD_PB_IS_ON", is_on);
                 self
             }
 
             fn set_green_ed_pump(mut self, is_auto: bool) -> Self {
-                self.test_bed
-                    .write_bool("OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO", is_auto);
+                self.write_bool("OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO", is_auto);
                 self
             }
 
             fn set_yellow_ed_pump(mut self, is_auto: bool) -> Self {
-                self.test_bed
-                    .write_bool("OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO", is_auto);
+                self.write_bool("OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO", is_auto);
                 self
             }
 
             fn set_ptu_state(mut self, is_auto: bool) -> Self {
-                self.test_bed.write_bool("OVHD_HYD_PTU_PB_IS_AUTO", is_auto);
+                self.write_bool("OVHD_HYD_PTU_PB_IS_AUTO", is_auto);
                 self
             }
 
             fn ac_bus_1_lost(mut self) -> Self {
-                self.test_bed.aircraft_mut().set_ac_bus_1_is_powered(false);
+                self.execute(|a| a.set_ac_bus_1_is_powered(false));
                 self
             }
 
             fn ac_bus_2_lost(mut self) -> Self {
-                self.test_bed.aircraft_mut().set_ac_bus_2_is_powered(false);
+                self.execute(|a| a.set_ac_bus_2_is_powered(false));
                 self
             }
 
             fn dc_ground_service_lost(mut self) -> Self {
-                self.test_bed
-                    .aircraft_mut()
-                    .set_dc_ground_service_is_powered(false);
+                self.execute(|a| a.set_dc_ground_service_is_powered(false));
                 self
             }
             fn dc_ground_service_avail(mut self) -> Self {
-                self.test_bed
-                    .aircraft_mut()
-                    .set_dc_ground_service_is_powered(true);
+                self.execute(|a| a.set_dc_ground_service_is_powered(true));
                 self
             }
 
             fn ac_ground_service_lost(mut self) -> Self {
-                self.test_bed
-                    .aircraft_mut()
-                    .set_ac_ground_service_is_powered(false);
+                self.execute(|a| a.set_ac_ground_service_is_powered(false));
                 self
             }
 
             fn dc_bus_2_lost(mut self) -> Self {
-                self.test_bed.aircraft_mut().set_dc_bus_2_is_powered(false);
+                self.execute(|a| a.set_dc_bus_2_is_powered(false));
                 self
             }
 
             fn dc_ess_lost(mut self) -> Self {
-                self.test_bed.aircraft_mut().set_dc_ess_is_powered(false);
+                self.execute(|a| a.set_dc_ess_is_powered(false));
                 self
             }
 
@@ -2150,7 +2111,7 @@ mod tests {
 
             fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
                 let scaled_value = position_percent.get::<percent>() / 100.;
-                self.test_bed.write_f64(name, scaled_value.min(1.).max(0.));
+                self.write_f64(name, scaled_value.min(1.).max(0.));
                 self
             }
 
@@ -2210,6 +2171,15 @@ mod tests {
                     .run_waiting_for(Duration::from_secs(1));
 
                 self
+            }
+        }
+        impl TestBed<A320HydraulicsTestAircraft> for A320HydraulicsTestBed {
+            fn test_bed(&self) -> &SimulationTestBed<A320HydraulicsTestAircraft> {
+                &self.test_bed
+            }
+
+            fn test_bed_mut(&mut self) -> &mut SimulationTestBed<A320HydraulicsTestAircraft> {
+                &mut self.test_bed
             }
         }
 
@@ -2341,21 +2311,21 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            assert!(!test_bed.aircraft().is_nws_pin_inserted());
+            assert!(!test_bed.query(|a| a.is_nws_pin_inserted()));
 
             test_bed = test_bed.set_pushback_state(true).run_one_tick();
-            assert!(test_bed.aircraft().is_nws_pin_inserted());
+            assert!(test_bed.query(|a| a.is_nws_pin_inserted()));
 
             test_bed = test_bed
                 .set_pushback_state(false)
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.aircraft().is_nws_pin_inserted());
+            assert!(test_bed.query(|a| a.is_nws_pin_inserted()));
 
             test_bed = test_bed.set_pushback_state(false).run_waiting_for(
                 A320PowerTransferUnitController::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
             );
 
-            assert!(!test_bed.aircraft().is_nws_pin_inserted());
+            assert!(!test_bed.query(|a| a.is_nws_pin_inserted()));
         }
 
         #[test]
@@ -2366,19 +2336,19 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            assert!(!test_bed.aircraft().is_cargo_powering_yellow_epump());
+            assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
             test_bed = test_bed.set_cargo_door_state(1.0).run_one_tick();
-            assert!(test_bed.aircraft().is_cargo_powering_yellow_epump());
+            assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.aircraft().is_cargo_powering_yellow_epump());
+            assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
             test_bed = test_bed.run_waiting_for(
                 A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             );
 
-            assert!(!test_bed.aircraft().is_cargo_powering_yellow_epump());
+            assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
         }
 
         #[test]

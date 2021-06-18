@@ -345,7 +345,7 @@ mod tests {
     mod electrical_bus_tests {
         use super::*;
         use crate::simulation::{
-            test::{ElementCtorFn, SimulationTestBed, TestAircraft},
+            test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBedFns},
             Aircraft,
         };
 
@@ -447,9 +447,7 @@ mod tests {
                 ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
             });
 
-            test_bed
-                .aircraft_mut()
-                .powered_by_battery_at(ElectricPotential::new::<volt>(25.));
+            test_bed.execute(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.)));
             test_bed.run();
 
             assert_eq!(
@@ -464,9 +462,7 @@ mod tests {
                 ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
             });
 
-            test_bed
-                .aircraft_mut()
-                .powered_by_battery_at(ElectricPotential::new::<volt>(25.01));
+            test_bed.execute(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.01)));
             test_bed.run();
 
             assert_eq!(test_bed.read_bool("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"), true);
@@ -508,7 +504,7 @@ mod tests {
         use super::*;
         use crate::{
             electrical::test::TestElectricitySource,
-            simulation::test::{ElementCtorFn, SimulationTestBed},
+            simulation::test::{ElementCtorFn, SimulationTestBed, TestBedFns},
         };
 
         #[test]
@@ -648,7 +644,10 @@ mod tests {
     #[cfg(test)]
     mod current_state_writer_tests {
         use super::*;
-        use crate::simulation::{test::SimulationTestBed, Aircraft};
+        use crate::simulation::{
+            test::{SimulationTestBed, TestBedFns},
+            Aircraft,
+        };
 
         enum WriteType {
             DirectCurrent,

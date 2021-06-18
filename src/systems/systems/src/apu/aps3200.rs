@@ -770,7 +770,7 @@ mod apu_generator_tests {
     use crate::{
         apu::tests::{test_bed, test_bed_with},
         shared,
-        simulation::test::{ElementCtorFn, SimulationTestBed, TestAircraft},
+        simulation::test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBedFns},
     };
 
     use super::*;

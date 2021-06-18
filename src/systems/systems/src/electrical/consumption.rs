@@ -150,7 +150,10 @@ mod tests {
     mod flight_phase_power_consumer_tests {
         use crate::{
             electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
-            simulation::{test::SimulationTestBed, Aircraft},
+            simulation::{
+                test::{SimulationTestBed, TestBedFns},
+                Aircraft,
+            },
         };
 
         use super::*;
@@ -251,15 +254,13 @@ mod tests {
                 )
             });
 
-            test_bed.aircraft_mut().power();
+            test_bed.execute(|a| a.power());
 
             apply_flight_phase(&mut test_bed, FwcFlightPhase::FirstEngineStarted);
 
             test_bed.run();
 
-            assert!(test_bed
-                .aircraft()
-                .consumption_equals(Power::new::<watt>(0.)));
+            assert!(test_bed.query(|a| a.consumption_equals(Power::new::<watt>(0.))));
         }
 
         #[test]
@@ -284,15 +285,13 @@ mod tests {
                 )
             });
 
-            test_bed.aircraft_mut().power();
+            test_bed.execute(|a| a.power());
 
             apply_flight_phase(&mut test_bed, FwcFlightPhase::AtOrAbove1500Feet);
 
             test_bed.run();
 
-            assert!(test_bed
-                .aircraft()
-                .consumption_within_range(input * 0.9, input * 1.1));
+            assert!(test_bed.query(|a| a.consumption_within_range(input * 0.9, input * 1.1)));
         }
 
         #[test]
@@ -329,9 +328,7 @@ mod tests {
 
             test_bed.run();
 
-            assert!(test_bed
-                .aircraft()
-                .consumption_equals(Power::new::<watt>(0.)));
+            assert!(test_bed.query(|a| a.consumption_equals(Power::new::<watt>(0.))));
         }
     }
 }
