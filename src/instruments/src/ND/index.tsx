@@ -37,6 +37,7 @@ const NavigationDisplay: React.FC = () => {
                     <ArcMode side={side} />
 
                     <Chrono side={side} />
+
                     <RadioNavInfo index={1} side={side} />
                     <RadioNavInfo index={2} side={side} />
                 </svg>

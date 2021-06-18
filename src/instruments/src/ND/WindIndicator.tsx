@@ -13,7 +13,7 @@ export const WindIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ adirsState, ta
     const windInfoShown = adirsState === 2 && tas > 100 && windSpeed > 2;
 
     return (
-        <Layer x={17} y={52}>
+        <Layer x={17} y={56}>
             <text x={25} y={0} fontSize={22} textAnchor="end" className="Green">
                 {windInfoShown ? (
                     Math.round(windDirection).toString().padStart(3, '0')
@@ -35,7 +35,7 @@ export const WindIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ adirsState, ta
                 strokeWidth={2.25}
                 strokeLinecap="round"
                 d="M 0 30 v -20 m -7 8 l 7 -8 l 7 8"
-                transform={`rotate(${(mod(Math.round(windDirection) - Math.round(planeHeading) + 180, 360))} 0 20)`}
+                transform={windInfoShown ? `rotate(${(mod(Math.round(windDirection) - Math.round(planeHeading) + 180, 360))} 0 20)` : ''}
                 visibility={windInfoShown ? 'visible' : 'hidden'}
             />
 
