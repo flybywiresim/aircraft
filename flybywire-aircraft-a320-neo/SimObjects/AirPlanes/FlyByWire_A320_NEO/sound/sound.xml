@@ -1110,10 +1110,6 @@
             <Range UpperBound="0" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
-        
-        <Sound WwiseEvent="cargoloadingaft" WwiseData="true" Continuous="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="BAGGAGELOADER ANGLE CURRENT" Units="Degrees" Index="1" >
-            <Range LowerBound="5" />
-        </Sound>
 
         <!-- GROUND ROLL AND RATTLES ========================================================================================== -->
 
