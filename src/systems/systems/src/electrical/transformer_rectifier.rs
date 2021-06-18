@@ -265,7 +265,7 @@ mod transformer_rectifier_tests {
     fn when_powered_but_failed_has_no_output() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.execute(|a| a.fail_transformer_rectifier());
+        test_bed.command(|a| a.fail_transformer_rectifier());
         test_bed.run();
 
         assert!(!test_bed.transformer_rectifier_is_powered());
@@ -284,7 +284,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_too_little_demand_current_is_not_normal() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.execute(|a| a.power_demand(Power::new::<watt>(5. * 28.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>(5. * 28.)));
         test_bed.run();
 
         assert!(!test_bed.current_is_normal());
@@ -294,7 +294,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_enough_demand_current_is_normal() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.execute(|a| a.power_demand(Power::new::<watt>((5. * 28.) + 1.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>((5. * 28.) + 1.)));
         test_bed.run();
 
         assert!(test_bed.current_is_normal());
@@ -334,7 +334,7 @@ mod transformer_rectifier_tests {
     fn when_powered_without_demand_has_no_consumption() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.execute(|a| a.power_demand(Power::new::<watt>(0.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>(0.)));
         test_bed.run();
 
         assert_eq!(
@@ -347,7 +347,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_demand_has_consumption() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.execute(|a| a.power_demand(Power::new::<watt>(200.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>(200.)));
         test_bed.run();
 
         assert_eq!(
@@ -360,7 +360,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_demand_current_is_based_on_demand() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.execute(|a| a.power_demand(Power::new::<watt>(200.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>(200.)));
         test_bed.run();
 
         assert_eq!(

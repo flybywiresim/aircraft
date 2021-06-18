@@ -241,7 +241,7 @@ mod air_intake_flap_tests {
     fn starts_opening_when_target_is_open() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
+        test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(5));
 
         assert!(test_bed.query(|a| a.flap_open_amount().get::<percent>()) > 0.);
@@ -251,7 +251,7 @@ mod air_intake_flap_tests {
     fn does_not_instantly_open() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
+        test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(
             (AirIntakeFlap::MINIMUM_TRAVEL_TIME_SECS - 1) as u64,
         ));
@@ -263,12 +263,12 @@ mod air_intake_flap_tests {
     fn closes_when_target_is_closed() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
+        test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(5));
 
         let flap_open_amount = test_bed.query(|a| a.flap_open_amount());
 
-        test_bed.execute(|a| a.command_flap_close());
+        test_bed.command(|a| a.command_flap_close());
         test_bed.run_with_delta(Duration::from_secs(2));
 
         assert!(test_bed.query(|a| a.flap_open_amount()) < flap_open_amount);
@@ -278,12 +278,12 @@ mod air_intake_flap_tests {
     fn does_not_instantly_close() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
+        test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(
             AirIntakeFlap::MAXIMUM_TRAVEL_TIME_SECS as u64,
         ));
 
-        test_bed.execute(|a| a.command_flap_close());
+        test_bed.command(|a| a.command_flap_close());
         test_bed.run_with_delta(Duration::from_secs(
             (AirIntakeFlap::MINIMUM_TRAVEL_TIME_SECS - 1) as u64,
         ));
@@ -295,7 +295,7 @@ mod air_intake_flap_tests {
     fn never_closes_beyond_0_percent() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_close());
+        test_bed.command(|a| a.command_flap_close());
         test_bed.run_with_delta(Duration::from_secs(1_000));
 
         assert_eq!(
@@ -308,7 +308,7 @@ mod air_intake_flap_tests {
     fn never_opens_beyond_100_percent() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
+        test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(1_000));
 
         assert_eq!(
@@ -328,7 +328,7 @@ mod air_intake_flap_tests {
     fn is_fully_open_returns_true_when_open() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
+        test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(1_000));
 
         assert_eq!(test_bed.query(|a| a.flap_is_fully_open()), true)
@@ -338,8 +338,8 @@ mod air_intake_flap_tests {
     fn does_not_move_when_unpowered() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
-        test_bed.execute(|a| a.unpower_air_intake_flap());
+        test_bed.command(|a| a.command_flap_open());
+        test_bed.command(|a| a.unpower_air_intake_flap());
         test_bed.run_with_delta(Duration::from_secs(5));
 
         assert_about_eq!(
@@ -352,7 +352,7 @@ mod air_intake_flap_tests {
     fn uses_power_when_moving() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
+        test_bed.command(|a| a.command_flap_open());
         test_bed.run_with_delta(Duration::from_secs(2));
 
         assert!(test_bed.query(|a| a.power_consumption().get::<watt>()) > 0.);
@@ -371,8 +371,8 @@ mod air_intake_flap_tests {
     fn does_not_move_when_controller_unpowered() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        test_bed.execute(|a| a.command_flap_open());
-        test_bed.execute(|a| a.unpower_controller());
+        test_bed.command(|a| a.command_flap_open());
+        test_bed.command(|a| a.unpower_controller());
         test_bed.run_with_delta(Duration::from_secs(5));
 
         assert_about_eq!(

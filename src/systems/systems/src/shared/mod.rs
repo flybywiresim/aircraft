@@ -351,7 +351,7 @@ mod delayed_true_logic_gate_tests {
             TestAircraft::new(DelayedTrueLogicGate::new(Duration::from_millis(10_000)))
         });
 
-        test_bed.execute(|a| a.set_expression(true));
+        test_bed.command(|a| a.set_expression(true));
 
         test_bed.run_with_delta(Duration::from_millis(0));
         test_bed.run_with_delta(Duration::from_millis(1_000));
@@ -365,7 +365,7 @@ mod delayed_true_logic_gate_tests {
             TestAircraft::new(DelayedTrueLogicGate::new(Duration::from_millis(100)))
         });
 
-        test_bed.execute(|a| a.set_expression(true));
+        test_bed.command(|a| a.set_expression(true));
 
         test_bed.run_with_delta(Duration::from_millis(0));
         test_bed.run_with_delta(Duration::from_millis(1_000));
@@ -380,11 +380,11 @@ mod delayed_true_logic_gate_tests {
             TestAircraft::new(DelayedTrueLogicGate::new(Duration::from_millis(1_000)))
         });
 
-        test_bed.execute(|a| a.set_expression(true));
+        test_bed.command(|a| a.set_expression(true));
         test_bed.run_with_delta(Duration::from_millis(0));
         test_bed.run_with_delta(Duration::from_millis(800));
 
-        test_bed.execute(|a| a.set_expression(false));
+        test_bed.command(|a| a.set_expression(false));
         test_bed.run_with_delta(Duration::from_millis(100));
         test_bed.run_with_delta(Duration::from_millis(200));
 
@@ -447,7 +447,7 @@ mod delayed_false_logic_gate_tests {
             TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)))
         });
 
-        test_bed.execute(|a| a.set_expression(true));
+        test_bed.command(|a| a.set_expression(true));
         test_bed.run_with_delta(Duration::from_millis(1_000));
 
         assert_eq!(test_bed.query(|a| a.gate_output()), true);
@@ -459,10 +459,10 @@ mod delayed_false_logic_gate_tests {
             TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(10_000)))
         });
 
-        test_bed.execute(|a| a.set_expression(true));
+        test_bed.command(|a| a.set_expression(true));
         test_bed.run_with_delta(Duration::from_millis(0));
 
-        test_bed.execute(|a| a.set_expression(false));
+        test_bed.command(|a| a.set_expression(false));
         test_bed.run_with_delta(Duration::from_millis(1_000));
 
         assert_eq!(test_bed.query(|a| a.gate_output()), true);
@@ -474,10 +474,10 @@ mod delayed_false_logic_gate_tests {
             TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)))
         });
 
-        test_bed.execute(|a| a.set_expression(true));
+        test_bed.command(|a| a.set_expression(true));
         test_bed.run_with_delta(Duration::from_millis(0));
 
-        test_bed.execute(|a| a.set_expression(false));
+        test_bed.command(|a| a.set_expression(false));
         test_bed.run_with_delta(Duration::from_millis(1_000));
 
         assert_eq!(test_bed.query(|a| a.gate_output()), false);
@@ -490,11 +490,11 @@ mod delayed_false_logic_gate_tests {
             TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(1_000)))
         });
 
-        test_bed.execute(|a| a.set_expression(false));
+        test_bed.command(|a| a.set_expression(false));
         test_bed.run_with_delta(Duration::from_millis(0));
         test_bed.run_with_delta(Duration::from_millis(800));
 
-        test_bed.execute(|a| a.set_expression(true));
+        test_bed.command(|a| a.set_expression(true));
         test_bed.run_with_delta(Duration::from_millis(100));
         test_bed.run_with_delta(Duration::from_millis(200));
 

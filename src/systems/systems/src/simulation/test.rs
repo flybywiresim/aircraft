@@ -18,7 +18,7 @@ pub trait TestBedFns<T> {
     fn run(&mut self);
     fn run_with_delta(&mut self, delta: Duration);
 
-    fn execute<U: FnOnce(&mut T)>(&mut self, func: U);
+    fn command<U: FnOnce(&mut T)>(&mut self, func: U);
     fn query<U: Fn(&T) -> V, V>(&self, func: U) -> V;
     fn query_elec<U: Fn(&T, &Electricity) -> V, V>(&self, func: U) -> V;
 
@@ -47,8 +47,8 @@ where
         self.test_bed_mut().run_with_delta(delta);
     }
 
-    fn execute<V: FnOnce(&mut T)>(&mut self, func: V) {
-        self.test_bed_mut().execute(func);
+    fn command<V: FnOnce(&mut T)>(&mut self, func: V) {
+        self.test_bed_mut().command(func);
     }
 
     fn query<V: Fn(&T) -> W, W>(&self, func: V) -> W {
@@ -158,7 +158,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.simulation.aircraft_mut()
     }
 
-    fn execute<U: FnOnce(&mut T)>(&mut self, func: U) {
+    fn command<U: FnOnce(&mut T)>(&mut self, func: U) {
         (func)(self.simulation.aircraft_mut())
     }
 

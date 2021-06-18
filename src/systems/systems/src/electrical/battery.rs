@@ -495,7 +495,7 @@ mod tests {
             assert!(test_bed.potential(1) < input_potential,
                 "This test assumes the battery's potential is lower than the given input potential.");
 
-            test_bed.execute(|a| a.supply_input_potential(input_potential));
+            test_bed.command(|a| a.supply_input_potential(input_potential));
 
             test_bed.run();
 
@@ -513,7 +513,7 @@ mod tests {
             assert!(input_potential < test_bed.potential(1),
                 "This test assumes the battery's potential is higher than the given input potential.");
 
-            test_bed.execute(|a| a.supply_input_potential(input_potential));
+            test_bed.command(|a| a.supply_input_potential(input_potential));
             test_bed.run();
 
             assert!(input_potential < test_bed.potential(1));
@@ -523,7 +523,7 @@ mod tests {
         fn when_charging_current_is_normal() {
             let mut test_bed = BatteryTestBed::with_empty_batteries();
 
-            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
+            test_bed.command(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run();
 
             assert!(test_bed.current_is_normal(1));
@@ -533,7 +533,7 @@ mod tests {
         fn when_charging_battery_current_is_charge_current() {
             let mut test_bed = BatteryTestBed::with_half_charged_batteries();
 
-            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
+            test_bed.command(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run();
 
             assert!(test_bed.current(1) > ElectricCurrent::new::<ampere>(0.));
@@ -543,7 +543,7 @@ mod tests {
         fn when_discharging_slowly_current_is_normal() {
             let mut test_bed = BatteryTestBed::with_full_batteries();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>(40.)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>(40.)));
             test_bed.run();
 
             assert!(test_bed.current_is_normal(1));
@@ -553,7 +553,7 @@ mod tests {
         fn when_discharging_quickly_current_is_abnormal() {
             let mut test_bed = BatteryTestBed::with_full_batteries();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>(500.)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>(500.)));
             test_bed.run();
 
             assert!(!test_bed.current_is_normal(1));
@@ -563,7 +563,7 @@ mod tests {
         fn when_discharging_battery_current_is_discharge_current() {
             let mut test_bed = BatteryTestBed::with_full_batteries();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>(100.)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>(100.)));
             test_bed.run();
 
             assert!(test_bed.current(1) < ElectricCurrent::new::<ampere>(0.))
@@ -575,7 +575,7 @@ mod tests {
 
             let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>(28. * 5.)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>(28. * 5.)));
             test_bed.run_with_delta(Duration::from_secs(60));
 
             assert!(test_bed.query(|a| a.battery_1_charge()) < charge_prior_to_run);
@@ -587,7 +587,7 @@ mod tests {
 
             let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
+            test_bed.command(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run_with_delta(Duration::from_secs(60));
 
             assert!(test_bed.query(|a| a.battery_1_charge()) > charge_prior_to_run);
@@ -599,7 +599,7 @@ mod tests {
 
             let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
+            test_bed.command(|a| a.supply_input_potential(ElectricPotential::new::<volt>(28.)));
             test_bed.run_with_delta(Duration::from_secs(1_000));
 
             assert!(test_bed.query(|a| a.battery_1_charge()) > charge_prior_to_run);
@@ -611,7 +611,7 @@ mod tests {
 
             let charge_prior_to_run = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed.execute(|a| a.supply_input_potential(ElectricPotential::new::<volt>(10.)));
+            test_bed.command(|a| a.supply_input_potential(ElectricPotential::new::<volt>(10.)));
             test_bed.run_with_delta(Duration::from_secs(1_000));
 
             assert_eq!(
@@ -647,7 +647,7 @@ mod tests {
         fn cannot_discharge_below_zero() {
             let mut test_bed = BatteryTestBed::with_nearly_empty_batteries();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>(5000.)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>(5000.)));
             test_bed.run_with_delta(Duration::from_secs(50));
 
             assert_eq!(
@@ -660,8 +660,8 @@ mod tests {
         fn dissimilar_charged_batteries_in_parallel_deplete() {
             let mut test_bed = BatteryTestBed::with_nearly_empty_dissimilarly_charged_batteries();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>(10.)));
-            test_bed.execute(|a| a.close_battery_2_contactor());
+            test_bed.command(|a| a.power_demand(Power::new::<watt>(10.)));
+            test_bed.command(|a| a.close_battery_2_contactor());
 
             for _ in 0..15 {
                 test_bed.run_with_delta(Duration::from_secs(1));
@@ -684,7 +684,7 @@ mod tests {
 
             let original_charge = test_bed.query(|a| a.battery_1_charge());
 
-            test_bed.execute(|a| a.close_battery_2_contactor());
+            test_bed.command(|a| a.close_battery_2_contactor());
 
             for _ in 0..100 {
                 test_bed.run_with_delta(Duration::from_secs(120));

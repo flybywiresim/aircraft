@@ -286,7 +286,7 @@ mod static_inverter_tests {
     fn when_powered_without_demand_has_no_consumption() {
         let mut test_bed = StaticInverterTestBed::with_powered_static_inverter();
 
-        test_bed.execute(|a| a.power_demand(Power::new::<watt>(0.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>(0.)));
         test_bed.run();
 
         assert_eq!(
@@ -299,7 +299,7 @@ mod static_inverter_tests {
     fn when_powered_with_demand_has_consumption() {
         let mut test_bed = StaticInverterTestBed::with_powered_static_inverter();
 
-        test_bed.execute(|a| a.power_demand(Power::new::<watt>(200.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>(200.)));
         test_bed.run();
 
         assert_eq!(

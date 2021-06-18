@@ -2051,36 +2051,36 @@ mod tests {
             }
 
             fn ac_bus_1_lost(mut self) -> Self {
-                self.execute(|a| a.set_ac_bus_1_is_powered(false));
+                self.command(|a| a.set_ac_bus_1_is_powered(false));
                 self
             }
 
             fn ac_bus_2_lost(mut self) -> Self {
-                self.execute(|a| a.set_ac_bus_2_is_powered(false));
+                self.command(|a| a.set_ac_bus_2_is_powered(false));
                 self
             }
 
             fn dc_ground_service_lost(mut self) -> Self {
-                self.execute(|a| a.set_dc_ground_service_is_powered(false));
+                self.command(|a| a.set_dc_ground_service_is_powered(false));
                 self
             }
             fn dc_ground_service_avail(mut self) -> Self {
-                self.execute(|a| a.set_dc_ground_service_is_powered(true));
+                self.command(|a| a.set_dc_ground_service_is_powered(true));
                 self
             }
 
             fn ac_ground_service_lost(mut self) -> Self {
-                self.execute(|a| a.set_ac_ground_service_is_powered(false));
+                self.command(|a| a.set_ac_ground_service_is_powered(false));
                 self
             }
 
             fn dc_bus_2_lost(mut self) -> Self {
-                self.execute(|a| a.set_dc_bus_2_is_powered(false));
+                self.command(|a| a.set_dc_bus_2_is_powered(false));
                 self
             }
 
             fn dc_ess_lost(mut self) -> Self {
-                self.execute(|a| a.set_dc_ess_is_powered(false));
+                self.command(|a| a.set_dc_ess_is_powered(false));
                 self
             }
 

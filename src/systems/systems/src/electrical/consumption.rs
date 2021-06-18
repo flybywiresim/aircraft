@@ -254,7 +254,7 @@ mod tests {
                 )
             });
 
-            test_bed.execute(|a| a.power());
+            test_bed.command(|a| a.power());
 
             apply_flight_phase(&mut test_bed, FwcFlightPhase::FirstEngineStarted);
 
@@ -285,7 +285,7 @@ mod tests {
                 )
             });
 
-            test_bed.execute(|a| a.power());
+            test_bed.command(|a| a.power());
 
             apply_flight_phase(&mut test_bed, FwcFlightPhase::AtOrAbove1500Feet);
 

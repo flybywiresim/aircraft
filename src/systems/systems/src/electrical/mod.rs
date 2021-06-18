@@ -447,7 +447,7 @@ mod tests {
                 ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
             });
 
-            test_bed.execute(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.)));
+            test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.)));
             test_bed.run();
 
             assert_eq!(
@@ -462,7 +462,7 @@ mod tests {
                 ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
             });
 
-            test_bed.execute(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.01)));
+            test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.01)));
             test_bed.run();
 
             assert_eq!(test_bed.read_bool("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"), true);

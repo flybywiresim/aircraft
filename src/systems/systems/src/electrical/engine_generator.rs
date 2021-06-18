@@ -519,7 +519,7 @@ mod tests {
         fn when_engine_running_but_idg_disconnected_provides_no_output() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.disconnect_idg());
+            test_bed.command(|a| a.disconnect_idg());
             test_bed.run();
 
             assert!(!test_bed.generator_is_powered());
@@ -529,7 +529,7 @@ mod tests {
         fn when_engine_running_but_generator_off_provides_no_output() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.gen_push_button_off());
+            test_bed.command(|a| a.gen_push_button_off());
             test_bed.run();
 
             assert!(!test_bed.generator_is_powered());
@@ -539,7 +539,7 @@ mod tests {
         fn when_engine_running_but_fire_push_button_released_provides_no_output() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.release_fire_push_button());
+            test_bed.command(|a| a.release_fire_push_button());
             test_bed.run();
 
             assert!(!test_bed.generator_is_powered());
@@ -557,7 +557,7 @@ mod tests {
         fn when_engine_running_but_idg_disconnected_frequency_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.disconnect_idg());
+            test_bed.command(|a| a.disconnect_idg());
             test_bed.run();
 
             assert!(!test_bed.frequency_is_normal());
@@ -567,7 +567,7 @@ mod tests {
         fn when_engine_running_but_generator_off_frequency_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.gen_push_button_off());
+            test_bed.command(|a| a.gen_push_button_off());
             test_bed.run();
 
             assert!(!test_bed.frequency_is_normal());
@@ -577,7 +577,7 @@ mod tests {
         fn when_engine_running_but_fire_push_button_released_frequency_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.release_fire_push_button());
+            test_bed.command(|a| a.release_fire_push_button());
             test_bed.run();
 
             assert!(!test_bed.frequency_is_normal());
@@ -603,7 +603,7 @@ mod tests {
         fn when_engine_running_but_idg_disconnected_potential_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.disconnect_idg());
+            test_bed.command(|a| a.disconnect_idg());
             test_bed.run();
 
             assert!(!test_bed.potential_is_normal());
@@ -613,7 +613,7 @@ mod tests {
         fn when_engine_running_but_generator_off_provides_potential_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.gen_push_button_off());
+            test_bed.command(|a| a.gen_push_button_off());
             test_bed.run();
 
             assert!(!test_bed.potential_is_normal());
@@ -623,7 +623,7 @@ mod tests {
         fn when_engine_running_but_fire_push_button_released_potential_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.release_fire_push_button());
+            test_bed.command(|a| a.release_fire_push_button());
             test_bed.run();
 
             assert!(!test_bed.potential_is_normal());
@@ -649,7 +649,7 @@ mod tests {
         fn when_engine_running_but_idg_disconnected_has_no_load() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.disconnect_idg());
+            test_bed.command(|a| a.disconnect_idg());
             test_bed.run();
 
             assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
@@ -659,7 +659,7 @@ mod tests {
         fn when_engine_running_but_generator_off_has_no_load() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.gen_push_button_off());
+            test_bed.command(|a| a.gen_push_button_off());
             test_bed.run();
 
             assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
@@ -669,7 +669,7 @@ mod tests {
         fn when_engine_running_but_fire_push_button_released_has_no_load() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.release_fire_push_button());
+            test_bed.command(|a| a.release_fire_push_button());
             test_bed.run();
 
             assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
@@ -687,7 +687,7 @@ mod tests {
         fn when_engine_running_and_potential_used_has_load() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>(50000.)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>(50000.)));
             test_bed.run();
 
             assert!(test_bed.load() > Ratio::new::<percent>(0.));
@@ -697,7 +697,7 @@ mod tests {
         fn when_load_below_maximum_it_is_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>(90000. / 0.8)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>(90000. / 0.8)));
             test_bed.run();
 
             assert!(test_bed.load_is_normal());
@@ -707,7 +707,7 @@ mod tests {
         fn when_load_exceeds_maximum_not_normal() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>((90000. / 0.8) + 1.)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>((90000. / 0.8) + 1.)));
             test_bed.run();
 
             assert!(!test_bed.load_is_normal());
@@ -717,7 +717,7 @@ mod tests {
         fn output_within_normal_parameters_when_load_exceeds_maximum() {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
 
-            test_bed.execute(|a| a.power_demand(Power::new::<watt>((90000. / 0.8) + 1.)));
+            test_bed.command(|a| a.power_demand(Power::new::<watt>((90000. / 0.8) + 1.)));
 
             test_bed.run();
 
@@ -752,7 +752,7 @@ mod tests {
             let mut test_bed = EngineGeneratorTestBed::with_running_engine();
             test_bed.run();
 
-            test_bed.execute(|a| a.shutdown_engine());
+            test_bed.command(|a| a.shutdown_engine());
 
             test_bed.run();
 

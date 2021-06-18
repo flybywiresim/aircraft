@@ -579,12 +579,12 @@ pub mod tests {
         }
 
         fn air_intake_flap_that_opens_in(mut self, duration: Duration) -> Self {
-            self.execute(|a| a.set_air_intake_flap_travel_time(duration));
+            self.command(|a| a.set_air_intake_flap_travel_time(duration));
             self
         }
 
         pub fn power_demand(mut self, power: Power) -> Self {
-            self.execute(|a| a.set_power_demand(power));
+            self.command(|a| a.set_power_demand(power));
             self
         }
 
@@ -625,12 +625,12 @@ pub mod tests {
         }
 
         fn apu_gen_not_used(mut self) -> Self {
-            self.execute(|a| a.set_apu_gen_is_used(false));
+            self.command(|a| a.set_apu_gen_is_used(false));
             self
         }
 
         fn no_fuel_available(mut self) -> Self {
-            self.execute(|a| a.set_has_fuel_remaining(false));
+            self.command(|a| a.set_has_fuel_remaining(false));
             self
         }
 
@@ -658,7 +658,7 @@ pub mod tests {
         }
 
         fn turbine_infinitely_running_at(mut self, n: Ratio) -> Self {
-            self.execute(|a| a.set_turbine_infinitely_running_at(n));
+            self.command(|a| a.set_turbine_infinitely_running_at(n));
             self
         }
 
@@ -711,17 +711,17 @@ pub mod tests {
         }
 
         fn unpowered_start_motor(mut self) -> Self {
-            self.execute(|a| a.cut_start_motor_power());
+            self.command(|a| a.cut_start_motor_power());
             self
         }
 
         fn unpowered_dc_bat_bus(mut self) -> Self {
-            self.execute(|a| a.unpower_dc_bat_bus());
+            self.command(|a| a.unpower_dc_bat_bus());
             self
         }
 
         fn powered_dc_bat_bus(mut self) -> Self {
-            self.execute(|a| a.power_dc_bat_bus());
+            self.command(|a| a.power_dc_bat_bus());
             self
         }
 

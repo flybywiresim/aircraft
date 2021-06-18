@@ -2378,7 +2378,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn running_engine(mut self, number: usize) -> Self {
-            self.execute(|a| a.running_engine(number));
+            self.command(|a| a.running_engine(number));
 
             self = self.without_triggering_emergency_elec(|x| {
                 x.run_waiting_for(Duration::from_millis(
@@ -2390,7 +2390,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn stopped_engine(mut self, number: usize) -> Self {
-            self.execute(|a| a.stopped_engine(number));
+            self.command(|a| a.stopped_engine(number));
             self
         }
 
@@ -2399,7 +2399,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn running_apu(mut self) -> Self {
-            self.execute(|a| a.running_apu());
+            self.command(|a| a.running_apu());
             self
         }
 
@@ -2410,12 +2410,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn empty_battery_1(mut self) -> Self {
-            self.execute(|a| a.empty_battery_1());
+            self.command(|a| a.empty_battery_1());
             self
         }
 
         fn empty_battery_2(mut self) -> Self {
-            self.execute(|a| a.empty_battery_2());
+            self.command(|a| a.empty_battery_2());
             self
         }
 
@@ -2448,17 +2448,17 @@ mod a320_electrical_circuit_tests {
         }
 
         fn failed_tr_1(mut self) -> Self {
-            self.execute(|a| a.failed_tr_1());
+            self.command(|a| a.failed_tr_1());
             self
         }
 
         fn failed_tr_2(mut self) -> Self {
-            self.execute(|a| a.failed_tr_2());
+            self.command(|a| a.failed_tr_2());
             self
         }
 
         fn running_emergency_generator(mut self) -> Self {
-            self.execute(|a| a.running_emergency_generator());
+            self.command(|a| a.running_emergency_generator());
             self.run_waiting_for(Duration::from_secs(100))
         }
 
@@ -2468,7 +2468,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn released_engine_fire_push_button(mut self, engine_number: usize) -> Self {
-            self.execute(|a| a.release_engine_fire_push_button(engine_number));
+            self.command(|a| a.release_engine_fire_push_button(engine_number));
             self
         }
 
@@ -2534,12 +2534,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn apu_master_sw_pb_on(mut self) -> Self {
-            self.execute(|a| a.set_apu_master_sw_pb_on());
+            self.command(|a| a.set_apu_master_sw_pb_on());
             self
         }
 
         fn apu_start_pb_on(mut self) -> Self {
-            self.execute(|a| a.set_apu_start_pb_on());
+            self.command(|a| a.set_apu_start_pb_on());
             self
         }
 
@@ -2549,7 +2549,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn command_closing_of_start_contactors(mut self) -> Self {
-            self.execute(|a| a.command_closing_of_start_contactors());
+            self.command(|a| a.command_closing_of_start_contactors());
             self
         }
 

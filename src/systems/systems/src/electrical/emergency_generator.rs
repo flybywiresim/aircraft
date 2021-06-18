@@ -254,7 +254,7 @@ mod emergency_generator_tests {
     fn when_started_provides_output() {
         let mut test_bed = EmergencyGeneratorTestBed::new();
 
-        test_bed.execute(|a| a.attempt_emer_gen_start());
+        test_bed.command(|a| a.attempt_emer_gen_start());
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(test_bed.emer_gen_is_powered());
@@ -264,8 +264,8 @@ mod emergency_generator_tests {
     fn when_started_without_hydraulic_pressure_is_unpowered() {
         let mut test_bed = EmergencyGeneratorTestBed::new();
 
-        test_bed.execute(|a| a.attempt_emer_gen_start());
-        test_bed.execute(|a| a.set_rat_hydraulic_loop_pressurised(false));
+        test_bed.command(|a| a.attempt_emer_gen_start());
+        test_bed.command(|a| a.set_rat_hydraulic_loop_pressurised(false));
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(!test_bed.emer_gen_is_powered());
@@ -284,7 +284,7 @@ mod emergency_generator_tests {
     fn when_started_frequency_normal() {
         let mut test_bed = EmergencyGeneratorTestBed::new();
 
-        test_bed.execute(|a| a.attempt_emer_gen_start());
+        test_bed.command(|a| a.attempt_emer_gen_start());
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(test_bed.frequency_is_normal());
@@ -303,7 +303,7 @@ mod emergency_generator_tests {
     fn when_started_potential_normal() {
         let mut test_bed = EmergencyGeneratorTestBed::new();
 
-        test_bed.execute(|a| a.attempt_emer_gen_start());
+        test_bed.command(|a| a.attempt_emer_gen_start());
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(test_bed.potential_is_normal());
@@ -324,7 +324,7 @@ mod emergency_generator_tests {
     fn output_within_normal_parameters_when_started() {
         let mut test_bed = EmergencyGeneratorTestBed::new();
 
-        test_bed.execute(|a| a.attempt_emer_gen_start());
+        test_bed.command(|a| a.attempt_emer_gen_start());
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(test_bed.query(|a| a
@@ -343,10 +343,10 @@ mod emergency_generator_tests {
         // immediately noticed.
         let mut test_bed = EmergencyGeneratorTestBed::new();
 
-        test_bed.execute(|a| a.attempt_emer_gen_start());
+        test_bed.command(|a| a.attempt_emer_gen_start());
         test_bed.run_with_delta(Duration::from_secs(100));
 
-        test_bed.execute(|a| a.stop_emer_gen());
+        test_bed.command(|a| a.stop_emer_gen());
         test_bed.run_with_delta(Duration::from_secs(0));
 
         assert!(!test_bed.query(|a| a

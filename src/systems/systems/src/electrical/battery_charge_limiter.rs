@@ -618,7 +618,7 @@ mod tests {
             }
 
             fn wait_for_closed_contactor(mut self, assert_is_closed: bool) -> Self {
-                self.execute(|a| a.set_battery_bus_at_minimum_charging_voltage());
+                self.command(|a| a.set_battery_bus_at_minimum_charging_voltage());
                 self = self.run(Duration::from_millis(
                     Open::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
                 ));
@@ -680,41 +680,41 @@ mod tests {
             }
 
             fn battery_push_button_off(mut self) -> Self {
-                self.execute(|a| a.set_battery_push_button_off());
+                self.command(|a| a.set_battery_push_button_off());
                 self = self.run(Duration::from_secs(0));
 
                 self
             }
 
             fn battery_push_button_auto(mut self) -> Self {
-                self.execute(|a| a.set_battery_push_button_auto());
+                self.command(|a| a.set_battery_push_button_auto());
                 self = self.run(Duration::from_secs(0));
 
                 self
             }
 
             fn available_emergency_generator(mut self) -> Self {
-                self.execute(|a| a.set_emergency_generator_available());
+                self.command(|a| a.set_emergency_generator_available());
                 self
             }
 
             fn started_apu(mut self) -> Self {
-                self.execute(|a| a.set_apu_master_sw_pb_on());
-                self.execute(|a| a.set_apu_start_pb_on());
+                self.command(|a| a.set_apu_master_sw_pb_on());
+                self.command(|a| a.set_apu_start_pb_on());
 
                 self = self.run(Duration::from_secs(0));
 
-                self.execute(|a| a.set_apu_available());
-                self.execute(|a| a.set_apu_start_pb_off());
+                self.command(|a| a.set_apu_available());
+                self.command(|a| a.set_apu_start_pb_off());
 
                 self
             }
 
             fn stopped_apu(mut self) -> Self {
-                self.execute(|a| a.set_apu_master_sw_pb_off());
+                self.command(|a| a.set_apu_master_sw_pb_off());
                 self = self.run(Duration::from_secs(0));
 
-                self.execute(|a| a.set_apu_unavailable());
+                self.command(|a| a.set_apu_unavailable());
 
                 self
             }
@@ -728,33 +728,33 @@ mod tests {
             }
 
             fn full_battery_charge(mut self) -> Self {
-                self.execute(|a| a.set_full_battery_charge());
+                self.command(|a| a.set_full_battery_charge());
                 self
             }
 
             fn nearly_empty_battery_charge(mut self) -> Self {
-                self.execute(|a| a.set_nearly_empty_battery_charge());
+                self.command(|a| a.set_nearly_empty_battery_charge());
                 self
             }
 
             fn no_power_outside_of_battery(mut self) -> Self {
-                self.execute(|a| a.set_battery_bus_unpowered());
-                self.execute(|a| a.set_both_ac_buses_unpowered());
+                self.command(|a| a.set_battery_bus_unpowered());
+                self.command(|a| a.set_both_ac_buses_unpowered());
                 self
             }
 
             fn power_demand_of(mut self, power: Power) -> Self {
-                self.execute(|a| a.set_power_demand(power));
+                self.command(|a| a.set_power_demand(power));
                 self
             }
 
             fn battery_bus_at_minimum_charging_voltage(mut self) -> Self {
-                self.execute(|a| a.set_battery_bus_at_minimum_charging_voltage());
+                self.command(|a| a.set_battery_bus_at_minimum_charging_voltage());
                 self
             }
 
             fn battery_bus_below_minimum_charging_voltage(mut self) -> Self {
-                self.execute(|a| a.set_battery_bus_below_minimum_charging_voltage());
+                self.command(|a| a.set_battery_bus_below_minimum_charging_voltage());
                 self
             }
 
@@ -767,12 +767,12 @@ mod tests {
             }
 
             fn apu_master_sw_pb_on(mut self) -> Self {
-                self.execute(|a| a.set_apu_master_sw_pb_on());
+                self.command(|a| a.set_apu_master_sw_pb_on());
                 self
             }
 
             fn apu_master_sw_pb_off(mut self) -> Self {
-                self.execute(|a| a.set_apu_master_sw_pb_off());
+                self.command(|a| a.set_apu_master_sw_pb_off());
                 self
             }
 
@@ -788,7 +788,7 @@ mod tests {
             }
 
             fn gear_down(mut self) -> Self {
-                self.execute(|a| a.set_gear_down());
+                self.command(|a| a.set_gear_down());
 
                 self
             }
