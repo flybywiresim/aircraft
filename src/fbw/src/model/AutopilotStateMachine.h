@@ -54,6 +54,7 @@ class AutopilotStateMachineModelClass {
     real_T timeDeltaSpeed4;
     real_T timeDeltaSpeed10;
     real_T timeConditionSoftAlt;
+    real_T eventTime_h;
     real_T runwayHeadingStored;
     real_T eventTime_a;
     real_T eventTime_iz;
@@ -109,6 +110,7 @@ class AutopilotStateMachineModelClass {
     boolean_T timeConditionSoftAlt_not_empty;
     boolean_T stateSoftAlt;
     boolean_T newFcuAltitudeSelected_c;
+    boolean_T eventTime_not_empty_j;
     boolean_T state;
     boolean_T eventTime_not_empty_m;
     boolean_T eventTime_not_empty_i;
