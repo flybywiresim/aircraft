@@ -31,17 +31,17 @@ declare global {
             /**
              * Computes the distance in nautical miles between two locations.
              */
-            static computeDistance(x: LatLong | LatLongAlt, y: LatLong | LatLongAlt): NauticalMiles;
+            static computeDistance(x: LatLongData, y: LatLongData): NauticalMiles;
 
             /**
              * Computes the great circle heading between two locations.
              */
-            static computeGreatCircleHeading(from: LatLong | LatLongAlt, to: LatLong | LatLongAlt): Heading;
+            static computeGreatCircleHeading(from: LatLongData, to: LatLongData): Heading;
 
             /**
              * Computes the great circle distance in nautical miles between two locations.
              */
-            static computeGreatCircleDistance(x: LatLong | LatLongAlt, y: LatLong | LatLongAlt): NauticalMiles;
+            static computeGreatCircleDistance(x: LatLongData, y: LatLongData): NauticalMiles;
 
             static lerpAngle(from: number, to: number, d: number): number;
 
