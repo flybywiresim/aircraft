@@ -110,3 +110,7 @@ declare global {
         function SetGameVarValue(name: string, unit: "string" | XYZVarUnit | POIListVarUnit | FuelLevelsVarUnit | GlassCockpitSettingsVarUnit, value: any): Promise<void>;
     }
 }
+
+export {
+    SimVar
+}
