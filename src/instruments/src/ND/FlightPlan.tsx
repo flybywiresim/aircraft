@@ -1,17 +1,25 @@
 import React, { FC, useEffect, useState } from 'react';
-import { useCurrentFlightPlan, useFlightPlanManager } from '@instruments/common/flightplan';
+import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 import { Geometry, Leg, TFLeg, Type1Transition } from '@fmgc/guidance/Geometry';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { MathUtils } from '@shared/MathUtils';
 import { Layer } from '@instruments/common/utils';
 import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 import { useSimVar } from '@instruments/common/simVars';
+import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
+import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { MapParameters } from './utils/MapParameters';
 
-export type FlightPathProps = { x?: number, y?: number, mapParams: MapParameters, clipPath: string, debug: boolean }
+export type FlightPathProps = {
+    x?: number,
+    y?: number,
+    flightPlanManager: FlightPlanManager,
+    mapParams: MapParameters,
+    clipPath: string,
+    debug: boolean,
+}
 
-export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, mapParams, clipPath, debug = false }) => {
-    const flightPlanManager = useFlightPlanManager();
+export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, clipPath, debug = false }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const flightPlan = useCurrentFlightPlan();
 
@@ -44,14 +52,11 @@ const Waypoint: FC<{ waypoint: WayPoint, mapParams: MapParameters }> = ({ waypoi
     const [x, y] = mapParams.coordinatesToXYy(waypoint.infos.coordinates);
 
     return (
-        !waypoint.isVectors
-            && (
-                <g className="GtLayer">
-                    <rect x={x - 4} y={y - 4} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform={`rotate(45 ${x} ${y})`} />
+        <Layer x={x} y={y}>
+            <rect x={-6} y={0} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform="rotate(45 4 4)" />
 
-                    <text x={x + 15} y={y + 10} fontSize={20} fill="#00ff00">{waypoint.ident}</text>
-                </g>
-            )
+            <text x={15} y={10} fontSize={20} fill="#00ff00">{waypoint.ident}</text>
+        </Layer>
     );
 };
 
