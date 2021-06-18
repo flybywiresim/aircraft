@@ -1,7 +1,7 @@
-use std::{collections::HashMap, time::Duration};
+use std::{cell::Ref, collections::HashMap, time::Duration};
 use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
 
-use crate::electrical::Electricity;
+use crate::electrical::{Electricity, Potential};
 
 use super::{
     Aircraft, Reader, Simulation, SimulationElement, SimulationElementVisitor,
@@ -33,6 +33,13 @@ pub trait TestBed {
 
     fn query_elec<V: Fn(&Self::Aircraft, &Electricity) -> W, W>(&self, func: V) -> W {
         self.test_bed().query_elec(func)
+    }
+
+    fn query_elec_ref<'a, U: Fn(&Self::Aircraft, &'a Electricity) -> Ref<'a, Potential>>(
+        &'a self,
+        func: U,
+    ) -> Ref<'a, Potential> {
+        self.test_bed().query_elec_ref(func)
     }
 
     fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
@@ -116,11 +123,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.simulation.tick(delta, &mut self.reader_writer);
     }
 
-    pub fn electricity(&self) -> &Electricity {
-        self.simulation.electricity()
-    }
-
-    pub fn aircraft(&self) -> &T {
+    fn aircraft(&self) -> &T {
         self.simulation.aircraft()
     }
 
@@ -137,6 +140,13 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     fn query_elec<U: Fn(&T, &Electricity) -> V, V>(&self, func: U) -> V {
+        (func)(self.simulation.aircraft(), self.simulation.electricity())
+    }
+
+    fn query_elec_ref<'a, U: Fn(&T, &'a Electricity) -> Ref<'a, Potential>>(
+        &'a self,
+        func: U,
+    ) -> Ref<'a, Potential> {
         (func)(self.simulation.aircraft(), self.simulation.electricity())
     }
 

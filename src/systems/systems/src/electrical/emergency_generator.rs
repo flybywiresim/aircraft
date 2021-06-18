@@ -145,7 +145,7 @@ mod emergency_generator_tests {
         }
 
         fn emer_gen_is_powered(&self) -> bool {
-            self.query(|a| a.emer_gen_is_powered(self.test_bed.electricity()))
+            self.query_elec(|a, elec| a.emer_gen_is_powered(elec))
         }
     }
     impl TestBed for EmergencyGeneratorTestBed {
