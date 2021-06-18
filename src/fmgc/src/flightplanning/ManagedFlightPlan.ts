@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+import { ActiveWaypointInfo } from '@fmgc/flightplanning/data/waypoints';
 import { SegmentType, FlightPlanSegment } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
 import { RawDataMapper } from './RawDataMapper';
@@ -91,8 +92,36 @@ export class ManagedFlightPlan {
     }
 
     /** The currently active waypoint. */
-    public get activeWaypoint() {
+    public get activeWaypoint(): WayPoint {
         return this.waypoints[this.activeWaypointIndex];
+    }
+
+    /**
+     * Returns info for the currently active waypoint, to be displayed by the Navigation Display
+     */
+    public getActiveWaypointInfo(lla?: LatLongData): ActiveWaypointInfo | undefined {
+        const activeWaypoint = this.waypoints[this.activeWaypointIndex];
+
+        if (!activeWaypoint) {
+            return undefined;
+        }
+
+        let ll = lla;
+        if (!ll) {
+            const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+            const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+
+            ll = { lat, long };
+        }
+
+        const bearing = Avionics.Utils.computeGreatCircleHeading(ll, activeWaypoint.infos.coordinates);
+        const distance = Avionics.Utils.computeGreatCircleDistance(ll, activeWaypoint.infos.coordinates);
+
+        return {
+            ident: activeWaypoint.ident,
+            bearing,
+            distance,
+        };
     }
 
     /** The parent instrument this flight plan is attached to locally. */
