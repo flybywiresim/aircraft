@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-declare class WayPoint {
+export declare class WayPoint {
     constructor(_baseInstrument: BaseInstrument);
 
     icao: string;
