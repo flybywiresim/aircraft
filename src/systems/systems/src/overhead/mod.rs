@@ -684,6 +684,6 @@ mod momentary_push_button_tests {
 
         test_bed.run();
 
-        assert!(test_bed.element().is_pressed());
+        assert!(test_bed.query_element(|e| e.is_pressed()));
     }
 }

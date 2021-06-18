@@ -4203,13 +4203,15 @@ mod tests {
             test_bed.write("FIRE_BUTTON_ENG1", true);
             test_bed.run();
 
-            edp1_controller.update(
-                &overhead_panel,
-                test_bed.element(),
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(10.),
-                true,
-            );
+            test_bed.query_element(|element| {
+                edp1_controller.update(
+                    &overhead_panel,
+                    element,
+                    Ratio::new::<percent>(50.),
+                    Pressure::new::<psi>(10.),
+                    true,
+                )
+            });
             assert!(!edp1_controller.should_pressurise());
         }
 
@@ -4295,13 +4297,15 @@ mod tests {
             test_bed.write("FIRE_BUTTON_ENG2", true);
             test_bed.run();
 
-            edp2_controller.update(
-                &overhead_panel,
-                test_bed.element(),
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(5.),
-                true,
-            );
+            test_bed.query_element(|element| {
+                edp2_controller.update(
+                    &overhead_panel,
+                    element,
+                    Ratio::new::<percent>(50.),
+                    Pressure::new::<psi>(5.),
+                    true,
+                )
+            });
             assert!(!edp2_controller.should_pressurise());
         }
 

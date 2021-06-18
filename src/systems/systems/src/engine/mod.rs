@@ -69,7 +69,7 @@ mod engine_fire_overhead_panel_tests {
         test_bed.write("FIRE_BUTTON_ENG1", false);
         test_bed.run();
 
-        assert_eq!(test_bed.element().is_released(1), false);
+        assert_eq!(test_bed.query_element(|e| e.is_released(1)), false);
     }
 
     #[test]
@@ -78,6 +78,6 @@ mod engine_fire_overhead_panel_tests {
         test_bed.write("FIRE_BUTTON_ENG1", true);
         test_bed.run();
 
-        assert_eq!(test_bed.element().is_released(1), true);
+        assert_eq!(test_bed.query_element(|e| e.is_released(1)), true);
     }
 }

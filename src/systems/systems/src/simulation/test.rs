@@ -27,15 +27,15 @@ pub trait TestBed {
         self.test_bed_mut().command(func);
     }
 
-    fn query<V: Fn(&Self::Aircraft) -> W, W>(&self, func: V) -> W {
+    fn query<V: FnOnce(&Self::Aircraft) -> W, W>(&self, func: V) -> W {
         self.test_bed().query(func)
     }
 
-    fn query_elec<V: Fn(&Self::Aircraft, &Electricity) -> W, W>(&self, func: V) -> W {
+    fn query_elec<V: FnOnce(&Self::Aircraft, &Electricity) -> W, W>(&self, func: V) -> W {
         self.test_bed().query_elec(func)
     }
 
-    fn query_elec_ref<'a, U: Fn(&Self::Aircraft, &'a Electricity) -> Ref<'a, Potential>>(
+    fn query_elec_ref<'a, U: FnOnce(&Self::Aircraft, &'a Electricity) -> Ref<'a, Potential>>(
         &'a self,
         func: U,
     ) -> Ref<'a, Potential> {
@@ -135,15 +135,15 @@ impl<T: Aircraft> SimulationTestBed<T> {
         (func)(self.simulation.aircraft_mut())
     }
 
-    fn query<U: Fn(&T) -> V, V>(&self, func: U) -> V {
+    fn query<U: FnOnce(&T) -> V, V>(&self, func: U) -> V {
         (func)(self.simulation.aircraft())
     }
 
-    fn query_elec<U: Fn(&T, &Electricity) -> V, V>(&self, func: U) -> V {
+    fn query_elec<U: FnOnce(&T, &Electricity) -> V, V>(&self, func: U) -> V {
         (func)(self.simulation.aircraft(), self.simulation.electricity())
     }
 
-    fn query_elec_ref<'a, U: Fn(&T, &'a Electricity) -> Ref<'a, Potential>>(
+    fn query_elec_ref<'a, U: FnOnce(&T, &'a Electricity) -> Ref<'a, Potential>>(
         &'a self,
         func: U,
     ) -> Ref<'a, Potential> {
@@ -206,12 +206,16 @@ impl<T: Aircraft> TestBed for SimulationTestBed<T> {
     }
 }
 impl<T: SimulationElement> SimulationTestBed<TestAircraft<T>> {
-    pub fn element_mut(&mut self) -> &mut T {
-        self.aircraft_mut().element_mut()
+    pub fn command_element<V: FnOnce(&mut T)>(&mut self, func: V) {
+        (func)(self.aircraft_mut().element_mut())
     }
 
-    pub fn element(&self) -> &T {
-        self.aircraft().element()
+    pub fn query_element<V: FnOnce(&T) -> W, W>(&self, func: V) -> W {
+        (func)(self.aircraft().element())
+    }
+
+    pub fn query_element_elec<V: FnOnce(&T, &Electricity) -> W, W>(&self, func: V) -> W {
+        (func)(self.aircraft().element(), self.simulation.electricity())
     }
 
     pub fn with_update_before_power_distribution<
@@ -302,11 +306,11 @@ impl<T: SimulationElement> TestAircraft<T> {
         self.update_after_power_distribution_fn = Box::new(func);
     }
 
-    pub fn element_mut(&mut self) -> &mut T {
+    fn element_mut(&mut self) -> &mut T {
         &mut self.element
     }
 
-    pub fn element(&self) -> &T {
+    fn element(&self) -> &T {
         &self.element
     }
 }
@@ -450,7 +454,7 @@ mod tests {
             });
         test_bed.run();
 
-        assert!(test_bed.element().all_functions_called());
+        assert!(test_bed.query_element(|e| e.all_functions_called()));
     }
 
     #[test]
@@ -462,9 +466,7 @@ mod tests {
         test_bed.run();
 
         assert_eq!(
-            test_bed
-                .element()
-                .update_called_before_or_after_receive_power(),
+            test_bed.query_element(|e| e.update_called_before_or_after_receive_power()),
             Some(CallOrder::After)
         );
     }
@@ -479,9 +481,7 @@ mod tests {
         test_bed.run();
 
         assert_eq!(
-            test_bed
-                .element()
-                .update_called_before_or_after_receive_power(),
+            test_bed.query_element(|e| e.update_called_before_or_after_receive_power()),
             Some(CallOrder::Before)
         );
     }

@@ -52,42 +52,42 @@ mod tests {
     fn is_up_and_locked_returns_false_when_fully_down() {
         let test_bed = run_test_bed_on(Ratio::new::<percent>(100.));
 
-        assert!(!test_bed.element().is_up_and_locked());
+        assert!(!test_bed.query_element(|e| e.is_up_and_locked()));
     }
 
     #[test]
     fn is_up_and_locked_returns_false_when_somewhat_down() {
         let test_bed = run_test_bed_on(Ratio::new::<percent>(1.));
 
-        assert!(!test_bed.element().is_up_and_locked());
+        assert!(!test_bed.query_element(|e| e.is_up_and_locked()));
     }
 
     #[test]
     fn is_up_and_locked_returns_true_when_fully_up() {
         let test_bed = run_test_bed_on(Ratio::new::<percent>(0.));
 
-        assert!(test_bed.element().is_up_and_locked());
+        assert!(test_bed.query_element(|e| e.is_up_and_locked()));
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_fully_up() {
         let test_bed = run_test_bed_on(Ratio::new::<percent>(0.));
 
-        assert!(!test_bed.element().is_down_and_locked());
+        assert!(!test_bed.query_element(|e| e.is_down_and_locked()));
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_somewhat_up() {
         let test_bed = run_test_bed_on(Ratio::new::<percent>(99.));
 
-        assert!(!test_bed.element().is_down_and_locked());
+        assert!(!test_bed.query_element(|e| e.is_down_and_locked()));
     }
 
     #[test]
     fn is_down_and_locked_returns_true_when_fully_down() {
         let test_bed = run_test_bed_on(Ratio::new::<percent>(100.));
 
-        assert!(test_bed.element().is_down_and_locked());
+        assert!(test_bed.query_element(|e| e.is_down_and_locked()));
     }
 
     fn run_test_bed_on(position: Ratio) -> SimulationTestBed<TestAircraft<LandingGear>> {

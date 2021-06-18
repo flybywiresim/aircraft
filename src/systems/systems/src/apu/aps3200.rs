@@ -779,9 +779,8 @@ mod apu_generator_tests {
     fn starts_without_output() {
         let test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
 
-        assert!(!test_bed.query_elec(|a, elec| {
-            shared::PowerConsumptionReport::is_powered(elec, a.element())
-        }));
+        assert!(!test_bed
+            .query_element_elec(|e, elec| { shared::PowerConsumptionReport::is_powered(elec, e) }));
     }
 
     #[test]
@@ -791,9 +790,8 @@ mod apu_generator_tests {
         update_below_threshold(&mut test_bed);
         update_above_threshold(&mut test_bed);
 
-        assert!(test_bed.query_elec(|a, elec| {
-            shared::PowerConsumptionReport::is_powered(elec, a.element())
-        }));
+        assert!(test_bed
+            .query_element_elec(|e, elec| { shared::PowerConsumptionReport::is_powered(elec, e) }));
     }
 
     #[test]
@@ -803,9 +801,8 @@ mod apu_generator_tests {
         update_above_threshold(&mut test_bed);
         update_below_threshold(&mut test_bed);
 
-        assert!(!test_bed.query_elec(|a, elec| {
-            shared::PowerConsumptionReport::is_powered(elec, a.element())
-        }));
+        assert!(!test_bed
+            .query_element_elec(|e, elec| { shared::PowerConsumptionReport::is_powered(elec, e) }));
     }
 
     #[test]

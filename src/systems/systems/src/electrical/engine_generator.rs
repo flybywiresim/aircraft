@@ -815,7 +815,10 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(500));
 
-            assert_eq!(test_bed.element().provides_stable_power_output(), true);
+            assert_eq!(
+                test_bed.query_element(|e| e.provides_stable_power_output()),
+                true
+            );
         }
 
         #[test]
@@ -833,7 +836,10 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(499));
 
-            assert_eq!(test_bed.element().provides_stable_power_output(), false);
+            assert_eq!(
+                test_bed.query_element(|e| e.provides_stable_power_output()),
+                false
+            );
         }
 
         #[test]
@@ -862,7 +868,10 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(500));
 
-            assert_eq!(test_bed.element().provides_stable_power_output(), false);
+            assert_eq!(
+                test_bed.query_element(|e| e.provides_stable_power_output()),
+                false
+            );
         }
 
         #[test]
@@ -878,11 +887,11 @@ mod tests {
                 },
             );
 
-            let starting_temperature = test_bed.element().oil_outlet_temperature;
+            let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
 
             test_bed.run_with_delta(Duration::from_secs(10));
 
-            assert!(test_bed.element().oil_outlet_temperature > starting_temperature);
+            assert!(test_bed.query_element(|e| e.oil_outlet_temperature) > starting_temperature);
         }
 
         #[test]
@@ -898,12 +907,12 @@ mod tests {
                 },
             );
 
-            let starting_temperature = test_bed.element().oil_outlet_temperature;
+            let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
 
             test_bed.run_with_delta(Duration::from_secs(10));
 
             assert_eq!(
-                test_bed.element().oil_outlet_temperature,
+                test_bed.query_element(|e| e.oil_outlet_temperature),
                 starting_temperature
             );
         }
@@ -923,7 +932,7 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_secs(10));
 
-            let starting_temperature = test_bed.element().oil_outlet_temperature;
+            let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
 
             test_bed.set_update_after_power_distribution(|idg, context| {
                 idg.update(
@@ -936,7 +945,7 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_secs(10));
 
-            assert!(test_bed.element().oil_outlet_temperature < starting_temperature);
+            assert!(test_bed.query_element(|e| e.oil_outlet_temperature) < starting_temperature);
         }
     }
 }
