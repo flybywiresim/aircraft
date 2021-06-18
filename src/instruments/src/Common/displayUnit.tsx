@@ -14,11 +14,13 @@ enum DisplayUnitState {
     On,
     Off,
     Selftest,
-    Standby
+    Standby,
+    Spawn
 }
 
 export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
-    const [state, setState] = useState(DisplayUnitState.Off);
+    const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
+    const [state, setState] = useState((coldDark) ? DisplayUnitState.Off : DisplayUnitState.Spawn);
     const [timer, setTimer] = useState<number | null>(null);
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
@@ -39,7 +41,10 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     });
 
     useEffect(() => {
-        if (state === DisplayUnitState.On && (potentiometer === 0 || electricityState === 0)) {
+        if ((state === DisplayUnitState.Spawn) && electricityState !== 0) {
+            setState(DisplayUnitState.On);
+            setTimer(null);
+        } else if (state === DisplayUnitState.On && (potentiometer === 0 || electricityState === 0)) {
             setState(DisplayUnitState.Standby);
             setTimer(10);
         } else if (state === DisplayUnitState.Standby && (potentiometer !== 0 && electricityState !== 0)) {
