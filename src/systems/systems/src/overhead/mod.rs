@@ -680,7 +680,7 @@ mod momentary_push_button_tests {
     #[test]
     fn reads_its_state() {
         let mut test_bed = SimulationTestBed::from(MomentaryPushButton::new("TEST"));
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
 

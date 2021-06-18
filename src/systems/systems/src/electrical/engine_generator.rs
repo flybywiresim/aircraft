@@ -349,7 +349,7 @@ mod tests {
             },
             simulation::{
                 test::{SimulationTestBed, TestBed},
-                Aircraft,
+                Aircraft, Read,
             },
         };
 
@@ -374,19 +374,19 @@ mod tests {
             }
 
             fn frequency_is_normal(&mut self) -> bool {
-                self.read_bool("ELEC_ENG_GEN_1_FREQUENCY_NORMAL")
+                self.read("ELEC_ENG_GEN_1_FREQUENCY_NORMAL")
             }
 
             fn potential_is_normal(&mut self) -> bool {
-                self.read_bool("ELEC_ENG_GEN_1_POTENTIAL_NORMAL")
+                self.read("ELEC_ENG_GEN_1_POTENTIAL_NORMAL")
             }
 
             fn load_is_normal(&mut self) -> bool {
-                self.read_bool("ELEC_ENG_GEN_1_LOAD_NORMAL")
+                self.read("ELEC_ENG_GEN_1_LOAD_NORMAL")
             }
 
             fn load(&mut self) -> Ratio {
-                Ratio::new::<percent>(self.read_f64("ELEC_ENG_GEN_1_LOAD"))
+                self.read("ELEC_ENG_GEN_1_LOAD")
             }
 
             fn generator_is_powered(&mut self) -> bool {

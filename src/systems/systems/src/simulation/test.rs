@@ -4,8 +4,9 @@ use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, v
 use crate::electrical::Electricity;
 
 use super::{
-    from_bool, to_bool, Aircraft, Simulation, SimulationElement, SimulationElementVisitor,
-    SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext,
+    Aircraft, Reader, Simulation, SimulationElement, SimulationElementVisitor,
+    SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
+    Writer,
 };
 
 pub trait TestBed {
@@ -57,24 +58,18 @@ pub trait TestBed {
         self.test_bed_mut().set_on_ground(on_ground);
     }
 
-    fn write_bool(&mut self, name: &str, value: bool) {
-        self.test_bed_mut().write_bool(name, value);
+    fn contains_key(&self, name: &str) -> bool {
+        self.test_bed().contains_key(name)
     }
-
+}
+impl<T: TestBed> Writer for T {
     fn write_f64(&mut self, name: &str, value: f64) {
         self.test_bed_mut().write_f64(name, value);
     }
-
-    fn read_bool(&mut self, name: &str) -> bool {
-        self.test_bed_mut().read_bool(name)
-    }
-
+}
+impl<T: TestBed> Reader for T {
     fn read_f64(&mut self, name: &str) -> f64 {
         self.test_bed_mut().read_f64(name)
-    }
-
-    fn contains_key(&self, name: &str) -> bool {
-        self.test_bed().contains_key(name)
     }
 }
 
@@ -174,20 +169,11 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     fn set_on_ground(&mut self, on_ground: bool) {
-        self.reader_writer
-            .write_bool(UpdateContext::IS_ON_GROUND_KEY, on_ground);
-    }
-
-    fn write_bool(&mut self, name: &str, value: bool) {
-        self.reader_writer.write_bool(name, value);
+        self.write(UpdateContext::IS_ON_GROUND_KEY, on_ground);
     }
 
     fn write_f64(&mut self, name: &str, value: f64) {
         self.reader_writer.write_f64(name, value);
-    }
-
-    fn read_bool(&mut self, name: &str) -> bool {
-        self.reader_writer.read_bool(name)
     }
 
     fn read_f64(&mut self, name: &str) -> f64 {
@@ -349,16 +335,8 @@ impl TestReaderWriter {
         self.variables.contains_key(name)
     }
 
-    fn write_bool(&mut self, name: &str, value: bool) {
-        self.write(name, from_bool(value));
-    }
-
     fn write_f64(&mut self, name: &str, value: f64) {
         self.write(name, value);
-    }
-
-    fn read_bool(&mut self, name: &str) -> bool {
-        to_bool(self.read(name))
     }
 
     fn read_f64(&mut self, name: &str) -> f64 {

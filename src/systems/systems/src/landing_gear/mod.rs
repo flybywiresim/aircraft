@@ -43,53 +43,56 @@ impl Default for LandingGear {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestAircraft, TestBed};
+    use crate::simulation::{
+        test::{SimulationTestBed, TestAircraft, TestBed},
+        Write,
+    };
 
     #[test]
     fn is_up_and_locked_returns_false_when_fully_down() {
-        let test_bed = run_test_bed_on(100.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(100.));
 
         assert!(!test_bed.element().is_up_and_locked());
     }
 
     #[test]
     fn is_up_and_locked_returns_false_when_somewhat_down() {
-        let test_bed = run_test_bed_on(1.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(1.));
 
         assert!(!test_bed.element().is_up_and_locked());
     }
 
     #[test]
     fn is_up_and_locked_returns_true_when_fully_up() {
-        let test_bed = run_test_bed_on(0.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(0.));
 
         assert!(test_bed.element().is_up_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_fully_up() {
-        let test_bed = run_test_bed_on(0.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(0.));
 
         assert!(!test_bed.element().is_down_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_somewhat_up() {
-        let test_bed = run_test_bed_on(99.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(99.));
 
         assert!(!test_bed.element().is_down_and_locked());
     }
 
     #[test]
     fn is_down_and_locked_returns_true_when_fully_down() {
-        let test_bed = run_test_bed_on(100.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(100.));
 
         assert!(test_bed.element().is_down_and_locked());
     }
 
-    fn run_test_bed_on(position: f64) -> SimulationTestBed<TestAircraft<LandingGear>> {
+    fn run_test_bed_on(position: Ratio) -> SimulationTestBed<TestAircraft<LandingGear>> {
         let mut test_bed = SimulationTestBed::from(LandingGear::new());
-        test_bed.write_f64(LandingGear::GEAR_CENTER_POSITION, position);
+        test_bed.write(LandingGear::GEAR_CENTER_POSITION, position);
 
         test_bed.run();
 

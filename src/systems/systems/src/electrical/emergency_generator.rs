@@ -122,7 +122,7 @@ mod emergency_generator_tests {
         electrical::Electricity,
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, UpdateContext,
+            Aircraft, Read, SimulationElementVisitor, UpdateContext,
         },
     };
 
@@ -137,11 +137,11 @@ mod emergency_generator_tests {
         }
 
         fn frequency_is_normal(&mut self) -> bool {
-            self.read_bool("ELEC_EMER_GEN_FREQUENCY_NORMAL")
+            self.read("ELEC_EMER_GEN_FREQUENCY_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.read_bool("ELEC_EMER_GEN_POTENTIAL_NORMAL")
+            self.read("ELEC_EMER_GEN_POTENTIAL_NORMAL")
         }
 
         fn emer_gen_is_powered(&self) -> bool {

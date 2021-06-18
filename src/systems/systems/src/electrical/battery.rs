@@ -244,7 +244,7 @@ mod tests {
             },
             simulation::{
                 test::{SimulationTestBed, TestBed},
-                Aircraft, SimulationElementVisitor, UpdateContext,
+                Aircraft, Read, SimulationElementVisitor, UpdateContext,
             },
         };
         use std::time::Duration;
@@ -327,23 +327,19 @@ mod tests {
             }
 
             fn current_is_normal(&mut self, number: usize) -> bool {
-                self.read_bool(&format!("ELEC_BAT_{}_CURRENT_NORMAL", number))
+                self.read(&format!("ELEC_BAT_{}_CURRENT_NORMAL", number))
             }
 
             fn current(&mut self, number: usize) -> ElectricCurrent {
-                ElectricCurrent::new::<ampere>(
-                    self.read_f64(&format!("ELEC_BAT_{}_CURRENT", number)),
-                )
+                self.read(&format!("ELEC_BAT_{}_CURRENT", number))
             }
 
             fn potential_is_normal(&mut self, number: usize) -> bool {
-                self.read_bool(&format!("ELEC_BAT_{}_POTENTIAL_NORMAL", number))
+                self.read(&format!("ELEC_BAT_{}_POTENTIAL_NORMAL", number))
             }
 
             fn potential(&mut self, number: usize) -> ElectricPotential {
-                ElectricPotential::new::<volt>(
-                    self.read_f64(&format!("ELEC_BAT_{}_POTENTIAL", number)),
-                )
+                self.read(&format!("ELEC_BAT_{}_POTENTIAL", number))
             }
         }
         impl TestBed for BatteryTestBed {

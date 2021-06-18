@@ -120,7 +120,7 @@ mod transformer_rectifier_tests {
         },
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, UpdateContext,
+            Aircraft, Read, SimulationElementVisitor, UpdateContext,
         },
     };
 
@@ -145,15 +145,15 @@ mod transformer_rectifier_tests {
         }
 
         fn current_is_normal(&mut self) -> bool {
-            self.read_bool("ELEC_TR_1_CURRENT_NORMAL")
+            self.read("ELEC_TR_1_CURRENT_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.read_bool("ELEC_TR_1_POTENTIAL_NORMAL")
+            self.read("ELEC_TR_1_POTENTIAL_NORMAL")
         }
 
         fn current(&mut self) -> ElectricCurrent {
-            ElectricCurrent::new::<ampere>(self.read_f64("ELEC_TR_1_CURRENT"))
+            self.read("ELEC_TR_1_CURRENT")
         }
 
         fn transformer_rectifier_is_powered(&self) -> bool {

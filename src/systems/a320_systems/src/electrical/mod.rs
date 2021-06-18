@@ -433,7 +433,7 @@ mod a320_electrical_circuit_tests {
         },
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft,
+            Aircraft, Read,
         },
     };
     use uom::si::f64::*;
@@ -2404,7 +2404,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn connected_external_power(mut self) -> Self {
-            self.write_bool("EXTERNAL POWER AVAILABLE:1", true);
+            self.write("EXTERNAL POWER AVAILABLE:1", true);
 
             self.without_triggering_emergency_elec(|x| x.run())
         }
@@ -2463,7 +2463,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn gen_off(mut self, number: usize) -> Self {
-            self.write_bool(&format!("OVHD_ELEC_ENG_GEN_{}_PB_IS_ON", number), false);
+            self.write(&format!("OVHD_ELEC_ENG_GEN_{}_PB_IS_ON", number), false);
             self
         }
 
@@ -2473,27 +2473,27 @@ mod a320_electrical_circuit_tests {
         }
 
         fn gen_1_line_off(mut self) -> Self {
-            self.write_bool("OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON", false);
+            self.write("OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON", false);
             self
         }
 
         fn apu_gen_off(mut self) -> Self {
-            self.write_bool("OVHD_ELEC_APU_GEN_PB_IS_ON", false);
+            self.write("OVHD_ELEC_APU_GEN_PB_IS_ON", false);
             self
         }
 
         fn ext_pwr_on(mut self) -> Self {
-            self.write_bool("OVHD_ELEC_EXT_PWR_PB_IS_ON", true);
+            self.write("OVHD_ELEC_EXT_PWR_PB_IS_ON", true);
             self
         }
 
         fn ext_pwr_off(mut self) -> Self {
-            self.write_bool("OVHD_ELEC_EXT_PWR_PB_IS_ON", false);
+            self.write("OVHD_ELEC_EXT_PWR_PB_IS_ON", false);
             self
         }
 
         fn ac_ess_feed_altn(mut self) -> Self {
-            self.write_bool("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL", false);
+            self.write("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL", false);
             self
         }
 
@@ -2506,12 +2506,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn bat(mut self, number: usize, auto: bool) -> Self {
-            self.write_bool(&format!("OVHD_ELEC_BAT_{}_PB_IS_AUTO", number), auto);
+            self.write(&format!("OVHD_ELEC_BAT_{}_PB_IS_AUTO", number), auto);
             self
         }
 
         fn bus_tie(mut self, auto: bool) -> Self {
-            self.write_bool("OVHD_ELEC_BUS_TIE_PB_IS_AUTO", auto);
+            self.write("OVHD_ELEC_BUS_TIE_PB_IS_AUTO", auto);
             self
         }
 
@@ -2524,12 +2524,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn commercial_off(mut self) -> Self {
-            self.write_bool("OVHD_ELEC_COMMERCIAL_PB_IS_ON", false);
+            self.write("OVHD_ELEC_COMMERCIAL_PB_IS_ON", false);
             self
         }
 
         fn galy_and_cab_off(mut self) -> Self {
-            self.write_bool("OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO", false);
+            self.write("OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO", false);
             self
         }
 
@@ -2544,7 +2544,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn rat_and_emer_gen_man_on_pressed(mut self) -> Self {
-            self.write_bool("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED", true);
+            self.write("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED", true);
             self
         }
 
@@ -2554,7 +2554,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn apu_start_contactors_closed(&mut self) -> bool {
-            self.read_bool("ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED")
+            self.read("ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED")
         }
 
         fn apu_start_motor_is_powered(&self) -> bool {
@@ -2664,28 +2664,28 @@ mod a320_electrical_circuit_tests {
         }
 
         fn ac_ess_feed_has_fault(&mut self) -> bool {
-            self.read_bool("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT")
+            self.read("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT")
         }
 
         fn gen_has_fault(&mut self, number: usize) -> bool {
-            self.read_bool(&format!("OVHD_ELEC_ENG_GEN_{}_PB_HAS_FAULT", number))
+            self.read(&format!("OVHD_ELEC_ENG_GEN_{}_PB_HAS_FAULT", number))
         }
 
         fn rat_and_emer_gen_has_fault(&mut self) -> bool {
-            self.read_bool("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT")
+            self.read("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT")
         }
 
         fn galley_is_shed(&mut self) -> bool {
-            self.read_bool("ELEC_GALLEY_IS_SHED")
+            self.read("ELEC_GALLEY_IS_SHED")
         }
 
         fn both_ac_ess_feed_contactors_open(&mut self) -> bool {
-            !self.read_bool("ELEC_CONTACTOR_3XC1_IS_CLOSED")
-                && !self.read_bool("ELEC_CONTACTOR_3XC2_IS_CLOSED")
+            !Read::<bool>::read(self, "ELEC_CONTACTOR_3XC1_IS_CLOSED")
+                && !Read::<bool>::read(self, "ELEC_CONTACTOR_3XC2_IS_CLOSED")
         }
 
         fn dc_bus_2_tie_contactor_is_open(&mut self) -> bool {
-            !self.read_bool("ELEC_CONTACTOR_1PC2_IS_CLOSED")
+            !Read::<bool>::read(self, "ELEC_CONTACTOR_1PC2_IS_CLOSED")
         }
 
         fn run(self) -> Self {

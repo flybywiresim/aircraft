@@ -346,7 +346,7 @@ mod tests {
         use super::*;
         use crate::simulation::{
             test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBed},
-            Aircraft,
+            Aircraft, Read,
         };
 
         #[test]
@@ -451,7 +451,7 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.read_bool("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"),
+                Read::<bool>::read(&mut test_bed, "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"),
                 false
             );
         }
@@ -465,7 +465,10 @@ mod tests {
             test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.01)));
             test_bed.run();
 
-            assert_eq!(test_bed.read_bool("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"), true);
+            assert_eq!(
+                Read::<bool>::read(&mut test_bed, "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"),
+                true
+            );
         }
 
         #[test]

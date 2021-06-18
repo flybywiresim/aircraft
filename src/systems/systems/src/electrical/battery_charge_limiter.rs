@@ -574,7 +574,7 @@ mod tests {
             },
             simulation::{
                 test::{SimulationTestBed, TestBed},
-                Aircraft, SimulationElementVisitor,
+                Aircraft, Read, SimulationElementVisitor,
             },
         };
         use std::time::Duration;
@@ -759,7 +759,7 @@ mod tests {
             }
 
             fn current(&mut self) -> ElectricCurrent {
-                ElectricCurrent::new::<ampere>(self.read_f64(&format!("ELEC_BAT_{}_CURRENT", 1)))
+                self.read(&format!("ELEC_BAT_{}_CURRENT", 1))
             }
 
             fn battery_contactor_is_closed(&self) -> bool {
@@ -777,7 +777,7 @@ mod tests {
             }
 
             fn should_show_arrow_when_contactor_closed(&mut self) -> bool {
-                self.read_bool("ELEC_CONTACTOR_TEST_SHOW_ARROW_WHEN_CLOSED")
+                self.read("ELEC_CONTACTOR_TEST_SHOW_ARROW_WHEN_CLOSED")
             }
 
             fn emergency_elec(mut self) -> Self {

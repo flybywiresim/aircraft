@@ -152,7 +152,7 @@ mod tests {
             electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
             simulation::{
                 test::{SimulationTestBed, TestBed},
-                Aircraft,
+                Aircraft, Write,
             },
         };
 
@@ -230,7 +230,7 @@ mod tests {
             test_bed: &mut SimulationTestBed<FlightPhasePowerConsumerTestAircraft>,
             phase: FwcFlightPhase,
         ) {
-            test_bed.write_f64("FWC_FLIGHT_PHASE", phase as i32 as f64);
+            test_bed.write("FWC_FLIGHT_PHASE", phase as i32 as f64);
         }
 
         #[test]

@@ -98,7 +98,7 @@ mod static_inverter_tests {
         },
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, UpdateContext,
+            Aircraft, Read, SimulationElementVisitor, UpdateContext,
         },
     };
 
@@ -123,11 +123,11 @@ mod static_inverter_tests {
         }
 
         fn frequency_is_normal(&mut self) -> bool {
-            self.read_bool("ELEC_STAT_INV_FREQUENCY_NORMAL")
+            self.read("ELEC_STAT_INV_FREQUENCY_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.read_bool("ELEC_STAT_INV_POTENTIAL_NORMAL")
+            self.read("ELEC_STAT_INV_POTENTIAL_NORMAL")
         }
 
         fn static_inverter_is_powered(&self) -> bool {

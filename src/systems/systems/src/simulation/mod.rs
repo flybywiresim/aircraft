@@ -3,7 +3,7 @@ use std::time::Duration;
 mod update_context;
 use crate::{
     electrical::Electricity,
-    shared::{to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
+    shared::{ConsumePower, ElectricalBuses, PowerConsumptionReport},
 };
 use uom::si::{
     acceleration::foot_per_second_squared,
@@ -329,6 +329,10 @@ impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
     }
 }
 
+pub trait Reader {
+    fn read_f64(&mut self, name: &str) -> f64;
+}
+
 /// Reads data from the simulator into the aircraft system simulation.
 pub struct SimulatorReader<'a> {
     simulator_read_writer: &'a mut dyn SimulatorReaderWriter,
@@ -339,10 +343,15 @@ impl<'a> SimulatorReader<'a> {
             simulator_read_writer,
         }
     }
-
-    pub fn read_f64(&mut self, name: &str) -> f64 {
+}
+impl<'a> Reader for SimulatorReader<'a> {
+    fn read_f64(&mut self, name: &str) -> f64 {
         self.simulator_read_writer.read(name)
     }
+}
+
+pub trait Writer {
+    fn write_f64(&mut self, name: &str, value: f64);
 }
 
 /// Writes data from the aircraft system simulation into the the simulator.
@@ -355,7 +364,8 @@ impl<'a> SimulatorWriter<'a> {
             simulator_read_writer,
         }
     }
-
+}
+impl<'a> Writer for SimulatorWriter<'a> {
     fn write_f64(&mut self, name: &str, value: f64) {
         self.simulator_read_writer.write(name, value);
     }
@@ -427,37 +437,37 @@ pub trait WriteWhen<T> {
     fn write_when(&mut self, condition: bool, name: &str, value: T);
 }
 
-impl<'a> Read<Velocity> for SimulatorReader<'a> {
+impl<T: Reader> Read<Velocity> for T {
     fn read(&mut self, name: &str) -> Velocity {
         Velocity::new::<knot>(self.read_f64(name))
     }
 }
 
-impl<'a> Read<Length> for SimulatorReader<'a> {
+impl<T: Reader> Read<Length> for T {
     fn read(&mut self, name: &str) -> Length {
         Length::new::<foot>(self.read_f64(name))
     }
 }
 
-impl<'a> Read<Acceleration> for SimulatorReader<'a> {
+impl<T: Reader> Read<Acceleration> for T {
     fn read(&mut self, name: &str) -> Acceleration {
         Acceleration::new::<foot_per_second_squared>(self.read_f64(name))
     }
 }
 
-impl<'a> Read<ThermodynamicTemperature> for SimulatorReader<'a> {
+impl<T: Reader> Read<ThermodynamicTemperature> for T {
     fn read(&mut self, name: &str) -> ThermodynamicTemperature {
         ThermodynamicTemperature::new::<degree_celsius>(self.read_f64(name))
     }
 }
 
-impl<'a> Write<ThermodynamicTemperature> for SimulatorWriter<'a> {
+impl<T: Writer> Write<ThermodynamicTemperature> for T {
     fn write(&mut self, name: &str, value: ThermodynamicTemperature) {
         self.write_f64(name, value.get::<degree_celsius>())
     }
 }
 
-impl<'a> WriteWhen<ThermodynamicTemperature> for SimulatorWriter<'a> {
+impl<T: Writer> WriteWhen<ThermodynamicTemperature> for T {
     fn write_when(&mut self, condition: bool, name: &str, value: ThermodynamicTemperature) {
         self.write_f64(
             name,
@@ -470,19 +480,19 @@ impl<'a> WriteWhen<ThermodynamicTemperature> for SimulatorWriter<'a> {
     }
 }
 
-impl<'a> Read<Ratio> for SimulatorReader<'a> {
+impl<T: Reader> Read<Ratio> for T {
     fn read(&mut self, name: &str) -> Ratio {
         Ratio::new::<percent>(self.read_f64(name))
     }
 }
 
-impl<'a> Write<Ratio> for SimulatorWriter<'a> {
+impl<T: Writer> Write<Ratio> for T {
     fn write(&mut self, name: &str, value: Ratio) {
         self.write_f64(name, value.get::<percent>())
     }
 }
 
-impl<'a> WriteWhen<Ratio> for SimulatorWriter<'a> {
+impl<T: Writer> WriteWhen<Ratio> for T {
     fn write_when(&mut self, condition: bool, name: &str, value: Ratio) {
         self.write_f64(
             name,
@@ -495,73 +505,103 @@ impl<'a> WriteWhen<Ratio> for SimulatorWriter<'a> {
     }
 }
 
-impl<'a> Read<bool> for SimulatorReader<'a> {
+impl<T: Reader> Read<bool> for T {
     fn read(&mut self, name: &str) -> bool {
-        to_bool(self.read_f64(name))
+        (self.read_f64(name) - 1.).abs() < f64::EPSILON
     }
 }
 
-impl<'a> Write<bool> for SimulatorWriter<'a> {
+impl<T: Writer> Write<bool> for T {
     fn write(&mut self, name: &str, value: bool) {
         self.write_f64(name, from_bool(value));
     }
 }
 
-impl<'a> WriteWhen<bool> for SimulatorWriter<'a> {
+impl<T: Writer> WriteWhen<bool> for T {
     fn write_when(&mut self, condition: bool, name: &str, value: bool) {
         self.write_f64(name, if condition { from_bool(value) } else { -1. });
     }
 }
 
-impl<'a> Read<f64> for SimulatorReader<'a> {
+impl<T: Reader> Read<f64> for T {
     fn read(&mut self, name: &str) -> f64 {
         self.read_f64(name)
     }
 }
 
-impl<'a> Write<f64> for SimulatorWriter<'a> {
+impl<T: Writer> Write<f64> for T {
     fn write(&mut self, name: &str, value: f64) {
         self.write_f64(name, value);
     }
 }
 
-impl<'a> Write<ElectricPotential> for SimulatorWriter<'a> {
+impl<T: Reader> Read<ElectricPotential> for T {
+    fn read(&mut self, name: &str) -> ElectricPotential {
+        ElectricPotential::new::<volt>(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<ElectricPotential> for T {
     fn write(&mut self, name: &str, value: ElectricPotential) {
         self.write_f64(name, value.get::<volt>());
     }
 }
 
-impl<'a> Write<ElectricCurrent> for SimulatorWriter<'a> {
+impl<T: Reader> Read<ElectricCurrent> for T {
+    fn read(&mut self, name: &str) -> ElectricCurrent {
+        ElectricCurrent::new::<ampere>(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<ElectricCurrent> for T {
     fn write(&mut self, name: &str, value: ElectricCurrent) {
         self.write_f64(name, value.get::<ampere>());
     }
 }
 
-impl<'a> Write<Frequency> for SimulatorWriter<'a> {
+impl<T: Reader> Read<Frequency> for T {
+    fn read(&mut self, name: &str) -> Frequency {
+        Frequency::new::<hertz>(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<Frequency> for T {
     fn write(&mut self, name: &str, value: Frequency) {
         self.write_f64(name, value.get::<hertz>());
     }
 }
 
-impl<'a> Write<Pressure> for SimulatorWriter<'a> {
+impl<T: Reader> Read<Pressure> for T {
+    fn read(&mut self, name: &str) -> Pressure {
+        Pressure::new::<psi>(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<Pressure> for T {
     fn write(&mut self, name: &str, value: Pressure) {
         self.write_f64(name, value.get::<psi>());
     }
 }
 
-impl<'a> Write<Volume> for SimulatorWriter<'a> {
+impl<T: Reader> Read<Volume> for T {
+    fn read(&mut self, name: &str) -> Volume {
+        Volume::new::<gallon>(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<Volume> for T {
     fn write(&mut self, name: &str, value: Volume) {
         self.write_f64(name, value.get::<gallon>());
     }
 }
 
-impl<'a> Write<VolumeRate> for SimulatorWriter<'a> {
+impl<T: Writer> Write<VolumeRate> for T {
     fn write(&mut self, name: &str, value: VolumeRate) {
         self.write_f64(name, value.get::<gallon_per_second>());
     }
 }
 
-impl<'a> Read<Mass> for SimulatorReader<'a> {
+impl<T: Reader> Read<Mass> for T {
     fn read(&mut self, name: &str) -> Mass {
         Mass::new::<pound>(self.read_f64(name))
     }

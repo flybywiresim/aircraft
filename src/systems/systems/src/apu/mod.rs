@@ -350,18 +350,17 @@ pub mod tests {
         electrical::{
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus, Electricity,
         },
-        shared::{to_bool, ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
+        shared::{ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft,
+            Aircraft, Read,
         },
     };
 
     use super::*;
     use std::time::Duration;
     use uom::si::{
-        electric_potential::volt, frequency::hertz, length::foot, power::watt, ratio::percent,
-        thermodynamic_temperature::degree_celsius,
+        length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
     };
 
     pub fn test_bed_with() -> AuxiliaryPowerUnitTestBed {
@@ -571,9 +570,7 @@ pub mod tests {
                 }),
             };
 
-            apu_test_bed
-                .test_bed
-                .write_bool("OVHD_APU_BLEED_PB_IS_ON", true);
+            apu_test_bed.write("OVHD_APU_BLEED_PB_IS_ON", true);
 
             apu_test_bed
         }
@@ -589,27 +586,27 @@ pub mod tests {
         }
 
         fn master_on(mut self) -> Self {
-            self.write_bool("OVHD_APU_MASTER_SW_PB_IS_ON", true);
+            self.write("OVHD_APU_MASTER_SW_PB_IS_ON", true);
             self
         }
 
         fn master_off(mut self) -> Self {
-            self.write_bool("OVHD_APU_MASTER_SW_PB_IS_ON", false);
+            self.write("OVHD_APU_MASTER_SW_PB_IS_ON", false);
             self
         }
 
         fn start_on(mut self) -> Self {
-            self.write_bool("OVHD_APU_START_PB_IS_ON", true);
+            self.write("OVHD_APU_START_PB_IS_ON", true);
             self
         }
 
         fn start_off(mut self) -> Self {
-            self.write_bool("OVHD_APU_START_PB_IS_ON", false);
+            self.write("OVHD_APU_START_PB_IS_ON", false);
             self
         }
 
         fn bleed_air_off(mut self) -> Self {
-            self.write_bool("OVHD_APU_BLEED_PB_IS_ON", false);
+            self.write("OVHD_APU_BLEED_PB_IS_ON", false);
             self
         }
 
@@ -635,7 +632,7 @@ pub mod tests {
         }
 
         pub fn released_apu_fire_pb(mut self) -> Self {
-            self.write_bool("FIRE_BUTTON_APU", true);
+            self.write("FIRE_BUTTON_APU", true);
             self
         }
 
@@ -691,12 +688,12 @@ pub mod tests {
         }
 
         fn running_apu_with_bleed_air(mut self) -> Self {
-            self.write_bool("OVHD_APU_BLEED_PB_IS_ON", true);
+            self.write("OVHD_APU_BLEED_PB_IS_ON", true);
             self.running_apu()
         }
 
         fn running_apu_without_bleed_air(mut self) -> Self {
-            self.write_bool("OVHD_APU_BLEED_PB_IS_ON", false);
+            self.write("OVHD_APU_BLEED_PB_IS_ON", false);
             self.running_apu()
         }
 
@@ -791,11 +788,11 @@ pub mod tests {
         }
 
         fn is_air_intake_flap_fully_open(&mut self) -> bool {
-            to_bool(self.air_intake_flap_fully_open_raw())
+            self.read("APU_FLAP_FULLY_OPEN")
         }
 
         fn air_intake_flap_fully_open_raw(&mut self) -> f64 {
-            self.read_f64("APU_FLAP_FULLY_OPEN")
+            self.read("APU_FLAP_FULLY_OPEN")
         }
 
         fn is_air_intake_flap_fully_closed(&mut self) -> bool {
@@ -803,11 +800,11 @@ pub mod tests {
         }
 
         fn air_intake_flap_open_amount(&mut self) -> Ratio {
-            Ratio::new::<percent>(self.read_f64("APU_FLAP_OPEN_PERCENTAGE"))
+            self.read("APU_FLAP_OPEN_PERCENTAGE")
         }
 
         pub fn n(&mut self) -> Ratio {
-            Ratio::new::<percent>(self.read_f64("APU_N"))
+            self.read("APU_N")
         }
 
         fn turbine_is_shutdown(&mut self) -> bool {
@@ -815,15 +812,15 @@ pub mod tests {
         }
 
         fn egt(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(self.read_f64("APU_EGT"))
+            self.read("APU_EGT")
         }
 
         fn egt_warning_temperature(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(self.read_f64("APU_EGT_WARNING"))
+            self.read("APU_EGT_WARNING")
         }
 
         fn egt_caution_temperature(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(self.read_f64("APU_EGT_CAUTION"))
+            self.read("APU_EGT_CAUTION")
         }
 
         fn apu_is_available(&mut self) -> bool {
@@ -831,15 +828,15 @@ pub mod tests {
         }
 
         fn start_is_on(&mut self) -> bool {
-            self.read_bool("OVHD_APU_START_PB_IS_ON")
+            self.read("OVHD_APU_START_PB_IS_ON")
         }
 
         fn start_shows_available(&mut self) -> bool {
-            self.read_bool("OVHD_APU_START_PB_IS_AVAILABLE")
+            self.read("OVHD_APU_START_PB_IS_AVAILABLE")
         }
 
         fn master_has_fault(&mut self) -> bool {
-            self.read_bool("OVHD_APU_MASTER_SW_PB_HAS_FAULT")
+            self.read("OVHD_APU_MASTER_SW_PB_HAS_FAULT")
         }
 
         pub fn generator_is_unpowered(&self) -> bool {
@@ -847,27 +844,27 @@ pub mod tests {
         }
 
         pub fn potential(&mut self) -> ElectricPotential {
-            ElectricPotential::new::<volt>(self.read_f64("ELEC_APU_GEN_1_POTENTIAL"))
+            self.read("ELEC_APU_GEN_1_POTENTIAL")
         }
 
         pub fn potential_within_normal_range(&mut self) -> bool {
-            self.read_bool("ELEC_APU_GEN_1_POTENTIAL_NORMAL")
+            self.read("ELEC_APU_GEN_1_POTENTIAL_NORMAL")
         }
 
         pub fn frequency(&mut self) -> Frequency {
-            Frequency::new::<hertz>(self.read_f64("ELEC_APU_GEN_1_FREQUENCY"))
+            self.read("ELEC_APU_GEN_1_FREQUENCY")
         }
 
         pub fn frequency_within_normal_range(&mut self) -> bool {
-            self.read_bool("ELEC_APU_GEN_1_FREQUENCY_NORMAL")
+            self.read("ELEC_APU_GEN_1_FREQUENCY_NORMAL")
         }
 
         pub fn load(&mut self) -> Ratio {
-            Ratio::new::<percent>(self.read_f64("ELEC_APU_GEN_1_LOAD"))
+            self.read("ELEC_APU_GEN_1_LOAD")
         }
 
         pub fn load_within_normal_range(&mut self) -> bool {
-            self.read_bool("ELEC_APU_GEN_1_LOAD_NORMAL")
+            self.read("ELEC_APU_GEN_1_LOAD_NORMAL")
         }
 
         fn should_close_start_contactors_commanded(&self) -> bool {
@@ -882,27 +879,27 @@ pub mod tests {
         }
 
         fn has_fuel_low_pressure_fault(&mut self) -> bool {
-            to_bool(self.fuel_low_pressure_fault_raw())
+            self.read("APU_LOW_FUEL_PRESSURE_FAULT")
         }
 
         fn fuel_low_pressure_fault_raw(&mut self) -> f64 {
-            self.read_f64("APU_LOW_FUEL_PRESSURE_FAULT")
+            self.read("APU_LOW_FUEL_PRESSURE_FAULT")
         }
 
         fn is_auto_shutdown(&mut self) -> bool {
-            self.read_bool("APU_IS_AUTO_SHUTDOWN")
+            self.read("APU_IS_AUTO_SHUTDOWN")
         }
 
         fn is_emergency_shutdown(&mut self) -> bool {
-            self.read_bool("APU_IS_EMERGENCY_SHUTDOWN")
+            self.read("APU_IS_EMERGENCY_SHUTDOWN")
         }
 
         fn is_inoperable(&mut self) -> bool {
-            self.read_bool("ECAM_INOP_SYS_APU")
+            self.read("ECAM_INOP_SYS_APU")
         }
 
         fn bleed_air_valve_is_open(&mut self) -> bool {
-            self.read_bool("APU_BLEED_AIR_VALVE_OPEN")
+            self.read("APU_BLEED_AIR_VALVE_OPEN")
         }
 
         fn apu_generator_output_within_normal_parameters(&self) -> bool {

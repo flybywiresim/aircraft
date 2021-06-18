@@ -98,7 +98,7 @@ mod external_power_source_tests {
         electrical::Electricity,
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor,
+            Aircraft, SimulationElementVisitor, Write,
         },
     };
 
@@ -118,20 +118,20 @@ mod external_power_source_tests {
         }
 
         fn with_connected_external_power(mut self) -> Self {
-            self.write_bool("EXTERNAL POWER AVAILABLE:1", true);
+            self.write("EXTERNAL POWER AVAILABLE:1", true);
             self
         }
 
         fn disconnect_external_power(&mut self) {
-            self.write_bool("EXTERNAL POWER AVAILABLE:1", false);
+            self.write("EXTERNAL POWER AVAILABLE:1", false);
         }
 
         fn frequency_is_normal(&mut self) -> bool {
-            self.read_bool("ELEC_EXT_PWR_FREQUENCY_NORMAL")
+            self.read("ELEC_EXT_PWR_FREQUENCY_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.read_bool("ELEC_EXT_PWR_POTENTIAL_NORMAL")
+            self.read("ELEC_EXT_PWR_POTENTIAL_NORMAL")
         }
 
         fn ext_pwr_is_powered(&self) -> bool {

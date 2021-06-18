@@ -290,11 +290,6 @@ pub(crate) fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 
     }
 }
 
-/// Converts a given `f64` representing a boolean value in the simulator into an actual `bool` value.
-pub(crate) fn to_bool(value: f64) -> bool {
-    (value - 1.).abs() < f64::EPSILON
-}
-
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;
