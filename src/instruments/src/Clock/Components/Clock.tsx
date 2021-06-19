@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import getDayNightState from './DayNight';
 
 const secondsToDisplay = (seconds: number): number[] => {
     const displayTime = [0, 0, 0];
@@ -17,10 +16,11 @@ export const Clock = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [dateMode, setDateMode] = useState(false);
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds', 200);
-    const [localTime] = useSimVar('E:LOCAL TIME', 'seconds', 200);
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number', 1000);
     const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number', 1000);
     const [year] = useSimVar('E:ZULU YEAR', 'number', 1000);
+    const [timeOfDay] = useSimVar('E:TIME OF DAY', 'enum', 10000);
+    const phaseOfDay = (timeOfDay === 0 || timeOfDay === 1) ? 'day' : 'night';
 
     useInteractionEvent('A32NX_CHRONO_DATE', () => {
         setDateMode(!dateMode);
@@ -39,8 +39,8 @@ export const Clock = () => {
 
     return (
         <>
-            <text x="6" y="153" className={`fontBig ${getDayNightState(localTime)}`}>{ltsTest === 0 ? '88:88:' : text1}</text>
-            <text x="190" y="147" className={`fontSmall ${getDayNightState(localTime)}`}>{ltsTest === 0 ? '88' : text2}</text>
+            <text x="6" y="153" className={`fontBig ${phaseOfDay}`}>{ltsTest === 0 ? '88:88:' : text1}</text>
+            <text x="190" y="147" className={`fontSmall ${phaseOfDay}`}>{ltsTest === 0 ? '88' : text2}</text>
         </>
     );
 };
