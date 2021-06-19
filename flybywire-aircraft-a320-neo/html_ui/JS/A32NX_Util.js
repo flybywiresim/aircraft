@@ -295,6 +295,24 @@ A32NX_Util.computeSunsetTime = (lat, lon, dayOfMonth, monthOfYear, year) => {
 };
 
 /**
+ * Returns the ISA temperature for a given altitude
+ * @param alt {number} altitude in ft
+ * @returns {number} ISA temp in C°
+ */
+A32NX_Util.getIsaTemp = (alt = Simplane.getAltitude()) => {
+    return Math.min(alt, 36089) * -0.0019812 + 15;
+};
+
+/**
+ * Returns the deviation from ISA temperature and OAT at given altitude
+ * @param alt {number} altitude in ft
+ * @returns {number} ISA temp deviation from OAT in C°
+ */
+A32NX_Util.getIsaTempDeviation = (alt = Simplane.getAltitude(), sat = Simplane.getAmbientTemperature()) => {
+    return sat - A32NX_Util.getIsaTemp(alt);
+};
+
+/**
  * Utility class to throttle instrument updates
  */
 class UpdateThrottler {
