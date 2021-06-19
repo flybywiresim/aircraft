@@ -5,7 +5,7 @@ class DisplayUnit {
         this.isPowered = isPoweredFn;
         this.potentiometerId = potentiometerId;
 
-        this.systemsInit = Boolean(SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool'));
+        this.systemsInit = Boolean(SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool')) && Boolean(SimVar.GetSimVarValue('SIM ON GROUND', 'Bool'));
         this.previouslyOff = false;
         // Start with a state where turning on the display unit within 10 seconds after starting the flight
         // will trigger the self test.
