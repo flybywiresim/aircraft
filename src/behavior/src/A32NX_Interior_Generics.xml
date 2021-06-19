@@ -322,14 +322,22 @@
             - HOLD_SIMVAR                       <no default>    SimVar to contain the held state
             - SEQ1_CODE                         Not present     Sequence 1 emissive code. If not present, the SEQ1 emissive will also not respond to the ANN LT TEST
             - SEQ2_CODE                         Not present     Sequence 2 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
+            - SEQ3_CODE                         Not present     Sequence 3 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
+            - SEQ4_CODE                         Not present     Sequence 4 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
             - SEQ_POWERED                       1               Whether SEQ1 and SEQ2 are powered. When unpowered, the emissive won't emit light
                                                                 even when SEQ1_CODE or SEQ2_CODE is true.
             - SEQ1_POWERED                      1               Whether SEQ1 is powered. When unpowered, the emissive won't emit light
                                                                 even when SEQ1_CODE is true.
             - SEQ2_POWERED                      1               Whether SEQ2 is powered. When unpowered, the emissive won't emit light
                                                                 even when SEQ2_CODE is true.
+            - SEQ3_POWERED                      1               Whether SEQ3 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ3_CODE is true.
+            - SEQ4_POWERED                      1               Whether SEQ4 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ4_CODE is true.
             - SEQ1_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ1 emissive drives the visibility of the SEQ1 text
             - SEQ2_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ2 emissive drives the visibility of the SEQ2 text
+            - SEQ3_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ3 emissive drives the visibility of the SEQ3 text
+            - SEQ4_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ4 emissive drives the visibility of the SEQ4 text
             - INVERTED                          False           Whether or not the switch is OFF by default
             - LEFT_SINGLE_CODE                  Not present    Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed, and when it's released
     -->
@@ -342,14 +350,20 @@
 
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ3_EMISSIVE_DRIVES_VISIBILITY>True</SEQ3_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ4_EMISSIVE_DRIVES_VISIBILITY>True</SEQ4_EMISSIVE_DRIVES_VISIBILITY>
             <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
 
             <SEQ1_NODE_ID>#NODE_ID#_SEQ1</SEQ1_NODE_ID>
             <SEQ2_NODE_ID>#NODE_ID#_SEQ2</SEQ2_NODE_ID>
+            <SEQ3_NODE_ID>#NODE_ID#_SEQ3</SEQ3_NODE_ID>
+            <SEQ4_NODE_ID>#NODE_ID#_SEQ4</SEQ4_NODE_ID>
 
             <SEQ_POWERED>1</SEQ_POWERED>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
+            <SEQ3_POWERED>1</SEQ3_POWERED>
+            <SEQ4_POWERED>1</SEQ4_POWERED>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -390,6 +404,38 @@
                         <EMISSIVE_CODE>#SEQ2_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
 
                         <Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
+                            <True>
+                                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                            </True>
+                        </Condition>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <Condition Check="SEQ3_CODE">
+            <True>
+                <Component ID="#SEQ3_NODE_ID#" Node="#SEQ3_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                        <EMISSIVE_CODE>#SEQ3_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ3_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
+
+                        <Condition Valid="SEQ3_EMISSIVE_DRIVES_VISIBILITY">
+                            <True>
+                                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                            </True>
+                        </Condition>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <Condition Check="SEQ4_CODE">
+            <True>
+                <Component ID="#SEQ4_NODE_ID#" Node="#SEQ4_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                        <EMISSIVE_CODE>#SEQ4_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ4_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
+
+                        <Condition Valid="SEQ4_EMISSIVE_DRIVES_VISIBILITY">
                             <True>
                                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                             </True>
