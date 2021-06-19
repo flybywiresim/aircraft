@@ -105,7 +105,6 @@ var A320_Neo_UpperECAM;
             this.iceNotDetTimer1 = new NXLogic_ConfirmNode(60);
             this.iceNotDetTimer2 = new NXLogic_ConfirmNode(130);
             this.predWsMemo = new NXLogic_MemoryNode(true);
-            this.ptuOnTimer = new NXLogic_ConfirmNode(0);
             this.ptuOffTimer = new NXLogic_ConfirmNode(2);
             this.isPtuOnMemory = new NXLogic_MemoryNode(true);
         }
@@ -1807,9 +1806,8 @@ var A320_Neo_UpperECAM;
         updatePtu(_deltaTime) {
             const showHydPtuMemo = this.getCachedSimVar("L:A32NX_HYD_PTU_ACTIVE_L2R", "bool") || this.getCachedSimVar("L:A32NX_HYD_PTU_ACTIVE_R2L", "bool");
 
-            const set = this.ptuOnTimer.write(showHydPtuMemo, _deltaTime);
             const reset = this.ptuOffTimer.write(!showHydPtuMemo, _deltaTime);
-            this.isPtuOnMemory.write(set, reset);
+            this.isPtuOnMemory.write(showHydPtuMemo, reset);
         }
     }
     A320_Neo_UpperECAM.Display = Display;
