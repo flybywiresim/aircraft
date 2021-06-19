@@ -443,9 +443,27 @@ impl<T: Reader> Read<Velocity> for T {
     }
 }
 
+impl<T: Writer> Write<Velocity> for T {
+    fn write(&mut self, name: &str, value: Velocity) {
+        self.write_f64(name, value.get::<knot>())
+    }
+}
+
 impl<T: Reader> Read<Length> for T {
     fn read(&mut self, name: &str) -> Length {
+        // Length is tricky, as we might have usage of nautical mile
+        // or other units later. We'll have to work around that problem
+        // when we get there.
         Length::new::<foot>(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<Length> for T {
+    fn write(&mut self, name: &str, value: Length) {
+        // Length is tricky, as we might have usage of nautical mile
+        // or other units later. We'll have to work around that problem
+        // when we get there.
+        self.write_f64(name, value.get::<foot>())
     }
 }
 

@@ -4,7 +4,7 @@ use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, v
 use crate::electrical::{Electricity, Potential};
 
 use super::{
-    Aircraft, Reader, Simulation, SimulationElement, SimulationElementVisitor,
+    Aircraft, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
     Writer,
 };
@@ -151,31 +151,19 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
-        self.reader_writer.write_f64(
-            UpdateContext::INDICATED_AIRSPEED_KEY,
-            indicated_airspeed.get::<knot>(),
-        );
+        self.write(UpdateContext::INDICATED_AIRSPEED_KEY, indicated_airspeed);
     }
 
     fn indicated_airspeed(&mut self) -> Velocity {
-        Velocity::new::<knot>(
-            self.reader_writer
-                .read_f64(UpdateContext::INDICATED_AIRSPEED_KEY),
-        )
+        self.read(UpdateContext::INDICATED_AIRSPEED_KEY)
     }
 
     fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
-        self.reader_writer.write_f64(
-            UpdateContext::INDICATED_ALTITUDE_KEY,
-            indicated_altitude.get::<foot>(),
-        );
+        self.write(UpdateContext::INDICATED_ALTITUDE_KEY, indicated_altitude);
     }
 
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
-        self.reader_writer.write_f64(
-            UpdateContext::AMBIENT_TEMPERATURE_KEY,
-            ambient_temperature.get::<degree_celsius>(),
-        );
+        self.write(UpdateContext::AMBIENT_TEMPERATURE_KEY, ambient_temperature);
     }
 
     fn set_on_ground(&mut self, on_ground: bool) {
