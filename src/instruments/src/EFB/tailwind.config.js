@@ -2,7 +2,7 @@
 
 module.exports = {
     purge: {
-        enabled: !!process.env.A32NX_PRODUCTION_BUILD,
+        enabled: process.env.A32NX_PRODUCTION_BUILD === '1',
         content: [
             './**/*.{jsx,tsx}',
         ],
