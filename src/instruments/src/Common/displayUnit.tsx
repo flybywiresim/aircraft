@@ -19,8 +19,8 @@ enum DisplayUnitState {
 }
 
 export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
-    const coldDark = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
-    const onGround = useSimVar('SIM ON GROUND', 'Bool', 200);
+    const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
+    const [onGround] = useSimVar('SIM ON GROUND', 'Bool', 200);
     const [state, setState] = useState((coldDark && onGround) ? DisplayUnitState.Off : DisplayUnitState.Spawn);
     const [timer, setTimer] = useState<number | null>(null);
 
