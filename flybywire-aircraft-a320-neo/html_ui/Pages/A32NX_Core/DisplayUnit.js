@@ -5,6 +5,7 @@ class DisplayUnit {
         this.isPowered = isPoweredFn;
         this.potentiometerId = potentiometerId;
 
+        this.systemsInit = Boolean(SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool'));
         this.previouslyOff = false;
         // Start with a state where turning on the display unit within 10 seconds after starting the flight
         // will trigger the self test.
@@ -28,10 +29,18 @@ class DisplayUnit {
         this.selfTest.update(deltaTime);
 
         const isOn = this.isOn();
-        if (isOn) {
-            this.offDurationInMilliseconds = 0;
+        if (this.systemsInit) {
+            if (isOn) {
+                this.offDurationInMilliseconds = 0;
+            } else {
+                this.offDurationInMilliseconds += deltaTime;
+            }
         } else {
-            this.offDurationInMilliseconds += deltaTime;
+            // on non c&d spawn in
+            this.offDurationInMilliseconds = 0;
+            if (isOn) {
+                this.systemsInit = true; // normal ops
+            }
         }
 
         this.rootElement.style.display = isOn ? "block" : "none";
