@@ -148,9 +148,17 @@ class CDUFuelPredPage {
                 };
                 if (mcdu.altDestination) {
                     altIdentCell = mcdu.altDestination.ident;
-                    altEFOBCell = (mcdu.getAltEFOB(true) * mcdu._conversionWeight).toFixed(1);
-                    altTimeCellColor = "[color]green";
+                    const altEFOBCellVal = (mcdu.getAltEFOB(true) * mcdu._conversionWeight).toFixed(1);
                     altEFOBCellColor = "[color]green";
+                    altEFOBCell = altEFOBCellVal;
+                    if (altEFOBCellVal < 0.8) {
+                        altEFOBCellColor = "[color]amber";
+                    }
+                    if (altEFOBCellVal <= 0) {
+                        altEFOBCellColor = "[color]amber";
+                        altEFOBCell = "---.-";
+                    }
+                    altTimeCellColor = "[color]green";
                 }
 
                 mcdu.tryUpdateRouteTrip(isFlying);

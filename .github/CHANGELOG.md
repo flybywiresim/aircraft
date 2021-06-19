@@ -5,7 +5,6 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
-1. [MCDU] When aircraft can not reach alternate destination EFOB value stays positiv - @erso44 (Ersin Karakilic)
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
@@ -113,6 +112,7 @@
 1. [MCDU] Fixed performance page refresh on flight phase transition - @MisterChocker (Leon)
 1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
 1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
+1. [MCDU] When aircraft can not reach alternate destination EFOB value stays positiv - @erso44 (Ersin Karakilic)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
