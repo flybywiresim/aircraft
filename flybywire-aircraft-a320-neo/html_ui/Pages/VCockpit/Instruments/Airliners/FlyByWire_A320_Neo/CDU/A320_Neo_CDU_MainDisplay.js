@@ -19,6 +19,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
+        this.aocAirportList = new CDUAocAirportList;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -33,6 +34,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             });
         });
     }
+
+    initMcduVariables() {
+        this.messageQueue = [];
+        this.aocAirportList.init();
+    }
+
     Init() {
         super.Init();
 
