@@ -14,7 +14,7 @@
 using namespace std;
 
 // IMPORTANT: this constant needs to increased with every interface change
-const uint64_t INTERFACE_VERSION = 8;
+const uint64_t INTERFACE_VERSION = 9;
 
 int main(int argc, char* argv[]) {
   // variables for command line parameters
