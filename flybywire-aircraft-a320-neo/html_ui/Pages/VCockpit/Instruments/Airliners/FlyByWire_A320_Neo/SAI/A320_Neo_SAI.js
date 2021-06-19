@@ -1128,7 +1128,7 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         this.dayBrightness = 0.85;
         this.nightBrightness = 0.45;
         this.isDaytime = this.getIsDaytime();
-        this.updateThrottler = new UpdateThrottler(3000);
+        this.updateThrottler = new UpdateThrottler(10000);
     }
     onEnter() {
     }
@@ -1179,34 +1179,10 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         this.autoSetBrightness();
     }
     getIsDaytime() {
-        const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-        const lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-
-        const dayOfMonth = SimVar.GetSimVarValue("E:ZULU DAY OF MONTH", "number");
-        const monthOfYear = SimVar.GetSimVarValue("E:ZULU MONTH OF YEAR", "number");
-        const year = SimVar.GetSimVarValue("E:ZULU YEAR", "number");
-
-        const sunrise = A32NX_Util.computeSunriseTime(lat, lon, dayOfMonth, monthOfYear, year);
-        const sunset = A32NX_Util.computeSunsetTime(lat, lon, dayOfMonth, monthOfYear, year);
-
-        if (sunset === Number.NEGATIVE_INFINITY || sunrise === Number.NEGATIVE_INFINITY) {
-            // Polar day
-            return true;
-        } else if (sunset === Number.POSITIVE_INFINITY || sunrise === Number.POSITIVE_INFINITY) {
-            // Polar night
-            return false;
-        }
-
-        const localTime = SimVar.GetSimVarValue("E:LOCAL TIME", "seconds");
-        const localHour = Math.floor(localTime / 3600);
-
-        return (localHour >= sunrise && localHour <= sunset);
+        const timeOfDay = SimVar.GetSimVarValue("E:TIME OF DAY", "Enum");
+        return timeOfDay === 0 || timeOfDay === 1;
     }
     autoSetBrightness() {
-        console.log("dayBrightness:", this.dayBrightness);
-        console.log("nightBrightness:", this.nightBrightness);
-        console.log("isDaytime:", this.isDaytime);
-
         this.setBrightness(this.isDaytime ? this.dayBrightness : this.nightBrightness);
     }
     onEvent(_event) {
