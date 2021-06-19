@@ -105,6 +105,8 @@ var A320_Neo_UpperECAM;
             this.iceNotDetTimer1 = new NXLogic_ConfirmNode(60);
             this.iceNotDetTimer2 = new NXLogic_ConfirmNode(130);
             this.predWsMemo = new NXLogic_MemoryNode(true);
+            this.ptuOffTimer = new NXLogic_ConfirmNode(2);
+            this.isPtuOnMemory = new NXLogic_MemoryNode(true);
         }
         get templateID() {
             return "UpperECAMTemplate";
@@ -1294,9 +1296,8 @@ var A320_Neo_UpperECAM;
                     {
                         message: "HYD PTU",
                         isActive: () => {
-                            // Rough approximation until hydraulic system fully implemented
-                            // Needs the last 2 conditions because PTU_ON is (incorrectly) permanently set to true during first engine start
-                            return (this.getCachedSimVar("L:XMLVAR_PTU_ON", "Bool") == 1) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 1 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 1);
+                            // There are no references indicating that the HYD PTU message should not show up during engine start. However, multiple pilots have pointed out that the PTU comes on during the second engine startup, but no memo is seen on the ECAM.
+                            return this.getCachedSimVar("L:A32NX_FWC_FLIGHT_PHASE", "Enum") >= 2 && this.isPtuOnMemory.read();
                         }
                     },
                     {
@@ -1632,6 +1633,8 @@ var A320_Neo_UpperECAM;
             this.updateInhibitMessages(_deltaTime);
             this.updateIcing(_deltaTime);
 
+            this.updatePtu(_deltaTime);
+
             const memosInhibited = this.leftEcamMessagePanel.hasWarnings || this.leftEcamMessagePanel.hasCautions;
             const showTOMemo = SimVar.GetSimVarValue("L:A32NX_FWC_TOMEMO", "Bool") && !memosInhibited;
             if (this.takeoffMemo != null) {
@@ -1833,6 +1836,13 @@ var A320_Neo_UpperECAM;
         getInfoPanelManager() {
             return this.infoPanelsManager;
         };
+
+        updatePtu(_deltaTime) {
+            const showHydPtuMemo = this.getCachedSimVar("L:A32NX_HYD_PTU_ACTIVE_L2R", "bool") || this.getCachedSimVar("L:A32NX_HYD_PTU_ACTIVE_R2L", "bool");
+
+            const reset = this.ptuOffTimer.write(!showHydPtuMemo, _deltaTime);
+            this.isPtuOnMemory.write(showHydPtuMemo, reset);
+        }
     }
     A320_Neo_UpperECAM.Display = Display;
     class PanelBase {
