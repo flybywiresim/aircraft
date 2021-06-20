@@ -22,6 +22,7 @@ jobs:
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
         run: |
+          echo A32NX_PRODUCTION_BUILD=1 >> .env
           echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
           echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
