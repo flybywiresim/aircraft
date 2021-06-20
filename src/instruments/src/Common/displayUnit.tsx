@@ -30,7 +30,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     useUpdate((deltaTime) => {
         if (timer !== null) {
             if (timer > 0) {
-                setTimer(timer - (deltaTime / 1000));
+                setTimer(Math.max(timer - (deltaTime / 1000), 0));
             } else if (state === DisplayUnitState.Standby) {
                 setState(DisplayUnitState.Off);
                 setTimer(null);
@@ -42,7 +42,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     });
 
     useEffect(() => {
-        if ((state === DisplayUnitState.Spawn) && electricityState !== 0) {
+        if ((state === DisplayUnitState.Spawn) && (potentiometer !== 0 && electricityState !== 0)) {
             setState(DisplayUnitState.On);
             setTimer(null);
         } else if (state === DisplayUnitState.On && (potentiometer === 0 || electricityState === 0)) {
@@ -59,10 +59,9 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
             setTimer(null);
         }
     });
-
-    if (state === DisplayUnitState.Selftest) {
-        return (
-            <svg className="SelfTest" viewBox="0 0 600 600">
+    return (
+        <div>
+            <svg style={{ display: state === DisplayUnitState.Selftest ? 'block' : 'none' }} className="SelfTest" viewBox="0 0 600 600">
                 <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
                 <text
@@ -80,13 +79,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
                     (MAX 40 SECONDS)
                 </text>
             </svg>
-        );
-    } if (state === DisplayUnitState.Off) {
-        return (
-            <></>
-        );
-    }
-    return (
-        <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
+            <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
+        </div>
     );
 };
