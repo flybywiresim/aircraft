@@ -1088,10 +1088,10 @@ mod tests {
         acceleration::foot_per_second_squared,
         f64::*,
         length::foot,
-        pressure::{pascal, psi, hectopascal},
+        pressure::{hectopascal, pascal, psi},
         thermodynamic_temperature::degree_celsius,
-        volume::gallon,
         velocity::foot_per_minute,
+        volume::gallon,
     };
 
     struct TestHydraulicLoopController {

@@ -1,13 +1,13 @@
-use self::{
-    cabin_pressure_controller::{CabinPressureController},
-    pressure_valve::PressureValve,
-};
+use self::{cabin_pressure_controller::CabinPressureController, pressure_valve::PressureValve};
 use crate::{
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, Write, SimulatorReader, Read, UpdateContext},
     overhead::{AutoManFaultPushButton, OnOffPushButton, ValueKnob},
     shared::random_number,
+    simulation::{
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        UpdateContext, Write,
+    },
 };
-use uom::si::{f64::*, length::foot, pressure::{hectopascal}, velocity::{foot_per_minute}};
+use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::foot_per_minute};
 
 mod cabin_pressure_controller;
 mod pressure_valve;
@@ -92,19 +92,14 @@ impl Pressurization {
             self.outflow_valve.update(context, &self.cpc_2);
             self.switch_active_system();
         }
-
     }
 
     pub fn is_sys1_active(&self) -> bool {
-        if self.cpc_1.is_active() {
-            true
-        } else { false }
+        self.cpc_1.is_active()
     }
 
     pub fn is_sys2_active(&self) -> bool {
-        if self.cpc_2.is_active() {
-            true
-        } else { false }
+        self.cpc_2.is_active()
     }
 
     pub fn set_active_system(&mut self) {
@@ -152,17 +147,26 @@ impl SimulationElement for Pressurization {
             writer.write("CABIN_ALTITUDE", self.cpc_1.cabin_altitude());
             writer.write("CABIN_VS", self.cpc_1.cabin_vs().get::<foot_per_minute>());
             writer.write("CABIN_DELTA_PRESSURE", self.cpc_1.cabin_delta_p());
-            writer.write("OUTFLOW_VALVE_OPEN_PERCENTAGE", self.cpc_1.outflow_valve_open_amount());
+            writer.write(
+                "OUTFLOW_VALVE_OPEN_PERCENTAGE",
+                self.cpc_1.outflow_valve_open_amount(),
+            );
         } else if self.is_sys2_active() {
             writer.write("CABIN_ALTITUDE", self.cpc_2.cabin_altitude());
             writer.write("CABIN_VS", self.cpc_2.cabin_vs().get::<foot_per_minute>());
             writer.write("CABIN_DELTA_PRESSURE", self.cpc_2.cabin_delta_p());
-            writer.write("OUTFLOW_VALVE_OPEN_PERCENTAGE", self.cpc_2.outflow_valve_open_amount());        }
+            writer.write(
+                "OUTFLOW_VALVE_OPEN_PERCENTAGE",
+                self.cpc_2.outflow_valve_open_amount(),
+            );
+        }
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.set_landing_elev(reader.read("AUTO_LANDING_ELEVATION"));
-        self.set_sl_pressure(Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE")));
+        self.set_sl_pressure(Pressure::new::<hectopascal>(
+            reader.read("SEA LEVEL PRESSURE"),
+        ));
         self.set_dest_qnh(Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH")));
     }
 }
@@ -209,21 +213,27 @@ impl PressurizationOverheadPanel {
     }
 }
 
+impl Default for PressurizationOverheadPanel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::simulation::test::SimulationTestBed;
-    use crate::{
-        simulation::{SimulationElement, Aircraft},
-    };
+    use crate::simulation::{Aircraft, SimulationElement};
 
-    use self::{
-        cabin_pressure_controller::PressureSchedule,
-    };
+    use self::cabin_pressure_controller::PressureSchedule;
 
     use std::time::Duration;
-    use uom::si::{ratio::percent, length::foot, pressure::{hectopascal, psi}, velocity::{knot, foot_per_minute}};
-
+    use uom::si::{
+        length::foot,
+        pressure::{hectopascal, psi},
+        ratio::percent,
+        velocity::{foot_per_minute, knot},
+    };
 
     struct TestAircraft {
         pressurization: Pressurization,
@@ -245,7 +255,7 @@ mod tests {
             }
         }
 
-        fn set_active_sys1 (&mut self) {
+        fn set_active_sys1(&mut self) {
             self.pressurization.active_system = 1;
         }
 
@@ -253,7 +263,6 @@ mod tests {
             self.engine_1_n1 = n;
             self.engine_2_n1 = n;
         }
-
     }
 
     impl Aircraft for TestAircraft {
@@ -284,10 +293,11 @@ mod tests {
         test_bed.run_aircraft(&mut aircraft);
         test_bed.run_aircraft(&mut aircraft);
 
-        assert!((aircraft.pressurization.cpc_1.cabin_altitude() - Length::new::<foot>(34000.)).abs() < Length::new::<foot>(10.));
+        assert!(
+            (aircraft.pressurization.cpc_1.cabin_altitude() - Length::new::<foot>(34000.)).abs()
+                < Length::new::<foot>(10.)
+        );
     }
-
-    // Try
 
     #[test]
     fn positive_cabin_vs_reduces_cabin_pressure() {
@@ -329,14 +339,20 @@ mod tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
         test_bed.run_aircraft(&mut aircraft);
 
-        assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::DescentInternal);
+        assert_eq!(
+            aircraft.pressurization.cpc_1.pressure_schedule(),
+            PressureSchedule::DescentInternal
+        );
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
         test_bed.set_on_ground(true);
         test_bed.set_delta(Duration::from_secs_f64(1.));
         test_bed.run_aircraft(&mut aircraft);
 
-        assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Ground);
+        assert_eq!(
+            aircraft.pressurization.cpc_1.pressure_schedule(),
+            PressureSchedule::Ground
+        );
 
         test_bed.set_delta(Duration::from_secs_f64(90.));
         test_bed.run_aircraft(&mut aircraft);
@@ -353,14 +369,20 @@ mod tests {
         fn schedule_starts_on_ground() {
             let aircraft = TestAircraft::new();
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Ground);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Ground
+            );
         }
 
         #[test]
         fn aircraft_vs_starts_at_0() {
             let aircraft = TestAircraft::new();
 
-            assert_eq!(aircraft.pressurization.cpc_1.cabin_vs(), Velocity::new::<foot_per_minute>(0.));
+            assert_eq!(
+                aircraft.pressurization.cpc_1.cabin_vs(),
+                Velocity::new::<foot_per_minute>(0.)
+            );
         }
 
         #[test]
@@ -375,7 +397,10 @@ mod tests {
 
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::TakeOff);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::TakeOff
+            );
         }
 
         #[test]
@@ -391,7 +416,10 @@ mod tests {
             test_bed.set_delta(Duration::from_secs_f64(10.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.cabin_vs(), Velocity::new::<foot_per_minute>(-400.));
+            assert_eq!(
+                aircraft.pressurization.cpc_1.cabin_vs(),
+                Velocity::new::<foot_per_minute>(-400.)
+            );
         }
 
         #[test]
@@ -408,7 +436,10 @@ mod tests {
             test_bed.run_aircraft(&mut aircraft);
 
             assert!(aircraft.pressurization.cpc_1.cabin_delta_p() > Pressure::new::<psi>(0.1));
-            assert_eq!(aircraft.pressurization.cpc_1.cabin_vs(), Velocity::new::<foot_per_minute>(0.));
+            assert_eq!(
+                aircraft.pressurization.cpc_1.cabin_vs(),
+                Velocity::new::<foot_per_minute>(0.)
+            );
         }
 
         #[test]
@@ -424,7 +455,10 @@ mod tests {
             test_bed.set_on_ground(false);
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
         }
 
         #[test]
@@ -438,7 +472,9 @@ mod tests {
             test_bed.set_delta(Duration::from_secs_f64(10.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert!(aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(0.));
+            assert!(
+                aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(0.)
+            );
         }
 
         #[test]
@@ -477,7 +513,7 @@ mod tests {
 
             for i in 1..39 {
                 test_bed.run_aircraft(&mut aircraft);
-                test_bed.set_indicated_altitude(Length::new::<foot>((i*1000) as f64));
+                test_bed.set_indicated_altitude(Length::new::<foot>((i * 1000) as f64));
             }
             test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.41));
 
@@ -501,7 +537,10 @@ mod tests {
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
         }
 
         #[test]
@@ -514,13 +553,19 @@ mod tests {
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::TakeOff);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::TakeOff
+            );
 
             aircraft.set_engine_n1(Ratio::new::<percent>(50.));
             test_bed.set_on_ground(true);
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Ground);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Ground
+            );
         }
 
         #[test]
@@ -530,14 +575,20 @@ mod tests {
 
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
             test_bed.set_delta(Duration::from_secs_f64(1.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
         }
 
         #[test]
@@ -547,7 +598,10 @@ mod tests {
 
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
@@ -555,7 +609,10 @@ mod tests {
             test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Abort);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Abort
+            );
         }
 
         #[test]
@@ -565,13 +622,19 @@ mod tests {
 
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
         }
 
         #[test]
@@ -581,14 +644,20 @@ mod tests {
 
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
             test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Cruise);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Cruise
+            );
         }
 
         #[test]
@@ -598,15 +667,24 @@ mod tests {
 
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
             test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Cruise);
-            assert_eq!(aircraft.pressurization.cpc_1.cabin_vs(), Velocity::new::<foot_per_minute>(0.));
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Cruise
+            );
+            assert_eq!(
+                aircraft.pressurization.cpc_1.cabin_vs(),
+                Velocity::new::<foot_per_minute>(0.)
+            );
         }
 
         #[test]
@@ -619,17 +697,26 @@ mod tests {
             test_bed.run_aircraft(&mut aircraft);
             test_bed.set_delta(Duration::from_secs_f64(1.));
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Cruise);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Cruise
+            );
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Cruise);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Cruise
+            );
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Cruise);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Cruise
+            );
         }
 
         #[test]
@@ -641,13 +728,19 @@ mod tests {
             test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Cruise);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Cruise
+            );
 
             test_bed.set_delta(Duration::from_secs_f64(61.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
         }
 
         #[test]
@@ -659,13 +752,19 @@ mod tests {
             test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Cruise);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Cruise
+            );
 
             test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::DescentInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::DescentInternal
+            );
         }
 
         #[test]
@@ -680,8 +779,12 @@ mod tests {
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert!(aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(-260.));
-            assert!(aircraft.pressurization.cpc_1.cabin_vs() < Velocity::new::<foot_per_minute>(0.));
+            assert!(
+                aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(-260.)
+            );
+            assert!(
+                aircraft.pressurization.cpc_1.cabin_vs() < Velocity::new::<foot_per_minute>(0.)
+            );
         }
 
         #[test]
@@ -696,13 +799,19 @@ mod tests {
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::DescentInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::DescentInternal
+            );
 
             test_bed.set_delta(Duration::from_secs_f64(61.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
         }
 
         #[test]
@@ -717,13 +826,19 @@ mod tests {
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::DescentInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::DescentInternal
+            );
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
             test_bed.set_on_ground(true);
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Ground);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Ground
+            );
         }
 
         #[test]
@@ -738,16 +853,24 @@ mod tests {
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::DescentInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::DescentInternal
+            );
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
             test_bed.set_on_ground(true);
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Ground);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Ground
+            );
 
             test_bed.run_aircraft(&mut aircraft);
-            assert!(aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(-1.));
+            assert!(
+                aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(-1.)
+            );
         }
 
         #[test]
@@ -761,13 +884,19 @@ mod tests {
             test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Abort);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Abort
+            );
 
             test_bed.set_delta(Duration::from_secs_f64(61.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::ClimbInternal);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::ClimbInternal
+            );
         }
 
         #[test]
@@ -781,13 +910,19 @@ mod tests {
             test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Abort);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Abort
+            );
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
             test_bed.set_on_ground(true);
             test_bed.run_aircraft(&mut aircraft);
 
-            assert_eq!(aircraft.pressurization.cpc_1.pressure_schedule(), PressureSchedule::Ground);
+            assert_eq!(
+                aircraft.pressurization.cpc_1.pressure_schedule(),
+                PressureSchedule::Ground
+            );
         }
     }
 }

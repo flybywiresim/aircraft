@@ -1,11 +1,9 @@
-use crate::{
-    simulation::UpdateContext,
-};
+use crate::simulation::UpdateContext;
 
-use super::{PressureValveActuator};
+use super::PressureValveActuator;
 
 use std::time::Duration;
-use uom::si::{f64::*, ratio::percent,};
+use uom::si::{f64::*, ratio::percent};
 
 pub struct PressureValve {
     open_amount: Ratio,
@@ -26,11 +24,14 @@ impl PressureValve {
         self.target_open = actuator.target_valve_position();
         if actuator.should_open_pressure_valve() && self.open_amount() < self.target_open() {
             self.open_amount += Ratio::new::<percent>(
-                self.get_valve_change_for_delta(context).min(self.target_open().get::<percent>() - self.open_amount.get::<percent>()),
+                self.get_valve_change_for_delta(context)
+                    .min(self.target_open().get::<percent>() - self.open_amount.get::<percent>()),
             );
-        } else if actuator.should_close_pressure_valve() && self.open_amount() > self.target_open() {
+        } else if actuator.should_close_pressure_valve() && self.open_amount() > self.target_open()
+        {
             self.open_amount -= Ratio::new::<percent>(
-                self.get_valve_change_for_delta(context).min(self.open_amount.get::<percent>() - self.target_open().get::<percent>()),
+                self.get_valve_change_for_delta(context)
+                    .min(self.open_amount.get::<percent>() - self.target_open().get::<percent>()),
             );
         }
     }
@@ -128,10 +129,11 @@ mod pressure_valve_tests {
     fn valve_starts_fully_open() {
         let mut aircraft = TestAircraft::new(PressureValve::new(), TestValveActuator::new());
         let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_secs(5));
+        let error_margin = f64::EPSILON;
 
         test_bed.run_aircraft(&mut aircraft);
 
-        assert_eq!(aircraft.valve_open_amount().get::<percent>(), 100.);
+        assert!((aircraft.valve_open_amount().get::<percent>() - 100.).abs() < error_margin);
     }
 
     #[test]

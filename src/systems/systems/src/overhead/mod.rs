@@ -535,7 +535,7 @@ impl ValueKnob {
     pub fn new_with_value(name: &str, value: f64) -> Self {
         Self {
             value_id: format!("OVHD_KNOB_{}", name),
-            value: value,
+            value,
         }
     }
 
@@ -543,7 +543,7 @@ impl ValueKnob {
         self.value = value
     }
 
-    pub fn value (&self) -> f64 {
+    pub fn value(&self) -> f64 {
         self.value
     }
 }

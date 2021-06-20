@@ -1,8 +1,11 @@
 use std::{collections::HashMap, time::Duration};
 use uom::si::{
-    acceleration::foot_per_second_squared, f64::*, length::foot,
-    thermodynamic_temperature::degree_celsius, velocity::{knot, foot_per_minute, foot_per_second},
+    acceleration::foot_per_second_squared,
+    f64::*,
+    length::foot,
     pressure::inch_of_mercury,
+    thermodynamic_temperature::degree_celsius,
+    velocity::{foot_per_minute, foot_per_second, knot},
 };
 
 use crate::electrical::consumption::SuppliedPower;

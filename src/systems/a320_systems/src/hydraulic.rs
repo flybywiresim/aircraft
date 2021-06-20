@@ -1460,9 +1460,13 @@ mod tests {
         use systems::shared::PotentialOrigin;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
-            acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
-            ratio::percent, thermodynamic_temperature::degree_celsius, velocity::{knot, foot_per_minute},
+            acceleration::foot_per_second_squared,
+            electric_potential::volt,
+            length::foot,
             pressure::hectopascal,
+            ratio::percent,
+            thermodynamic_temperature::degree_celsius,
+            velocity::{foot_per_minute, knot},
         };
 
         struct A320TestEmergencyElectricalOverheadPanel {

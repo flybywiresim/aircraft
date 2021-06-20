@@ -333,9 +333,9 @@ mod tests {
     use uom::si::{
         acceleration::foot_per_second_squared,
         length::foot,
-        pressure::{pascal, psi, hectopascal},
+        pressure::{hectopascal, pascal, psi},
         thermodynamic_temperature::degree_celsius,
-        velocity::{knot, foot_per_minute},
+        velocity::{foot_per_minute, knot},
         volume::gallon,
     };
 

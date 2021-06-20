@@ -209,7 +209,7 @@ var A320_Neo_LowerECAM_PRESS;
             const pressureDelta = SimVar.GetSimVarValue("L:A32NX_CABIN_DELTA_PRESSURE", "PSI");
             const cabinAltitude = fastToFixed(SimVar.GetSimVarValue("L:A32NX_CABIN_ALTITUDE", "feet"), 0);
             const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2);
-            const outletValveOpenPercent = SimVar.GetSimVarValue("L:A32NX_OUTFLOW_VALVE_OPEN_PERCENTAGE", "Percent");//it is defined as "VAVLE" in the wasm, not a typo on my part
+            const outletValveOpenPercent = SimVar.GetSimVarValue("L:A32NX_OUTFLOW_VALVE_OPEN_PERCENTAGE", "Percent");
 
             const leftPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool"));
             const rightPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
