@@ -1,5 +1,8 @@
 'use strict';
 
+console.error(!!process.env.A32NX_PRODUCTION_BUILD);
+process.exit(1);
+
 module.exports = {
     purge: {
         enabled: !!process.env.A32NX_PRODUCTION_BUILD,
