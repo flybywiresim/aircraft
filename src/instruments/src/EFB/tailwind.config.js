@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = {
+    mode: 'jit',
     purge: {
         enabled: process.env.A32NX_PRODUCTION_BUILD === '1',
         content: [
