@@ -121,6 +121,9 @@
 1. [AOC] Reworked airport handling on AOC Weather Request Page - @MisterChocker (Leon)
 1. [SOUND] Added blue and yellow electric hydraulic pump sounds - @hotshotp (Boris)
 1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
+1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman)
+1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
+1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
