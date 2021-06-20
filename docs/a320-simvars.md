@@ -1197,6 +1197,54 @@
     - Indicates the selected heading on the FCU, instantly updated
     - In case of managed heading mode, the value is -1
 
+- A32NX_FCU_SPD_MANAGED_DASHES
+  - Boolean
+  - Indicates if managed speed/mach mode is active and a numerical value is not displayed
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+      
+- A32NX_FCU_SPD_MANAGED_DOT
+  - Boolean
+  - Indicates if managed speed/mach mode is active
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_HDG_MANAGED_DASHES
+  - Boolean
+  - Indicates if managed heading mode is active and a numerical value is not displayed
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_HDG_MANAGED_DOT
+  - Boolean
+  - Indicates if managed heading mode is active or armed
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED/ARMED | 1
+
+- A32NX_FCU_ALT_MANAGED
+  - Boolean
+  - Indicates if managed altitude mode is active (dot)
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
+- A32NX_FCU_VS_MANAGED
+  - Boolean
+  - Indicates if managed VS/FPA mode is active
+    State | Value
+      --- | ---
+      SELECTED | 0
+      MANAGED | 1
+
 - A32NX_FCU_LOC_MODE_ACTIVE
     - Boolean
     - Indicates if LOC button on the FCU is illuminated
@@ -1337,6 +1385,22 @@
       NOT PRESSED | 0
       PRESSED | 1
 
+- A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX
+    - Bool
+    - Indicates if the thrust lever warning for FLEX take-off is active
+      State | Value
+      --- | ---
+      NOT ACTIVE | 0
+      ACTIVE | 1
+
+- A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA
+    - Bool
+    - Indicates if the thrust lever warning for TOGA take-off is active
+      State | Value
+      --- | ---
+      NOT ACTIVE | 0
+      ACTIVE | 1
+
 ## Throttle Mapping System
 
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
@@ -1370,10 +1434,10 @@
 - A32NX_ENGINE_CYCLE_TIME
     - Number (seconds)
     - Sum of Engine 1 & 2 cycle times to detect when engines are alive (pause/ slew management)
-    
+
 - A32NX_ENGINE_STATE:{index}
     - Number
-    - Defines actual engine state 
+    - Defines actual engine state
       State | Value
       --- | ---
       OFF | 0

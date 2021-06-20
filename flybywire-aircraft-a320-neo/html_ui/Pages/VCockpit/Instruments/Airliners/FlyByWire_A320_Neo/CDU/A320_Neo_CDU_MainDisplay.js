@@ -22,6 +22,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inFocus = false;
         this.lastInput = 0;
         this.clrStop = false;
+        this.aocAirportList = new CDUAocAirportList;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -42,6 +43,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     initMcduVariables() {
         this.messageQueue = [];
+        this.aocAirportList.init();
     }
 
     Init() {
