@@ -51,6 +51,8 @@ function postCss(instrumentName, instrumentFolder) {
 }
 
 export function baseCompile(instrumentName, instrumentFolder) {
+    console.error('in baseCompile: ' + !!process.env.A32NX_PRODUCTION_BUILD);
+    
     return [
         image(),
         nodeResolve({ extensions }),
