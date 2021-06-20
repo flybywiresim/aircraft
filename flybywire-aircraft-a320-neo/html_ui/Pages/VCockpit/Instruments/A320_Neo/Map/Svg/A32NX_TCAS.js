@@ -77,9 +77,9 @@ class A32NX_TCAS_Manager {
 
         this.updateSensitivityLevel(altitude, radioAltitude, TCASMode);
 
-        const TARATimes = this.getTARATimes(this.sensitivityLevel);
-        const TARADMOD = this.getTARADMOD(this.sensitivityLevel);
-        const TARAVertical = this.getTARAVerticalThreshold(this.sensitivityLevel);
+        const TaRaTimes = this.getTaRaTau(this.sensitivityLevel);
+        const TaRaDMOD = this.getTaRaDMOD(this.sensitivityLevel);
+        const TaRaVertical = this.getTaRaZTHR(this.sensitivityLevel);
 
         let maxIntrusionLevel = 0;
         // Check for collisions
@@ -112,9 +112,9 @@ class A32NX_TCAS_Manager {
             let verticalIntrusionLevel = 0;
             let rangeIntrusionLevel = 0;
 
-            if (traffic.TAU < TARATimes[1] || traffic.slantDistance < TARADMOD[1]) {
+            if (traffic.TAU < TaRaTimes[1] || traffic.slantDistance < TaRaDMOD[1]) {
                 rangeIntrusionLevel = 3;
-            } else if (traffic.TAU < TARATimes[0] || traffic.slantDistance < TARADMOD[0]) {
+            } else if (traffic.TAU < TaRaTimes[0] || traffic.slantDistance < TaRaDMOD[0]) {
                 rangeIntrusionLevel = 2;
             } else if (horizontalDistance < 6) {
                 rangeIntrusionLevel = 1;
@@ -122,9 +122,9 @@ class A32NX_TCAS_Manager {
                 rangeIntrusionLevel = 0;
             }
 
-            if (traffic.verticalTAU < TARATimes[1] || Math.abs(traffic.relativeAlt) < TARAVertical[1]) {
+            if (traffic.verticalTAU < TaRaTimes[1] || Math.abs(traffic.relativeAlt) < TaRaVertical[1]) {
                 verticalIntrusionLevel = 3;
-            } else if (traffic.verticalTAU < TARATimes[0] || Math.abs(traffic.relativeAlt) < TARAVertical[0]) {
+            } else if (traffic.verticalTAU < TaRaTimes[0] || Math.abs(traffic.relativeAlt) < TaRaVertical[0]) {
                 verticalIntrusionLevel = 2;
             } else if (Math.abs(traffic.relativeAlt) < 1200) {
                 verticalIntrusionLevel = 1;
@@ -169,9 +169,9 @@ class A32NX_TCAS_Manager {
     /**
      * Get TA/RA minimum TAU, depending on altitude and TCAS mode
      * @param sensitivityLevel {number}
-     * @returns {number[]} [TATime (seconds), RATime (seconds)]
+     * @returns {number[]} [TaTime (seconds), RaTime (seconds)]
      */
-    getTARATimes(sensitivityLevel) {
+    getTaRaTau(sensitivityLevel) {
         if (sensitivityLevel === 2) {
             return [20, -1];
         } else if (sensitivityLevel === 3) {
@@ -188,11 +188,34 @@ class A32NX_TCAS_Manager {
     }
 
     /**
+     * Get RA TVTHR, used if current aircraft is in level flight,
+     * OR if current aircraft is climbing/descending same direction as other aircraft,
+     * but at a slower rate
+     * @param sensitivityLevel {number}
+     * @returns {number} RaTime (seconds)
+     */
+    getTVTHR(sensitivityLevel) {
+        if (sensitivityLevel === 2) {
+            return -1;
+        } else if (sensitivityLevel === 3) {
+            return 15;
+        } else if (sensitivityLevel === 4) {
+            return 18;
+        } else if (sensitivityLevel === 5) {
+            return 20;
+        } else if (sensitivityLevel === 6) {
+            return 22;
+        } else if (sensitivityLevel > 7) {
+            return 25;
+        }
+    }
+
+    /**
      * Get TA/RA DMOD (fixed distance at which TCAS triggers)
      * @param sensitivityLevel {number}
-     * @returns {number[]} [TADMOD (nautical miles), RADMOD (nautical miles)]
+     * @returns {number[]} [TaDMOD (nautical miles), RaDMOD (nautical miles)]
      */
-    getTARADMOD(sensitivityLevel) {
+    getTaRaDMOD(sensitivityLevel) {
         if (sensitivityLevel === 2) {
             return [0.3, -1];
         } else if (sensitivityLevel === 3) {
@@ -211,9 +234,9 @@ class A32NX_TCAS_Manager {
     /**
      * Get TA/RA altitude threshold (fixed altitude difference at which TCAS triggers)
      * @param sensitivityLevel {number}
-     * @returns {number[]} [TAVertDist (feet), RAVertDist (feet)]
+     * @returns {number[]} [TaVertDist (feet), RaVertDist (feet)]
      */
-    getTARAVerticalThreshold(sensitivityLevel) {
+    getTaRaZTHR(sensitivityLevel) {
         if (sensitivityLevel === 2) {
             return [850, -1];
         } else if (sensitivityLevel === 3) {
@@ -228,6 +251,29 @@ class A32NX_TCAS_Manager {
             return [850, 600];
         } else {
             return [1200, 700];
+        }
+    }
+
+    /**
+     * Get RA ALIM (altitude threshold used to select RA strength and direction)
+     * @param sensitivityLevel {number}
+     * @returns {number} RaVertDist (feet)
+     */
+    getALIM(sensitivityLevel) {
+        if (sensitivityLevel === 2) {
+            return -1;
+        } else if (sensitivityLevel === 3) {
+            return 300;
+        } else if (sensitivityLevel === 4) {
+            return 300;
+        } else if (sensitivityLevel === 5) {
+            return 350;
+        } else if (sensitivityLevel === 6) {
+            return 400;
+        } else if (sensitivityLevel === 7) {
+            return 600;
+        } else {
+            return 700;
         }
     }
 }
@@ -254,7 +300,6 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         this.lon = _lon;
 
         this.alt = _alt;
-        //vertical speed, feet per minute
         this.vertSpeed = 0;
 
         this.onGround = false;
@@ -304,6 +349,7 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
      */
     update(_deltaTime, newLat, newLon, newAlt, newHeading, selfLat, selfLon, selfAlt, selfVertSpeed) {
         this.vertSpeed = (newAlt - this.alt) / _deltaTime * 60; //times 60 because deltatime is in seconds, and we need feet per minute
+
         const newSlantDist = this.computeDistance3D([newLat, newLon, newAlt], [selfLat, selfLon, selfAlt]);
         this.closureRate = (this.slantDistance - newSlantDist) / _deltaTime * 3600; // see above, delta time in seconds, knots is per hour.
         this.lat = newLat;
@@ -471,11 +517,11 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
     /**
      * Gets the distance between 2 points, given in lat/lon/alt above sea level
      * @param pos1 {number[]} Position 1 [lat, lon, alt(feet)]
-     * @param pos2 {number[]} Position 1 [lat, lon, alt(feet)]
+     * @param pos2 {number[]} Position 2 [lat, lon, alt(feet)]
      * @return {number} distance in nautical miles
      */
     computeDistance3D(pos1, pos2) {
-        const earthRadius = 3440.1; // earth radius in nautcal miles
+        const earthRadius = 3440.065; // earth radius in nautcal miles
         const deg2rad = Math.PI / 180;
 
         const radius1 = pos1[2] / 6076 + earthRadius;
