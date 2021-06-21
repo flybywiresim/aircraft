@@ -1,4 +1,9 @@
 use std::time::Duration;
+use uom::si::{
+    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
+    ratio::percent, volume::gallon,
+};
+
 use systems::{
     engine::Engine,
     hydraulic::{
@@ -8,7 +13,7 @@ use systems::{
     },
     landing_gear::LandingGear,
     overhead::{
-        AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton, OnOffFaultPushButton,
+        AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
         DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
@@ -19,10 +24,6 @@ use systems::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext, Write,
     },
-};
-use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, volume::gallon,
 };
 
 pub(super) struct A320Hydraulic {
@@ -1370,7 +1371,7 @@ pub(super) struct A320HydraulicOverheadPanel {
     ptu_push_button: AutoOffFaultPushButton,
     rat_push_button: MomentaryPushButton,
     yellow_epump_push_button: AutoOnFaultPushButton,
-    blue_epump_override_push_button: OnOffFaultPushButton,
+    blue_epump_override_push_button: MomentaryOnPushButton,
 }
 impl A320HydraulicOverheadPanel {
     pub(super) fn new() -> A320HydraulicOverheadPanel {
@@ -1381,7 +1382,13 @@ impl A320HydraulicOverheadPanel {
             ptu_push_button: AutoOffFaultPushButton::new_auto("HYD_PTU"),
             rat_push_button: MomentaryPushButton::new("HYD_RAT_MAN_ON"),
             yellow_epump_push_button: AutoOnFaultPushButton::new_auto("HYD_EPUMPY"),
-            blue_epump_override_push_button: OnOffFaultPushButton::new_off("HYD_EPUMPY_OVRD"),
+            blue_epump_override_push_button: MomentaryOnPushButton::new("HYD_EPUMPY_OVRD"),
+        }
+    }
+
+    fn update_blue_override_state(&mut self) {
+        if self.blue_epump_push_button.is_off() {
+            self.blue_epump_override_push_button.turn_off();
         }
     }
 
@@ -1394,6 +1401,8 @@ impl A320HydraulicOverheadPanel {
             .set_fault(hyd.blue_epump_has_fault());
         self.yellow_epump_push_button
             .set_fault(hyd.yellow_epump_has_low_press_fault());
+
+        self.update_blue_override_state();
     }
 
     fn yellow_epump_push_button_is_auto(&self) -> bool {
@@ -1443,6 +1452,14 @@ impl SimulationElement for A320HydraulicOverheadPanel {
         self.blue_epump_override_push_button.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        if !buses.is_powered(A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS)
+            || !buses.is_powered(A320Hydraulic::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS)
+        {
+            self.blue_epump_override_push_button.turn_off();
+        }
     }
 }
 
@@ -1868,6 +1885,11 @@ mod tests {
                     .read_bool("OVHD_HYD_EPUMPB_PB_HAS_FAULT")
             }
 
+            fn blue_epump_override_is_on(&mut self) -> bool {
+                self.simulation_test_bed
+                    .read_bool("OVHD_HYD_EPUMPY_OVRD_IS_ON")
+            }
+
             fn get_brake_left_yellow_pressure(&mut self) -> Pressure {
                 Pressure::new::<psi>(
                     self.simulation_test_bed
@@ -2105,9 +2127,9 @@ mod tests {
                 self
             }
 
-            fn set_blue_e_pump_ovrd(mut self, is_on: bool) -> Self {
+            fn set_blue_e_pump_ovrd_pressed(mut self, is_pressed: bool) -> Self {
                 self.simulation_test_bed
-                    .write_bool("OVHD_HYD_EPUMPY_OVRD_PB_IS_ON", is_on);
+                    .write_bool("OVHD_HYD_EPUMPY_OVRD_IS_PRESSED", is_pressed);
                 self
             }
 
@@ -2163,9 +2185,13 @@ mod tests {
                 self
             }
 
+            fn dc_ess_active(mut self) -> Self {
+                self.aircraft.set_dc_ess_is_powered(true);
+                self
+            }
+
             fn set_cold_dark_inputs(self) -> Self {
-                self.set_blue_e_pump_ovrd(false)
-                    .set_eng1_fire_button(false)
+                self.set_eng1_fire_button(false)
                     .set_eng2_fire_button(false)
                     .set_blue_e_pump(true)
                     .set_yellow_e_pump(true)
@@ -2251,6 +2277,13 @@ mod tests {
                     .run_waiting_for(Duration::from_secs(1));
 
                 self
+            }
+
+            fn press_blue_epump_override_button_once(self) -> Self {
+                self.set_blue_e_pump_ovrd_pressed(true)
+                    .run_one_tick()
+                    .set_blue_e_pump_ovrd_pressed(false)
+                    .run_one_tick()
             }
         }
 
@@ -2709,7 +2742,8 @@ mod tests {
             // Blue epump should have no fault
             assert!(!test_bed.is_blue_epump_press_low_fault());
 
-            test_bed = test_bed.set_blue_e_pump_ovrd(true).run_one_tick();
+            test_bed = test_bed.press_blue_epump_override_button_once();
+            assert!(test_bed.blue_epump_override_is_on());
 
             // As we use override, this bypasses eng off fault inhibit so we have a fault
             assert!(test_bed.is_blue_epump_press_low_fault());
@@ -2989,7 +3023,8 @@ mod tests {
             assert!(!test_bed.is_blue_epump_press_low());
 
             // Starting epump
-            test_bed = test_bed.set_blue_e_pump_ovrd(true).run_one_tick();
+            test_bed = test_bed.press_blue_epump_override_button_once();
+            assert!(test_bed.blue_epump_override_is_on());
 
             // Pump commanded on but pressure couldn't rise enough: we are in fault low
             assert!(test_bed.is_blue_epump_press_low());
@@ -3003,10 +3038,58 @@ mod tests {
             assert!(!test_bed.is_blue_epump_press_low());
 
             // Stoping epump, no fault expected
-            test_bed = test_bed
-                .set_blue_e_pump_ovrd(false)
-                .run_waiting_for(Duration::from_secs(1));
+            test_bed = test_bed.press_blue_epump_override_button_once();
+            assert!(!test_bed.blue_epump_override_is_on());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
             assert!(!test_bed.is_blue_epump_press_low());
+        }
+
+        #[test]
+        fn blue_epump_override_switches_to_off_when_losing_relay_power_and_stays_off() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Starting epump
+            test_bed = test_bed
+                .press_blue_epump_override_button_once()
+                .run_waiting_for(Duration::from_secs(10));
+            assert!(test_bed.blue_epump_override_is_on());
+            assert!(test_bed.is_blue_pressurised());
+
+            // Killing the bus corresponding to the latching relay of blue pump override push button
+            // It should set the override state back to off without touching the push button
+            test_bed = test_bed.dc_ess_lost().run_one_tick();
+            assert!(!test_bed.blue_epump_override_is_on());
+
+            // Stays off even powered back
+            test_bed = test_bed.dc_ess_active().run_one_tick();
+            assert!(!test_bed.blue_epump_override_is_on());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
+            assert!(!test_bed.is_blue_pressurised());
+        }
+
+        #[test]
+        fn blue_epump_override_switches_to_off_when_pump_forced_off_on_hyd_panel() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Starting epump
+            test_bed = test_bed
+                .press_blue_epump_override_button_once()
+                .run_waiting_for(Duration::from_secs(10));
+            assert!(test_bed.blue_epump_override_is_on());
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed.set_blue_e_pump(false).run_one_tick();
+            assert!(!test_bed.blue_epump_override_is_on());
         }
 
         #[test]
@@ -3329,17 +3412,20 @@ mod tests {
                 .run_one_tick();
 
             // Starting blue_epump wait for pressure rise to make sure system is primed
-            test_bed = test_bed
-                .set_blue_e_pump_ovrd(true)
-                .run_waiting_for(Duration::from_secs(20));
+            test_bed = test_bed.press_blue_epump_override_button_once();
+            assert!(test_bed.blue_epump_override_is_on());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
             assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(3500.));
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
 
             // Shutdown and wait for pressure stabilisation
-            test_bed = test_bed
-                .set_blue_e_pump_ovrd(false)
-                .run_waiting_for(Duration::from_secs(50));
+            test_bed = test_bed.press_blue_epump_override_button_once();
+            assert!(!test_bed.blue_epump_override_is_on());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(50));
+
             assert!(!test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(-50.));
@@ -3881,8 +3967,7 @@ mod tests {
         #[test]
         fn controller_blue_epump_activates_when_no_weight_on_wheels() {
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            overhead_panel.blue_epump_override_push_button.push_off();
+            let overhead_panel = A320HydraulicOverheadPanel::new();
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new(
                 A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
@@ -3924,8 +4009,7 @@ mod tests {
         fn controller_blue_epump_split_engine_states() {
             let engine_on_oil_pressure = Pressure::new::<psi>(30.);
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            overhead_panel.blue_epump_override_push_button.push_off();
+            let overhead_panel = A320HydraulicOverheadPanel::new();
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new(
                 A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
@@ -3976,8 +4060,7 @@ mod tests {
         fn controller_blue_epump_on_off_engines() {
             let engine_on_oil_pressure = Pressure::new::<psi>(30.);
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            overhead_panel.blue_epump_override_push_button.push_off();
+            let overhead_panel = A320HydraulicOverheadPanel::new();
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new(
                 A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
@@ -4027,7 +4110,7 @@ mod tests {
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.push_on();
+            overhead_panel.blue_epump_override_push_button.turn_on();
             blue_epump_controller.update(
                 &overhead_panel,
                 true,
@@ -4040,7 +4123,7 @@ mod tests {
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.push_off();
+            overhead_panel.blue_epump_override_push_button.turn_off();
             blue_epump_controller.update(
                 &overhead_panel,
                 false,
@@ -4063,7 +4146,7 @@ mod tests {
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.push_on();
+            overhead_panel.blue_epump_override_push_button.turn_on();
 
             blue_epump_controller.receive_power(&test_supplied_power(
                 ElectricalBusType::DirectCurrentEssential,
