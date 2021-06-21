@@ -57,11 +57,11 @@ class A32NX_FWC {
         // ESDL 1. 0.320
         this.memoLdgInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
 
-        // master warning & caution buttons
+        // Master Warning & Caution
         this.warningPressed = false;
         this.cautionPressed = false;
 
-        // altitude warning
+        // Altitude Warning
         this.previousTargetAltitude = NaN;
         this._wasBellowThreshold = false;
         this._wasAboveThreshold = false;
@@ -102,12 +102,18 @@ class A32NX_FWC {
         const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
         SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
 
-        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
+        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN", "Bool")) {
             this.warningPressed = true;
+            const ldgWarning = SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool");
+            const overspeedWarning = SimVar.GetSimVarValue("L:A32NX_OVERSPEED", "Bool");
+
+            if (!ldgWarning && !overspeedWarning) {
+                SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
+            }
         } else {
             this.warningPressed = false;
         }
-        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_R", "Bool")) {
+        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT", "Bool")) {
             this.cautionPressed = true;
         } else {
             this.cautionPressed = false;
@@ -419,5 +425,52 @@ class A32NX_FWC {
             }
         }
         return true;
+    }
+
+    _updateOverspeedWarning() {
+        if (Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4)) {
+            SimVar.SetSimVarValue("L:A32NX_OVERSPEED", "Bool", true);
+        } else {
+            SimVar.SetSimVarValue("L:A32NX_OVERSPEED", "Bool", false);
+        }
+    }
+
+    _checkLandingGear(_deltaTime) {
+        const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
+        const isLandingGearLockedDown = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum") > 0.9;
+        if (!isLandingGearLockedDown && radioHeight < 750 && !(this.flightPhase === 3 || this.flightPhase === 4 || this.flightPhase === 5)) {
+            SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
+
+            // Condition 1. Both Engine N1 RPM lower than 75%
+            const eng1N1 = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent");
+            const eng2N1 = SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent");
+            if (eng1N1 < 75 && eng2N1 < 75) {
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+                return;
+            }
+
+            // Condition 2. If 1 engine shutdown & other engine N1 RPM lower than 75%
+            const isEngine1Shutdown = (SimVar.GetSimVarValue("TURB ENG N1:1", "Percent") < 15 || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:1", "Bool") == 0) && !Simplane.getIsGrounded();
+            if (isEngine1Shutdown && eng2N1 < 97) {
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+                return;
+            }
+            const isEngine2Shutdown = (SimVar.GetSimVarValue("TURB ENG N1:2", "Percent") < 15 || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:2", "Bool") == 0) && !Simplane.getIsGrounded();
+            if (isEngine2Shutdown && eng2N1 < 97) {
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+                return;
+            }
+
+            // Condition 3. If both engine is not TOGA or FLEX or MCT, Flap position lower than 1.
+            const isTogaFlexMct1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
+            const isTogaFlexMct2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
+            const flapPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+            if (!(isTogaFlexMct1 && isTogaFlexMct2) && flapPosition >= 1) {
+                //this situation can't cancelled with master warning. but after fwc rewrite, will fixed.
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+                return;
+            }
+        }
+        SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
     }
 }
