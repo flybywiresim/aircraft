@@ -1,12 +1,16 @@
 'use strict';
 
+const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
+
 module.exports = {
     mode: 'jit',
     purge: {
         enabled: process.env.A32NX_PRODUCTION_BUILD === '1',
         content: [
             './**/*.{jsx,tsx}',
-            './../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json',
+        ],
+        safelist: [
+            ...reactComponentsClasses,
         ],
     },
     darkMode: false, // or 'media' or 'class'
