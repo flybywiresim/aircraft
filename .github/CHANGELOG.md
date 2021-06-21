@@ -80,6 +80,7 @@
 1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
 1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
 1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
+1. [HYD] Blue electric pump override button changed to momentary latched - @Crocket63 (crocket)
 1. [LIGHTS] Add OVHD ANN LT DIM functionality - @bouveng (Johan Bouveng)
 1. [PFD] Add baro setting flash when passing TA/TL - @lukecologne (luke)
 1. [FLIGHT MODEL] Fix flap transition bounce - @donstim (donbikes#4084)
