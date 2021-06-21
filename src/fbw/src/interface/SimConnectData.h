@@ -141,6 +141,7 @@ struct SimInputAutopilot {
 struct SimInputThrottles {
   double ATHR_push;
   double ATHR_disconnect;
+  double ATHR_reset_disable;
 };
 
 struct SimOutput {
