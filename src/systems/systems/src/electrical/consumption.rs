@@ -50,10 +50,10 @@ impl PowerConsumer {
 }
 impl SimulationElement for PowerConsumer {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.bus_is_powered(self.powered_by_bus);
+        self.is_powered = buses.is_powered(self.powered_by_bus);
     }
 
-    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
         consumption.consume_from_bus(self.powered_by_bus, self.demand);
     }
 }
@@ -220,7 +220,11 @@ mod tests {
                 visitor.visit(self);
             }
 
-            fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+            fn process_power_consumption_report<T: PowerConsumptionReport>(
+                &mut self,
+                _: &UpdateContext,
+                report: &T,
+            ) {
                 self.apu_generator_consumption =
                     Some(report.total_consumption_of(PotentialOrigin::ApuGenerator(1)));
             }

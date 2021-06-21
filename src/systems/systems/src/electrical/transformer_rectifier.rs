@@ -7,7 +7,7 @@ use super::{
 };
 use crate::{
     shared::{ConsumePower, PowerConsumptionReport},
-    simulation::{SimulationElement, SimulatorWriter},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
 
@@ -84,7 +84,11 @@ impl SimulationElement for TransformerRectifier {
         self.writer.write_direct(self, writer);
     }
 
-    fn consume_power_in_converters<T: ConsumePower>(&mut self, consumption: &mut T) {
+    fn consume_power_in_converters<T: ConsumePower>(
+        &mut self,
+        _: &UpdateContext,
+        consumption: &mut T,
+    ) {
         let dc_power =
             consumption.total_consumption_of(PotentialOrigin::TransformerRectifier(self.number));
 
@@ -95,7 +99,11 @@ impl SimulationElement for TransformerRectifier {
         consumption.consume_from_input(self, dc_power);
     }
 
-    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+    fn process_power_consumption_report<T: PowerConsumptionReport>(
+        &mut self,
+        _: &UpdateContext,
+        report: &T,
+    ) {
         self.output_potential = if report.is_powered(self) {
             ElectricPotential::new::<volt>(28.)
         } else {
@@ -239,7 +247,11 @@ mod transformer_rectifier_tests {
             visitor.visit(self);
         }
 
-        fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            report: &T,
+        ) {
             self.transformer_rectifier_consumption =
                 report.total_consumption_of(PotentialOrigin::TransformerRectifier(1));
         }

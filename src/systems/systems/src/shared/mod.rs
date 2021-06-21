@@ -103,10 +103,16 @@ impl Display for ElectricalBusType {
     }
 }
 
+/// Trait through which elements can query the potential and powered state
+/// of electrical buses.
 pub trait ElectricalBuses {
-    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> Ref<Potential>;
-    fn bus_is_powered(&self, bus_type: ElectricalBusType) -> bool;
-    fn is_powered(&self, element: &impl ElectricalElement) -> bool;
+    /// Returns the potential which is fed to the given bus type.
+    fn potential_of(&self, bus_type: ElectricalBusType) -> Ref<Potential>;
+
+    /// Returns whether the given bus type is powered.
+    fn is_powered(&self, bus_type: ElectricalBusType) -> bool;
+
+    /// Returns whether any of the given bus types are powered.
     fn any_is_powered(&self, bus_types: &[ElectricalBusType]) -> bool;
 }
 
@@ -136,15 +142,24 @@ impl Display for PotentialOrigin {
     }
 }
 
+/// Trait through which elements can query the power consumed throughout the aircraft.
 pub trait PowerConsumptionReport {
+    /// Returns whether or not the given element is powered.
     fn is_powered(&self, element: &impl ElectricalElement) -> bool;
+
+    /// Returns the total power consumed from the given [PotentialOrigin].
     fn total_consumption_of(&self, potential_origin: PotentialOrigin) -> Power;
-    fn delta(&self) -> Duration;
 }
 
+/// Trait through which elements can consume power from the aircraft's electrical system.
 pub trait ConsumePower: PowerConsumptionReport {
+    /// Returns the input potential of the given element.
     fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential>;
+
+    /// Consumes the given amount of power from the potential provided to the element.
     fn consume_from_input(&mut self, element: &impl ElectricalElement, power: Power);
+
+    /// Consumes the given amount of power from the provided electrical bus.
     fn consume_from_bus(&mut self, bus_type: ElectricalBusType, power: Power);
 }
 

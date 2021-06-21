@@ -55,18 +55,18 @@ pub trait Aircraft: SimulationElement {
         electricity.distribute_to(self, context);
     }
 
-    fn consume_electricity(&mut self, electricity: &mut Electricity)
+    fn consume_electricity(&mut self, context: &UpdateContext, electricity: &mut Electricity)
     where
         Self: Sized,
     {
-        electricity.consume_in(self);
+        electricity.consume_in(context, self);
     }
 
-    fn report_electricity_consumption(&mut self, electricity: &Electricity)
+    fn report_electricity_consumption(&mut self, context: &UpdateContext, electricity: &Electricity)
     where
         Self: Sized,
     {
-        electricity.report_consumption_to(self);
+        electricity.report_consumption_to(context, self);
     }
 }
 
@@ -152,20 +152,28 @@ pub trait SimulationElement {
     /// The easiest way to deal with power consumption is using the [`PowerConsumer`] type.
     ///
     /// [`PowerConsumer`]: ../electrical/struct.PowerConsumer.html
-    fn consume_power<T: ConsumePower>(&mut self, _power: &mut T) {}
+    fn consume_power<T: ConsumePower>(&mut self, _context: &UpdateContext, _power: &mut T) {}
 
     /// Consume power within converters, such as transformer rectifiers and the static
     /// inverter. This is a separate function, as their power consumption can only be
     /// determined after the consumption of elements to which they provide power is known.
     ///
     /// [`consume_power`]: fn.consume_power.html
-    fn consume_power_in_converters<T: ConsumePower>(&mut self, _power: &mut T) {}
+    fn consume_power_in_converters<T: ConsumePower>(
+        &mut self,
+        _context: &UpdateContext,
+        _power: &mut T,
+    ) {
+    }
 
     /// Process a report containing the power consumption per potential origin.
     /// This is useful for calculating the load percentage on a given generator,
     /// amperes provided by a given transformer rectifier and so on.
-    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _report: &T)
-    where
+    fn process_power_consumption_report<T: PowerConsumptionReport>(
+        &mut self,
+        _context: &UpdateContext,
+        _report: &T,
+    ) where
         Self: Sized,
     {
     }
@@ -253,7 +261,7 @@ impl<T: Aircraft> Simulation<T> {
         delta: Duration,
         simulator_reader_writer: &mut impl SimulatorReaderWriter,
     ) {
-        self.electricity.pre_tick(delta);
+        self.electricity.pre_tick();
 
         let mut reader = SimulatorReader::new(simulator_reader_writer);
         let context = UpdateContext::from_reader(&mut reader, delta);
@@ -268,9 +276,10 @@ impl<T: Aircraft> Simulation<T> {
             .distribute_electricity(&context, &self.electricity);
 
         self.aircraft.update_after_power_distribution(&context);
-        self.aircraft.consume_electricity(&mut self.electricity);
         self.aircraft
-            .report_electricity_consumption(&self.electricity);
+            .consume_electricity(&context, &mut self.electricity);
+        self.aircraft
+            .report_electricity_consumption(&context, &self.electricity);
 
         let mut writer = SimulatorWriter::new(simulator_reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);

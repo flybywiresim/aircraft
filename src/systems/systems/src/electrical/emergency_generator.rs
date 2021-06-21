@@ -96,7 +96,11 @@ impl ElectricitySource for EmergencyGenerator {
     }
 }
 impl SimulationElement for EmergencyGenerator {
-    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _report: &T) {
+    fn process_power_consumption_report<T: PowerConsumptionReport>(
+        &mut self,
+        _: &UpdateContext,
+        _report: &T,
+    ) {
         self.output_frequency = if self.should_provide_output() {
             Frequency::new::<hertz>(400.)
         } else {

@@ -162,7 +162,7 @@ impl SimulationElement for ElectricalBus {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.potential = buses.potential_of_bus(self.bus_type).raw();
+        self.potential = buses.potential_of(self.bus_type).raw();
     }
 }
 
@@ -337,7 +337,6 @@ pub struct Electricity {
     buses: HashMap<ElectricalBusType, ElectricalElementIdentifier>,
     potential: PotentialCollection,
     none_potential: RefCell<Potential>,
-    tick_delta: Duration,
 }
 impl Electricity {
     pub fn new() -> Self {
@@ -346,13 +345,11 @@ impl Electricity {
             buses: HashMap::new(),
             potential: PotentialCollection::new(),
             none_potential: RefCell::new(Potential::none()),
-            tick_delta: Duration::from_secs(0),
         }
     }
 
-    pub(super) fn pre_tick(&mut self, delta: Duration) {
+    pub(super) fn pre_tick(&mut self) {
         self.potential.clear();
-        self.tick_delta = delta;
     }
 
     /// Flows electricity from the given output element to the given input element as long
@@ -427,7 +424,7 @@ impl Electricity {
     }
 
     /// Returns if the given element is powered or not.
-    fn is_powered(&self, element: &impl ElectricalElement) -> bool {
+    pub fn is_powered(&self, element: &impl ElectricalElement) -> bool {
         self.potential.is_powered(element.output_identifier())
     }
 
@@ -452,31 +449,25 @@ impl Electricity {
             .unwrap_or_else(|| self.none_potential.borrow())
     }
 
-    // pub fn is_powered_by(
-    //     &self,
-    //     element: &impl ElectricalElement,
-    // ) -> OptionIterator<impl Iterator<Item = PotentialOrigin>> {
-    //     OptionIterator::new(match self.potential.get(element.output_identifier()) {
-    //         Some(potential) => Some(potential.origins()),
-    //         None => None,
-    //     })
-    // }
-
     pub fn distribute_to(&self, element: &mut impl SimulationElement, _: &UpdateContext) {
         let mut visitor = ReceivePowerVisitor::new(&self);
         element.accept(&mut visitor);
     }
 
-    pub fn consume_in(&mut self, element: &mut impl SimulationElement) {
-        let mut visitor = ConsumePowerVisitor::new(self);
+    pub fn consume_in(&mut self, context: &UpdateContext, element: &mut impl SimulationElement) {
+        let mut visitor = ConsumePowerVisitor::new(context, self);
         element.accept(&mut visitor);
 
-        let mut visitor = ConsumePowerInConvertersVisitor::new(self);
+        let mut visitor = ConsumePowerInConvertersVisitor::new(context, self);
         element.accept(&mut visitor);
     }
 
-    pub fn report_consumption_to(&self, element: &mut impl SimulationElement) {
-        let mut visitor = ProcessPowerConsumptionReportVisitor::new(&self);
+    pub fn report_consumption_to(
+        &self,
+        context: &UpdateContext,
+        element: &mut impl SimulationElement,
+    ) {
+        let mut visitor = ProcessPowerConsumptionReportVisitor::new(context, &self);
         element.accept(&mut visitor);
     }
 
@@ -501,7 +492,7 @@ impl ElectricalElementIdentifierProvider for Electricity {
     }
 }
 impl ElectricalBuses for Electricity {
-    fn potential_of_bus(&self, bus_type: ElectricalBusType) -> Ref<Potential> {
+    fn potential_of(&self, bus_type: ElectricalBusType) -> Ref<Potential> {
         if let Some(identifier) = self.buses.get(&bus_type) {
             self.potential
                 .get(*identifier)
@@ -511,7 +502,7 @@ impl ElectricalBuses for Electricity {
         }
     }
 
-    fn bus_is_powered(&self, bus_type: ElectricalBusType) -> bool {
+    fn is_powered(&self, bus_type: ElectricalBusType) -> bool {
         self.bus_is_powered(bus_type)
     }
 
@@ -519,10 +510,6 @@ impl ElectricalBuses for Electricity {
         bus_types
             .iter()
             .any(|&bus_type| self.bus_is_powered(bus_type))
-    }
-
-    fn is_powered(&self, element: &impl ElectricalElement) -> bool {
-        self.is_powered(element)
     }
 }
 impl ConsumePower for Electricity {
@@ -549,10 +536,6 @@ impl PowerConsumptionReport for Electricity {
     fn is_powered(&self, element: &impl ElectricalElement) -> bool {
         self.is_powered(element)
     }
-
-    fn delta(&self) -> Duration {
-        self.tick_delta
-    }
 }
 
 struct ReceivePowerVisitor<'a> {
@@ -570,43 +553,55 @@ impl<'a> SimulationElementVisitor for ReceivePowerVisitor<'a> {
 }
 
 struct ConsumePowerVisitor<'a> {
+    context: &'a UpdateContext,
     electricity: &'a mut Electricity,
 }
 impl<'a> ConsumePowerVisitor<'a> {
-    pub fn new(electricity: &'a mut Electricity) -> Self {
-        ConsumePowerVisitor { electricity }
+    pub fn new(context: &'a UpdateContext, electricity: &'a mut Electricity) -> Self {
+        ConsumePowerVisitor {
+            context,
+            electricity,
+        }
     }
 }
 impl<'a> SimulationElementVisitor for ConsumePowerVisitor<'a> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.consume_power(self.electricity);
+        visited.consume_power(self.context, self.electricity);
     }
 }
 struct ConsumePowerInConvertersVisitor<'a> {
+    context: &'a UpdateContext,
     electricity: &'a mut Electricity,
 }
 impl<'a> ConsumePowerInConvertersVisitor<'a> {
-    pub fn new(electricity: &'a mut Electricity) -> Self {
-        ConsumePowerInConvertersVisitor { electricity }
+    pub fn new(context: &'a UpdateContext, electricity: &'a mut Electricity) -> Self {
+        ConsumePowerInConvertersVisitor {
+            context,
+            electricity,
+        }
     }
 }
 impl<'a> SimulationElementVisitor for ConsumePowerInConvertersVisitor<'a> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.consume_power_in_converters(self.electricity);
+        visited.consume_power_in_converters(self.context, self.electricity);
     }
 }
 
 struct ProcessPowerConsumptionReportVisitor<'a> {
+    context: &'a UpdateContext,
     electricity: &'a Electricity,
 }
 impl<'a> ProcessPowerConsumptionReportVisitor<'a> {
-    pub fn new(electricity: &'a Electricity) -> Self {
-        ProcessPowerConsumptionReportVisitor { electricity }
+    pub fn new(context: &'a UpdateContext, electricity: &'a Electricity) -> Self {
+        ProcessPowerConsumptionReportVisitor {
+            context,
+            electricity,
+        }
     }
 }
 impl<'a> SimulationElementVisitor for ProcessPowerConsumptionReportVisitor<'a> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.process_power_consumption_report(self.electricity);
+        visited.process_power_consumption_report(self.context, self.electricity);
     }
 }
 
@@ -624,9 +619,6 @@ impl<'a> SimulationElementVisitor for ProcessPowerConsumptionReportVisitor<'a> {
 /// circuit would take multiple simulation ticks, as _V_ for origins (ENG GEN, TR, etc)
 /// can only be calculated when electrical consumption is known, which is the case at
 /// the end of a simulation tick.
-///
-/// As the raw `ElectricPotential` is of less importance for the majority of code,
-/// it is not taken into account when checking for partial equality.
 ///
 /// For the reasons outlined above when creating e.g. an engine generator, ensure you
 /// return `Potential::none()` when the generator isn't supplying potential, and
@@ -1950,7 +1942,7 @@ mod tests {
         fn potential_of_returns_a_potential_which_isnt_powered_when_bus_is_unpowered() {
             let mut electricity = Electricity::new();
             TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
-            let potential = electricity.potential_of_bus(ElectricalBusType::AlternatingCurrent(1));
+            let potential = electricity.potential_of(ElectricalBusType::AlternatingCurrent(1));
 
             assert!(potential.is_unpowered());
         }
@@ -1964,7 +1956,7 @@ mod tests {
             let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
             electricity.flow(&element, &bus);
 
-            let potential = electricity.potential_of_bus(ElectricalBusType::AlternatingCurrent(1));
+            let potential = electricity.potential_of(ElectricalBusType::AlternatingCurrent(1));
 
             assert!(potential.is_only_powered_by_single_engine_generator());
         }

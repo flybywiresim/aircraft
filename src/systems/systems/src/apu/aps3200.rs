@@ -677,7 +677,11 @@ impl SimulationElement for Aps3200ApuGenerator {
         self.writer.write_alternating_with_load(self, writer);
     }
 
-    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+    fn process_power_consumption_report<T: PowerConsumptionReport>(
+        &mut self,
+        _: &UpdateContext,
+        report: &T,
+    ) {
         self.output_potential = if self.should_provide_output() {
             self.calculate_potential(self.n)
         } else {
@@ -727,14 +731,14 @@ impl ApuStartMotor for Aps3200StartMotor {
 }
 impl SimulationElement for Aps3200StartMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.bus_is_powered(self.powered_by);
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 
-    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
+    fn consume_power<T: ConsumePower>(&mut self, context: &UpdateContext, consumption: &mut T) {
         if !self.is_powered {
             self.powered_since = Duration::from_secs(0);
         } else {
-            self.powered_since += consumption.delta();
+            self.powered_since += context.delta();
 
             const APU_W_CONST: f64 = 9933.453168671222;
             const APU_W_X: f64 = -1319.1431831932327;

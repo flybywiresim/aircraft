@@ -95,10 +95,10 @@ impl AirIntakeFlap {
 }
 impl SimulationElement for AirIntakeFlap {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.bus_is_powered(self.powered_by);
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 
-    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
         if self.is_moving {
             consumption.consume_from_bus(self.powered_by, Power::new::<watt>(20.))
         }
@@ -188,7 +188,11 @@ mod air_intake_flap_tests {
         }
     }
     impl SimulationElement for TestAircraft {
-        fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            report: &T,
+        ) {
             self.power_consumption = report.total_consumption_of(PotentialOrigin::Battery(1));
         }
 

@@ -7,7 +7,7 @@ use super::{
 };
 use crate::{
     shared::{ConsumePower, PowerConsumptionReport},
-    simulation::{SimulationElement, SimulatorWriter},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
@@ -60,7 +60,11 @@ impl SimulationElement for StaticInverter {
         self.writer.write_alternating(self, writer);
     }
 
-    fn consume_power_in_converters<T: ConsumePower>(&mut self, consumption: &mut T) {
+    fn consume_power_in_converters<T: ConsumePower>(
+        &mut self,
+        _: &UpdateContext,
+        consumption: &mut T,
+    ) {
         let ac_power = consumption.total_consumption_of(PotentialOrigin::StaticInverter);
 
         // Add the AC consumption to the STAT INVs input (DC) consumption.
@@ -70,7 +74,11 @@ impl SimulationElement for StaticInverter {
         consumption.consume_from_input(self, ac_power);
     }
 
-    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+    fn process_power_consumption_report<T: PowerConsumptionReport>(
+        &mut self,
+        _: &UpdateContext,
+        report: &T,
+    ) {
         let has_output = report.is_powered(self);
         self.output_potential = if has_output {
             ElectricPotential::new::<volt>(115.)
@@ -212,7 +220,11 @@ mod static_inverter_tests {
             visitor.visit(self);
         }
 
-        fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            report: &T,
+        ) {
             self.static_inverter_consumption =
                 report.total_consumption_of(PotentialOrigin::StaticInverter);
         }

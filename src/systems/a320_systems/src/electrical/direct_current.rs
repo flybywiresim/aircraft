@@ -10,7 +10,7 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
-        ElectricalBuses, LandingGearPosition,
+        LandingGearPosition,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -258,12 +258,12 @@ impl A320DirectCurrentElectrical {
     fn should_close_2xb_contactors(
         &self,
         context: &UpdateContext,
-        eletricity: &Electricity,
+        electricity: &Electricity,
         emergency_generator: &EmergencyGenerator,
         ac_state: &impl A320AlternatingCurrentElectricalSystem,
     ) -> bool {
-        !ac_state.any_non_essential_bus_powered(eletricity)
-            && !eletricity.is_powered(emergency_generator)
+        !ac_state.any_non_essential_bus_powered(electricity)
+            && !electricity.is_powered(emergency_generator)
             && ((context.indicated_airspeed() < Velocity::new::<knot>(50.)
                 && self.batteries_connected_to_bat_bus())
                 || context.indicated_airspeed() >= Velocity::new::<knot>(50.))

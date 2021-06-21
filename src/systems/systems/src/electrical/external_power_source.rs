@@ -76,7 +76,11 @@ impl SimulationElement for ExternalPowerSource {
         self.writer.write_alternating(self, writer);
     }
 
-    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _: &T) {
+    fn process_power_consumption_report<T: PowerConsumptionReport>(
+        &mut self,
+        _: &UpdateContext,
+        _: &T,
+    ) {
         self.output_frequency = if self.should_provide_output() {
             Frequency::new::<hertz>(400.)
         } else {

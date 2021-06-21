@@ -341,10 +341,10 @@ impl SimulationElement for ElectronicControlBox {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = self.is_powered_by_apu_itself() || buses.bus_is_powered(self.powered_by);
+        self.is_powered = self.is_powered_by_apu_itself() || buses.is_powered(self.powered_by);
     }
 
-    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
         if !self.is_powered_by_apu_itself() && self.is_on() {
             consumption.consume_from_bus(self.powered_by, Power::new::<watt>(105.))
         }

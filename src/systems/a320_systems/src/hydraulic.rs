@@ -810,7 +810,7 @@ impl SimulationElement for A320BlueElectricPumpController {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.bus_is_powered(self.powered_by);
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
@@ -895,11 +895,11 @@ impl SimulationElement for A320YellowElectricPumpController {
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         // Control of the pump is powered by dedicated bus OR manual operation of cargo door through another bus
-        self.is_powered = buses.bus_is_powered(self.powered_by)
+        self.is_powered = buses.is_powered(self.powered_by)
             || (self
                 .should_activate_yellow_pump_for_cargo_door_operation
                 .output()
-                && buses.bus_is_powered(self.powered_by_when_cargo_door_operation))
+                && buses.is_powered(self.powered_by_when_cargo_door_operation))
     }
 }
 
@@ -988,7 +988,7 @@ impl SimulationElement for A320PowerTransferUnitController {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.bus_is_powered(self.powered_by);
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
@@ -1047,8 +1047,8 @@ impl SimulationElement for A320RamAirTurbineController {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_solenoid_1_powered = buses.bus_is_powered(self.solenoid_1_bus);
-        self.is_solenoid_2_powered = buses.bus_is_powered(self.solenoid_2_bus);
+        self.is_solenoid_1_powered = buses.is_powered(self.solenoid_1_bus);
+        self.is_solenoid_2_powered = buses.is_powered(self.solenoid_2_bus);
     }
 }
 
@@ -1513,8 +1513,8 @@ mod tests {
         }
         impl SimulationElement for A320TestElectrical {
             fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-                self.all_ac_lost = !buses.bus_is_powered(ElectricalBusType::AlternatingCurrent(1))
-                    && !buses.bus_is_powered(ElectricalBusType::AlternatingCurrent(2));
+                self.all_ac_lost = !buses.is_powered(ElectricalBusType::AlternatingCurrent(1))
+                    && !buses.is_powered(ElectricalBusType::AlternatingCurrent(2));
             }
         }
         struct A320HydraulicsTestAircraft {

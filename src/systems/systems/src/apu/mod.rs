@@ -546,8 +546,11 @@ pub mod tests {
             visitor.visit(self);
         }
 
-        fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T)
-        where
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            report: &T,
+        ) where
             Self: Sized,
         {
             self.power_consumption =

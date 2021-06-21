@@ -10,8 +10,8 @@ use systems::{
         ExternalPowerSource, TransformerRectifier,
     },
     shared::{
-        AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineCorrectedN2, EngineFirePushButtons,
+        AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType, EngineCorrectedN2,
+        EngineFirePushButtons,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };

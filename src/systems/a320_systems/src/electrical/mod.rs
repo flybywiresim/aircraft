@@ -2073,7 +2073,7 @@ mod a320_electrical_circuit_tests {
     }
     impl SimulationElement for TestApu {
         fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-            self.start_motor_is_powered = buses.bus_is_powered(ElectricalBusType::Sub("49-42-00"));
+            self.start_motor_is_powered = buses.is_powered(ElectricalBusType::Sub("49-42-00"));
         }
     }
     impl AuxiliaryPowerUnitElectrical for TestApu {
@@ -2563,31 +2563,31 @@ mod a320_electrical_circuit_tests {
 
         fn ac_bus_output(&self, number: u8) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::AlternatingCurrent(number))
+                elec.potential_of(ElectricalBusType::AlternatingCurrent(number))
             })
         }
 
         fn ac_ess_bus_output(&self) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::AlternatingCurrentEssential)
+                elec.potential_of(ElectricalBusType::AlternatingCurrentEssential)
             })
         }
 
         fn ac_ess_shed_bus_output(&self) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::AlternatingCurrentEssentialShed)
+                elec.potential_of(ElectricalBusType::AlternatingCurrentEssentialShed)
             })
         }
 
         fn ac_stat_inv_bus_output(&self) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::AlternatingCurrentStaticInverter)
+                elec.potential_of(ElectricalBusType::AlternatingCurrentStaticInverter)
             })
         }
 
         fn ac_gnd_flt_service_bus_output(&self) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::AlternatingCurrentGndFltService)
+                elec.potential_of(ElectricalBusType::AlternatingCurrentGndFltService)
             })
         }
 
@@ -2617,37 +2617,37 @@ mod a320_electrical_circuit_tests {
 
         fn dc_bus_output(&self, number: u8) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::DirectCurrent(number))
+                elec.potential_of(ElectricalBusType::DirectCurrent(number))
             })
         }
 
         fn dc_bat_bus_output(&self) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::DirectCurrentBattery)
+                elec.potential_of(ElectricalBusType::DirectCurrentBattery)
             })
         }
 
         fn dc_ess_bus_output(&self) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::DirectCurrentEssential)
+                elec.potential_of(ElectricalBusType::DirectCurrentEssential)
             })
         }
 
         fn dc_ess_shed_bus_output(&self) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::DirectCurrentEssentialShed)
+                elec.potential_of(ElectricalBusType::DirectCurrentEssentialShed)
             })
         }
 
         fn hot_bus_output(&self, number: u8) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::DirectCurrentHot(number))
+                elec.potential_of(ElectricalBusType::DirectCurrentHot(number))
             })
         }
 
         fn dc_gnd_flt_service_bus_output(&self) -> Ref<Potential> {
             self.query_elec_ref(|_, elec| {
-                elec.potential_of_bus(ElectricalBusType::DirectCurrentGndFltService)
+                elec.potential_of(ElectricalBusType::DirectCurrentGndFltService)
             })
         }
 

@@ -421,15 +421,19 @@ mod tests {
             self.receive_power_called = true;
         }
 
-        fn consume_power<T: ConsumePower>(&mut self, _: &mut T) {
+        fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, _: &mut T) {
             self.consume_power_called = true;
         }
 
-        fn consume_power_in_converters<T: ConsumePower>(&mut self, _: &mut T) {
+        fn consume_power_in_converters<T: ConsumePower>(&mut self, _: &UpdateContext, _: &mut T) {
             self.consume_power_in_converters_called = true;
         }
 
-        fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _: &T) {
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            _: &T,
+        ) {
             self.process_power_consumption_report_called = true;
         }
     }
