@@ -959,7 +959,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         this.onClr();
                         this.check_clr = setTimeout(() => {
                             this.onClrHeld();
-                        }, 1000);
+                        }, 2000);
                     }
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
