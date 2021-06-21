@@ -4,10 +4,7 @@ class CDU_OPTIONS_MCDU_KB {
         mcdu.clearDisplay();
 
         const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "DISABLED");
-        let storedMcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
-        if (storedMcduTimeout === 0) {
-            storedMcduTimeout = "NONE";
-        }
+        const storedMcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
 
         const [enable, disable] = mcduInput === "ENABLED" ? ["{green}ALLOW INPUT{end}", "{cyan}*NO INPUT{end}"] : ["{cyan}*ALLOW INPUT{end}", "{green}NO INPUT{end}"];
 
@@ -57,7 +54,7 @@ class CDU_OPTIONS_MCDU_KB {
         mcdu.onLeftInput[4] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_MCDU_KB_TIMEOUT", "60");
-            } else if (isNaN(value) || parseInt(value) > 120) {
+            } else if (isNaN(value) || parseInt(value) > 120 || parseInt(value) < 5) {
                 mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
             } else {
                 NXDataStore.set("CONFIG_MCDU_KB_TIMEOUT", value);

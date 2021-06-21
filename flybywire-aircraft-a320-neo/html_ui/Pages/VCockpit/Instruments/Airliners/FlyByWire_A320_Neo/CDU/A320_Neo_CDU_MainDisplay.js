@@ -137,10 +137,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
                 if (val.slice(-1) === "-") {
                     this.inOut = this.inOut.slice(0, -1) + "+";
-                } else if (val.slice(-1) === "+") {
-                    this.inOut = this.inOut.slice(0, -1) + "-";
                 } else {
-                    this.inOut += "-";
+                    this.inOut += defaultKey;
                 }
             }
         };
@@ -953,7 +951,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 // Note: tried using H-events, worse performance. Reverted to direct input.
                 // Preventing repeated input also similarly felt awful and defeated the point.
                 // Clr hold functionality pointless as scratchpad will be cleared (repeated input).
-                if (keycode >= KeyCode.KEY_0 && keycode <= KeyCode.KEY_9 || keycode >= KeyCode.KEY_A && keycode <= KeyCode.KEY_Z) {
+
+                if (e.altKey || (e.ctrlKey && keycode === KeyCode.KEY_Z)) {
+                    this.clearFocus();
+                } else if (e.shiftKey && keycode === KeyCode.KEY_BACK_SPACE) {
+                    if (!this.check_clr) {
+                        this.onClr();
+                        this.check_clr = setTimeout(() => {
+                            this.onClrHeld();
+                        }, 1000);
+                    }
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
+                } else if (keycode >= KeyCode.KEY_0 && keycode <= KeyCode.KEY_9 || keycode >= KeyCode.KEY_A && keycode <= KeyCode.KEY_Z) {
                     const letter = String.fromCharCode(keycode);
                     this.onLetterInput(letter);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_" + letter.toUpperCase(), "Number", 1); // TODO: L/R [1/2] side MCDU Split
@@ -1005,6 +1015,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const keycode = e.keyCode;
             if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
                 this.clrStop = false;
+            }
+            if (this.check_clr) {
+                clearTimeout(this.check_clr);
+                this.check_clr = undefined;
             }
         });
     }
@@ -1270,9 +1284,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else if (input === "MENU") {
             if (this.onMenu) {
                 this.onMenu();
-                // } else if (input === "MCDU") {
-                //     if (this.onMcdu) {
-                //         this.onMcdu();
             }
             return true;
         } else if (input === "AIRPORT") {
