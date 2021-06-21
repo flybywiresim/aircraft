@@ -1,13 +1,36 @@
+const resolutionSense = {
+    initial: 0,
+    neutral: 1,
+    up: 2,
+    down: 3
+};
+
+const resolutionStrength = {
+    level_off: 0,
+    change: 1,
+    change_crossing: 2,
+    maintain_change: 3,
+    maintain_change_crossing: 4,
+    level_off: 5,
+    reverse_change: 6,
+    increase_change: 7,
+    preventative: 8,
+    removed: 9
+};
+
 class A32NX_TCAS_Manager {
     constructor() {
         this.TrafficUpdateTimer = 0.2;
         this.TrafficAircraft = [];
         this.sensitivityLevel = 1;
-        this.CurrentAlertStatus = 0; // 0: none, 1: TA, 2: RA
+        this.activeRA = new Set();
+        this.activeTA = new Set();
+        this.soundManager = new A32NX_SoundManager();
     }
 
     // This is called from the MFD JS file, because the MapInstrument doesn't have a deltaTime
     update(_deltaTime) {
+        // console.log("UPDATE LOOP CALLED!");
         const TCASSwitchPos = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "number");
         const TransponderStatus = SimVar.GetSimVarValue("TRANSPONDER STATE:1", "number");
         const TCASThreatSetting = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Traffic_Position", "number");
@@ -30,12 +53,10 @@ class A32NX_TCAS_Manager {
         const groundAlt = altitude - radioAltitude;
 
         const vertSpeed = SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute");
-
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         const lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
 
         // update traffic aircraft
-
         this.TrafficUpdateTimer += _deltaTime / 1000;
 
         //Update every 0.1 seconds. Also need to use this timer as deltatime inside this if block
@@ -77,9 +98,9 @@ class A32NX_TCAS_Manager {
 
         this.updateSensitivityLevel(altitude, radioAltitude, TCASMode);
 
-        const TaRaTimes = this.getTaRaTau(this.sensitivityLevel);
+        const TaRaTau = this.getTaRaTau(this.sensitivityLevel);
         const TaRaDMOD = this.getTaRaDMOD(this.sensitivityLevel);
-        const TaRaVertical = this.getTaRaZTHR(this.sensitivityLevel);
+        const TaRaZTHR = this.getTaRaZTHR(this.sensitivityLevel);
 
         let maxIntrusionLevel = 0;
         // Check for collisions
@@ -112,9 +133,9 @@ class A32NX_TCAS_Manager {
             let verticalIntrusionLevel = 0;
             let rangeIntrusionLevel = 0;
 
-            if (traffic.TAU < TaRaTimes[1] || traffic.slantDistance < TaRaDMOD[1]) {
+            if (traffic.TAU < TaRaTau[1] || traffic.slantDistance < TaRaDMOD[1]) {
                 rangeIntrusionLevel = 3;
-            } else if (traffic.TAU < TaRaTimes[0] || traffic.slantDistance < TaRaDMOD[0]) {
+            } else if (traffic.TAU < TaRaTau[0] || traffic.slantDistance < TaRaDMOD[0]) {
                 rangeIntrusionLevel = 2;
             } else if (horizontalDistance < 6) {
                 rangeIntrusionLevel = 1;
@@ -122,9 +143,9 @@ class A32NX_TCAS_Manager {
                 rangeIntrusionLevel = 0;
             }
 
-            if (traffic.verticalTAU < TaRaTimes[1] || Math.abs(traffic.relativeAlt) < TaRaVertical[1]) {
+            if (traffic.verticalTAU < TaRaTau[1] || Math.abs(traffic.relativeAlt) < TaRaZTHR[1]) {
                 verticalIntrusionLevel = 3;
-            } else if (traffic.verticalTAU < TaRaTimes[0] || Math.abs(traffic.relativeAlt) < TaRaVertical[0]) {
+            } else if (traffic.verticalTAU < TaRaTau[0] || Math.abs(traffic.relativeAlt) < TaRaZTHR[0]) {
                 verticalIntrusionLevel = 2;
             } else if (Math.abs(traffic.relativeAlt) < 1200) {
                 verticalIntrusionLevel = 1;
@@ -139,6 +160,53 @@ class A32NX_TCAS_Manager {
                 maxIntrusionLevel = traffic.intrusionLevel;
             }
         }
+
+        this.updateAdvisories(_deltaTime);
+    }
+
+    updateAdvisories(_deltaTime) {
+        for (const traffic of this.TrafficAircraft) {
+            if (this.activeTA.has(traffic.ID)) {
+                if (traffic.intrusionLevel === 3) {
+                    console.log("TCAS: TA UPGRADED TO RA!");
+                    this.activeTA.delete(traffic.ID);
+                    this.activeRA.add(traffic.ID);
+                } else if (traffic.intrusionLevel < 2) {
+                    console.log("TCAS: CLEAR OF TA!");
+                    this.activeTA.delete(traffic.ID);
+                    traffic.timeSinceLastTA = 0;
+                }
+            } else {
+                // if (traffic.intrusionLevel === 2 && traffic.timeSinceLastTA >= 5) {
+                if (traffic.intrusionLevel === 2) {
+                    // this.soundManager.tryPlaySound(soundList.traffic_traffic);
+                    console.log("TCAS: GENERATING NEW TA!");
+                    Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
+                    this.activeTA.add(traffic.ID);
+                } else if (traffic.timeSinceLastTA <= 5) {
+                    traffic.timeSinceLastTA += _deltaTime / 1000;
+                }
+            }
+
+            if (this.activeRA.has(traffic.ID)) {
+                if (traffic.intrusionLevel === 3) {
+                    // Handle continuing RA
+                } else {
+                    if (traffic.intrusionLevel === 2) {
+                        traffic.timeSinceLastTA = 0;
+                    }
+                    this.activeRA.delete(traffic.ID);
+                    console.log("TCAS: CLEAR OF CONFLICT!");
+                }
+            } else {
+                if (traffic.intrusionLevel === 3) {
+                    // New RA!
+                    console.log("TCAS: RA GENERATED!");
+                }
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -317,6 +385,7 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         //0: no intrusion, 1: proximate, 2: TA, 3: RA
         this.intrusionLevel = 0;
         this.isDisplayed = false;
+
         // time until predicted collision
         this.TAU = Infinity;
         // time until aircraft is on the same altitude level
@@ -329,6 +398,9 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         // previous dipslay type (i.e. RA, TA, vertical speed arrow etc.) to prevent frequent svg changes
         this._lastIntrusionLevel = NaN;
         this._lastVertArrowCase = NaN;
+
+        // Keep a timer after a TA has ended to prevent unneeded annunciations
+        this.timeSinceLastTA = 6;
     }
 
     id(map) {
