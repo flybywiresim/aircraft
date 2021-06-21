@@ -1156,9 +1156,9 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
             this.isDaytime = isDaytime;
             /** Respecting the night->day (isDaytime) and day->night (!isDaytime) transitions */
             if (isDaytime) {
-                this.targetBrightness = this.targetBrightness > this.dayBrightness ? this.targetBrightness : this.dayBrightness;
+                this.targetBrightness = Math.max(this.targetBrightness, this.dayBrightness);
             } else {
-                this.targetBrightness = this.targetBrightness < this.nightBrightness ? this.targetBrightness : this.nightBrightness;
+                this.targetBrightness = Math.min(this.targetBrightness, this.nightBrightness);
             }
         }
 
