@@ -80,6 +80,7 @@
 1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
 1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
 1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
+1. [HYD] Blue electric pump override button changed to momentary latched - @Crocket63 (crocket)
 1. [LIGHTS] Add OVHD ANN LT DIM functionality - @bouveng (Johan Bouveng)
 1. [PFD] Add baro setting flash when passing TA/TL - @lukecologne (luke)
 1. [FLIGHT MODEL] Fix flap transition bounce - @donstim (donbikes#4084)
@@ -115,6 +116,12 @@
 1. [FMGC] Added reset of fmgc variables - @MisterChocker (Leon)
 1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
 1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
+1. [ATHR/FWC] Adapted take-off A/THR engagement and added thrust lever not set warning - @aguther (Andreas Guther)
+1. [TEXTURE] Added a white dot to the test button and corrected DISCH alignment on the fire panel - @ImenesFBW (Imenes)
+1. [ECAM] Added ISA DEV to ECAM - @BlueberryKing (BlueberryKing#6641)
+1. [AOC] Reworked airport handling on AOC Weather Request Page - @MisterChocker (Leon)
+1. [SOUND] Added blue and yellow electric hydraulic pump sounds - @hotshotp (Boris)
+1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
 1. [ELEC] Improve electrical system implementation to allow for implementing advanced scenarios - @davidwalschots (David Walschots)
 
 ## 0.6.0

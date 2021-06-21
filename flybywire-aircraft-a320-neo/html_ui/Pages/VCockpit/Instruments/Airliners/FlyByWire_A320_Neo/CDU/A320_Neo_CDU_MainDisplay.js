@@ -19,6 +19,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
+        this.aocAirportList = new CDUAocAirportList;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -36,6 +37,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     initMcduVariables() {
         this.messageQueue = [];
+        this.aocAirportList.init();
     }
 
     Init() {
@@ -304,13 +306,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.checkAocTimes();
 
         this.updateMCDU();
-
-        // If legacy SimBrief username variable is in the DataStore, convert it to a user ID and remove it.
-        const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
-        if (simbriefUsername) {
-            getSimBriefUser(simbriefUsername, this, () => { });
-            NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", "");
-        }
     }
 
     /* MCDU UPDATE */
