@@ -1,11 +1,33 @@
-const resolutionSense = {
+const CONSTANTS = {
+    MIN_VS: -6000,
+    MAX_VS: 6000
+};
+
+const taraCallouts = {
+    climb: 0,
+    climb_cross: 1,
+    climb_increase: 2,
+    climb_now: 3,
+    clear_of_conflict: 4,
+    descend: 5,
+    descend_cross: 6,
+    descend_increase: 7,
+    descend_now: 8,
+    monitor_vs: 9,
+    maintain_vs: 10,
+    maintain_vs_cross: 11,
+    level_off: 12,
+    traffic: 13
+};
+
+const raSense = {
     initial: 0,
-    neutral: 1,
+    level: 1,
     up: 2,
     down: 3
 };
 
-const resolutionStrength = {
+const raStrength = {
     initial: 0,
     level_off: 1,
     change: 2,
@@ -17,6 +39,538 @@ const resolutionStrength = {
     increase_change: 8,
     preventative: 9,
     removed: 10
+};
+
+const raType = {
+    corrective: 0,
+    preventative: 1
+};
+
+/**
+ *  callout: warning annunciation to be made
+ *  sense: up (climb) or down (descend)
+ *  type: corrective or preventative
+ *
+ */
+const raVariants = {
+    // PREVENTIVE RA's
+    monitor_vs_level: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.level,
+        type: raType.preventative,
+        vs: {
+            condition: [-100, 100],
+            green: null,
+            red: [
+                [CONSTANTS.MIN_VS, -100],
+                [100, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    monitor_vs_climb_0: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.up,
+        type: raType.preventative,
+        vs: {
+            condition: [0, CONSTANTS.MAX_VS],
+            green: null,
+            red: [
+                [CONSTANTS.MIN_VS, 0]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    monitor_vs_climb_500: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.up,
+        type: raType.preventative,
+        vs: {
+            condition: [-500, CONSTANTS.MAX_VS],
+            green: null,
+            red: [
+                [CONSTANTS.MIN_VS, -500]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    monitor_vs_climb_1000: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.up,
+        type: raType.preventative,
+        vs: {
+            condition: [-1000, CONSTANTS.MAX_VS],
+            green: null,
+            red: [
+                [CONSTANTS.MIN_VS, -1000]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    monitor_vs_climb_2000: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.up,
+        type: raType.preventative,
+        vs: {
+            condition: [-2000, CONSTANTS.MAX_VS],
+            green: null,
+            red: [
+                [CONSTANTS.MIN_VS, -2000]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+
+    monitor_vs_descend_0: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.down,
+        type: raType.preventative,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, 0],
+            green: null,
+            red: [
+                [0, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    monitor_vs_descend_500: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.down,
+        type: raType.preventative,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, 500],
+            green: null,
+            red: [
+                [500, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    monitor_vs_descend_1000: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.down,
+        type: raType.preventative,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, 1000],
+            green: null,
+            red: [
+                [1000, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    monitor_vs_descend_2000: {
+        callout: taraCallouts.monitor_vs,
+        sense: raSense.down,
+        type: raType.preventative,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, 2000],
+            green: null,
+            red: [
+                [2000, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    // CORRECTIVE RA's
+    // CLIMB
+    climb: {
+        callout: taraCallouts.climb,
+        sense: raSense.up,
+        type: raType.corrective,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
+            green: [1500, 2000],
+            red: [
+                [CONSTANTS.MIN_VS, 1500]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: true,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    climb_cross: {
+        callout: taraCallouts.climb_cross,
+        sense: raSense.up,
+        type: raType.corrective,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
+            green: [1500, 2000],
+            red: [
+                [CONSTANTS.MIN_VS, 1500]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: true,
+            can_be_reversed: true,
+            requires_crossing: true,
+            forbids_crossing: false
+        }
+    },
+    climb_increase: {
+        callout: taraCallouts.climb_increase,
+        sense: raSense.up,
+        type: raType.corrective,
+        vs: {
+            condition: [500, CONSTANTS.MAX_VS],
+            green: [2500, 4400],
+            red: [
+                [CONSTANTS.MIN_VS, 2500]
+            ]
+        },
+        conditions: {
+            can_be_initial: false,
+            can_be_followup: true,
+            can_be_reversed: false,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    // CORRECTIVE RA's
+    // DESCEND
+    descend: {
+        callout: taraCallouts.descend,
+        sense: raSense.down,
+        type: raType.corrective,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
+            green: [-2000, -1500],
+            red: [
+                [-1500, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: true,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    descend_cross: {
+        callout: taraCallouts.descend_cross,
+        sense: raSense.down,
+        type: raType.corrective,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
+            green: [-2000, -1500],
+            red: [
+                [-1500, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: true,
+            can_be_reversed: true,
+            requires_crossing: true,
+            forbids_crossing: false
+        }
+    },
+    descend_increase: {
+        callout: taraCallouts.descend_increase,
+        sense: raSense.down,
+        type: raType.corrective,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, -500],
+            green: [-4400, -2500],
+            red: [
+                [-2500, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: false,
+            can_be_followup: true,
+            can_be_reversed: false,
+            requires_crossing: false,
+            forbids_crossing: false
+        }
+    },
+    // CORRECTIVE RA's
+    // LEVEL OFF
+    level_off_250_both: {
+        callout: taraCallouts.level_off,
+        sense: raSense.level,
+        type: raType.corrective,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
+            green: [-250, 250],
+            red: [
+                [CONSTANTS.MIN_VS, -250],
+                [250, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: true,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    level_off_300_below: {
+        callout: taraCallouts.level_off,
+        sense: raSense.level,
+        type: raType.corrective,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
+            green: [-300, 0],
+            red: [
+                [CONSTANTS.MIN_VS, -300],
+                [0, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: true,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    level_off_300_above: {
+        callout: taraCallouts.level_off,
+        sense: raSense.level,
+        type: raType.corrective,
+        vs: {
+            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
+            green: [0, 300],
+            red: [
+                [CONSTANTS.MIN_VS, 0],
+                [300, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: true,
+            can_be_reversed: true,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    // CORRECTIVE RA's
+    // MAINTAIN VS, CLIMB
+    climb_maintain_vs: {
+        callout: taraCallouts.maintain_vs,
+        sense: raSense.up,
+        type: raType.corrective,
+        vs: {
+            condition: [1500, 2000],
+            green: [1500, 2000],
+            red: [
+                [CONSTANTS.MIN_VS, 1500],
+                [2000, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: false,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    climb_maintain_vs_crossing: {
+        callout: taraCallouts.maintain_vs,
+        sense: raSense.up,
+        type: raType.corrective,
+        vs: {
+            condition: [1500, 2000],
+            green: [1500, 2000],
+            red: [
+                [CONSTANTS.MIN_VS, 1500],
+                [2000, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: false,
+            requires_crossing: true,
+            forbids_crossing: false
+        }
+    },
+    climb_maintain_vs_steep: {
+        callout: taraCallouts.maintain_vs,
+        sense: raSense.up,
+        type: raType.corrective,
+        vs: {
+            condition: [1500, 4400],
+            green: [1500, 4400],
+            red: [
+                [CONSTANTS.MIN_VS, 1500],
+                [4400, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: false,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    climb_maintain_vs_steep_crossing: {
+        callout: taraCallouts.maintain_vs,
+        sense: raSense.up,
+        type: raType.corrective,
+        vs: {
+            condition: [1500, 4400],
+            green: [1500, 4400],
+            red: [
+                [CONSTANTS.MIN_VS, 1500],
+                [4400, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: false,
+            requires_crossing: true,
+            forbids_crossing: false
+        }
+    },
+    // CORRECTIVE RA's
+    // MAINTAIN VS, DESCEND
+    descend_maintain_vs: {
+        callout: taraCallouts.maintain_vs,
+        sense: raSense.down,
+        type: raType.corrective,
+        vs: {
+            condition: [-2000, -1500],
+            green: [-2000, -1500],
+            red: [
+                [CONSTANTS.MIN_VS, -2000],
+                [-1500, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: false,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    descend_maintain_vs_crossing: {
+        callout: taraCallouts.maintain_vs,
+        sense: raSense.down,
+        type: raType.corrective,
+        vs: {
+            condition: [-2000, -1500],
+            green: [-2000, -1500],
+            red: [
+                [CONSTANTS.MIN_VS, -2000],
+                [-1500, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: false,
+            requires_crossing: true,
+            forbids_crossing: false
+        }
+    },
+    descend_maintain_vs_steep: {
+        callout: taraCallouts.maintain_vs,
+        sense: raSense.down,
+        type: raType.corrective,
+        vs: {
+            condition: [-4400, -1500],
+            green: [-4400, -1500],
+            red: [
+                [CONSTANTS.MIN_VS, -4400],
+                [-1500, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: false,
+            requires_crossing: false,
+            forbids_crossing: true
+        }
+    },
+    descend_maintain_vs_steep_crossing: {
+        callout: taraCallouts.maintain_vs,
+        sense: raSense.down,
+        type: raType.corrective,
+        vs: {
+            condition: [-4400, -1500],
+            green: [-4400, -1500],
+            red: [
+                [CONSTANTS.MIN_VS, -4400],
+                [-1500, CONSTANTS.MAX_VS]
+            ]
+        },
+        conditions: {
+            can_be_initial: true,
+            can_be_followup: false,
+            can_be_reversed: false,
+            requires_crossing: true,
+            forbids_crossing: false
+        }
+    }
 };
 
 class A32NX_TCAS_Manager {
@@ -172,7 +726,7 @@ class A32NX_TCAS_Manager {
                 if (traffic.intrusionLevel === 3) {
                     console.log("TCAS: TA UPGRADED TO RA!");
                     this.activeTA.delete(traffic.ID);
-                    this.activeRA.add([traffic.ID, resolutionSense.initial, resolutionStrength.initial]);
+                    this.activeRA.add([traffic.ID, raSense.initial, raStrength.initial]);
                 } else if (traffic.intrusionLevel < 2) {
                     console.log("TCAS: CLEAR OF TA!");
                     this.activeTA.delete(traffic.ID);
@@ -203,7 +757,7 @@ class A32NX_TCAS_Manager {
             } else {
                 if (traffic.intrusionLevel === 3) {
                     console.log("TCAS: RA GENERATED!");
-                    this.activeRA.add([traffic.ID, resolutionSense.initial, resolutionStrength.initial]);
+                    this.activeRA.add([traffic.ID, raSense.initial, raStrength.initial]);
                 }
             }
         }
@@ -212,7 +766,7 @@ class A32NX_TCAS_Manager {
     updateRaParameters(_deltaTime) {
         for (const RA of this.activeRA) {
             const traffic = this.TrafficAircraft.find(t => t.ID === RA[0]);
-            if (RA[1] === resolutionSense.initial) {
+            if (RA[1] === raSense.initial) {
                 // Choose initial sense and strength
             } else {
 
