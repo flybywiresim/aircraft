@@ -1126,8 +1126,11 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         this.minimum = 0.15;
         this.bright_gran = 0.05;
         this.dayBrightness = 0.85;
-        this.nightBrightness = 0.45;
+        this.nightBrightness = 0.50;
         this.isDaytime = this.getIsDaytime();
+        this.currentBrightness = this.isDaytime ? this.dayBrightness : this.nightBrightness;
+        this.isInTransition = false;
+        this.transitionSpeed = 5e-5;
         this.updateThrottler = new UpdateThrottler(10000);
     }
     onEnter() {
@@ -1136,12 +1139,16 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
-        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+        if (!this.isInTransition && this.updateThrottler.canUpdate(_deltaTime) === -1) {
             return;
         }
 
-        this.isDaytime = this.getIsDaytime();
-        this.autoSetBrightness();
+        if (this.isDaytime !== this.getIsDaytime()) {
+            this.isDaytime = this.getIsDaytime();
+            this.isInTransition = true;
+        }
+
+        this.updateTransition(_deltaTime);
     }
     onExit() {
     }
@@ -1152,38 +1159,59 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", b);
         this.brightnessElement.updateBrightness(b); //TODO: Remove line on model update
     }
+    updateTransition(_deltaTime) {
+        if (!this.isInTransition) {
+            return;
+        }
+
+        const targetBrightness = this.isDaytime ? this.dayBrightness : this.nightBrightness;
+        const brightnessChange = this.transitionSpeed * _deltaTime;
+
+        if (targetBrightness > this.currentBrightness) {
+            this.currentBrightness = Math.min(this.currentBrightness + brightnessChange, targetBrightness);
+        } else if (targetBrightness < this.currentBrightness) {
+            this.currentBrightness = Math.max(this.currentBrightness - brightnessChange, targetBrightness);
+        } else {
+            this.isInTransition = false;
+        }
+
+        this.setBrightness(this.currentBrightness);
+    }
     brightnessUp() {
         if (this.bugsElement.getDisplay() !== "none") {
             return;
         }
 
-        if (this.isDaytime && this.dayBrightness < this.maximum) {
-            this.dayBrightness += this.bright_gran;
-        } else if (!this.isDaytime && this.nightBrightness < this.maximum) {
-            this.nightBrightness += this.bright_gran;
+        this.isInTransition = false;
+        this.currentBrightness = Math.min(this.maximum, this.currentBrightness + this.bright_gran);
+
+        if (this.isDaytime) {
+            this.dayBrightness = this.currentBrightness;
+        } else {
+            this.nightBrightness = this.currentBrightness;
         }
 
-        this.autoSetBrightness();
+        this.setBrightness(this.currentBrightness);
     }
     brightnessDown() {
         if (this.bugsElement.getDisplay() !== "none") {
             return;
         }
 
-        if (this.isDaytime && this.dayBrightness > this.minimum) {
-            this.dayBrightness -= this.bright_gran;
-        } else if (!this.isDaytime && this.nightBrightness > this.minimum) {
-            this.nightBrightness -= this.bright_gran;
+        this.isInTransition = false;
+        this.currentBrightness = Math.max(this.minimum, this.currentBrightness - this.bright_gran);
+
+        if (this.isDaytime) {
+            this.dayBrightness = this.currentBrightness;
+        } else {
+            this.nightBrightness = this.currentBrightness;
         }
 
-        this.autoSetBrightness();
+        this.setBrightness(this.currentBrightness);
     }
     getIsDaytime() {
         const timeOfDay = SimVar.GetSimVarValue("E:TIME OF DAY", "Enum");
         return timeOfDay === 0 || timeOfDay === 1;
-    }
-    autoSetBrightness() {
-        this.setBrightness(this.isDaytime ? this.dayBrightness : this.nightBrightness);
     }
     onEvent(_event) {
         switch (_event) {
