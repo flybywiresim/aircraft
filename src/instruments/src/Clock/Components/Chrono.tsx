@@ -9,7 +9,7 @@ export const Chrono = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 200);
     const [timeOfDay] = useSimVar('E:TIME OF DAY', 'enum', 10000);
-    const phaseOfDay = (timeOfDay === 0 || timeOfDay === 1) ? 'day' : 'night';
+    const phaseOfDay = (timeOfDay === 1 || timeOfDay === 2) ? 'day' : 'night';
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState<null | number>(null);

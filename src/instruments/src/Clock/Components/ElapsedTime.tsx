@@ -9,7 +9,7 @@ export const ElapsedTime = () => {
     const [elapsedKnobPos] = useInteractionSimVar('L:A32NX_CHRONO_ET_SWITCH_POS', 'number', 'A32NX_CHRONO_ET_POS_CHANGED');
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 1000);
     const [timeOfDay] = useSimVar('E:TIME OF DAY', 'enum', 10000);
-    const phaseOfDay = (timeOfDay === 0 || timeOfDay === 1) ? 'day' : 'night';
+    const phaseOfDay = (timeOfDay === 1 || timeOfDay === 2) ? 'day' : 'night';
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState(0);
