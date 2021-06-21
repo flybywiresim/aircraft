@@ -742,7 +742,7 @@ mod momentary_push_button_tests {
 #[cfg(test)]
 mod momentary_on_push_button_tests {
     use super::*;
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     #[test]
     fn new_is_not_pressed() {
@@ -751,94 +751,89 @@ mod momentary_on_push_button_tests {
 
     #[test]
     fn reads_its_state() {
-        let mut button = MomentaryOnPushButton::new("TEST");
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
-        assert!(button.is_pressed());
+        assert!(test_bed.query_element(|button| button.is_pressed()));
     }
 
     #[test]
     fn stays_on_while_kept_pressed() {
-        let mut button = MomentaryOnPushButton::new("TEST");
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
-        test_bed.run_without_update(&mut button);
-        assert!(button.is_on());
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
 
-        test_bed.run_without_update(&mut button);
-        assert!(button.is_on());
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
     }
 
     #[test]
     fn can_be_forced_off() {
-        let mut button = MomentaryOnPushButton::new("TEST");
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
-        test_bed.run_without_update(&mut button);
-        assert!(button.is_on());
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
 
-        button.turn_off();
+        test_bed.command_element(|button| button.turn_off());
 
-        test_bed.run_without_update(&mut button);
-        assert!(!button.is_on());
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_on()));
     }
 
     #[test]
     fn remains_off_when_forced_off() {
-        let mut button = MomentaryOnPushButton::new("TEST");
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
-        test_bed.run_without_update(&mut button);
-        button.turn_off();
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        test_bed.run();
 
-        assert!(!button.is_on());
+        test_bed.command_element(|button| button.turn_off());
 
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", false);
-        test_bed.run_without_update(&mut button);
+        assert!(!test_bed.query_element(|button| button.is_on()));
 
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
-        test_bed.run_without_update(&mut button);
-        button.turn_off();
+        test_bed.write("OVHD_TEST_IS_PRESSED", false);
+        test_bed.run();
 
-        assert!(!button.is_on());
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        test_bed.run();
+        test_bed.command_element(|button| button.turn_off());
+
+        assert!(!test_bed.query_element(|button| button.is_on()));
     }
 
     #[test]
     fn can_press_on_and_off() {
-        let mut button = MomentaryOnPushButton::new("TEST");
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
-        test_bed.run_without_update(&mut button);
-        assert!(button.is_on());
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
 
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", false);
+        test_bed.write("OVHD_TEST_IS_PRESSED", false);
 
-        test_bed.run_without_update(&mut button);
-        assert!(button.is_on());
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
 
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
-        test_bed.run_without_update(&mut button);
-        assert!(!button.is_on());
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_on()));
 
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", false);
+        test_bed.write("OVHD_TEST_IS_PRESSED", false);
 
-        test_bed.run_without_update(&mut button);
-        assert!(!button.is_on());
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_on()));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut button = MomentaryOnPushButton::new("TEST");
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_TEST_IS_ON"));
     }
