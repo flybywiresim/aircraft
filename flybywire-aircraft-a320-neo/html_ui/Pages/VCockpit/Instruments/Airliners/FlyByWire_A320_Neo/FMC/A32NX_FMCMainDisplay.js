@@ -1839,21 +1839,6 @@ class FMCMainDisplay extends BaseAirliners {
     setApproachIndex(approachIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
-                const frequency = this.flightPlanManager.getApproachNavFrequency();
-                if (isFinite(frequency)) {
-                    const freq = Math.round(frequency * 100) / 100;
-                    if (this.connectIlsFrequency(freq)) {
-                        this._ilsFrequencyPilotEntered = false;
-                        SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
-                        const approach = this.flightPlanManager.getApproach();
-                        if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
-                            const runway = this.flightPlanManager.getApproachRunway();
-                            if (runway) {
-                                SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_COURSE", "number", runway.direction);
-                            }
-                        }
-                    }
-                }
                 const approach = this.flightPlanManager.getApproach();
                 if (approach) {
                     const runway = this.flightPlanManager.getApproachRunway();
