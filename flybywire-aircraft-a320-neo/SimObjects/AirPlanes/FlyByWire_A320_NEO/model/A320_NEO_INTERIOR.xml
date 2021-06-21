@@ -125,6 +125,11 @@
                 <ANIM_NAME>LIGHTING_Knob_Glareshield</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_1</PART_ID>
                 <POTENTIOMETER>83</POTENTIOMETER>
+                <MAX_VALUE>100</MAX_VALUE>
+                <KNOB_TURN_SPEED>1</KNOB_TURN_SPEED>
+                <WWISE_EVENT></WWISE_EVENT>
+                <UPDATE_FREQUENCY>50</UPDATE_FREQUENCY>
+                <UPDATE_DELAY>0.2</UPDATE_DELAY>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
