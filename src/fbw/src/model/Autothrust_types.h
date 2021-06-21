@@ -230,6 +230,8 @@ typedef struct {
   athr_status status;
   athr_mode mode;
   athr_mode_message mode_message;
+  boolean_T thrust_lever_warning_flex;
+  boolean_T thrust_lever_warning_toga;
 } athr_output;
 
 #endif

@@ -286,6 +286,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "athr.output.status" << delimiter;
   out << "athr.output.mode" << delimiter;
   out << "athr.output.mode_message" << delimiter;
+  out << "athr.output.thrust_lever_warning_flex" << delimiter;
+  out << "athr.output.thrust_lever_warning_toga" << delimiter;
   out << "fbw.sim.time.monotonic_time" << delimiter;
   out << "fbw.sim.time.dt" << delimiter;
   out << "fbw.sim.time.simulation_time" << delimiter;
@@ -764,6 +766,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << athr.output.status << delimiter;
   out << athr.output.mode << delimiter;
   out << athr.output.mode_message << delimiter;
+  out << static_cast<unsigned int>(athr.output.thrust_lever_warning_flex) << delimiter;
+  out << static_cast<unsigned int>(athr.output.thrust_lever_warning_toga) << delimiter;
   out << fbw.sim.time.monotonic_time << delimiter;
   out << fbw.sim.time.dt << delimiter;
   out << fbw.sim.time.simulation_time << delimiter;

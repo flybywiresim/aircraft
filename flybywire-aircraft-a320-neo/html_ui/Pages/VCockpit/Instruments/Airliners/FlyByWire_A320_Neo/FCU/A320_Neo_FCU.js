@@ -303,6 +303,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 console.warn("reset due to _isManaged == true");
             }
             this.isManaged = _isManaged;
+            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED_DOT", "boolean", this.isManaged);
             if (_showSelectedSpeed !== this.showSelectedSpeed && !_showSelectedSpeed) {
                 this.inSelection = false;
                 this.isSelectedValueActive = false;
@@ -310,6 +311,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 console.warn("reset due to _showSelectedSpeed == false");
             }
             this.showSelectedSpeed = _showSelectedSpeed;
+            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED_DASHES", "boolean", this.isManaged && !this.showSelectedSpeed);
             this.currentValue = _machActive ? _value * 100 : _value;
             this.isMachActive = _machActive;
             this.setTextElementActive(this.textSPD, !_machActive);
@@ -693,6 +695,18 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 var value = Math.round(Math.max(this.currentValue, 0)) % 360;
                 this.textValueContent = value.toString().padStart(3, "0");
             }
+
+            SimVar.SetSimVarValue(
+                "L:A32NX_FCU_HDG_MANAGED_DASHES",
+                "boolean",
+                (this.isManagedArmed || this.isManagedActive) && !this.showSelectedHeading
+            );
+            SimVar.SetSimVarValue(
+                "L:A32NX_FCU_HDG_MANAGED_DOT",
+                "boolean",
+                this.isManagedArmed || this.isManagedActive
+            );
+
             this.setElementVisibility(this.illuminator, this.isManagedArmed || this.isManagedActive);
         }
     }
@@ -887,6 +901,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             const value = Math.floor(Math.max(this.currentValue, 100));
             this.textValueContent = value.toString().padStart(5, "0");
             this.setElementVisibility(this.illuminator, this.isManaged);
+            SimVar.SetSimVarValue("L:A32NX_FCU_ALT_MANAGED", "boolean", this.isManaged);
         }
     }
 
@@ -1102,8 +1117,10 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                         this.textValueContent = sign + (Math.floor(value * 0.01).toString().padStart(2, "0")) + "oo";
                     }
                 }
+                SimVar.SetSimVarValue("L:A32NX_FCU_VS_MANAGED", "boolean", false);
             } else {
                 this.textValueContent = "~----";
+                SimVar.SetSimVarValue("L:A32NX_FCU_VS_MANAGED", "boolean", true);
             }
         }
     }

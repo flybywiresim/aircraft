@@ -997,20 +997,6 @@
 						</Action>
 					</ChildrenList>
 				</Event>
-				<Event Name="Play_Asobo_A320_NEO_yellowelecpump" ID="{830F1671-F159-4F66-A643-3A884175F307}">
-					<ChildrenList>
-						<Action Name="" ID="{5FAF4898-D143-4858-AD99-83CB5064214E}" ShortID="860818220">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="1"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="Yellow_pump" ID="{DA5DEF0E-EFB6-45D7-A4E4-2C2BC038FE8D}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
-					</ChildrenList>
-				</Event>
 				<Event Name="Play_Asobo_A320_NEO_AVventext" ID="{E5FD536C-1554-4B88-B0DA-6DFEDD6BF251}">
 					<ChildrenList>
 						<Action Name="" ID="{C83AF829-6741-486B-AF9F-FF4F53844E94}" ShortID="554448647">
@@ -1584,6 +1570,174 @@
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="cvr_test" ID="{EA7EF7B4-27D7-4187-AB5C-A9BBA5808638}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_yellowepump" ID="{4D09EE6B-A81D-4D43-9CD9-9A4D594D97D7}">
+					<ChildrenList>
+						<Action Name="" ID="{172E48DA-66CD-4E56-8374-419839AFFBA6}" ShortID="608106794">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="yellowsystem" ID="{4E416564-71C2-4A86-AA20-CAB63DDCE503}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_yellowshut" ID="{0503963D-4FC9-4C7F-9F86-4233953D9A0D}">
+					<ChildrenList>
+						<Action Name="" ID="{E017394B-DE79-426B-9D38-478DD283A7FD}" ShortID="196142653">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="blueyellowshutdown" ID="{F7AA489A-E1A5-4E43-8312-1D6C199D4C52}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_blueepump" ID="{32DFCA04-1EEA-4641-8F03-F41F0309F297}">
+					<ChildrenList>
+						<Action Name="" ID="{06ADBAA0-FB1E-4817-9832-3DBFDC7813F3}" ShortID="1011006570">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="bluesystem" ID="{D0F2401B-BA3F-4AE6-A288-9CF770D3D3F8}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_yellowepumpext" ID="{CF00D9CE-41EC-4841-B2B0-0927803CA799}">
+					<ChildrenList>
+						<Action Name="" ID="{D7E96AEB-AA92-46DB-8183-8142FD7565E4}" ShortID="1011421868">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="yellowsystemext" ID="{6C90E5F8-861E-440A-99BC-CB8EF13E801A}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_epumpshutext" ID="{CF93AD94-59F1-45CB-8059-E32282FDA5C7}">
+					<ChildrenList>
+						<Action Name="" ID="{F19AA1B9-A807-4DE4-BFEC-8A336104B19A}" ShortID="641862576">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="blueyellowshutdownext" ID="{27D6E865-6CC5-4FDF-8931-CC26EDD232FD}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_blueepumpext" ID="{A90725F7-5780-409C-B3EF-6DE82326039C}">
+					<ChildrenList>
+						<Action Name="" ID="{9A0013F1-279F-45B9-BAD1-7651F483CB79}" ShortID="648188770">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="bluesystemext" ID="{78EEC471-12F1-45B7-9A48-817B0EE864DE}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_blueshut" ID="{E32E6D84-0BFA-4B3C-A665-E871F455685D}">
+					<ChildrenList>
+						<Action Name="" ID="{DFD17D20-8ADC-4D59-A53B-F210D10300B5}" ShortID="505562170">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="blueyellowshutdown_01" ID="{CF6EE365-1A0F-4994-BA17-9EBDD21F4B67}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_fcubutton" ID="{4A8789D2-404F-4565-A886-19F675BAE959}">
+					<ChildrenList>
+						<Action Name="" ID="{D81E9D2A-37C4-448B-BF58-9E35D82A07C2}" ShortID="168798793">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="fcubutton" ID="{B7702464-08B2-4211-B5B7-FA7CB6C13D54}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_svcbuswhine" ID="{97E1CA4A-9222-479D-999C-60B525910A30}">
+					<ChildrenList>
+						<Action Name="" ID="{CED49E85-7282-4E02-AEB9-05CFBEE7A76E}" ShortID="119756785">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="SVCbuswhine" ID="{2C4C6E13-0837-43B9-9C9B-C18614F57707}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_svcbusoff" ID="{7963285A-399A-4378-AE2F-6DF892758DF3}">
+					<ChildrenList>
+						<Action Name="" ID="{36DAEC4F-D193-4AED-A412-98C22327E254}" ShortID="771014942">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="svcbusoff" ID="{6C70C689-A291-4CB9-8768-A378D91288E3}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_intbrakefan" ID="{67706F83-8151-4DD9-8E5B-6B6BA87F9F6A}">
+					<ChildrenList>
+						<Action Name="" ID="{2C90F5D2-12F4-4EB5-944F-64F919BC5269}" ShortID="194479533">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="brakefan" ID="{4FE0C9D0-333A-4ACC-A9A2-924560D3702B}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_intbrakefanshut" ID="{7CA9ED77-707F-485A-9F65-B5C13F9734E8}">
+					<ChildrenList>
+						<Action Name="" ID="{475AFF4B-DBAE-49D5-AB6D-B72A553ED9F9}" ShortID="803364453">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="brakefanshut" ID="{B33CDF0D-2DD6-4CF7-B630-6CEF0BF9D13C}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
