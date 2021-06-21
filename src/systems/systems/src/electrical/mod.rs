@@ -298,441 +298,6 @@ impl Default for EmergencyElectrical {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use uom::si::{electric_current::ampere, frequency::hertz, ratio::percent};
-
-    struct StubElectricSource {}
-    impl ProvideCurrent for StubElectricSource {
-        fn current(&self) -> ElectricCurrent {
-            ElectricCurrent::new::<ampere>(150.)
-        }
-
-        fn current_normal(&self) -> bool {
-            true
-        }
-    }
-    impl ProvidePotential for StubElectricSource {
-        fn potential(&self) -> ElectricPotential {
-            ElectricPotential::new::<volt>(28.)
-        }
-
-        fn potential_normal(&self) -> bool {
-            true
-        }
-    }
-    impl ProvideFrequency for StubElectricSource {
-        fn frequency(&self) -> Frequency {
-            Frequency::new::<hertz>(400.)
-        }
-
-        fn frequency_normal(&self) -> bool {
-            true
-        }
-    }
-    impl ProvideLoad for StubElectricSource {
-        fn load(&self) -> Ratio {
-            Ratio::new::<percent>(50.)
-        }
-
-        fn load_normal(&self) -> bool {
-            true
-        }
-    }
-
-    #[cfg(test)]
-    mod electrical_bus_tests {
-        use super::*;
-        use crate::simulation::{
-            test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBed},
-            Aircraft, Read,
-        };
-
-        #[test]
-        fn writes_its_state() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(electrical_bus));
-            test_bed.run();
-
-            assert!(test_bed.contains_key("ELEC_AC_2_BUS_IS_POWERED"));
-        }
-
-        #[test]
-        fn sub_bus_does_not_write_its_state() {
-            let mut test_bed = SimulationTestBed::new(|electricity| {
-                ElectricalBusTestAircraft::new(ElectricalBusType::Sub("202PP"), electricity)
-            });
-            test_bed.run();
-
-            assert!(!test_bed.contains_key("ELEC_SUB_202PP_BUS_IS_POWERED"));
-        }
-
-        struct BatteryStub {
-            identifier: ElectricalElementIdentifier,
-            potential: ElectricPotential,
-        }
-        impl BatteryStub {
-            fn new(
-                identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-            ) -> BatteryStub {
-                BatteryStub {
-                    identifier: identifier_provider.next(),
-                    potential: ElectricPotential::new::<volt>(0.),
-                }
-            }
-
-            fn set_potential(&mut self, potential: ElectricPotential) {
-                self.potential = potential;
-            }
-        }
-        impl ElectricalElement for BatteryStub {
-            fn input_identifier(&self) -> ElectricalElementIdentifier {
-                self.identifier
-            }
-
-            fn output_identifier(&self) -> ElectricalElementIdentifier {
-                self.identifier
-            }
-
-            fn is_conductive(&self) -> bool {
-                true
-            }
-        }
-        impl ElectricitySource for BatteryStub {
-            fn output_potential(&self) -> Potential {
-                if self.potential > ElectricPotential::new::<volt>(0.) {
-                    Potential::new(PotentialOrigin::Battery(1), self.potential)
-                } else {
-                    Potential::none()
-                }
-            }
-        }
-
-        struct ElectricalBusTestAircraft {
-            bus: ElectricalBus,
-            battery: BatteryStub,
-        }
-        impl ElectricalBusTestAircraft {
-            fn new(bus_type: ElectricalBusType, electricity: &mut Electricity) -> Self {
-                Self {
-                    bus: ElectricalBus::new(bus_type, electricity),
-                    battery: BatteryStub::new(electricity),
-                }
-            }
-
-            fn powered_by_battery_at(&mut self, potential: ElectricPotential) {
-                self.battery.set_potential(potential);
-            }
-        }
-        impl Aircraft for ElectricalBusTestAircraft {
-            fn update_before_power_distribution(
-                &mut self,
-                _: &UpdateContext,
-                electricity: &mut Electricity,
-            ) {
-                electricity.supplied_by(&self.battery);
-                electricity.flow(&self.battery, &self.bus);
-            }
-        }
-        impl SimulationElement for ElectricalBusTestAircraft {
-            fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.bus.accept(visitor);
-                visitor.visit(self);
-            }
-        }
-
-        #[test]
-        fn bat_bus_at_25_volt_is_abnormal() {
-            let mut test_bed = SimulationTestBed::new(|electricity| {
-                ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
-            });
-
-            test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.)));
-            test_bed.run();
-
-            assert_eq!(
-                Read::<bool>::read(&mut test_bed, "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"),
-                false
-            );
-        }
-
-        #[test]
-        fn bat_bus_above_25_volt_is_abnormal() {
-            let mut test_bed = SimulationTestBed::new(|electricity| {
-                ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
-            });
-
-            test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.01)));
-            test_bed.run();
-
-            assert_eq!(
-                Read::<bool>::read(&mut test_bed, "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"),
-                true
-            );
-        }
-
-        #[test]
-        fn writes_potential_normal_when_bat_bus() {
-            let mut test_bed = SimulationTestBed::new(|electricity| {
-                TestAircraft::new(ElectricalBus::new(
-                    ElectricalBusType::DirectCurrentBattery,
-                    electricity,
-                ))
-            });
-            test_bed.run();
-
-            assert!(test_bed.contains_key("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"));
-        }
-
-        #[test]
-        fn does_not_write_potential_normal_when_not_bat_bus() {
-            let mut test_bed = SimulationTestBed::new(|electricity| {
-                TestAircraft::new(ElectricalBus::new(
-                    ElectricalBusType::AlternatingCurrentEssential,
-                    electricity,
-                ))
-            });
-            test_bed.run();
-
-            assert!(!test_bed.contains_key("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"));
-        }
-
-        fn electrical_bus(electricity: &mut Electricity) -> ElectricalBus {
-            ElectricalBus::new(ElectricalBusType::AlternatingCurrent(2), electricity)
-        }
-    }
-
-    #[cfg(test)]
-    mod contactor_tests {
-        use super::*;
-        use crate::{
-            electrical::test::TestElectricitySource,
-            simulation::test::{ElementCtorFn, SimulationTestBed, TestBed},
-        };
-
-        #[test]
-        fn contactor_starts_open() {
-            assert!(contactor(&mut Electricity::new()).is_open());
-        }
-
-        #[test]
-        fn open_contactor_when_toggled_open_stays_open() {
-            let mut contactor = open_contactor(&mut Electricity::new());
-            contactor.close_when(false);
-
-            assert!(contactor.is_open());
-        }
-
-        #[test]
-        fn open_contactor_when_toggled_closed_closes() {
-            let mut contactor = open_contactor(&mut Electricity::new());
-            contactor.close_when(true);
-
-            assert!(contactor.is_closed());
-        }
-
-        #[test]
-        fn closed_contactor_when_toggled_open_opens() {
-            let mut contactor = closed_contactor(&mut Electricity::new());
-            contactor.close_when(false);
-
-            assert!(contactor.is_open());
-        }
-
-        #[test]
-        fn closed_contactor_when_toggled_closed_stays_closed() {
-            let mut contactor = closed_contactor(&mut Electricity::new());
-            contactor.close_when(true);
-
-            assert!(contactor.is_closed());
-        }
-
-        #[test]
-        fn open_contactor_has_no_output_when_powered_by_nothing() {
-            let mut electricity = Electricity::new();
-            let contactor = open_contactor(&mut electricity);
-
-            assert!(!electricity.is_powered(&contactor));
-        }
-
-        #[test]
-        fn closed_contactor_has_no_output_when_powered_by_nothing() {
-            let mut electricity = Electricity::new();
-            let contactor = closed_contactor(&mut electricity);
-
-            assert!(!electricity.is_powered(&contactor));
-        }
-
-        #[test]
-        fn open_contactor_has_no_output_when_powered_by_nothing_which_is_powered() {
-            let mut electricity = Electricity::new();
-            contactor_has_no_output_when_powered_by_nothing_which_is_powered(
-                open_contactor(&mut electricity),
-                &mut electricity,
-            );
-        }
-
-        #[test]
-        fn closed_contactor_has_no_output_when_powered_by_nothing_which_is_powered() {
-            let mut electricity = Electricity::new();
-            contactor_has_no_output_when_powered_by_nothing_which_is_powered(
-                closed_contactor(&mut electricity),
-                &mut electricity,
-            );
-        }
-
-        fn contactor_has_no_output_when_powered_by_nothing_which_is_powered(
-            contactor: Contactor,
-            electricity: &mut Electricity,
-        ) {
-            let unpowered =
-                TestElectricitySource::unpowered(PotentialOrigin::External, electricity);
-            electricity.supplied_by(&unpowered);
-            electricity.flow(&unpowered, &contactor);
-
-            assert!(!electricity.is_powered(&contactor));
-        }
-
-        #[test]
-        fn open_contactor_has_no_output_when_powered_by_something() {
-            let mut electricity = Electricity::new();
-            let contactor = open_contactor(&mut electricity);
-            let powered =
-                TestElectricitySource::powered(PotentialOrigin::External, &mut electricity);
-            electricity.supplied_by(&powered);
-            electricity.flow(&powered, &contactor);
-
-            assert!(!electricity.is_powered(&contactor));
-        }
-
-        #[test]
-        fn closed_contactor_has_output_when_powered_by_something_which_is_powered() {
-            let mut electricity = Electricity::new();
-            let contactor = closed_contactor(&mut electricity);
-            let powered =
-                TestElectricitySource::powered(PotentialOrigin::External, &mut electricity);
-            electricity.supplied_by(&powered);
-            electricity.flow(&powered, &contactor);
-
-            assert!(electricity.is_powered(&contactor));
-        }
-
-        #[test]
-        fn writes_its_state() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(contactor));
-            test_bed.run();
-
-            assert!(test_bed.contains_key("ELEC_CONTACTOR_TEST_IS_CLOSED"));
-        }
-
-        fn contactor(electricity: &mut Electricity) -> Contactor {
-            Contactor::new("TEST", electricity)
-        }
-
-        fn open_contactor(electricity: &mut Electricity) -> Contactor {
-            let mut contactor = contactor(electricity);
-            contactor.closed = false;
-
-            contactor
-        }
-
-        fn closed_contactor(electricity: &mut Electricity) -> Contactor {
-            let mut contactor = contactor(electricity);
-            contactor.closed = true;
-
-            contactor
-        }
-    }
-
-    #[cfg(test)]
-    mod current_state_writer_tests {
-        use super::*;
-        use crate::simulation::{
-            test::{SimulationTestBed, TestBed},
-            Aircraft,
-        };
-
-        enum WriteType {
-            DirectCurrent,
-            AlternatingCurrent,
-            AlternatingCurrentWithLoad,
-        }
-
-        struct CurrentStateWriterTestAircraft {
-            write_type: WriteType,
-            writer: ElectricalStateWriter,
-        }
-        impl CurrentStateWriterTestAircraft {
-            fn new(write_type: WriteType) -> Self {
-                Self {
-                    write_type,
-                    writer: ElectricalStateWriter::new("TEST"),
-                }
-            }
-        }
-        impl Aircraft for CurrentStateWriterTestAircraft {}
-        impl SimulationElement for CurrentStateWriterTestAircraft {
-            fn write(&self, writer: &mut SimulatorWriter) {
-                match self.write_type {
-                    WriteType::DirectCurrent => {
-                        self.writer.write_direct(&StubElectricSource {}, writer)
-                    }
-                    WriteType::AlternatingCurrent => self
-                        .writer
-                        .write_alternating(&StubElectricSource {}, writer),
-                    WriteType::AlternatingCurrentWithLoad => self
-                        .writer
-                        .write_alternating_with_load(&StubElectricSource {}, writer),
-                }
-            }
-        }
-
-        #[test]
-        fn writes_direct_current_state() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                CurrentStateWriterTestAircraft::new(WriteType::DirectCurrent)
-            });
-
-            test_bed.run();
-
-            assert!(test_bed.contains_key("ELEC_TEST_CURRENT"));
-            assert!(test_bed.contains_key("ELEC_TEST_CURRENT_NORMAL"));
-            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL"));
-            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL_NORMAL"));
-        }
-
-        #[test]
-        fn writes_alternating_current_state() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                CurrentStateWriterTestAircraft::new(WriteType::AlternatingCurrent)
-            });
-
-            test_bed.run();
-
-            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL"));
-            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL_NORMAL"));
-            assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY"));
-            assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY_NORMAL"));
-        }
-
-        #[test]
-        fn writes_alternating_current_with_load_state() {
-            let mut test_bed = SimulationTestBed::new(|_| {
-                CurrentStateWriterTestAircraft::new(WriteType::AlternatingCurrentWithLoad)
-            });
-
-            test_bed.run();
-
-            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL"));
-            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL_NORMAL"));
-            assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY"));
-            assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY_NORMAL"));
-            assert!(test_bed.contains_key("ELEC_TEST_LOAD"));
-            assert!(test_bed.contains_key("ELEC_TEST_LOAD_NORMAL"));
-        }
-    }
-}
-
 pub trait ElectricalElement {
     fn input_identifier(&self) -> ElectricalElementIdentifier;
     fn output_identifier(&self) -> ElectricalElementIdentifier;
@@ -1298,742 +863,1179 @@ impl PotentialCollection {
 }
 
 #[cfg(test)]
-mod new_potential_tests {
+mod tests {
     use super::*;
+    use uom::si::{electric_current::ampere, frequency::hertz, ratio::percent};
 
-    #[test]
-    fn some_potential_is_powered() {
-        assert_eq!(some_potential().is_powered(), true);
-    }
-
-    #[test]
-    fn some_potential_is_not_unpowered() {
-        assert_eq!(some_potential().is_unpowered(), false);
-    }
-
-    #[test]
-    fn none_potential_is_not_powered() {
-        assert_eq!(none_potential().is_powered(), false);
-    }
-
-    #[test]
-    fn none_potential_is_unpowered() {
-        assert_eq!(none_potential().is_unpowered(), true);
-    }
-
-    #[test]
-    fn merge_ignores_none() {
-        let potential = Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        )
-        .merge(Potential::none());
-
-        assert!(potential.is_only_powered_by_apu());
-        assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
-    }
-
-    #[test]
-    fn merge_returns_the_callee_when_its_potential_is_greater_than_that_of_the_argument() {
-        let potential = Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        )
-        .merge(Potential::new(
-            PotentialOrigin::EngineGenerator(1),
-            ElectricPotential::new::<volt>(40.),
-        ));
-
-        assert!(potential.is_only_powered_by_apu());
-        assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
-    }
-
-    #[test]
-    fn merge_returns_the_argument_when_its_potential_is_greater_than_that_of_the_callee() {
-        let potential = Potential::new(
-            PotentialOrigin::EngineGenerator(1),
-            ElectricPotential::new::<volt>(40.),
-        )
-        .merge(Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        ));
-
-        assert!(potential.is_only_powered_by_apu());
-        assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
-    }
-
-    #[test]
-    fn merge_returns_a_merged_result_when_both_callee_and_argument_have_equal_potential() {
-        let potential = Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        )
-        .merge(Potential::new(
-            PotentialOrigin::EngineGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        ));
-
-        let mut set = HashSet::new();
-        set.insert(PotentialOrigin::ApuGenerator(1));
-        set.insert(PotentialOrigin::EngineGenerator(1));
-
-        assert_eq!(potential.origins.symmetric_difference(&set).count(), 0);
-        assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
-    }
-
-    #[test]
-    fn merge_combines_equal_origins() {
-        let potential = Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        )
-        .merge(Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        ));
-
-        assert!(potential.is_only_powered_by_apu());
-        assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
-    }
-
-    #[test]
-    fn merge_considers_miniscule_potential_differences_equal() {
-        let potential = Potential::new(
-            PotentialOrigin::EngineGenerator(1),
-            ElectricPotential::new::<volt>(115.0011),
-        )
-        .merge(Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.002),
-        ));
-
-        let mut set = HashSet::new();
-        set.insert(PotentialOrigin::ApuGenerator(1));
-        set.insert(PotentialOrigin::EngineGenerator(1));
-
-        assert_eq!(potential.origins.symmetric_difference(&set).count(), 0);
-    }
-
-    #[test]
-    fn merge_considers_larger_potential_differences_inequal() {
-        let potential = Potential::new(
-            PotentialOrigin::EngineGenerator(1),
-            ElectricPotential::new::<volt>(115.001),
-        )
-        .merge(Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.0021),
-        ));
-
-        assert_eq!(potential.origins.len(), 1);
-        assert_eq!(
-            potential.origins.iter().next(),
-            Some(&PotentialOrigin::ApuGenerator(1))
-        );
-    }
-
-    #[test]
-    fn merge_takes_the_lowest_raw_potential_from_two_potentials_it_considers_equal() {
-        let potential = Potential::new(
-            PotentialOrigin::EngineGenerator(1),
-            ElectricPotential::new::<volt>(115.0011),
-        )
-        .merge(Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.002),
-        ));
-
-        assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.0011));
-    }
-
-    #[test]
-    fn origin_count_returns_0_when_none() {
-        assert_eq!(Potential::none().origin_count(), 0);
-    }
-
-    #[test]
-    fn origin_count_returns_the_number_of_origins() {
-        let potential = Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        )
-        .merge(Potential::new(
-            PotentialOrigin::EngineGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        ));
-
-        assert_eq!(potential.origin_count(), 2);
-    }
-
-    #[test]
-    fn is_only_powered_by_single_engine_generator_returns_false_when_none() {
-        assert!(!Potential::none().is_only_powered_by_single_engine_generator());
-    }
-
-    #[test]
-    fn is_only_powered_by_single_engine_generator_returns_false_when_different_origin() {
-        assert!(!Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.)
-        )
-        .is_only_powered_by_single_engine_generator());
-    }
-
-    #[test]
-    fn is_only_powered_by_single_engine_generator_returns_true_when_engine_generator() {
-        assert!(Potential::new(
-            PotentialOrigin::EngineGenerator(2),
-            ElectricPotential::new::<volt>(115.)
-        )
-        .is_only_powered_by_single_engine_generator());
-    }
-
-    #[test]
-    fn is_only_powered_by_single_engine_generator_returns_false_when_pair_of_engine_generators() {
-        assert!(!Potential::new(
-            PotentialOrigin::EngineGenerator(1),
-            ElectricPotential::new::<volt>(115.)
-        )
-        .merge(Potential::new(
-            PotentialOrigin::EngineGenerator(2),
-            ElectricPotential::new::<volt>(115.)
-        ))
-        .is_only_powered_by_single_engine_generator());
-    }
-
-    fn some_potential() -> Potential {
-        Potential::new(
-            PotentialOrigin::ApuGenerator(1),
-            ElectricPotential::new::<volt>(115.),
-        )
-    }
-
-    fn none_potential() -> Potential {
-        Potential::none()
-    }
-}
-
-#[cfg(test)]
-mod electricity_tests {
-    use super::*;
-
-    struct TestElectricalElement {
-        number: usize,
-        identifier: ElectricalElementIdentifier,
-        is_powered: bool,
-        is_conductive: bool,
-    }
-    impl TestElectricalElement {
-        fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
-            Self {
-                number: 1,
-                identifier: identifier_provider.next(),
-                is_powered: false,
-                is_conductive: true,
-            }
+    struct StubElectricSource {}
+    impl ProvideCurrent for StubElectricSource {
+        fn current(&self) -> ElectricCurrent {
+            ElectricCurrent::new::<ampere>(150.)
         }
 
-        fn unregistered() -> Self {
-            Self {
-                number: 1,
-                identifier: ElectricalElementIdentifier::first(),
-                is_powered: false,
-                is_conductive: true,
-            }
-        }
-
-        fn power(mut self) -> Self {
-            self.is_powered = true;
-            self
-        }
-
-        fn non_conductive(mut self) -> Self {
-            self.is_conductive = false;
-            self
-        }
-
-        fn with_number(mut self, number: usize) -> Self {
-            self.number = number;
-            self
+        fn current_normal(&self) -> bool {
+            true
         }
     }
-    impl ElectricalElement for TestElectricalElement {
-        fn input_identifier(&self) -> ElectricalElementIdentifier {
-            self.identifier
+    impl ProvidePotential for StubElectricSource {
+        fn potential(&self) -> ElectricPotential {
+            ElectricPotential::new::<volt>(28.)
         }
 
-        fn output_identifier(&self) -> ElectricalElementIdentifier {
-            self.identifier
-        }
-
-        fn is_conductive(&self) -> bool {
-            self.is_conductive
+        fn potential_normal(&self) -> bool {
+            true
         }
     }
-    impl ElectricitySource for TestElectricalElement {
-        fn output_potential(&self) -> Potential {
-            if self.is_powered {
-                Potential::new(
-                    PotentialOrigin::EngineGenerator(self.number),
-                    ElectricPotential::new::<volt>(115.),
-                )
-            } else {
-                Potential::none()
-            }
-        }
-    }
-
-    struct TestBus {
-        identifier: ElectricalElementIdentifier,
-    }
-    impl TestBus {
-        fn new(
-            bus_type: ElectricalBusType,
-            identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-        ) -> Self {
-            Self {
-                identifier: identifier_provider.next_for_bus(bus_type),
-            }
-        }
-    }
-    impl ElectricalElement for TestBus {
-        fn input_identifier(&self) -> ElectricalElementIdentifier {
-            self.identifier
+    impl ProvideFrequency for StubElectricSource {
+        fn frequency(&self) -> Frequency {
+            Frequency::new::<hertz>(400.)
         }
 
-        fn output_identifier(&self) -> ElectricalElementIdentifier {
-            self.identifier
+        fn frequency_normal(&self) -> bool {
+            true
+        }
+    }
+    impl ProvideLoad for StubElectricSource {
+        fn load(&self) -> Ratio {
+            Ratio::new::<percent>(50.)
         }
 
-        fn is_conductive(&self) -> bool {
+        fn load_normal(&self) -> bool {
             true
         }
     }
 
-    struct TestTransformer {
-        input_identifier: ElectricalElementIdentifier,
-        output_identifier: ElectricalElementIdentifier,
-    }
-    impl TestTransformer {
-        fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
-            Self {
-                input_identifier: identifier_provider.next(),
-                output_identifier: identifier_provider.next(),
+    #[cfg(test)]
+    mod electrical_bus_tests {
+        use super::*;
+        use crate::simulation::{
+            test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBed},
+            Aircraft, Read,
+        };
+
+        #[test]
+        fn writes_its_state() {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(electrical_bus));
+            test_bed.run();
+
+            assert!(test_bed.contains_key("ELEC_AC_2_BUS_IS_POWERED"));
+        }
+
+        #[test]
+        fn sub_bus_does_not_write_its_state() {
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                ElectricalBusTestAircraft::new(ElectricalBusType::Sub("202PP"), electricity)
+            });
+            test_bed.run();
+
+            assert!(!test_bed.contains_key("ELEC_SUB_202PP_BUS_IS_POWERED"));
+        }
+
+        struct BatteryStub {
+            identifier: ElectricalElementIdentifier,
+            potential: ElectricPotential,
+        }
+        impl BatteryStub {
+            fn new(
+                identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+            ) -> BatteryStub {
+                BatteryStub {
+                    identifier: identifier_provider.next(),
+                    potential: ElectricPotential::new::<volt>(0.),
+                }
+            }
+
+            fn set_potential(&mut self, potential: ElectricPotential) {
+                self.potential = potential;
             }
         }
-    }
-    impl ElectricityTransformer for TestTransformer {
-        fn transform(&self, input: Ref<Potential>) -> Potential {
-            if input.is_powered() {
-                Potential::new(
-                    PotentialOrigin::TransformerRectifier(1),
-                    ElectricPotential::new::<volt>(28.),
-                )
-            } else {
-                Potential::none()
+        impl ElectricalElement for BatteryStub {
+            fn input_identifier(&self) -> ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn output_identifier(&self) -> ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn is_conductive(&self) -> bool {
+                true
             }
         }
-    }
-    impl ElectricalElement for TestTransformer {
-        fn input_identifier(&self) -> ElectricalElementIdentifier {
-            self.input_identifier
+        impl ElectricitySource for BatteryStub {
+            fn output_potential(&self) -> Potential {
+                if self.potential > ElectricPotential::new::<volt>(0.) {
+                    Potential::new(PotentialOrigin::Battery(1), self.potential)
+                } else {
+                    Potential::none()
+                }
+            }
         }
 
-        fn output_identifier(&self) -> ElectricalElementIdentifier {
-            self.output_identifier
+        struct ElectricalBusTestAircraft {
+            bus: ElectricalBus,
+            battery: BatteryStub,
+        }
+        impl ElectricalBusTestAircraft {
+            fn new(bus_type: ElectricalBusType, electricity: &mut Electricity) -> Self {
+                Self {
+                    bus: ElectricalBus::new(bus_type, electricity),
+                    battery: BatteryStub::new(electricity),
+                }
+            }
+
+            fn powered_by_battery_at(&mut self, potential: ElectricPotential) {
+                self.battery.set_potential(potential);
+            }
+        }
+        impl Aircraft for ElectricalBusTestAircraft {
+            fn update_before_power_distribution(
+                &mut self,
+                _: &UpdateContext,
+                electricity: &mut Electricity,
+            ) {
+                electricity.supplied_by(&self.battery);
+                electricity.flow(&self.battery, &self.bus);
+            }
+        }
+        impl SimulationElement for ElectricalBusTestAircraft {
+            fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+                self.bus.accept(visitor);
+                visitor.visit(self);
+            }
         }
 
-        fn is_conductive(&self) -> bool {
-            true
+        #[test]
+        fn bat_bus_at_25_volt_is_abnormal() {
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
+            });
+
+            test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.)));
+            test_bed.run();
+
+            assert_eq!(
+                Read::<bool>::read(&mut test_bed, "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"),
+                false
+            );
+        }
+
+        #[test]
+        fn bat_bus_above_25_volt_is_abnormal() {
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                ElectricalBusTestAircraft::new(ElectricalBusType::DirectCurrentBattery, electricity)
+            });
+
+            test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.01)));
+            test_bed.run();
+
+            assert_eq!(
+                Read::<bool>::read(&mut test_bed, "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"),
+                true
+            );
+        }
+
+        #[test]
+        fn writes_potential_normal_when_bat_bus() {
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                TestAircraft::new(ElectricalBus::new(
+                    ElectricalBusType::DirectCurrentBattery,
+                    electricity,
+                ))
+            });
+            test_bed.run();
+
+            assert!(test_bed.contains_key("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"));
+        }
+
+        #[test]
+        fn does_not_write_potential_normal_when_not_bat_bus() {
+            let mut test_bed = SimulationTestBed::new(|electricity| {
+                TestAircraft::new(ElectricalBus::new(
+                    ElectricalBusType::AlternatingCurrentEssential,
+                    electricity,
+                ))
+            });
+            test_bed.run();
+
+            assert!(!test_bed.contains_key("ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"));
+        }
+
+        fn electrical_bus(electricity: &mut Electricity) -> ElectricalBus {
+            ElectricalBus::new(ElectricalBusType::AlternatingCurrent(2), electricity)
         }
     }
 
-    #[test]
-    fn next_provides_increasing_identifiers() {
-        let mut electricity = Electricity::new();
-        let mut identifier = electricity.next();
-        for _ in 1..=10 {
-            let next_identifier = electricity.next();
-            assert!(identifier.0 < next_identifier.0);
-            identifier = next_identifier;
+    #[cfg(test)]
+    mod contactor_tests {
+        use super::*;
+        use crate::{
+            electrical::test::TestElectricitySource,
+            simulation::test::{ElementCtorFn, SimulationTestBed, TestBed},
+        };
+
+        #[test]
+        fn contactor_starts_open() {
+            assert!(contactor(&mut Electricity::new()).is_open());
+        }
+
+        #[test]
+        fn open_contactor_when_toggled_open_stays_open() {
+            let mut contactor = open_contactor(&mut Electricity::new());
+            contactor.close_when(false);
+
+            assert!(contactor.is_open());
+        }
+
+        #[test]
+        fn open_contactor_when_toggled_closed_closes() {
+            let mut contactor = open_contactor(&mut Electricity::new());
+            contactor.close_when(true);
+
+            assert!(contactor.is_closed());
+        }
+
+        #[test]
+        fn closed_contactor_when_toggled_open_opens() {
+            let mut contactor = closed_contactor(&mut Electricity::new());
+            contactor.close_when(false);
+
+            assert!(contactor.is_open());
+        }
+
+        #[test]
+        fn closed_contactor_when_toggled_closed_stays_closed() {
+            let mut contactor = closed_contactor(&mut Electricity::new());
+            contactor.close_when(true);
+
+            assert!(contactor.is_closed());
+        }
+
+        #[test]
+        fn open_contactor_has_no_output_when_powered_by_nothing() {
+            let mut electricity = Electricity::new();
+            let contactor = open_contactor(&mut electricity);
+
+            assert!(!electricity.is_powered(&contactor));
+        }
+
+        #[test]
+        fn closed_contactor_has_no_output_when_powered_by_nothing() {
+            let mut electricity = Electricity::new();
+            let contactor = closed_contactor(&mut electricity);
+
+            assert!(!electricity.is_powered(&contactor));
+        }
+
+        #[test]
+        fn open_contactor_has_no_output_when_powered_by_nothing_which_is_powered() {
+            let mut electricity = Electricity::new();
+            contactor_has_no_output_when_powered_by_nothing_which_is_powered(
+                open_contactor(&mut electricity),
+                &mut electricity,
+            );
+        }
+
+        #[test]
+        fn closed_contactor_has_no_output_when_powered_by_nothing_which_is_powered() {
+            let mut electricity = Electricity::new();
+            contactor_has_no_output_when_powered_by_nothing_which_is_powered(
+                closed_contactor(&mut electricity),
+                &mut electricity,
+            );
+        }
+
+        fn contactor_has_no_output_when_powered_by_nothing_which_is_powered(
+            contactor: Contactor,
+            electricity: &mut Electricity,
+        ) {
+            let unpowered =
+                TestElectricitySource::unpowered(PotentialOrigin::External, electricity);
+            electricity.supplied_by(&unpowered);
+            electricity.flow(&unpowered, &contactor);
+
+            assert!(!electricity.is_powered(&contactor));
+        }
+
+        #[test]
+        fn open_contactor_has_no_output_when_powered_by_something() {
+            let mut electricity = Electricity::new();
+            let contactor = open_contactor(&mut electricity);
+            let powered =
+                TestElectricitySource::powered(PotentialOrigin::External, &mut electricity);
+            electricity.supplied_by(&powered);
+            electricity.flow(&powered, &contactor);
+
+            assert!(!electricity.is_powered(&contactor));
+        }
+
+        #[test]
+        fn closed_contactor_has_output_when_powered_by_something_which_is_powered() {
+            let mut electricity = Electricity::new();
+            let contactor = closed_contactor(&mut electricity);
+            let powered =
+                TestElectricitySource::powered(PotentialOrigin::External, &mut electricity);
+            electricity.supplied_by(&powered);
+            electricity.flow(&powered, &contactor);
+
+            assert!(electricity.is_powered(&contactor));
+        }
+
+        #[test]
+        fn writes_its_state() {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(contactor));
+            test_bed.run();
+
+            assert!(test_bed.contains_key("ELEC_CONTACTOR_TEST_IS_CLOSED"));
+        }
+
+        fn contactor(electricity: &mut Electricity) -> Contactor {
+            Contactor::new("TEST", electricity)
+        }
+
+        fn open_contactor(electricity: &mut Electricity) -> Contactor {
+            let mut contactor = contactor(electricity);
+            contactor.closed = false;
+
+            contactor
+        }
+
+        fn closed_contactor(electricity: &mut Electricity) -> Contactor {
+            let mut contactor = contactor(electricity);
+            contactor.closed = true;
+
+            contactor
         }
     }
 
-    #[test]
-    fn next_for_bus_provides_increasing_identifiers() {
-        let mut electricity = Electricity::new();
-        let mut identifier = electricity.next();
-        for _ in 1..=10 {
-            let next_identifier = electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery);
-            assert!(identifier.0 < next_identifier.0);
-            identifier = next_identifier;
+    #[cfg(test)]
+    mod current_state_writer_tests {
+        use super::*;
+        use crate::simulation::{
+            test::{SimulationTestBed, TestBed},
+            Aircraft,
+        };
+
+        enum WriteType {
+            DirectCurrent,
+            AlternatingCurrent,
+            AlternatingCurrentWithLoad,
+        }
+
+        struct CurrentStateWriterTestAircraft {
+            write_type: WriteType,
+            writer: ElectricalStateWriter,
+        }
+        impl CurrentStateWriterTestAircraft {
+            fn new(write_type: WriteType) -> Self {
+                Self {
+                    write_type,
+                    writer: ElectricalStateWriter::new("TEST"),
+                }
+            }
+        }
+        impl Aircraft for CurrentStateWriterTestAircraft {}
+        impl SimulationElement for CurrentStateWriterTestAircraft {
+            fn write(&self, writer: &mut SimulatorWriter) {
+                match self.write_type {
+                    WriteType::DirectCurrent => {
+                        self.writer.write_direct(&StubElectricSource {}, writer)
+                    }
+                    WriteType::AlternatingCurrent => self
+                        .writer
+                        .write_alternating(&StubElectricSource {}, writer),
+                    WriteType::AlternatingCurrentWithLoad => self
+                        .writer
+                        .write_alternating_with_load(&StubElectricSource {}, writer),
+                }
+            }
+        }
+
+        #[test]
+        fn writes_direct_current_state() {
+            let mut test_bed = SimulationTestBed::new(|_| {
+                CurrentStateWriterTestAircraft::new(WriteType::DirectCurrent)
+            });
+
+            test_bed.run();
+
+            assert!(test_bed.contains_key("ELEC_TEST_CURRENT"));
+            assert!(test_bed.contains_key("ELEC_TEST_CURRENT_NORMAL"));
+            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL"));
+            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL_NORMAL"));
+        }
+
+        #[test]
+        fn writes_alternating_current_state() {
+            let mut test_bed = SimulationTestBed::new(|_| {
+                CurrentStateWriterTestAircraft::new(WriteType::AlternatingCurrent)
+            });
+
+            test_bed.run();
+
+            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL"));
+            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL_NORMAL"));
+            assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY"));
+            assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY_NORMAL"));
+        }
+
+        #[test]
+        fn writes_alternating_current_with_load_state() {
+            let mut test_bed = SimulationTestBed::new(|_| {
+                CurrentStateWriterTestAircraft::new(WriteType::AlternatingCurrentWithLoad)
+            });
+
+            test_bed.run();
+
+            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL"));
+            assert!(test_bed.contains_key("ELEC_TEST_POTENTIAL_NORMAL"));
+            assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY"));
+            assert!(test_bed.contains_key("ELEC_TEST_FREQUENCY_NORMAL"));
+            assert!(test_bed.contains_key("ELEC_TEST_LOAD"));
+            assert!(test_bed.contains_key("ELEC_TEST_LOAD_NORMAL"));
         }
     }
 
-    #[test]
-    fn next_and_next_for_bus_together_provide_increasing_identifiers() {
-        let mut electricity = Electricity::new();
-        let mut identifier = electricity.next();
-        for n in 1..=10 {
-            let next_identifier = if n % 2 == 0 {
-                electricity.next()
-            } else {
-                electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery)
-            };
-            assert!(identifier.0 < next_identifier.0);
-            identifier = next_identifier;
+    #[cfg(test)]
+    mod new_potential_tests {
+        use super::*;
+
+        #[test]
+        fn some_potential_is_powered() {
+            assert_eq!(some_potential().is_powered(), true);
+        }
+
+        #[test]
+        fn some_potential_is_not_unpowered() {
+            assert_eq!(some_potential().is_unpowered(), false);
+        }
+
+        #[test]
+        fn none_potential_is_not_powered() {
+            assert_eq!(none_potential().is_powered(), false);
+        }
+
+        #[test]
+        fn none_potential_is_unpowered() {
+            assert_eq!(none_potential().is_unpowered(), true);
+        }
+
+        #[test]
+        fn merge_ignores_none() {
+            let potential = Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            )
+            .merge(Potential::none());
+
+            assert!(potential.is_only_powered_by_apu());
+            assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
+        }
+
+        #[test]
+        fn merge_returns_the_callee_when_its_potential_is_greater_than_that_of_the_argument() {
+            let potential = Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            )
+            .merge(Potential::new(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(40.),
+            ));
+
+            assert!(potential.is_only_powered_by_apu());
+            assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
+        }
+
+        #[test]
+        fn merge_returns_the_argument_when_its_potential_is_greater_than_that_of_the_callee() {
+            let potential = Potential::new(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(40.),
+            )
+            .merge(Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            ));
+
+            assert!(potential.is_only_powered_by_apu());
+            assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
+        }
+
+        #[test]
+        fn merge_returns_a_merged_result_when_both_callee_and_argument_have_equal_potential() {
+            let potential = Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            )
+            .merge(Potential::new(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            ));
+
+            let mut set = HashSet::new();
+            set.insert(PotentialOrigin::ApuGenerator(1));
+            set.insert(PotentialOrigin::EngineGenerator(1));
+
+            assert_eq!(potential.origins.symmetric_difference(&set).count(), 0);
+            assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
+        }
+
+        #[test]
+        fn merge_combines_equal_origins() {
+            let potential = Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            )
+            .merge(Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            ));
+
+            assert!(potential.is_only_powered_by_apu());
+            assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.));
+        }
+
+        #[test]
+        fn merge_considers_miniscule_potential_differences_equal() {
+            let potential = Potential::new(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(115.0011),
+            )
+            .merge(Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.002),
+            ));
+
+            let mut set = HashSet::new();
+            set.insert(PotentialOrigin::ApuGenerator(1));
+            set.insert(PotentialOrigin::EngineGenerator(1));
+
+            assert_eq!(potential.origins.symmetric_difference(&set).count(), 0);
+        }
+
+        #[test]
+        fn merge_considers_larger_potential_differences_inequal() {
+            let potential = Potential::new(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(115.001),
+            )
+            .merge(Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.0021),
+            ));
+
+            assert_eq!(potential.origins.len(), 1);
+            assert_eq!(
+                potential.origins.iter().next(),
+                Some(&PotentialOrigin::ApuGenerator(1))
+            );
+        }
+
+        #[test]
+        fn merge_takes_the_lowest_raw_potential_from_two_potentials_it_considers_equal() {
+            let potential = Potential::new(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(115.0011),
+            )
+            .merge(Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.002),
+            ));
+
+            assert_eq!(potential.raw, ElectricPotential::new::<volt>(115.0011));
+        }
+
+        #[test]
+        fn origin_count_returns_0_when_none() {
+            assert_eq!(Potential::none().origin_count(), 0);
+        }
+
+        #[test]
+        fn origin_count_returns_the_number_of_origins() {
+            let potential = Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            )
+            .merge(Potential::new(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            ));
+
+            assert_eq!(potential.origin_count(), 2);
+        }
+
+        #[test]
+        fn is_only_powered_by_single_engine_generator_returns_false_when_none() {
+            assert!(!Potential::none().is_only_powered_by_single_engine_generator());
+        }
+
+        #[test]
+        fn is_only_powered_by_single_engine_generator_returns_false_when_different_origin() {
+            assert!(!Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.)
+            )
+            .is_only_powered_by_single_engine_generator());
+        }
+
+        #[test]
+        fn is_only_powered_by_single_engine_generator_returns_true_when_engine_generator() {
+            assert!(Potential::new(
+                PotentialOrigin::EngineGenerator(2),
+                ElectricPotential::new::<volt>(115.)
+            )
+            .is_only_powered_by_single_engine_generator());
+        }
+
+        #[test]
+        fn is_only_powered_by_single_engine_generator_returns_false_when_pair_of_engine_generators()
+        {
+            assert!(!Potential::new(
+                PotentialOrigin::EngineGenerator(1),
+                ElectricPotential::new::<volt>(115.)
+            )
+            .merge(Potential::new(
+                PotentialOrigin::EngineGenerator(2),
+                ElectricPotential::new::<volt>(115.)
+            ))
+            .is_only_powered_by_single_engine_generator());
+        }
+
+        fn some_potential() -> Potential {
+            Potential::new(
+                PotentialOrigin::ApuGenerator(1),
+                ElectricPotential::new::<volt>(115.),
+            )
+        }
+
+        fn none_potential() -> Potential {
+            Potential::none()
         }
     }
 
-    #[test]
-    fn next_for_bus_identifier_matches_looked_up_identifier() {
-        let mut electricity = Electricity::new();
-
-        electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery);
-        let identifier = electricity.next_for_bus(ElectricalBusType::DirectCurrentEssential);
-
-        assert!(
-            electricity.identifier_for(ElectricalBusType::DirectCurrentEssential)
-                == Some(&identifier)
-        );
-    }
-
-    #[test]
-    fn an_unknown_element_isnt_powered() {
-        let electricity = Electricity::new();
-        let element = TestElectricalElement::unregistered();
-
-        assert!(!electricity.is_powered(&element));
-    }
-
-    #[test]
-    fn a_known_but_unpowered_element_isnt_powered() {
-        let mut electricity = Electricity::new();
-        let element = TestElectricalElement::new(&mut electricity);
-
-        assert!(!electricity.is_powered(&element));
-    }
-
-    #[test]
-    fn a_known_and_powered_element_is_powered() {
-        let mut electricity = Electricity::new();
-        let element = TestElectricalElement::new(&mut electricity).power();
-        electricity.supplied_by(&element);
-
-        assert!(electricity.is_powered(&element));
-    }
-
-    #[test]
-    fn power_doesnt_flow_from_an_unpowered_element_to_another_unpowered_element() {
-        let mut electricity = Electricity::new();
-        let from_element = TestElectricalElement::new(&mut electricity);
-        let to_element = TestElectricalElement::new(&mut electricity);
-        electricity.supplied_by(&from_element);
-        electricity.flow(&from_element, &to_element);
-
-        assert!(!electricity.is_powered(&to_element));
-    }
-
-    #[test]
-    fn power_flows_from_a_powered_to_an_unpowered_element() {
-        let mut electricity = Electricity::new();
-        let from_element = TestElectricalElement::new(&mut electricity).power();
-        let to_element = TestElectricalElement::new(&mut electricity);
-        electricity.supplied_by(&from_element);
-        electricity.flow(&from_element, &to_element);
-
-        assert!(electricity.is_powered(&to_element));
-    }
-
-    #[test]
-    fn power_doesnt_flow_from_a_non_conductive_to_a_conductive_element() {
-        let mut electricity = Electricity::new();
-        let from_element = TestElectricalElement::new(&mut electricity)
-            .power()
-            .non_conductive();
-        let to_element = TestElectricalElement::new(&mut electricity);
-        electricity.supplied_by(&from_element);
-        electricity.flow(&from_element, &to_element);
-
-        assert!(!electricity.is_powered(&to_element));
-    }
-
-    #[test]
-    fn power_doesnt_flow_from_a_conductive_to_a_non_conductive_element() {
-        let mut electricity = Electricity::new();
-        let from_element = TestElectricalElement::new(&mut electricity).power();
-        let to_element = TestElectricalElement::new(&mut electricity).non_conductive();
-        electricity.supplied_by(&from_element);
-        electricity.flow(&from_element, &to_element);
-
-        assert!(!electricity.is_powered(&to_element));
-    }
-
-    #[test]
-    fn an_unknown_bus_isnt_powered() {
-        let electricity = Electricity::new();
-
-        assert!(!electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
-    }
-
-    #[test]
-    fn a_known_but_unpowered_bus_isnt_powered() {
-        let mut electricity = Electricity::new();
-        // Request an identifier, such that the bus type is registered.
-        TestBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
-
-        assert!(!electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
-    }
-
-    #[test]
-    fn a_known_and_powered_bus_is_powered() {
-        let mut electricity = Electricity::new();
-        let element = TestElectricalElement::new(&mut electricity).power();
-        electricity.supplied_by(&element);
-
-        let bus = TestBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
-        electricity.flow(&element, &bus);
-
-        assert!(electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
-    }
-
-    #[test]
-    fn an_unpowered_transformer_does_not_transform_electricity() {
-        let mut electricity = Electricity::new();
-        let transformer = TestTransformer::new(&mut electricity);
-        electricity.transform_in(&transformer);
-
-        assert!(!electricity.is_powered(&transformer));
-    }
-
-    #[test]
-    fn a_powered_transformer_transforms_electricity() {
-        let mut electricity = Electricity::new();
-        let source = TestElectricalElement::new(&mut electricity).power();
-        let transformer = TestTransformer::new(&mut electricity);
-
-        electricity.supplied_by(&source);
-        electricity.flow(&source, &transformer);
-        electricity.transform_in(&transformer);
-
-        assert!(electricity.is_powered(&transformer));
-    }
-
-    #[test]
-    fn transformed_electricity_isnt_the_same_potential() {
-        let mut electricity = Electricity::new();
-        let source = TestElectricalElement::new(&mut electricity).power();
-        let transformer = TestTransformer::new(&mut electricity);
-
-        electricity.supplied_by(&source);
-        electricity.flow(&source, &transformer);
-        electricity.transform_in(&transformer);
-
-        assert!(electricity
-            .output_of(&source)
-            .origins
-            .contains(&PotentialOrigin::EngineGenerator(1)));
-        assert!(electricity
-            .output_of(&transformer)
-            .origins
-            .contains(&PotentialOrigin::TransformerRectifier(1)))
-    }
-
-    #[test]
-    fn electricity_flows_back_through_the_circuit() {
-        let mut electricity = Electricity::new();
-        let first = TestElectricalElement::new(&mut electricity);
-        let second = TestElectricalElement::new(&mut electricity);
-        let third = TestElectricalElement::new(&mut electricity).power();
-
-        electricity.flow(&first, &second);
-        electricity.flow(&second, &third);
-        electricity.supplied_by(&third);
-
-        assert!(electricity.is_powered(&first));
-    }
-
-    #[test]
-    fn electricity_from_multiple_sources_combines() {
-        let mut electricity = Electricity::new();
-        let first = TestElectricalElement::new(&mut electricity).power();
-        let second = TestElectricalElement::new(&mut electricity)
-            .with_number(2)
-            .power();
-
-        electricity.supplied_by(&first);
-        electricity.supplied_by(&second);
-        electricity.flow(&first, &second);
-
-        assert_eq!(electricity.output_of(&first).origin_count(), 2);
-    }
-
-    #[test]
-    fn flow_right_argument_doesnt_dangle() {
-        let mut electricity = Electricity::new();
-        let first = TestElectricalElement::new(&mut electricity);
-        let second = TestElectricalElement::new(&mut electricity);
-        let third = TestElectricalElement::new(&mut electricity);
-        let fourth = TestElectricalElement::new(&mut electricity);
-        electricity.flow(&first, &second);
-
-        // If the code doesn't add the third element to the potential object during this call...
-        electricity.flow(&second, &third);
-
-        let powered = TestElectricalElement::new(&mut electricity).power();
-        electricity.supplied_by(&powered);
-        electricity.flow(&fourth, &powered);
-
-        // ...then during this call the third element would get lost, as the potential doesn't contain
-        // a reference to the element, and thus there is no way to include that element in the new merged potential.
-        electricity.flow(&fourth, &first);
-
-        assert!(electricity.is_powered(&third));
-    }
-
-    #[test]
-    fn flow_left_argument_doesnt_dangle() {
-        let mut electricity = Electricity::new();
-        let first = TestElectricalElement::new(&mut electricity);
-        let second = TestElectricalElement::new(&mut electricity);
-        let third = TestElectricalElement::new(&mut electricity);
-        let fourth = TestElectricalElement::new(&mut electricity);
-        electricity.flow(&first, &second);
-
-        // If the code doesn't add the third element to the potential object during this call...
-        electricity.flow(&third, &second);
-
-        let powered = TestElectricalElement::new(&mut electricity).power();
-        electricity.supplied_by(&powered);
-        electricity.flow(&fourth, &powered);
-
-        // ...then during this call the third element would get lost, as the potential doesn't contain
-        // a reference to the element, and thus there is no way to include that element in the new merged potential.
-        electricity.flow(&fourth, &first);
-
-        assert!(electricity.is_powered(&third));
-    }
-
-    #[test]
-    fn any_is_powered_returns_true_when_any_of_the_arguments_is_powered() {
-        let mut electricity = Electricity::new();
-        let element = TestElectricalElement::new(&mut electricity).power();
-        electricity.supplied_by(&element);
-
-        let ac_bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
-        TestBus::new(ElectricalBusType::DirectCurrent(1), &mut electricity);
-
-        electricity.flow(&element, &ac_bus);
-        // Don't flow to DC BUS on purpose.
-
-        assert!(electricity.any_is_powered(&[
-            ElectricalBusType::AlternatingCurrent(1),
-            ElectricalBusType::DirectCurrent(1),
-        ]));
-    }
-
-    #[test]
-    fn any_is_powered_returns_false_when_none_of_the_arguments_is_powered() {
-        let mut electricity = Electricity::new();
-        TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
-        TestBus::new(ElectricalBusType::DirectCurrent(1), &mut electricity);
-
-        assert!(!electricity.any_is_powered(&[
-            ElectricalBusType::AlternatingCurrent(1),
-            ElectricalBusType::DirectCurrent(1),
-        ]));
-    }
-
-    #[test]
-    fn potential_of_returns_a_potential_which_isnt_powered_when_bus_is_unpowered() {
-        let mut electricity = Electricity::new();
-        TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
-        let potential = electricity.potential_of_bus(ElectricalBusType::AlternatingCurrent(1));
-
-        assert!(potential.is_unpowered());
-    }
-
-    #[test]
-    fn potential_of_returns_a_potential_with_origin_when_bus_is_powered() {
-        let mut electricity = Electricity::new();
-        let element = TestElectricalElement::new(&mut electricity).power();
-        electricity.supplied_by(&element);
-
-        let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
-        electricity.flow(&element, &bus);
-
-        let potential = electricity.potential_of_bus(ElectricalBusType::AlternatingCurrent(1));
-
-        assert!(potential.is_only_powered_by_single_engine_generator());
-    }
-
-    #[test]
-    fn power_consumed_from_a_powered_bus_is_included_in_the_power_usage() {
-        let mut electricity = Electricity::new();
-        let generator = TestElectricalElement::new(&mut electricity).power();
-        electricity.supplied_by(&generator);
-
-        let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
-        electricity.flow(&generator, &bus);
-
-        electricity.consume_from_bus(
-            ElectricalBusType::AlternatingCurrent(1),
-            Power::new::<watt>(400.),
-        );
-        electricity.consume_from_bus(
-            ElectricalBusType::AlternatingCurrent(1),
-            Power::new::<watt>(300.),
-        );
-
-        assert_eq!(
-            electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
-            Power::new::<watt>(700.)
-        );
-    }
-
-    #[test]
-    fn power_consumed_from_an_unpowered_bus_is_not_included_in_the_power_usage() {
-        let mut electricity = Electricity::new();
-        TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
-
-        electricity.consume_from_bus(
-            ElectricalBusType::AlternatingCurrent(1),
-            Power::new::<watt>(400.),
-        );
-
-        assert_eq!(
-            electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
-            Power::new::<watt>(0.)
-        );
-    }
-
-    #[test]
-    fn consumption_is_equally_divided_between_all_potential_origins() {
-        let mut electricity = Electricity::new();
-        let generator_1 = TestElectricalElement::new(&mut electricity).power();
-        let generator_2 = TestElectricalElement::new(&mut electricity)
-            .with_number(2)
-            .power();
-        electricity.supplied_by(&generator_1);
-        electricity.supplied_by(&generator_2);
-
-        let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
-        electricity.flow(&generator_1, &bus);
-        electricity.flow(&generator_2, &bus);
-
-        electricity.consume_from_bus(
-            ElectricalBusType::AlternatingCurrent(1),
-            Power::new::<watt>(400.),
-        );
-
-        assert_eq!(
-            electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
-            Power::new::<watt>(200.)
-        );
-        assert_eq!(
-            electricity.total_consumption_of(PotentialOrigin::EngineGenerator(2)),
-            Power::new::<watt>(200.)
-        );
+    #[cfg(test)]
+    mod electricity_tests {
+        use super::*;
+
+        struct TestElectricalElement {
+            number: usize,
+            identifier: ElectricalElementIdentifier,
+            is_powered: bool,
+            is_conductive: bool,
+        }
+        impl TestElectricalElement {
+            fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+                Self {
+                    number: 1,
+                    identifier: identifier_provider.next(),
+                    is_powered: false,
+                    is_conductive: true,
+                }
+            }
+
+            fn unregistered() -> Self {
+                Self {
+                    number: 1,
+                    identifier: ElectricalElementIdentifier::first(),
+                    is_powered: false,
+                    is_conductive: true,
+                }
+            }
+
+            fn power(mut self) -> Self {
+                self.is_powered = true;
+                self
+            }
+
+            fn non_conductive(mut self) -> Self {
+                self.is_conductive = false;
+                self
+            }
+
+            fn with_number(mut self, number: usize) -> Self {
+                self.number = number;
+                self
+            }
+        }
+        impl ElectricalElement for TestElectricalElement {
+            fn input_identifier(&self) -> ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn output_identifier(&self) -> ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn is_conductive(&self) -> bool {
+                self.is_conductive
+            }
+        }
+        impl ElectricitySource for TestElectricalElement {
+            fn output_potential(&self) -> Potential {
+                if self.is_powered {
+                    Potential::new(
+                        PotentialOrigin::EngineGenerator(self.number),
+                        ElectricPotential::new::<volt>(115.),
+                    )
+                } else {
+                    Potential::none()
+                }
+            }
+        }
+
+        struct TestBus {
+            identifier: ElectricalElementIdentifier,
+        }
+        impl TestBus {
+            fn new(
+                bus_type: ElectricalBusType,
+                identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+            ) -> Self {
+                Self {
+                    identifier: identifier_provider.next_for_bus(bus_type),
+                }
+            }
+        }
+        impl ElectricalElement for TestBus {
+            fn input_identifier(&self) -> ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn output_identifier(&self) -> ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn is_conductive(&self) -> bool {
+                true
+            }
+        }
+
+        struct TestTransformer {
+            input_identifier: ElectricalElementIdentifier,
+            output_identifier: ElectricalElementIdentifier,
+        }
+        impl TestTransformer {
+            fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+                Self {
+                    input_identifier: identifier_provider.next(),
+                    output_identifier: identifier_provider.next(),
+                }
+            }
+        }
+        impl ElectricityTransformer for TestTransformer {
+            fn transform(&self, input: Ref<Potential>) -> Potential {
+                if input.is_powered() {
+                    Potential::new(
+                        PotentialOrigin::TransformerRectifier(1),
+                        ElectricPotential::new::<volt>(28.),
+                    )
+                } else {
+                    Potential::none()
+                }
+            }
+        }
+        impl ElectricalElement for TestTransformer {
+            fn input_identifier(&self) -> ElectricalElementIdentifier {
+                self.input_identifier
+            }
+
+            fn output_identifier(&self) -> ElectricalElementIdentifier {
+                self.output_identifier
+            }
+
+            fn is_conductive(&self) -> bool {
+                true
+            }
+        }
+
+        #[test]
+        fn next_provides_increasing_identifiers() {
+            let mut electricity = Electricity::new();
+            let mut identifier = electricity.next();
+            for _ in 1..=10 {
+                let next_identifier = electricity.next();
+                assert!(identifier.0 < next_identifier.0);
+                identifier = next_identifier;
+            }
+        }
+
+        #[test]
+        fn next_for_bus_provides_increasing_identifiers() {
+            let mut electricity = Electricity::new();
+            let mut identifier = electricity.next();
+            for _ in 1..=10 {
+                let next_identifier =
+                    electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery);
+                assert!(identifier.0 < next_identifier.0);
+                identifier = next_identifier;
+            }
+        }
+
+        #[test]
+        fn next_and_next_for_bus_together_provide_increasing_identifiers() {
+            let mut electricity = Electricity::new();
+            let mut identifier = electricity.next();
+            for n in 1..=10 {
+                let next_identifier = if n % 2 == 0 {
+                    electricity.next()
+                } else {
+                    electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery)
+                };
+                assert!(identifier.0 < next_identifier.0);
+                identifier = next_identifier;
+            }
+        }
+
+        #[test]
+        fn next_for_bus_identifier_matches_looked_up_identifier() {
+            let mut electricity = Electricity::new();
+
+            electricity.next_for_bus(ElectricalBusType::DirectCurrentBattery);
+            let identifier = electricity.next_for_bus(ElectricalBusType::DirectCurrentEssential);
+
+            assert!(
+                electricity.identifier_for(ElectricalBusType::DirectCurrentEssential)
+                    == Some(&identifier)
+            );
+        }
+
+        #[test]
+        fn an_unknown_element_isnt_powered() {
+            let electricity = Electricity::new();
+            let element = TestElectricalElement::unregistered();
+
+            assert!(!electricity.is_powered(&element));
+        }
+
+        #[test]
+        fn a_known_but_unpowered_element_isnt_powered() {
+            let mut electricity = Electricity::new();
+            let element = TestElectricalElement::new(&mut electricity);
+
+            assert!(!electricity.is_powered(&element));
+        }
+
+        #[test]
+        fn a_known_and_powered_element_is_powered() {
+            let mut electricity = Electricity::new();
+            let element = TestElectricalElement::new(&mut electricity).power();
+            electricity.supplied_by(&element);
+
+            assert!(electricity.is_powered(&element));
+        }
+
+        #[test]
+        fn power_doesnt_flow_from_an_unpowered_element_to_another_unpowered_element() {
+            let mut electricity = Electricity::new();
+            let from_element = TestElectricalElement::new(&mut electricity);
+            let to_element = TestElectricalElement::new(&mut electricity);
+            electricity.supplied_by(&from_element);
+            electricity.flow(&from_element, &to_element);
+
+            assert!(!electricity.is_powered(&to_element));
+        }
+
+        #[test]
+        fn power_flows_from_a_powered_to_an_unpowered_element() {
+            let mut electricity = Electricity::new();
+            let from_element = TestElectricalElement::new(&mut electricity).power();
+            let to_element = TestElectricalElement::new(&mut electricity);
+            electricity.supplied_by(&from_element);
+            electricity.flow(&from_element, &to_element);
+
+            assert!(electricity.is_powered(&to_element));
+        }
+
+        #[test]
+        fn power_doesnt_flow_from_a_non_conductive_to_a_conductive_element() {
+            let mut electricity = Electricity::new();
+            let from_element = TestElectricalElement::new(&mut electricity)
+                .power()
+                .non_conductive();
+            let to_element = TestElectricalElement::new(&mut electricity);
+            electricity.supplied_by(&from_element);
+            electricity.flow(&from_element, &to_element);
+
+            assert!(!electricity.is_powered(&to_element));
+        }
+
+        #[test]
+        fn power_doesnt_flow_from_a_conductive_to_a_non_conductive_element() {
+            let mut electricity = Electricity::new();
+            let from_element = TestElectricalElement::new(&mut electricity).power();
+            let to_element = TestElectricalElement::new(&mut electricity).non_conductive();
+            electricity.supplied_by(&from_element);
+            electricity.flow(&from_element, &to_element);
+
+            assert!(!electricity.is_powered(&to_element));
+        }
+
+        #[test]
+        fn an_unknown_bus_isnt_powered() {
+            let electricity = Electricity::new();
+
+            assert!(!electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
+        }
+
+        #[test]
+        fn a_known_but_unpowered_bus_isnt_powered() {
+            let mut electricity = Electricity::new();
+            // Request an identifier, such that the bus type is registered.
+            TestBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
+
+            assert!(!electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
+        }
+
+        #[test]
+        fn a_known_and_powered_bus_is_powered() {
+            let mut electricity = Electricity::new();
+            let element = TestElectricalElement::new(&mut electricity).power();
+            electricity.supplied_by(&element);
+
+            let bus = TestBus::new(ElectricalBusType::DirectCurrentBattery, &mut electricity);
+            electricity.flow(&element, &bus);
+
+            assert!(electricity.bus_is_powered(ElectricalBusType::DirectCurrentBattery));
+        }
+
+        #[test]
+        fn an_unpowered_transformer_does_not_transform_electricity() {
+            let mut electricity = Electricity::new();
+            let transformer = TestTransformer::new(&mut electricity);
+            electricity.transform_in(&transformer);
+
+            assert!(!electricity.is_powered(&transformer));
+        }
+
+        #[test]
+        fn a_powered_transformer_transforms_electricity() {
+            let mut electricity = Electricity::new();
+            let source = TestElectricalElement::new(&mut electricity).power();
+            let transformer = TestTransformer::new(&mut electricity);
+
+            electricity.supplied_by(&source);
+            electricity.flow(&source, &transformer);
+            electricity.transform_in(&transformer);
+
+            assert!(electricity.is_powered(&transformer));
+        }
+
+        #[test]
+        fn transformed_electricity_isnt_the_same_potential() {
+            let mut electricity = Electricity::new();
+            let source = TestElectricalElement::new(&mut electricity).power();
+            let transformer = TestTransformer::new(&mut electricity);
+
+            electricity.supplied_by(&source);
+            electricity.flow(&source, &transformer);
+            electricity.transform_in(&transformer);
+
+            assert!(electricity
+                .output_of(&source)
+                .origins
+                .contains(&PotentialOrigin::EngineGenerator(1)));
+            assert!(electricity
+                .output_of(&transformer)
+                .origins
+                .contains(&PotentialOrigin::TransformerRectifier(1)))
+        }
+
+        #[test]
+        fn electricity_flows_back_through_the_circuit() {
+            let mut electricity = Electricity::new();
+            let first = TestElectricalElement::new(&mut electricity);
+            let second = TestElectricalElement::new(&mut electricity);
+            let third = TestElectricalElement::new(&mut electricity).power();
+
+            electricity.flow(&first, &second);
+            electricity.flow(&second, &third);
+            electricity.supplied_by(&third);
+
+            assert!(electricity.is_powered(&first));
+        }
+
+        #[test]
+        fn electricity_from_multiple_sources_combines() {
+            let mut electricity = Electricity::new();
+            let first = TestElectricalElement::new(&mut electricity).power();
+            let second = TestElectricalElement::new(&mut electricity)
+                .with_number(2)
+                .power();
+
+            electricity.supplied_by(&first);
+            electricity.supplied_by(&second);
+            electricity.flow(&first, &second);
+
+            assert_eq!(electricity.output_of(&first).origin_count(), 2);
+        }
+
+        #[test]
+        fn flow_right_argument_doesnt_dangle() {
+            let mut electricity = Electricity::new();
+            let first = TestElectricalElement::new(&mut electricity);
+            let second = TestElectricalElement::new(&mut electricity);
+            let third = TestElectricalElement::new(&mut electricity);
+            let fourth = TestElectricalElement::new(&mut electricity);
+            electricity.flow(&first, &second);
+
+            // If the code doesn't add the third element to the potential object during this call...
+            electricity.flow(&second, &third);
+
+            let powered = TestElectricalElement::new(&mut electricity).power();
+            electricity.supplied_by(&powered);
+            electricity.flow(&fourth, &powered);
+
+            // ...then during this call the third element would get lost, as the potential doesn't contain
+            // a reference to the element, and thus there is no way to include that element in the new merged potential.
+            electricity.flow(&fourth, &first);
+
+            assert!(electricity.is_powered(&third));
+        }
+
+        #[test]
+        fn flow_left_argument_doesnt_dangle() {
+            let mut electricity = Electricity::new();
+            let first = TestElectricalElement::new(&mut electricity);
+            let second = TestElectricalElement::new(&mut electricity);
+            let third = TestElectricalElement::new(&mut electricity);
+            let fourth = TestElectricalElement::new(&mut electricity);
+            electricity.flow(&first, &second);
+
+            // If the code doesn't add the third element to the potential object during this call...
+            electricity.flow(&third, &second);
+
+            let powered = TestElectricalElement::new(&mut electricity).power();
+            electricity.supplied_by(&powered);
+            electricity.flow(&fourth, &powered);
+
+            // ...then during this call the third element would get lost, as the potential doesn't contain
+            // a reference to the element, and thus there is no way to include that element in the new merged potential.
+            electricity.flow(&fourth, &first);
+
+            assert!(electricity.is_powered(&third));
+        }
+
+        #[test]
+        fn any_is_powered_returns_true_when_any_of_the_arguments_is_powered() {
+            let mut electricity = Electricity::new();
+            let element = TestElectricalElement::new(&mut electricity).power();
+            electricity.supplied_by(&element);
+
+            let ac_bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+            TestBus::new(ElectricalBusType::DirectCurrent(1), &mut electricity);
+
+            electricity.flow(&element, &ac_bus);
+            // Don't flow to DC BUS on purpose.
+
+            assert!(electricity.any_is_powered(&[
+                ElectricalBusType::AlternatingCurrent(1),
+                ElectricalBusType::DirectCurrent(1),
+            ]));
+        }
+
+        #[test]
+        fn any_is_powered_returns_false_when_none_of_the_arguments_is_powered() {
+            let mut electricity = Electricity::new();
+            TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+            TestBus::new(ElectricalBusType::DirectCurrent(1), &mut electricity);
+
+            assert!(!electricity.any_is_powered(&[
+                ElectricalBusType::AlternatingCurrent(1),
+                ElectricalBusType::DirectCurrent(1),
+            ]));
+        }
+
+        #[test]
+        fn potential_of_returns_a_potential_which_isnt_powered_when_bus_is_unpowered() {
+            let mut electricity = Electricity::new();
+            TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+            let potential = electricity.potential_of_bus(ElectricalBusType::AlternatingCurrent(1));
+
+            assert!(potential.is_unpowered());
+        }
+
+        #[test]
+        fn potential_of_returns_a_potential_with_origin_when_bus_is_powered() {
+            let mut electricity = Electricity::new();
+            let element = TestElectricalElement::new(&mut electricity).power();
+            electricity.supplied_by(&element);
+
+            let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+            electricity.flow(&element, &bus);
+
+            let potential = electricity.potential_of_bus(ElectricalBusType::AlternatingCurrent(1));
+
+            assert!(potential.is_only_powered_by_single_engine_generator());
+        }
+
+        #[test]
+        fn power_consumed_from_a_powered_bus_is_included_in_the_power_usage() {
+            let mut electricity = Electricity::new();
+            let generator = TestElectricalElement::new(&mut electricity).power();
+            electricity.supplied_by(&generator);
+
+            let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+            electricity.flow(&generator, &bus);
+
+            electricity.consume_from_bus(
+                ElectricalBusType::AlternatingCurrent(1),
+                Power::new::<watt>(400.),
+            );
+            electricity.consume_from_bus(
+                ElectricalBusType::AlternatingCurrent(1),
+                Power::new::<watt>(300.),
+            );
+
+            assert_eq!(
+                electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
+                Power::new::<watt>(700.)
+            );
+        }
+
+        #[test]
+        fn power_consumed_from_an_unpowered_bus_is_not_included_in_the_power_usage() {
+            let mut electricity = Electricity::new();
+            TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+
+            electricity.consume_from_bus(
+                ElectricalBusType::AlternatingCurrent(1),
+                Power::new::<watt>(400.),
+            );
+
+            assert_eq!(
+                electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
+                Power::new::<watt>(0.)
+            );
+        }
+
+        #[test]
+        fn consumption_is_equally_divided_between_all_potential_origins() {
+            let mut electricity = Electricity::new();
+            let generator_1 = TestElectricalElement::new(&mut electricity).power();
+            let generator_2 = TestElectricalElement::new(&mut electricity)
+                .with_number(2)
+                .power();
+            electricity.supplied_by(&generator_1);
+            electricity.supplied_by(&generator_2);
+
+            let bus = TestBus::new(ElectricalBusType::AlternatingCurrent(1), &mut electricity);
+            electricity.flow(&generator_1, &bus);
+            electricity.flow(&generator_2, &bus);
+
+            electricity.consume_from_bus(
+                ElectricalBusType::AlternatingCurrent(1),
+                Power::new::<watt>(400.),
+            );
+
+            assert_eq!(
+                electricity.total_consumption_of(PotentialOrigin::EngineGenerator(1)),
+                Power::new::<watt>(200.)
+            );
+            assert_eq!(
+                electricity.total_consumption_of(PotentialOrigin::EngineGenerator(2)),
+                Power::new::<watt>(200.)
+            );
+        }
     }
 }
