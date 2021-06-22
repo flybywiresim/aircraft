@@ -3840,10 +3840,11 @@
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <LEFT_SINGLE_CODE>
-                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
+                    0 (&gt;L:A32NX_MASTER_WARNING)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
-                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
                 </LEFT_LEAVE_CODE>
                 <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
@@ -3863,10 +3864,10 @@
                 <ID>Caution</ID>
                 <LEFT_SINGLE_CODE>
                     0 (&gt;L:A32NX_MASTER_CAUTION)
-                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
-                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT)
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
                 </LEFT_LEAVE_CODE>
                 <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
@@ -3884,10 +3885,11 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <LEFT_SINGLE_CODE>
-                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
+                    0 (&gt;L:A32NX_MASTER_WARNING)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
-                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
                 </LEFT_LEAVE_CODE>
                 <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
@@ -3907,10 +3909,10 @@
                 <ID>Caution</ID>
                 <LEFT_SINGLE_CODE>
                     0 (&gt;L:A32NX_MASTER_CAUTION)
-                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
-                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT)
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
                 </LEFT_LEAVE_CODE>
                 <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
