@@ -4,12 +4,11 @@ class DisplayUnit {
         this.selfTest = new DisplayUnitSelfTest(selfTestElement, getSelfTestTimeInSecondsFn);
         this.isPowered = isPoweredFn;
         this.potentiometerId = potentiometerId;
-
-        this.systemsInit = Boolean(SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') && SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum') === (FmgcFlightPhases.PREFLIGHT));
+        this.offDurationTimerActive = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') && SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum') === FmgcFlightPhases.PREFLIGHT;
         this.previouslyOff = false;
         // Start with a state where turning on the display unit within 10 seconds after starting the flight
         // will trigger the self test.
-        this.offDurationInMilliseconds = DisplayUnitSelfTest.RequiredAfterBeingOffForMilliseconds;
+        this.offDurationInMilliseconds = this.offDurationTimerActive ? DisplayUnitSelfTest.RequiredAfterBeingOffForMilliseconds : 0;
     }
 
     isJustNowTurnedOn() {
@@ -29,7 +28,7 @@ class DisplayUnit {
         this.selfTest.update(deltaTime);
 
         const isOn = this.isOn();
-        if (this.systemsInit) {
+        if (this.offDurationTimerActive) {
             if (isOn) {
                 this.offDurationInMilliseconds = 0;
             } else {
@@ -37,9 +36,8 @@ class DisplayUnit {
             }
         } else {
             // on non c&d spawn in
-            this.offDurationInMilliseconds = 0;
             if (isOn) {
-                this.systemsInit = true; // normal ops
+                this.offDurationTimerActive = true; // normal ops
             }
         }
 
