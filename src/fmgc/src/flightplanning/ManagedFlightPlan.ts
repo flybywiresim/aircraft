@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-import { ActiveWaypointInfo } from '@fmgc/flightplanning/data/waypoints';
-import { SegmentType, FlightPlanSegment } from './FlightPlanSegment';
+import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
+import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
 import { RawDataMapper } from './RawDataMapper';
 import { GPS } from './GPS';
@@ -97,31 +97,55 @@ export class ManagedFlightPlan {
     }
 
     /**
+     * Returns a list of {@link WaypointStats} for the waypoints in the flight plan
+     *
+     * @return {WaypointStats[]} array of statistics for the waypoints in the flight plan, with matching indices to
+     *                           flight plan waypoints
+     */
+    public computeWaypointStatistics(ppos: LatLongData): WaypointStats[] {
+        // TODO this should be moved into its own dedicated module
+
+        const firstData = this.computeActiveWaypointStatistics(ppos);
+
+        return [firstData, ...(this.waypoints.map((waypoint) => ({
+            ident: waypoint.ident,
+            bearingInFp: waypoint.bearingInFP,
+            distanceFromPpos: firstData.distanceFromPpos + waypoint.cumulativeDistanceInFP,
+            timeFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP),
+        })))];
+    }
+
+    /**
      * Returns info for the currently active waypoint, to be displayed by the Navigation Display
      */
-    public getActiveWaypointInfo(lla?: LatLongData): ActiveWaypointInfo | undefined {
-        const activeWaypoint = this.waypoints[this.activeWaypointIndex];
+    public computeActiveWaypointStatistics(ppos: LatLongData): WaypointStats {
+        // TODO this should be moved into its own dedicated module
 
-        if (!activeWaypoint) {
+        if (!this.activeWaypoint) {
             return undefined;
         }
 
-        let ll = lla;
-        if (!ll) {
-            const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-            const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-
-            ll = { lat, long };
-        }
-
-        const bearing = Avionics.Utils.computeGreatCircleHeading(ll, activeWaypoint.infos.coordinates);
-        const distance = Avionics.Utils.computeGreatCircleDistance(ll, activeWaypoint.infos.coordinates);
+        const bearingInFp = Avionics.Utils.computeGreatCircleHeading(ppos, this.activeWaypoint.infos.coordinates);
+        const distanceFromPpos = Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
 
         return {
-            ident: activeWaypoint.ident,
-            bearing,
-            distance,
+            ident: this.activeWaypoint.ident,
+            bearingInFp,
+            distanceFromPpos,
+            timeFromPpos: this.computeWaypointEta(distanceFromPpos),
         };
+    }
+
+    // FIXME THIS IS COMPLETELY WRONG!
+    // This should return ETA based on GMT time.
+    private computeWaypointEta(distance: number) {
+        const acSpeed = SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots');
+
+        if (acSpeed < 100) {
+            return undefined;
+        }
+
+        return (distance / acSpeed) * 3600;
     }
 
     /** The parent instrument this flight plan is attached to locally. */
