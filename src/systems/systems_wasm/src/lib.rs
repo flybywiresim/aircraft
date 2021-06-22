@@ -67,13 +67,13 @@ impl MsfsSimulationHandler {
     pub fn handle<T: Aircraft>(
         &mut self,
         event: MSFSEvent,
-        aircraft: &mut T,
+        simulation: &mut Simulation<T>,
         sim_connect: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         match event {
             MSFSEvent::PreDraw(d) => {
                 self.pre_tick(d.delta_time());
-                Simulation::tick(d.delta_time(), aircraft, self);
+                simulation.tick(d.delta_time(), self);
                 self.post_tick(&mut sim_connect.as_mut())?;
             }
             MSFSEvent::SimConnect(message) => {
