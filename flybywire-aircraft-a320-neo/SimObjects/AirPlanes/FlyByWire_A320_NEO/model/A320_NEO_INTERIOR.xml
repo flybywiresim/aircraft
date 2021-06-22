@@ -67,6 +67,11 @@
                 <NODE_ID>LIGHTING_Knob_Panel</NODE_ID>
                 <PART_ID>LIGHTING_Knob_Panel</PART_ID>
                 <ANIM_NAME>LIGHTING_Knob_Panel</ANIM_NAME>
+                <MAX_VALUE>100</MAX_VALUE>
+                <KNOB_TURN_SPEED>1</KNOB_TURN_SPEED>
+                <WWISE_EVENT></WWISE_EVENT>
+                <UPDATE_FREQUENCY>50</UPDATE_FREQUENCY>
+                <UPDATE_DELAY>0.2</UPDATE_DELAY>
             </UseTemplate>
 
             <!-- All Pedestal & Main Panel Backlighting should be on potentiometer 85 -->
