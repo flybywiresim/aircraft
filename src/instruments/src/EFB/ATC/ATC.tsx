@@ -21,7 +21,7 @@ export const ATC = () => {
 
     useEffect(() => {
         loadAtc();
-        setInterval(() => loadAtc(), 2 * 60 * 1000);
+        setInterval(() => loadAtc(), 60 * 1000);
     }, []);
 
     useEffect(() => {
