@@ -96,7 +96,7 @@ class A32NX_FlightPhaseManager {
             [FmgcFlightPhases.DONE]: new A32NX_FlightPhase_Done()
         };
 
-        this.activeFlightPhase = this.flightPhases[FmgcFlightPhases.PREFLIGHT];
+        this.activeFlightPhase = this.flightPhases[SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number") || FmgcFlightPhases.PREFLIGHT];
 
         SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", FmgcFlightPhases.PREFLIGHT);
 
@@ -175,7 +175,6 @@ class A32NX_FlightPhase_PreFlight {
     }
 
     init(_fmc) {
-        _fmc.climbTransitionGroundAltitude = null;
     }
 
     check(_deltaTime, _fmc) {

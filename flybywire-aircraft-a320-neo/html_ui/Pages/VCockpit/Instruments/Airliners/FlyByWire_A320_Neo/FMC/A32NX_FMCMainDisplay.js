@@ -164,6 +164,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = undefined;
         this.ilsTakeoffAutoTuned = undefined;
         this.ilsApproachAutoTuned = undefined;
+        this.climbTransitionGroundAltitude = undefined;
     }
 
     Init() {
@@ -229,6 +230,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
 
         this.updateFuelVars();
+        this.updatePerfSpeeds();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
@@ -446,6 +448,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = false;
         this.ilsTakeoffAutoTuned = false;
         this.ilsApproachAutoTuned = false;
+        this.climbTransitionGroundAltitude = null;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
