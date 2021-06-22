@@ -47,7 +47,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
 
             <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} side={side} tcasMode={tcasMode} />
 
-            <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().getActiveWaypointInfo(ppos)} />
+            <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
         </>
     );
 };
