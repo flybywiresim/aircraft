@@ -8,8 +8,6 @@ use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
 
 mod random;
 pub use random::*;
-mod iterator;
-pub use iterator::*;
 
 pub trait AuxiliaryPowerUnitElectrical:
     ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
