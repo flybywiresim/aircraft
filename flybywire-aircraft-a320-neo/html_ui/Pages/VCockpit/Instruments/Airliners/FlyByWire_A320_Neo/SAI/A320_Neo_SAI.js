@@ -1180,14 +1180,14 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
     }
 
     brightnessUp() {
-        if (this.bugsElement.getDisplay() === "none") {
+        if (this.bugsElement.getDisplay() === "none" && this.currentBrightness < this.maximum) {
             this.targetBrightness = Math.min(this.maximum, this.currentBrightness + this.bright_gran);
             this.setBrightness(this.targetBrightness);
         }
     }
 
     brightnessDown() {
-        if (this.bugsElement.getDisplay() === "none") {
+        if (this.bugsElement.getDisplay() === "none" && this.currentBrightness > this.minimum) {
             this.targetBrightness = Math.max(this.minimum, this.currentBrightness - this.bright_gran);
             this.setBrightness(this.targetBrightness);
         }
