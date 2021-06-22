@@ -77,6 +77,7 @@ class A32NX_FWC {
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
         this._updateAltitudeWarning();
+        this._checkLandingGear();
     }
 
     _resetPulses() {
