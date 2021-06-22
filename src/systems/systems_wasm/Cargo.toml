@@ -7,6 +7,7 @@ edition = "2018"
 [lib]
 test = false
 doctest = false
+doc = false
 
 [dependencies]
 uom = "0.30.0"
