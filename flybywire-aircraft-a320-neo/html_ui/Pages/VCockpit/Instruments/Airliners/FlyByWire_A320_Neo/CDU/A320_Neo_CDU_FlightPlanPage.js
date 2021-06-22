@@ -303,7 +303,17 @@ class CDUFlightPlanPage {
                                 airwayName = "\xa0" + airway.name;
                             }
                         }
-                        const distance = (waypoint === fpm.getActiveWaypoint() ? waypoint.liveDistanceTo : waypoint.distanceInFP);
+
+                        // TODO actually use the correct prediction
+
+                        const ppos = {
+                            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+                            long: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree longitude'),
+                        };
+
+                        const stats = fpm.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos);
+
+                        const distance = stats.distanceFromPpos;
                         let dstnc;
                         if (i === 1) {
                             dstnc = distance.toFixed(0).toString() + "NM";
