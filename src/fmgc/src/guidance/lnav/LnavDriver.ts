@@ -35,6 +35,8 @@ export class LnavDriver implements GuidanceComponent {
     update(_deltaTime: number): void {
         let available = false;
 
+        /* Run sequencing */
+
         const geometry = this.guidanceController.guidanceManager.getActiveLegPathGeometry();
 
         if (geometry !== null) {
@@ -93,6 +95,8 @@ export class LnavDriver implements GuidanceComponent {
                 }
             }
         }
+
+        /* Set FG parameters */
 
         if (!available && this.lastAvail !== false) {
             SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', false);
