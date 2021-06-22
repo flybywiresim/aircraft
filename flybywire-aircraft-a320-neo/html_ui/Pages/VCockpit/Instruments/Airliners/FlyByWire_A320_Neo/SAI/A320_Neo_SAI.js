@@ -1130,9 +1130,9 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         this.isDaytime = this.getIsDaytime();
         this.targetBrightness = this.isDaytime ? this.dayBrightness : this.nightBrightness;
         this.setBrightness(this.targetBrightness);
-        this.transitionSpeedModifier = 0.00001;
+        this.transitionSpeedModifier = 0.01;
         this.updateThrottler = new UpdateThrottler(10000);
-        this.transitionThrottler = new UpdateThrottler(500);
+        this.transitionThrottler = new UpdateThrottler(150);
     }
 
     onEnter() {
@@ -1155,11 +1155,8 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         if (this.isDaytime !== isDaytime) {
             this.isDaytime = isDaytime;
             /** Respecting the night->day (isDaytime) and day->night (!isDaytime) transitions */
-            if (isDaytime) {
-                this.targetBrightness = Math.max(this.targetBrightness, this.dayBrightness);
-            } else {
-                this.targetBrightness = Math.min(this.targetBrightness, this.nightBrightness);
-            }
+            const newTargetBrightness = this.targetBrightness - (this.nightBrightness - this.dayBrightness) * (isDaytime ? 1 : -1);
+            this.targetBrightness = Utils.Clamp(newTargetBrightness, this.minimum, this.maximum);
         }
 
         /** We need to exit here to get a transition delta time */
@@ -1168,8 +1165,8 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         }
 
         this.setBrightness(this.targetBrightness > this.currentBrightness ?
-            Math.min(this.currentBrightness + this.transitionSpeedModifier * deltaTime, this.targetBrightness) :
-            Math.max(this.currentBrightness - this.transitionSpeedModifier * deltaTime, this.targetBrightness)
+            Math.min(this.currentBrightness + this.transitionSpeedModifier, this.targetBrightness) :
+            Math.max(this.currentBrightness - this.transitionSpeedModifier, this.targetBrightness)
         );
     }
 
@@ -1183,21 +1180,17 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
     }
 
     brightnessUp() {
-        if (this.bugsElement.getDisplay() !== "none") {
-            return;
+        if (this.bugsElement.getDisplay() === "none") {
+            this.targetBrightness = Math.min(this.maximum, this.currentBrightness + this.bright_gran);
+            this.setBrightness(this.targetBrightness);
         }
-
-        this.targetBrightness = Math.min(this.maximum, this.currentBrightness + this.bright_gran);
-        this.setBrightness(this.targetBrightness);
     }
 
     brightnessDown() {
-        if (this.bugsElement.getDisplay() !== "none") {
-            return;
+        if (this.bugsElement.getDisplay() === "none") {
+            this.targetBrightness = Math.max(this.minimum, this.currentBrightness - this.bright_gran);
+            this.setBrightness(this.targetBrightness);
         }
-
-        this.targetBrightness = Math.max(this.minimum, this.currentBrightness - this.bright_gran);
-        this.setBrightness(this.targetBrightness);
     }
 
     getIsDaytime() {
