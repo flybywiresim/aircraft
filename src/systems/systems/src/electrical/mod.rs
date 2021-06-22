@@ -537,6 +537,11 @@ impl PowerConsumptionReport for Electricity {
         self.is_powered(element)
     }
 }
+impl Default for Electricity {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 struct ReceivePowerVisitor<'a> {
     electricity: &'a Electricity,
@@ -699,11 +704,11 @@ impl Potential {
     }
 
     pub fn is_powered(&self) -> bool {
-        self.origins.len() > 0
+        !self.origins.is_empty()
     }
 
     pub fn is_unpowered(&self) -> bool {
-        self.origins.len() == 0
+        self.origins.is_empty()
     }
 
     pub fn is_only_powered_by_single_engine_generator(&self) -> bool {
@@ -834,15 +839,12 @@ impl PotentialCollection {
     }
 
     fn consume_from(&mut self, identifier: ElectricalElementIdentifier, power: Power) {
-        match self.items.get_mut(&identifier) {
-            Some(potential) => {
-                let potential = potential.as_ref().borrow();
-                for origin in potential.origins() {
-                    let y = self.consumption_per_origin.entry(*origin).or_default();
-                    *y += power / potential.origin_count() as f64;
-                }
+        if let Some(potential) = self.items.get_mut(&identifier) {
+            let potential = potential.as_ref().borrow();
+            for origin in potential.origins() {
+                let y = self.consumption_per_origin.entry(*origin).or_default();
+                *y += power / potential.origin_count() as f64;
             }
-            None => {}
         }
     }
 

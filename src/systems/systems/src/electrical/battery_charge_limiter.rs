@@ -418,6 +418,7 @@ impl Closed {
         emergency_elec.is_active() && self.beyond_emergency_elec_closed_time_allowance()
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn should_open(
         &self,
         context: &UpdateContext,
