@@ -100,15 +100,18 @@ impl<T: Aircraft> SimulationTestBed<T> {
         test_bed.set_indicated_altitude(Length::new::<foot>(5000.));
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
         test_bed.set_on_ground(false);
+        test_bed.seed();
 
         test_bed
     }
 
-    /// Creates an instance seeded with the state found in the given element.
+    /// Creates an instance seeded with the starting state found in the given element.
     ///
-    /// By default the unseeded simulation will return 0.0 or false for any requested
-    /// variables. If this is a problem for your test, then use this function.
-    pub fn seed(&mut self) {
+    /// By default an unseeded simulation will return 0.0 or false for any requested
+    /// variables. This function sets simvars to the the initial programmed state
+    /// (e.g. `OnOffFaultPushButton::new_on` would be a push button which initially
+    /// is ON).
+    fn seed(&mut self) {
         let mut writer = SimulatorWriter::new(&mut self.reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
         self.simulation.accept(&mut visitor);

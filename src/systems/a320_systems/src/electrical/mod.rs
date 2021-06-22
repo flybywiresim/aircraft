@@ -2370,11 +2370,11 @@ mod a320_electrical_circuit_tests {
     }
     impl A320ElectricalTestBed {
         fn new() -> Self {
-            let mut test_bed =
-                SimulationTestBed::new(|electricity| A320ElectricalTestAircraft::new(electricity));
-            test_bed.seed();
-
-            Self { test_bed }
+            Self {
+                test_bed: SimulationTestBed::new(|electricity| {
+                    A320ElectricalTestAircraft::new(electricity)
+                }),
+            }
         }
 
         fn running_engine(mut self, number: usize) -> Self {

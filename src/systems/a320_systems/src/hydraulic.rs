@@ -1776,12 +1776,11 @@ mod tests {
         }
         impl A320HydraulicsTestBed {
             fn new() -> Self {
-                let mut test_bed = SimulationTestBed::new(|electricity| {
-                    A320HydraulicsTestAircraft::new(electricity)
-                });
-                test_bed.seed();
-
-                Self { test_bed }
+                Self {
+                    test_bed: SimulationTestBed::new(|electricity| {
+                        A320HydraulicsTestAircraft::new(electricity)
+                    }),
+                }
             }
 
             fn run_one_tick(self) -> Self {
