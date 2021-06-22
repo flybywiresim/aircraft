@@ -142,15 +142,19 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
     };
 
     const zoomin = () => {
-        const chart: any = document.getElementById('chart');
+        const chart :any = document.getElementById('chart');
         const currWidth = chart.clientWidth;
-        if (currWidth !== 2500) chart.style.width = `${currWidth + 100}px`;
+        if (currWidth === 2500) return false;
+
+        chart.style.width = `${currWidth + 100}px`;
     };
 
     const zoomout = () => {
         const chart :any = document.getElementById('chart');
         const currWidth = chart.clientWidth;
-        if (currWidth !== 100) chart.style.width = `${currWidth - 100}px`;
+        if (currWidth === 100) return false;
+
+        chart.style.width = `${currWidth - 100}px`;
     };
 
     return (
