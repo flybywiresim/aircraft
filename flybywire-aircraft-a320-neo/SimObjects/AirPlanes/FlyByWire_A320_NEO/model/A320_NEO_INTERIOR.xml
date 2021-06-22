@@ -1479,6 +1479,11 @@
                     <ANIM_WRAP>False</ANIM_WRAP>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_INCREASE</ANIMTIP_1>
+                    <MAX_VALUE>100</MAX_VALUE>
+                    <KNOB_TURN_SPEED>1</KNOB_TURN_SPEED>
+                    <WWISE_EVENT></WWISE_EVENT>
+                    <UPDATE_FREQUENCY>50</UPDATE_FREQUENCY>
+                    <UPDATE_DELAY>0.2</UPDATE_DELAY>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
