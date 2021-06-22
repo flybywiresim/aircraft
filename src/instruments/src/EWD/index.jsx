@@ -57,7 +57,7 @@ function EWD() {
 
     switch (state) {
     case 'DEFAULT':
-        if (getSimVar('L:A32NX_COLD_AND_DARK_SPAWN')) {
+        if (getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum') === 0) {
             setState('OFF');
         } else {
             setState('IDLE');
