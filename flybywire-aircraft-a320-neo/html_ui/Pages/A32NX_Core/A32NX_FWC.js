@@ -442,10 +442,12 @@ class A32NX_FWC {
         if (!isLandingGearLockedDown && radioHeight < 750 && !(this.flightPhase === 3 || this.flightPhase === 4 || this.flightPhase === 5)) {
             SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
 
-            // Condition 1. Both Engine N1 RPM lower than 75%
+            // Condition 1. Both Engine N1 RPM lower than 75% and throttle is not on TOGA position.
             const eng1N1 = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent");
             const eng2N1 = SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent");
-            if (eng1N1 < 75 && eng2N1 < 75) {
+            const eng1TogaPosition = SimVar.GetSimVarValue("L:A32NX_3D_THROTTLE_LEVER_POSITION_1", "Number") === 100 ? true : false;
+            const eng2TogaPosition = SimVar.GetSimVarValue("L:A32NX_3D_THROTTLE_LEVER_POSITION_2", "Number") === 100 ? true : false;
+            if (eng1N1 < 75 && eng2N1 < 75 && (!eng1TogaPosition && !eng2TogaPosition)) {
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
                 return;
             }
