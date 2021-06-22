@@ -57,11 +57,11 @@ class A32NX_FWC {
         // ESDL 1. 0.320
         this.memoLdgInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
 
-        // master warning & caution buttons
+        // Master Warning & Caution
         this.warningPressed = false;
         this.cautionPressed = false;
 
-        // altitude warning
+        // Altitude Warning
         this.previousTargetAltitude = NaN;
         this._wasBellowThreshold = false;
         this._wasAboveThreshold = false;
@@ -77,6 +77,7 @@ class A32NX_FWC {
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
         this._updateAltitudeWarning();
+        this._autothrustDisconnect(_deltaTime);
     }
 
     _resetPulses() {
@@ -102,12 +103,18 @@ class A32NX_FWC {
         const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
         SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
 
-        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
+        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN", "Bool")) {
             this.warningPressed = true;
+            const ldgWarning = SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool");
+            const overspeedWarning = SimVar.GetSimVarValue("L:A32NX_OVERSPEED", "Bool");
+
+            if (!ldgWarning && !overspeedWarning) {
+                SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
+            }
         } else {
             this.warningPressed = false;
         }
-        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_R", "Bool")) {
+        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT", "Bool")) {
             this.cautionPressed = true;
         } else {
             this.cautionPressed = false;
@@ -419,5 +426,17 @@ class A32NX_FWC {
             }
         }
         return true;
+    }
+
+    _updateOverspeedWarning() {
+        if (Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4)) {
+            SimVar.SetSimVarValue("L:A32NX_OVERSPEED", "Bool", true);
+        } else {
+            SimVar.SetSimVarValue("L:A32NX_OVERSPEED", "Bool", false);
+        }
+    }
+
+    _autothrustDisconnect(_deltaTime) {
+
     }
 }

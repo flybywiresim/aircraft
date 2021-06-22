@@ -525,6 +525,30 @@ var A320_Neo_UpperECAM;
                             },
                         ]
                     },
+                    {
+                        name: "AUTO FLT",
+                        messages: [
+                            {
+                                message: "A/THR OFF",
+                                level: 2,
+                                alwaysShowCategory: true,
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool")
+                                ),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "THR LEVERS",
+                                        action: "MOVE",
+                                        isCompleted: () => {
+                                            return this.currentThrPosition1 !== this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:1", "number") &&
+                                                this.currentThrPosition2 !== this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:2", "number");
+                                        }
+                                    }
+                                ]
+                            },
+                        ]
+                    },
                     //Ground
                     {
                         name: "ENG 1 FIRE",
@@ -1230,6 +1254,14 @@ var A320_Neo_UpperECAM;
                         isActive: () => this.leftEcamMessagePanel.landASAP === 2 && !Simplane.getIsGrounded()
                     },
                     {
+                        message: "A/THR OFF",
+                        style: "InfoCaution",
+                        important: true,
+                        isActive: () => {
+                            return this.getCachedSimVar("L:A32NX_AUTOTHRUST_DISCONNECT", "Bool");
+                        }
+                    },
+                    {
                         message: "T.O. INHIBIT",
                         style: "InfoSpecial",
                         important: true,
@@ -1828,6 +1860,14 @@ var A320_Neo_UpperECAM;
             const notDet1 = this.iceNotDetTimer1.write(isAnyAntiIceOn, _deltaTime);
             this.iceNotDetTimer2.write(!isActivelyIcing && notDet1, _deltaTime);
 
+        }
+
+        updateThrottlePosition() {
+            const warningStatus = this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool");
+            if (!warningStatus) {
+                this.currentThrPosition1 = this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:1", "Number");
+                this.currentThrPosition2 = this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:2", "Number");
+            }
         }
 
         getInfoPanelManager() {
@@ -2876,7 +2916,7 @@ var A320_Neo_UpperECAM;
                             if (!_category) {
                                 break;
                             }
-                            if (this.activeCategories.includes(_category)) {
+                            if (this.activeCategories.includes(_category) && !_alwaysShowCategory) {
                                 for (var i = 0; i < _category.length; i++) {
                                     msgOutput = "&nbsp;" + msgOutput;
                                 }
@@ -2941,7 +2981,7 @@ var A320_Neo_UpperECAM;
                         }
                         if (!this.clearedMessages.includes(message.id)) {
                             this.hasActiveFailures = true;
-                            if (message.level == 3) {
+                            if (message.level == 3 && !message.shouldNotCRCPlaying) {
                                 this.hasWarnings = true;
                             }
                             if (message.level == 2) {
