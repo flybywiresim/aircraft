@@ -105,6 +105,8 @@ var A320_Neo_UpperECAM;
             this.iceNotDetTimer1 = new NXLogic_ConfirmNode(60);
             this.iceNotDetTimer2 = new NXLogic_ConfirmNode(130);
             this.predWsMemo = new NXLogic_MemoryNode(true);
+            this.currentThrPosition1 = 0;
+            this.currentThrPosition2 = 0;
         }
         get templateID() {
             return "UpperECAMTemplate";
@@ -533,7 +535,7 @@ var A320_Neo_UpperECAM;
                                 level: 2,
                                 alwaysShowCategory: true,
                                 isActive: () => (
-                                    this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool")
+                                    this.getCachedSimVar("L:A32NX_AUTOTHRUST_DISCONNECT_BY_FCU", "Bool")
                                 ),
                                 actions: [
                                     {
@@ -541,8 +543,8 @@ var A320_Neo_UpperECAM;
                                         message: "THR LEVERS",
                                         action: "MOVE",
                                         isCompleted: () => {
-                                            return this.currentThrPosition1 !== this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:1", "number") &&
-                                                this.currentThrPosition2 !== this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:2", "number");
+                                            return this.currentThrPosition1 !== this.getCachedSimVar("L:A32NX_3D_THROTTLE_LEVER_POSITION_1", "number") &&
+                                                this.currentThrPosition2 !== this.getCachedSimVar("L:A32NX_3D_THROTTLE_LEVER_POSITION_2", "number");
                                         }
                                     }
                                 ]
@@ -1258,7 +1260,7 @@ var A320_Neo_UpperECAM;
                         style: "InfoCaution",
                         important: true,
                         isActive: () => {
-                            return this.getCachedSimVar("L:A32NX_AUTOTHRUST_DISCONNECT", "Bool");
+                            return this.getCachedSimVar("L:A32NX_AUTOTHRUST_DISCONNECT_BY_RED", "Bool");
                         }
                     },
                     {
@@ -1663,6 +1665,7 @@ var A320_Neo_UpperECAM;
 
             this.updateInhibitMessages(_deltaTime);
             this.updateIcing(_deltaTime);
+            this.updateThrottlePosition();
 
             const memosInhibited = this.leftEcamMessagePanel.hasWarnings || this.leftEcamMessagePanel.hasCautions;
             const showTOMemo = SimVar.GetSimVarValue("L:A32NX_FWC_TOMEMO", "Bool") && !memosInhibited;
@@ -1863,10 +1866,10 @@ var A320_Neo_UpperECAM;
         }
 
         updateThrottlePosition() {
-            const warningStatus = this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool");
-            if (!warningStatus) {
-                this.currentThrPosition1 = this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:1", "Number");
-                this.currentThrPosition2 = this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:2", "Number");
+            const thrustStatus = this.getCachedSimVar("L:A32NX_AUTOTHRUST_STATUS", "Bool");
+            if (thrustStatus !== 0) {
+                this.currentThrPosition1 = this.getCachedSimVar("L:A32NX_3D_THROTTLE_LEVER_POSITION_1", "Number");
+                this.currentThrPosition2 = this.getCachedSimVar("L:A32NX_3D_THROTTLE_LEVER_POSITION_2", "Number");
             }
         }
 

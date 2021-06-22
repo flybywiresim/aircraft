@@ -67,6 +67,10 @@ class A32NX_FWC {
         this._wasAboveThreshold = false;
         this._wasInRange = false;
         this._wasReach200ft = false;
+
+        // Autothrust
+        this.autothrottleRed = true;
+        this.autothrustTimer = new NXLogic_ConfirmNode(3, false);
     }
 
     update(_deltaTime, _core) {
@@ -437,6 +441,39 @@ class A32NX_FWC {
     }
 
     _autothrustDisconnect(_deltaTime) {
+        const autothrustStatus = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_STATUS", "Enum");
+        const autothrustRed = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_DISCONNECT_BY_RED", "Bool");
+        const autothrustTimer = this.autothrustTimer.write(autothrustStatus, _deltaTime);
 
+        if (autothrustRed) {
+            SimVar.SetSimVarValue("L:A32NX_Master_Caution", "Bool", true);
+            if (autothrustTimer === 0 || this.cautionPressed) {
+                SimVar.SetSimVarValue("L:A32NX_AUTOTHRUST_DISCONNECT_BY_RED", "Bool", false);
+                SimVar.SetSimVarValue("L:A32NX_Master_Caution", "Bool", false);
+            }
+        }
+        if (autothrustStatus > 0) {
+            SimVar.SetSimVarValue("L:A32NX_AUTOTHRUST_DISCONNECT_BY_RED", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_AUTOTHRUST_DISCONNECT_BY_FCU", "Bool", false);
+            this.autothrottleRed = false;
+            return;
+        }
+
+        const autothrustRedButton = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_DISCONNECT", "Bool");
+        const throttle1 = SimVar.GetSimVarValue("L:A32NX_3D_THROTTLE_LEVER_POSITION_1", "Number");
+        const throttle2 = SimVar.GetSimVarValue("L:A32NX_3D_THROTTLE_LEVER_POSITION_2", "Number");
+        const ra = Simplane.getAltitudeAboveGround();
+
+        if (autothrustRedButton && !autothrustStatus) {
+            SimVar.SetSimVarValue("L:A32NX_AUTOTHRUST_DISCONNECT_BY_RED", "Bool", true);
+            this.autothrottleRed = true;
+        }
+        if (throttle1 === 25 && throttle2 === 25 && ra >= 50 && !this.autothrottleRed) {
+            SimVar.SetSimVarValue("L:A32NX_AUTOTHRUST_DISCONNECT_BY_RED", "Bool", true);
+            this.autothrottleRed = true;
+        }
+        if (!autothrustStatus && !this.autothrottleRed) {
+            SimVar.SetSimVarValue("L:A32NX_AUTOTHRUST_DISCONNECT_BY_FCU", "Bool", true);
+        }
     }
 }
