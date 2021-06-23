@@ -18,7 +18,7 @@ use systems::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
-    electrical::{consumption::SuppliedPower, ElectricalSystem, ExternalPowerSource},
+    electrical::{Electricity, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     landing_gear::LandingGear,
     pressurization::{Pressurization, PressurizationOverheadPanel},
@@ -47,10 +47,11 @@ pub struct A320 {
     pressurization_overhead: PressurizationOverheadPanel,
 }
 impl A320 {
-    pub fn new() -> A320 {
+    pub fn new(electricity: &mut Electricity) -> A320 {
         A320 {
             apu: AuxiliaryPowerUnitFactory::new_aps3200(
                 1,
+                electricity,
                 APU_START_MOTOR_BUS_TYPE,
                 ElectricalBusType::DirectCurrentBattery,
                 ElectricalBusType::DirectCurrentBattery,
@@ -64,9 +65,9 @@ impl A320 {
             engine_1: LeapEngine::new(1),
             engine_2: LeapEngine::new(2),
             engine_fire_overhead: EngineFireOverheadPanel::new(),
-            electrical: A320Electrical::new(),
+            electrical: A320Electrical::new(electricity),
             power_consumption: A320PowerConsumption::new(),
-            ext_pwr: ExternalPowerSource::new(),
+            ext_pwr: ExternalPowerSource::new(electricity),
             hydraulic: A320Hydraulic::new(),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(),
             landing_gear: LandingGear::new(),
@@ -75,13 +76,12 @@ impl A320 {
         }
     }
 }
-impl Default for A320 {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 impl Aircraft for A320 {
-    fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+    fn update_before_power_distribution(
+        &mut self,
+        context: &UpdateContext,
+        electricity: &mut Electricity,
+    ) {
         self.apu.update_before_electrical(
             context,
             &self.apu_overhead,
@@ -98,6 +98,7 @@ impl Aircraft for A320 {
 
         self.electrical.update(
             context,
+            electricity,
             &self.ext_pwr,
             &self.electrical_overhead,
             &self.emergency_electrical_overhead,
@@ -110,7 +111,7 @@ impl Aircraft for A320 {
         );
 
         self.electrical_overhead
-            .update_after_electrical(&self.electrical);
+            .update_after_electrical(&self.electrical, electricity);
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
     }
@@ -140,10 +141,6 @@ impl Aircraft for A320 {
         self.hydraulic_overhead.update(&self.hydraulic);
 
         self.power_consumption.update(context);
-    }
-
-    fn get_supplied_power(&mut self) -> SuppliedPower {
-        self.electrical.get_supplied_power()
     }
 }
 impl SimulationElement for A320 {

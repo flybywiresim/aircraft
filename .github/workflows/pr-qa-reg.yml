@@ -1,6 +1,6 @@
-name: Register Quality Assurance
+name: project automation
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - ready_for_review
@@ -11,7 +11,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: ready for code review
-        uses: takanabe/github-actions-automate-projects@v0.0.2
+        uses: docker://misterchocker/project-automation:sandbox
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_PROJECT_URL: https://github.com/flybywiresim/a32nx/projects/4

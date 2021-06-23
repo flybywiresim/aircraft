@@ -8,8 +8,8 @@ class CDU_OPTIONS_REALISM {
             ["A32NX OPTIONS REALISM"],
             ["\xa0ADIRS", "DMC SELF-TEST\xa0"],
             ["<ALIGN TIME", `{small}[S]{end}{cyan}${storedDMCTestTime}*{end}`],
-            [""],
-            [""],
+            ["\xa0MCDU"],
+            ["<KEYBOARD INPUT"],
             [""],
             [""],
             [""],
@@ -22,6 +22,9 @@ class CDU_OPTIONS_REALISM {
 
         mcdu.onLeftInput[0] = () => {
             CDU_OPTIONS_ADIRS.ShowPage(mcdu);
+        };
+        mcdu.onLeftInput[1] = () => {
+            CDU_OPTIONS_MCDU_KB.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[0] = () => {
@@ -36,6 +39,7 @@ class CDU_OPTIONS_REALISM {
             } else {
                 NXDataStore.set("CONFIG_SELF_TEST_TIME", value);
             }
+            mcdu.clearFocus();
             CDU_OPTIONS_REALISM.ShowPage(mcdu);
         };
 
