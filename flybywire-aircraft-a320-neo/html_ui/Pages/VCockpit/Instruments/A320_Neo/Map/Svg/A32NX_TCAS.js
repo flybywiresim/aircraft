@@ -1,5 +1,3 @@
-const { delay } = require("lodash");
-
 const CONSTANTS = {
     MIN_VS: -6000,
     MAX_VS: 6000,
@@ -589,6 +587,7 @@ const raVariants = {
 
 class A32NX_TCAS_Manager {
     constructor() {
+        console.log("TCAS: in constructor beginning");
         this.TrafficUpdateTimer = 0.2;
         this.TrafficAircraft = [];
         this.sensitivityLevel = 1;
@@ -606,10 +605,12 @@ class A32NX_TCAS_Manager {
         this.secondsSinceLastTA = 100;
         this.secondsSinceLastRA = 100;
         this.secondsSinceStartOfRA = 0;
+        console.log("TCAS: in constructor ending");
     }
 
     // This is called from the MFD JS file, because the MapInstrument doesn't have a deltaTime
     update(_deltaTime) {
+        console.log("TCAS: in update beginning");
         const TCASSwitchPos = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "number");
         const TransponderStatus = SimVar.GetSimVarValue("TRANSPONDER STATE:1", "number");
         const TCASThreatSetting = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Traffic_Position", "number");
@@ -716,8 +717,11 @@ class A32NX_TCAS_Manager {
             if (traffic.RaTAU < TaRaTau[1] || traffic.slantDistance < TaRaDMOD[1]) {
                 rangeIntrusionLevel = 3;
             } else if (traffic.TaTAU < TaRaTau[0] || traffic.slantDistance < TaRaDMOD[0]) {
+                console.log("TCAS: RANGE INTRUSION TA!");
                 rangeIntrusionLevel = 2;
             } else if (horizontalDistance < 6) {
+                console.log("TAU: ", traffic.TaTAU, "; Slant distance: ", traffic.slantDistance);
+                console.log("Desired TAU: ", TaRaTau[0], "; Desired DMOD: ", TaRaDMOD[0]);
                 rangeIntrusionLevel = 1;
             } else {
                 rangeIntrusionLevel = 0;
@@ -726,6 +730,7 @@ class A32NX_TCAS_Manager {
             if (traffic.verticalTAU < TaRaTau[1] || Math.abs(traffic.relativeAlt) < TaRaZTHR[1]) {
                 verticalIntrusionLevel = 3;
             } else if (traffic.verticalTAU < TaRaTau[0] || Math.abs(traffic.relativeAlt) < TaRaZTHR[0]) {
+                console.log("TCAS: VERTICAL INTRUSION TA!");
                 verticalIntrusionLevel = 2;
             } else if (Math.abs(traffic.relativeAlt) < 1200) {
                 verticalIntrusionLevel = 1;
@@ -736,8 +741,10 @@ class A32NX_TCAS_Manager {
             traffic.intrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
         }
 
+        // console.log("TCAS: in update near end");
         const ra = this.raLogic(_deltaTime, vertSpeed, altitude, radioAltitude, ALIM, false); // Placeholder value for onlyPreventative
         this.updateAdvisoryState(_deltaTime, ra);
+        // console.log("TCAS: in update end");
     }
 
     /**
@@ -746,10 +753,10 @@ class A32NX_TCAS_Manager {
     updateAdvisoryState(_deltaTime, _ra) {
         const taThreatCount = this.TrafficAircraft.reduce((acc, aircraft) => {
             return acc + (aircraft.intrusionLevel === 2 ? 1 : 0);
-        });
+        }, 0);
         const raThreatCount = this.TrafficAircraft.reduce((acc, aircraft) => {
             return acc + (aircraft.intrusionLevel === 3 ? 1 : 0);
-        });
+        }, 0);
 
         switch (this.advisoryState) {
             case tcasState.TA:
@@ -1211,7 +1218,7 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         const combinedVertSpeed = selfVertSpeed - this.vertSpeed;
 
         this.TaTAU = (this.slantDistance - TaRaDMOD[0]) / this.closureRate * 3600;
-        this.RaTAU = (this.slantDistance = TaRaDMOD[1]) / this.closureRate * 3600;
+        this.RaTAU = (this.slantDistance - TaRaDMOD[1]) / this.closureRate * 3600;
         this.verticalTAU = this.relativeAlt / combinedVertSpeed * 60;
 
         // check if we are moving away from target. If yes, set TAUs to infinity
