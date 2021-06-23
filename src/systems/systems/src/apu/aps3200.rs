@@ -1,7 +1,8 @@
 use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
 use crate::{
     electrical::{
-        ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
+        ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
+        ElectricalStateWriter, ElectricitySource, Potential, ProvideFrequency, ProvideLoad,
         ProvidePotential,
     },
     shared::{
@@ -540,6 +541,7 @@ fn calculate_towards_ambient_egt(
 /// APS3200 APU Generator
 pub struct Aps3200ApuGenerator {
     number: usize,
+    identifier: ElectricalElementIdentifier,
     n: Ratio,
     writer: ElectricalStateWriter,
     output_frequency: Frequency,
@@ -550,9 +552,13 @@ pub struct Aps3200ApuGenerator {
 impl Aps3200ApuGenerator {
     const APU_GEN_POWERED_N: f64 = 84.;
 
-    pub fn new(number: usize) -> Aps3200ApuGenerator {
+    pub fn new(
+        number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Aps3200ApuGenerator {
         Aps3200ApuGenerator {
             number,
+            identifier: identifier_provider.next(),
             n: Ratio::new::<percent>(0.),
             writer: ElectricalStateWriter::new(&format!("APU_GEN_{}", number)),
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -641,10 +647,23 @@ impl ApuGenerator for Aps3200ApuGenerator {
 provide_potential!(Aps3200ApuGenerator, (110.0..=120.0));
 provide_frequency!(Aps3200ApuGenerator, (390.0..=410.0));
 provide_load!(Aps3200ApuGenerator);
-impl PotentialSource for Aps3200ApuGenerator {
-    fn output(&self) -> Potential {
+impl ElectricalElement for Aps3200ApuGenerator {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn output_identifier(&self) -> ElectricalElementIdentifier {
+        self.identifier
+    }
+
+    fn is_conductive(&self) -> bool {
+        true
+    }
+}
+impl ElectricitySource for Aps3200ApuGenerator {
+    fn output_potential(&self) -> Potential {
         if self.should_provide_output() {
-            Potential::single(
+            Potential::new(
                 PotentialOrigin::ApuGenerator(self.number),
                 self.output_potential,
             )
@@ -658,7 +677,11 @@ impl SimulationElement for Aps3200ApuGenerator {
         self.writer.write_alternating_with_load(self, writer);
     }
 
-    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+    fn process_power_consumption_report<T: PowerConsumptionReport>(
+        &mut self,
+        _: &UpdateContext,
+        report: &T,
+    ) {
         self.output_potential = if self.should_provide_output() {
             self.calculate_potential(self.n)
         } else {
@@ -711,11 +734,11 @@ impl SimulationElement for Aps3200StartMotor {
         self.is_powered = buses.is_powered(self.powered_by);
     }
 
-    fn consume_power<T: ConsumePower>(&mut self, consumption: &mut T) {
+    fn consume_power<T: ConsumePower>(&mut self, context: &UpdateContext, consumption: &mut T) {
         if !self.is_powered {
             self.powered_since = Duration::from_secs(0);
         } else {
-            self.powered_since += consumption.delta();
+            self.powered_since += context.delta();
 
             const APU_W_CONST: f64 = 9933.453168671222;
             const APU_W_X: f64 = -1319.1431831932327;
@@ -750,34 +773,40 @@ mod apu_generator_tests {
 
     use crate::{
         apu::tests::{test_bed, test_bed_with},
-        simulation::test::SimulationTestBed,
+        shared,
+        simulation::test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBed},
     };
 
     use super::*;
 
     #[test]
     fn starts_without_output() {
-        assert!(apu_generator().is_unpowered());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
+
+        assert!(!test_bed
+            .query_element_elec(|e, elec| { shared::PowerConsumptionReport::is_powered(elec, e) }));
     }
 
     #[test]
     fn when_apu_running_provides_output() {
-        let mut generator = apu_generator();
-        let mut test_bed = SimulationTestBed::new();
-        update_below_threshold(&mut test_bed, &mut generator);
-        update_above_threshold(&mut test_bed, &mut generator);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
 
-        assert!(generator.is_powered());
+        update_below_threshold(&mut test_bed);
+        update_above_threshold(&mut test_bed);
+
+        assert!(test_bed
+            .query_element_elec(|e, elec| { shared::PowerConsumptionReport::is_powered(elec, e) }));
     }
 
     #[test]
     fn when_apu_shutdown_provides_no_output() {
-        let mut generator = apu_generator();
-        let mut test_bed = SimulationTestBed::new();
-        update_above_threshold(&mut test_bed, &mut generator);
-        update_below_threshold(&mut test_bed, &mut generator);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
 
-        assert!(generator.is_unpowered());
+        update_above_threshold(&mut test_bed);
+        update_below_threshold(&mut test_bed);
+
+        assert!(!test_bed
+            .query_element_elec(|e, elec| { shared::PowerConsumptionReport::is_powered(elec, e) }));
     }
 
     #[test]
@@ -927,14 +956,14 @@ mod apu_generator_tests {
             .released_apu_fire_pb()
             .run(Duration::from_secs(1));
 
-        assert!(test_bed.generator_output().is_unpowered());
+        assert!(test_bed.generator_is_unpowered());
     }
 
     #[test]
     fn writes_its_state() {
-        let mut apu_gen = apu_generator();
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.run_without_update(&mut apu_gen);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
+
+        test_bed.run();
 
         assert!(test_bed.contains_key("ELEC_APU_GEN_1_POTENTIAL"));
         assert!(test_bed.contains_key("ELEC_APU_GEN_1_POTENTIAL_NORMAL"));
@@ -944,25 +973,25 @@ mod apu_generator_tests {
         assert!(test_bed.contains_key("ELEC_APU_GEN_1_LOAD_NORMAL"));
     }
 
-    fn apu_generator() -> Aps3200ApuGenerator {
-        Aps3200ApuGenerator::new(1)
+    fn apu_generator(
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+    ) -> Aps3200ApuGenerator {
+        Aps3200ApuGenerator::new(1, identifier_provider)
     }
 
-    fn update_above_threshold(
-        test_bed: &mut SimulationTestBed,
-        generator: &mut Aps3200ApuGenerator,
-    ) {
-        test_bed.run_before_power_distribution(generator, |gen, _| {
-            gen.update(Ratio::new::<percent>(100.), false);
+    fn update_above_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Aps3200ApuGenerator>>) {
+        test_bed.set_update_before_power_distribution(|generator, _, electricity| {
+            generator.update(Ratio::new::<percent>(100.), false);
+            electricity.supplied_by(generator);
         });
+        test_bed.run();
     }
 
-    fn update_below_threshold(
-        test_bed: &mut SimulationTestBed,
-        generator: &mut Aps3200ApuGenerator,
-    ) {
-        test_bed.run_before_power_distribution(generator, |gen, _| {
-            gen.update(Ratio::new::<percent>(0.), false);
+    fn update_below_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Aps3200ApuGenerator>>) {
+        test_bed.set_update_before_power_distribution(|generator, _, electricity| {
+            generator.update(Ratio::new::<percent>(0.), false);
+            electricity.supplied_by(generator);
         });
+        test_bed.run();
     }
 }

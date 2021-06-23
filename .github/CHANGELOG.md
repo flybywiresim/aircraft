@@ -122,6 +122,8 @@
 1. [AOC] Reworked airport handling on AOC Weather Request Page - @MisterChocker (Leon)
 1. [SOUND] Added blue and yellow electric hydraulic pump sounds - @hotshotp (Boris)
 1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
+1. [ELEC] Improve electrical system implementation to allow for implementing advanced scenarios - @davidwalschots (David Walschots)
+1. [MCDU] MCDU accepts direct keyboard input (enabled by new option in A32NX Realism Settings). - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
