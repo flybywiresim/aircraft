@@ -14,6 +14,7 @@ clang++ \
   -Wno-macro-redefined \
   --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
+  -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
   -D_LIBCPP_HAS_NO_THREADS \

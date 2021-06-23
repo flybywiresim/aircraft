@@ -80,6 +80,7 @@
 1. [MCDU] Fixed sometimes bad error message on crz fl entry - @MisterChocker (Leon)
 1. [ECP] Corrected EMER CANC ECAM button emissive behavior - @ImenesFBW (Imenes)
 1. [ECAM] Change flight control page to use hydraulic simulation vars - @lukecologne (luke)
+1. [HYD] Blue electric pump override button changed to momentary latched - @Crocket63 (crocket)
 1. [LIGHTS] Add OVHD ANN LT DIM functionality - @bouveng (Johan Bouveng)
 1. [PFD] Add baro setting flash when passing TA/TL - @lukecologne (luke)
 1. [FLIGHT MODEL] Fix flap transition bounce - @donstim (donbikes#4084)
@@ -122,6 +123,8 @@
 1. [AOC] Reworked airport handling on AOC Weather Request Page - @MisterChocker (Leon)
 1. [SOUND] Added blue and yellow electric hydraulic pump sounds - @hotshotp (Boris)
 1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
+1. [ELEC] Improve electrical system implementation to allow for implementing advanced scenarios - @davidwalschots (David Walschots)
+1. [MCDU] MCDU accepts direct keyboard input (enabled by new option in A32NX Realism Settings). - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
