@@ -6,9 +6,8 @@ use std::{pin::Pin, time::Duration};
 use systems::simulation::Simulation;
 use systems_wasm::{
     electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, HandleMessage,
-    MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter, MsfsSimulationHandler, PrePostTick,
-    ReadWrite, SimulatorAspect,
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader,
+    MsfsNamedVariableReaderWriter, MsfsSimulationHandler, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
@@ -302,8 +301,7 @@ impl Brakes {
         }
     }
 }
-impl SimulatorAspect for Brakes {}
-impl ReadWrite for Brakes {
+impl SimulatorAspect for Brakes {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
             "PARK_BRAKE_LEVER_POS" => Some(self.is_park_brake_set()),
@@ -326,8 +324,7 @@ impl ReadWrite for Brakes {
             _ => false,
         }
     }
-}
-impl HandleMessage for Brakes {
+
     fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
         match message {
             SimConnectRecv::Event(e) => {
@@ -360,8 +357,7 @@ impl HandleMessage for Brakes {
             _ => false,
         }
     }
-}
-impl PrePostTick for Brakes {
+
     fn pre_tick(&mut self, delta: Duration) {
         self.synchronise_with_sim();
         self.update_keyboard_inputs(delta);

@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 use std::error::Error;
 
+use crate::SimulatorAspect;
 use msfs::legacy::execute_calculator_code;
 use msfs::legacy::AircraftVariable;
 use systems::shared::to_bool;
-
-use crate::{HandleMessage, PrePostTick, ReadWrite, SimulatorAspect};
 
 pub struct MsfsElectricalBuses {
     connections: HashMap<String, ElectricalBusConnection>,
@@ -24,8 +23,7 @@ impl MsfsElectricalBuses {
         );
     }
 }
-impl SimulatorAspect for MsfsElectricalBuses {}
-impl ReadWrite for MsfsElectricalBuses {
+impl SimulatorAspect for MsfsElectricalBuses {
     fn write(&mut self, name: &str, value: f64) -> bool {
         if name.starts_with("ELEC_") && name.ends_with("_BUS_IS_POWERED") {
             if let Some(connection) = self.connections.get_mut(name) {
@@ -38,8 +36,6 @@ impl ReadWrite for MsfsElectricalBuses {
         false
     }
 }
-impl HandleMessage for MsfsElectricalBuses {}
-impl PrePostTick for MsfsElectricalBuses {}
 
 struct ElectricalBusConnection {
     connected: bool,
@@ -105,8 +101,7 @@ impl MsfsAuxiliaryPowerUnit {
         execute_calculator_code::<()>("1 (>K:APU_OFF_SWITCH, Number)");
     }
 }
-impl SimulatorAspect for MsfsAuxiliaryPowerUnit {}
-impl ReadWrite for MsfsAuxiliaryPowerUnit {
+impl SimulatorAspect for MsfsAuxiliaryPowerUnit {
     fn write(&mut self, name: &str, value: f64) -> bool {
         if name == self.is_available_variable_name {
             let is_available = to_bool(value);
@@ -127,5 +122,3 @@ impl ReadWrite for MsfsAuxiliaryPowerUnit {
         false
     }
 }
-impl HandleMessage for MsfsAuxiliaryPowerUnit {}
-impl PrePostTick for MsfsAuxiliaryPowerUnit {}
