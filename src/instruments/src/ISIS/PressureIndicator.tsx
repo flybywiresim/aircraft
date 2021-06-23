@@ -8,16 +8,12 @@ enum BaroMode {
 
 export const PressureIndicator: React.FC = () => {
     const [baroMode] = useSimVar('L:A32NX_ISIS_BARO_MODE', 'enum');
-    const [qnh] = useSimVar('A:KOHLSMAN SETTING MB:2', 'millibars');
+    const [hpaQnh] = useSimVar('A:KOHLSMAN SETTING MB:2', 'millibars');
+    const [inHgQnh] = useSimVar('A:KOHLSMAN SETTING MB:2', 'inHg');
 
-    if (baroMode === BaroMode.STD) {
-        return <text x={256} y={466} width="100%" textAnchor="middle" fontSize={36} fill="cyan">STD</text>;
-    }
     return (
         <text x={256} y={466} width="100%" textAnchor="middle" fontSize={36} fill="cyan">
-            {Math.round(qnh)}
-            /
-            {((qnh * 0.03).toFixed(2))}
+            {baroMode === BaroMode.STD ? 'STD' : `${Math.round(hpaQnh)}/${inHgQnh.toFixed(2)}`}
         </text>
     );
 };
