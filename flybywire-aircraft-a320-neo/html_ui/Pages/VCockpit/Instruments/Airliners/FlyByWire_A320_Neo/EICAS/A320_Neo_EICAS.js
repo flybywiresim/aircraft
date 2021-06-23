@@ -178,11 +178,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") != 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") != 0;
 
-        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer <= 0) || (currFlightPhase == FmgcFlightPhases.CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
+        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase === FmgcFlightPhases.CLIMB || currFlightPhase === FmgcFlightPhases.CRUISE) && this.CrzCondTimer <= 0) || ((currFlightPhase === FmgcFlightPhases.CLIMB || currFlightPhase === FmgcFlightPhases.CRUISE) && !spoilerOrFlapsDeployed && !ToPowerSet);
 
-        if ((currFlightPhase != FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
+        if ((currFlightPhase !== FmgcFlightPhases.CLIMB || currFlightPhase === FmgcFlightPhases.CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer = 60;
-        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer >= 0) {
+        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase === FmgcFlightPhases.CLIMB || currFlightPhase === FmgcFlightPhases.CRUISE) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer -= deltaTime / 1000;
         }
 
