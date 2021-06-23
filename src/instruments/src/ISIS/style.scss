@@ -1,5 +1,13 @@
 @import "../Common/definitions";
 
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/fonts/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 .isis-svg {
   position: absolute;
   width: 512px;
@@ -10,11 +18,33 @@
   font-family: "Ecam", monospace !important;
 }
 
-
 .sky {
   fill: #0698ff;
 }
 
 .earth {
   fill: #9c480c;
+}
+
+.FontLarge {
+  font-size: 52px;
+}
+
+.FontLargest {
+  font-size: 56px;
+}
+
+.MiddleAlign {
+  text-align: center;
+  text-anchor: middle;
+}
+
+.Green {
+  stroke: $display-green;
+  fill: none;
+}
+
+text.Green {
+  fill: $display-green;
+  stroke: none;
 }

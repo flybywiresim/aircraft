@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
-import { render } from '../Common';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import { ArtificialHorizon } from './ArtificialHorizon'
+import { render } from '../Common';
+import { ArtificialHorizon } from './ArtificialHorizon';
 import { BugSetup } from './BugSetup';
 
 import './style.scss';
@@ -29,14 +29,13 @@ const ISISDisplay: React.FC = () => {
         return (
             <svg className="isis-svg" version="1.1" viewBox="0 0 512 512">
                 {{
-                    'AHI': <ArtificialHorizon />,
-                    'BUG': <BugSetup />
+                    AHI: <ArtificialHorizon />,
+                    BUG: <BugSetup />,
                 }[mode]}
             </svg>
         );
-    } else {
-        return <></>;
     }
+    return <></>;
 };
 
 render(<ISISDisplay />);
