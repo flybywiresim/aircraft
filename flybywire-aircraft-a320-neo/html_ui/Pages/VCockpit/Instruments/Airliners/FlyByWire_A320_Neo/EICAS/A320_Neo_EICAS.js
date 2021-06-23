@@ -176,13 +176,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
         const apuAvailable = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
-        const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") != 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") != 0;
+        const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") !== 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") !== 0;
 
-        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase === FmgcFlightPhases.CLIMB || currFlightPhase === FmgcFlightPhases.CRUISE) && this.CrzCondTimer <= 0) || ((currFlightPhase === FmgcFlightPhases.CLIMB || currFlightPhase === FmgcFlightPhases.CRUISE) && !spoilerOrFlapsDeployed && !ToPowerSet);
+        //TODO: currently uses FMC flight phases, however should be using FWC phases (1-10), which are not implemented yet. Refactor with state machine for proper handling.
+        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase > FmgcFlightPhases.TAKEOFF) && this.CrzCondTimer <= 0) || ((currFlightPhase > FmgcFlightPhases.TAKEOFF) && !spoilerOrFlapsDeployed && !ToPowerSet);
 
         if ((currFlightPhase !== FmgcFlightPhases.CLIMB || currFlightPhase === FmgcFlightPhases.CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer = 60;
-        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase === FmgcFlightPhases.CLIMB || currFlightPhase === FmgcFlightPhases.CRUISE) && this.CrzCondTimer >= 0) {
+        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase > FmgcFlightPhases.TAKEOFF) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer -= deltaTime / 1000;
         }
 
