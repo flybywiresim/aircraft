@@ -122,6 +122,7 @@
 1. [AOC] Reworked airport handling on AOC Weather Request Page - @MisterChocker (Leon)
 1. [SOUND] Added blue and yellow electric hydraulic pump sounds - @hotshotp (Boris)
 1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
+1. [ISIS] Implement automatic brightness adjustment for standby instrument - @BlueberryKing (BlueberryKing#6641)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
