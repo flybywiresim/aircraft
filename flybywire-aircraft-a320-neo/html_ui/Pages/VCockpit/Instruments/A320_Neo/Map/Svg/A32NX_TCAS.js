@@ -1,23 +1,30 @@
+const { delay } = require("lodash");
+
 const CONSTANTS = {
     MIN_VS: -6000,
-    MAX_VS: 6000
+    MAX_VS: 6000,
+    INHIBIT_CLB_RA: 39000, // for all climb RA's
+    INHIBIT_INC_DES_RA_AGL: 1450, // for increase descent RA's
+    INHIBIT_ALL_DES_RA_AGL: 1200, // 1200 takeoff, 1000 approach
+    INHIBIT_ALL_RA: 1000, // 1100 in climb, 900 in descent
+    REALLY_BIG_NUMBER: 1000000
 };
 
 const taraCallouts = {
-    climb: 0,
-    climb_cross: 1,
-    climb_increase: 2,
-    climb_now: 3,
-    clear_of_conflict: 4,
-    descend: 5,
-    descend_cross: 6,
-    descend_increase: 7,
-    descend_now: 8,
-    monitor_vs: 9,
-    maintain_vs: 10,
-    maintain_vs_cross: 11,
-    level_off: 12,
-    traffic: 13
+    climb: "climb_climb",
+    climb_cross: "climb_crossing_climb",
+    climb_increase: "increase_climb",
+    climb_now: "climb_climb_now",
+    clear_of_conflict: "clear_of_conflict",
+    descend: "descend_descend",
+    descend_cross: "descend_crossing_descend",
+    descend_increase: "increase_descent",
+    descend_now: "descend_descend_now",
+    monitor_vs: "monitor_vs",
+    maintain_vs: "maint_vs_maint",
+    maintain_vs_cross: "maint_vs_crossing_maint",
+    level_off: "level_off_level_off",
+    traffic: "traffic_traffic"
 };
 
 const raSense = {
@@ -46,6 +53,12 @@ const raType = {
     preventative: 1
 };
 
+const tcasState = {
+    none: 0,
+    TA: 1,
+    RA: 2
+};
+
 /**
  *  callout: warning annunciation to be made
  *  sense: up (climb) or down (descend)
@@ -54,13 +67,14 @@ const raType = {
  */
 const raVariants = {
     // PREVENTIVE RA's
+    // TODO: don't display green band as green on PFD for preventative
     monitor_vs_level: {
         callout: taraCallouts.monitor_vs,
         sense: raSense.level,
         type: raType.preventative,
         vs: {
             condition: [-100, 100],
-            green: null,
+            green: [-100, 100],
             red: [
                 [CONSTANTS.MIN_VS, -100],
                 [100, CONSTANTS.MAX_VS]
@@ -80,7 +94,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             condition: [0, CONSTANTS.MAX_VS],
-            green: null,
+            green: [0, CONSTANTS.MAX_VS],
             red: [
                 [CONSTANTS.MIN_VS, 0]
             ]
@@ -99,7 +113,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             condition: [-500, CONSTANTS.MAX_VS],
-            green: null,
+            green: [-500, CONSTANTS.MAX_VS],
             red: [
                 [CONSTANTS.MIN_VS, -500]
             ]
@@ -118,7 +132,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             condition: [-1000, CONSTANTS.MAX_VS],
-            green: null,
+            green: [-1000, CONSTANTS.MAX_VS],
             red: [
                 [CONSTANTS.MIN_VS, -1000]
             ]
@@ -137,7 +151,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             condition: [-2000, CONSTANTS.MAX_VS],
-            green: null,
+            green: [-2000, CONSTANTS.MAX_VS],
             red: [
                 [CONSTANTS.MIN_VS, -2000]
             ]
@@ -157,7 +171,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             condition: [CONSTANTS.MIN_VS, 0],
-            green: null,
+            green: [CONSTANTS.MIN_VS, 0],
             red: [
                 [0, CONSTANTS.MAX_VS]
             ]
@@ -176,7 +190,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             condition: [CONSTANTS.MIN_VS, 500],
-            green: null,
+            green: [CONSTANTS.MIN_VS, 500],
             red: [
                 [500, CONSTANTS.MAX_VS]
             ]
@@ -195,7 +209,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             condition: [CONSTANTS.MIN_VS, 1000],
-            green: null,
+            green: [CONSTANTS.MIN_VS, 1000],
             red: [
                 [1000, CONSTANTS.MAX_VS]
             ]
@@ -214,7 +228,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             condition: [CONSTANTS.MIN_VS, 2000],
-            green: null,
+            green: [CONSTANTS.MIN_VS, 2000],
             red: [
                 [2000, CONSTANTS.MAX_VS]
             ]
@@ -578,8 +592,20 @@ class A32NX_TCAS_Manager {
         this.TrafficUpdateTimer = 0.2;
         this.TrafficAircraft = [];
         this.sensitivityLevel = 1;
-        this.activeRA = new Set();
-        this.activeTA = new Set();
+
+        // Holds an object dictating the active RA's state, if there is an RA
+        this.activeRA = null;
+
+        // Aircraft's vertical speed at time of initial RA
+        this.vsAtInitialRA = null;
+
+        // Overall TCAS state for callout latching (None, TA, or RA)
+        this.advisoryState = tcasState.none;
+
+        // Timekeeping
+        this.secondsSinceLastTA = 100;
+        this.secondsSinceLastRA = 100;
+        this.secondsSinceStartOfRA = 0;
     }
 
     // This is called from the MFD JS file, because the MapInstrument doesn't have a deltaTime
@@ -601,9 +627,7 @@ class A32NX_TCAS_Manager {
         // update our own position and velocities
         const altitude = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
         const radioAltitude = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND", "feet");
-
-        // altitude of the terrain
-        const groundAlt = altitude - radioAltitude;
+        const groundAlt = altitude - radioAltitude; // altitude of the terrain
 
         const vertSpeed = SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute");
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
@@ -614,6 +638,8 @@ class A32NX_TCAS_Manager {
         const TaRaTau = this.getTaRaTau(this.sensitivityLevel);
         const TaRaDMOD = this.getTaRaDMOD(this.sensitivityLevel);
         const TaRaZTHR = this.getTaRaZTHR(this.sensitivityLevel);
+        const ALIM = this.getALIM(this.sensitivityLevel);
+        const TVTHR = this.getTVTHR(this.sensitivityLevel);
 
         // update traffic aircraft
         this.TrafficUpdateTimer += _deltaTime / 1000;
@@ -655,10 +681,9 @@ class A32NX_TCAS_Manager {
             this.TrafficUpdateTimer = 0;
         }
 
-        let maxIntrusionLevel = 0;
         // Check for collisions
         for (const traffic of this.TrafficAircraft) {
-            // horzontal distance in Nautical miles
+            // horzontal distance in nautical miles
             const horizontalDistance = Avionics.Utils.computeDistance(new LatLong(traffic.lat, traffic.lon), new LatLong(lat, lon));
 
             traffic.updateIsDisplayed(TCASThreatSetting);
@@ -709,69 +734,258 @@ class A32NX_TCAS_Manager {
             }
 
             traffic.intrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
-
-            // determine highest intrusion level
-            if (traffic.intrusionLevel > maxIntrusionLevel) {
-                maxIntrusionLevel = traffic.intrusionLevel;
-            }
         }
 
-        this.updateAdvisories(_deltaTime);
-        this.updateRaParameters(_deltaTime);
+        const ra = this.raLogic(_deltaTime, vertSpeed, altitude, radioAltitude, ALIM, false); // Placeholder value for onlyPreventative
+        this.updateAdvisoryState(_deltaTime, ra);
     }
 
-    updateAdvisories(_deltaTime) {
-        for (const traffic of this.TrafficAircraft) {
-            if (this.activeTA.has(traffic.ID)) {
-                if (traffic.intrusionLevel === 3) {
-                    console.log("TCAS: TA UPGRADED TO RA!");
-                    this.activeTA.delete(traffic.ID);
-                    this.activeRA.add([traffic.ID, raSense.initial, raStrength.initial]);
-                } else if (traffic.intrusionLevel < 2) {
-                    console.log("TCAS: CLEAR OF TA!");
-                    this.activeTA.delete(traffic.ID);
-                    traffic.timeSinceLastTA = 0;
-                }
-            } else {
-                if (traffic.intrusionLevel === 2) {
-                    console.log("TCAS: GENERATING NEW TA!");
-                    Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
-                    this.activeTA.add(traffic.ID);
-                } else if (traffic.timeSinceLastTA <= 5) {
-                    traffic.timeSinceLastTA += _deltaTime / 1000;
-                }
-            }
+    /**
+     * Handles updating this.advisoryState, elapsed timers, and playing sounds
+     */
+    updateAdvisoryState(_deltaTime, _ra) {
+        const taThreatCount = this.TrafficAircraft.reduce((acc, aircraft) => {
+            return acc + (aircraft.intrusionLevel === 2 ? 1 : 0);
+        });
+        const raThreatCount = this.TrafficAircraft.reduce((acc, aircraft) => {
+            return acc + (aircraft.intrusionLevel === 3 ? 1 : 0);
+        });
 
-            if (this.activeRA.has(traffic.ID)) {
-                if (traffic.intrusionLevel === 3) {
-                    // Handle continuing RA
-                } else {
-                    if (traffic.intrusionLevel === 2) {
-                        this.activeTA.add(traffic.ID);
-                        traffic.timeSinceLastTA = 0;
-                        console.log("TCAS: RA DOWNGRADED TO TA");
+        switch (this.advisoryState) {
+            case tcasState.TA:
+                if (raThreatCount > 0) {
+                    this.advisoryState === tcasState.RA;
+                    this.secondsSinceStartOfRA = 0;
+                } else if (taThreatCount === 0) {
+                    this.advisoryState = tcasState.none;
+                    this.secondsSinceLastTA = 0;
+                }
+                break;
+            case tcasState.RA:
+                if (raThreatCount === 0) {
+                    this.secondsSinceLastRA = 0;
+                    if (taThreatCount > 0) {
+                        this.secondsSinceLastTA = 0;
+                        this.advisoryState = tcasState.TA;
+                    } else {
+                        this.advisoryState = tcasState.none;
                     }
-                    this.activeRA.delete(traffic.ID);
-                    console.log("TCAS: CLEAR OF CONFLICT!");
+                    console.log("TCAS: CLEAR OF CONFLICT");
+                    Coherent.call("PLAY_INSTRUMENT_SOUND", "clear_of_conflict");
+                    this.activeRA = null;
+                } else {
+                    this.secondsSinceStartOfRA += _deltaTime / 1000;
                 }
-            } else {
-                if (traffic.intrusionLevel === 3) {
-                    console.log("TCAS: RA GENERATED!");
-                    this.activeRA.add([traffic.ID, raSense.initial, raStrength.initial]);
+                break;
+            default:
+                if (raThreatCount > 0) {
+                    this.advisoryState === tcasState.RA;
+                    this.secondsSinceStartOfRA = 0;
+                } else {
+                    if (taThreatCount > 0) {
+                        this.advisoryState === tcasState.TA;
+                        if (this.timeSinceLastTA >= 5) {
+                            console.log("TCAS: TA GENERATED");
+                            Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
+                        }
+                    } else {
+                        if (this.secondsSinceLastTA < 10) {
+                            this.secondsSinceLastTA += _deltaTime / 1000;
+                        }
+                    }
+
+                    if (this.secondsSinceLastRA < 10) {
+                        this.secondsSinceLastRA += _deltaTime / 1000;
+                    }
                 }
-            }
+                break;
+        }
+
+        if (_ra !== null && this.advisoryState === tcasState.RA) {
+            this.activeRA = _ra;
+            Coherent.call("PLAY_INSTRUMENT_SOUND", this.activeRA.info.callout);
+            console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
         }
     }
 
-    updateRaParameters(_deltaTime) {
-        for (const RA of this.activeRA) {
-            const traffic = this.TrafficAircraft.find(t => t.ID === RA[0]);
-            if (RA[1] === raSense.initial) {
-                // Choose initial sense and strength
-            } else {
+    /**
+     * Iterates through each RA threat (and its associated CPA data),
+     * and filters out all inapplicable RA variants.
+     * Then, perform computation for each applicable RA, and
+     * pick one with best vertical separation and other criteria
+     */
+    raLogic(_deltaTime, selfVertSpeed, selfAlt, selfRadioAlt, ALIM, onlyPreventative) {
+        // Get all active, valid RA threats, sorted by lowest TAU first
+        const raTraffic = this.TrafficAircraft
+            .filter((aircraft) => {
+                return aircraft.intrusionLevel === 3 && aircraft.RaTAU != Infinity;
+            })
+            .sort((a, b) => {
+                return a.RaTAU - b.RaTAU;
+            });
 
-            }
+        // No RA's found
+        if (raTraffic.length === 0) {
+            return null;
         }
+
+        const previousRA = this.activeRA;
+        const validRaVariants = Object.values(raVariants).filter((ra) => {
+            const isInitial = previousRA === null ? true : false;
+            const lastCallout = isInitial ? null : previousRA.info.callout;
+            const lastSense = isInitial ? raSense.level_off : previousRA.info.sense;
+            const lastType = isinitial ? null : previousRA.info.type;
+            const isReversal = (previousRA === null) && lastSense !== ra.sense;
+
+            // If we're below 1000 ft AGL, inhibit all RA's
+            const check1000 = selfRadioAlt > CONSTANTS.INHIBIT_ALL_RA;
+            // Check whether the RA variant agrees with initial or followup RA status
+            const a = (isInitial && ra.conditions.can_be_initial) || (!isInitial && ra.conditions.can_be_followup);
+            // Make sure our own VS falls within this RA's required initial VS
+            const b = (selfVertSpeed > ra.vs.condition[0] && selfVertSpeed < ra.vs.condition[1]);
+            // Make sure the RA allows reversals if needed
+            const c = isReversal ? ra.conditions.can_be_reversed : true;
+            // Only allow preventative RA's if requested
+            const d = onlyPreventative ? ra.type === raType.preventative : true;
+            // Inhibit climb RA's above service ceiling
+            const e = (selfAlt >= CONSTANTS.INHIBIT_CLB_RA) ? ra.sense !== raSense.up : true;
+            // Inhibit all descend RA's below predefined altitude
+            const f = (selfRadioAlt <= CONSTANTS.INHIBIT_ALL_DES_RA_AGL) ? ra.sense !== raSense.down : true;
+            // Inhibit increase descent RA's below predefined altitude
+            const g = (selfRadioAlt <= CONSTANTS.INHIBIT_INC_DES_RA_AGL) ? ra.callout !== taraCallouts.descend_increase : true;
+            // Proper RA weakening for increase climb & descent RA's
+            const h = (lastCallout !== null && lastCallout === taraCallouts.climb_increase) ? ra.callout !== taraCallouts.climb || ra.callout !== taraCallouts.climb_cross : true;
+            const i = (lastCallout !== null && lastCallout === taraCallouts.descend_increase) ? ra.callout !== taraCallouts.descend || ra.callout !== taraCallouts.descend_cross : true;
+            // Inhibit level off RA's following preventive RA's
+            const j = (lastType !== null && lastType === raType.preventative) ? ra.callout !== taraCallouts.level_off : true;
+
+            return check1000 && a && b && c && d && e && f && g && h && i && j;
+        });
+
+        const raAttempts = [];
+        for (const ra of validRaVariants) {
+            const isInitial = previousRA === null ? true : false;
+            const lastSense = isInitial ? raSense.level_off : previousRA.info.sense;
+            // Assume reaction time of 5 seconds for first RA, 2.5 seconds for follow-ups
+            const delay = isInitial ? 5 : 2.5;
+            // Assume acceleration of 0.25G (8.044 f/s^2) for first RA, 0.33G (10.62) for follow-ups
+            const accel = isInitial ? 8.044 : 10.62;
+
+            const attempt = {
+                info: ra,
+                isCrossing: false,
+                isReversal: (previousRA === null && lastSense !== ra.sense),
+                minSeparation: CONSTANTS.REALLY_BIG_NUMBER,
+                achievesALIM: null
+            };
+            for (const traffic of raTraffic) {
+                const verticalSep = this.calculateVerticalSeparation(ra, selfVertSpeed, selfAlt, traffic, delay, accel);
+                if (verticalSep < attempt.minSeparation) {
+                    attempt.minSeparation = verticalSep;
+                }
+                if ((ra.sense === raSense.up && selfAlt < traffic.alt)
+                    || ra.sense === raSense.down && selfAlt > traffic.alt) {
+                    attempt.isCrossing = true;
+                }
+            }
+
+            attempt.achievesALIM = (attempt.minSeparation >= ALIM);
+
+            // Only push attempt to raAttempts if it doesn't violate crossing rules
+            if (ra.conditions.requires_crossing && !attempt.isCrossing
+                || ra.conditions.forbids_crossing && attempt.isCrossing) {
+                continue;
+            }
+            // Do not push preventive RA's which do not achieve ALIM
+            if (ra.type === raType.preventative && !attempt.achievesALIM) {
+                continue;
+            }
+            raAttempts.push(attempt);
+        }
+
+        raAttempts.sort((a, b) => {
+            // If only one achieves ALIM, pick it
+            if (a.achievesALIM && !b.achievesALIM) {
+                return -1;
+            }
+            if (b.achievesALIM && !a.achievesALIM) {
+                return 1;
+            }
+
+            // If neither achieve ALIM, then greatest separation
+            if (!a.achievesALIM && !b.achievesALIM) {
+                if (Math.max(a.minSeparation, 0) > Math.max(b.minSeparation, 0)) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+
+            // Prefer non-reversals
+            if (!a.isReversal && b.isReversal) {
+                return -1;
+            }
+            if (a.isReversal && !b.isReversal) {
+                return 1;
+            }
+
+            // Prefer non-crossings
+            if (!a.isCrossing && b.isCrossing) {
+                return -1;
+            }
+            if (a.isCrossing && !b.isCrossing) {
+                return 1;
+            }
+
+            // TODO:
+            // --- Prefer least disruptive RA's (VS change)
+            // --- Prefer greatest separation (again)
+            // --- Prefer preventative over corrective
+            return -1;
+        });
+
+        if (raAttempts.length !== 0) {
+            const ra = raAttempts[0];
+            if (ra.info.callout === previousRA.info.callout
+                && ra.info.vs.green === previousRA.info.vs.green) {
+                return null;
+            }
+            return ra;
+        }
+        return null;
+    }
+
+    calculateVerticalSeparation(raVariant, selfVS, selfAlt, trafficAC, delayTime, accel) {
+        const trafficAltAtCPA = trafficAC.alt + ((trafficAC.vertSpeed * 60) * trafficAC.RaTAU);
+        if (raVariant.sense === raSense.up) {
+            const targetVS = Math.min(...raVariant.vs.green);
+            const newDelayTime = selfVS < targetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+            return this.calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, newDelayTime, accel) - trafficAltAtCPA;
+        } else if (raVariant.sense === raSense.down) {
+            const targetVS = Math.max(...raVariant.vs.green);
+            const newDelayTime = selfVS > targetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+            return trafficAltAtCPA - this.calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, newDelayTime, accel);
+        } else {
+            const minTargetVS = Math.min(...raVariant.vs.green);
+            const maxTargetVS = Math.max(...raVariant.vs.green);
+            const minDelayTime = selfVS < mintargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+            const maxDelayTime = selfVS > maxtargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+            const minVerticalSep = this.calculateAvoidanceManeuver(minTargetVS, selfVS, selfAlt, trafficAC, minDelayTime, accel) - trafficAltAtCPA;
+            const maxVerticalSep = trafficAltAtCPA - this.calculateAvoidanceManeuver(maxTargetVS, selfVS, selfAlt, trafficAC, maxDelayTime, accel);
+            return Math.max(minVerticalSep, maxVerticalSep);
+        }
+    }
+
+    calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, delayTime, accel) {
+        // accel must be in f/s^2
+        accel = targetVS < selfVS ? -1 * accel : accel;
+        const timeToAccelerate = Math.min(trafficAC.RaTAU - delayTime, ((targetVS - selfVS) * 60) / accel);
+        const remainingTime = trafficAC.RaTau - (delayTime + timeToAccelerate);
+        const predicted_elevation = selfAlt
+                                        + Math.round(selfVS * 60) * (delayTime + timeToAccelerate)
+                                        + 0.5 * accel ** timeToAccelerate
+                                        + (targetVS * 60) * remainingTime;
+        return predicted_elevation;
     }
 
     /**
@@ -922,21 +1136,18 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
      * @param _selfLat {number} in degrees
      * @param _selfLon {number} in degrees
      * @param _selfAlt {number} in feet
-     */constructor(_ID, _lat, _lon, _alt, _heading, _selfLat, _selfLon, _selfAlt) {
+     */
+    constructor(_ID, _lat, _lon, _alt, _heading, _selfLat, _selfLon, _selfAlt) {
         super();
 
         this.created = false;
         this.ID = _ID;
         this.name = "npc-airplane-" + this.ID;
-
         this.lat = _lat;
         this.lon = _lon;
-
         this.alt = _alt;
         this.vertSpeed = 0;
-
         this.onGround = false;
-
         this.heading = _heading;
 
         //relative altitude between player and this traffic, in feet
@@ -953,7 +1164,7 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
 
         // time until predicted collision
         this.TaTAU = Infinity;
-        this.RaTau = Infinity;
+        this.RaTAU = Infinity;
         // time until aircraft is on the same altitude level
         this.verticalTAU = Infinity;
 
