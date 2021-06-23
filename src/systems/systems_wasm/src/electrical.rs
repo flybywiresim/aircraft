@@ -1,6 +1,9 @@
 use std::collections::HashMap;
+use std::error::Error;
 
 use msfs::legacy::execute_calculator_code;
+use msfs::legacy::AircraftVariable;
+use systems::shared::to_bool;
 
 use crate::{HandleMessage, PrePostTick, ReadWrite, SimulatorAspect};
 
@@ -63,3 +66,66 @@ impl ElectricalBusConnection {
         }
     }
 }
+
+/// The default MSFS APU is still used during engine start.
+/// At this moment, the engines cannot be started without it.
+/// Once pneumatics and the engine model are completed, this
+/// type can probably be removed.
+pub struct MsfsAuxiliaryPowerUnit {
+    is_available_variable_name: String,
+    msfs_apu_is_on: AircraftVariable,
+    fuel_valve_number: u8,
+}
+impl MsfsAuxiliaryPowerUnit {
+    pub fn new(
+        is_available_variable_name: &str,
+        fuel_valve_number: u8,
+    ) -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            is_available_variable_name: is_available_variable_name.to_owned(),
+            msfs_apu_is_on: AircraftVariable::from("APU SWITCH", "Bool", 0)?,
+            fuel_valve_number,
+        })
+    }
+
+    fn toggle_fuel_valve(&self) {
+        execute_calculator_code::<()>(&format!(
+            "{} (>K:FUELSYSTEM_VALVE_TOGGLE)",
+            self.fuel_valve_number
+        ));
+    }
+
+    fn start_apu(&self) {
+        // In the systems.cfg, the `apu_pct_rpm_per_second` setting
+        // is set to 1000, meaning the MSFS APU starts in 1 millisecond.
+        execute_calculator_code::<()>("1 (>K:APU_STARTER, Number)");
+    }
+
+    fn stop_apu(&self) {
+        execute_calculator_code::<()>("1 (>K:APU_OFF_SWITCH, Number)");
+    }
+}
+impl SimulatorAspect for MsfsAuxiliaryPowerUnit {}
+impl ReadWrite for MsfsAuxiliaryPowerUnit {
+    fn write(&mut self, name: &str, value: f64) -> bool {
+        if name == self.is_available_variable_name {
+            let is_available = to_bool(value);
+            let msfs_apu_is_on = to_bool(self.msfs_apu_is_on.get());
+
+            if is_available && !msfs_apu_is_on {
+                self.toggle_fuel_valve();
+                self.start_apu();
+            } else if !is_available && msfs_apu_is_on {
+                self.toggle_fuel_valve();
+                self.stop_apu();
+            }
+        }
+
+        // We only take a peek at the value, but don't write it.
+        // Therefore, return false to indicate it should still be
+        // written elsewhere.
+        false
+    }
+}
+impl HandleMessage for MsfsAuxiliaryPowerUnit {}
+impl PrePostTick for MsfsAuxiliaryPowerUnit {}

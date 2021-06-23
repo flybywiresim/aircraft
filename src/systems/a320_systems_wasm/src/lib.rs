@@ -5,9 +5,10 @@ use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
 use std::{pin::Pin, time::Duration};
 use systems::simulation::Simulation;
 use systems_wasm::{
-    electrical::MsfsElectricalBuses, f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64,
-    HandleMessage, MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter,
-    MsfsSimulationHandler, PrePostTick, ReadWrite, SimulatorAspect,
+    electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, HandleMessage,
+    MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter, MsfsSimulationHandler, PrePostTick,
+    ReadWrite, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
@@ -17,6 +18,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut simulation = Simulation::new(|electricity| A320::new(electricity));
     let mut msfs_simulation_handler = MsfsSimulationHandler::new(vec![
         Box::new(create_electrical_buses()),
+        Box::new(MsfsAuxiliaryPowerUnit::new(
+            "OVHD_APU_START_PB_IS_AVAILABLE",
+            8,
+        )?),
         Box::new(Brakes::new(&mut sim_connect.as_mut())?),
         Box::new(create_aircraft_variable_reader()?),
         Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
