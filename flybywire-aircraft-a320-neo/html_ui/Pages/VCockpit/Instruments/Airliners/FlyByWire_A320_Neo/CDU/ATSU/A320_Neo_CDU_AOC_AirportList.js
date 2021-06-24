@@ -51,7 +51,7 @@ class CDUAocAirportList {
      * @param _value {string}
      */
     canUpdate(_index, _value) {
-        if (this.rows[_index].isManaged || (!this.rows[_index].isManaged && !this.rows[_index].icao)) {
+        if (this.rows[_index].isManaged || !this.rows[_index].icao) {
             this.rows[_index] = this.getAssembledAirportInfo(_value, true);
         }
     }
