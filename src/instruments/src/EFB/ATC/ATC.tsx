@@ -113,7 +113,7 @@ export const ATC = () => {
                                     id="atc.callsign"
                                     onClick={() => setFrequency(toFrequency(atc.frequency))}
                                 >
-                                    <div className="flex w-full justify-start text-base">
+                                    <div className="flex w-full justify-start text-lg">
                                         <div>
                                             { atc.type === apiClient.AtcType.RADAR && <IconChartRadar size="2rem" /> }
                                             { atc.type === apiClient.AtcType.GROUND && <IconTrafficLights size="2rem" /> }
@@ -162,7 +162,7 @@ export const ATC = () => {
                             </div>
                             <div className="active-atis flex-wrap mt-8 text-2xl">
                                 { currentAtc?.textAtis && currentAtc.textAtis.map((line) => (
-                                    <p className="flex flex-wrap mt-2">{line}</p>
+                                    <p className="flex text-base flex-wrap mt-2">{line}</p>
                                 )) }
                             </div>
                         </div>
