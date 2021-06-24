@@ -1,7 +1,7 @@
 class CDUAocAirportList {
     constructor() {
-        const defaultRow = this.getAssembledAirportInfo();
-        this.rows = [defaultRow, defaultRow, defaultRow, defaultRow];
+        const emptyRow = this.getAssembledAirportInfo();
+        this.rows = [emptyRow, emptyRow, emptyRow, emptyRow];
     }
 
     /**
