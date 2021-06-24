@@ -18,11 +18,17 @@ export const ATC = () => {
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+    const [lastUpdate, setLastUpdate] = useState<string>();
 
     useEffect(() => {
         loadAtc();
-        setInterval(() => loadAtc(), 60 * 1000);
-    }, []);
+        const interval = setInterval(() => {
+            loadAtc();
+            setLastUpdate(new Date().toString());
+        }, 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, [lastUpdate]);
 
     useEffect(() => {
         setAtc();
