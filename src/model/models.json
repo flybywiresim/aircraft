@@ -78,6 +78,10 @@
       {
         "gltf": "./buttondecals/buttondecals.gltf",
         "bin": "./buttondecals/buttondecals.bin"
+      },
+      {
+        "gltf": "./dynscreens/dyn_screens.gltf",
+        "bin": "./dynscreens/dyn_screens.bin"
       }
     ],
     "modifications": [
@@ -505,6 +509,21 @@
         "node": "PUSH_OVHD_FUEL_PUMP2_SEQ1",
         "mods": {
           "translation": [-0.0000735893846, 0.003314972, 0.00431442261]
+        }
+      },
+      {
+        "node": "DYN_SCREEN",
+        "mods": {
+          "translation": [
+            -0.05070041,
+            1.92718291,
+            0
+          ],
+          "scale": [
+            0,
+            0,
+            0
+          ]
         }
       }
     ]

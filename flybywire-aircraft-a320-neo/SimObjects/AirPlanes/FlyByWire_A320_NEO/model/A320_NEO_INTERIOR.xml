@@ -199,9 +199,57 @@
             </UseTemplate>
         </Component>
 
-        <!-- G1000 ###################################### -->
+        <Component ID="DYN_SCREEN_ATC" Node="DYN_SCREEN_ATC">
+            <Material>
+                <EmissiveFactor>
+                    <Parameter>
+                        <Code>0.5</Code>
+                    </Parameter>
+                </EmissiveFactor>
+            </Material>
+        </Component>
 
-        <Component ID="Screen_emissive" Node="DYN_SCREEN">
+        <Component ID="DYN_SCREEN_BAT" Node="DYN_SCREEN_BAT">
+            <Material>
+                <EmissiveFactor>
+                    <Parameter>
+                        <Code>0.5</Code>
+                    </Parameter>
+                </EmissiveFactor>
+            </Material>
+        </Component>
+
+        <Component ID="DYN_SCREEN_CLOCK" Node="DYN_SCREEN_CLOCK">
+            <Material>
+                <EmissiveFactor>
+                    <Parameter>
+                        <Code>0.5</Code>
+                    </Parameter>
+                </EmissiveFactor>
+            </Material>
+        </Component>
+
+        <Component ID="DYN_SCREEN_ISIS" Node="DYN_SCREEN_ISIS">
+            <Material>
+                <EmissiveFactor>
+                    <Parameter>
+                        <Code>0.5</Code>
+                    </Parameter>
+                </EmissiveFactor>
+            </Material>
+        </Component>
+
+        <Component ID="DYN_SCREEN_RMP" Node="DYN_SCREEN_RMP">
+            <Material>
+                <EmissiveFactor>
+                    <Parameter>
+                        <Code>0.5</Code>
+                    </Parameter>
+                </EmissiveFactor>
+            </Material>
+        </Component>
+
+        <Component ID="DYN_SCREEN_RTPI" Node="DYN_SCREEN_RTPI">
             <Material>
                 <EmissiveFactor>
                     <Parameter>
@@ -3389,7 +3437,7 @@
         <Component ID="Airbus_EICAS">
             <UseTemplate Name="ASOBO_Airbus_EICAS_Template">
                 <BOTH_SCREENS_ON_ONE_NODE/>
-                <NODE_ID>DYN_SCREEN</NODE_ID>
+                <NODE_ID>DYN_SCREEN_RMP</NODE_ID>
             </UseTemplate>
 
             <UseTemplate Name="FBW_ECAM_PAGE_SELECTION_Template">

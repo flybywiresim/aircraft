@@ -1,0 +1,708 @@
+{
+    "accessors": [
+        {
+            "bufferView": 1,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 16,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_ATC_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 16,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_ATC_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 16,
+            "min": [
+                -0.21292082965373993,
+                -0.703160285949707,
+                -0.0448150634765625
+            ],
+            "max": [
+                -0.16457636654376984,
+                -0.698960542678833,
+                -0.025587081909179688
+            ],
+            "type": "VEC3",
+            "name": "x0_DYN_SCREEN_ATC_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 16,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_ATC_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 16,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_ATC_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 16,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_ATC_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "componentType": 5123,
+            "count": 42,
+            "type": "SCALAR",
+            "name": "x0_DYN_SCREEN_ATC_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 604,
+            "componentType": 5123,
+            "count": 8,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_BAT_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 592,
+            "componentType": 5120,
+            "count": 8,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_BAT_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 576,
+            "componentType": 5126,
+            "count": 8,
+            "min": [
+                -0.01278727501630783,
+                0.5540554523468018,
+                -0.2112560272216797
+            ],
+            "max": [
+                0.1379280686378479,
+                0.5578280687332153,
+                -0.20183753967285156
+            ],
+            "type": "VEC3",
+            "name": "x0_DYN_SCREEN_BAT_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 588,
+            "componentType": 5120,
+            "count": 8,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_BAT_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 596,
+            "componentType": 5122,
+            "count": 8,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_BAT_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 600,
+            "componentType": 5122,
+            "count": 8,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_BAT_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 84,
+            "componentType": 5123,
+            "count": 12,
+            "type": "SCALAR",
+            "name": "x0_DYN_SCREEN_BAT_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 892,
+            "componentType": 5123,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_CLOCK_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 880,
+            "componentType": 5120,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_CLOCK_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 864,
+            "componentType": 5126,
+            "count": 24,
+            "min": [
+                -0.15520553290843964,
+                -0.3549675941467285,
+                0.5696582794189453
+            ],
+            "max": [
+                -0.1028280109167099,
+                -0.2947884798049927,
+                0.5871753692626953
+            ],
+            "type": "VEC3",
+            "name": "x0_DYN_SCREEN_CLOCK_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 876,
+            "componentType": 5120,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_CLOCK_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 884,
+            "componentType": 5122,
+            "count": 24,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_CLOCK_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 888,
+            "componentType": 5122,
+            "count": 24,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_CLOCK_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 108,
+            "componentType": 5123,
+            "count": 54,
+            "type": "SCALAR",
+            "name": "x0_DYN_SCREEN_CLOCK_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1756,
+            "componentType": 5123,
+            "count": 4,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_ISIS_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1744,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_ISIS_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1728,
+            "componentType": 5126,
+            "count": 4,
+            "min": [
+                0.16344788670539856,
+                -0.3579021692276001,
+                0.568511962890625
+            ],
+            "max": [
+                0.24142611026763916,
+                -0.2831869125366211,
+                0.5860099792480469
+            ],
+            "type": "VEC3",
+            "name": "x0_DYN_SCREEN_ISIS_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1740,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_ISIS_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1748,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_ISIS_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1752,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_ISIS_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 216,
+            "componentType": 5123,
+            "count": 6,
+            "type": "SCALAR",
+            "name": "x0_DYN_SCREEN_ISIS_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1900,
+            "componentType": 5123,
+            "count": 16,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_RMP_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1888,
+            "componentType": 5120,
+            "count": 16,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_RMP_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1872,
+            "componentType": 5126,
+            "count": 16,
+            "min": [
+                -0.21458978950977325,
+                -0.6486978530883789,
+                0.2094745635986328
+            ],
+            "max": [
+                0.3184993863105774,
+                -0.6456649303436279,
+                0.22321701049804688
+            ],
+            "type": "VEC3",
+            "name": "x0_DYN_SCREEN_RMP_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1884,
+            "componentType": 5120,
+            "count": 16,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_RMP_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1892,
+            "componentType": 5122,
+            "count": 16,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_RMP_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1896,
+            "componentType": 5122,
+            "count": 16,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_RMP_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 228,
+            "componentType": 5123,
+            "count": 24,
+            "type": "SCALAR",
+            "name": "x0_DYN_SCREEN_RMP_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2476,
+            "componentType": 5123,
+            "count": 8,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_RTPI_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2464,
+            "componentType": 5120,
+            "count": 8,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_RTPI_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2448,
+            "componentType": 5126,
+            "count": 8,
+            "min": [
+                0.05846258997917175,
+                -0.7170407772064209,
+                -0.16837501525878906
+            ],
+            "max": [
+                0.08681154251098633,
+                -0.7170333862304688,
+                -0.15836143493652344
+            ],
+            "type": "VEC3",
+            "name": "x0_DYN_SCREEN_RTPI_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2460,
+            "componentType": 5120,
+            "count": 8,
+            "type": "VEC4",
+            "name": "x0_DYN_SCREEN_RTPI_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2468,
+            "componentType": 5122,
+            "count": 8,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_RTPI_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2472,
+            "componentType": 5122,
+            "count": 8,
+            "type": "VEC2",
+            "name": "x0_DYN_SCREEN_RTPI_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 276,
+            "componentType": 5123,
+            "count": 18,
+            "type": "SCALAR",
+            "name": "x0_DYN_SCREEN_RTPI_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.7.5",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            },
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.3184993863105774,
+                    0.5578280687332153,
+                    0.5871753692626953
+                ],
+                "BoundingBoxMin": [
+                    -0.21458978950977325,
+                    -0.7170407772064209,
+                    -0.2112560272216797
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 312,
+            "byteOffset": 0,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 2736,
+            "byteStride": 36,
+            "byteOffset": 312,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_asset_optimized",
+        "ASOBO_normal_map_convention"
+    ],
+    "materials": [
+        {
+            "name": "$ATC",
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0
+            }
+        },
+        {
+            "name": "$BAT",
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0
+            }
+        },
+        {
+            "name": "$CLOCK",
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0
+            }
+        },
+        {
+            "name": "$ISIS",
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0
+            }
+        },
+        {
+            "name": "$RMP",
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0
+            }
+        },
+        {
+            "name": "$RTPI",
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 0,
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4,
+                        "TEXCOORD_1": 5
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 14,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_DYN_SCREEN_ATC"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 7,
+                        "NORMAL": 8,
+                        "POSITION": 9,
+                        "TANGENT": 10,
+                        "TEXCOORD_0": 11,
+                        "TEXCOORD_1": 12
+                    },
+                    "indices": 13,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 4,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_DYN_SCREEN_BAT"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 14,
+                        "NORMAL": 15,
+                        "POSITION": 16,
+                        "TANGENT": 17,
+                        "TEXCOORD_0": 18,
+                        "TEXCOORD_1": 19
+                    },
+                    "indices": 20,
+                    "material": 2,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 18,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_DYN_SCREEN_CLOCK"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 21,
+                        "NORMAL": 22,
+                        "POSITION": 23,
+                        "TANGENT": 24,
+                        "TEXCOORD_0": 25,
+                        "TEXCOORD_1": 26
+                    },
+                    "indices": 27,
+                    "material": 3,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_DYN_SCREEN_ISIS"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 28,
+                        "NORMAL": 29,
+                        "POSITION": 30,
+                        "TANGENT": 31,
+                        "TEXCOORD_0": 32,
+                        "TEXCOORD_1": 33
+                    },
+                    "indices": 34,
+                    "material": 4,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 8,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_DYN_SCREEN_RMP"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 35,
+                        "NORMAL": 36,
+                        "POSITION": 37,
+                        "TANGENT": 38,
+                        "TEXCOORD_0": 39,
+                        "TEXCOORD_1": 40
+                    },
+                    "indices": 41,
+                    "material": 5,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 6,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_DYN_SCREEN_RTPI"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                -0.050700411200523376,
+                1.927182912826538,
+                11.299336433410645
+            ],
+            "mesh": 0,
+            "name": "DYN_SCREEN_ATC"
+        },
+        {
+            "translation": [
+                -0.050700411200523376,
+                1.927182912826538,
+                11.299336433410645
+            ],
+            "mesh": 1,
+            "name": "DYN_SCREEN_BAT"
+        },
+        {
+            "translation": [
+                -0.050700411200523376,
+                1.927182912826538,
+                11.299336433410645
+            ],
+            "mesh": 2,
+            "name": "DYN_SCREEN_CLOCK"
+        },
+        {
+            "translation": [
+                -0.050700411200523376,
+                1.927182912826538,
+                11.299336433410645
+            ],
+            "mesh": 3,
+            "name": "DYN_SCREEN_ISIS"
+        },
+        {
+            "translation": [
+                -0.050700411200523376,
+                1.927182912826538,
+                11.299336433410645
+            ],
+            "mesh": 4,
+            "name": "DYN_SCREEN_RMP"
+        },
+        {
+            "translation": [
+                -0.050700411200523376,
+                1.927182912826538,
+                11.299336433410645
+            ],
+            "mesh": 5,
+            "name": "DYN_SCREEN_RTPI"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ]
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 3048,
+            "uri": "dyn_screens.bin"
+        }
+    ]
+}
