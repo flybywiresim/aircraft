@@ -9,8 +9,7 @@ const CONSTANTS = {
     INITIAL_DELAY: 5, // in seconds
     FOLLOWUP_DELAY: 2.5, // in deconds
     INITIAL_ACCEL: 8.04, // 0.25G in f/s^2
-    FOLLOWUP_ACCEL: 10.62, // 0.33G in f/s^2
-    MAX_PREVENTIVE_VS: 2000
+    FOLLOWUP_ACCEL: 10.62 // 0.33G in f/s^2
 };
 
 const taraCallouts = {
@@ -31,24 +30,8 @@ const taraCallouts = {
 };
 
 const raSense = {
-    initial: 0,
-    level: 1,
-    up: 2,
-    down: 3
-};
-
-const raStrength = {
-    initial: 0,
-    level_off: 1,
-    change: 2,
-    change_crossing: 3,
-    maintain_change: 4,
-    maintain_change_crossing: 5,
-    level_off: 6,
-    reverse_change: 7,
-    increase_change: 8,
-    preventative: 9,
-    removed: 10
+    up: 0,
+    down: 1
 };
 
 const raType = {
@@ -512,9 +495,8 @@ class A32NX_TCAS_Manager {
             traffic.intrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
         }
 
-        // console.log("TCAS: in update near end");
+        const ra = this.newRaLogic(selfVS, selfAlt, selfRadioAlt, this.getALIM(this.sensitivityLevel));
         this.updateAdvisoryState(_deltaTime, ra);
-        // console.log("TCAS: in update end");
     }
 
     /**
@@ -626,7 +608,7 @@ class A32NX_TCAS_Manager {
             }
 
             // Select sense (TODO: INHIBITIONS)
-            const sense = raSense.level;
+            const sense = raSense.up;
             const [upVerticalSep, upIsCrossing] = this.getVerticalSep(
                 raSense.up,
                 selfVS,
@@ -682,8 +664,7 @@ class A32NX_TCAS_Manager {
 
             const ra = {
                 info: null,
-                isReversal: false,
-                clearOfConflict: false
+                isReversal: false
             };
             if (Math.abs(selfVS) < 1500) {
                 // Choose preventive or corrective
@@ -765,11 +746,9 @@ class A32NX_TCAS_Manager {
             }
         } else {
             // There is a previous RA, so revise it if necessary
-            // If no RA threats, then just return (clear of conflict)
+            // If no RA threats, then just return null
             if (raTraffic.length === 0) {
-                ra = previousRA;
-                ra.clearOfConflict = true;
-                return ra;
+                return null;
             }
 
             let alreadyAchievedALIM = true;
@@ -782,8 +761,7 @@ class A32NX_TCAS_Manager {
             const sense = previousRA.info.sense;
             const ra = {
                 info: null,
-                isReversal: previousRA.isReversal,
-                clearOfConflict: false
+                isReversal: previousRA.isReversal
             };
 
             if (alreadyAchievedALIM) {
