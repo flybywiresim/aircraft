@@ -402,16 +402,11 @@ export class ManagedFlightPlan {
             }
         }
 
-        // transfer a potential discontinuity forward
-        if (this.waypoints[index - 1]) {
-            if (removed && removed.endsInDiscontinuity) {
-                this.waypoints[index - 1].endsInDiscontinuity = true;
-                this.waypoints[index - 1].discontinuityCanBeCleared = true;
-            } else {
-                // otherwise insert a discontinuity
-                this.waypoints[index - 1].endsInDiscontinuity = true;
-                this.waypoints[index - 1].discontinuityCanBeCleared = true;
-            }
+        // transfer a potential discontinuity backward
+        const beforeRemoved = this.waypoints[index - 1];
+        if (beforeRemoved && !beforeRemoved.endsInDiscontinuity) {
+            beforeRemoved.endsInDiscontinuity = true;
+            beforeRemoved.discontinuityCanBeCleared = true;
         }
 
         if (index < this.activeWaypointIndex) {
