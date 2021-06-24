@@ -5,7 +5,12 @@ const CONSTANTS = {
     INHIBIT_INC_DES_RA_AGL: 1450, // for increase descent RA's
     INHIBIT_ALL_DES_RA_AGL: 1200, // 1200 takeoff, 1000 approach
     INHIBIT_ALL_RA: 1000, // 1100 in climb, 900 in descent
-    REALLY_BIG_NUMBER: 1000000
+    REALLY_BIG_NUMBER: 1000000,
+    INITIAL_DELAY: 5, // in seconds
+    FOLLOWUP_DELAY: 2.5, // in deconds
+    INITIAL_ACCEL: 8.04, // 0.25G in f/s^2
+    FOLLOWUP_ACCEL: 10.62, // 0.33G in f/s^2
+    MAX_PREVENTIVE_VS: 2000
 };
 
 const taraCallouts = {
@@ -426,46 +431,6 @@ const raVariants = {
         sense: raSense.up,
         type: raType.corrective,
         vs: {
-            condition: [1500, 2000],
-            green: [1500, 2000],
-            red: [
-                [CONSTANTS.MIN_VS, 1500],
-                [2000, CONSTANTS.MAX_VS]
-            ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: false,
-            requires_crossing: false,
-            forbids_crossing: true
-        }
-    },
-    climb_maintain_vs_crossing: {
-        callout: taraCallouts.maintain_vs,
-        sense: raSense.up,
-        type: raType.corrective,
-        vs: {
-            condition: [1500, 2000],
-            green: [1500, 2000],
-            red: [
-                [CONSTANTS.MIN_VS, 1500],
-                [2000, CONSTANTS.MAX_VS]
-            ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: false,
-            requires_crossing: true,
-            forbids_crossing: false
-        }
-    },
-    climb_maintain_vs_steep: {
-        callout: taraCallouts.maintain_vs,
-        sense: raSense.up,
-        type: raType.corrective,
-        vs: {
             condition: [1500, 4400],
             green: [1500, 4400],
             red: [
@@ -481,7 +446,7 @@ const raVariants = {
             forbids_crossing: true
         }
     },
-    climb_maintain_vs_steep_crossing: {
+    climb_maintain_vs_crossing: {
         callout: taraCallouts.maintain_vs,
         sense: raSense.up,
         type: raType.corrective,
@@ -508,46 +473,6 @@ const raVariants = {
         sense: raSense.down,
         type: raType.corrective,
         vs: {
-            condition: [-2000, -1500],
-            green: [-2000, -1500],
-            red: [
-                [CONSTANTS.MIN_VS, -2000],
-                [-1500, CONSTANTS.MAX_VS]
-            ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: false,
-            requires_crossing: false,
-            forbids_crossing: true
-        }
-    },
-    descend_maintain_vs_crossing: {
-        callout: taraCallouts.maintain_vs,
-        sense: raSense.down,
-        type: raType.corrective,
-        vs: {
-            condition: [-2000, -1500],
-            green: [-2000, -1500],
-            red: [
-                [CONSTANTS.MIN_VS, -2000],
-                [-1500, CONSTANTS.MAX_VS]
-            ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: false,
-            requires_crossing: true,
-            forbids_crossing: false
-        }
-    },
-    descend_maintain_vs_steep: {
-        callout: taraCallouts.maintain_vs,
-        sense: raSense.down,
-        type: raType.corrective,
-        vs: {
             condition: [-4400, -1500],
             green: [-4400, -1500],
             red: [
@@ -563,7 +488,7 @@ const raVariants = {
             forbids_crossing: true
         }
     },
-    descend_maintain_vs_steep_crossing: {
+    descend_maintain_vs_crossing: {
         callout: taraCallouts.maintain_vs,
         sense: raSense.down,
         type: raType.corrective,
@@ -967,34 +892,285 @@ class A32NX_TCAS_Manager {
         return null;
     }
 
-    calculateVerticalSeparation(raVariant, selfVS, selfAlt, trafficAC, delayTime, accel) {
-        const trafficAltAtCPA = trafficAC.alt + ((trafficAC.vertSpeed * 60) * trafficAC.RaTAU);
-        if (raVariant.sense === raSense.up) {
-            const targetVS = Math.min(...raVariant.vs.green);
-            const newDelayTime = selfVS < targetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-            return this.calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, newDelayTime, accel) - trafficAltAtCPA;
-        } else if (raVariant.sense === raSense.down) {
-            const targetVS = Math.max(...raVariant.vs.green);
-            const newDelayTime = selfVS > targetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-            return trafficAltAtCPA - this.calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, newDelayTime, accel);
+    /**
+     * NEW RA LOGIC FUNCTION
+     * @param {*} _deltaTime
+     * @param {*} selfVertSpeed
+     * @param {*} selfAlt
+     * @param {*} selfRadioAlt
+     * @param {number} ALIM for current sensitivity level
+     * @returns
+     */
+
+    // TODO: INHIBITIONS
+
+    newRaLogic(_deltaTime, selfVS, selfAlt, selfRadioAlt, ALIM) {
+        // Get all active, valid RA threats, sorted by lowest TAU first
+        const raTraffic = this.TrafficAircraft
+            .filter((aircraft) => {
+                return aircraft.intrusionLevel === 3 && aircraft.RaTAU != Infinity;
+            })
+            .sort((a, b) => {
+                return a.RaTAU - b.RaTAU;
+            });
+
+        // Get last RA issued, if any
+        const previousRA = this.activeRA;
+
+        if (previousRA === null) {
+            // This is the initial RA call
+            // If no RA threats, then just return
+            if (raTraffic.length === 0) {
+                return null;
+            }
+
+            // Select sense (TODO: INHIBITIONS)
+            const sense = raSense.level;
+            const [upVerticalSep, upIsCrossing] = this.getVerticalSep(
+                raSense.up,
+                selfVS,
+                selfAlt,
+                1500,
+                raTraffic,
+                CONSTANTS.INITIAL_DELAY,
+                CONSTANTS.INITIAL_ACCEL
+            );
+            const [downVerticalSep, downIsCrossing] = this.getVerticalSep(
+                raSense.up,
+                selfVS,
+                selfAlt,
+                -1500,
+                raTraffic,
+                CONSTANTS.INITIAL_DELAY,
+                CONSTANTS.INITIAL_ACCEL
+            );
+
+            // If both achieve ALIM, prefer non-crossing
+            if (upVerticalSep >= ALIM && downVerticalSep >= ALIM) {
+                if (upIsCrossing && !downIsCrossing) {
+                    sense = raSense.down;
+                } else if (!upIsCrossing && downIsCrossing) {
+                    sense = raSense.up;
+                } else {
+                    sense = upVerticalSep > downVerticalSep ? raSense.up : raSense.down;
+                }
+            }
+
+            // If neither achieve ALIM, choose sense with greatest separation
+            if (upVerticalSep < ALIM && downVerticalSep < ALIM) {
+                sense = upVerticalSep > downVerticalSep ? raSense.up : raSense.down;
+            }
+
+            // If only one achieves ALIM, pick it
+            if (upVerticalSep >= ALIM && downVerticalSep < ALIM) {
+                sense = raSense.up;
+            } else {
+                sense = raSense.down;
+            }
+
+            // Useful later
+            const [levelSep, levelIsCrossing] = this.getVerticalSep(
+                sense,
+                selfVS,
+                selfAlt,
+                0,
+                raTraffic,
+                CONSTANTS.INITIAL_DELAY,
+                CONSTANTS.INITIAL_ACCEL
+            );
+
+            const ra = null;
+            if (Math.abs(selfVS) < 1500) {
+                // Choose preventive or corrective
+                const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
+                if (predictedSep >= ALIM) {
+                    // We already achieve ALIM, so preventive RA
+                    // Multiplier for vertical speed (test negative VS for climb sense, positive VS for descend sense)
+                    const mul = sense === raSense.up ? -1 : 1;
+                    const [sep500, sep500cross] = this.getVerticalSep(
+                        sense,
+                        selfVS,
+                        selfAlt,
+                        (mul * 500),
+                        raTraffic,
+                        CONSTANTS.INITIAL_DELAY,
+                        CONSTANTS.INITIAL_ACCEL
+                    );
+                    const [sep1000, sep1000cross] = this.getVerticalSep(
+                        sense,
+                        selfVS,
+                        selfAlt,
+                        (mul * 1000),
+                        raTraffic,
+                        CONSTANTS.INITIAL_DELAY,
+                        CONSTANTS.INITIAL_ACCEL
+                    );
+                    const [sep2000, sep2000cross] = this.getVerticalSep(
+                        sense,
+                        selfVS,
+                        selfAlt,
+                        (mul * 2000),
+                        raTraffic,
+                        CONSTANTS.INITIAL_DELAY,
+                        CONSTANTS.INITIAL_ACCEL
+                    );
+
+                    // Find preventive RA's which achieve ALIM
+                    // If none achieve ALIM, then use nominal RA
+                    if (sep2000 >= ALIM) {
+                        ra = sense === raSense.up ? raVariants.monitor_vs_climb_2000 : raVariants.monitor_vs_descend_2000;
+                    } else if (sep1000 >= ALIM) {
+                        ra = sense === raSense.up ? raVariants.monitor_vs_climb_1000 : raVariants.monitor_vs_descend_1000;
+                    } else if (sep500 >= ALIM) {
+                        ra = sense === raSense.up ? raVariants.monitor_vs_climb_500 : raVariants.monitor_vs_descend_500;
+                    } else if (levelSep >= ALIM) {
+                        ra = sense === raSense.up ? raVariants.monitor_vs_climb_0 : raVariants.monitor_vs_descend_0;
+                    } else {
+                        if (sense === raSense.up) {
+                            ra = upIsCrossing ? raVariants.climb_cross : raVariants.climb;
+                        } else {
+                            ra = downIsCrossing ? raVariants.descend_cross : raVariants.descend;
+                        }
+                    }
+                } else {
+                    // Corrective RA (either climb/descend or level off)
+                    const nominalSep = sense === raSense.up ? upVerticalSep : downVerticalSep;
+                    if (nominalSep > levelSep) {
+                        if (sense === raSense.up) {
+                            ra = upIsCrossing ? raVariants.climb_cross : raVariants.climb;
+                        } else {
+                            ra = downIsCrossing ? raVariants.descend_cross : raVariants.descend;
+                        }
+                    } else {
+                        ra = raVariants.level_off_250_both;
+                    }
+                }
+            } else {
+                // We're above 1500 FPM already, so either maintain VS or level off
+                const nominalSep = sense === raSense.up ? upVerticalSep : downVerticalSep;
+                if (nominalSep > levelSep) {
+                    if (sense === raSense.up) {
+                        ra = upIsCrossing ? raVariants.climb_maintain_vs_crossing : raVariants.climb_maintain_vs;
+                    } else {
+                        ra = downIsCrossing ? raVariants.descend_maintain_vs_crossing : raVariants.descend_maintain_vs;
+                    }
+                } else {
+                    ra = raVariants.level_off_250_both;
+                }
+            }
         } else {
-            const minTargetVS = Math.min(...raVariant.vs.green);
-            const maxTargetVS = Math.max(...raVariant.vs.green);
-            const minDelayTime = selfVS < minTargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-            const maxDelayTime = selfVS > maxTargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-            const minVerticalSep = this.calculateAvoidanceManeuver(minTargetVS, selfVS, selfAlt, trafficAC, minDelayTime, accel) - trafficAltAtCPA;
-            const maxVerticalSep = trafficAltAtCPA - this.calculateAvoidanceManeuver(maxTargetVS, selfVS, selfAlt, trafficAC, maxDelayTime, accel);
-            return Math.max(minVerticalSep, maxVerticalSep);
+            // There is a previous RA, so revise it if necessary
+            // If no RA threats, then just return (TODO: clear of conflict)
+            if (raTraffic.length === 0) {
+                return null;
+            }
+
+            let alreadyAchievedALIM = true;
+            raTraffic.forEach((ac) => {
+                if (Math.abs(selfAlt - ac.alt) < ALIM) {
+                    alreadyAchievedALIM = false;
+                }
+            });
+
+            if (alreadyAchievedALIM) {
+                // We've already achieved ALIM
+                // If 10 seconds or more elapsed since start of RA
+                //   & we haven't yet reached CPA
+                //   & our previous RA wasn't a monitor VS or level off,
+                // THEN issue a level-off weakening RA
+            } else {
+                const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
+                if (predictedSep < ALIM) {
+                    // Won't achieve ALIM anymore :(
+                    // TODO: more logic here
+                } else {
+                    // We're still on track to achieve ALIM
+                    // Do nothing.
+                }
+            }
         }
+
     }
 
-    calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, delayTime, accel) {
+    getPredictedSep(selfVS, selfAlt, otherAircraft) {
+        const minSeparation = CONSTANTS.REALLY_BIG_NUMBER;
+        for (const ac of otherAircraft) {
+            const trafficAltAtCPA = ac.alt + ((ac.vertSpeed * 60) * ac.RaTAU);
+            const myAltAtCPA = selfAlt + ((selfVS * 60) * ac.RaTau);
+            const _sep = Math.abs(myAltAtCPA - trafficAltAtCPA);
+            if (_sep < minSeparation) {
+                minSeparation = _sep;
+            }
+        }
+        return minSeparation;
+    }
+
+    /**
+     * NEW VERTICAL SEP FUNCTION
+     * @param {*} sense
+     * @param {*} selfVS
+     * @param {*} selfAlt
+     * @param {*} targetVS
+     * @param {*} otherAircraft
+     * @param {*} delay
+     * @param {*} accel
+     * @returns
+     */
+    getVerticalSep(sense, selfVS, selfAlt, targetVS, otherAircraft, delay, accel) {
+        let isCrossing = false;
+        let minSeparation = CONSTANTS.REALLY_BIG_NUMBER;
+        for (const ac of otherAircraft) {
+            const trafficAltAtCPA = ac.alt + ((ac.vertSpeed * 60) * ac.RaTAU);
+            let _sep = CONSTANTS.REALLY_BIG_NUMBER;
+            if (sense === raSense.up) {
+                const _delay = selfVS < targetVS ? Math.min(ac.RaTau, delay) : 0;
+                _sep = this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel) - trafficAltAtCPA;
+                if (!isCrossing && (selfAlt + 100) < ac.alt) {
+                    isCrossing = true;
+                }
+            } else if (sense === raSense.down) {
+                const _delay = selfVS > targetVS ? Math.min(ac.RaTau, delay) : 0;
+                _sep = trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel);
+                if (!isCrossing && (selfAlt - 100) > ac.alt) {
+                    isCrossing = true;
+                }
+            }
+
+            if (_sep < minSeparation) {
+                minSeparation = _sep;
+            }
+        }
+        return [minSeparation, isCrossing];
+    }
+
+    // calculateVerticalSeparation(raVariant, selfVS, selfAlt, trafficAC, delayTime, accel) {
+    //     const trafficAltAtCPA = trafficAC.alt + ((trafficAC.vertSpeed * 60) * trafficAC.RaTAU);
+    //     if (raVariant.sense === raSense.up) {
+    //         const targetVS = Math.min(...raVariant.vs.green);
+    //         const newDelayTime = selfVS < targetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+    //         return this.calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, newDelayTime, accel) - trafficAltAtCPA;
+    //     } else if (raVariant.sense === raSense.down) {
+    //         const targetVS = Math.max(...raVariant.vs.green);
+    //         const newDelayTime = selfVS > targetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+    //         return trafficAltAtCPA - this.calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, newDelayTime, accel);
+    //     } else {
+    //         const minTargetVS = Math.min(...raVariant.vs.green);
+    //         const maxTargetVS = Math.max(...raVariant.vs.green);
+    //         const minDelayTime = selfVS < minTargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+    //         const maxDelayTime = selfVS > maxTargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+    //         const minVerticalSep = this.calculateAvoidanceManeuver(minTargetVS, selfVS, selfAlt, trafficAC, minDelayTime, accel) - trafficAltAtCPA;
+    //         const maxVerticalSep = trafficAltAtCPA - this.calculateAvoidanceManeuver(maxTargetVS, selfVS, selfAlt, trafficAC, maxDelayTime, accel);
+    //         return Math.max(minVerticalSep, maxVerticalSep);
+    //     }
+    // }
+
+    calculateTrajectory(targetVS, selfVS, selfAlt, otherAC, delay, accel) {
         // accel must be in f/s^2
         accel = targetVS < selfVS ? -1 * accel : accel;
-        const timeToAccelerate = Math.min(trafficAC.RaTAU - delayTime, ((targetVS - selfVS) * 60) / accel);
-        const remainingTime = trafficAC.RaTau - (delayTime + timeToAccelerate);
+        const timeToAccelerate = Math.min(otherAC.RaTAU - delay, ((targetVS - selfVS) * 60) / accel);
+        const remainingTime = otherAC.RaTau - (delay + timeToAccelerate);
         const predicted_elevation = selfAlt
-                                        + Math.round(selfVS * 60) * (delayTime + timeToAccelerate)
+                                        + Math.round(selfVS * 60) * (delay + timeToAccelerate)
                                         + 0.5 * accel ** timeToAccelerate
                                         + (targetVS * 60) * remainingTime;
         return predicted_elevation;
