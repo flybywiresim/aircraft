@@ -447,6 +447,40 @@ var A320_Neo_UpperECAM;
                             }
                         ]
                     },
+                    {
+                        name: "ENG",
+                        messages: [
+                            {
+                                id: "thr_levers_not_set",
+                                message: "THR LEVERS NOT SET",
+                                level: 2,
+                                flightPhasesInhib: [1, 4, 5, 6, 7, 8, 10],
+                                alwaysShowCategory: true,
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX", "Bool") == 1
+                                    || this.getCachedSimVar("L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA", "Bool") == 1
+                                ),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "THR LEVERS",
+                                        action: "MCT/FLX",
+                                        isCompleted: () => {
+                                            return this.getCachedSimVar("L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX", "Bool") == 0;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "THR LEVERS",
+                                        action: "TOGA",
+                                        isCompleted: () => {
+                                            return this.getCachedSimVar("L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA", "Bool") == 0;
+                                        }
+                                    }
+                                ]
+                            },
+                        ]
+                    },
                     //Airborne
                     {
                         name: "OVERSPEED",

@@ -2860,17 +2860,16 @@
 
                 <Component ID="Overhead_Back_Panel">
                     <!-- "BLUE PUMP OVRD" -->
-
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
-                        <!-- This name is wrong, but it refers to the node we want -->
                         <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</LOCK_NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPY_OVRD_PB_IS_ON</TOGGLE_SIMVAR>
+                        <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_SINGLE_CODE>
+                        <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_LEAVE_CODE>
+                        <TOOLTIPID>Runs the blue electric pump</TOOLTIPID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE>(L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_ON, Bool)</SEQ2_CODE>
+                        <MOMENTARY/>
+                        <NO_SEQ1 />
                     </UseTemplate>
 
                     <!-- "HYD LEAK MEASUREMENT VALVES" -->
