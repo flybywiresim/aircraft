@@ -124,6 +124,7 @@
 1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
 1. [ELEC] Improve electrical system implementation to allow for implementing advanced scenarios - @davidwalschots (David Walschots)
 1. [MCDU] MCDU accepts direct keyboard input (enabled by new option in A32NX Realism Settings). - @2hwk (2Cas#1022)
+1. [ISIS] Implement automatic brightness adjustment for standby instrument - @BlueberryKing (BlueberryKing#6641)
 1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman)
 1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
 1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)
