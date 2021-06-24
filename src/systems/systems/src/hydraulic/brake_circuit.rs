@@ -341,11 +341,6 @@ impl From<u8> for AutobrakeMode {
     }
 }
 
-impl Default for AutobrakePanel {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 pub struct AutobrakePanel {
     lo_button: MomentaryPushButton,
     med_button: MomentaryPushButton,
@@ -405,6 +400,11 @@ impl SimulationElement for AutobrakePanel {
         self.last_max_state = self.max_button.is_pressed();
     }
 }
+impl Default for AutobrakePanel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct AutobrakeDecelerationGovernor {
     target: Acceleration,
@@ -418,11 +418,6 @@ pub struct AutobrakeDecelerationGovernor {
     is_engaged: bool,
     time_engaged: Duration,
     filter: f64,
-}
-impl Default for AutobrakeDecelerationGovernor {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 impl AutobrakeDecelerationGovernor {
     // Low pass filter for controller acceleration input, time constant in second
@@ -500,6 +495,11 @@ impl AutobrakeDecelerationGovernor {
 
     pub fn deceleration_value(&self) -> Acceleration {
         self.acceleration
+    }
+}
+impl Default for AutobrakeDecelerationGovernor {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
