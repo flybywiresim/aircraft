@@ -12,9 +12,9 @@ class CDUAocAirportList {
      */
     init(_dep = "", _arr = "", _alt = "") {
         this.rows = [
-            this.getAssembledAirportInfo(_dep, !!_dep),
-            this.getAssembledAirportInfo(_arr, !!_arr),
-            this.getAssembledAirportInfo(_alt, !!_alt),
+            this.getAssembledAirportInfo(_dep, true),
+            this.getAssembledAirportInfo(_arr, true),
+            this.getAssembledAirportInfo(_alt, true),
             this.getAssembledAirportInfo()
         ];
     }
@@ -26,7 +26,7 @@ class CDUAocAirportList {
      * @returns {{output: string, icao: string, isManaged: boolean}}
      */
     getAssembledAirportInfo(_icao = "", _isManaged = false) {
-        return { icao: _icao, isManaged: _isManaged, output: `{${!_isManaged || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
+        return { icao: _icao, isManaged: _isManaged && !!_icao, output: `{${!_isManaged || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
     }
 
     /**
