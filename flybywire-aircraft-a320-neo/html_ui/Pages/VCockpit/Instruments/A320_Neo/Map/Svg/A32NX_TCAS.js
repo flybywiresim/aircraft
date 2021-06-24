@@ -251,7 +251,7 @@ const raVariants = {
     // LEVEL OFF
     level_off_250_both: {
         callout: taraCallouts.level_off,
-        sense: raSense.level,
+        sense: raSense.up,
         type: raType.corrective,
         vs: {
             green: [-250, 250],
@@ -263,7 +263,7 @@ const raVariants = {
     },
     level_off_300_below: {
         callout: taraCallouts.level_off,
-        sense: raSense.level,
+        sense: raSense.down,
         type: raType.corrective,
         vs: {
             green: [-300, 0],
@@ -275,7 +275,7 @@ const raVariants = {
     },
     level_off_300_above: {
         callout: taraCallouts.level_off,
-        sense: raSense.level,
+        sense: raSense.up,
         type: raType.corrective,
         vs: {
             green: [0, 300],
@@ -495,7 +495,7 @@ class A32NX_TCAS_Manager {
             traffic.intrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
         }
 
-        const ra = this.newRaLogic(selfVS, selfAlt, selfRadioAlt, this.getALIM(this.sensitivityLevel));
+        const ra = this.newRaLogic(vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
         this.updateAdvisoryState(_deltaTime, ra);
     }
 
@@ -600,6 +600,11 @@ class A32NX_TCAS_Manager {
         // Get last RA issued, if any
         const previousRA = this.activeRA;
 
+        const ra = {
+            info: null,
+            isReversal: false
+        };
+
         if (previousRA === null) {
             // This is the initial RA call
             // If no RA threats, then just return
@@ -608,7 +613,7 @@ class A32NX_TCAS_Manager {
             }
 
             // Select sense (TODO: INHIBITIONS)
-            const sense = raSense.up;
+            let sense = raSense.up;
             const [upVerticalSep, upIsCrossing] = this.getVerticalSep(
                 raSense.up,
                 selfVS,
@@ -662,10 +667,6 @@ class A32NX_TCAS_Manager {
                 CONSTANTS.INITIAL_ACCEL
             );
 
-            const ra = {
-                info: null,
-                isReversal: false
-            };
             if (Math.abs(selfVS) < 1500) {
                 // Choose preventive or corrective
                 const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
@@ -729,6 +730,7 @@ class A32NX_TCAS_Manager {
                         }
                     } else {
                         ra.info = raVariants.level_off_250_both;
+                        ra.info.sense = sense;
                     }
                 }
             } else {
@@ -758,11 +760,9 @@ class A32NX_TCAS_Manager {
                 }
             });
 
+            console.log("previousRA: ", previousRA);
             const sense = previousRA.info.sense;
-            const ra = {
-                info: null,
-                isReversal: previousRA.isReversal
-            };
+            ra.isReversal = previousRA.isReversal;
 
             if (alreadyAchievedALIM) {
                 // We've already achieved ALIM
@@ -773,7 +773,10 @@ class A32NX_TCAS_Manager {
                 if (this.secondsSinceStartOfRA >= 10
                     && previousRA.info.callout !== taraCallouts.level_off
                     && previousRA.info.callout !== taraCallouts.monitor_vs) {
-                    ra.info = (previosuRA.info.sense === raSense.up) ? raVariants.level_off_300_above : raVariants.level_off_300_below;
+                    ra.info = (previousRA.info.sense === raSense.up) ? raVariants.level_off_300_above : raVariants.level_off_300_below;
+                } else {
+                    // Continue with same RA
+                    return null;
                 }
             } else {
                 const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
@@ -862,6 +865,9 @@ class A32NX_TCAS_Manager {
                             ra.isReversal = true;
                         }
                     }
+                } else {
+                    // Continue with same RA
+                    return null;
                 }
             }
         }
