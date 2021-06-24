@@ -21,7 +21,6 @@ export const ATC = () => {
     const [lastUpdate, setLastUpdate] = useState<string>();
 
     useEffect(() => {
-        loadAtc();
         const interval = setInterval(() => {
             loadAtc();
             setLastUpdate(new Date().toString());
