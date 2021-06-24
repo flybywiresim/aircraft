@@ -48,9 +48,9 @@ export const ATC = () => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
             for (const a of allAtc) {
-                a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude) * 1.3;
+                a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude);
                 if (a.visualRange === 0 && a.type === apiClient.AtcType.ATIS) {
-                    a.visualRange = 50;
+                    a.visualRange = 100;
                 }
             }
             allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
