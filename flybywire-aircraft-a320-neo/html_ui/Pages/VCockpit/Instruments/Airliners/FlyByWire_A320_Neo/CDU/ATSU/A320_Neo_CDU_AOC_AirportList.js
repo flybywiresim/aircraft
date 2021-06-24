@@ -34,7 +34,7 @@ class CDUAocAirportList {
      * @param _value {string}
      */
     set arrival(_value) {
-        this.canUpdate(1, _value);
+        this.tryUpdate(1, _value);
     }
 
     /**
@@ -42,7 +42,7 @@ class CDUAocAirportList {
      * @param _value {string}
      */
     set alternate(_value) {
-        this.canUpdate(2, _value);
+        this.tryUpdate(2, _value);
     }
 
     /**
@@ -50,7 +50,7 @@ class CDUAocAirportList {
      * @param _index {number}
      * @param _value {string}
      */
-    canUpdate(_index, _value) {
+    tryUpdate(_index, _value) {
         if (this.rows[_index].isManaged || !this.rows[_index].icao) {
             this.rows[_index] = this.getAssembledAirportInfo(_value, true);
         }
