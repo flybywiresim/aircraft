@@ -12,9 +12,9 @@ class CDUAocAirportList {
      */
     init(_dep = "", _arr = "", _alt = "") {
         this.rows = [
-            this.getAssembledAirportInfo(_dep, true),
-            this.getAssembledAirportInfo(_arr, true),
-            this.getAssembledAirportInfo(_alt, true),
+            this.getAssembledAirportInfo(_dep),
+            this.getAssembledAirportInfo(_arr),
+            this.getAssembledAirportInfo(_alt),
             this.getAssembledAirportInfo()
         ];
     }
@@ -25,7 +25,7 @@ class CDUAocAirportList {
      * @param _isManaged {boolean}
      * @returns {{output: string, icao: string, isManaged: boolean}}
      */
-    getAssembledAirportInfo(_icao = "", _isManaged = false) {
+    getAssembledAirportInfo(_icao = "", _isManaged = true) {
         return { icao: _icao, isManaged: _isManaged && !!_icao, output: `{${!_isManaged || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
     }
 
@@ -52,12 +52,12 @@ class CDUAocAirportList {
      */
     tryUpdate(_index, _value) {
         if (this.rows[_index].isManaged || !this.rows[_index].icao) {
-            this.rows[_index] = this.getAssembledAirportInfo(_value, true);
+            this.rows[_index] = this.getAssembledAirportInfo(_value);
         }
     }
 
     set(_index, _value) {
-        this.rows[_index] = this.getAssembledAirportInfo(_value === FMCMainDisplay.clrValue ? "" : _value);
+        this.rows[_index] = this.getAssembledAirportInfo(_value === FMCMainDisplay.clrValue ? "" : _value, false);
     }
 
     /**
