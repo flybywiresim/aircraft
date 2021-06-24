@@ -168,6 +168,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         const apuAvailable = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
+        const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
 
         switch (fwcFlightPhase) {
             case 10 :
@@ -197,18 +198,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.pageNameWhenUnselected = "ENG";
                 break;
             case 6 :
-            case 7 :
-            case 8 :
-            case 9 :
-                const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
-                const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
-                const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") !== 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") !== 0;
 
                 if (isGearExtended && (Simplane.getAltitude() < 16000)) {
                     this.pageNameWhenUnselected = "WHEEL";
                     break;
                     // Else check for CRZ
                 }
+
+                const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
+                const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") !== 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") !== 0;
 
                 if ((spoilerOrFlapsDeployed || ToPowerSet)) {
                     if (this.CrzCondTimer <= 0) {
@@ -218,6 +216,13 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                     }
                 } else if (!spoilerOrFlapsDeployed && !ToPowerSet) {
                     this.pageNameWhenUnselected = "CRZ";
+                }
+                break;
+            case 7 :
+            case 8 :
+            case 9 :
+                if (isGearExtended && (Simplane.getAltitude() < 16000)) {
+                    this.pageNameWhenUnselected = "WHEEL";
                 }
                 break;
             default :
