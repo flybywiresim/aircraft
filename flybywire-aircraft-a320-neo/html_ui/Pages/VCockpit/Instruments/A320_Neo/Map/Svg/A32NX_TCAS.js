@@ -76,19 +76,11 @@ const raVariants = {
         sense: raSense.level,
         type: raType.preventative,
         vs: {
-            condition: [-100, 100],
             green: [-100, 100],
             red: [
                 [CONSTANTS.MIN_VS, -100],
                 [100, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
     monitor_vs_climb_0: {
@@ -96,18 +88,10 @@ const raVariants = {
         sense: raSense.up,
         type: raType.preventative,
         vs: {
-            condition: [0, CONSTANTS.MAX_VS],
             green: [0, CONSTANTS.MAX_VS],
             red: [
                 [CONSTANTS.MIN_VS, 0]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
     monitor_vs_climb_500: {
@@ -115,18 +99,10 @@ const raVariants = {
         sense: raSense.up,
         type: raType.preventative,
         vs: {
-            condition: [-500, CONSTANTS.MAX_VS],
             green: [-500, CONSTANTS.MAX_VS],
             red: [
                 [CONSTANTS.MIN_VS, -500]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
     monitor_vs_climb_1000: {
@@ -134,18 +110,10 @@ const raVariants = {
         sense: raSense.up,
         type: raType.preventative,
         vs: {
-            condition: [-1000, CONSTANTS.MAX_VS],
             green: [-1000, CONSTANTS.MAX_VS],
             red: [
                 [CONSTANTS.MIN_VS, -1000]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
     monitor_vs_climb_2000: {
@@ -153,18 +121,10 @@ const raVariants = {
         sense: raSense.up,
         type: raType.preventative,
         vs: {
-            condition: [-2000, CONSTANTS.MAX_VS],
             green: [-2000, CONSTANTS.MAX_VS],
             red: [
                 [CONSTANTS.MIN_VS, -2000]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
 
@@ -173,18 +133,10 @@ const raVariants = {
         sense: raSense.down,
         type: raType.preventative,
         vs: {
-            condition: [CONSTANTS.MIN_VS, 0],
             green: [CONSTANTS.MIN_VS, 0],
             red: [
                 [0, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
     monitor_vs_descend_500: {
@@ -192,18 +144,10 @@ const raVariants = {
         sense: raSense.down,
         type: raType.preventative,
         vs: {
-            condition: [CONSTANTS.MIN_VS, 500],
             green: [CONSTANTS.MIN_VS, 500],
             red: [
                 [500, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
     monitor_vs_descend_1000: {
@@ -211,18 +155,10 @@ const raVariants = {
         sense: raSense.down,
         type: raType.preventative,
         vs: {
-            condition: [CONSTANTS.MIN_VS, 1000],
             green: [CONSTANTS.MIN_VS, 1000],
             red: [
                 [1000, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
     monitor_vs_descend_2000: {
@@ -230,18 +166,10 @@ const raVariants = {
         sense: raSense.down,
         type: raType.preventative,
         vs: {
-            condition: [CONSTANTS.MIN_VS, 2000],
             green: [CONSTANTS.MIN_VS, 2000],
             red: [
                 [2000, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: false
         }
     },
     // CORRECTIVE RA's
@@ -251,18 +179,10 @@ const raVariants = {
         sense: raSense.up,
         type: raType.corrective,
         vs: {
-            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
             green: [1500, 2000],
             red: [
                 [CONSTANTS.MIN_VS, 1500]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: true,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: true
         }
     },
     climb_cross: {
@@ -270,18 +190,10 @@ const raVariants = {
         sense: raSense.up,
         type: raType.corrective,
         vs: {
-            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
             green: [1500, 2000],
             red: [
                 [CONSTANTS.MIN_VS, 1500]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: true,
-            can_be_reversed: true,
-            requires_crossing: true,
-            forbids_crossing: false
         }
     },
     climb_increase: {
@@ -289,18 +201,21 @@ const raVariants = {
         sense: raSense.up,
         type: raType.corrective,
         vs: {
-            condition: [500, CONSTANTS.MAX_VS],
             green: [2500, 4400],
             red: [
                 [CONSTANTS.MIN_VS, 2500]
             ]
-        },
-        conditions: {
-            can_be_initial: false,
-            can_be_followup: true,
-            can_be_reversed: false,
-            requires_crossing: false,
-            forbids_crossing: false
+        }
+    },
+    climb_now: {
+        callout: taraCallouts.climb_now,
+        sense: raSense.up,
+        type: raType.corrective,
+        vs: {
+            green: [1500, 2000],
+            red: [
+                [CONSTANTS.MIN_VS, 1500]
+            ]
         }
     },
     // CORRECTIVE RA's
@@ -310,18 +225,10 @@ const raVariants = {
         sense: raSense.down,
         type: raType.corrective,
         vs: {
-            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
             green: [-2000, -1500],
             red: [
                 [-1500, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: true,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: true
         }
     },
     descend_cross: {
@@ -329,18 +236,10 @@ const raVariants = {
         sense: raSense.down,
         type: raType.corrective,
         vs: {
-            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
             green: [-2000, -1500],
             red: [
                 [-1500, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: true,
-            can_be_reversed: true,
-            requires_crossing: true,
-            forbids_crossing: false
         }
     },
     descend_increase: {
@@ -348,18 +247,21 @@ const raVariants = {
         sense: raSense.down,
         type: raType.corrective,
         vs: {
-            condition: [CONSTANTS.MIN_VS, -500],
             green: [-4400, -2500],
             red: [
                 [-2500, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: false,
-            can_be_followup: true,
-            can_be_reversed: false,
-            requires_crossing: false,
-            forbids_crossing: false
+        }
+    },
+    descend_now: {
+        callout: taraCallouts.descend_now,
+        sense: raSense.down,
+        type: raType.corrective,
+        vs: {
+            green: [-2000, -1500],
+            red: [
+                [-1500, CONSTANTS.MAX_VS]
+            ]
         }
     },
     // CORRECTIVE RA's
@@ -369,19 +271,11 @@ const raVariants = {
         sense: raSense.level,
         type: raType.corrective,
         vs: {
-            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
             green: [-250, 250],
             red: [
                 [CONSTANTS.MIN_VS, -250],
                 [250, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: true,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: true
         }
     },
     level_off_300_below: {
@@ -389,19 +283,11 @@ const raVariants = {
         sense: raSense.level,
         type: raType.corrective,
         vs: {
-            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
             green: [-300, 0],
             red: [
                 [CONSTANTS.MIN_VS, -300],
                 [0, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: true,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: true
         }
     },
     level_off_300_above: {
@@ -409,19 +295,11 @@ const raVariants = {
         sense: raSense.level,
         type: raType.corrective,
         vs: {
-            condition: [CONSTANTS.MIN_VS, CONSTANTS.MAX_VS],
             green: [0, 300],
             red: [
                 [CONSTANTS.MIN_VS, 0],
                 [300, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: true,
-            can_be_reversed: true,
-            requires_crossing: false,
-            forbids_crossing: true
         }
     },
     // CORRECTIVE RA's
@@ -431,19 +309,11 @@ const raVariants = {
         sense: raSense.up,
         type: raType.corrective,
         vs: {
-            condition: [1500, 4400],
             green: [1500, 4400],
             red: [
                 [CONSTANTS.MIN_VS, 1500],
                 [4400, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: false,
-            requires_crossing: false,
-            forbids_crossing: true
         }
     },
     climb_maintain_vs_crossing: {
@@ -451,19 +321,11 @@ const raVariants = {
         sense: raSense.up,
         type: raType.corrective,
         vs: {
-            condition: [1500, 4400],
             green: [1500, 4400],
             red: [
                 [CONSTANTS.MIN_VS, 1500],
                 [4400, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: false,
-            requires_crossing: true,
-            forbids_crossing: false
         }
     },
     // CORRECTIVE RA's
@@ -473,19 +335,11 @@ const raVariants = {
         sense: raSense.down,
         type: raType.corrective,
         vs: {
-            condition: [-4400, -1500],
             green: [-4400, -1500],
             red: [
                 [CONSTANTS.MIN_VS, -4400],
                 [-1500, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: false,
-            requires_crossing: false,
-            forbids_crossing: true
         }
     },
     descend_maintain_vs_crossing: {
@@ -493,19 +347,11 @@ const raVariants = {
         sense: raSense.down,
         type: raType.corrective,
         vs: {
-            condition: [-4400, -1500],
             green: [-4400, -1500],
             red: [
                 [CONSTANTS.MIN_VS, -4400],
                 [-1500, CONSTANTS.MAX_VS]
             ]
-        },
-        conditions: {
-            can_be_initial: true,
-            can_be_followup: false,
-            can_be_reversed: false,
-            requires_crossing: true,
-            forbids_crossing: false
         }
     }
 };
@@ -667,7 +513,6 @@ class A32NX_TCAS_Manager {
         }
 
         // console.log("TCAS: in update near end");
-        const ra = this.raLogic(_deltaTime, vertSpeed, altitude, radioAltitude, ALIM, false); // Placeholder value for onlyPreventative
         this.updateAdvisoryState(_deltaTime, ra);
         // console.log("TCAS: in update end");
     }
@@ -745,154 +590,6 @@ class A32NX_TCAS_Manager {
     }
 
     /**
-     * Iterates through each RA threat (and its associated CPA data),
-     * and filters out all inapplicable RA variants.
-     * Then, perform computation for each applicable RA, and
-     * pick one with best vertical separation and other criteria
-     */
-    raLogic(_deltaTime, selfVertSpeed, selfAlt, selfRadioAlt, ALIM, onlyPreventative) {
-        // Get all active, valid RA threats, sorted by lowest TAU first
-        const raTraffic = this.TrafficAircraft
-            .filter((aircraft) => {
-                return aircraft.intrusionLevel === 3 && aircraft.RaTAU != Infinity;
-            })
-            .sort((a, b) => {
-                return a.RaTAU - b.RaTAU;
-            });
-
-        // No RA's found
-        if (raTraffic.length === 0) {
-            return null;
-        }
-
-        const previousRA = this.activeRA;
-        const validRaVariants = Object.values(raVariants).filter((ra) => {
-            const isInitial = previousRA === null ? true : false;
-            const lastCallout = isInitial ? null : previousRA.info.callout;
-            const lastSense = isInitial ? raSense.level_off : previousRA.info.sense;
-            const lastType = isInitial ? null : previousRA.info.type;
-            const isReversal = (previousRA === null) && lastSense !== ra.sense;
-
-            // If we're below 1000 ft AGL, inhibit all RA's
-            const check1000 = selfRadioAlt > CONSTANTS.INHIBIT_ALL_RA;
-            // Check whether the RA variant agrees with initial or followup RA status
-            const a = (isInitial && ra.conditions.can_be_initial) || (!isInitial && ra.conditions.can_be_followup);
-            // Make sure our own VS falls within this RA's required initial VS
-            const b = (selfVertSpeed > ra.vs.condition[0] && selfVertSpeed < ra.vs.condition[1]);
-            // Make sure the RA allows reversals if needed
-            const c = isReversal ? ra.conditions.can_be_reversed : true;
-            // Only allow preventative RA's if requested
-            const d = onlyPreventative ? ra.type === raType.preventative : true;
-            // Inhibit climb RA's above service ceiling
-            const e = (selfAlt >= CONSTANTS.INHIBIT_CLB_RA) ? ra.sense !== raSense.up : true;
-            // Inhibit all descend RA's below predefined altitude
-            const f = (selfRadioAlt <= CONSTANTS.INHIBIT_ALL_DES_RA_AGL) ? ra.sense !== raSense.down : true;
-            // Inhibit increase descent RA's below predefined altitude
-            const g = (selfRadioAlt <= CONSTANTS.INHIBIT_INC_DES_RA_AGL) ? ra.callout !== taraCallouts.descend_increase : true;
-            // Proper RA weakening for increase climb & descent RA's
-            const h = (lastCallout !== null && lastCallout === taraCallouts.climb_increase) ? ra.callout !== taraCallouts.climb || ra.callout !== taraCallouts.climb_cross : true;
-            const i = (lastCallout !== null && lastCallout === taraCallouts.descend_increase) ? ra.callout !== taraCallouts.descend || ra.callout !== taraCallouts.descend_cross : true;
-            // Inhibit level off RA's following preventive RA's
-            const j = (lastType !== null && lastType === raType.preventative) ? ra.callout !== taraCallouts.level_off : true;
-
-            return check1000 && a && b && c && d && e && f && g && h && i && j;
-        });
-
-        const raAttempts = [];
-        for (const ra of validRaVariants) {
-            const isInitial = previousRA === null ? true : false;
-            const lastSense = isInitial ? raSense.level_off : previousRA.info.sense;
-            // Assume reaction time of 5 seconds for first RA, 2.5 seconds for follow-ups
-            const delay = isInitial ? 5 : 2.5;
-            // Assume acceleration of 0.25G (8.044 f/s^2) for first RA, 0.33G (10.62) for follow-ups
-            const accel = isInitial ? 8.044 : 10.62;
-
-            const attempt = {
-                info: ra,
-                isCrossing: false,
-                isReversal: (previousRA === null && lastSense !== ra.sense),
-                minSeparation: CONSTANTS.REALLY_BIG_NUMBER,
-                achievesALIM: null
-            };
-            for (const traffic of raTraffic) {
-                const verticalSep = this.calculateVerticalSeparation(ra, selfVertSpeed, selfAlt, traffic, delay, accel);
-                if (verticalSep < attempt.minSeparation) {
-                    attempt.minSeparation = verticalSep;
-                }
-                if ((ra.sense === raSense.up && selfAlt < traffic.alt)
-                    || ra.sense === raSense.down && selfAlt > traffic.alt) {
-                    attempt.isCrossing = true;
-                }
-            }
-
-            attempt.achievesALIM = (attempt.minSeparation >= ALIM);
-
-            // Only push attempt to raAttempts if it doesn't violate crossing rules
-            if (ra.conditions.requires_crossing && !attempt.isCrossing
-                || ra.conditions.forbids_crossing && attempt.isCrossing) {
-                continue;
-            }
-            // Do not push preventive RA's which do not achieve ALIM
-            if (ra.type === raType.preventative && !attempt.achievesALIM) {
-                continue;
-            }
-            raAttempts.push(attempt);
-        }
-
-        raAttempts.sort((a, b) => {
-            // If only one achieves ALIM, pick it
-            if (a.achievesALIM && !b.achievesALIM) {
-                return -1;
-            }
-            if (b.achievesALIM && !a.achievesALIM) {
-                return 1;
-            }
-
-            // If neither achieve ALIM, then greatest separation
-            if (!a.achievesALIM && !b.achievesALIM) {
-                if (Math.max(a.minSeparation, 0) > Math.max(b.minSeparation, 0)) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            }
-
-            // Prefer non-reversals
-            if (!a.isReversal && b.isReversal) {
-                return -1;
-            }
-            if (a.isReversal && !b.isReversal) {
-                return 1;
-            }
-
-            // Prefer non-crossings
-            if (!a.isCrossing && b.isCrossing) {
-                return -1;
-            }
-            if (a.isCrossing && !b.isCrossing) {
-                return 1;
-            }
-
-            // TODO:
-            // --- Prefer least disruptive RA's (VS change)
-            // --- Prefer greatest separation (again)
-            // --- Prefer preventative over corrective
-            return -1;
-        });
-
-        if (raAttempts.length !== 0) {
-            const ra = raAttempts[0];
-            if (previousRA !== null
-                && ra.info.callout === previousRA.info.callout
-                && ra.info.vs.green === previousRA.info.vs.green) {
-                return null;
-            }
-            return ra;
-        }
-        return null;
-    }
-
-    /**
      * NEW RA LOGIC FUNCTION
      * @param {*} _deltaTime
      * @param {*} selfVertSpeed
@@ -903,6 +600,10 @@ class A32NX_TCAS_Manager {
      */
 
     // TODO: INHIBITIONS
+    // Inhibit all RA's below 1000ft AGL
+    // Inhibit descend RA's below CONSTANTS.INHIBIT_ALL_DES_RA_AGL
+    // Inhibit increase descent RA's below CONSTANTS.INHIBIT_INC_DES_RA_AGL
+    // Inhibit climb RA's above service ceiling (39,000 feet)
 
     newRaLogic(_deltaTime, selfVS, selfAlt, selfRadioAlt, ALIM) {
         // Get all active, valid RA threats, sorted by lowest TAU first
@@ -979,7 +680,11 @@ class A32NX_TCAS_Manager {
                 CONSTANTS.INITIAL_ACCEL
             );
 
-            const ra = null;
+            const ra = {
+                info: null,
+                isReversal: false,
+                clearOfConflict: false
+            };
             if (Math.abs(selfVS) < 1500) {
                 // Choose preventive or corrective
                 const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
@@ -1018,18 +723,18 @@ class A32NX_TCAS_Manager {
                     // Find preventive RA's which achieve ALIM
                     // If none achieve ALIM, then use nominal RA
                     if (sep2000 >= ALIM) {
-                        ra = sense === raSense.up ? raVariants.monitor_vs_climb_2000 : raVariants.monitor_vs_descend_2000;
+                        ra.info = (sense === raSense.up) ? raVariants.monitor_vs_climb_2000 : raVariants.monitor_vs_descend_2000;
                     } else if (sep1000 >= ALIM) {
-                        ra = sense === raSense.up ? raVariants.monitor_vs_climb_1000 : raVariants.monitor_vs_descend_1000;
+                        ra.info = (sense === raSense.up) ? raVariants.monitor_vs_climb_1000 : raVariants.monitor_vs_descend_1000;
                     } else if (sep500 >= ALIM) {
-                        ra = sense === raSense.up ? raVariants.monitor_vs_climb_500 : raVariants.monitor_vs_descend_500;
+                        ra.info = (sense === raSense.up) ? raVariants.monitor_vs_climb_500 : raVariants.monitor_vs_descend_500;
                     } else if (levelSep >= ALIM) {
-                        ra = sense === raSense.up ? raVariants.monitor_vs_climb_0 : raVariants.monitor_vs_descend_0;
+                        ra.info = (sense === raSense.up) ? raVariants.monitor_vs_climb_0 : raVariants.monitor_vs_descend_0;
                     } else {
                         if (sense === raSense.up) {
-                            ra = upIsCrossing ? raVariants.climb_cross : raVariants.climb;
+                            ra.info = upIsCrossing ? raVariants.climb_cross : raVariants.climb;
                         } else {
-                            ra = downIsCrossing ? raVariants.descend_cross : raVariants.descend;
+                            ra.info = downIsCrossing ? raVariants.descend_cross : raVariants.descend;
                         }
                     }
                 } else {
@@ -1037,12 +742,12 @@ class A32NX_TCAS_Manager {
                     const nominalSep = sense === raSense.up ? upVerticalSep : downVerticalSep;
                     if (nominalSep > levelSep) {
                         if (sense === raSense.up) {
-                            ra = upIsCrossing ? raVariants.climb_cross : raVariants.climb;
+                            ra.info = upIsCrossing ? raVariants.climb_cross : raVariants.climb;
                         } else {
-                            ra = downIsCrossing ? raVariants.descend_cross : raVariants.descend;
+                            ra.info = downIsCrossing ? raVariants.descend_cross : raVariants.descend;
                         }
                     } else {
-                        ra = raVariants.level_off_250_both;
+                        ra.info = raVariants.level_off_250_both;
                     }
                 }
             } else {
@@ -1050,19 +755,21 @@ class A32NX_TCAS_Manager {
                 const nominalSep = sense === raSense.up ? upVerticalSep : downVerticalSep;
                 if (nominalSep > levelSep) {
                     if (sense === raSense.up) {
-                        ra = upIsCrossing ? raVariants.climb_maintain_vs_crossing : raVariants.climb_maintain_vs;
+                        ra.info = upIsCrossing ? raVariants.climb_maintain_vs_crossing : raVariants.climb_maintain_vs;
                     } else {
-                        ra = downIsCrossing ? raVariants.descend_maintain_vs_crossing : raVariants.descend_maintain_vs;
+                        ra.info = downIsCrossing ? raVariants.descend_maintain_vs_crossing : raVariants.descend_maintain_vs;
                     }
                 } else {
-                    ra = raVariants.level_off_250_both;
+                    ra.info = raVariants.level_off_250_both;
                 }
             }
         } else {
             // There is a previous RA, so revise it if necessary
-            // If no RA threats, then just return (TODO: clear of conflict)
+            // If no RA threats, then just return (clear of conflict)
             if (raTraffic.length === 0) {
-                return null;
+                ra = previousRA;
+                ra.clearOfConflict = true;
+                return ra;
             }
 
             let alreadyAchievedALIM = true;
@@ -1072,26 +779,125 @@ class A32NX_TCAS_Manager {
                 }
             });
 
+            const sense = previousRA.info.sense;
+            const ra = {
+                info: null,
+                isReversal: previousRA.isReversal,
+                clearOfConflict: false
+            };
+
             if (alreadyAchievedALIM) {
                 // We've already achieved ALIM
                 // If 10 seconds or more elapsed since start of RA
-                //   & we haven't yet reached CPA
+                //   & (DEFERRED) we haven't yet reached CPA
                 //   & our previous RA wasn't a monitor VS or level off,
                 // THEN issue a level-off weakening RA
+                if (this.secondsSinceStartOfRA >= 10
+                    && previousRA.info.callout !== taraCallouts.level_off
+                    && previousRA.info.callout !== taraCallouts.monitor_vs) {
+                    ra.info = (previosuRA.info.sense === raSense.up) ? raVariants.level_off_300_above : raVariants.level_off_300_below;
+                }
             } else {
                 const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
                 if (predictedSep < ALIM) {
                     // Won't achieve ALIM anymore :(
-                    // TODO: more logic here
-                } else {
-                    // We're still on track to achieve ALIM
-                    // Do nothing.
+                    const mul = (sense === raSense.up) ? 1 : -1;
+                    let increaseSep = null;
+                    let increaseCross = null;
+                    let strength = 0;
+
+                    if (previousRA.info.callout === taraCallouts.level_off
+                        || previousRA.info.callout === taraCallouts.monitor_vs) {
+                        strength = 1;
+                        [increaseSep, increaseCross] = this.getVerticalSep(
+                            sense,
+                            selfVS,
+                            selfAlt,
+                            mul * 1500,
+                            raTraffic,
+                            CONSTANTS.FOLLOWUP_DELAY,
+                            CONSTANTS.FOLLOWUP_ACCEL
+                        );
+                        if (increaseCross) {
+                            const strengthenRaInfo = (raSense === raSense.up) ? raVariants.climb_cross : raVariants.descend_cross;
+                        } else {
+                            const strengthenRaInfo = (raSense === raSense.up) ? raVariants.climb : raVariants.descend;
+                        }
+                    } else if (previousRA.info.callout === taraCallouts.climb
+                        || previousRA.info.callout === taraCallouts.climb_cross
+                        || previousRA.info.callout === taraCallouts.climb_maintain_vs
+                        || previousRA.info.callout === taraCallouts.climb_maintain_vs_crossing
+                        || previousRA.info.callout === taraCallouts.descend
+                        || previousRA.info.callout === taraCallouts.descend_cross
+                        || previousRA.info.callout === taraCallouts.descend_maintain_vs
+                        || previousRA.info.callout === taraCallouts.descend_maintain_vs_crossing) {
+                        strength = 2;
+                        [increaseSep, increaseCross] = this.getVerticalSep(
+                            sense,
+                            selfVS,
+                            selfAlt,
+                            mul * 2500,
+                            raTraffic,
+                            CONSTANTS.FOLLOWUP_DELAY,
+                            CONSTANTS.FOLLOWUP_ACCEL
+                        );
+                        const strengthenRaInfo = (raSense === raSense.up) ? raVariants.climb_increase : raVariants.descend_increase;
+                    }
+
+                    if (previousRA.isReversal) {
+                        // We've reversed before. Can only increase strength if able
+                        ra.info = strengthenRaInfo;
+                    } else {
+                        // Haven't reversed before, so it's still a possibility
+                        const reversedSense = (sense === raSense.up) ? raSense.down : raSense.up;
+                        const revMul = (reversedSense === raSense.up) ? 1 : -1;
+                        const [reverseSep, reverseCross] = this.getVerticalSep(
+                            reversedSense,
+                            selfVS,
+                            selfAlt,
+                            revMul * 1500,
+                            raTraffic,
+                            CONSTANTS.FOLLOWUP_DELAY,
+                            CONSTANTS.FOLLOWUP_ACCEL
+                        );
+
+                        // If both achieve ALIM, prefer non-reversal
+                        if (increaseSep >= ALIM && reverseSep >= ALIM) {
+                            ra.info = strengthenRaInfo;
+                        }
+
+                        // If neither achieve ALIM, choose sense with greatest separation
+                        if (increaseSep < ALIM && reverseSep < ALIM) {
+                            if (increaseSep >= reverseSep) {
+                                ra.info = strengthenRaInfo;
+                            } else {
+                                ra.info = (reversedSense === raSense.up) ? raVariants.climb_now : raVariants.descend_now;
+                                ra.isReversal = true;
+                            }
+                        }
+
+                        // If only one achieves ALIM, pick it
+                        if (increaseSep >= ALIM && reverseSep < ALIM) {
+                            ra.info = strengthenRaInfo;
+                        } else {
+                            ra.info = (reversedSense === raSense.up) ? raVariants.climb_now : raVariants.descend_now;
+                            ra.isReversal = true;
+                        }
+                    }
                 }
             }
         }
 
+        return ra;
     }
 
+    /**
+     *
+     * @param {*} selfVS
+     * @param {*} selfAlt
+     * @param {*} otherAircraft
+     * @returns
+     */
     getPredictedSep(selfVS, selfAlt, otherAircraft) {
         const minSeparation = CONSTANTS.REALLY_BIG_NUMBER;
         for (const ac of otherAircraft) {
@@ -1142,27 +948,6 @@ class A32NX_TCAS_Manager {
         }
         return [minSeparation, isCrossing];
     }
-
-    // calculateVerticalSeparation(raVariant, selfVS, selfAlt, trafficAC, delayTime, accel) {
-    //     const trafficAltAtCPA = trafficAC.alt + ((trafficAC.vertSpeed * 60) * trafficAC.RaTAU);
-    //     if (raVariant.sense === raSense.up) {
-    //         const targetVS = Math.min(...raVariant.vs.green);
-    //         const newDelayTime = selfVS < targetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-    //         return this.calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, newDelayTime, accel) - trafficAltAtCPA;
-    //     } else if (raVariant.sense === raSense.down) {
-    //         const targetVS = Math.max(...raVariant.vs.green);
-    //         const newDelayTime = selfVS > targetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-    //         return trafficAltAtCPA - this.calculateAvoidanceManeuver(targetVS, selfVS, selfAlt, trafficAC, newDelayTime, accel);
-    //     } else {
-    //         const minTargetVS = Math.min(...raVariant.vs.green);
-    //         const maxTargetVS = Math.max(...raVariant.vs.green);
-    //         const minDelayTime = selfVS < minTargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-    //         const maxDelayTime = selfVS > maxTargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-    //         const minVerticalSep = this.calculateAvoidanceManeuver(minTargetVS, selfVS, selfAlt, trafficAC, minDelayTime, accel) - trafficAltAtCPA;
-    //         const maxVerticalSep = trafficAltAtCPA - this.calculateAvoidanceManeuver(maxTargetVS, selfVS, selfAlt, trafficAC, maxDelayTime, accel);
-    //         return Math.max(minVerticalSep, maxVerticalSep);
-    //     }
-    // }
 
     calculateTrajectory(targetVS, selfVS, selfAlt, otherAC, delay, accel) {
         // accel must be in f/s^2
