@@ -159,7 +159,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
 
-        // modification start here
         const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
 
         //Determine displayed page when no button is selected
@@ -201,15 +200,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             case 7 :
             case 8 :
             case 9 :
+                const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
+                const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
+                const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") !== 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") !== 0;
+
                 if (isGearExtended && (Simplane.getAltitude() < 16000)) {
                     this.pageNameWhenUnselected = "WHEEL";
                     break;
                     // Else check for CRZ
                 }
-
-                const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
-                const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
-                const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") !== 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") !== 0;
 
                 if ((spoilerOrFlapsDeployed || ToPowerSet)) {
                     if (this.CrzCondTimer <= 0) {
@@ -222,7 +221,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 }
                 break;
             default :
-                console.error("FWC out of range: " + fwcFlightPhase);
+                // Sometimes happens when loading in, in which case we have to initialise pageNameWhenUnselected here.
+                this.pageNameWhenUnselected = "DOOR";
                 break;
         }
 

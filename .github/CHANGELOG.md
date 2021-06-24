@@ -124,7 +124,7 @@
 1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
 1. [ELEC] Improve electrical system implementation to allow for implementing advanced scenarios - @davidwalschots (David Walschots)
 1. [MCDU] MCDU accepts direct keyboard input (enabled by new option in A32NX Realism Settings). - @2hwk (2Cas#1022)
-1. [ECAM] Fix ECAM pages use proper FWC phase logic - @2hwk (2Cas#1022)
+1. [ECAM] Autoswitch ECAM pages use proper FWC phase logic - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
