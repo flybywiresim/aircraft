@@ -1594,7 +1594,7 @@ impl A320AutobrakeController {
 impl SimulationElement for A320AutobrakeController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write("AUTOBRAKES_ARMED_MODE", self.mode as u8 as f64);
-        writer.write("AUTOBRAKES_BRAKING", self.is_decelerating());
+        writer.write("AUTOBRAKES_DECEL_LIGHT", self.is_decelerating());
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {

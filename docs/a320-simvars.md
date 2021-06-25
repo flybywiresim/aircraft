@@ -906,7 +906,7 @@
         - 2: Autobrake in MED
         - 3: Autobrake in MAX
 
-- A32NX_AUTOBRAKES_BRAKING
+- A32NX_AUTOBRAKES_DECEL_LIGHT
     - Bool
     - Autobrakes are braking and reached the deceleration target
 
@@ -1228,7 +1228,7 @@
       --- | ---
       SELECTED | 0
       MANAGED | 1
-      
+
 - A32NX_FCU_SPD_MANAGED_DOT
   - Boolean
   - Indicates if managed speed/mach mode is active
