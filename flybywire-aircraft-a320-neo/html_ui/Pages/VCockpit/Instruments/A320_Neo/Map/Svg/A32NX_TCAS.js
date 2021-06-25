@@ -625,7 +625,7 @@ class A32NX_TCAS_Manager {
                 true
             );
             const [downVerticalSep, downIsCrossing] = this.getVerticalSep(
-                raSense.up,
+                raSense.down,
                 selfVS,
                 selfAlt,
                 -1500,
@@ -775,7 +775,7 @@ class A32NX_TCAS_Manager {
                 }
             });
 
-            // console.log("previousRA: ", previousRA);
+            console.log("previousRA: ", previousRA);
             const sense = previousRA.info.sense;
             ra.isReversal = previousRA.isReversal;
 
@@ -794,7 +794,7 @@ class A32NX_TCAS_Manager {
                     return null;
                 }
             } else {
-                const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
+                const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic); // need this to factor in level off/maintain VS RA's
                 let strengthenRaInfo = null;
                 if (predictedSep < ALIM) {
                     // Won't achieve ALIM anymore :(
@@ -849,7 +849,12 @@ class A32NX_TCAS_Manager {
 
                     if (previousRA.isReversal) {
                         // We've reversed before. Can only increase strength if able
-                        ra.info = strengthenRaInfo;
+                        if (strengthenRaInfo === null) {
+                            // We're at the strongest RA type possible. So cannot reverse.
+                            return null;
+                        } else {
+                            ra.info = strengthenRaInfo;
+                        }
                     } else {
                         // Haven't reversed before, so it's still a possibility
                         const reversedSense = (sense === raSense.up) ? raSense.down : raSense.up;
@@ -863,6 +868,16 @@ class A32NX_TCAS_Manager {
                             CONSTANTS.FOLLOWUP_DELAY,
                             CONSTANTS.FOLLOWUP_ACCEL
                         );
+
+                        // If cannot increase RA, then pick between current separation and reverse
+                        if (strengthenRaInfo === null) {
+                            if (predictedSep >= reverseSep) {
+                                return null;
+                            } else {
+                                ra.info = (reversedSense === raSense.up) ? raVariants.climb_now : raVariants.descend_now;
+                                ra.isReversal = true;
+                            }
+                        }
 
                         // If both achieve ALIM, prefer non-reversal
                         if (increaseSep >= ALIM && reverseSep >= ALIM) {
@@ -943,14 +958,14 @@ class A32NX_TCAS_Manager {
             let _sep = CONSTANTS.REALLY_BIG_NUMBER;
             if (sense === raSense.up) {
                 const _delay = selfVS < targetVS ? Math.min(ac.RaTAU, delay) : 0;
-                _sep = Math.max(this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug) - trafficAltAtCPA, 0);
+                _sep = Math.max(this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug) - trafficAltAtCPA, 0); // max might not be needed
                 console.log("--------> Up traffic _sep=" + _sep);
                 if (!isCrossing && (selfAlt + 100) < ac.alt) {
                     isCrossing = true;
                 }
             } else if (sense === raSense.down) {
                 const _delay = selfVS > targetVS ? Math.min(ac.RaTAU, delay) : 0;
-                _sep = Math.max(trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug), 0);
+                _sep = Math.max(trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug), 0); // max might not be needed
                 console.log("--------> Down traffic _sep=" + _sep);
                 if (!isCrossing && (selfAlt - 100) > ac.alt) {
                     isCrossing = true;
