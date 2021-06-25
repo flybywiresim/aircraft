@@ -358,7 +358,6 @@ class A32NX_TCAS_Manager {
         // Timekeeping
         this.secondsSinceLastTA = 100;
         this.secondsSinceLastRA = 100;
-        this.secondsSinceStartOfRA = 0;
         console.log("TCAS: in constructor ending");
     }
 
@@ -495,11 +494,21 @@ class A32NX_TCAS_Manager {
                 verticalIntrusionLevel = 0;
             }
 
-            traffic.intrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
+            traffic.intrusionLevel = this.updateIntrusionLevel(verticalIntrusionLevel, rangeIntrusionLevel);
         }
 
         const ra = this.newRaLogic(_deltaTime, vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
         this.updateAdvisoryState(_deltaTime, ra);
+    }
+
+    updateIntrusionLevel(verticalIntrusionLevel, rangeIntrusionLevel) {
+        const _desiredIntrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
+        // Minimum RA duration is 5 seconds - don't remove it before then
+        if (this.activeRA !== null && _desiredIntrusionLevel < 3 && this.activeRA.secondsSinceStart < 5) {
+            return 3;
+        } else {
+            return _desiredIntrusionLevel;
+        }
     }
 
     /**
@@ -517,7 +526,6 @@ class A32NX_TCAS_Manager {
             case tcasState.TA:
                 if (raThreatCount > 0) {
                     this.advisoryState = tcasState.RA;
-                    this.secondsSinceStartOfRA = 0;
                     console.log("TCAS: TA UPGRADED TO RA");
                     console.log("_ra:", _ra);
                 } else if (taThreatCount === 0) {
@@ -538,14 +546,11 @@ class A32NX_TCAS_Manager {
                     console.log("TCAS: CLEAR OF CONFLICT");
                     Coherent.call("PLAY_INSTRUMENT_SOUND", "clear_of_conflict");
                     this.activeRA = null;
-                } else {
-                    this.secondsSinceStartOfRA += _deltaTime / 1000;
                 }
                 break;
             default:
                 if (raThreatCount > 0) {
                     this.advisoryState = tcasState.RA;
-                    this.secondsSinceStartOfRA = 0;
                 } else {
                     if (taThreatCount > 0) {
                         this.advisoryState = tcasState.TA;
@@ -569,8 +574,12 @@ class A32NX_TCAS_Manager {
 
         if (_ra !== null && this.advisoryState === tcasState.RA) {
             this.activeRA = _ra;
-            Coherent.call("PLAY_INSTRUMENT_SOUND", this.activeRA.info.callout);
-            console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
+            this.activeRA.secondsSinceStart += _deltaTime / 1000;
+            if (!this.activeRA.hasBeenAnnounced) {
+                Coherent.call("PLAY_INSTRUMENT_SOUND", this.activeRA.info.callout);
+                console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
+                this.activeRA.hasBeenAnnounced = true;
+            }
         }
     }
 
@@ -605,7 +614,9 @@ class A32NX_TCAS_Manager {
 
         const ra = {
             info: null,
-            isReversal: false
+            isReversal: false,
+            secondsSinceStart: 0,
+            hasBeenAnnounced: false
         };
 
         if (previousRA === null) {
@@ -781,6 +792,7 @@ class A32NX_TCAS_Manager {
             console.log("previousRA: ", previousRA);
             const sense = previousRA.info.sense;
             ra.isReversal = previousRA.isReversal;
+            ra.secondsSinceStart = previousRA.secondsSinceStart;
 
             if (alreadyAchievedALIM) {
                 // We've already achieved ALIM
@@ -788,13 +800,14 @@ class A32NX_TCAS_Manager {
                 //   & (DEFERRED) we haven't yet reached CPA
                 //   & our previous RA wasn't a monitor VS or level off,
                 // THEN issue a level-off weakening RA
-                if (this.secondsSinceStartOfRA >= 10
+                if (previousRA.secondsSinceStart >= 10
                     && previousRA.info.callout !== taraCallouts.level_off
                     && previousRA.info.callout !== taraCallouts.monitor_vs) {
                     ra.info = (previousRA.info.sense === raSense.up) ? raVariants.level_off_300_above : raVariants.level_off_300_below;
                 } else {
                     // Continue with same RA
-                    return null;
+                    ra.info = previousRA.info;
+                    ra.hasBeenAnnounced = true;
                 }
             } else {
                 const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic); // need this to factor in level off/maintain VS RA's
@@ -850,11 +863,13 @@ class A32NX_TCAS_Manager {
                         console.log("StrengthenRAInfo: condition not met. Callout: ", previousRA.info.callout);
                     }
 
-                    if (previousRA.isReversal) {
-                        // We've reversed before. Can only increase strength if able
+                    if (previousRA.isReversal || previousRA.secondsSinceStart < 5) {
+                        // We've reversed before, or less than 5 seconds have elapsed since start of RA.
+                        // Can only increase strength if able
                         if (strengthenRaInfo === null) {
                             // We're at the strongest RA type possible. So cannot reverse.
-                            return null;
+                            ra.info = previousRA.info;
+                            ra.hasBeenAnnounced = true;
                         } else {
                             ra.info = strengthenRaInfo;
                         }
@@ -875,7 +890,9 @@ class A32NX_TCAS_Manager {
                         // If cannot increase RA, then pick between current separation and reverse
                         if (strengthenRaInfo === null) {
                             if (predictedSep >= reverseSep) {
-                                return null;
+                                ra.info = previousRA.info;
+                                ra.hasBeenAnnounced = false;
+                                return ra;
                             } else {
                                 ra.info = (reversedSense === raSense.up) ? raVariants.climb_now : raVariants.descend_now;
                                 ra.isReversal = true;
@@ -907,7 +924,8 @@ class A32NX_TCAS_Manager {
                     }
                 } else {
                     // Continue with same RA
-                    return null;
+                    ra.info = previousRA.info;
+                    ra.hasBeenAnnounced = false;
                 }
             }
         }
