@@ -495,7 +495,7 @@ class A32NX_TCAS_Manager {
             traffic.intrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
         }
 
-        const ra = this.newRaLogic(vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
+        const ra = this.newRaLogic(_deltaTime, vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
         this.updateAdvisoryState(_deltaTime, ra);
     }
 
@@ -621,7 +621,8 @@ class A32NX_TCAS_Manager {
                 1500,
                 raTraffic,
                 CONSTANTS.INITIAL_DELAY,
-                CONSTANTS.INITIAL_ACCEL
+                CONSTANTS.INITIAL_ACCEL,
+                true
             );
             const [downVerticalSep, downIsCrossing] = this.getVerticalSep(
                 raSense.up,
@@ -630,11 +631,19 @@ class A32NX_TCAS_Manager {
                 -1500,
                 raTraffic,
                 CONSTANTS.INITIAL_DELAY,
-                CONSTANTS.INITIAL_ACCEL
+                CONSTANTS.INITIAL_ACCEL,
+                true
             );
+
+            console.log("TCAS: INITIAL RA: SELECTING SENSE");
+            console.log("---------------------------------");
+            console.log("UP VERTICAL SEPARATION at 1500: ", upVerticalSep, "; upIsCrossing: " + upIsCrossing);
+            console.log("DOWN VERTICAL SEPARATION at 1500: ", downVerticalSep, "; downIsCrossing: " + downIsCrossing);
+            console.log("ALIM IS ", ALIM);
 
             // If both achieve ALIM, prefer non-crossing
             if (upVerticalSep >= ALIM && downVerticalSep >= ALIM) {
+                console.log("BOTH ACHIEVE ALIM");
                 if (upIsCrossing && !downIsCrossing) {
                     sense = raSense.down;
                 } else if (!upIsCrossing && downIsCrossing) {
@@ -647,12 +656,15 @@ class A32NX_TCAS_Manager {
             // If neither achieve ALIM, choose sense with greatest separation
             if (upVerticalSep < ALIM && downVerticalSep < ALIM) {
                 sense = upVerticalSep > downVerticalSep ? raSense.up : raSense.down;
+                console.log("NEITHER ACHIEVE ALIM, PICKING GREATEST SEPARATION");
             }
 
             // If only one achieves ALIM, pick it
             if (upVerticalSep >= ALIM && downVerticalSep < ALIM) {
+                console.log("UP ACHIEVES ALIM");
                 sense = raSense.up;
             } else {
+                console.log("DOWN ACHIEVES ALIM");
                 sense = raSense.down;
             }
 
@@ -664,8 +676,11 @@ class A32NX_TCAS_Manager {
                 0,
                 raTraffic,
                 CONSTANTS.INITIAL_DELAY,
-                CONSTANTS.INITIAL_ACCEL
+                CONSTANTS.INITIAL_ACCEL,
+                true
             );
+
+            console.log("levelSep is: " + levelSep);
 
             if (Math.abs(selfVS) < 1500) {
                 // Choose preventive or corrective
@@ -760,7 +775,7 @@ class A32NX_TCAS_Manager {
                 }
             });
 
-            console.log("previousRA: ", previousRA);
+            // console.log("previousRA: ", previousRA);
             const sense = previousRA.info.sense;
             ra.isReversal = previousRA.isReversal;
 
@@ -883,10 +898,10 @@ class A32NX_TCAS_Manager {
      * @returns
      */
     getPredictedSep(selfVS, selfAlt, otherAircraft) {
-        const minSeparation = CONSTANTS.REALLY_BIG_NUMBER;
+        let minSeparation = CONSTANTS.REALLY_BIG_NUMBER;
         for (const ac of otherAircraft) {
-            const trafficAltAtCPA = ac.alt + ((ac.vertSpeed * 60) * ac.RaTAU);
-            const myAltAtCPA = selfAlt + ((selfVS * 60) * ac.RaTau);
+            const trafficAltAtCPA = ac.alt + ((ac.vertSpeed / 60) * ac.RaTAU);
+            const myAltAtCPA = selfAlt + ((selfVS / 60) * ac.RaTAU);
             const _sep = Math.abs(myAltAtCPA - trafficAltAtCPA);
             if (_sep < minSeparation) {
                 minSeparation = _sep;
@@ -906,21 +921,30 @@ class A32NX_TCAS_Manager {
      * @param {*} accel
      * @returns
      */
-    getVerticalSep(sense, selfVS, selfAlt, targetVS, otherAircraft, delay, accel) {
+    getVerticalSep(sense, selfVS, selfAlt, targetVS, otherAircraft, delay, accel, debug = false) {
         let isCrossing = false;
         let minSeparation = CONSTANTS.REALLY_BIG_NUMBER;
+
+        console.log("Debugging vertical sep: sense ", sense, " at FPM: ", targetVS);
+        console.log("All raTraffic:", otherAircraft);
+
         for (const ac of otherAircraft) {
-            const trafficAltAtCPA = ac.alt + ((ac.vertSpeed * 60) * ac.RaTAU);
+            const trafficAltAtCPA = ac.alt + ((ac.vertSpeed / 60) * ac.RaTAU);
+
+            console.log("----> Traffic: Alt=" + ac.alt + ", VS=" + ac.vertSpeed + ", AltAtCPA=" + trafficAltAtCPA);
+
             let _sep = CONSTANTS.REALLY_BIG_NUMBER;
             if (sense === raSense.up) {
-                const _delay = selfVS < targetVS ? Math.min(ac.RaTau, delay) : 0;
-                _sep = this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel) - trafficAltAtCPA;
+                const _delay = selfVS < targetVS ? Math.min(ac.RaTAU, delay) : 0;
+                _sep = this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug) - trafficAltAtCPA;
+                console.log("--------> Up traffic _sep=" + _sep);
                 if (!isCrossing && (selfAlt + 100) < ac.alt) {
                     isCrossing = true;
                 }
             } else if (sense === raSense.down) {
-                const _delay = selfVS > targetVS ? Math.min(ac.RaTau, delay) : 0;
-                _sep = trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel);
+                const _delay = selfVS > targetVS ? Math.min(ac.RaTAU, delay) : 0;
+                _sep = trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug);
+                console.log("--------> Down traffic _sep=" + _sep);
                 if (!isCrossing && (selfAlt - 100) > ac.alt) {
                     isCrossing = true;
                 }
@@ -933,15 +957,25 @@ class A32NX_TCAS_Manager {
         return [minSeparation, isCrossing];
     }
 
-    calculateTrajectory(targetVS, selfVS, selfAlt, otherAC, delay, accel) {
+    calculateTrajectory(targetVS, selfVS, selfAlt, otherAC, delay, accel, debug) {
         // accel must be in f/s^2
         accel = targetVS < selfVS ? -1 * accel : accel;
-        const timeToAccelerate = Math.min(otherAC.RaTAU - delay, ((targetVS - selfVS) * 60) / accel);
-        const remainingTime = otherAC.RaTau - (delay + timeToAccelerate);
+        // console.log("--------> trajectory: accel=", accel);
+        // console.log("--------> RaTau=", otherAC.RaTAU);
+        const timeToAccelerate = Math.min(otherAC.RaTAU - delay, ((targetVS - selfVS) / 60) / accel); // raTau can be infinity
+        // console.log("--------> trajectory: timeToAccelerate=", timeToAccelerate);
+        const remainingTime = otherAC.RaTAU - (delay + timeToAccelerate);
         const predicted_elevation = selfAlt
-                                        + Math.round(selfVS * 60) * (delay + timeToAccelerate)
-                                        + 0.5 * accel ** timeToAccelerate
-                                        + (targetVS * 60) * remainingTime;
+                                        + Math.round(selfVS / 60) * (delay + timeToAccelerate)
+                                        + 0.5 * accel * Math.pow(timeToAccelerate, 2)
+                                        + (targetVS / 60) * remainingTime;
+
+        // DEBUG:
+        // console.log("------------>selfAlt: ", selfAlt);
+        // console.log("------------>Math.round(selfVS / 60): ", Math.round(selfVS / 60));
+        // console.log("------------>(delay + timeToAccelerate): ", (delay + timeToAccelerate));
+        // console.log("------------>0.5 * accel * Math.pow(timeToAccelerate, 2): ", 0.5 * accel * Math.pow(timeToAccelerate, 2));
+        // console.log("------------>(targetVS / 60) * remainingTime: ", (targetVS / 60) * remainingTime);
         return predicted_elevation;
     }
 
