@@ -322,8 +322,8 @@
             - HOLD_SIMVAR                       <no default>    SimVar to contain the held state
             - SEQ1_CODE                         Not present     Sequence 1 emissive code. If not present, the SEQ1 emissive will also not respond to the ANN LT TEST
             - SEQ2_CODE                         Not present     Sequence 2 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
-            - SEQ3_CODE                         Not present     Sequence 3 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
-            - SEQ4_CODE                         Not present     Sequence 4 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
+            - SEQ3_CODE                         Not present     Sequence 3 emissive code. If not present, the SEQ3 emissive will also not respond to the ANN LT TEST
+            - SEQ4_CODE                         Not present     Sequence 4 emissive code. If not present, the SEQ4 emissive will also not respond to the ANN LT TEST
             - SEQ_POWERED                       1               Whether SEQ1 and SEQ2 are powered. When unpowered, the emissive won't emit light
                                                                 even when SEQ1_CODE or SEQ2_CODE is true.
             - SEQ1_POWERED                      1               Whether SEQ1 is powered. When unpowered, the emissive won't emit light
