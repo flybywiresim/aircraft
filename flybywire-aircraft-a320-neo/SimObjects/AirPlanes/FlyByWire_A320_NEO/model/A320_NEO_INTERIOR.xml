@@ -3008,6 +3008,8 @@
             <DefaultTemplateParameters>
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ3_EMISSIVE_DRIVES_VISIBILITY>False</SEQ3_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ4_EMISSIVE_DRIVES_VISIBILITY>False</SEQ4_EMISSIVE_DRIVES_VISIBILITY>
                 <DEFAULT_TEMPLATE_EMISSIVE>ASOBO_LIGHTING_Potentiometer_Emissive_Template</DEFAULT_TEMPLATE_EMISSIVE>
 
                 <PLANE_NAME>A32NX</PLANE_NAME>
@@ -3015,13 +3017,13 @@
 
             <UseTemplate Name="FBW_Airbus_Autoland_Warning">
                 <SIDE>L</SIDE>
-                <!-- Note there is only a single emissive. Once two emissives are available SEQ1 should use AC ESS SHED, and SEQ 2 should use AC 2. -->
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
+                <BUS_TOP>AC_ESS_SHED</BUS_TOP>
+                <BUS_BOTTOM>AC_2</BUS_BOTTOM>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_Autoland_Warning">
                 <SIDE>R</SIDE>
-                <!-- Note there is only a single emissive. Once two emissives are available SEQ1 should use AC ESS SHED, and SEQ 2 should use AC 2. -->
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
+                <BUS_TOP>AC_2</BUS_TOP>
+                <BUS_BOTTOM>AC_ESS_SHED</BUS_BOTTOM>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">

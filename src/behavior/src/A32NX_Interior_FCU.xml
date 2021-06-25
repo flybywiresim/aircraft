@@ -317,15 +317,30 @@
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_#SIDE#</NODE_ID>
             <SEQ_POWERED>1</SEQ_POWERED>
-            <NO_SEQ2 />
+            <NO_SEQ1/>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_Push_Held">
-            <SEQ1_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool)</SEQ1_CODE>
-            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <NO_SEQ1/>
+            <SEQ2_POWERED>(L:A32NX_ELEC_#BUS_TOP#_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_#BUS_BOTTOM#_BUS_IS_POWERED, Bool) and</SEQ2_POWERED>
+            <SEQ2_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool) (E:ABSOLUTE TIME, seconds) 1 % 0.4 &gt; and</SEQ2_CODE>
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ3_POWERED>(L:A32NX_ELEC_#BUS_TOP#_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_#BUS_BOTTOM#_BUS_IS_POWERED, Bool) ! and</SEQ3_POWERED>
+            <SEQ3_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool) (E:ABSOLUTE TIME, seconds) 1 % 0.4 &gt; and</SEQ3_CODE>
+            <SEQ3_EMISSIVE_DRIVES_VISIBILITY>True</SEQ3_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ4_POWERED>(L:A32NX_ELEC_#BUS_TOP#_BUS_IS_POWERED, Bool) ! (L:A32NX_ELEC_#BUS_BOTTOM#_BUS_IS_POWERED, Bool) and</SEQ4_POWERED>
+            <SEQ4_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool) (E:ABSOLUTE TIME, seconds) 1 % 0.4 &gt; and</SEQ4_CODE>
+            <SEQ4_EMISSIVE_DRIVES_VISIBILITY>True</SEQ4_EMISSIVE_DRIVES_VISIBILITY>
             <LEFT_SINGLE_CODE />
             <HOLD_SIMVAR />
-            <NO_SEQ2 />
         </UseTemplate>
+
+        <!-- Hide the old light -->
+        <Component ID="#NODE_ID#_SEQ1_HIDE" Node="#NODE_ID#_SEQ1">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>0</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
     </Template>
 </ModelBehaviors>
