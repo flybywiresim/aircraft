@@ -1520,8 +1520,8 @@ impl A320AutobrakeController {
             || self.should_disarm_after_time_in_flight.output()
     }
 
-    fn update_target(&mut self) {
-        self.target = Acceleration::new::<meter_per_second_squared>(match self.mode {
+    fn calculate_target(&mut self) -> Acceleration {
+        let target = Acceleration::new::<meter_per_second_squared>(match self.mode {
             AutobrakeMode::NONE => Self::OFF_MODE_DECEL_TARGET_MS2,
             AutobrakeMode::LOW => interpolation(
                 &Self::LOW_MODE_DECEL_PROFILE_TIME_S,
@@ -1535,16 +1535,13 @@ impl A320AutobrakeController {
             ),
             AutobrakeMode::MAX => Self::MAX_MODE_DECEL_TARGET_MS2,
             _ => Self::OFF_MODE_DECEL_TARGET_MS2,
-        })
+        });
+
+        target
     }
 
     fn disarm(&mut self) {
         self.mode = AutobrakeMode::NONE;
-        self.deceleration_governor.disable();
-    }
-
-    fn engage_deceleration_governor(&mut self) {
-        self.deceleration_governor.engage();
     }
 
     fn update_input_conditions(
@@ -1583,15 +1580,11 @@ impl A320AutobrakeController {
         );
         self.update_mode_state_machine(&autobrake_panel);
 
-        if self.should_engage_deceleration_governor() {
-            self.engage_deceleration_governor();
-        } else {
-            self.deceleration_governor.disable();
-        }
+        self.deceleration_governor
+            .engage_when(self.should_engage_deceleration_governor());
 
-        self.update_target();
-        self.deceleration_governor.update_target(self.target);
-        self.deceleration_governor.update(&context);
+        self.target = self.calculate_target();
+        self.deceleration_governor.update(&context, self.target);
     }
 }
 impl SimulationElement for A320AutobrakeController {

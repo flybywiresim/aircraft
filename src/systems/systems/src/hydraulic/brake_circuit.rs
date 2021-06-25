@@ -438,19 +438,23 @@ impl AutobrakeDecelerationGovernor {
         }
     }
 
-    pub fn update_target(&mut self, deceleration_target: Acceleration) {
+    fn update_target(&mut self, deceleration_target: Acceleration) {
         self.target = deceleration_target;
     }
 
-    pub fn engage(&mut self) {
-        self.is_engaged = true;
+    pub fn engage_when(&mut self, engage_condition: bool) {
+        if engage_condition {
+            self.is_engaged = true;
+        } else {
+            self.disengage();
+        }
     }
 
     pub fn is_engaged(&self) -> bool {
         self.is_engaged
     }
 
-    pub fn disable(&mut self) {
+    fn disengage(&mut self) {
         self.is_engaged = false;
         self.time_engaged = Duration::from_secs(0);
         self.target = Acceleration::new::<meter_per_second_squared>(10.);
@@ -464,7 +468,9 @@ impl AutobrakeDecelerationGovernor {
         self.is_engaged && self.acceleration < self.target * percent_margin_to_target / 100.
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(&mut self, context: &UpdateContext, target: Acceleration) {
+        self.update_target(target);
+
         let accel = context.long_accel();
         self.acceleration = self.acceleration
             + (accel - self.acceleration)
