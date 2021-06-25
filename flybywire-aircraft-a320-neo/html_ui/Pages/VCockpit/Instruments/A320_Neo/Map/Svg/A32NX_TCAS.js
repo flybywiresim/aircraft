@@ -495,7 +495,7 @@ class A32NX_TCAS_Manager {
                 verticalIntrusionLevel = 0;
             }
 
-            traffic.intrusionLevel = this.updateIntrusionLevel(verticalIntrusionLevel, rangeIntrusionLevel);
+            traffic.intrusionLevel = this.updateIntrusionLevel(traffic, verticalIntrusionLevel, rangeIntrusionLevel);
         }
 
         // Only update followup RA's once per second
@@ -503,20 +503,23 @@ class A32NX_TCAS_Manager {
             this.followupRaTimer += _deltaTime / 1000;
         }
 
+        let ra = this.activeRA;
         if (this.activeRA === null || this.followupRaTimer >= 1) {
-            const ra = this.newRaLogic(_deltaTime, vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
+            ra = this.newRaLogic(_deltaTime, vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
             this.followupRaTimer = 0;
-        } else {
-            const ra = this.activeRA;
         }
 
         this.updateAdvisoryState(_deltaTime, ra);
     }
 
-    updateIntrusionLevel(verticalIntrusionLevel, rangeIntrusionLevel) {
+    // This is mis-labeling TA's and proximity's as RA's
+    updateIntrusionLevel(traffic, verticalIntrusionLevel, rangeIntrusionLevel) {
         const _desiredIntrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
         // Minimum RA duration is 5 seconds - don't remove it before then
-        if (this.activeRA !== null && _desiredIntrusionLevel < 3 && this.activeRA.secondsSinceStart < 5) {
+        if (this.activeRA !== null
+            && traffic.intrusionLevel === 3
+            && _desiredIntrusionLevel < 3
+            && this.activeRA.secondsSinceStart < 5) {
             return 3;
         } else {
             return _desiredIntrusionLevel;
@@ -858,7 +861,8 @@ class A32NX_TCAS_Manager {
                         || previousRA.info.callout === taraCallouts.descend_cross
                         || previousRA.info.callout === taraCallouts.descend_maintain_vs
                         || previousRA.info.callout === taraCallouts.descend_maintain_vs_crossing
-                        || previousRA.info.callout === taraCallouts.descend_now) {
+                        || previousRA.info.callout === taraCallouts.descend_now
+                        && ((previousRA.info.sense === raSense.up && selfVS >= 1500) || (previousRA.info.sense = raSense.down && selfVS <= -1500))) {
                         strength = 2;
                         [increaseSep, increaseCross] = this.getVerticalSep(
                             sense,
@@ -903,7 +907,7 @@ class A32NX_TCAS_Manager {
                         if (strengthenRaInfo === null) {
                             if (predictedSep >= reverseSep) {
                                 ra.info = previousRA.info;
-                                ra.hasBeenAnnounced = false;
+                                ra.hasBeenAnnounced = true;
                                 return ra;
                             } else {
                                 ra.info = (reversedSense === raSense.up) ? raVariants.climb_now : raVariants.descend_now;
@@ -937,7 +941,7 @@ class A32NX_TCAS_Manager {
                 } else {
                     // Continue with same RA
                     ra.info = previousRA.info;
-                    ra.hasBeenAnnounced = false;
+                    ra.hasBeenAnnounced = true;
                 }
             }
         }
