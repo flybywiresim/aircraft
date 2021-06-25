@@ -1470,16 +1470,12 @@ impl A320AutobrakeController {
         self.mode != AutobrakeMode::NONE
     }
 
-    fn deceleration_governor_is_engaged(&self) -> bool {
-        self.deceleration_governor.is_engaged()
-    }
-
     fn is_decelerating(&self) -> bool {
         if self.mode == AutobrakeMode::NONE {
             return false;
         }
 
-        let deceleration_demanded = self.deceleration_governor_is_engaged()
+        let deceleration_demanded = self.deceleration_governor.is_engaged()
             && self.target.get::<meter_per_second_squared>() < 0.;
 
         if self.mode == AutobrakeMode::LOW || self.mode == AutobrakeMode::MED {
@@ -1517,7 +1513,7 @@ impl A320AutobrakeController {
     }
 
     fn should_disarm(&self) -> bool {
-        (self.deceleration_governor_is_engaged() && self.pedal_input_should_disarm())
+        (self.deceleration_governor.is_engaged() && self.pedal_input_should_disarm())
             || !self.is_armed()
             || !self.arming_is_allowed_by_bcu
             || self.spoilers_retracted_during_this_update()
