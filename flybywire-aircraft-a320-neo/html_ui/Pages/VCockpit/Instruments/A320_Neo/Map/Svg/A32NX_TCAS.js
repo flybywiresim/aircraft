@@ -582,7 +582,7 @@ class A32NX_TCAS_Manager {
                     }
                     console.log("TCAS: CLEAR OF CONFLICT");
                     // Coherent.call("PLAY_INSTRUMENT_SOUND", "clear_of_conflict");
-                    this.soundManager.tryPlaySound(soundList.clear_of_conflict);
+                    this.soundManager.tryPlaySound(soundList.clear_of_conflict, true);
                     this.activeRA = null;
                 }
                 break;
@@ -596,7 +596,7 @@ class A32NX_TCAS_Manager {
                         if (this.secondsSinceLastTA >= 5) {
                             console.log("TCAS: TA GENERATED 2");
                             // Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
-                            this.soundManager.tryPlaySound(soundList.traffic_traffic);
+                            this.soundManager.tryPlaySound(soundList.traffic_traffic, true);
                         }
                     } else {
                         if (this.secondsSinceLastTA < 10) {
@@ -617,7 +617,7 @@ class A32NX_TCAS_Manager {
             if (!this.activeRA.hasBeenAnnounced) {
                 console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
                 // Coherent.call("PLAY_INSTRUMENT_SOUND", this.activeRA.info.callout);
-                this.soundManager.tryPlaySound(this.activeRA.info.callout);
+                this.soundManager.tryPlaySound(this.activeRA.info.callout, true);
                 this.activeRA.hasBeenAnnounced = true;
             }
         }
