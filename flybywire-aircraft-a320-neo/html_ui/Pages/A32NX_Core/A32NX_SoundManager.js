@@ -9,6 +9,7 @@ class PeriodicSound {
 class A32NX_SoundManager {
     constructor() {
         this.periodicList = [];
+        this.soundQueue = [];
 
         this.playingSound = null;
         this.playingSoundRemaining = NaN;
@@ -48,8 +49,10 @@ class A32NX_SoundManager {
             console.log("SOUND: playing ", sound);
             Coherent.call("PLAY_INSTRUMENT_SOUND", sound.name);
             return true;
+        } else {
+            this.soundQueue.push(sound);
+            return false;
         }
-        return false;
     }
 
     update(deltaTime, _core) {
@@ -58,6 +61,11 @@ class A32NX_SoundManager {
             this.playingSoundRemaining = NaN;
         } else if (this.playingSoundRemaining > 0) {
             this.playingSoundRemaining -= deltaTime / 1000;
+        }
+
+        if (this.playingSound === null && this.soundQueue.length > 0) {
+            const _sound = this.soundQueue.shift();
+            this.tryPlaySound(_sound);
         }
 
         this.periodicList.forEach((element) => {

@@ -12,21 +12,38 @@ const CONSTANTS = {
     FOLLOWUP_ACCEL: 10.62 // 0.33G in f/s^2
 };
 
+// const taraCallouts = {
+//     climb: "climb_climb",
+//     climb_cross: "climb_crossing_climb",
+//     climb_increase: "increase_climb",
+//     climb_now: "climb_climb_now",
+//     clear_of_conflict: "clear_of_conflict",
+//     descend: "descend_descend",
+//     descend_cross: "descend_crossing_descend",
+//     descend_increase: "increase_descent",
+//     descend_now: "descend_descend_now",
+//     monitor_vs: "monitor_vs",
+//     maintain_vs: "maint_vs_maint",
+//     maintain_vs_cross: "maint_vs_crossing_maint",
+//     level_off: "level_off_level_off",
+//     traffic: "traffic_traffic"
+// };
+
 const taraCallouts = {
-    climb: "climb_climb",
-    climb_cross: "climb_crossing_climb",
-    climb_increase: "increase_climb",
-    climb_now: "climb_climb_now",
-    clear_of_conflict: "clear_of_conflict",
-    descend: "descend_descend",
-    descend_cross: "descend_crossing_descend",
-    descend_increase: "increase_descent",
-    descend_now: "descend_descend_now",
-    monitor_vs: "monitor_vs",
-    maintain_vs: "maint_vs_maint",
-    maintain_vs_cross: "maint_vs_crossing_maint",
-    level_off: "level_off_level_off",
-    traffic: "traffic_traffic"
+    climb: soundList.climb_climb,
+    climb_cross: soundList.climb_crossing_climb,
+    climb_increase: soundList.increase_climb,
+    climb_now: soundList.climb_climb_now,
+    clear_of_conflict: soundList.clear_of_conflict,
+    descend: soundList.descend_descend,
+    descend_cross: soundList.descend_crossing_descend,
+    descend_increase: soundList.increase_descent,
+    descend_now: soundList.descend_descend_now,
+    monitor_vs: soundList.monitor_vs,
+    maintain_vs: soundList.maint_vs_maint,
+    maintain_vs_cross: soundList.maint_vs_crossing_maint,
+    level_off: soundList.level_off_level_off,
+    traffic: soundList.traffic_traffic
 };
 
 const raSense = {
@@ -356,6 +373,8 @@ class A32NX_TCAS_Manager {
         // Overall TCAS state for callout latching (None, TA, or RA)
         this.advisoryState = tcasState.none;
 
+        this.soundManager = new A32NX_SoundManager();
+
         // Timekeeping
         this.secondsSinceLastTA = 100;
         this.secondsSinceLastRA = 100;
@@ -365,6 +384,9 @@ class A32NX_TCAS_Manager {
     // This is called from the MFD JS file, because the MapInstrument doesn't have a deltaTime
     update(_deltaTime) {
         console.log("TCAS: in update beginning");
+        // Update own instance of sound manager
+        this.soundManager.update(_deltaTime);
+
         const TCASSwitchPos = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "number");
         const TransponderStatus = SimVar.GetSimVarValue("TRANSPONDER STATE:1", "number");
         const TCASThreatSetting = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Traffic_Position", "number");
@@ -559,7 +581,8 @@ class A32NX_TCAS_Manager {
                         this.advisoryState = tcasState.none;
                     }
                     console.log("TCAS: CLEAR OF CONFLICT");
-                    Coherent.call("PLAY_INSTRUMENT_SOUND", "clear_of_conflict");
+                    // Coherent.call("PLAY_INSTRUMENT_SOUND", "clear_of_conflict");
+                    this.soundManager.tryPlaySound(soundList.clear_of_conflict);
                     this.activeRA = null;
                 }
                 break;
@@ -572,7 +595,8 @@ class A32NX_TCAS_Manager {
                         console.log("TCAS: TA GENERATED");
                         if (this.secondsSinceLastTA >= 5) {
                             console.log("TCAS: TA GENERATED 2");
-                            Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
+                            // Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
+                            this.soundManager.tryPlaySound(soundList.traffic_traffic);
                         }
                     } else {
                         if (this.secondsSinceLastTA < 10) {
@@ -591,8 +615,9 @@ class A32NX_TCAS_Manager {
             this.activeRA = _ra;
             this.activeRA.secondsSinceStart += _deltaTime / 1000;
             if (!this.activeRA.hasBeenAnnounced) {
-                Coherent.call("PLAY_INSTRUMENT_SOUND", this.activeRA.info.callout);
                 console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
+                // Coherent.call("PLAY_INSTRUMENT_SOUND", this.activeRA.info.callout);
+                this.soundManager.tryPlaySound(this.activeRA.info.callout);
                 this.activeRA.hasBeenAnnounced = true;
             }
         }
