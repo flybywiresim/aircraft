@@ -388,7 +388,10 @@ class A32NX_TCAS_Manager {
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         const lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
 
-        this.updateSensitivityLevel(altitude, radioAltitude, TCASMode);
+        // Update sensitivity level only if there is no active RA
+        if (this.activeRA === null) {
+            this.updateSensitivityLevel(altitude, radioAltitude, TCASMode);
+        }
 
         const TaRaTau = this.getTaRaTau(this.sensitivityLevel);
         const TaRaDMOD = this.getTaRaDMOD(this.sensitivityLevel);
@@ -1007,7 +1010,6 @@ class A32NX_TCAS_Manager {
 
     /**
      * recalculates the TCAS sensitivity level
-     * TODO since TCAS v7, sensitivity level cannot decrease during an active RA
      * @param altitude {number} in feet
      * @param radioAltitude {number} in feet
      * @param TCASMode {number}
