@@ -7,6 +7,7 @@ import { MapParameters } from './utils/MapParameters';
 import { RadioNeedle } from './RadioNeedles';
 import { Plane } from './Plane';
 import { ToWaypointIndicator } from './ToWaypointIndicator';
+import { ApproachMessage } from './ApproachMessage';
 
 const rangeSettings = [10, 20, 40, 80, 160, 320];
 
@@ -21,6 +22,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
+    const [fmgcFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
 
     const ppos = { lat, long };
 
@@ -48,6 +50,8 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
             <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} side={side} tcasMode={tcasMode} />
 
             <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
+
+            <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
         </>
     );
 };
