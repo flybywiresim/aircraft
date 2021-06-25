@@ -877,7 +877,7 @@ class A32NX_TCAS_Manager {
                             strengthenRaInfo = (sense === raSense.up) ? raVariants.climb : raVariants.descend;
                         }
                         console.log("StrengthenRAInfo: level 0 to 1: ", strengthenRaInfo);
-                    } else if (previousRA.info.callout === taraCallouts.climb
+                    } else if ((previousRA.info.callout === taraCallouts.climb
                         || previousRA.info.callout === taraCallouts.climb_cross
                         || previousRA.info.callout === taraCallouts.climb_maintain_vs
                         || previousRA.info.callout === taraCallouts.climb_maintain_vs_crossing
@@ -886,7 +886,7 @@ class A32NX_TCAS_Manager {
                         || previousRA.info.callout === taraCallouts.descend_cross
                         || previousRA.info.callout === taraCallouts.descend_maintain_vs
                         || previousRA.info.callout === taraCallouts.descend_maintain_vs_crossing
-                        || previousRA.info.callout === taraCallouts.descend_now
+                        || previousRA.info.callout === taraCallouts.descend_now)
                         && ((previousRA.info.sense === raSense.up && selfVS >= 1500) || (previousRA.info.sense = raSense.down && selfVS <= -1500))) {
                         strength = 2;
                         [increaseSep, increaseCross] = this.getVerticalSep(
