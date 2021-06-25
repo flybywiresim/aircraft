@@ -680,4 +680,71 @@
             </SEQ1_CODE>
         </UseTemplate>
     </Template>
+
+    <!--
+    Required Parameters:
+        - NODE_ID
+        - BUS_POWERED
+    Optional Parameters:
+        - MIN_BRIGHTNESS
+        - MAX_BRIGHTNESS
+        - DAY_BRIGHTNESS
+        - NIGHT_BRIGHTNESS
+        - UPDATE_FREQUENCY
+        - ADJUST_RATE
+    -->
+    <Template Name="FBW_Airbus_Auto_Brightness_Screen">
+        <DefaultTemplateParameters>
+            <MIN_BRIGHTNESS>0.05</MIN_BRIGHTNESS>
+            <MAX_BRIGHTNESS>1</MAX_BRIGHTNESS>
+            <DAY_BRIGHTNESS>0.75</DAY_BRIGHTNESS>
+            <NIGHT_BRIGHTNESS>0.3</NIGHT_BRIGHTNESS>
+            <UPDATE_FREQUENCY>8</UPDATE_FREQUENCY>
+            <ADJUST_RATE>0.01</ADJUST_RATE>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#_Screen">
+            <Update Once="True" type="rnp">
+                (O:A32NX_#NODE_ID#_BRIGHTNESS_AUTO, number) = 0.5;
+            </Update>
+            <Update Frequency="#UPDATE_FREQUENCY#" type="rnp">
+                <![CDATA[
+                    alias tod = (E:TIME OF DAY, number);
+                    alias brightness = (L:A32NX_#NODE_ID#_BRIGHTNESS, number);
+                    alias brightnessAuto = (O:A32NX_#NODE_ID#_BRIGHTNESS_AUTO, number);
+                    alias brightnessOffset = (L:A32NX_#NODE_ID#_BRIGHTNESS_OFFSET, number);
+
+                    let autoTarget = #DAY_BRIGHTNESS, number#;
+
+                    if tod> 1 { // night
+                        autoTarget = #NIGHT_BRIGHTNESS, number#;
+                        if brightnessAuto > autoTarget {
+                            brightnessAuto -= #ADJUST_RATE, number#;
+                        }
+                    } else { // day
+                        if brightnessAuto < autoTarget {
+                            brightnessAuto += #ADJUST_RATE, number#;
+                        }
+                    }
+
+                    if brightnessOffset + autoTarget > #MAX_BRIGHTNESS, number# {
+                        brightnessOffset = #MAX_BRIGHTNESS, number# - brightnessAuto;
+                    } else if brightnessOffset + autoTarget < #MIN_BRIGHTNESS, number# {
+                        brightnessOffset = #MIN_BRIGHTNESS, number# - brightnessAuto;
+                    }
+
+                    brightness = brightnessAuto + brightnessOffset;
+                ]]>
+            </Update>
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
+                <EMISSIVE_CODE>
+                    #BUS_POWERED# if{
+                        (L:A32NX_#NODE_ID#_BRIGHTNESS, number)
+                    } els{
+                        0
+                    }
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
 </ModelBehaviors>

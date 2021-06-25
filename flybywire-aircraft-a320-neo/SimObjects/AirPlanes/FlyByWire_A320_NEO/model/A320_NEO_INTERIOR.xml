@@ -199,66 +199,6 @@
             </UseTemplate>
         </Component>
 
-        <Component ID="DYN_SCREEN_ATC" Node="DYN_SCREEN_ATC">
-            <Material>
-                <EmissiveFactor>
-                    <Parameter>
-                        <Code>0.5</Code>
-                    </Parameter>
-                </EmissiveFactor>
-            </Material>
-        </Component>
-
-        <Component ID="DYN_SCREEN_BAT" Node="DYN_SCREEN_BAT">
-            <Material>
-                <EmissiveFactor>
-                    <Parameter>
-                        <Code>0.5</Code>
-                    </Parameter>
-                </EmissiveFactor>
-            </Material>
-        </Component>
-
-        <Component ID="DYN_SCREEN_CLOCK" Node="DYN_SCREEN_CLOCK">
-            <Material>
-                <EmissiveFactor>
-                    <Parameter>
-                        <Code>0.5</Code>
-                    </Parameter>
-                </EmissiveFactor>
-            </Material>
-        </Component>
-
-        <Component ID="DYN_SCREEN_ISIS" Node="DYN_SCREEN_ISIS">
-            <Material>
-                <EmissiveFactor>
-                    <Parameter>
-                        <Code>0.5</Code>
-                    </Parameter>
-                </EmissiveFactor>
-            </Material>
-        </Component>
-
-        <Component ID="DYN_SCREEN_RMP" Node="DYN_SCREEN_RMP">
-            <Material>
-                <EmissiveFactor>
-                    <Parameter>
-                        <Code>0.5</Code>
-                    </Parameter>
-                </EmissiveFactor>
-            </Material>
-        </Component>
-
-        <Component ID="DYN_SCREEN_RTPI" Node="DYN_SCREEN_RTPI">
-            <Material>
-                <EmissiveFactor>
-                    <Parameter>
-                        <Code>0.5</Code>
-                    </Parameter>
-                </EmissiveFactor>
-            </Material>
-        </Component>
-
         <Component ID="Pedestal_Fwd">
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_1</NODE_ID>
@@ -372,6 +312,11 @@
             </Component>
 
             <Component ID="HANDLING">
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>DYN_SCREEN_RTPI</NODE_ID>
+                    <POTENTIOMETER>85</POTENTIOMETER>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+                </UseTemplate>
                 <UseTemplate Name="FBW_HANDLING_Knob_RudderTrim_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>KNOB_RUDDERTRIM</ANIM_NAME>
@@ -833,12 +778,12 @@
             </UseTemplate>
 
             <Component ID="Standby_Indicator">
-                <!-- TODO: Model change required to not affect brake/clock - Uncomment when this is done -->
-                <!--
-                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                    <NODE_ID>DYN_SCREEN</NODE_ID>
-                    <EMISSIVE_CODE>(L:A32NX_BARO_BRIGHTNESS, Percent over 100)</EMISSIVE_CODE>
-                </UseTemplate> -->
+                <UseTemplate Name="FBW_Airbus_Auto_Brightness_Screen">
+                    <NODE_ID>DYN_SCREEN_ISIS</NODE_ID>
+                    <BUS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED, Bool) or</BUS_POWERED>
+                    <NIGHT_BRIGHTNESS>0.2</NIGHT_BRIGHTNESS>
+                    <DAY_BRIGHTNESS>0.75</DAY_BRIGHTNESS>
+                </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
                     <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
@@ -876,17 +821,19 @@
                         <BTN_ID>BARO_LS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_Push_Held_BARO_Template">
+                    <UseTemplate Name="A32NX_ISIS_Push_Brightness_Template">
                         <NODE_ID>PUSH_BARO_PLUS</NODE_ID>
                         <TOOLTIPID>Increase ISI brightness</TOOLTIPID>
                         <BTN_ID>BARO_PLUS</BTN_ID>
                         <ONLY_SEQ1/>
+                        <LEFT_SINGLE_CODE>(L:A32NX_DYN_SCREEN_ISIS_BRIGHTNESS_OFFSET) 0.045 + (&gt;L:A32NX_DYN_SCREEN_ISIS_BRIGHTNESS_OFFSET)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_Push_Held_BARO_Template">
+                    <UseTemplate Name="A32NX_ISIS_Push_Brightness_Template">
                         <NODE_ID>PUSH_BARO_MINUS</NODE_ID>
                         <TOOLTIPID>Decrease ISI brightness</TOOLTIPID>
                         <BTN_ID>BARO_MINUS</BTN_ID>
                         <ONLY_SEQ1/>
+                        <LEFT_SINGLE_CODE>(L:A32NX_DYN_SCREEN_ISIS_BRIGHTNESS_OFFSET) 0.045 - (&gt;L:A32NX_DYN_SCREEN_ISIS_BRIGHTNESS_OFFSET)</LEFT_SINGLE_CODE>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Push_BARO_Template">
                         <NODE_ID>PUSH_BARO_RST</NODE_ID>
@@ -1068,6 +1015,12 @@
                 <DefaultTemplateParameters>
                     <TYPE>AIRBUS</TYPE>
                 </DefaultTemplateParameters>
+
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>DYN_SCREEN_BAT</NODE_ID>
+                    <POTENTIOMETER>86</POTENTIOMETER>
+                    <!-- TODO emmisive code -->
+                </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Battery_Master_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_BAT1</NODE_ID>
@@ -3435,11 +3388,6 @@
         </Component>
 
         <Component ID="Airbus_EICAS">
-            <UseTemplate Name="ASOBO_Airbus_EICAS_Template">
-                <BOTH_SCREENS_ON_ONE_NODE/>
-                <NODE_ID>DYN_SCREEN_RMP</NODE_ID>
-            </UseTemplate>
-
             <UseTemplate Name="FBW_ECAM_PAGE_SELECTION_Template">
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
@@ -3454,6 +3402,11 @@
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <TYPE>AIRBUS</TYPE>
             </DefaultTemplateParameters>
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>DYN_SCREEN_RMP</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+                <!-- TODO emmisive code -->
+            </UseTemplate>
             <Component ID="Updater">
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater">
                 </UseTemplate>
@@ -3730,6 +3683,11 @@
         </Component>
 
         <Component ID="Airbus_ATC">
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>DYN_SCREEN_ATC</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
             <UseTemplate Name="FBW_Airbus_ATC_Template">
                 <TYPE>AIRBUS</TYPE>
                 <PUSH_BTN_PREFIX>PUSH_ATC_</PUSH_BTN_PREFIX>
@@ -4000,6 +3958,13 @@
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
                 <NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_Airbus_Auto_Brightness_Screen">
+                <NODE_ID>DYN_SCREEN_CLOCK</NODE_ID>
+                <BUS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED, Bool) or</BUS_POWERED>
+                <NIGHT_BRIGHTNESS>0.5</NIGHT_BRIGHTNESS>
+                <DAY_BRIGHTNESS>1</DAY_BRIGHTNESS>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Push_Toggle">
