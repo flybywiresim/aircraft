@@ -1934,8 +1934,8 @@ var A320_Neo_UpperECAM;
             this.updateReverserDoor(_deltaTime);
         }
         updateReverserDoor(_deltaTime) {
-            // console.log(SimVar.GetSimVarValue("A:TURB ENG REVERSE NOZZLE PERCENT:" + this.index, "percent"));
-            const thrustLeversInReverse = Simplane.getEngineThrottle(this.index) < 0;
+            const engineId = this.index + 1;
+            const thrustLeversInReverse = SimVar.GetSimVarValue("A:TURB ENG REVERSE NOZZLE PERCENT:" + engineId, "percent") > 1;
 
             if (this.reverseDoorOpeningPercentage < 1 && thrustLeversInReverse) {
                 this.reverseDoorOpeningPercentage = Math.min(this.reverseDoorOpeningPercentage + this.reverseDoorSpeed * _deltaTime, 1);
