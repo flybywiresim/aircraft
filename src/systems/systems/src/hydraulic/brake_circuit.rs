@@ -11,7 +11,9 @@ use std::f64::consts::E;
 use std::string::String;
 use std::time::Duration;
 
-use uom::si::{acceleration::meter_per_second_squared, f64::*, pressure::psi, volume::gallon};
+use uom::si::{
+    acceleration::meter_per_second_squared, f64::*, pressure::psi, ratio::ratio, volume::gallon,
+};
 
 use super::Accumulator;
 
@@ -123,9 +125,9 @@ pub struct BrakeCircuit {
     left_brake_actuator: BrakeActuator,
     right_brake_actuator: BrakeActuator,
 
-    demanded_brake_position_left: f64,
+    demanded_brake_position_left: Ratio,
     pressure_applied_left: Pressure,
-    demanded_brake_position_right: f64,
+    demanded_brake_position_right: Ratio,
     pressure_applied_right: Pressure,
 
     pressure_limitation: Pressure,
@@ -175,9 +177,9 @@ impl BrakeCircuit {
             left_brake_actuator: BrakeActuator::new(total_displacement / 2.),
             right_brake_actuator: BrakeActuator::new(total_displacement / 2.),
 
-            demanded_brake_position_left: 0.0,
+            demanded_brake_position_left: Ratio::new::<ratio>(0.0),
             pressure_applied_left: Pressure::new::<psi>(0.0),
-            demanded_brake_position_right: 0.0,
+            demanded_brake_position_right: Ratio::new::<ratio>(0.0),
             pressure_applied_right: Pressure::new::<psi>(0.0),
             pressure_limitation: Pressure::new::<psi>(5000.0),
             has_accumulator: has_accu,
@@ -203,9 +205,9 @@ impl BrakeCircuit {
 
     fn update_brake_actuators(&mut self, context: &UpdateContext, hyd_pressure: Pressure) {
         self.left_brake_actuator
-            .set_position_demand(self.demanded_brake_position_left);
+            .set_position_demand(self.demanded_brake_position_left.get::<ratio>());
         self.right_brake_actuator
-            .set_position_demand(self.demanded_brake_position_right);
+            .set_position_demand(self.demanded_brake_position_right.get::<ratio>());
 
         let actual_max_allowed_pressure = hyd_pressure.min(self.pressure_limitation);
 
@@ -269,12 +271,16 @@ impl BrakeCircuit {
                     ));
     }
 
-    pub fn set_brake_demand_left(&mut self, brake_ratio: f64) {
-        self.demanded_brake_position_left = brake_ratio.min(1.0).max(0.0);
+    pub fn set_brake_demand_left(&mut self, brake_ratio: Ratio) {
+        self.demanded_brake_position_left = brake_ratio
+            .min(Ratio::new::<ratio>(1.0))
+            .max(Ratio::new::<ratio>(0.0));
     }
 
-    pub fn set_brake_demand_right(&mut self, brake_ratio: f64) {
-        self.demanded_brake_position_right = brake_ratio.min(1.0).max(0.0);
+    pub fn set_brake_demand_right(&mut self, brake_ratio: Ratio) {
+        self.demanded_brake_position_right = brake_ratio
+            .min(Ratio::new::<ratio>(1.0))
+            .max(Ratio::new::<ratio>(0.0));
     }
 
     pub fn left_brake_pressure(&self) -> Pressure {
@@ -693,15 +699,15 @@ mod tests {
                 < Pressure::new::<psi>(10.0)
         );
 
-        brake_circuit_primed.set_brake_demand_left(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), &hyd_loop);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.right_brake_pressure() <= Pressure::new::<psi>(50.));
         assert!(brake_circuit_primed.accumulator.fluid_volume() >= Volume::new::<gallon>(0.1));
 
-        brake_circuit_primed.set_brake_demand_left(0.0);
-        brake_circuit_primed.set_brake_demand_right(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(0.0));
+        brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), &hyd_loop);
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.left_brake_pressure() <= Pressure::new::<psi>(50.));
@@ -735,14 +741,14 @@ mod tests {
                 < Pressure::new::<psi>(10.0)
         );
 
-        brake_circuit_primed.set_brake_demand_left(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.right_brake_pressure() <= Pressure::new::<psi>(50.));
 
-        brake_circuit_primed.set_brake_demand_left(0.0);
-        brake_circuit_primed.set_brake_demand_right(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(0.0));
+        brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.left_brake_pressure() <= Pressure::new::<psi>(50.));
@@ -770,8 +776,8 @@ mod tests {
                 < Pressure::new::<psi>(1.0)
         );
 
-        brake_circuit_primed.set_brake_demand_left(1.0);
-        brake_circuit_primed.set_brake_demand_right(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
+        brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2900.));

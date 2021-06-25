@@ -1,7 +1,12 @@
 use std::time::Duration;
 use uom::si::{
-    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
-    pressure::pascal, pressure::psi, ratio::percent, volume::gallon,
+    acceleration::meter_per_second_squared,
+    angular_velocity::revolution_per_minute,
+    f64::*,
+    pressure::pascal,
+    pressure::psi,
+    ratio::{percent, ratio},
+    volume::gallon,
 };
 
 use systems::{
@@ -1059,12 +1064,12 @@ struct A320HydraulicBrakeComputerUnit {
     parking_brake_demand: bool,
     weight_on_wheels: bool,
     is_gear_lever_down: bool,
-    left_brake_pilot_input: f64,
-    right_brake_pilot_input: f64,
-    left_brake_green_output: f64,
-    left_brake_yellow_output: f64,
-    right_brake_green_output: f64,
-    right_brake_yellow_output: f64,
+    left_brake_pilot_input: Ratio,
+    right_brake_pilot_input: Ratio,
+    left_brake_green_output: Ratio,
+    left_brake_yellow_output: Ratio,
+    right_brake_green_output: Ratio,
+    right_brake_yellow_output: Ratio,
     normal_brakes_available: bool,
     should_disable_auto_brake_when_retracting: DelayedTrueLogicGate,
     anti_skid_activated: bool,
@@ -1094,16 +1099,16 @@ impl A320HydraulicBrakeComputerUnit {
             parking_brake_demand: true,
             weight_on_wheels: true,
             is_gear_lever_down: true,
-            left_brake_pilot_input: 0.0,
-            right_brake_pilot_input: 0.0,
+            left_brake_pilot_input: Ratio::new::<ratio>(0.0),
+            right_brake_pilot_input: Ratio::new::<ratio>(0.0),
             // Actual command sent to left green circuit
-            left_brake_green_output: 0.0,
+            left_brake_green_output: Ratio::new::<ratio>(0.0),
             // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
-            left_brake_yellow_output: 1.0,
+            left_brake_yellow_output: Ratio::new::<ratio>(1.0),
             // Actual command sent to right green circuit
-            right_brake_green_output: 0.0,
+            right_brake_green_output: Ratio::new::<ratio>(0.0),
             // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
-            right_brake_yellow_output: 1.0,
+            right_brake_yellow_output: Ratio::new::<ratio>(1.0),
             normal_brakes_available: false,
             should_disable_auto_brake_when_retracting: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
@@ -1120,8 +1125,9 @@ impl A320HydraulicBrakeComputerUnit {
 
     fn update_normal_braking_availability(&mut self, normal_braking_loop_pressure: &Pressure) {
         if normal_braking_loop_pressure.get::<psi>() > Self::MIN_PRESSURE_BRAKE_ALTN_HYST_HI
-            && (self.left_brake_pilot_input < Self::PILOT_INPUT_DETECTION_TRESHOLD
-                && self.right_brake_pilot_input < Self::PILOT_INPUT_DETECTION_TRESHOLD)
+            && (self.left_brake_pilot_input.get::<ratio>() < Self::PILOT_INPUT_DETECTION_TRESHOLD
+                && self.right_brake_pilot_input.get::<ratio>()
+                    < Self::PILOT_INPUT_DETECTION_TRESHOLD)
         {
             self.normal_brakes_available = true;
         } else if normal_braking_loop_pressure.get::<psi>() < Self::MIN_PRESSURE_BRAKE_ALTN_HYST_LO
@@ -1132,8 +1138,9 @@ impl A320HydraulicBrakeComputerUnit {
 
     fn update_brake_pressure_limitation(&mut self) {
         let yellow_manual_braking_input = self.left_brake_pilot_input
-            > self.left_brake_yellow_output + 0.2
-            || self.right_brake_pilot_input > self.right_brake_yellow_output + 0.2;
+            > self.left_brake_yellow_output + Ratio::new::<ratio>(0.2)
+            || self.right_brake_pilot_input
+                > self.right_brake_yellow_output + Ratio::new::<ratio>(0.2);
 
         // Nominal braking from pedals is limited to 2538psi
         self.normal_brake_pressure_limit = Pressure::new::<psi>(2538.);
@@ -1183,16 +1190,16 @@ impl A320HydraulicBrakeComputerUnit {
 
         if is_in_flight_gear_lever_up {
             if self.should_disable_auto_brake_when_retracting.output() {
-                self.left_brake_green_output = 0.;
-                self.right_brake_green_output = 0.;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.);
             } else {
                 // Slight brake pressure to stop the spinning wheels (have no pressure data available yet, 0.2 is random one)
-                self.left_brake_green_output = 0.2;
-                self.right_brake_green_output = 0.2;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.2);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.2);
             }
 
-            self.left_brake_yellow_output = 0.;
-            self.right_brake_yellow_output = 0.;
+            self.left_brake_yellow_output = Ratio::new::<ratio>(0.);
+            self.right_brake_yellow_output = Ratio::new::<ratio>(0.);
         } else {
             let green_used_for_brakes = self.normal_brakes_available
                 && self.anti_skid_activated
@@ -1206,19 +1213,19 @@ impl A320HydraulicBrakeComputerUnit {
                 self.right_brake_green_output = self
                     .right_brake_pilot_input
                     .max(self.autobrake_controller.brake_output());
-                self.left_brake_yellow_output = 0.;
-                self.right_brake_yellow_output = 0.;
+                self.left_brake_yellow_output = Ratio::new::<ratio>(0.);
+                self.right_brake_yellow_output = Ratio::new::<ratio>(0.);
             } else {
-                self.left_brake_green_output = 0.;
-                self.right_brake_green_output = 0.;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.);
                 if !self.parking_brake_demand {
                     // Normal braking but using alternate circuit
                     self.left_brake_yellow_output = self.left_brake_pilot_input;
                     self.right_brake_yellow_output = self.right_brake_pilot_input;
                 } else {
                     // Else we just use parking brake
-                    self.left_brake_yellow_output = 1.;
-                    self.right_brake_yellow_output = 1.;
+                    self.left_brake_yellow_output = Ratio::new::<ratio>(1.);
+                    self.right_brake_yellow_output = Ratio::new::<ratio>(1.);
 
                     // Special case: parking brake on but yellow can't provide enough brakes: green are allowed to brake for emergency
                     if alternate_circuit.left_brake_pressure().get::<psi>()
@@ -1234,10 +1241,22 @@ impl A320HydraulicBrakeComputerUnit {
         }
 
         // Limiting final values
-        self.left_brake_yellow_output = self.left_brake_yellow_output.min(1.).max(0.);
-        self.right_brake_yellow_output = self.right_brake_yellow_output.min(1.).max(0.);
-        self.left_brake_green_output = self.left_brake_green_output.min(1.).max(0.);
-        self.right_brake_green_output = self.right_brake_green_output.min(1.).max(0.);
+        self.left_brake_yellow_output = self
+            .left_brake_yellow_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.right_brake_yellow_output = self
+            .right_brake_yellow_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.left_brake_green_output = self
+            .left_brake_green_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.right_brake_green_output = self
+            .right_brake_green_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
     }
 
     fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
@@ -1262,8 +1281,8 @@ impl SimulationElement for A320HydraulicBrakeComputerUnit {
         self.weight_on_wheels = reader.read("SIM ON GROUND");
         self.is_gear_lever_down = reader.read("GEAR HANDLE POSITION");
         self.anti_skid_activated = reader.read("ANTISKID BRAKES ACTIVE");
-        self.left_brake_pilot_input = reader.read("LEFT_BRAKE_PEDAL_INPUT");
-        self.right_brake_pilot_input = reader.read("RIGHT_BRAKE_PEDAL_INPUT");
+        self.left_brake_pilot_input = Ratio::new::<ratio>(reader.read("LEFT_BRAKE_PEDAL_INPUT"));
+        self.right_brake_pilot_input = Ratio::new::<ratio>(reader.read("RIGHT_BRAKE_PEDAL_INPUT"));
     }
 }
 
@@ -1391,8 +1410,8 @@ pub struct A320AutobrakeController {
     mode: AutobrakeMode,
 
     arming_is_allowed_by_bcu: bool,
-    left_brake_pedal_input: f64,
-    right_brake_pedal_input: f64,
+    left_brake_pedal_input: Ratio,
+    right_brake_pedal_input: Ratio,
 
     ground_spoilers_are_deployed: bool,
     last_ground_spoilers_are_deployed: bool,
@@ -1422,8 +1441,8 @@ impl A320AutobrakeController {
             target: Acceleration::new::<meter_per_second_squared>(0.),
             mode: AutobrakeMode::NONE,
             arming_is_allowed_by_bcu: false,
-            left_brake_pedal_input: 0.,
-            right_brake_pedal_input: 0.,
+            left_brake_pedal_input: Ratio::new::<percent>(0.),
+            right_brake_pedal_input: Ratio::new::<percent>(0.),
             ground_spoilers_are_deployed: false,
             last_ground_spoilers_are_deployed: false,
             should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
@@ -1443,8 +1462,8 @@ impl A320AutobrakeController {
         !self.ground_spoilers_are_deployed && self.last_ground_spoilers_are_deployed
     }
 
-    fn brake_output(&self) -> f64 {
-        self.deceleration_governor.output()
+    fn brake_output(&self) -> Ratio {
+        Ratio::new::<ratio>(self.deceleration_governor.output())
     }
 
     fn update_mode_state_machine(&mut self, autobrake_panel: &AutobrakePanel) {
@@ -1498,15 +1517,17 @@ impl A320AutobrakeController {
             AutobrakeMode::NONE => false,
             AutobrakeMode::LOW | AutobrakeMode::MED => {
                 // LOW and MED deactivates if one pedal over 53% or two over 11%.
-                self.left_brake_pedal_input > 0.53
-                    || self.right_brake_pedal_input > 0.53
-                    || (self.left_brake_pedal_input > 0.11 && self.right_brake_pedal_input > 0.11)
+                self.left_brake_pedal_input > Ratio::new::<percent>(53.)
+                    || self.right_brake_pedal_input > Ratio::new::<percent>(53.)
+                    || (self.left_brake_pedal_input > Ratio::new::<percent>(11.)
+                        && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
             }
             AutobrakeMode::MAX => {
                 // MAX deactivates if one pedal over 77% or two over 53%.
-                self.left_brake_pedal_input > 0.77
-                    || self.right_brake_pedal_input > 0.77
-                    || (self.left_brake_pedal_input > 0.53 && self.right_brake_pedal_input > 0.53)
+                self.left_brake_pedal_input > Ratio::new::<percent>(77.)
+                    || self.right_brake_pedal_input > Ratio::new::<percent>(77.)
+                    || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
+                        && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
             }
             _ => false,
         }
@@ -1521,7 +1542,7 @@ impl A320AutobrakeController {
     }
 
     fn calculate_target(&mut self) -> Acceleration {
-        let target = Acceleration::new::<meter_per_second_squared>(match self.mode {
+        Acceleration::new::<meter_per_second_squared>(match self.mode {
             AutobrakeMode::NONE => Self::OFF_MODE_DECEL_TARGET_MS2,
             AutobrakeMode::LOW => interpolation(
                 &Self::LOW_MODE_DECEL_PROFILE_TIME_S,
@@ -1535,9 +1556,7 @@ impl A320AutobrakeController {
             ),
             AutobrakeMode::MAX => Self::MAX_MODE_DECEL_TARGET_MS2,
             _ => Self::OFF_MODE_DECEL_TARGET_MS2,
-        });
-
-        target
+        })
     }
 
     fn disarm(&mut self) {
@@ -1548,8 +1567,8 @@ impl A320AutobrakeController {
         &mut self,
         context: &UpdateContext,
         allow_arming: bool,
-        pedal_input_left: f64,
-        pedal_input_right: f64,
+        pedal_input_left: Ratio,
+        pedal_input_right: Ratio,
         weight_on_wheels: bool,
     ) {
         self.should_disarm_after_time_in_flight
@@ -1567,8 +1586,8 @@ impl A320AutobrakeController {
         context: &UpdateContext,
         autobrake_panel: &AutobrakePanel,
         allow_arming: bool,
-        pedal_input_left: f64,
-        pedal_input_right: f64,
+        pedal_input_left: Ratio,
+        pedal_input_right: Ratio,
         weight_on_wheels: bool,
     ) {
         self.update_input_conditions(
@@ -2388,7 +2407,7 @@ mod tests {
             }
 
             fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
-                let scaled_value = position_percent.get::<percent>() / 100.;
+                let scaled_value = position_percent.get::<ratio>();
                 self.write(name, scaled_value.min(1.).max(0.));
                 self
             }
@@ -4394,7 +4413,6 @@ mod tests {
         }
 
         #[test]
-        // Should disable with two pedals > 42° over max range of 79.4° thus 52%
         fn autobrakes_max_disengage_at_52_on_both_pedal_input() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
@@ -4488,7 +4506,6 @@ mod tests {
         }
 
         #[test]
-        // Should disable with both pedals > 9° over max range of 79.4° thus 11.3%
         fn autobrakes_med_disengage_at_11_on_both_pedal_input() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
