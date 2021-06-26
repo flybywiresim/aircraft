@@ -4,7 +4,7 @@ class DisplayUnit {
         this.selfTest = new DisplayUnitSelfTest(selfTestElement, getSelfTestTimeInSecondsFn);
         this.isPowered = isPoweredFn;
         this.potentiometerId = potentiometerId;
-        this.offDurationTimerActive = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') && SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum') === FmgcFlightPhases.PREFLIGHT;
+        this.offDurationTimerActive = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
         this.previouslyOff = false;
         // Start with a state where turning on the display unit within 10 seconds after starting the flight
         // will trigger the self test.

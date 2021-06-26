@@ -75,7 +75,7 @@ function DCDU() {
     });
     switch (state) {
     case 'DEFAULT':
-        if (getSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') && getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum') === 0) {
+        if (getSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool')) {
             setState('OFF');
         } else {
             setState('IDLE');

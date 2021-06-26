@@ -19,9 +19,8 @@ enum DisplayUnitState {
 }
 
 export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
-    const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum', 200);
     const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
-    const [state, setState] = useState((coldDark && flightPhase === 0) ? DisplayUnitState.Off : DisplayUnitState.Spawn);
+    const [state, setState] = useState((coldDark) ? DisplayUnitState.Off : DisplayUnitState.Spawn);
     const [timer, setTimer] = useState<number | null>(null);
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
