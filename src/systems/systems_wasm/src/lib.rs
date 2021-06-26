@@ -1,22 +1,15 @@
 #![cfg(any(target_arch = "wasm32", doc))]
+pub mod electrical;
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
     sim_connect::{SimConnect, SimConnectRecv},
     MSFSEvent,
 };
-use std::{collections::HashMap, pin::Pin, time::Duration};
+use std::{collections::HashMap, error::Error, pin::Pin, time::Duration};
 use systems::simulation::{Aircraft, Simulation, SimulatorReaderWriter};
 
-/// Used to combine all the traits that together make up
-/// an aspect of the simulator.
-pub trait SimulatorAspect: ReadWrite + HandleMessage + PrePostTick {}
-
-/// Used to read data from and write data to the simulator.
-/// Implementors are not required to implement both capabilities.
-/// despite the trait containing both functions.
-///
-/// When not implemented, reading or writing results in inaction.
-pub trait ReadWrite {
+/// An aspect to inject into events in the simulation.
+pub trait SimulatorAspect {
     /// Attempts to read data with the given name.
     /// Returns `Some` when reading was successful, `None` otherwise.
     fn read(&mut self, _name: &str) -> Option<f64> {
@@ -32,25 +25,18 @@ pub trait ReadWrite {
     fn write(&mut self, _name: &str, _value: f64) -> bool {
         false
     }
-}
 
-/// Used to handle messages coming from SimConnect.
-pub trait HandleMessage {
-    /// Attempt to handle the given SimConnect message, returning true
+    /// Attempts to handle the given SimConnect message, returning true
     /// when the message was handled and false otherwise.
     fn handle_message(&mut self, _message: &SimConnectRecv) -> bool {
         false
     }
-}
 
-/// Used to handle pre simulation and post simulation events.
-pub trait PrePostTick {
+    /// Executes before a simulation tick runs.
     fn pre_tick(&mut self, _delta: Duration) {}
 
-    fn post_tick(
-        &mut self,
-        _sim_connect: &mut Pin<&mut SimConnect>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    /// Executes after a simulation tick ran.
+    fn post_tick(&mut self, _sim_connect: &mut Pin<&mut SimConnect>) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 }
@@ -151,8 +137,7 @@ impl MsfsNamedVariableReaderWriter {
             .or_insert_with(|| NamedVariable::from(&name))
     }
 }
-impl SimulatorAspect for MsfsNamedVariableReaderWriter {}
-impl ReadWrite for MsfsNamedVariableReaderWriter {
+impl SimulatorAspect for MsfsNamedVariableReaderWriter {
     fn read(&mut self, name: &str) -> Option<f64> {
         Some(self.lookup_named_variable(name).get_value())
     }
@@ -163,8 +148,6 @@ impl ReadWrite for MsfsNamedVariableReaderWriter {
         true
     }
 }
-impl HandleMessage for MsfsNamedVariableReaderWriter {}
-impl PrePostTick for MsfsNamedVariableReaderWriter {}
 
 /// Reads aircraft variables (AVar).
 pub struct MsfsAircraftVariableReader {
@@ -235,8 +218,7 @@ impl MsfsAircraftVariableReader {
         }
     }
 }
-impl SimulatorAspect for MsfsAircraftVariableReader {}
-impl ReadWrite for MsfsAircraftVariableReader {
+impl SimulatorAspect for MsfsAircraftVariableReader {
     fn read(&mut self, name: &str) -> Option<f64> {
         let name = match self.mapping.get(name) {
             Some(x) => x,
@@ -249,8 +231,6 @@ impl ReadWrite for MsfsAircraftVariableReader {
         }
     }
 }
-impl HandleMessage for MsfsAircraftVariableReader {}
-impl PrePostTick for MsfsAircraftVariableReader {}
 
 const MIN_32KPOS_VAL_FROM_SIMCONNECT: f64 = -16384.;
 const MAX_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
