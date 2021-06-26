@@ -1962,6 +1962,8 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
 
+        this.flightNumber = flightNo;
+
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
             NXApi.connectTelex(flightNo)
                 .then(() => {
