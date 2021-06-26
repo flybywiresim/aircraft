@@ -21,13 +21,18 @@ class DisplayUnit {
     }
 
     update(deltaTime) {
+        const isOn = this.isOn();
+
         if (this.isJustNowTurnedOn()) {
             this.selfTest.execute(this.offDurationInMilliseconds);
         }
 
-        this.selfTest.update(deltaTime);
+        if (!isOn) {
+            this.selfTest.interrupt();
+        } else {
+            this.selfTest.update(deltaTime);
+        }
 
-        const isOn = this.isOn();
         if (this.offDurationTimerActive) {
             if (isOn) {
                 this.offDurationInMilliseconds = 0;
@@ -51,6 +56,7 @@ class DisplayUnitSelfTest {
     constructor(element, getSelfTestTimeInSecondsFn) {
         this.element = element;
         this.getSelfTestTimeInSeconds = getSelfTestTimeInSecondsFn;
+        this.maxTimer = this.getSelfTestTimeInSeconds() * 1000;
 
         this.remainingTestDurationInMilliseconds = 0;
     }
@@ -65,12 +71,23 @@ class DisplayUnitSelfTest {
 
     execute(offDurationInMilliseconds) {
         if (this.isRequired(offDurationInMilliseconds)) {
-            this.remainingTestDurationInMilliseconds = this.getSelfTestTimeInSeconds() * 1000;
+            this.remainingTestDurationInMilliseconds = this.maxTimer;
+        }
+    }
+
+    interrupt() {
+        if (this.remainingTestDurationInMilliseconds > 0 && this.remainingTestDurationInMilliseconds < this.maxTimer) {
+            this.remainingTestDurationInMilliseconds = this.maxTimer;
         }
     }
 
     update(deltaTime) {
-        this.remainingTestDurationInMilliseconds -= deltaTime;
-        this.element.style.visibility = this.remainingTestDurationInMilliseconds > 0 ? "visible" : "hidden";
+        if (this.remainingTestDurationInMilliseconds > 0) {
+            this.remainingTestDurationInMilliseconds -= deltaTime;
+            this.element.style.visibility = "visible";
+        } else {
+
+            this.element.style.visibility = "hidden";
+        }
     }
 }
