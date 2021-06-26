@@ -1903,6 +1903,15 @@ class FMCMainDisplay extends BaseAirliners {
             }
             airport = this.flightPlanManager.getDestination();
             runway = this.flightPlanManager.getApproachRunway();
+
+            const planeLla = new LatLongAlt(
+                SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
+                SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude")
+            );
+            const runwayDistance = Avionics.Utils.computeGreatCircleDistance(planeLla, runway.beginningCoordinates);
+            if (runwayDistance > 300) {
+                return;
+            }
         } else {
             if (this.ilsTakeoffAutoTuned) {
                 return;
@@ -1912,10 +1921,15 @@ class FMCMainDisplay extends BaseAirliners {
             runway = this.flightPlanManager.getDepartureRunway();
         }
 
+        // If the airport has correct navdata, the ILS will be listed as the reference navaid (originIcao in MSFS land) on at least the last leg of the
+        // ILS approach procedure(s). Tuning this way gives us the ident, and the course
         if (airport && airport.infos && runway) {
             for (let i = 0; i < airport.infos.approaches.length && !this.ilsAutoTuned; i++) {
                 const appr = airport.infos.approaches[i];
-                const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCR]?)$/);
+                // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
+                // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
+                // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
+                const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCRT]?)([\s\-]*[A-Z0-9])?$/);
                 if (
                     match !== null
                     && Avionics.Utils.formatRunway(match[3]) === Avionics.Utils.formatRunway(runway.designation)
