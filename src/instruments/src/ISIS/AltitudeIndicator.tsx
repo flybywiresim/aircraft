@@ -58,11 +58,11 @@ type DrumProps = {
     distanceSpacing: number;
     positionOffset: number;
     value: number;
-    showZero: boolean;
+    showZero?: boolean;
     elementFunction: (value: number, offset: number, color: string) => JSX.Element;
 }
 
-const Drum: React.FC<DrumProps> = ({ x, displayRange, valueSpacing, distanceSpacing, positionOffset, value, elementFunction, showZero = true }) => {
+const Drum: React.FC<DrumProps> = ({ displayRange, valueSpacing, distanceSpacing, positionOffset, value, elementFunction, showZero = true }) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing); // How many numbers to draw (at most)
 
     // Where to draw topmost number

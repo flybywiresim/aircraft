@@ -3,12 +3,12 @@ import { DisplayUnit } from '@instruments/common/displayUnit';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { render } from '../Common';
-import { ArtificialHorizon } from './ArtificialHorizon';
-import { BugSetup } from './BugSetup';
+import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';
+import { BugSetupDisplay } from './BugSetupDisplay';
 
 import './style.scss';
 
-const ISISDisplay: React.FC = () => {
+export const ISISDisplay: React.FC = () => {
     const [dcEssLive] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool');
     const [dcHotLive] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'bool');
     const [ias] = useSimVar('AIRSPEED INDICATED', 'knots');
@@ -29,8 +29,8 @@ const ISISDisplay: React.FC = () => {
         return (
             <svg className="isis-svg" version="1.1" viewBox="0 0 512 512">
                 {{
-                    AHI: <ArtificialHorizon />,
-                    BUG: <BugSetup />,
+                    AHI: <ArtificialHorizonDisplay indicatedAirspeed={ias} />,
+                    BUG: <BugSetupDisplay />,
                 }[mode]}
             </svg>
         );

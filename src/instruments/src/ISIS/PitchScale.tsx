@@ -4,6 +4,10 @@ export const PitchScale: React.FC<{ pitchDegPixels: number }> = ({ pitchDegPixel
     const markers = Array();
     for (let d = -30; d <= 30; d += 10) {
         if (d === 0) {
+            markers.push(
+                <line x1={-256} x2={768} y1={256} y2={256} strokeWidth={4} stroke="white" />,
+            );
+
             continue;
         }
         const y = 256 - d * pitchDegPixels;
