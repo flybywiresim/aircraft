@@ -29,7 +29,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     useUpdate((deltaTime) => {
         if (timer !== null) {
             if (timer > 0) {
-                setTimer(timer - (deltaTime / 1000), 0);
+                setTimer(timer - (deltaTime / 1000));
             } else if (state === DisplayUnitState.Standby) {
                 setState(DisplayUnitState.Off);
                 setTimer(null);

@@ -109,7 +109,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorVideoPressed = false;
 
         // Using ternary in case the LVar is undefined
-        this.poweredDuringPreviousUpdate = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 0 : 1;
+        this.poweredDuringPreviousUpdate = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
 
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
