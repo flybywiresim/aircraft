@@ -19,8 +19,6 @@ export const Clock = () => {
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number', 1000);
     const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number', 1000);
     const [year] = useSimVar('E:ZULU YEAR', 'number', 1000);
-    const [timeOfDay] = useSimVar('E:TIME OF DAY', 'enum', 10000);
-    const phaseOfDay = (timeOfDay === 1 || timeOfDay === 2) ? 'day' : 'night';
 
     useInteractionEvent('A32NX_CHRONO_DATE', () => {
         setDateMode(!dateMode);
@@ -39,8 +37,8 @@ export const Clock = () => {
 
     return (
         <>
-            <text x="6" y="153" className={`fontBig ${phaseOfDay}`}>{ltsTest === 0 ? '88:88:' : text1}</text>
-            <text x="190" y="147" className={`fontSmall ${phaseOfDay}`}>{ltsTest === 0 ? '88' : text2}</text>
+            <text x="6" y="153" className="fontBig">{ltsTest === 0 ? '88:88:' : text1}</text>
+            <text x="190" y="147" className="fontSmall">{ltsTest === 0 ? '88' : text2}</text>
         </>
     );
 };

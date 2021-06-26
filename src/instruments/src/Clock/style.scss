@@ -17,6 +17,14 @@ text {
   alignment-baseline: center;
 }
 
+.day text {
+  fill: rgba(180, 170, 170, 0.95);
+}
+
+.night text {
+  fill: rgba(155, 148, 148, 0.45);
+}
+
 .fontBig {
   font-size: 65px;
   transition: fill 7s ease-in-out;
@@ -25,12 +33,4 @@ text {
 .fontSmall {
   font-size: 48px;
   transition: fill 7s ease-in-out;
-}
-
-.day {
-  fill: rgba(180, 170, 170, 0.95);
-}
-
-.night {
-  fill: rgba(155, 148, 148, 0.45);
 }

@@ -8,8 +8,6 @@ const getDisplayString = (seconds: number | null, running: boolean) : string => 
 export const Chrono = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 200);
-    const [timeOfDay] = useSimVar('E:TIME OF DAY', 'enum', 10000);
-    const phaseOfDay = (timeOfDay === 1 || timeOfDay === 2) ? 'day' : 'night';
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState<null | number>(null);
@@ -38,6 +36,6 @@ export const Chrono = () => {
     });
 
     return (
-        <text x="47" y="60" className={`fontBig ${phaseOfDay}`}>{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, running)}</text>
+        <text x="47" y="60" className="fontBig">{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, running)}</text>
     );
 };

@@ -8,8 +8,6 @@ export const ElapsedTime = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [elapsedKnobPos] = useInteractionSimVar('L:A32NX_CHRONO_ET_SWITCH_POS', 'number', 'A32NX_CHRONO_ET_POS_CHANGED');
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 1000);
-    const [timeOfDay] = useSimVar('E:TIME OF DAY', 'enum', 10000);
-    const phaseOfDay = (timeOfDay === 1 || timeOfDay === 2) ? 'day' : 'night';
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -24,6 +22,6 @@ export const ElapsedTime = () => {
     }, [absTime, elapsedKnobPos]);
 
     return (
-        <text x="47" y="247" className={`fontBig ${phaseOfDay}`}>{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, elapsedKnobPos === 0)}</text>
+        <text x="47" y="247" className="fontBig">{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, elapsedKnobPos === 0)}</text>
     );
 };
