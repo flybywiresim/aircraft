@@ -1725,7 +1725,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryUpdateTOW() {
-        this.takeOffWeight = this.getGW() - this.taxiFuelWeight;
+        this.takeOffWeight = this.zeroFuelWeight + this.blockFuel - this.taxiFuelWeight;
     }
 
     tryUpdateLW() {
