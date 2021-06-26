@@ -8,6 +8,7 @@ import { MachIndicator } from './MachIndicator';
 import { PressureIndicator } from './PressureIndicator';
 import { ArtificialHorizon } from './ArtificialHorizon';
 import { AirspeedIndicator } from './AirspeedIndicator';
+import { AirplaneSymbol } from './AirplaneSymbol';
 
 type Props = {
     indicatedAirspeed: number;
@@ -33,6 +34,7 @@ export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed })
                 { lsActive && <LandingSystem /> }
                 <PressureIndicator />
                 <MachIndicator />
+                <AirplaneSymbol />
             </g>
         </g>
     );
