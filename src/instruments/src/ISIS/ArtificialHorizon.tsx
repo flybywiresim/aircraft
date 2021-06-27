@@ -1,6 +1,8 @@
-import React, { } from 'react';
+import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { PitchScale } from './PitchScale';
+import { RollScale } from './RollScale';
+import { RollIndex } from './RollIndex';
 
 const Sky: React.FC = () => <rect x={-256} y={-256} width={1024} height={512} className="sky" />;
 const Earth: React.FC = () => <rect x={-256} y={256} width={1024} height={512} className="earth" />;
@@ -8,19 +10,26 @@ const Earth: React.FC = () => <rect x={-256} y={256} width={1024} height={512} c
 export const ArtificialHorizon: React.FC<{ maskWidth: number }> = ({ maskWidth }) => {
     const [pitch] = useSimVar('PLANE PITCH DEGREES', 'degrees');
     const [roll] = useSimVar('PLANE BANK DEGREES', 'degrees');
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool');
 
-    const pitchDegPixels = (512 - 2 * maskWidth) / 35;
+    const pitchDegPixels = (512 - 2 * maskWidth) / 37;
 
     const pitchShift = -pitch * pitchDegPixels;
 
     return (
         <g id="ArtificialHorizon">
-            <g id="horizon" transform={`rotate(${roll} 256 256) translate(0 ${pitchShift})`}>
-                <Sky />
-                <Earth />
-                <PitchScale pitchDegPixels={pitchDegPixels} />
+            <g id="RollGroup" transform={`rotate(${roll} 256 256)`}>
+                <g id="PitchGroup" transform={`translate(0 ${pitchShift})`}>
+                    <Sky />
+                    <Earth />
+                    <PitchScale pitchDegPixels={pitchDegPixels} />
+                </g>
+                {/* TODO: Add actual delta time */}
+                {/* TODO: Figure out if isOnGround is needed (does the lateral acceleration shown on ISIS differ from sideslip shown on PFD?) */}
+                <RollIndex roll={roll} isOnGround={isOnGround} deltaTime={33} />
             </g>
-            <path id="Mask" className="mask" d="M 0 0 h 512 v 512 h -512 z M 108 130.5 c 50 -30 246 -30 296 0 v 251 c -50 30 -246 30 -296 0 z" />
+            <RollScale />
+            <path id="Mask" className="mask" d="M 0 0 h 512 v 512 h -512 z M 108 120.5 c 50 -30 246 -30 296 0 v 271 c -50 30 -246 30 -296 0 z" />
         </g>
     );
 };
