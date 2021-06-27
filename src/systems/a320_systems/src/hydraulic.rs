@@ -1535,7 +1535,6 @@ impl A320AutobrakeController {
 
     fn should_disarm(&self) -> bool {
         (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
-            || !self.is_armed()
             || !self.arming_is_allowed_by_bcu
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
