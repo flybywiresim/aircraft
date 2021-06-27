@@ -1466,18 +1466,20 @@ impl A320AutobrakeController {
         Ratio::new::<ratio>(self.deceleration_governor.output())
     }
 
-    fn update_mode_state_machine(&mut self, autobrake_panel: &AutobrakePanel) {
-        if let Some(mode) = autobrake_panel.pressed_mode() {
-            if self.mode == mode {
-                self.mode = AutobrakeMode::NONE;
-            } else if mode != AutobrakeMode::MAX
-                || !self.should_reject_max_mode_after_time_in_flight.output()
-            {
-                self.mode = mode;
-            }
-        }
+    fn determine_mode(&mut self, autobrake_panel: &AutobrakePanel) -> AutobrakeMode {
         if self.should_disarm() {
-            self.disarm();
+            AutobrakeMode::NONE
+        } else {
+            match autobrake_panel.pressed_mode() {
+                Some(mode) if self.mode == mode => AutobrakeMode::NONE,
+                Some(mode)
+                    if mode != AutobrakeMode::MAX
+                        || !self.should_reject_max_mode_after_time_in_flight.output() =>
+                {
+                    mode
+                }
+                Some(_) | None => self.mode,
+            }
         }
     }
 
@@ -1558,10 +1560,6 @@ impl A320AutobrakeController {
         })
     }
 
-    fn disarm(&mut self) {
-        self.mode = AutobrakeMode::NONE;
-    }
-
     fn update_input_conditions(
         &mut self,
         context: &UpdateContext,
@@ -1596,7 +1594,7 @@ impl A320AutobrakeController {
             pedal_input_right,
             weight_on_wheels,
         );
-        self.update_mode_state_machine(&autobrake_panel);
+        self.mode = self.determine_mode(&autobrake_panel);
 
         self.deceleration_governor
             .engage_when(self.should_engage_deceleration_governor());
