@@ -983,11 +983,11 @@
     - Provides the selected navigation display mode for the captain side EFIS
       Value | Meaning
       --- | ---
-      0 | ROSE NAV
+      0 | ROSE ILS
       1 | ROSE VOR
-      2 | ROSE ILS
-      3 | PLAN
-      4 | ARC
+      2 | ROSE NAV
+      3 | ARC
+      4 | PLAN
     - {side}
         - L
         - R
