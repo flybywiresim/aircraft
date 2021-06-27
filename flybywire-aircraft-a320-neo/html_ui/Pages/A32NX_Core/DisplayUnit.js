@@ -9,6 +9,9 @@ class DisplayUnit {
         // Start with a state where turning on the display unit within 10 seconds after starting the flight
         // will trigger the self test.
         this.offDurationInMilliseconds = this.offDurationTimerActive ? DisplayUnitSelfTest.RequiredAfterBeingOffForMilliseconds : 0;
+        if (this.offDurationTimerActive) {
+            this.selfTest.execute(this.offDurationInMilliseconds);
+        }
     }
 
     isJustNowTurnedOn() {
