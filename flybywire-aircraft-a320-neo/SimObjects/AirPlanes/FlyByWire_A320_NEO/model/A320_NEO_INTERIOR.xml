@@ -48,18 +48,14 @@
         <!-- Integrated lighting -->
 
         <Component ID="LIGHTING">
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Pedestal_Template">
+
+            <UseTemplate Name="FBW_Dimmer_Knob">
                 <NODE_ID>LIGHTING_Knob_Pedestal</NODE_ID>
                 <PART_ID>LIGHTING_Knob_Pedestal</PART_ID>
                 <ANIM_NAME>LIGHTING_Knob_Pedestal</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>76</POTENTIOMETER>
-                <MAX_VALUE>100</MAX_VALUE>
-                <KNOB_TURN_SPEED>1</KNOB_TURN_SPEED>
-                <WWISE_EVENT></WWISE_EVENT>
-                <UPDATE_FREQUENCY>50</UPDATE_FREQUENCY>
-                <UPDATE_DELAY>0.2</UPDATE_DELAY>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Pedestal_Emissive_Template">
