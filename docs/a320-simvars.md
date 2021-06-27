@@ -964,6 +964,37 @@
       0 | inactive
       1 | active
 
+## EIS Display System
+
+- A32NX_EFIS_{side}_ND_MODE
+    - Enum
+    - Provides the selected navigation display mode for the captain side EFIS
+      Value | Meaning
+      --- | ---
+      0 | ROSE NAV
+      1 | ROSE VOR
+      2 | ROSE ILS
+      3 | PLAN
+      4 | ARC
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_RANGE
+    - Enum
+    - Provides the selected navigation display range for the captain side EFIS
+      Value | Meaning
+      --- | ---
+      0 | 10
+      1 | 20
+      2 | 40
+      3 | 80
+      4 | 160
+      5 | 320
+    - {side}
+        - L
+        - R
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
