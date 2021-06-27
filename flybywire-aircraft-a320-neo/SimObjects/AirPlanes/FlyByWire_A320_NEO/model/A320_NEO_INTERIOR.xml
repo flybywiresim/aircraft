@@ -3076,7 +3076,7 @@
                 <NODE_ID>KNOB_AUTOPILOT_ROSE_L</NODE_ID>
                 <PART_ID>KNOB_AUTOPILOT_ROSE_L</PART_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_ROSE_L_</ANIM_NAME>
-                <KNOB_POSITION_VAR>A320_Neo_MFD_NAV_MODE_1</KNOB_POSITION_VAR>
+                <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_MODE</KNOB_POSITION_VAR>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
@@ -3091,7 +3091,7 @@
                 <NODE_ID>KNOB_AUTOPILOT_ROSE_R</NODE_ID>
                 <PART_ID>KNOB_AUTOPILOT_ROSE_R</PART_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_ROSE_R</ANIM_NAME>
-                <KNOB_POSITION_VAR>A320_Neo_MFD_NAV_MODE_2</KNOB_POSITION_VAR>
+                <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_MODE</KNOB_POSITION_VAR>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
