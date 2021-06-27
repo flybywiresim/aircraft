@@ -1,9 +1,8 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    overhead::MomentaryPushButton,
+    overhead::MomentaryRisingEdgePushButton,
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, Write,
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
 };
 
@@ -348,35 +347,29 @@ impl From<u8> for AutobrakeMode {
 }
 
 pub struct AutobrakePanel {
-    lo_button: MomentaryPushButton,
-    med_button: MomentaryPushButton,
-    max_button: MomentaryPushButton,
-    last_lo_state: bool,
-    last_med_state: bool,
-    last_max_state: bool,
+    lo_button: MomentaryRisingEdgePushButton,
+    med_button: MomentaryRisingEdgePushButton,
+    max_button: MomentaryRisingEdgePushButton,
 }
 impl AutobrakePanel {
     pub fn new() -> AutobrakePanel {
         AutobrakePanel {
-            lo_button: MomentaryPushButton::new("AUTOBRK_LOW_ON"),
-            med_button: MomentaryPushButton::new("AUTOBRK_MED_ON"),
-            max_button: MomentaryPushButton::new("AUTOBRK_MAX_ON"),
-            last_lo_state: false,
-            last_med_state: false,
-            last_max_state: false,
+            lo_button: MomentaryRisingEdgePushButton::new("AUTOBRK_LOW_ON"),
+            med_button: MomentaryRisingEdgePushButton::new("AUTOBRK_MED_ON"),
+            max_button: MomentaryRisingEdgePushButton::new("AUTOBRK_MAX_ON"),
         }
     }
 
     fn low_pressed(&self) -> bool {
-        self.lo_button.is_pressed() && !self.last_lo_state
+        self.lo_button.is_pressed()
     }
 
     fn med_pressed(&self) -> bool {
-        self.med_button.is_pressed() && !self.last_med_state
+        self.med_button.is_pressed()
     }
 
     fn max_pressed(&self) -> bool {
-        self.max_button.is_pressed() && !self.last_max_state
+        self.max_button.is_pressed()
     }
 
     pub fn pressed_mode(&self) -> Option<AutobrakeMode> {
@@ -393,17 +386,11 @@ impl AutobrakePanel {
 }
 impl SimulationElement for AutobrakePanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-
         self.lo_button.accept(visitor);
         self.med_button.accept(visitor);
         self.max_button.accept(visitor);
-    }
 
-    fn read(&mut self, _state: &mut SimulatorReader) {
-        self.last_lo_state = self.lo_button.is_pressed();
-        self.last_med_state = self.med_button.is_pressed();
-        self.last_max_state = self.max_button.is_pressed();
+        visitor.visit(self);
     }
 }
 impl Default for AutobrakePanel {

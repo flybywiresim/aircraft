@@ -448,6 +448,29 @@ impl SimulationElement for MomentaryPushButton {
     }
 }
 
+/// Same implementation as MomentaryPushButton but is only "pressed" for one update even if kept pressed
+pub struct MomentaryRisingEdgePushButton {
+    is_pressed_id: String,
+    is_pressed: bool,
+}
+impl MomentaryRisingEdgePushButton {
+    pub fn new(name: &str) -> Self {
+        Self {
+            is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
+            is_pressed: false,
+        }
+    }
+
+    pub fn is_pressed(&self) -> bool {
+        self.is_pressed
+    }
+}
+impl SimulationElement for MomentaryRisingEdgePushButton {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.is_pressed = reader.read(&self.is_pressed_id) && !self.is_pressed;
+    }
+}
+
 pub struct MomentaryOnPushButton {
     is_pressed_id: String,
     is_on_id: String,
@@ -836,5 +859,47 @@ mod momentary_on_push_button_tests {
         test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_TEST_IS_ON"));
+    }
+}
+
+#[cfg(test)]
+mod momentary_rising_edge_push_button_tests {
+    use super::*;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+
+    #[test]
+    fn new_is_not_pressed() {
+        assert!(!MomentaryRisingEdgePushButton::new("TEST").is_pressed());
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed = SimulationTestBed::from(MomentaryRisingEdgePushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+
+        assert!(test_bed.query_element(|button| button.is_pressed()));
+    }
+
+    #[test]
+    fn can_be_pressed() {
+        let mut test_bed = SimulationTestBed::from(MomentaryRisingEdgePushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_pressed()));
+    }
+
+    #[test]
+    fn is_only_pressed_for_one_update() {
+        let mut test_bed = SimulationTestBed::from(MomentaryRisingEdgePushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_pressed()));
+
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_pressed()));
     }
 }
