@@ -185,6 +185,16 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         //TCAS
         this.map.instrument.TCASManager.update(deltaTime);
 
+        const tcasTaOnly = Simvar.GetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool");
+
+        if (tcasTaOnly) {
+            document.querySelector("#rect_TAOnly").setAttribute("visibility", "visible");
+            document.querySelector("#TAOnly").setAttribute("visibility", "visible");
+        } else {
+            document.querySelector("#rect_TAOnly").setAttribute("visibility", "hidden");
+            document.querySelector("#TAOnly").setAttribute("visibility", "hidden");
+        }
+
         const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
 
         if (ADIRSState != 2) {
