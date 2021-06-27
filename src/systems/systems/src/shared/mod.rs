@@ -339,6 +339,10 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
     }
 }
 
+pub fn to_bool(value: f64) -> bool {
+    (value - 1.).abs() < f64::EPSILON
+}
+
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;
