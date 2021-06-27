@@ -26,6 +26,12 @@
   fill: #9c480c;
 }
 
+.mask {
+	fill: $display-background;
+	fill-rule: "evenodd";
+	stroke: none;
+}
+
 .FontLarge {
   font-size: 52px;
 }

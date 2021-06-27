@@ -29,6 +29,8 @@ export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed })
             <g id="fixedOverlay">
                 <path d="M32,8 L32,504" fill="white" stroke="white" strokeWidth={4} />
                 <path d="M480,8 L480,504" fill="white" stroke="white" strokeWidth={4} />
+                <path d="M0,108 L512,108" fill="white" stroke="white" strokeWidth={4} />
+                <path d="M0,404 L512,404" fill="white" stroke="white" strokeWidth={4} />
                 <AirspeedIndicator maskWidth={maskWidth} indicatedAirspeed={indicatedAirspeed} />
                 <AltitudeIndicator maskWidth={maskWidth} altitude={Math.floor(alt)} mda={200} />
                 { lsActive && <LandingSystem /> }
