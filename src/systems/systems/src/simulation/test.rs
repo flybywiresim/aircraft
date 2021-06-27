@@ -202,22 +202,11 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.write(UpdateContext::IS_ON_GROUND_KEY, on_ground);
     }
 
-    pub fn on_ground(&mut self) -> bool {
-        (self.reader_writer.read(UpdateContext::IS_ON_GROUND_KEY) - 1.).abs() < f64::EPSILON
-    }
-
     pub fn set_long_acceleration(&mut self, accel: Acceleration) {
         self.reader_writer.write_f64(
             UpdateContext::ACCEL_BODY_Z_KEY,
             accel.get::<foot_per_second_squared>(),
         );
-    }
-
-    pub fn long_acceleration(&mut self) -> Acceleration {
-        Acceleration::new::<foot_per_second_squared>(
-            self.reader_writer
-                .read_f64(UpdateContext::INDICATED_AIRSPEED_KEY),
-        )
     }
 
     fn write_f64(&mut self, name: &str, value: f64) {
