@@ -2142,15 +2142,7 @@ mod tests {
             }
 
             fn autobrake_mode(&mut self) -> AutobrakeMode {
-                let mode = self.read_f64("AUTOBRAKES_ARMED_MODE") as u8;
-
-                match mode {
-                    0 => AutobrakeMode::NONE,
-                    1 => AutobrakeMode::LOW,
-                    2 => AutobrakeMode::MED,
-                    3 => AutobrakeMode::MAX,
-                    _ => AutobrakeMode::NONE,
-                }
+                AutobrakeMode::from(self.read_f64("AUTOBRAKES_ARMED_MODE") as u8)
             }
 
             fn get_brake_left_green_pressure(&mut self) -> Pressure {
