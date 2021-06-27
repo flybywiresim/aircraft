@@ -1454,10 +1454,6 @@ impl A320AutobrakeController {
         }
     }
 
-    fn ground_spoilers_are_deployed(&self) -> bool {
-        self.ground_spoilers_are_deployed
-    }
-
     fn spoilers_retracted_during_this_update(&self) -> bool {
         !self.ground_spoilers_are_deployed && self.last_ground_spoilers_are_deployed
     }
@@ -1484,7 +1480,7 @@ impl A320AutobrakeController {
     }
 
     fn should_engage_deceleration_governor(&self) -> bool {
-        self.is_armed() && self.ground_spoilers_are_deployed() && !self.should_disarm()
+        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm()
     }
 
     fn is_armed(&self) -> bool {
