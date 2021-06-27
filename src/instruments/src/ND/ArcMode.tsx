@@ -7,9 +7,8 @@ import { MapParameters } from './utils/MapParameters';
 import { RadioNeedle } from './RadioNeedles';
 import { Plane } from './Plane';
 import { ToWaypointIndicator } from './ToWaypointIndicator';
+import { rangeSettings } from './index';
 import { ApproachMessage } from './ApproachMessage';
-
-const rangeSettings = [10, 20, 40, 80, 160, 320];
 
 export type ArcModeProps = { side: 'L' | 'R' }
 
