@@ -280,6 +280,9 @@ const raVariants = {
     // CORRECTIVE RA's
     // LEVEL OFF
     level_off_250_both: {
+        // Currently not used
+        // Will be used when support for multi-threat RA's,
+        // from both above and below, will be added
         callout: callouts.level_off,
         sense: raSense.up,
         type: raType.corrective,
@@ -298,7 +301,6 @@ const raVariants = {
         vs: {
             green: [-300, 0],
             red: [
-                [CONSTANTS.MIN_VS, -300],
                 [0, CONSTANTS.MAX_VS]
             ]
         }
@@ -310,8 +312,7 @@ const raVariants = {
         vs: {
             green: [0, 300],
             red: [
-                [CONSTANTS.MIN_VS, 0],
-                [300, CONSTANTS.MAX_VS]
+                [CONSTANTS.MIN_VS, 0]
             ]
         }
     },
@@ -324,8 +325,7 @@ const raVariants = {
         vs: {
             green: [1500, 4400],
             red: [
-                [CONSTANTS.MIN_VS, 1500],
-                [4400, CONSTANTS.MAX_VS]
+                [CONSTANTS.MIN_VS, 1500]
             ]
         }
     },
@@ -336,8 +336,7 @@ const raVariants = {
         vs: {
             green: [1500, 4400],
             red: [
-                [CONSTANTS.MIN_VS, 1500],
-                [4400, CONSTANTS.MAX_VS]
+                [CONSTANTS.MIN_VS, 1500]
             ]
         }
     },
@@ -350,7 +349,6 @@ const raVariants = {
         vs: {
             green: [-4400, -1500],
             red: [
-                [CONSTANTS.MIN_VS, -4400],
                 [-1500, CONSTANTS.MAX_VS]
             ]
         }
@@ -362,7 +360,6 @@ const raVariants = {
         vs: {
             green: [-4400, -1500],
             red: [
-                [CONSTANTS.MIN_VS, -4400],
                 [-1500, CONSTANTS.MAX_VS]
             ]
         }
@@ -810,8 +807,7 @@ class A32NX_TCAS_Manager {
                             ra.info = downIsCrossing ? raVariants.descend_cross : raVariants.descend;
                         }
                     } else {
-                        ra.info = raVariants.level_off_250_both;
-                        ra.info.sense = sense;
+                        ra.info = sense === raSense.up ? raVariants.level_off_300_above : raVariants.level_off_300_below;
                     }
                 }
             } else {
@@ -824,7 +820,7 @@ class A32NX_TCAS_Manager {
                         ra.info = downIsCrossing ? raVariants.descend_maintain_vs_crossing : raVariants.descend_maintain_vs;
                     }
                 } else {
-                    ra.info = raVariants.level_off_250_both;
+                    ra.info = sense === raSense.up ? raVariants.level_off_300_above : raVariants.level_off_300_below;
                 }
             }
         } else {
