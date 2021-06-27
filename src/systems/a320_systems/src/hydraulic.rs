@@ -1145,20 +1145,20 @@ impl A320HydraulicBrakeComputerUnit {
         // Nominal braking from pedals is limited to 2538psi
         self.normal_brake_pressure_limit = Pressure::new::<psi>(2538.);
 
-        if self.parking_brake_demand {
+        self.alternate_brake_pressure_limit = Pressure::new::<psi>(if self.parking_brake_demand {
             // If no pilot action, standard park brake pressure limit
             if !yellow_manual_braking_input {
-                self.alternate_brake_pressure_limit = Pressure::new::<psi>(2103.);
+                2103.
             } else {
                 // Else manual action limited to a higher max nominal pressure
-                self.alternate_brake_pressure_limit = Pressure::new::<psi>(2538.);
+                2538.
             }
         } else if !self.anti_skid_activated {
-            self.alternate_brake_pressure_limit = Pressure::new::<psi>(1160.);
+            1160.
         } else {
             // Else if any manual braking we use standard limit
-            self.alternate_brake_pressure_limit = Pressure::new::<psi>(2538.);
-        }
+            2538.
+        });
     }
 
     /// Updates final brake demands per hydraulic loop based on pilot pedal demands
