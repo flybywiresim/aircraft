@@ -44,3 +44,25 @@ macro_rules! provide_potential {
         }
     };
 }
+
+macro_rules! read_write_enum {
+    ($t: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn read(&mut self, name: &str) -> $t {
+                self.read_f64(name).into()
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn write(&mut self, name: &str, value: $t) {
+                self.write_f64(name, value.into());
+            }
+        }
+
+        impl From<$t> for f64 {
+            fn from(value: $t) -> f64 {
+                value as u8 as f64
+            }
+        }
+    };
+}

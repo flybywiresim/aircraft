@@ -14,6 +14,7 @@ use electrical::{
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use power_consumption::A320PowerConsumption;
 use systems::{
+    adirs::{AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel},
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
@@ -26,6 +27,8 @@ use systems::{
 };
 
 pub struct A320 {
+    adirs: AirDataInertialReferenceSystem,
+    adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
@@ -46,6 +49,8 @@ pub struct A320 {
 impl A320 {
     pub fn new(electricity: &mut Electricity) -> A320 {
         A320 {
+            adirs: AirDataInertialReferenceSystem::new(),
+            adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(),
             apu: AuxiliaryPowerUnitFactory::new_aps3200(
                 1,
                 electricity,
@@ -127,6 +132,9 @@ impl Aircraft for A320 {
         );
 
         self.hydraulic_overhead.update(&self.hydraulic);
+
+        self.adirs.update(context, &self.adirs_overhead);
+        self.adirs_overhead.update(context);
 
         self.power_consumption.update(context);
     }
