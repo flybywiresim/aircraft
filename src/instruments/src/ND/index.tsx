@@ -9,13 +9,23 @@ import { WindIndicator } from './WindIndicator';
 import { SpeedIndicator } from './SpeedIndicator';
 import { RadioNavInfo } from './RadioNavInfo';
 import { Chrono } from './Chrono';
+import { NavigationDisplayMessages } from './utils/NavigationDisplayMessages';
 
 import './styles.scss';
 
-const NavigationDisplay: React.FC = () => {
-    const [adirsState] = useSimVar('L:A320_Neo_ADIRS_STATE', 'Enum', 500);
-    const [tas] = useSimVar('AIRSPEED TRUE', 'knots', 500);
+export type RangeSetting = 10 | 20 | 40 | 80 | 160 | 320;
 
+export const rangeSettings: RangeSetting[] = [10, 20, 40, 80, 160, 320];
+
+export enum Mode {
+    ROSE_ILS,
+    ROSE_VOR,
+    ROSE_NAV,
+    ARC,
+    PLAN,
+}
+
+const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
         const url = document.getElementsByTagName('a32nx-nd')[0].getAttribute('url');
 
@@ -23,6 +33,12 @@ const NavigationDisplay: React.FC = () => {
     });
 
     const side = displayIndex === 1 ? 'L' : 'R';
+
+    const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
+    const [modeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
+
+    const [adirsState] = useSimVar('L:A320_Neo_ADIRS_STATE', 'Enum', 500);
+    const [tas] = useSimVar('AIRSPEED TRUE', 'knots', 500);
 
     return (
         <DisplayUnit
@@ -37,6 +53,8 @@ const NavigationDisplay: React.FC = () => {
                     <ArcMode side={side} />
 
                     <Chrono side={side} />
+
+                    <NavigationDisplayMessages rangeSetting={rangeSettings[rangeIndex]} mode={modeIndex} />
 
                     <RadioNavInfo index={1} side={side} />
                     <RadioNavInfo index={2} side={side} />
