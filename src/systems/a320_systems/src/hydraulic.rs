@@ -1512,7 +1512,7 @@ impl A320AutobrakeController {
         }
     }
 
-    fn pedal_input_should_disarm(&self) -> bool {
+    fn should_disarm_due_to_pedal_input(&self) -> bool {
         match self.mode {
             AutobrakeMode::NONE => false,
             AutobrakeMode::LOW | AutobrakeMode::MED => {
@@ -1534,7 +1534,7 @@ impl A320AutobrakeController {
     }
 
     fn should_disarm(&self) -> bool {
-        (self.deceleration_governor.is_engaged() && self.pedal_input_should_disarm())
+        (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
             || !self.is_armed()
             || !self.arming_is_allowed_by_bcu
             || self.spoilers_retracted_during_this_update()
