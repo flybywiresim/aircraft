@@ -335,6 +335,7 @@ mod tests {
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(250.)); //Equivalent to FL340 from tables
         test_bed.set_on_ground(true);
         test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(20));
 
         assert!(
             (test_bed.query(|a| a.pressurization.cpc_1.cabin_altitude())
@@ -351,9 +352,9 @@ mod tests {
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
 
-        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(10));
         let last_cabin_pressure = test_bed.query(|a| a.pressurization.cpc_1.cabin_pressure());
-        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(10));
         assert!(last_cabin_pressure > test_bed.query(|a| a.pressurization.cpc_1.cabin_pressure()));
     }
 
