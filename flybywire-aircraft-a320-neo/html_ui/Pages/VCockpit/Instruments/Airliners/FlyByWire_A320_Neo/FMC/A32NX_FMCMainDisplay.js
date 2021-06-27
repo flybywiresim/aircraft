@@ -164,6 +164,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = undefined;
         this.ilsTakeoffAutoTuned = undefined;
         this.ilsApproachAutoTuned = undefined;
+        this.climbTransitionGroundAltitude = undefined;
+        this.altDestination = undefined;
+        this.flightNumber = undefined;
+        this.cruiseTemperature = undefined;
+        this.taxiFuelWeight = undefined;
+        this.blockFuel = undefined;
+        this.zeroFuelWeight = undefined;
+        this.zeroFuelWeightMassCenter = undefined;
     }
 
     Init() {
@@ -229,6 +237,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
 
         this.updateFuelVars();
+        this.updatePerfSpeeds();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
@@ -446,6 +455,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = false;
         this.ilsTakeoffAutoTuned = false;
         this.ilsApproachAutoTuned = false;
+        this.climbTransitionGroundAltitude = null;
+        this.altDestination = undefined;
+        this.flightNumber = undefined;
+        this.cruiseTemperature = undefined;
+        this.taxiFuelWeight = 0.2;
+        this.blockFuel = undefined;
+        this.zeroFuelWeight = undefined;
+        this.zeroFuelWeightMassCenter = undefined;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -464,6 +481,7 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
         SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
+        SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
 
         SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
@@ -1943,6 +1961,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
+
+        this.flightNumber = flightNo;
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
             NXApi.connectTelex(flightNo)

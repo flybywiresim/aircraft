@@ -96,9 +96,10 @@ class A32NX_FlightPhaseManager {
             [FmgcFlightPhases.DONE]: new A32NX_FlightPhase_Done()
         };
 
-        this.activeFlightPhase = this.flightPhases[FmgcFlightPhases.PREFLIGHT];
+        const initialFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number") || FmgcFlightPhases.PREFLIGHT;
+        this.activeFlightPhase = this.flightPhases[initialFlightPhase];
 
-        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", FmgcFlightPhases.PREFLIGHT);
+        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", initialFlightPhase);
 
         this.activeFlightPhase.init(_fmc);
     }
@@ -175,7 +176,6 @@ class A32NX_FlightPhase_PreFlight {
     }
 
     init(_fmc) {
-        _fmc.climbTransitionGroundAltitude = null;
     }
 
     check(_deltaTime, _fmc) {
@@ -367,7 +367,6 @@ class A32NX_FlightPhase_Done {
         _fmc.initVariables();
         _fmc.initMcduVariables();
         _fmc.forceClearScratchpad();
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", true);
         CDUIdentPage.ShowPage(_fmc);
     }
