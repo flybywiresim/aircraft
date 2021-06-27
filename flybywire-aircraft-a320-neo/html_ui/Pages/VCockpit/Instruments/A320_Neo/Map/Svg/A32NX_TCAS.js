@@ -102,9 +102,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             green: [0, CONSTANTS.MAX_VS],
-            red: [
-                [CONSTANTS.MIN_VS, 0]
-            ]
+            red: [CONSTANTS.MIN_VS, 0]
         }
     },
     monitor_vs_climb_500: {
@@ -113,9 +111,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             green: [-500, CONSTANTS.MAX_VS],
-            red: [
-                [CONSTANTS.MIN_VS, -500]
-            ]
+            red: [CONSTANTS.MIN_VS, -500]
         }
     },
     monitor_vs_climb_1000: {
@@ -124,9 +120,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             green: [-1000, CONSTANTS.MAX_VS],
-            red: [
-                [CONSTANTS.MIN_VS, -1000]
-            ]
+            red: [CONSTANTS.MIN_VS, -1000]
         }
     },
     monitor_vs_climb_2000: {
@@ -135,9 +129,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             green: [-2000, CONSTANTS.MAX_VS],
-            red: [
-                [CONSTANTS.MIN_VS, -2000]
-            ]
+            red: [CONSTANTS.MIN_VS, -2000]
         }
     },
 
@@ -147,9 +139,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             green: [CONSTANTS.MIN_VS, 0],
-            red: [
-                [0, CONSTANTS.MAX_VS]
-            ]
+            red: [0, CONSTANTS.MAX_VS]
         }
     },
     monitor_vs_descend_500: {
@@ -158,9 +148,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             green: [CONSTANTS.MIN_VS, 500],
-            red: [
-                [500, CONSTANTS.MAX_VS]
-            ]
+            red: [500, CONSTANTS.MAX_VS]
         }
     },
     monitor_vs_descend_1000: {
@@ -169,9 +157,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             green: [CONSTANTS.MIN_VS, 1000],
-            red: [
-                [1000, CONSTANTS.MAX_VS]
-            ]
+            red: [1000, CONSTANTS.MAX_VS]
         }
     },
     monitor_vs_descend_2000: {
@@ -180,9 +166,7 @@ const raVariants = {
         type: raType.preventative,
         vs: {
             green: [CONSTANTS.MIN_VS, 2000],
-            red: [
-                [2000, CONSTANTS.MAX_VS]
-            ]
+            red: [2000, CONSTANTS.MAX_VS]
         }
     },
     // CORRECTIVE RA's
@@ -193,9 +177,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [1500, 2000],
-            red: [
-                [CONSTANTS.MIN_VS, 1500]
-            ]
+            red: [CONSTANTS.MIN_VS, 1500]
         }
     },
     climb_cross: {
@@ -204,9 +186,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [1500, 2000],
-            red: [
-                [CONSTANTS.MIN_VS, 1500]
-            ]
+            red: [CONSTANTS.MIN_VS, 1500]
         }
     },
     climb_increase: {
@@ -215,9 +195,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [2500, 4400],
-            red: [
-                [CONSTANTS.MIN_VS, 2500]
-            ]
+            red: [CONSTANTS.MIN_VS, 2500]
         }
     },
     climb_now: {
@@ -226,9 +204,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [1500, 2000],
-            red: [
-                [CONSTANTS.MIN_VS, 1500]
-            ]
+            red: [CONSTANTS.MIN_VS, 1500]
         }
     },
     // CORRECTIVE RA's
@@ -239,9 +215,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [-2000, -1500],
-            red: [
-                [-1500, CONSTANTS.MAX_VS]
-            ]
+            red: [-1500, CONSTANTS.MAX_VS]
         }
     },
     descend_cross: {
@@ -250,9 +224,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [-2000, -1500],
-            red: [
-                [-1500, CONSTANTS.MAX_VS]
-            ]
+            red: [-1500, CONSTANTS.MAX_VS]
         }
     },
     descend_increase: {
@@ -261,9 +233,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [-4400, -2500],
-            red: [
-                [-2500, CONSTANTS.MAX_VS]
-            ]
+            red: [-2500, CONSTANTS.MAX_VS]
         }
     },
     descend_now: {
@@ -272,37 +242,33 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [-2000, -1500],
-            red: [
-                [-1500, CONSTANTS.MAX_VS]
-            ]
+            red: [-1500, CONSTANTS.MAX_VS]
         }
     },
     // CORRECTIVE RA's
     // LEVEL OFF
-    level_off_250_both: {
-        // Currently not used
-        // Will be used when support for multi-threat RA's,
-        // from both above and below, will be added
-        callout: callouts.level_off,
-        sense: raSense.up,
-        type: raType.corrective,
-        vs: {
-            green: [-250, 250],
-            red: [
-                [CONSTANTS.MIN_VS, -250],
-                [250, CONSTANTS.MAX_VS]
-            ]
-        }
-    },
+    // level_off_250_both: {
+    //     // Currently not used
+    //     // Will be used when support for multi-threat RA's,
+    //     // from both above and below, will be added
+    //     callout: callouts.level_off,
+    //     sense: raSense.up,
+    //     type: raType.corrective,
+    //     vs: {
+    //         green: [-250, 250],
+    //         red: [
+    //             [CONSTANTS.MIN_VS, -250],
+    //             [250, CONSTANTS.MAX_VS]
+    //         ]
+    //     }
+    // },
     level_off_300_below: {
         callout: callouts.level_off,
         sense: raSense.down,
         type: raType.corrective,
         vs: {
             green: [-300, 0],
-            red: [
-                [0, CONSTANTS.MAX_VS]
-            ]
+            red: [0, CONSTANTS.MAX_VS]
         }
     },
     level_off_300_above: {
@@ -311,9 +277,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [0, 300],
-            red: [
-                [CONSTANTS.MIN_VS, 0]
-            ]
+            red: [CONSTANTS.MIN_VS, 0]
         }
     },
     // CORRECTIVE RA's
@@ -324,9 +288,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [1500, 4400],
-            red: [
-                [CONSTANTS.MIN_VS, 1500]
-            ]
+            red: [CONSTANTS.MIN_VS, 1500]
         }
     },
     climb_maintain_vs_crossing: {
@@ -335,9 +297,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [1500, 4400],
-            red: [
-                [CONSTANTS.MIN_VS, 1500]
-            ]
+            red: [CONSTANTS.MIN_VS, 1500]
         }
     },
     // CORRECTIVE RA's
@@ -348,9 +308,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [-4400, -1500],
-            red: [
-                [-1500, CONSTANTS.MAX_VS]
-            ]
+            red: [-1500, CONSTANTS.MAX_VS]
         }
     },
     descend_maintain_vs_crossing: {
@@ -359,9 +317,7 @@ const raVariants = {
         type: raType.corrective,
         vs: {
             green: [-4400, -1500],
-            red: [
-                [-1500, CONSTANTS.MAX_VS]
-            ]
+            red: [-1500, CONSTANTS.MAX_VS]
         }
     }
 };
@@ -388,6 +344,8 @@ class A32NX_TCAS_Manager {
         // Timekeeping
         this.secondsSinceLastTA = 100;
         this.secondsSinceLastRA = 100;
+
+        SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 0);
         console.log("TCAS: in constructor ending");
     }
 
@@ -573,10 +531,12 @@ class A32NX_TCAS_Manager {
             case tcasState.TA:
                 if (raThreatCount > 0) {
                     this.advisoryState = tcasState.RA;
+                    SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 2);
                     console.log("TCAS: TA UPGRADED TO RA");
                     console.log("_ra:", _ra);
                 } else if (taThreatCount === 0) {
                     this.advisoryState = tcasState.none;
+                    SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 0);
                     this.secondsSinceLastTA = 0;
                     console.log("TCAS: TA RESOLVED");
                 }
@@ -587,8 +547,10 @@ class A32NX_TCAS_Manager {
                     if (taThreatCount > 0) {
                         this.secondsSinceLastTA = 0;
                         this.advisoryState = tcasState.TA;
+                        SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 1);
                     } else {
                         this.advisoryState = tcasState.none;
+                        SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 0);
                     }
                     console.log("TCAS: CLEAR OF CONFLICT");
                     // Coherent.call("PLAY_INSTRUMENT_SOUND", "clear_of_conflict");
@@ -599,9 +561,11 @@ class A32NX_TCAS_Manager {
             default:
                 if (raThreatCount > 0) {
                     this.advisoryState = tcasState.RA;
+                    SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 2);
                 } else {
                     if (taThreatCount > 0) {
                         this.advisoryState = tcasState.TA;
+                        SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 1);
                         console.log("TCAS: TA GENERATED");
                         if (this.secondsSinceLastTA >= 5) {
                             console.log("TCAS: TA GENERATED 2");
@@ -627,6 +591,17 @@ class A32NX_TCAS_Manager {
             if (!this.activeRA.hasBeenAnnounced) {
                 console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
                 this.soundManager.tryPlaySound(this.activeRA.info.callout.sound, true);
+                let VSpeedsUnpacked;
+                if (this.activeRA.info.type === raType.preventative) {
+                    VSpeedsUnpacked = this.activeRA.info.vs.red;
+                } else {
+                    VSpeedsUnpacked = this.activeRA.info.vs.red.concat(this.activeRA.info.vs.green);
+                }
+                VSpeedsUnpacked.forEach((v, i, a) => {
+                    a[i] = (v / 50);
+                });
+                const VSpeedsPacked = BitPacking.pack8(VSpeedsUnpacked);
+                SimVar.SetSimVarValue("L:A32NX_TCAS_VSPEEDS_PACKED", "Number", VSpeedsPacked);
                 this.activeRA.hasBeenAnnounced = true;
             }
         }
