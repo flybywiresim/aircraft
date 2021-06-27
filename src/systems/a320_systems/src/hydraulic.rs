@@ -1488,26 +1488,28 @@ impl A320AutobrakeController {
     }
 
     fn is_decelerating(&self) -> bool {
-        if self.mode == AutobrakeMode::NONE {
-            return false;
+        match self.mode {
+            AutobrakeMode::NONE => false,
+            AutobrakeMode::LOW | AutobrakeMode::MED => {
+                self.deceleration_demanded()
+                    && self
+                        .deceleration_governor
+                        .is_on_target(Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED)
+            }
+            _ => {
+                self.deceleration_demanded()
+                    && self
+                        .deceleration_governor
+                        .deceleration_value()
+                        .get::<meter_per_second_squared>()
+                        < Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2
+            }
         }
+    }
 
-        let deceleration_demanded = self.deceleration_governor.is_engaged()
-            && self.target.get::<meter_per_second_squared>() < 0.;
-
-        if self.mode == AutobrakeMode::LOW || self.mode == AutobrakeMode::MED {
-            deceleration_demanded
-                && self
-                    .deceleration_governor
-                    .is_on_target(Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED)
-        } else {
-            deceleration_demanded
-                && self
-                    .deceleration_governor
-                    .deceleration_value()
-                    .get::<meter_per_second_squared>()
-                    < Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2
-        }
+    fn deceleration_demanded(&self) -> bool {
+        self.deceleration_governor.is_engaged()
+            && self.target.get::<meter_per_second_squared>() < 0.
     }
 
     fn should_disarm_due_to_pedal_input(&self) -> bool {
