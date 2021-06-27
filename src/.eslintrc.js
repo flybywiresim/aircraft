@@ -55,6 +55,7 @@ module.exports = {
         'no-return-assign': 'off',
         'radix': 'off',
         'max-classes-per-file': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
 
         // buggy
         'prefer-destructuring': 'off',
