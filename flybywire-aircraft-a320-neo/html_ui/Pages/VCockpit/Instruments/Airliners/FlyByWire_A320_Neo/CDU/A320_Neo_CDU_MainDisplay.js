@@ -23,6 +23,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.lastInput = 0;
         this.clrStop = false;
         this.aocAirportList = new CDUAocAirportList;
+        this.initB = false;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -278,17 +279,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
 
         CDUMenuPage.ShowPage(this);
-
-        this.updatePerfSpeeds();
-
-        // support spawning in with a custom flight phases from the .flt files
-        const initialFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number");
-        if (initialFlightPhase) {
-            this.flightPhaseManager.changeFlightPhase(initialFlightPhase);
-        }
-
-        this.climbTransitionGroundAltitude = null;
-        this.initB = false;
 
         // If the consent is not set, show telex page
         const onlineFeaturesStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
