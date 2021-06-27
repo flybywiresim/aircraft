@@ -7,7 +7,9 @@ use crate::{
         UpdateContext, Write,
     },
 };
-use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::foot_per_minute};
+use uom::si::{
+    f64::*, length::foot, pressure::hectopascal, ratio::percent, velocity::foot_per_minute,
+};
 
 mod cabin_pressure_controller;
 mod pressure_valve;
@@ -16,6 +18,63 @@ pub trait PressureValveActuator {
     fn should_open_pressure_valve(&self) -> bool;
     fn should_close_pressure_valve(&self) -> bool;
     fn target_valve_position(&self) -> Ratio;
+}
+
+pub struct AircraftInputsPressurization {
+    eng_1_n1: Ratio,
+    eng_2_n1: Ratio,
+    landing_elevation: Length,
+    sea_level_pressure: Pressure,
+    destination_qnh: Pressure,
+}
+
+impl AircraftInputsPressurization {
+    fn new() -> Self {
+        Self {
+            eng_1_n1: Ratio::new::<percent>(0.),
+            eng_2_n1: Ratio::new::<percent>(0.),
+            landing_elevation: Length::new::<foot>(0.),
+            sea_level_pressure: Pressure::new::<hectopascal>(1013.),
+            destination_qnh: Pressure::new::<hectopascal>(1013.),
+        }
+    }
+
+    pub fn set_eng_n1(&mut self, eng_1_n1: Ratio, eng_2_n1: Ratio) {
+        self.eng_1_n1 = eng_1_n1;
+        self.eng_2_n1 = eng_2_n1;
+    }
+
+    pub fn set_landing_elev(&mut self, landing_elev: Length) {
+        self.landing_elevation = landing_elev;
+    }
+
+    pub fn set_sea_level_pressure(&mut self, sea_level_pressure: Pressure) {
+        self.sea_level_pressure = sea_level_pressure;
+    }
+
+    pub fn set_destination_qnh(&mut self, dest_qnh: Pressure) {
+        self.destination_qnh = dest_qnh;
+    }
+
+    pub fn eng_1_n1(&self) -> Ratio {
+        self.eng_1_n1
+    }
+
+    pub fn eng_2_n1(&self) -> Ratio {
+        self.eng_2_n1
+    }
+
+    pub fn landing_elev(&self) -> Length {
+        self.landing_elevation
+    }
+
+    pub fn sea_level_pressure(&self) -> Pressure {
+        self.sea_level_pressure
+    }
+
+    pub fn destination_qnh(&self) -> Pressure {
+        self.destination_qnh
+    }
 }
 
 pub struct Pressurization {
@@ -27,9 +86,7 @@ pub struct Pressurization {
     // is_in_man_mode: bool,
     // man_mode_duration: Duration,
     active_system: usize,
-    landing_elevation: Length,
-    sea_level_pressure: Pressure,
-    destination_qnh: Pressure,
+    aircraft_inputs: AircraftInputsPressurization,
 }
 
 impl Pressurization {
@@ -49,9 +106,7 @@ impl Pressurization {
             // is_in_man_mode: false,
             // man_mode_duration: Duration::from_millis(0),
             active_system: active,
-            landing_elevation: Length::new::<foot>(0.),
-            sea_level_pressure: Pressure::new::<hectopascal>(1013.25),
-            destination_qnh: Pressure::new::<hectopascal>(0.),
+            aircraft_inputs: AircraftInputsPressurization::new(),
         }
     }
 
@@ -62,6 +117,8 @@ impl Pressurization {
         eng_1_n1: Ratio,
         eng_2_n1: Ratio,
     ) {
+        self.aircraft_inputs.set_eng_n1(eng_1_n1, eng_2_n1);
+
         if !self.is_sys1_active() && !self.is_sys2_active() {
             self.set_active_system();
         };
@@ -70,11 +127,7 @@ impl Pressurization {
                 context,
                 &self.outflow_valve,
                 press_overhead,
-                eng_1_n1,
-                eng_2_n1,
-                self.landing_elevation,
-                self.sea_level_pressure,
-                self.destination_qnh,
+                &self.aircraft_inputs,
             );
             self.outflow_valve.update(context, &self.cpc_1);
             self.switch_active_system();
@@ -83,11 +136,7 @@ impl Pressurization {
                 context,
                 &self.outflow_valve,
                 press_overhead,
-                eng_1_n1,
-                eng_2_n1,
-                self.landing_elevation,
-                self.sea_level_pressure,
-                self.destination_qnh,
+                &self.aircraft_inputs,
             );
             self.outflow_valve.update(context, &self.cpc_2);
             self.switch_active_system();
@@ -123,15 +172,15 @@ impl Pressurization {
     }
 
     fn set_landing_elev(&mut self, reading: Length) {
-        self.landing_elevation = reading;
+        self.aircraft_inputs.set_landing_elev(reading);
     }
 
     fn set_sl_pressure(&mut self, reading: Pressure) {
-        self.sea_level_pressure = reading;
+        self.aircraft_inputs.set_sea_level_pressure(reading);
     }
 
     fn set_dest_qnh(&mut self, reading: Pressure) {
-        self.destination_qnh = reading;
+        self.aircraft_inputs.set_destination_qnh(reading);
     }
 }
 
@@ -196,10 +245,6 @@ impl PressurizationOverheadPanel {
         }
     }
 
-    // pub fn update(&mut self, press: &Pressurization,) {
-
-    // }
-
     pub fn mode_is_man(&self) -> bool {
         self.mode_sel.is_man()
     }
@@ -222,7 +267,7 @@ impl Default for PressurizationOverheadPanel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement};
 
     use self::cabin_pressure_controller::PressureSchedule;
@@ -285,80 +330,74 @@ mod tests {
 
     #[test]
     fn conversion_from_pressure_to_altitude_works() {
-        let mut aircraft = TestAircraft::new();
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(250.)); //Equivalent to FL340 from tables
         test_bed.set_on_ground(true);
-        test_bed.run_aircraft(&mut aircraft);
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
         assert!(
-            (aircraft.pressurization.cpc_1.cabin_altitude() - Length::new::<foot>(34000.)).abs()
+            (test_bed.query(|a| a.pressurization.cpc_1.cabin_altitude())
+                - Length::new::<foot>(34000.))
+            .abs()
                 < Length::new::<foot>(10.)
         );
     }
 
     #[test]
     fn positive_cabin_vs_reduces_cabin_pressure() {
-        let mut aircraft = TestAircraft::new();
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
 
-        test_bed.run_aircraft(&mut aircraft);
-        let last_cabin_pressure = aircraft.pressurization.cpc_1.cabin_pressure();
-        test_bed.run_aircraft(&mut aircraft);
-        assert!(last_cabin_pressure > aircraft.pressurization.cpc_1.cabin_pressure());
+        test_bed.run();
+        let last_cabin_pressure = test_bed.query(|a| a.pressurization.cpc_1.cabin_pressure());
+        test_bed.run();
+        assert!(last_cabin_pressure > test_bed.query(|a| a.pressurization.cpc_1.cabin_pressure()));
     }
 
     #[test]
     fn active_system_updates_only_one_cpc() {
-        let mut aircraft = TestAircraft::new();
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
-        assert!(aircraft.pressurization.cpc_1.is_active());
-        assert!(!aircraft.pressurization.is_sys2_active());
+        assert!(test_bed.query(|a| a.pressurization.cpc_1.is_active()));
+        assert!(!test_bed.query(|a| a.pressurization.is_sys2_active()));
     }
 
     #[test]
     fn seventy_seconds_after_landing_cpc_switches() {
-        let mut aircraft = TestAircraft::new();
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-        test_bed.run_aircraft(&mut aircraft);
-        test_bed.set_delta(Duration::from_secs_f64(31.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
-        assert!(aircraft.pressurization.is_sys1_active());
-        assert!(!aircraft.pressurization.is_sys2_active());
+        assert!(test_bed.query(|a| a.pressurization.is_sys1_active()));
+        assert!(!test_bed.query(|a| a.pressurization.is_sys2_active()));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
         assert_eq!(
-            aircraft.pressurization.cpc_1.pressure_schedule(),
+            test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
             PressureSchedule::DescentInternal
         );
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
         test_bed.set_on_ground(true);
-        test_bed.set_delta(Duration::from_secs_f64(1.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run();
 
         assert_eq!(
-            aircraft.pressurization.cpc_1.pressure_schedule(),
+            test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
             PressureSchedule::Ground
         );
 
-        test_bed.set_delta(Duration::from_secs_f64(90.));
-        test_bed.run_aircraft(&mut aircraft);
+        test_bed.run_with_delta(Duration::from_secs_f64(90.));
 
-        assert!(!aircraft.pressurization.is_sys1_active());
-        assert!(aircraft.pressurization.is_sys2_active());
+        assert!(!test_bed.query(|a| a.pressurization.is_sys1_active()));
+        assert!(test_bed.query(|a| a.pressurization.is_sys2_active()));
     }
 
     #[cfg(test)]
@@ -367,560 +406,544 @@ mod tests {
 
         #[test]
         fn schedule_starts_on_ground() {
-            let aircraft = TestAircraft::new();
+            let test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Ground
             );
         }
 
         #[test]
         fn aircraft_vs_starts_at_0() {
-            let aircraft = TestAircraft::new();
+            let test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.cabin_vs(),
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_vs()),
                 Velocity::new::<foot_per_minute>(0.)
             );
         }
 
         #[test]
         fn schedule_changes_from_ground_to_takeoff() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            aircraft.set_engine_n1(Ratio::new::<percent>(95.));
+            test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
             test_bed.set_on_ground(true);
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::TakeOff
             );
         }
 
         #[test]
         fn cabin_vs_changes_to_takeoff() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            aircraft.set_engine_n1(Ratio::new::<percent>(95.));
+            test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
             test_bed.set_on_ground(true);
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
 
-            test_bed.set_delta(Duration::from_secs_f64(10.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            assert_eq!(
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
+                PressureSchedule::TakeOff
+            );
+            test_bed.run_with_delta(Duration::from_secs(10));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.cabin_vs(),
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_vs()),
                 Velocity::new::<foot_per_minute>(-400.)
             );
         }
 
         #[test]
         fn cabin_delta_p_does_not_exceed_0_1_during_takeoff() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            aircraft.set_engine_n1(Ratio::new::<percent>(95.));
+            test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
             test_bed.set_on_ground(true);
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
             test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1005.));
-            test_bed.set_delta(Duration::from_secs_f64(10.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(10.));
 
-            assert!(aircraft.pressurization.cpc_1.cabin_delta_p() > Pressure::new::<psi>(0.1));
+            assert!(
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_delta_p())
+                    > Pressure::new::<psi>(0.1)
+            );
             assert_eq!(
-                aircraft.pressurization.cpc_1.cabin_vs(),
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_vs()),
                 Velocity::new::<foot_per_minute>(0.)
             );
         }
 
         #[test]
         fn schedule_changes_from_ground_to_climb() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
             test_bed.set_on_ground(true);
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             test_bed.set_on_ground(false);
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
         }
 
         #[test]
         fn cabin_vs_changes_to_climb() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
 
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(10.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(10.));
 
             assert!(
-                aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(0.)
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_vs())
+                    > Velocity::new::<foot_per_minute>(0.)
             );
         }
 
         #[test]
         fn cabin_vs_increases_with_altitude() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
-            test_bed.set_delta(Duration::from_secs_f64(10.));
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+            test_bed.run_with_delta(Duration::from_secs_f64(10.));
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(2000.));
-            test_bed.run_aircraft(&mut aircraft);
-            let first_vs = aircraft.pressurization.cpc_1.cabin_vs();
+            test_bed.run_with_delta(Duration::from_secs_f64(10.));
+            let first_vs = test_bed.query(|a| a.pressurization.cpc_1.cabin_vs());
 
             test_bed.set_indicated_altitude(Length::new::<foot>(20000.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(10.));
 
             test_bed.set_indicated_altitude(Length::new::<foot>(30000.));
-            test_bed.run_aircraft(&mut aircraft);
-
+            test_bed.run_with_delta(Duration::from_secs_f64(10.));
             test_bed.set_indicated_altitude(Length::new::<foot>(39000.));
-            test_bed.run_aircraft(&mut aircraft);
-            assert!(aircraft.pressurization.cpc_1.cabin_vs() > first_vs);
+            test_bed.run_with_delta(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.query(|a| a.pressurization.cpc_1.cabin_vs()) > first_vs);
         }
 
         #[test]
         fn cabin_delta_p_does_not_exceed_8_06_psi_in_climb() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
-            test_bed.set_on_ground(false);
-            test_bed.run_aircraft(&mut aircraft);
-
-            test_bed.set_delta(Duration::from_secs(60));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
 
             for i in 1..39 {
-                test_bed.run_aircraft(&mut aircraft);
+                test_bed.run_with_delta(Duration::from_secs(60));
                 test_bed.set_indicated_altitude(Length::new::<foot>((i * 1000) as f64));
             }
             test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.41));
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
-            test_bed.run_aircraft(&mut aircraft);
-            assert!(aircraft.pressurization.cpc_1.cabin_delta_p() < Pressure::new::<psi>(8.06));
+            test_bed.run_with_delta(Duration::from_secs(60));
+
+            assert!(
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_delta_p())
+                    < Pressure::new::<psi>(8.06)
+            );
         }
 
         #[test]
         fn schedule_changes_from_takeoff_to_climb() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            aircraft.set_engine_n1(Ratio::new::<percent>(95.));
+            test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
             test_bed.set_on_ground(true);
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             test_bed.set_on_ground(false);
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
         }
 
         #[test]
         fn schedule_changes_from_takeoff_to_ground() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            aircraft.set_engine_n1(Ratio::new::<percent>(95.));
+            test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
             test_bed.set_on_ground(true);
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::TakeOff
             );
 
-            aircraft.set_engine_n1(Ratio::new::<percent>(50.));
+            test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(50.)));
             test_bed.set_on_ground(true);
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Ground
             );
         }
 
         #[test]
         fn schedule_does_not_instantly_change_from_climb_to_abort() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
-            test_bed.set_delta(Duration::from_secs_f64(1.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
         }
 
         #[test]
         fn schedule_changes_from_climb_to_abort() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs(31));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Abort
             );
         }
 
         #[test]
         fn schedule_does_not_instantly_change_from_climb_to_cruise() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
         }
 
         #[test]
         fn schedule_changes_from_climb_to_cruise() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Cruise
             );
         }
 
         #[test]
         fn cabin_vs_changes_to_cruise() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Cruise
             );
             assert_eq!(
-                aircraft.pressurization.cpc_1.cabin_vs(),
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_vs()),
                 Velocity::new::<foot_per_minute>(0.)
             );
         }
 
         #[test]
         fn schedule_does_not_instantly_change_from_cruise_to_climb_and_descent() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(1.));
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Cruise
             );
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Cruise
             );
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Cruise
             );
         }
 
         #[test]
         fn schedule_changes_from_cruise_to_climb() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Cruise
             );
 
-            test_bed.set_delta(Duration::from_secs_f64(61.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(61.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
         }
 
         #[test]
         fn schedule_changes_from_cruise_to_descent() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Cruise
             );
 
-            test_bed.set_delta(Duration::from_secs_f64(31.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::DescentInternal
             );
         }
 
         #[test]
         fn cabin_vs_changes_to_descent() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+
+            for i in 1..39 {
+                test_bed.run_with_delta(Duration::from_secs(60));
+                test_bed.set_indicated_altitude(Length::new::<foot>((i * 1000) as f64));
+            }
+            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.41));
+
+            test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
+            test_bed.run_with_delta(Duration::from_secs(60));
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
+
+            assert_eq!(
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
+                PressureSchedule::DescentInternal
+            );
 
             assert!(
-                aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(-260.)
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_vs())
+                    > Velocity::new::<foot_per_minute>(-260.)
             );
             assert!(
-                aircraft.pressurization.cpc_1.cabin_vs() < Velocity::new::<foot_per_minute>(0.)
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_vs())
+                    < Velocity::new::<foot_per_minute>(0.)
             );
         }
 
         #[test]
         fn schedule_changes_from_descent_to_climb() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::DescentInternal
             );
 
-            test_bed.set_delta(Duration::from_secs_f64(61.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(61.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
         }
 
         #[test]
         fn schedule_changes_from_descent_to_ground() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::DescentInternal
             );
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
             test_bed.set_on_ground(true);
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Ground
             );
         }
 
         #[test]
         fn cabin_vs_changes_to_ground() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::DescentInternal
             );
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
             test_bed.set_on_ground(true);
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Ground
             );
 
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
             assert!(
-                aircraft.pressurization.cpc_1.cabin_vs() > Velocity::new::<foot_per_minute>(-1.)
+                test_bed.query(|a| a.pressurization.cpc_1.cabin_vs())
+                    > Velocity::new::<foot_per_minute>(-1.)
             );
         }
 
         #[test]
         fn schedule_changes_from_abort_to_climb() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Abort
             );
 
-            test_bed.set_delta(Duration::from_secs_f64(61.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run_with_delta(Duration::from_secs_f64(61.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::ClimbInternal
             );
         }
 
         #[test]
         fn schedule_changes_from_abort_to_ground() {
-            let mut aircraft = TestAircraft::new();
-            let mut test_bed = SimulationTestBed::new();
+            let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
             test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
             test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
-            test_bed.run_aircraft(&mut aircraft);
-            test_bed.set_delta(Duration::from_secs_f64(31.));
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Abort
             );
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
             test_bed.set_on_ground(true);
-            test_bed.run_aircraft(&mut aircraft);
+            test_bed.run();
 
             assert_eq!(
-                aircraft.pressurization.cpc_1.pressure_schedule(),
+                test_bed.query(|a| a.pressurization.cpc_1.pressure_schedule()),
                 PressureSchedule::Ground
             );
         }

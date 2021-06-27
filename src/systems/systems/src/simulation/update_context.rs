@@ -31,9 +31,7 @@ impl UpdateContext {
         indicated_airspeed: Velocity,
         indicated_altitude: Length,
         ambient_temperature: ThermodynamicTemperature,
-        ambient_pressure: Pressure,
         is_on_ground: bool,
-        vertical_speed: Velocity,
         longitudinal_acceleration: Acceleration,
     ) -> UpdateContext {
         UpdateContext {
@@ -41,9 +39,9 @@ impl UpdateContext {
             indicated_airspeed,
             indicated_altitude,
             ambient_temperature,
-            ambient_pressure,
+            ambient_pressure: Pressure::new::<inch_of_mercury>(29.92),
             is_on_ground,
-            vertical_speed,
+            vertical_speed: Velocity::new::<foot_per_second>(0.),
             longitudinal_acceleration,
         }
     }

@@ -5,6 +5,7 @@ use uom::si::{
     pressure::inch_of_mercury,
     thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, foot_per_second, knot},
+};
 
 use crate::electrical::{Electricity, Potential};
 
@@ -68,6 +69,14 @@ pub trait TestBed {
 
     fn set_on_ground(&mut self, on_ground: bool) {
         self.test_bed_mut().set_on_ground(on_ground);
+    }
+
+    fn set_ambient_pressure(&mut self, ambient_pressure: Pressure) {
+        self.test_bed_mut().set_ambient_pressure(ambient_pressure);
+    }
+
+    fn set_vertical_speed(&mut self, vertical_speed: Velocity) {
+        self.test_bed_mut().set_vertical_speed(vertical_speed);
     }
 
     fn contains_key(&self, name: &str) -> bool {
@@ -179,13 +188,19 @@ impl<T: Aircraft> SimulationTestBed<T> {
     fn set_on_ground(&mut self, on_ground: bool) {
         self.write(UpdateContext::IS_ON_GROUND_KEY, on_ground);
     }
-  
+
     fn set_ambient_pressure(&mut self, ambient_pressure: Pressure) {
-        self.write(UpdateContext::AMBIENT_PRESSURE_KEY, ambient_pressure);
+        self.write(
+            UpdateContext::AMBIENT_PRESSURE_KEY,
+            ambient_pressure.get::<inch_of_mercury>(),
+        );
     }
 
     fn set_vertical_speed(&mut self, vertical_speed: Velocity) {
-        self.write(UpdateContext::VERTICAL_SPEED_KEY, vertical_speed);
+        self.write(
+            UpdateContext::VERTICAL_SPEED_KEY,
+            vertical_speed.get::<foot_per_second>(),
+        );
     }
 
     fn write_f64(&mut self, name: &str, value: f64) {

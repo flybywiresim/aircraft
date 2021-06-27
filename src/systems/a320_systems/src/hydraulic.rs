@@ -1479,12 +1479,8 @@ mod tests {
         use systems::simulation::test::TestBed;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
-            acceleration::foot_per_second_squared,
-            length::foot,
-            pressure::hectopascal,
-            ratio::percent,
-            thermodynamic_temperature::degree_celsius,
-            velocity::{foot_per_minute, knot},
+            acceleration::foot_per_second_squared, length::foot, ratio::percent,
+            thermodynamic_temperature::degree_celsius, velocity::knot,
         };
 
         struct A320TestEmergencyElectricalOverheadPanel {
@@ -4599,9 +4595,7 @@ mod tests {
                 Velocity::new::<knot>(250.),
                 Length::new::<foot>(5000.),
                 ThermodynamicTemperature::new::<degree_celsius>(25.0),
-                Pressure::new::<hectopascal>(1013.),
                 true,
-                Velocity::new::<foot_per_minute>(0.),
                 Acceleration::new::<foot_per_second_squared>(0.),
             )
         }

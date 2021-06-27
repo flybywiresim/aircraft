@@ -1088,9 +1088,8 @@ mod tests {
         acceleration::foot_per_second_squared,
         f64::*,
         length::foot,
-        pressure::{hectopascal, pascal, psi},
+        pressure::{pascal, psi},
         thermodynamic_temperature::degree_celsius,
-        velocity::foot_per_minute,
         volume::gallon,
     };
 
@@ -1282,9 +1281,7 @@ mod tests {
             Velocity::new::<knot>(250.),
             Length::new::<foot>(5000.),
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
-            Pressure::new::<hectopascal>(1013.),
             true,
-            Velocity::new::<foot_per_minute>(0.),
             Acceleration::new::<foot_per_second_squared>(0.),
         )
     }

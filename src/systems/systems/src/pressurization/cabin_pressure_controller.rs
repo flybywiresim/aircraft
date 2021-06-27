@@ -1,6 +1,8 @@
 use crate::simulation::UpdateContext;
 
-use super::{PressureValve, PressureValveActuator, PressurizationOverheadPanel};
+use super::{
+    AircraftInputsPressurization, PressureValve, PressureValveActuator, PressurizationOverheadPanel,
+};
 
 use std::time::Duration;
 use uom::si::{
@@ -52,24 +54,26 @@ impl CabinPressureController {
         context: &UpdateContext,
         outflow_valve: &PressureValve,
         overhead: &PressurizationOverheadPanel,
-        eng_1_n1: Ratio,
-        eng_2_n1: Ratio,
-        landing_elevation: Length,
-        sea_level_pressure: Pressure,
-        destination_qnh: Pressure,
+        aircraft_inputs: &AircraftInputsPressurization,
     ) {
-        self.pressure_schedule_manager
-            .update(context, eng_1_n1, eng_2_n1);
+        self.pressure_schedule_manager.update(
+            context,
+            aircraft_inputs.eng_1_n1(),
+            aircraft_inputs.eng_2_n1(),
+        );
         self.outflow_valve_open_amount = outflow_valve.open_amount();
         self.exterior_pressure = context.ambient_pressure();
         self.aircraft_vs = context.vertical_speed();
         self.last_cabin_pressure = self.cabin_pressure;
         self.update_cabin_pressure(context);
-        self.update_cabin_altitude(sea_level_pressure, destination_qnh);
+        self.update_cabin_altitude(
+            aircraft_inputs.sea_level_pressure(),
+            aircraft_inputs.destination_qnh(),
+        );
         self.update_cabin_vs(context); //Pre-smooth function
         self.set_cabin_vs(context); //Smooth function
         self.update_departure_elev(context);
-        self.update_landing_elev(landing_elevation);
+        self.update_landing_elev(aircraft_inputs.landing_elev());
         self.is_ldg_elev_auto = !overhead.mode_is_man();
         self.update_active_system(context);
     }
