@@ -1494,15 +1494,17 @@ impl A320AutobrakeController {
                 self.deceleration_demanded()
                     && self
                         .deceleration_governor
-                        .is_on_target(Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED)
+                        .is_on_target(Ratio::new::<percent>(
+                            Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED,
+                        ))
             }
             _ => {
                 self.deceleration_demanded()
-                    && self
-                        .deceleration_governor
-                        .deceleration_value()
-                        .get::<meter_per_second_squared>()
-                        < Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2
+                    && self.deceleration_governor.decelerating_at_or_above_rate(
+                        Acceleration::new::<meter_per_second_squared>(
+                            Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2,
+                        ),
+                    )
             }
         }
     }

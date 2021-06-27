@@ -419,7 +419,7 @@ pub struct AutobrakeDecelerationGovernor {
     last_error: f64,
 
     current_output: f64,
-    acceleration: Acceleration,
+    filtered_acceleration: Acceleration,
 
     is_engaged: bool,
     time_engaged: Duration,
@@ -437,7 +437,7 @@ impl AutobrakeDecelerationGovernor {
             last_error: 0.,
 
             current_output: 0.,
-            acceleration: Acceleration::new::<meter_per_second_squared>(0.),
+            filtered_acceleration: Acceleration::new::<meter_per_second_squared>(0.),
             is_engaged: false,
             time_engaged: Duration::from_secs(0),
             filter: Self::ACCELERATION_INPUT_FILTER,
@@ -470,22 +470,23 @@ impl AutobrakeDecelerationGovernor {
         self.time_engaged
     }
 
-    pub fn is_on_target(&self, percent_margin_to_target: f64) -> bool {
-        self.is_engaged && self.acceleration < self.target * percent_margin_to_target / 100.
+    pub fn is_on_target(&self, percent_margin_to_target: Ratio) -> bool {
+        self.is_engaged
+            && self.filtered_acceleration < self.target * percent_margin_to_target.get::<ratio>()
     }
 
     pub fn update(&mut self, context: &UpdateContext, target: Acceleration) {
         self.update_target(target);
 
         let accel = context.long_accel();
-        self.acceleration = self.acceleration
-            + (accel - self.acceleration)
+        self.filtered_acceleration = self.filtered_acceleration
+            + (accel - self.filtered_acceleration)
                 * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / self.filter));
 
         if self.is_engaged {
             self.time_engaged += context.delta();
 
-            let target_error = self.acceleration.get::<meter_per_second_squared>()
+            let target_error = self.filtered_acceleration.get::<meter_per_second_squared>()
                 - self.target.get::<meter_per_second_squared>();
 
             let p_term = self.p_gain * (target_error - self.last_error);
@@ -505,8 +506,8 @@ impl AutobrakeDecelerationGovernor {
         self.current_output
     }
 
-    pub fn deceleration_value(&self) -> Acceleration {
-        self.acceleration
+    pub fn decelerating_at_or_above_rate(&self, target_threshold: Acceleration) -> bool {
+        self.filtered_acceleration < target_threshold
     }
 }
 impl Default for AutobrakeDecelerationGovernor {
