@@ -1,6 +1,6 @@
 export class BitPacking {
     /**
-     * Pack an array of up to 6 8-bit integers into a single integer
+     * Pack an array of up to 4 8-bit integers into a single integer
      * The total size of the resulting packed integer is 51 bytes.
      * Can hold values from -128 to 127 signed, or 0 to 255 unsigned.
      * @param values The array of integers
@@ -8,7 +8,7 @@ export class BitPacking {
      * @returns Resulting packed number
      */
     static pack8(values: number[], unsigned: boolean = false): number {
-        const size = Math.min(values.length, 6);
+        const size = Math.min(values.length, 4);
         const offset = unsigned ? 128 : 0;
         let packed = 0;
         let bitmask = 0xFF;
