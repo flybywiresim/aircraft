@@ -134,6 +134,7 @@
 1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
 
+1. [MCDU] Handle SimBrief North Atlantic Tracks waypoints correctly - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
