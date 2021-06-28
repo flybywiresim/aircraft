@@ -25,7 +25,7 @@ impl LeapEngine {
     // Gear ratio from primary gearbox input to EDP drive shaft
     const PUMP_N2_GEAR_RATIO: f64 = 0.211;
 
-    const MIN_IDLE_N2_THRESHOLD: f64 = 50.;
+    const MIN_IDLE_N2_THRESHOLD: f64 = 55.;
 
     pub fn new(number: usize) -> LeapEngine {
         LeapEngine {
