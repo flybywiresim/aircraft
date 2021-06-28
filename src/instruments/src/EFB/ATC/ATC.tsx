@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
 import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconRadio, IconTrafficLights } from '@tabler/icons';
+import { useInterval } from '@flybywiresim/react-components';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
@@ -18,16 +19,10 @@ export const ATC = () => {
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
-    const [lastUpdate, setLastUpdate] = useState<string>();
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            loadAtc();
-            setLastUpdate(new Date().toString());
-        }, 60 * 1000);
-
-        return () => clearInterval(interval);
-    }, [lastUpdate]);
+        loadAtc();
+    }, []);
 
     useEffect(() => {
         setAtc();
@@ -39,11 +34,11 @@ export const ATC = () => {
         }
     }, [controllers]);
 
-    useEffect(() => {
+    useInterval(() => {
         loadAtc();
-    }, [atisSource]);
+    }, 60 * 1000);
 
-    const loadAtc = () => {
+    const loadAtc = useCallback(() => {
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
@@ -58,7 +53,7 @@ export const ATC = () => {
             allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.RADAR, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
             setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
         });
-    };
+    }, [currentLatitude, currentLongitude]);
 
     const setAtc = () => {
         const converted = fromFrequency(frequency);
