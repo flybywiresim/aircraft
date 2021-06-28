@@ -1,5 +1,5 @@
 class CDUInitPage {
-    static ShowPage1(mcdu, resetFlightNo = false) {
+    static ShowPage1(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageA;
         mcdu.activeSystem = 'FMGC';
@@ -8,7 +8,7 @@ class CDUInitPage {
         let coRoute = "__________[color]amber";
         const flightNo = new CDU_SingleValueField(mcdu,
             "string",
-            SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC"),
+            mcdu.flightNumber,
             {
                 emptyValue: "________[color]amber",
                 suffix: "[color]cyan",
