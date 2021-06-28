@@ -3,7 +3,7 @@ use std::time::Duration;
 mod update_context;
 use crate::{
     electrical::Electricity,
-    shared::{ConsumePower, ElectricalBuses, PowerConsumptionReport},
+    shared::{to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
 };
 use uom::si::{
     acceleration::foot_per_second_squared,
@@ -535,7 +535,7 @@ impl<T: Writer> WriteWhen<Ratio> for T {
 
 impl<T: Reader> Read<bool> for T {
     fn read(&mut self, name: &str) -> bool {
-        (self.read_f64(name) - 1.).abs() < f64::EPSILON
+        to_bool(self.read_f64(name))
     }
 }
 
