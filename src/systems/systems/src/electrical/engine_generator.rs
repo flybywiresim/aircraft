@@ -5,7 +5,7 @@ use super::{
 };
 use crate::{
     shared::{
-        calculate_towards_target_temperature, EngineFirePushButtons, EngineN2,
+        calculate_towards_target_temperature, EngineCorrectedN2, EngineFirePushButtons,
         PowerConsumptionReport,
     },
     simulation::{
@@ -48,7 +48,7 @@ impl EngineGenerator {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        engine: &impl EngineN2,
+        engine: &impl EngineCorrectedN2,
         generator_buttons: &impl EngineGeneratorPushButtons,
         fire_buttons: &impl EngineFirePushButtons,
     ) {
@@ -170,7 +170,7 @@ impl IntegratedDriveGenerator {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        engine: &impl EngineN2,
+        engine: &impl EngineCorrectedN2,
         generator_buttons: &impl EngineGeneratorPushButtons,
         fire_buttons: &impl EngineFirePushButtons,
     ) {
@@ -300,11 +300,8 @@ mod tests {
             }
         }
     }
-    impl EngineN2 for TestEngine {
+    impl EngineCorrectedN2 for TestEngine {
         fn corrected_n2(&self) -> Ratio {
-            self.corrected_n2
-        }
-        fn uncorrected_n2(&self) -> Ratio {
             self.corrected_n2
         }
     }

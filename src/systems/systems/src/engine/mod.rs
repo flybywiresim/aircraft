@@ -2,13 +2,13 @@ use uom::si::f64::*;
 
 use crate::{
     overhead::FirePushButton,
-    shared::{EngineFirePushButtons, EngineN2},
+    shared::{EngineCorrectedN2, EngineFirePushButtons, EngineUncorrectedN2},
     simulation::{SimulationElement, SimulationElementVisitor},
 };
 
 pub mod leap_engine;
 
-pub trait Engine: EngineN2 {
+pub trait Engine: EngineCorrectedN2 + EngineUncorrectedN2 {
     fn hydraulic_pump_output_speed(&self) -> AngularVelocity;
     fn oil_pressure(&self) -> Pressure;
     fn is_above_minimum_idle(&self) -> bool;

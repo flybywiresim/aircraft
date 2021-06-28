@@ -1,7 +1,7 @@
 use uom::si::{angular_velocity::revolution_per_minute, f64::*, pressure::psi, ratio::percent};
 
 use crate::{
-    shared::EngineN2,
+    shared::{EngineCorrectedN2, EngineUncorrectedN2},
     simulation::{Read, SimulationElement, SimulatorReader, UpdateContext},
 };
 
@@ -58,10 +58,12 @@ impl SimulationElement for LeapEngine {
         self.update_parameters();
     }
 }
-impl EngineN2 for LeapEngine {
+impl EngineCorrectedN2 for LeapEngine {
     fn corrected_n2(&self) -> Ratio {
         self.corrected_n2
     }
+}
+impl EngineUncorrectedN2 for LeapEngine {
     fn uncorrected_n2(&self) -> Ratio {
         self.uncorrected_n2
     }

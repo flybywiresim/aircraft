@@ -11,7 +11,7 @@ use systems::{
     },
     shared::{
         AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType,
-        EngineFirePushButtons, EngineN2,
+        EngineFirePushButtons, EngineCorrectedN2,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -90,7 +90,7 @@ impl A320AlternatingCurrentElectrical {
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineN2; 2],
+        engines: [&impl EngineCorrectedN2; 2],
     ) {
         self.main_power_sources.update(
             context,
@@ -394,7 +394,7 @@ impl A320MainPowerSources {
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineN2; 2],
+        engines: [&impl EngineCorrectedN2; 2],
     ) {
         self.engine_1_gen
             .update(context, engines[0], overhead, engine_fire_push_buttons);
