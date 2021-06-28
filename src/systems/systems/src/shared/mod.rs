@@ -48,8 +48,9 @@ pub trait LandingGearPosition {
     fn is_down_and_locked(&self) -> bool;
 }
 
-pub trait EngineCorrectedN2 {
+pub trait EngineN2 {
     fn corrected_n2(&self) -> Ratio;
+    fn uncorrected_n2(&self) -> Ratio;
 }
 
 /// The common types of electrical buses within Airbus aircraft.

@@ -22,7 +22,7 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
+        EmergencyElectricalState, EngineFirePushButtons, EngineN2, LandingGearPosition,
         RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
@@ -63,7 +63,7 @@ impl A320Electrical {
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 2],
+        engines: [&impl EngineN2; 2],
         hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
         landing_gear: &impl LandingGearPosition,
     ) {
@@ -2157,8 +2157,11 @@ mod a320_electrical_circuit_tests {
             self.is_running = false;
         }
     }
-    impl EngineCorrectedN2 for TestEngine {
+    impl EngineN2 for TestEngine {
         fn corrected_n2(&self) -> Ratio {
+            Ratio::new::<percent>(if self.is_running { 80. } else { 0. })
+        }
+        fn uncorrected_n2(&self) -> Ratio {
             Ratio::new::<percent>(if self.is_running { 80. } else { 0. })
         }
     }
