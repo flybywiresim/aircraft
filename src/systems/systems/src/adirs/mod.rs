@@ -69,9 +69,9 @@ impl Default for AirDataInertialReferenceSystemOverheadPanel {
 
 #[derive(Clone, Copy, PartialEq)]
 enum InertialReferenceMode {
-    Off,
-    Navigation,
-    Attitude,
+    Off = 0,
+    Navigation = 1,
+    Attitude = 2,
 }
 
 read_write_enum!(InertialReferenceMode);
@@ -130,9 +130,9 @@ impl SimulationElement for InertialReferenceModeSelector {
 
 #[derive(PartialEq)]
 enum AlignState {
-    Off,
-    Aligning,
-    Aligned,
+    Off = 0,
+    Aligning = 1,
+    Aligned = 2,
 }
 
 read_write_enum!(AlignState);
@@ -341,6 +341,8 @@ impl From<f64> for AlignTime {
 struct InertialReference {
     has_fault_id: String,
     number: usize,
+    /// The remaining time to align, where 0 indicates the IR system is aligned.
+    /// None indicates the IR system isn't aligning nor aligned.
     remaining_align_duration: Option<Duration>,
     ir_fault_flash_duration: Option<Duration>,
 }

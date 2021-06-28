@@ -423,8 +423,8 @@ class A32NX_GPWS {
 
     terr_fault() {
         const posLAT = SimVar.GetSimVarValue("A:GPS POSITION LAT", "degree latitude");
-        const ADIRS = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        const ADIRS_TIME = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
+        const ADIRS = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum");
+        const ADIRS_TIME = SimVar.GetSimVarValue("L:A32NX_ADIRS_TIME", "seconds");
 
         if (ADIRS === 0) {
             SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 1);
@@ -439,8 +439,8 @@ class A32NX_GPWS {
 
     sys_fault() {
         const posLAT = SimVar.GetSimVarValue("A:GPS POSITION LAT", "degree latitude");
-        const ADIRS = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        const ADIRS_TIME = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
+        const ADIRS = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum");
+        const ADIRS_TIME = SimVar.GetSimVarValue("L:A32NX_ADIRS_TIME", "seconds");
 
         if (ADIRS === 0) {
             SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 1);

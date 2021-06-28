@@ -213,15 +213,15 @@
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_1)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_2)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_3)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                </Operator>
@@ -2247,15 +2247,15 @@
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_1)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_2)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_3)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                </Operator>
