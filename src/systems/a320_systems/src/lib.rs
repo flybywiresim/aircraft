@@ -141,6 +141,8 @@ impl Aircraft for A320 {
 }
 impl SimulationElement for A320 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.adirs.accept(visitor);
+        self.adirs_overhead.accept(visitor);
         self.apu.accept(visitor);
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);

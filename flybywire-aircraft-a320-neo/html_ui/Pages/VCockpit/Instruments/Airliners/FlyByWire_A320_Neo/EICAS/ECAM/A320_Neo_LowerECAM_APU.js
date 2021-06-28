@@ -104,7 +104,7 @@ var A320_Neo_LowerECAM_APU;
             // Komp: If you switch the displays to DMC 3, then ADIRU 3 is the one providing the data.
             // Same when you select the air data selector to CAPT ON 3.
             // We'll wait for further implementation of those systems before making that functionality fully correct.
-            const adirs1OnNav = SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_1', 'Enum') === 1;
+            const adirs1OnNav = SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'Enum') === 1;
             if (adirs1OnNav) {
                 this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValue");

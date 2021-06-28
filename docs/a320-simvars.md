@@ -1007,7 +1007,7 @@
       Instant (0 s) | 1
       Fast (90 s) | 2
 
-- A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_{number}
+- A32NX_OVHD_ADIRS_IR_{number}_MODE_SELECTOR_KNOB
     - Enum
     - number: { 1, 2, 3 }
     - The Inertial Reference mode selected through the selector knobs.
@@ -1016,6 +1016,15 @@
       Off | 0
       Navigation | 1
       Attitude | 2
+
+- A32NX_OVHD_ADIRS_ON_BAT_IS_ILLUMINATED
+    - Bool
+    - Whether the ON BAT indication should illuminate.
+
+- A32NX_OVHD_ADIRS_IR_{number}_HAS_FAULT
+    - Bool
+    - Whether the FAULT light illuminates for IR {number}
+    - number: { 1, 2, 3 }
 
 - A32NX_ADIRS_STATE
     - Enum
@@ -1037,15 +1046,6 @@
 - A32NX_ADIRS_PFD_ALIGNED_ATT
     - Bool
     - Indicates whether the PFD should display attitude information.
-
-- A32NX_ADIRS_ON_BAT
-    - Bool
-    - Whether the ON BAT indication should illuminate.
-
-- ADIRS_IR_{number}_HAS_FAULT
-    - Bool
-    - Whether the FAULT light illuminates for IR {number}
-    - number: { 1, 2, 3 }
 
 ## Autopilot System
 

@@ -47,7 +47,7 @@ class CDUIRSInit {
             originAirportTitle = ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE"];
             GPSPosAlign = ["--°--.--", "--°--.--", " "];
             originAirportString = [originAirportLat['deg'] + "°{small}" + originAirportLat['min'] + "." + originAirportLat['sec'] + "{end}" + originAirportLat['dir'] + "[color]cyan", originAirportLon['deg'] + "°{small}" + originAirportLon['min'] + "." + originAirportLon['sec'] + "{end}" + originAirportLon['dir'] + "[color]cyan", referenceName];
-            if (SimVar.GetSimVarValue("L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_3", "Enum")) {
+            if (SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB", "Enum") || SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB", "Enum") || SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB", "Enum")) {
                 GPSPosAlign = [currentGPSLat['deg'] + "°{small}" + currentGPSLat['min'] + "." + Math.ceil(Number(currentGPSLat['sec'] / 100)) + "{end}" + currentGPSLat['dir'] + '[color]green', currentGPSLon['deg'] + "°{small}" + currentGPSLon['min'] + "." + Math.ceil(Number(currentGPSLon['sec'] / 100)) + "{end}" + currentGPSLon['dir'] + "[color]green", ""];
                 alignType = "GPS";
             }
@@ -70,7 +70,7 @@ class CDUIRSInit {
         }
 
         let IRS1GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_1", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS1 = "IRS1 ALIGNED ON " + alignType;
             } else {
@@ -81,7 +81,7 @@ class CDUIRSInit {
             statusIRS1 = "IRS1 OFF";
         }
         let IRS2GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_2", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS2 = "IRS2 ALIGNED ON " + alignType;
             } else {
@@ -92,7 +92,7 @@ class CDUIRSInit {
             statusIRS2 = "IRS2 OFF";
         }
         let IRS3GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_IR_MODE_SELECTOR_KNOB_3", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS3 = "IRS3 ALIGNED ON " + alignType;
             } else {

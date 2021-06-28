@@ -103,7 +103,7 @@ impl InertialReferenceModeSelector {
     }
 
     fn mode_id(number: u8) -> String {
-        format!("ADIRS_IR_MODE_SELECTOR_KNOB_{}", number)
+        format!("OVHD_ADIRS_IR_{}_MODE_SELECTOR_KNOB", number)
     }
 
     fn mode(&self) -> InertialReferenceMode {
@@ -348,6 +348,7 @@ struct InertialReference {
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
+    const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
 
     fn new(number: usize) -> Self {
         Self {
@@ -361,7 +362,7 @@ impl InertialReference {
     }
 
     fn has_fault_id(number: usize) -> String {
-        format!("ADIRS_IR_{}_HAS_FAULT", number)
+        format!("OVHD_ADIRS_IR_{}_HAS_FAULT", number)
     }
 
     fn update(
@@ -374,7 +375,7 @@ impl InertialReference {
         let selected_mode = overhead.mode_of(self.number);
 
         if self.alignment_starting(selected_mode) {
-            self.ir_fault_flash_duration = Some(Duration::from_millis(20));
+            self.ir_fault_flash_duration = Some(Self::IR_FAULT_FLASH_DURATION);
         } else if let Some(flash_duration) = self.ir_fault_flash_duration {
             let remaining = subtract_delta_from_duration(context, flash_duration);
             self.ir_fault_flash_duration = if remaining > Duration::from_secs(0) {
@@ -689,7 +690,8 @@ mod tests {
         test_bed.run_without_delta();
         assert!(test_bed.ir_fault_light_illuminated(1));
 
-        test_bed.run_with_delta(Duration::from_millis(19));
+        test_bed
+            .run_with_delta(InertialReference::IR_FAULT_FLASH_DURATION - Duration::from_millis(1));
         assert!(test_bed.ir_fault_light_illuminated(1));
 
         test_bed.run_with_delta(Duration::from_millis(1));
