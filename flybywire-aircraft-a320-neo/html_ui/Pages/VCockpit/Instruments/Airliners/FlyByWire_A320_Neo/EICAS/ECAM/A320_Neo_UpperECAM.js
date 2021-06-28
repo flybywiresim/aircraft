@@ -1903,6 +1903,8 @@ var A320_Neo_UpperECAM;
             this.timerAvail = -1;
             this.timerAvailFlag = -1;
             this.deltaThrottlePosition = this.getThrottlePosition(this.index);
+            this.reverseDoorOpeningPercentage = 0;
+            this.reverseDoorSpeed = 0.0005;
         }
         update(_deltaTime) {
             if (this.allGauges != null) {
@@ -1929,6 +1931,17 @@ var A320_Neo_UpperECAM;
                 this.timerTOGA = -1;
             }
             this.checkIgnitionPhaseForAVAIL(_deltaTime);
+            this.updateReverserDoor(_deltaTime);
+        }
+        updateReverserDoor(_deltaTime) {
+            const engineId = this.index + 1;
+            const thrustLeversInReverse = SimVar.GetSimVarValue("A:TURB ENG REVERSE NOZZLE PERCENT:" + engineId, "percent") > 1;
+
+            if (this.reverseDoorOpeningPercentage < 1 && thrustLeversInReverse) {
+                this.reverseDoorOpeningPercentage = Math.min(this.reverseDoorOpeningPercentage + this.reverseDoorSpeed * _deltaTime, 1);
+            } else if (this.reverseDoorOpeningPercentage > 0 && !thrustLeversInReverse) {
+                this.reverseDoorOpeningPercentage = Math.max(this.reverseDoorOpeningPercentage - this.reverseDoorSpeed * _deltaTime, 0);
+            }
         }
         checkIgnitionPhaseForAVAIL(_deltaTime) {
             const idleN1 = SimVar.GetSimVarValue("L:A32NX_ENGINE_IDLE_N1", "number") - 0.3;
@@ -1992,6 +2005,7 @@ var A320_Neo_UpperECAM;
             gaugeDef.outerIndicatorFunction = this.getThrottlePosition.bind(this);
             gaugeDef.outerDynamicArcFunction = this.getN1GaugeAutopilotThrottleValues.bind(this);
             gaugeDef.extraMessageFunction = this.getN1GaugeExtraMessage.bind(this);
+            gaugeDef.extraMessageStyleFunction = this.getN1GaugeExtraMessageStyle.bind(this);
             gaugeDef.maxRedValue = A320_Neo_UpperECAM.Definitions.MAX_GAUGE_N1_RED;
             gaugeDef.dangerRange[0] = gaugeDef.minRedValue;
             gaugeDef.dangerRange[1] = gaugeDef.maxRedValue;
@@ -2065,13 +2079,20 @@ var A320_Neo_UpperECAM;
             }
         }
         getN1GaugeExtraMessage() {
-            if (Simplane.getEngineThrottle(this.index) < 0) {
+            if (this.reverseDoorOpeningPercentage > 0) {
                 return "REV";
             } else if (this.timerAvail >= 0) {
                 return "AVAIL";
             } else {
                 return "";
             }
+        }
+        getN1GaugeExtraMessageStyle() {
+            if (this.reverseDoorOpeningPercentage > 0 && this.reverseDoorOpeningPercentage < 1) {
+                return " amber";
+            }
+
+            return "";
         }
         getEngineStartStatus() {
             const engineId = this.index + 1;
