@@ -60,6 +60,7 @@ class DisplayUnitSelfTest {
         this.element = element;
         this.getSelfTestTimeInSeconds = getSelfTestTimeInSecondsFn;
         this.maxTimer = this.getSelfTestTimeInSeconds() * 1000;
+        this.init = false;
 
         this.remainingTestDurationInMilliseconds = 0;
     }
@@ -86,7 +87,11 @@ class DisplayUnitSelfTest {
 
     update(deltaTime) {
         if (this.remainingTestDurationInMilliseconds > 0) {
-            this.remainingTestDurationInMilliseconds -= deltaTime;
+            if (this.init) {
+                this.remainingTestDurationInMilliseconds -= deltaTime;
+            } else {
+                this.init = true;
+            }
             this.element.style.visibility = "visible";
         } else {
 
