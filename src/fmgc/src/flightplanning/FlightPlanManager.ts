@@ -65,7 +65,7 @@ export class FlightPlanManager {
     constructor(public _parentInstrument: BaseInstrument) {
         this._loadFlightPlans();
 
-        if (_parentInstrument.instrumentIdentifier === 'CJ4_FMC') {
+        if (_parentInstrument.instrumentIdentifier === 'A320_Neo_CDU') {
             this._isMaster = true;
             _parentInstrument.addEventListener('FlightStart', async () => {
                 const plan = new ManagedFlightPlan();

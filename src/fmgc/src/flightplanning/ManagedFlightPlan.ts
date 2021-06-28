@@ -731,13 +731,13 @@ export class ManagedFlightPlan {
                 procedure = new LegsProcedure(legs, origin, this._parentInstrument);
             }
 
-            let waypointIndex = segment.offset;
+            const waypointIndex = segment.offset;
             while (procedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
                 const waypoint = await procedure.getNext();
 
                 if (waypoint !== undefined) {
-                    this.addWaypoint(waypoint, ++waypointIndex, segment.type);
+                    this.addWaypointAvoidingDuplicates(waypoint, waypointIndex, segment);
                 }
             }
         }
@@ -788,7 +788,7 @@ export class ManagedFlightPlan {
                 const waypoint = await procedure.getNext();
 
                 if (waypoint) {
-                    this.addWaypoint(waypoint, ++waypointIndex, segment.type);
+                    this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment.type);
                 }
             }
         }
@@ -840,7 +840,7 @@ export class ManagedFlightPlan {
                 const waypoint = await procedure.getNext();
 
                 if (waypoint !== undefined) {
-                    this.addWaypoint(waypoint, ++waypointIndex, segment.type);
+                    this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment.type);
                 }
             }
 
@@ -1010,5 +1010,15 @@ export class ManagedFlightPlan {
 
         visitObject(plan);
         return plan;
+    }
+
+    private addWaypointAvoidingDuplicates(waypoint, waypointIndex, segment): void {
+        const index = this.waypoints.findIndex((wp) => wp.ident === waypoint.ident);
+        if (index === -1) {
+            this.addWaypoint(waypoint, ++waypointIndex, segment.type);
+        } else {
+            this.removeWaypoint(index);
+            this.addWaypoint(waypoint, ++waypointIndex, segment.type);
+        }
     }
 }
