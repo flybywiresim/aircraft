@@ -511,8 +511,8 @@
                     <PART_ID>PFD_Brightness</PART_ID>
                     <ANIM_NAME>KNOB_EFIS_CS_PFD</ANIM_NAME>
                     <MIN_VALUE>0</MIN_VALUE>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PFD_DECREASE</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PFD_INCREASE</ANIMTIP_1>
+                    <ANIMTIP_0>Decrease PFD Brightness</ANIMTIP_0>
+                    <ANIMTIP_1>Increase PFD Brightness</ANIMTIP_1>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -602,8 +602,8 @@
                     <PART_ID>ND_Brightness</PART_ID>
                     <ANIM_NAME>KNOB_EFIS_CS_ND_SMALL</ANIM_NAME>
                     <MIN_VALUE>0</MIN_VALUE>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_ND_DECREASE</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_ND_INCREASE</ANIMTIP_1>
+                    <ANIMTIP_0>Decrease ND Brightness</ANIMTIP_0>
+                    <ANIMTIP_1>Increase ND Brightness</ANIMTIP_1>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
@@ -649,8 +649,8 @@
                     <PART_ID>PFD_Brightness_FO</PART_ID>
                     <ANIM_NAME>KNOB_EFIS_FO_PFD</ANIM_NAME>
                     <MIN_VALUE>0</MIN_VALUE>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PFD_DECREASE</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PFD_INCREASE</ANIMTIP_1>
+                    <ANIMTIP_0>Decrease PFD Brightness</ANIMTIP_0>
+                    <ANIMTIP_1>Increase PFD Brightness</ANIMTIP_1>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -671,8 +671,8 @@
                     <PART_ID>ND_Brightness_FO</PART_ID>
                     <ANIM_NAME>KNOB_EFIS_FO_ND_SMALL</ANIM_NAME>
                     <MIN_VALUE>0</MIN_VALUE>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_ND_DECREASE</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_ND_INCREASE</ANIMTIP_1>
+                    <ANIMTIP_0>Decrease ND Brightness</ANIMTIP_0>
+                    <ANIMTIP_1>Increase ND Brightness</ANIMTIP_1>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
