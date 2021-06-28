@@ -336,6 +336,18 @@ const uplinkRoute = async (mcdu) => {
                 await addWaypointAsync(fix, mcdu, fix.ident);
                 continue;
             }
+            if (fix.via_airway.match(/^NAT[A-Z]$/)) {
+                // NAT oceanic track
+                // MSFS has waypoints for these, but they're in a different format
+                try {
+                    const ident = ("" + parseInt(fix.pos_lat)).padStart(2, "0") + ("" + Math.abs(parseInt(fix.pos_long))).padStart(2, "0") + "N";
+                    await addWaypointAsync(fix, mcdu, ident);
+                } catch (e) {
+                    console.warn(`Failed to insert NAT waypoint "${fix.ident}"`, e);
+                } finally {
+                    continue;
+                }
+            }
             if (nextFix.via_airway !== fix.via_airway) {
                 // last fix of airway
                 console.log("Inserting waypoint: " + fix.ident + " via " + fix.via_airway);
