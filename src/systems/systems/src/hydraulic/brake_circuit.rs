@@ -331,9 +331,9 @@ pub enum AutobrakeMode {
     RTO = 5,
     BTV = 6,
 }
-impl From<u8> for AutobrakeMode {
-    fn from(value: u8) -> Self {
-        match value {
+impl From<f64> for AutobrakeMode {
+    fn from(value: f64) -> Self {
+        match value as u8 {
             0 => AutobrakeMode::NONE,
             1 => AutobrakeMode::LOW,
             2 => AutobrakeMode::MED,

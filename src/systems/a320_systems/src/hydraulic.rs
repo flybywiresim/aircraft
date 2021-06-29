@@ -1517,14 +1517,12 @@ impl A320AutobrakeController {
         match self.mode {
             AutobrakeMode::NONE => false,
             AutobrakeMode::LOW | AutobrakeMode::MED => {
-                // LOW and MED deactivates if one pedal over 53% or two over 11%.
                 self.left_brake_pedal_input > Ratio::new::<percent>(53.)
                     || self.right_brake_pedal_input > Ratio::new::<percent>(53.)
                     || (self.left_brake_pedal_input > Ratio::new::<percent>(11.)
                         && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
             }
             AutobrakeMode::MAX => {
-                // MAX deactivates if one pedal over 77% or two over 53%.
                 self.left_brake_pedal_input > Ratio::new::<percent>(77.)
                     || self.right_brake_pedal_input > Ratio::new::<percent>(77.)
                     || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
@@ -1613,7 +1611,7 @@ impl SimulationElement for A320AutobrakeController {
         self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        self.mode = (state.read_f64("AUTOBRAKES_ARMED_MODE") as u8).into();
+        self.mode = state.read_f64("AUTOBRAKES_ARMED_MODE").into();
     }
 }
 
@@ -2141,7 +2139,7 @@ mod tests {
             }
 
             fn autobrake_mode(&mut self) -> AutobrakeMode {
-                AutobrakeMode::from(self.read_f64("AUTOBRAKES_ARMED_MODE") as u8)
+                self.read_f64("AUTOBRAKES_ARMED_MODE").into()
             }
 
             fn get_brake_left_green_pressure(&mut self) -> Pressure {
