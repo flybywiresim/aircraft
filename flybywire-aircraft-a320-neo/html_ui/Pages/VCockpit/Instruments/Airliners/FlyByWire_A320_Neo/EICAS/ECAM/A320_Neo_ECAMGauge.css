@@ -158,6 +158,9 @@ a320-neo-ecam-gauge #RootSVG #ExtraMessage text {
   fill: var(--displayGreen);
   font-size: 15px;
 }
+a320-neo-ecam-gauge #RootSVG #ExtraMessage text.amber {
+  fill: var(--displayAmber);
+}
 a320-neo-ecam-gauge #RootSVG #ExtraMessage .active {
   display: block !important;
 }
