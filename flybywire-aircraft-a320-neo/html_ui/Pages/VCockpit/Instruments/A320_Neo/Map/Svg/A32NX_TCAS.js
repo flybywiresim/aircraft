@@ -336,7 +336,6 @@ const raVariants = {
 
 class A32NX_TCAS_Manager {
     constructor() {
-        console.log("TCAS: in constructor beginning");
         this.TrafficUpdateTimer = 0.2;
         this.followupRaTimer = 0;
         this.TrafficAircraft = [];
@@ -357,7 +356,6 @@ class A32NX_TCAS_Manager {
         this.inhibitions = inhibit.none;
 
         SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 0);
-        console.log("TCAS: in constructor ending");
     }
 
     // This is called from the MFD JS file, because the MapInstrument doesn't have a deltaTime
@@ -562,7 +560,7 @@ class A32NX_TCAS_Manager {
 
     /**
      * Only lower threat level from RA/TA if they fulfill minimum time requirements
-     * TODO: Maintain RA status if target violates TA-protected volume boosted by 25% & is moving closer / moving away slowly (relative speed slower than 40 kts)
+     * Maintain RA status if target violates TA-protected volume boosted by 25% & is moving closer / moving away slowly (relative speed slower than 40 kts)
      * @param {*} traffic
      * @param {*} verticalIntrusionLevel
      * @param {*} rangeIntrusionLevel
@@ -575,7 +573,6 @@ class A32NX_TCAS_Manager {
             && traffic.secondsSinceLastTA >= CONSTANTS.TA_EXPIRATION_DELAY) {
             traffic.taExpiring = false;
             traffic.secondsSinceLastTA = 0;
-            console.log("🚀 -> A32NX_TCAS_Manager -> updateIntrusionLevel -> TA EXPIRATION PERIOD ENDED");
         } else if (traffic.intrusionLevel === 2
             && _desiredIntrusionLevel < 2
             && traffic.secondsSinceLastTA < CONSTANTS.TA_EXPIRATION_DELAY) {
@@ -647,7 +644,7 @@ class A32NX_TCAS_Manager {
                         SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 1);
                         console.log("TCAS: TA GENERATED");
                         if (this.inhibitions !== inhibit.all_ra_aural_ta) {
-                            console.log("TCAS: TA GENERATED 2");
+                            console.log("TCAS: TA GENERATED SOUND");
                             this.soundManager.tryPlaySound(soundList.traffic_traffic, true);
                         }
                     }
@@ -867,12 +864,16 @@ class A32NX_TCAS_Manager {
 
             let alreadyAchievedALIM = true;
             let alreadyAchievedTaZTHR = true;
+            let minTimeToCPA = CONSTANTS.REALLY_BIG_NUMBER;
             raTraffic.forEach((ac) => {
                 if (Math.abs(selfAlt - ac.alt) < ALIM) {
                     alreadyAchievedALIM = false;
                 }
                 if (Math.abs(selfAlt - ac.alt) < ZTHR[0]) {
                     alreadyAchievedTaZTHR = false;
+                }
+                if (ac.RaTau < minTimeToCPA) {
+                    minTimeToCPA = ac.RaTau;
                 }
             });
 
@@ -953,8 +954,8 @@ class A32NX_TCAS_Manager {
                         console.log("StrengthenRAInfo: condition not met. Callout: ", previousRA.info.callout);
                     }
 
-                    if (previousRA.isReversal || previousRA.secondsSinceStart < 5) {
-                        // We've reversed before, or less than 5 seconds have elapsed since start of RA.
+                    if (previousRA.isReversal || previousRA.secondsSinceStart < 10 || minTimeToCPA < 4) {
+                        // We've reversed before, or less than 10 seconds have elapsed since start of RA, or less than 4 seconds until CPA
                         // Can only increase strength if able
                         if (strengthenRaInfo === null) {
                             // We're at the strongest RA type possible. So cannot reverse.
@@ -1058,13 +1059,8 @@ class A32NX_TCAS_Manager {
         let isCrossing = false;
         let minSeparation = CONSTANTS.REALLY_BIG_NUMBER;
 
-        // console.log("Debugging vertical sep: sense ", sense, " at FPM: ", targetVS);
-        // console.log("All raTraffic:", otherAircraft);
-
         for (const ac of otherAircraft) {
             const trafficAltAtCPA = ac.alt + ((ac.vertSpeed / 60) * ac.RaTAU);
-
-            // console.log("----> Traffic: Alt=" + ac.alt + ", VS=" + ac.vertSpeed + ", AltAtCPA=" + trafficAltAtCPA);
 
             let _sep = CONSTANTS.REALLY_BIG_NUMBER;
             if (sense === raSense.up) {
@@ -1091,7 +1087,7 @@ class A32NX_TCAS_Manager {
     calculateTrajectory(targetVS, selfVS, selfAlt, otherAC, delay, accel) {
         // accel must be in f/s^2
         accel = targetVS < selfVS ? -1 * accel : accel;
-        const timeToAccelerate = Math.min(otherAC.RaTAU - delay, ((targetVS - selfVS) / 60) / accel); // raTau can be infinity
+        const timeToAccelerate = Math.min(otherAC.RaTAU - delay, ((targetVS - selfVS) / 60) / accel); // raTau can be infinity?
         const remainingTime = otherAC.RaTAU - (delay + timeToAccelerate);
         const predicted_elevation = selfAlt
                                     + Math.round(selfVS / 60) * (delay + timeToAccelerate)
