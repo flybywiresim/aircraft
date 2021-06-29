@@ -399,6 +399,8 @@ impl Default for AutobrakePanel {
     }
 }
 
+/// Deceleration governor is the PI controller computing the expected brake force to reach the target
+/// it's been given by update caller
 pub struct AutobrakeDecelerationGovernor {
     target: Acceleration,
     i_gain: f64,
