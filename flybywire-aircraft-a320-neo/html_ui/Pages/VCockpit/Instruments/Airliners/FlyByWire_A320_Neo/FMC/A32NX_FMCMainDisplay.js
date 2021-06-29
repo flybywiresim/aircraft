@@ -6,7 +6,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
         this.ilsUpdateThrottler = new UpdateThrottler(5000);
-        this.currentFlightPhase = FmgcFlightPhases.PREFLIGHT;
+        this.currentFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number") || FmgcFlightPhases.PREFLIGHT;
+        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
         this._apCooldown = 500;
         this._radioNavOn = false;
         this._vhf1Frequency = 0;
@@ -183,8 +184,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.dataManager = new FMCDataManager(this);
 
-        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
-
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
         this.tempCurve.add(-10 * 3.28084, 21.50);
@@ -242,6 +241,8 @@ class FMCMainDisplay extends BaseAirliners {
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+
+        this.flightPhaseManager.init();
 
         /** It takes some time until origin and destination are known, placing this inside callback of the flight plan loader doesn't work */
         setTimeout(() => {
