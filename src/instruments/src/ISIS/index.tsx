@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { DisplayUnit } from '@instruments/common/displayUnit';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { render } from '../Common';
+import { ISISDisplayUnit } from './ISISDisplayUnit';
 import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';
 import { BugSetupDisplay } from './BugSetupDisplay';
 import { initialBugs } from './Bug';
@@ -10,8 +10,6 @@ import { initialBugs } from './Bug';
 import './style.scss';
 
 export const ISISDisplay: React.FC = () => {
-    const [dcEssLive] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool');
-    const [dcHotLive] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'bool');
     const [ias] = useSimVar('AIRSPEED INDICATED', 'knots');
     const [bugsActive, setBugsActive] = useSimVar('L:A32NX_ISIS_BUGS_ACTIVE', 'enum');
     const [mode, setMode] = useState('AHI');
@@ -74,17 +72,16 @@ export const ISISDisplay: React.FC = () => {
         }
     });
 
-    if (ias > 50 && dcHotLive || dcEssLive) {
-        return (
+    return (
+        <ISISDisplayUnit indicatedAirspeed={ias}>
             <svg className="isis-svg" version="1.1" viewBox="0 0 512 512">
                 {{
                     AHI: <ArtificialHorizonDisplay indicatedAirspeed={ias} bugs={bugs} />,
                     BUG: <BugSetupDisplay bugs={bugs} selectedIndex={selectedIndex} />,
                 }[mode]}
             </svg>
-        );
-    }
-    return <></>;
+        </ISISDisplayUnit>
+    );
 };
 
 render(<ISISDisplay />);
