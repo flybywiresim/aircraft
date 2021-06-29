@@ -173,8 +173,7 @@ impl Autobrakes {
         self.low_mode_requested = true;
     }
 }
-impl SimulatorAspect for Autobrakes {}
-impl ReadWrite for Autobrakes {
+impl SimulatorAspect for Autobrakes {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
             "OVHD_AUTOBRK_LOW_ON_IS_PRESSED" => Some(self.low_mode_requested as u8 as f64),
@@ -183,8 +182,7 @@ impl ReadWrite for Autobrakes {
             _ => None,
         }
     }
-}
-impl HandleMessage for Autobrakes {
+
     fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
         match message {
             SimConnectRecv::Event(e) => {
@@ -204,8 +202,7 @@ impl HandleMessage for Autobrakes {
             _ => false,
         }
     }
-}
-impl PrePostTick for Autobrakes {
+
     fn pre_tick(&mut self, delta: Duration) {
         self.synchronise_with_sim();
     }
