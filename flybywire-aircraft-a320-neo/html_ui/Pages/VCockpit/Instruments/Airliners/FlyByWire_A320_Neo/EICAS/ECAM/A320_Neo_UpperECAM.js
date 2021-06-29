@@ -1403,7 +1403,7 @@ var A320_Neo_UpperECAM;
                         message: "AUTO BRK LO",
                         isActive: () => (
                             (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                            SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 1
+                            this.getCachedSimVar("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 1
                         )
                     },
                     {
@@ -1411,7 +1411,7 @@ var A320_Neo_UpperECAM;
                         isActive: () => {
                             return (
                                 (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                                SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 2
+                                this.getCachedSimVar("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 2
                             );
                         }
                     },
@@ -1420,7 +1420,7 @@ var A320_Neo_UpperECAM;
                         isActive: () => {
                             return (
                                 (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                                SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 3
+                                this.getCachedSimVar("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 3
                             );
                         }
                     },
@@ -1454,7 +1454,7 @@ var A320_Neo_UpperECAM;
                     "AUTO BRK",
                     "MAX",
                     "MAX",
-                    () => SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 3
+                    () => this.getCachedSimVar("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 3
                 ),
                 new A320_Neo_UpperECAM.MemoItem(
                     "to-memo-signs",
