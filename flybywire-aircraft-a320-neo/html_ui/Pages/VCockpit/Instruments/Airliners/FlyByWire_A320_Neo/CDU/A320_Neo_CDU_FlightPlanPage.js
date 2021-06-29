@@ -269,11 +269,11 @@ class CDUFlightPlanPage {
                     let timeCell = "----";
                     if (isFlying) {
                         if (isFinite(waypoint.liveUTCTo) || isFinite(waypoint.waypointReachedAt)) {
-                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[index + 1].etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
+                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[stats.length === 1 ? 0 : index + 1].etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
                         }
                     } else {
                         if (isFinite(waypoint.liveETATo)) {
-                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[index + 1].timeFromPpos : 0) + "[s-text]";
+                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[stats.length === 1 ? 0 : index + 1].timeFromPpos : 0) + "[s-text]";
                         }
                     }
                     if (fpIndex > fpm.getDepartureWaypointsCount()) {
@@ -313,7 +313,7 @@ class CDUFlightPlanPage {
                         }
 
                         // TODO actually use the correct prediction
-                        const distance = stats[index + 1].distanceFromPpos;
+                        const distance = stats[stats.length === 1 ? 0 : index + 1].distanceFromPpos;
                         let dstnc;
                         if (i === 1) {
                             dstnc = distance.toFixed(0).toString() + "NM";

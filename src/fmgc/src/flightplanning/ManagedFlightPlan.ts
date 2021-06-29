@@ -1022,11 +1022,10 @@ export class ManagedFlightPlan {
 
     private addWaypointAvoidingDuplicates(waypoint, waypointIndex, segment): void {
         const index = this.waypoints.findIndex((wp) => wp.ident === waypoint.ident);
-        if (index === -1) {
-            this.addWaypoint(waypoint, ++waypointIndex, segment.type);
-        } else {
+
+        if (index !== -1 && index === waypointIndex + 1) {
             this.removeWaypoint(index);
-            this.addWaypoint(waypoint, ++waypointIndex, segment.type);
         }
+        this.addWaypoint(waypoint, ++waypointIndex, segment.type);
     }
 }
