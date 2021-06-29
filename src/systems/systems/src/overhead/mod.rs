@@ -449,15 +449,17 @@ impl SimulationElement for MomentaryPushButton {
 }
 
 /// Same implementation as MomentaryPushButton but is only "pressed" for one update even if kept pressed
-pub struct MomentaryRisingEdgePushButton {
+pub struct MomentaryPulsePushButton {
     is_pressed_id: String,
     is_pressed: bool,
+    last_pressed_state: bool,
 }
-impl MomentaryRisingEdgePushButton {
+impl MomentaryPulsePushButton {
     pub fn new(name: &str) -> Self {
         Self {
             is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
             is_pressed: false,
+            last_pressed_state: false,
         }
     }
 
@@ -465,9 +467,11 @@ impl MomentaryRisingEdgePushButton {
         self.is_pressed
     }
 }
-impl SimulationElement for MomentaryRisingEdgePushButton {
+impl SimulationElement for MomentaryPulsePushButton {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_pressed = reader.read(&self.is_pressed_id) && !self.is_pressed;
+        let current_button_pos = reader.read(&self.is_pressed_id);
+        self.is_pressed = current_button_pos && !self.last_pressed_state;
+        self.last_pressed_state = current_button_pos;
     }
 }
 
@@ -869,12 +873,12 @@ mod momentary_rising_edge_push_button_tests {
 
     #[test]
     fn new_is_not_pressed() {
-        assert!(!MomentaryRisingEdgePushButton::new("TEST").is_pressed());
+        assert!(!MomentaryPulsePushButton::new("TEST").is_pressed());
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(MomentaryRisingEdgePushButton::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(MomentaryPulsePushButton::new("TEST"));
         test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
@@ -884,7 +888,7 @@ mod momentary_rising_edge_push_button_tests {
 
     #[test]
     fn can_be_pressed() {
-        let mut test_bed = SimulationTestBed::from(MomentaryRisingEdgePushButton::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(MomentaryPulsePushButton::new("TEST"));
         test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
@@ -893,11 +897,14 @@ mod momentary_rising_edge_push_button_tests {
 
     #[test]
     fn is_only_pressed_for_one_update() {
-        let mut test_bed = SimulationTestBed::from(MomentaryRisingEdgePushButton::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(MomentaryPulsePushButton::new("TEST"));
         test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
         assert!(test_bed.query_element(|button| button.is_pressed()));
+
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_pressed()));
 
         test_bed.run();
         assert!(!test_bed.query_element(|button| button.is_pressed()));

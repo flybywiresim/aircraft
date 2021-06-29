@@ -1,6 +1,6 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    overhead::MomentaryRisingEdgePushButton,
+    overhead::MomentaryPulsePushButton,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
@@ -347,16 +347,16 @@ impl From<u8> for AutobrakeMode {
 }
 
 pub struct AutobrakePanel {
-    lo_button: MomentaryRisingEdgePushButton,
-    med_button: MomentaryRisingEdgePushButton,
-    max_button: MomentaryRisingEdgePushButton,
+    lo_button: MomentaryPulsePushButton,
+    med_button: MomentaryPulsePushButton,
+    max_button: MomentaryPulsePushButton,
 }
 impl AutobrakePanel {
     pub fn new() -> AutobrakePanel {
         AutobrakePanel {
-            lo_button: MomentaryRisingEdgePushButton::new("AUTOBRK_LOW_ON"),
-            med_button: MomentaryRisingEdgePushButton::new("AUTOBRK_MED_ON"),
-            max_button: MomentaryRisingEdgePushButton::new("AUTOBRK_MAX_ON"),
+            lo_button: MomentaryPulsePushButton::new("AUTOBRK_LOW_ON"),
+            med_button: MomentaryPulsePushButton::new("AUTOBRK_MED_ON"),
+            max_button: MomentaryPulsePushButton::new("AUTOBRK_MAX_ON"),
         }
     }
 
