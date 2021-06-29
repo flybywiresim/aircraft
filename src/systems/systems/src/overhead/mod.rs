@@ -449,12 +449,12 @@ impl SimulationElement for MomentaryPushButton {
 }
 
 /// Same implementation as MomentaryPushButton but is only "pressed" for one update even if kept pressed
-pub struct MomentaryPulsePushButton {
+pub struct PressSingleSignalButton {
     is_pressed_id: String,
     is_pressed: bool,
     last_pressed_state: bool,
 }
-impl MomentaryPulsePushButton {
+impl PressSingleSignalButton {
     pub fn new(name: &str) -> Self {
         Self {
             is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
@@ -467,7 +467,7 @@ impl MomentaryPulsePushButton {
         self.is_pressed
     }
 }
-impl SimulationElement for MomentaryPulsePushButton {
+impl SimulationElement for PressSingleSignalButton {
     fn read(&mut self, reader: &mut SimulatorReader) {
         let current_button_pos = reader.read(&self.is_pressed_id);
         self.is_pressed = current_button_pos && !self.last_pressed_state;
@@ -873,12 +873,12 @@ mod momentary_rising_edge_push_button_tests {
 
     #[test]
     fn new_is_not_pressed() {
-        assert!(!MomentaryPulsePushButton::new("TEST").is_pressed());
+        assert!(!PressSingleSignalButton::new("TEST").is_pressed());
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(MomentaryPulsePushButton::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
         test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
@@ -888,7 +888,7 @@ mod momentary_rising_edge_push_button_tests {
 
     #[test]
     fn can_be_pressed() {
-        let mut test_bed = SimulationTestBed::from(MomentaryPulsePushButton::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
         test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
@@ -897,7 +897,7 @@ mod momentary_rising_edge_push_button_tests {
 
     #[test]
     fn is_only_pressed_for_one_update() {
-        let mut test_bed = SimulationTestBed::from(MomentaryPulsePushButton::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
         test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();

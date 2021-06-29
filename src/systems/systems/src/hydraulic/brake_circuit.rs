@@ -1,6 +1,6 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    overhead::MomentaryPulsePushButton,
+    overhead::PressSingleSignalButton,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
@@ -347,16 +347,16 @@ impl From<f64> for AutobrakeMode {
 }
 
 pub struct AutobrakePanel {
-    lo_button: MomentaryPulsePushButton,
-    med_button: MomentaryPulsePushButton,
-    max_button: MomentaryPulsePushButton,
+    lo_button: PressSingleSignalButton,
+    med_button: PressSingleSignalButton,
+    max_button: PressSingleSignalButton,
 }
 impl AutobrakePanel {
     pub fn new() -> AutobrakePanel {
         AutobrakePanel {
-            lo_button: MomentaryPulsePushButton::new("AUTOBRK_LOW_ON"),
-            med_button: MomentaryPulsePushButton::new("AUTOBRK_MED_ON"),
-            max_button: MomentaryPulsePushButton::new("AUTOBRK_MAX_ON"),
+            lo_button: PressSingleSignalButton::new("AUTOBRK_LOW_ON"),
+            med_button: PressSingleSignalButton::new("AUTOBRK_MED_ON"),
+            max_button: PressSingleSignalButton::new("AUTOBRK_MAX_ON"),
         }
     }
 
