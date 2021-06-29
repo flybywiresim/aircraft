@@ -1400,8 +1400,8 @@ impl SimulationElement for PushbackTug {
     }
 }
 
-// Autobrake controller computes the state machine of the autobrake logic, and the deceleration target
-// that we expect for the plane
+/// Autobrake controller computes the state machine of the autobrake logic, and the deceleration target
+/// that we expect for the plane
 pub struct A320AutobrakeController {
     // Deceleration governor is the PID controller computing the expected brake force to reach the target computed by A320AutobrakeController
     deceleration_governor: AutobrakeDecelerationGovernor,
