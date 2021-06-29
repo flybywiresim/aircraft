@@ -68,3 +68,34 @@ text.Green {
 .StrokeYellow {
 	stroke: $display-yellow;
 }
+
+.StrokeCyan {
+	stroke: $display-cyan;
+}
+
+.TextCyan {
+	stroke: $display-cyan;
+	fill: $display-cyan
+}
+
+.FillBackground {
+	fill: $display-background;
+}
+
+.NoFill {
+	fill: none;
+}
+
+@keyframes blinking {
+  0% {stroke: $display-background;}
+  50% {stroke: $display-background;}
+  51% {stroke: white;}
+  100% {strok: white;}
+}
+
+.BlinkInfinite {
+  animation-name: blinking;
+  animation-duration: 0.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}

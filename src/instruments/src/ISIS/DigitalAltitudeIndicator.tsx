@@ -1,4 +1,5 @@
 import React from 'react';
+import { Bug } from './Bug';
 
 const TensDigits = (value, offset, color) => {
     let text;
@@ -77,7 +78,7 @@ const Drum: React.FC<DrumProps> = ({ displayRange, valueSpacing, distanceSpacing
         highestValue -= valueSpacing;
     }
 
-    const graduationElements: JSX.Element[] = [];
+    const graduationElements: React.ReactElement[] = [];
 
     for (let i = 0; i < numTicks; i++) {
         const elementPosition = highestPosition - i * valueSpacing;
@@ -100,10 +101,11 @@ const Drum: React.FC<DrumProps> = ({ displayRange, valueSpacing, distanceSpacing
 
 type DigitalAltitudeIndicatorProps = {
     altitude: number;
-    mda: number
+    mda: number;
+    bugs: Bug[];
 }
 
-export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> = ({ altitude, mda }) => {
+export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> = ({ altitude, mda, bugs }) => {
     const isNegative = altitude < 0;
 
     const color = (mda !== 0 && altitude < mda) ? 'Amber' : 'Green';
@@ -131,15 +133,16 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
 
     const showThousandsZero = TenThousandsValue !== 0;
 
+    const isAltitudeInBugRange = bugs.some(({ value }) => Math.abs(value - altitude) < 100);
+
     return (
         <g>
             <path
                 d="M512,224 L440,224 L440,232 L340,232 L340,288 L440,288 L440,296 L512,296"
+                className={isAltitudeInBugRange ? 'StrokeCyan' : 'StrokeYellow'}
                 fill="black"
-                stroke="yellow"
                 strokeWidth={3}
             />
-            { /* alt tape goes here */ }
             { /* if alt < 0 show NEG banner */ }
             { /* <text x={434} y={257} fontSize={48} textAnchor="end" alignmentBaseline="central" fill="lime">{Math.round(alt / 100).toFixed(0).padStart(3)}</text> */ }
             <svg x={340} y={234} color={color} width="100" height="52" viewBox="0 0 100 52">

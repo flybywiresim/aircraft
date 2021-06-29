@@ -1,4 +1,6 @@
 import React from 'react';
+import { Bug } from './Bug';
+import { BugSetupDisplay } from './BugSetupDisplay';
 
 export const calculateVerticalOffsetFromRoll = (roll: number) => {
     let offset = 0;
@@ -51,14 +53,16 @@ type Props = {
     displayRange: number;
     valueSpacing: number;
     distanceSpacing: number;
-    graduationElementFunction: (elementValue: number, offset: number) => JSX.Element;
+    graduationElementFunction: (elementValue: number, offset: number) => React.ReactElement;
+    bugElementFunction: (bug: Bug, offset: number) => React.ReactElement;
+    bugs: Bug[];
     tapeValue: number;
     lowerLimit: number;
     upperLimit: number
 }
 
 export const VerticalTape: React.FC<Props> = ({
-    displayRange, valueSpacing, distanceSpacing, graduationElementFunction, tapeValue,
+    displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, bugElementFunction, tapeValue,
     lowerLimit = -Infinity, upperLimit = Infinity,
 }) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing);
@@ -70,7 +74,7 @@ export const VerticalTape: React.FC<Props> = ({
         lowestValue += valueSpacing;
     }
 
-    const graduationElements: JSX.Element[] = [];
+    const graduationElements: React.ReactElement[] = [];
 
     for (let i = 0; i < numTicks; i++) {
         const elementValue = lowestValue + i * valueSpacing;
@@ -80,9 +84,19 @@ export const VerticalTape: React.FC<Props> = ({
         }
     }
 
+    const bugElements: React.ReactElement[] = [];
+
+    bugs.forEach((bug) => {
+        const { value } = bug;
+
+        const offset = -value * distanceSpacing / valueSpacing;
+        bugElements.push(bugElementFunction(bug, offset));
+    });
+
     return (
         <g transform={`translate(0 ${clampedValue * distanceSpacing / valueSpacing})`}>
             {graduationElements}
+            {bugElements}
         </g>
     );
 };

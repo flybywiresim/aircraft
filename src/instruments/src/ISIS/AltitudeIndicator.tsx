@@ -1,4 +1,5 @@
 import React from 'react';
+import { Bug, BugType } from './Bug';
 import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';
 import { VerticalTape } from './ISISUtils';
 
@@ -6,9 +7,10 @@ type AltitudeIndicatorProps = {
     maskWidth: number;
     altitude: number;
     mda: number
+    bugs: Bug[]
 }
 
-type TickProps = { maskWidth: number; offset: number, altitude: number }
+type TickProps = { offset: number, altitude: number }
 
 const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
     const shouldShowText = altitude % 500 === 0;
@@ -22,9 +24,27 @@ const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
     );
 };
 
-export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ maskWidth, altitude, mda }) => {
+type BugProps = { bug: Bug, offset: number, maskWidth: number }
+const BugElement: React.FC<BugProps> = ({ bug, offset, maskWidth }) => {
+    if (bug.value % 500 === 0) {
+        return (
+            <g className="StrokeCyan NoFill" transform={`translate(0 ${offset})`}>
+                <path strokeWidth={3} d={`M3,${142} v-10 h65 v30 h-65 v-6`} />
+            </g>
+        );
+    }
+
+    return (
+        <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
+            <path strokeWidth={7} d={`M0,${148} h30`} />
+        </g>
+    );
+};
+
+export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ maskWidth, altitude, mda, bugs }) => {
     const height = 512 - 2 * maskWidth;
     const createTick = (altitude: number, offset: number) => <Tick altitude={altitude} offset={offset} />;
+    const createBug = (bug: Bug, offset: number) => <BugElement maskWidth={maskWidth} bug={bug} offset={offset} />;
 
     return (
         <g id="AltitudeIndicator">
@@ -34,12 +54,14 @@ export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ maskWidth,
                     valueSpacing={100}
                     distanceSpacing={20}
                     graduationElementFunction={createTick}
+                    bugs={bugs}
+                    bugElementFunction={createBug}
                     tapeValue={Math.floor(altitude)}
                     lowerLimit={-2000}
                     upperLimit={50000}
                 />
             </svg>
-            <DigitalAltitudeIndicator altitude={Math.floor(altitude)} mda={mda} />
+            <DigitalAltitudeIndicator altitude={Math.floor(altitude)} mda={mda} bugs={bugs} />
         </g>
     );
 };
