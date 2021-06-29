@@ -3,7 +3,9 @@ use plotlib::repr::Plot;
 use plotlib::style::LineStyle;
 use plotlib::view::ContinuousView;
 use std::time::Duration;
-use systems::electrical::consumption::SuppliedPower;
+use systems::electrical::test::TestElectricitySource;
+use systems::electrical::ElectricalBus;
+use systems::electrical::Electricity;
 use systems::electrical::Potential;
 pub use systems::hydraulic::*;
 use systems::shared::PotentialOrigin;
@@ -310,7 +312,7 @@ fn hyd_circuit_basic(path: &str) {
             &edp_controller,
         );
 
-        epump.receive_power(&test_supplied_power(
+        epump.receive_power(&test_electricity(
             ElectricalBusType::AlternatingCurrentEssential,
             true,
         ));
@@ -349,21 +351,21 @@ fn hyd_circuit_basic(path: &str) {
     reservoir_history.show_matplotlib("hyd_circuit_reservoir_tests", &path);
 }
 
-fn test_supplied_power(bus_id: ElectricalBusType, is_powered: bool) -> SuppliedPower {
-    let mut supplied_power = SuppliedPower::new();
-    supplied_power.add(
-        bus_id,
-        if is_powered {
-            Potential::single(
-                PotentialOrigin::EngineGenerator(1),
-                ElectricPotential::new::<volt>(115.),
-            )
-        } else {
-            Potential::none()
-        },
-    );
+fn test_electricity(bus_id: ElectricalBusType, is_powered: bool) -> Electricity {
+    let mut electricity = Electricity::new();
+    let mut source =
+        TestElectricitySource::unpowered(PotentialOrigin::EngineGenerator(1), &mut electricity);
 
-    supplied_power
+    if is_powered {
+        source.power();
+    }
+
+    let bus = ElectricalBus::new(bus_id, &mut electricity);
+
+    electricity.supplied_by(&source);
+    electricity.flow(&source, &bus);
+
+    electricity
 }
 
 fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
