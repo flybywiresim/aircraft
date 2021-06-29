@@ -1754,6 +1754,7 @@
         <Sound WwiseData="true" WwiseEvent="monitor_vs" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="traffic" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="traffic_traffic" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="TCAS_sys_test_OK" NodeName="WIPER_BASE_L" />
         
         <!-- ROPS callouts ==================================================================================== -->
         
