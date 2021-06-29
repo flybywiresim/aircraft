@@ -431,10 +431,6 @@ impl AutobrakeDecelerationGovernor {
         }
     }
 
-    fn update_target(&mut self, deceleration_target: Acceleration) {
-        self.target = deceleration_target;
-    }
-
     pub fn engage_when(&mut self, engage_condition: bool) {
         if engage_condition {
             self.is_engaged = true;
@@ -463,7 +459,7 @@ impl AutobrakeDecelerationGovernor {
     }
 
     pub fn update(&mut self, context: &UpdateContext, target: Acceleration) {
-        self.update_target(target);
+        self.target = target;
 
         let accel = context.long_accel();
         self.filtered_acceleration = self.filtered_acceleration
