@@ -2,28 +2,28 @@ import React, { memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
-import { FlightPlan } from './FlightPlan';
-import { MapParameters } from './utils/MapParameters';
-import { RadioNeedle } from './RadioNeedles';
-import { Plane } from './Plane';
-import { ToWaypointIndicator } from './ToWaypointIndicator';
-import { rangeSettings } from './index';
-import { ApproachMessage } from './ApproachMessage';
+import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
+import { FlightPlan } from '../FlightPlan';
+import { MapParameters } from '../utils/MapParameters';
+import { RadioNeedle } from '../RadioNeedles';
+import { Plane } from '../Plane';
+import { ToWaypointIndicator } from '../ToWaypointIndicator';
+import { rangeSettings } from '../index';
+import { ApproachMessage } from '../ApproachMessage';
 
-export type ArcModeProps = { side: 'L' | 'R' }
+export type ArcModeProps = {
+    side: 'L' | 'R',
+    ppos: LatLongData,
+}
 
-export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ side, ppos }) => {
     const flightPlanManager = useFlightPlanManager();
 
-    const [lat] = useSimVar('PLANE LATITUDE', 'degree latitude');
-    const [long] = useSimVar('PLANE LONGITUDE', 'degree longitude');
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
     const [fmgcFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
-
-    const ppos = { lat, long };
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -34,7 +34,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side }) => {
 
     useEffect(() => {
         mapParams.compute(ppos, rangeSettings[rangeIndex] * 2, 768, trueHeading);
-    }, [lat, long, magHeading, rangeIndex].map((n) => MathUtils.fastToFixed(n, 6)));
+    }, [ppos.lat, ppos.long, magHeading, rangeIndex].map((n) => MathUtils.fastToFixed(n, 6)));
 
     return (
         <>
