@@ -1021,9 +1021,24 @@
     - Bool
     - Whether the ON BAT indication should illuminate.
 
-- A32NX_OVHD_ADIRS_IR_{number}_HAS_FAULT
+- A32NX_OVHD_ADIRS_IR_{number}_PB_HAS_FAULT
     - Bool
-    - Whether the FAULT light illuminates for IR {number}
+    - Whether the FAULT light illuminates for IR {number}.
+    - number: { 1, 2, 3 }
+
+- A32NX_OVHD_ADIRS_IR_{number}_PB_IS_OFF
+    - Bool
+    - Whether the IR push button is in the OFF position.
+    - number: { 1, 2, 3 }
+
+- A32NX_OVHD_ADIRS_ADR_{number}_PB_HAS_FAULT
+    - Bool
+    - Whether the FAULT light illuminates for ADR {number}.
+    - number: { 1, 2, 3 }
+
+- A32NX_OVHD_ADIRS_ADR_{number}_PB_IS_OFF
+    - Bool
+    - Whether the ADR push button is in the OFF position.
     - number: { 1, 2, 3 }
 
 - A32NX_ADIRS_STATE
