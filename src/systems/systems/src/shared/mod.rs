@@ -52,6 +52,10 @@ pub trait EngineCorrectedN2 {
     fn corrected_n2(&self) -> Ratio;
 }
 
+pub trait EngineUncorrectedN2 {
+    fn uncorrected_n2(&self) -> Ratio;
+}
+
 /// The common types of electrical buses within Airbus aircraft.
 /// These include types such as AC, DC, AC ESS, etc.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -301,6 +305,10 @@ pub(crate) fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 
         ys[idx - 1]
             + (intermediate_x - xs[idx - 1]) / (xs[idx] - xs[idx - 1]) * (ys[idx] - ys[idx - 1])
     }
+}
+
+pub fn to_bool(value: f64) -> bool {
+    (value - 1.).abs() < f64::EPSILON
 }
 
 #[cfg(test)]
