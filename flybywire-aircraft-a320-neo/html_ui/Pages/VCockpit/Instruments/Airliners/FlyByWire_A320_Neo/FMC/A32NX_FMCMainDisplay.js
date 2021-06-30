@@ -210,6 +210,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
+        this._cruiseFlightLevel = this.cruiseFlightLevel;
 
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
@@ -224,6 +225,7 @@ class FMCMainDisplay extends BaseAirliners {
                     console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
                     if (cruiseAlt > 0) {
                         this.cruiseFlightLevel = cruiseAlt;
+                        this._cruiseFlightLevel = cruiseAlt;
                     }
                 };
                 const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();

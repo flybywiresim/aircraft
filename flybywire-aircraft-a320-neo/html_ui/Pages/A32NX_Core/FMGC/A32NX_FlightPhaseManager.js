@@ -102,6 +102,7 @@ class A32NX_FlightPhaseManager {
     }
 
     init() {
+        console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase);
         this.activeFlightPhase.init(this.fmc);
     }
 
