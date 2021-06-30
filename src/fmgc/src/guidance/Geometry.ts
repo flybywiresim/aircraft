@@ -1,5 +1,6 @@
 import { Degrees, NauticalMiles } from '@typings/types';
 import { MathUtils } from '@shared/MathUtils';
+import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { ControlLaw, GuidanceParameters } from './ControlLaws';
 
 export const EARTH_RADIUS_NM = 3440.1;
@@ -91,7 +92,7 @@ export class TFLeg extends Leg {
      *
      * @param ppos {LatLong} the current position of the aircraft
      */
-    getAircraftToLegBearing(ppos: LatLong): number {
+    getAircraftToLegBearing(ppos: LatLongData): number {
         const aircraftToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(ppos, this.to.infos.coordinates);
 
         // Rotate frame of reference to 0deg
@@ -111,7 +112,7 @@ export class TFLeg extends Leg {
         return aircraftToLegBearing;
     }
 
-    getDistanceToGo(ppos: LatLong): NauticalMiles {
+    getDistanceToGo(ppos: LatLongData): NauticalMiles {
         const aircraftLegBearing = this.getAircraftToLegBearing(ppos);
 
         const absDtg = Avionics.Utils.computeGreatCircleDistance(ppos, this.to.infos.coordinates);
