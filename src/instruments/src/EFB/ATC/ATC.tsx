@@ -22,7 +22,7 @@ export const ATC = () => {
 
     useEffect(() => {
         loadAtc();
-    }, []);
+    }, [atisSource]);
 
     useEffect(() => {
         setAtc();
