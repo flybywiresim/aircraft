@@ -775,7 +775,6 @@
         <DefaultTemplateParameters>
             <NODE_ID>KNOB_OVHD_AIRCOND_#ID#</NODE_ID>
             <ANIM_NAME>KNOB_OVHD_AIRCOND_#ID#</ANIM_NAME>
-
             <KNOB_POSITION_TYPE>L</KNOB_POSITION_TYPE>
             <KNOB_POSITION_VAR>A320_Neo_AIRCOND_LVL_#ID#</KNOB_POSITION_VAR>
             <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
@@ -783,7 +782,8 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
-                <ANIM_SIMVAR>L:#KNOB_POSITION_VAR#</ANIM_SIMVAR>
+                <ANIM_SIMVAR>#KNOB_POSITION_VAR#</ANIM_SIMVAR>
+                <ANIM_SIMVAR_TYPE>#KNOB_POSITION_TYPE#</ANIM_SIMVAR_TYPE>
             </UseTemplate>
         </Component>
     </Template>
