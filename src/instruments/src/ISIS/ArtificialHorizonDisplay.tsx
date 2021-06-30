@@ -35,10 +35,10 @@ export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed, b
                 <path d="M0,404 L512,404" fill="white" stroke="white" strokeWidth={4} /> */}
                 <AirspeedIndicator maskWidth={maskWidth} indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
                 <AltitudeIndicator maskWidth={maskWidth} altitude={Math.floor(alt)} mda={200} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
+                <AirplaneSymbol />
                 { lsActive && <LandingSystem /> }
                 <PressureIndicator />
                 <MachIndicator />
-                <AirplaneSymbol />
             </g>
         </g>
     );
