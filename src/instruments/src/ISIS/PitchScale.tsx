@@ -1,7 +1,22 @@
 import React from 'react';
 
-export const PitchScale: React.FC<{ pitchDegPixels: number }> = ({ pitchDegPixels }) => {
-    const markers = Array();
+const ExcessivePitchAttitudeArrows: React.FC = () => (
+    <g id="ExcessivePitchArrows">
+        <path d="M198 -258 h 46 v 12 h -16 l 28 28 l 28 -28 h -16 v -12 h 46 l -58 58z" strokeWidth={2} className="StrokeRed NoFill" />
+        <path d="M216 -162 h 16 l 24 42 l 24 -42 h 16 l -40 70z" strokeWidth={2} className="StrokeRed NoFill" />
+        <path d="M220 -66 h12 l24 42 l24 -42 h12 l-35.5 62z" strokeWidth={2} className="StrokeRed NoFill" />
+        <path d="M220 578 h12 l24 -42 l24 42 h12 l-35.5 -62z" strokeWidth={2} className="StrokeRed NoFill" />
+        <path d="M216 674 h 16 l 24 -42 l 24 42 h 16 l -40 -70z" strokeWidth={2} className="StrokeRed NoFill" />
+        <path d="M198 770 h 46 v -12 h -16 l 28 -28 l 28 28 h -16 v 12 h 46 l -58 -58z" strokeWidth={2} className="StrokeRed NoFill" />
+    </g>
+);
+
+type Props = {
+    pitchDegPixels: number;
+}
+
+export const PitchScale: React.FC<Props> = ({ pitchDegPixels }) => {
+    const markers: React.ReactElement[] = [];
     for (let d = -30; d <= 30; d += 10) {
         if (d === 0) {
             markers.push(
@@ -40,5 +55,10 @@ export const PitchScale: React.FC<{ pitchDegPixels: number }> = ({ pitchDegPixel
         );
     }
 
-    return markers;
+    return (
+        <g id="PitchScale">
+            {markers}
+            <ExcessivePitchAttitudeArrows />
+        </g>
+    );
 };

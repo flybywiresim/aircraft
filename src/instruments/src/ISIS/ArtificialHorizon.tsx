@@ -4,8 +4,8 @@ import { PitchScale } from './PitchScale';
 import { RollScale } from './RollScale';
 import { RollIndex } from './RollIndex';
 
-const Sky: React.FC = () => <rect x={-256} y={-256} width={1024} height={512} className="sky" />;
-const Earth: React.FC = () => <rect x={-256} y={256} width={1024} height={512} className="earth" />;
+const Sky: React.FC = () => <rect x={-256} y={-512} width={1024} height={768} className="sky" />;
+const Earth: React.FC = () => <rect x={-256} y={256} width={1024} height={768} className="earth" />;
 
 export const ArtificialHorizon: React.FC<{ maskWidth: number }> = ({ maskWidth }) => {
     const [pitch] = useSimVar('PLANE PITCH DEGREES', 'degrees');
