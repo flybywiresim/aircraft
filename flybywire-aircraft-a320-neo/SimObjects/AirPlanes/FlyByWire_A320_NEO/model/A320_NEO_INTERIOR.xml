@@ -60,6 +60,7 @@
 
             <UseTemplate Name="ASOBO_LIGHTING_Pedestal_Emissive_Template">
                 <NODE_ID>LIGHT_OVHD_TOPEDESTAL</NODE_ID>
+                <POTENTIOMETER>76</POTENTIOMETER>
             </UseTemplate>
 
             <!-- INTEG LT MAIN PNL & PED -->
