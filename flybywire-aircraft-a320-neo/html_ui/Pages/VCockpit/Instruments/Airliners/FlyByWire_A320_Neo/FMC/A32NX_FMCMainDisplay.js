@@ -164,6 +164,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = undefined;
         this.ilsTakeoffAutoTuned = undefined;
         this.ilsApproachAutoTuned = undefined;
+        this.climbTransitionGroundAltitude = undefined;
+        this.altDestination = undefined;
+        this.flightNumber = undefined;
+        this.cruiseTemperature = undefined;
+        this.taxiFuelWeight = undefined;
+        this.blockFuel = undefined;
+        this.zeroFuelWeight = undefined;
+        this.zeroFuelWeightMassCenter = undefined;
     }
 
     Init() {
@@ -229,10 +237,20 @@ class FMCMainDisplay extends BaseAirliners {
         });
 
         this.updateFuelVars();
+        this.updatePerfSpeeds();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+
+        /** It takes some time until origin and destination are known, placing this inside callback of the flight plan loader doesn't work */
+        setTimeout(() => {
+            const origin = this.flightPlanManager.getOrigin();
+            const dest = this.flightPlanManager.getDestination();
+            if (origin && origin.ident && dest && dest.ident) {
+                this.aocAirportList.init(origin.ident, dest.ident);
+            }
+        }, 1000);
 
         // Start the check routine for system health and status
         setInterval(() => {
@@ -437,6 +455,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = false;
         this.ilsTakeoffAutoTuned = false;
         this.ilsApproachAutoTuned = false;
+        this.climbTransitionGroundAltitude = null;
+        this.altDestination = undefined;
+        this.flightNumber = undefined;
+        this.cruiseTemperature = undefined;
+        this.taxiFuelWeight = 0.2;
+        this.blockFuel = undefined;
+        this.zeroFuelWeight = undefined;
+        this.zeroFuelWeightMassCenter = undefined;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -455,6 +481,7 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
         SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
+        SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
 
         SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
@@ -1525,6 +1552,7 @@ class FMCMainDisplay extends BaseAirliners {
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
+                                        this.aocAirportList.init(this.tmpOrigin, airportTo.ident);
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
                                         callback(true);
@@ -1621,6 +1649,7 @@ class FMCMainDisplay extends BaseAirliners {
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent);
         if (airportAltDest) {
             this.altDestination = airportAltDest;
+            this.aocAirportList.alternate = altDestIdent;
             this.tryUpdateDistanceToAlt();
             return true;
         }
@@ -1889,6 +1918,15 @@ class FMCMainDisplay extends BaseAirliners {
             }
             airport = this.flightPlanManager.getDestination();
             runway = this.flightPlanManager.getApproachRunway();
+
+            const planeLla = new LatLongAlt(
+                SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
+                SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude")
+            );
+            const runwayDistance = Avionics.Utils.computeGreatCircleDistance(planeLla, runway.beginningCoordinates);
+            if (runwayDistance > 300) {
+                return;
+            }
         } else {
             if (this.ilsTakeoffAutoTuned) {
                 return;
@@ -1898,10 +1936,15 @@ class FMCMainDisplay extends BaseAirliners {
             runway = this.flightPlanManager.getDepartureRunway();
         }
 
+        // If the airport has correct navdata, the ILS will be listed as the reference navaid (originIcao in MSFS land) on at least the last leg of the
+        // ILS approach procedure(s). Tuning this way gives us the ident, and the course
         if (airport && airport.infos && runway) {
             for (let i = 0; i < airport.infos.approaches.length && !this.ilsAutoTuned; i++) {
                 const appr = airport.infos.approaches[i];
-                const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCR]?)$/);
+                // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
+                // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
+                // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
+                const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCRT]?)([\s\-]*[A-Z0-9])?$/);
                 if (
                     match !== null
                     && Avionics.Utils.formatRunway(match[3]) === Avionics.Utils.formatRunway(runway.designation)
@@ -1918,6 +1961,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
+
+        this.flightNumber = flightNo;
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
             NXApi.connectTelex(flightNo)
@@ -3877,7 +3922,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (!this._progBrgDist) {
             return;
         }
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
+        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
             this._progBrgDist.distance = -1;
             this._progBrgDist.bearing = -1;
             return;
@@ -3985,33 +4030,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Returns the ISA temperature for a given altitude
-     * @param alt {number} altitude in ft
-     * @returns {number} ISA temp in C°
-     */
-    //TODO: can this be an util?
-    getIsaTemp(alt = Simplane.getAltitude()) {
-        return alt / 1000 * (-1.98) + 15;
-    }
-
-    /**
-     * Returns the deviation from ISA temperature and OAT at given altitude
-     * @param alt {number} altitude in ft
-     * @returns {number} ISA temp deviation from OAT in C°
-     */
-    //TODO: can this be an util?
-    getIsaTempDeviation(alt = Simplane.getAltitude()) {
-        return SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius") - this.getIsaTemp(alt);
-    }
-
-    /**
      * Returns the maximum cruise FL for ISA temp and GW
      * @param temp {number} ISA in C°
      * @param gw {number} GW in t
      * @returns {number} MAX FL
      */
     //TODO: can this be an util?
-    getMaxFL(temp = this.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
+    getMaxFL(temp = A32NX_Util.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
         return Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * (-0.039) - 2.389) * gw + temp * (-0.667) + 585.334);
     }
 

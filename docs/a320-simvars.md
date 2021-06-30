@@ -4,6 +4,7 @@
 
 1. [Uncategorized](#uncategorized)
 1. [Fly-By-Wire System](#fly-by-wire-system)
+1. [ADIRS](#adirs)
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
@@ -14,28 +15,6 @@
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
     - Also is used for knowing when to play the no smoking chime sound
-
-- A32NX_ADIRS_PFD_ALIGNED
-    - Bool
-    - 0 when ADIRS is not aligned
-    - 1 when ADIRS is aligned or 3 minutes after it has started aligning
-
-- A32NX_Neo_ADIRS_START_TIME
-    - Seconds
-    - Holds the start time in seconds that the ADIRS TIMER will count down from
-    - Used to have certain things turn on based on a percentage of the total alignment time
-
-- A32NX_ADIRS_1_FAULT
-    - Bool
-    - Whether the "FAULT" indication is shown on the OVHD ADIRS panel for ADIRS 1
-
-- A32NX_ADIRS_2_FAULT
-    - Bool
-    - Whether the "FAULT" indication is shown on the OVHD ADIRS panel for ADIRS 2
-
-- A32NX_ADIRS_3_FAULT
-    - Bool
-    - Whether the "FAULT" indication is shown on the OVHD ADIRS panel for ADIRS 3
 
 - A32NX_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
@@ -1016,6 +995,58 @@
        0.0 | neutral
       1.0 | full up
 
+## ADIRS
+
+- A32NX_CONFIG_ADIRS_IR_ALIGN_TIME
+    - Enum
+    - Input for: systems.wasm
+    - The configured Inertial Reference system align time.
+      Description | Value
+      --- | ---
+      Real (affected by latitude) | 0
+      Instant (0 s) | 1
+      Fast (90 s) | 2
+
+- A32NX_OVHD_ADIRS_IR_{number}_MODE_SELECTOR_KNOB
+    - Enum
+    - number: { 1, 2, 3 }
+    - The Inertial Reference mode selected through the selector knobs.
+      Description | Value
+      --- | ---
+      Off | 0
+      Navigation | 1
+      Attitude | 2
+
+- A32NX_OVHD_ADIRS_ON_BAT_IS_ILLUMINATED
+    - Bool
+    - Whether the ON BAT indication should illuminate.
+
+- A32NX_OVHD_ADIRS_IR_{number}_HAS_FAULT
+    - Bool
+    - Whether the FAULT light illuminates for IR {number}
+    - number: { 1, 2, 3 }
+
+- A32NX_ADIRS_STATE
+    - Enum
+    - The Inertial Reference alignment state.
+      Description | Value
+      --- | ---
+      Off | 0
+      Aligning | 1
+      Aligned | 2
+
+- A32NX_ADIRS_TIME
+    - Seconds
+    - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
+
+- A32NX_ADIRS_PFD_ALIGNED_FIRST
+    - Bool
+    - Indicates whether the PFD should display altitude, air speed and vertical speed information.
+
+- A32NX_ADIRS_PFD_ALIGNED_ATT
+    - Bool
+    - Indicates whether the PFD should display attitude information.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
@@ -1204,7 +1235,7 @@
       --- | ---
       SELECTED | 0
       MANAGED | 1
-      
+
 - A32NX_FCU_SPD_MANAGED_DOT
   - Boolean
   - Indicates if managed speed/mach mode is active
@@ -1385,6 +1416,22 @@
       NOT PRESSED | 0
       PRESSED | 1
 
+- A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX
+    - Bool
+    - Indicates if the thrust lever warning for FLEX take-off is active
+      State | Value
+      --- | ---
+      NOT ACTIVE | 0
+      ACTIVE | 1
+
+- A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA
+    - Bool
+    - Indicates if the thrust lever warning for TOGA take-off is active
+      State | Value
+      --- | ---
+      NOT ACTIVE | 0
+      ACTIVE | 1
+
 ## Throttle Mapping System
 
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
@@ -1418,10 +1465,10 @@
 - A32NX_ENGINE_CYCLE_TIME
     - Number (seconds)
     - Sum of Engine 1 & 2 cycle times to detect when engines are alive (pause/ slew management)
-    
+
 - A32NX_ENGINE_STATE:{index}
     - Number
-    - Defines actual engine state 
+    - Defines actual engine state
       State | Value
       --- | ---
       OFF | 0

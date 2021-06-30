@@ -6,8 +6,9 @@
 //! - **Simulation** refers to the system simulation you create by using this crate.
 #![allow(clippy::suspicious_operation_groupings)]
 #[macro_use]
-mod macros;
+pub mod macros;
 
+pub mod adirs;
 pub mod apu;
 pub mod electrical;
 pub mod engine;
