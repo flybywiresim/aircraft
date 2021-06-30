@@ -223,7 +223,7 @@ class Jet_NDCompass extends HTMLElement {
             }
 
             // This stuff makes the compass do a smooth spin to the actual heading after alignment finishes
-            const desiredRotationHeading = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") !== 2
+            const desiredRotationHeading = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Number") !== 2
                 ? 0
                 : compass;
             const delta = ((desiredRotationHeading - this._delayedCompass + 540) % 360) - 180;

@@ -3889,7 +3889,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (!this._progBrgDist) {
             return;
         }
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
+        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
             this._progBrgDist.distance = -1;
             this._progBrgDist.bearing = -1;
             return;
