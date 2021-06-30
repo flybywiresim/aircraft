@@ -158,7 +158,7 @@ pub struct AirDataInertialReferenceSystem {
 }
 impl AirDataInertialReferenceSystem {
     const STATE_KEY: &'static str = "ADIRS_STATE";
-    const TIME_KEY: &'static str = "ADIRS_TIME";
+    const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
     const LATITUDE_KEY: &'static str = "GPS POSITION LAT";
     const ADR_INITIALISATION_DURATION: Duration = Duration::from_secs(18);
@@ -241,7 +241,7 @@ impl AirDataInertialReferenceSystem {
                 (None, None) => None,
                 (None, Some(remaining)) => Some(remaining),
                 (Some(remaining), None) => Some(remaining),
-                (Some(x), Some(y)) => Some(if x < y { x } else { y }),
+                (Some(x), Some(y)) => Some(if x > y { x } else { y }),
             })
             .unwrap_or_else(|| Duration::from_secs(0))
     }
@@ -262,7 +262,10 @@ impl SimulationElement for AirDataInertialReferenceSystem {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(Self::STATE_KEY, self.state());
-        writer.write(Self::TIME_KEY, self.remaining_align_duration());
+        writer.write(
+            Self::REMAINING_ALIGNMENT_TIME_KEY,
+            self.remaining_align_duration(),
+        );
         writer.write(
             Self::ADR_ALIGNED_KEY,
             self.remaining_adr_initialisation_duration == Some(Duration::from_secs(0)),
@@ -362,7 +365,7 @@ impl InertialReference {
     }
 
     fn has_fault_id(number: usize) -> String {
-        format!("OVHD_ADIRS_IR_{}_HAS_FAULT", number)
+        format!("OVHD_ADIRS_IR_{}_PB_HAS_FAULT", number)
     }
 
     fn update(
@@ -543,7 +546,7 @@ mod tests {
         }
 
         fn remaining_alignment_time(&mut self) -> Duration {
-            self.read(AirDataInertialReferenceSystem::TIME_KEY)
+            self.read(AirDataInertialReferenceSystem::REMAINING_ALIGNMENT_TIME_KEY)
         }
 
         fn all_mode_selectors_off(mut self) -> Self {
@@ -822,6 +825,41 @@ mod tests {
         assert_eq!(test_bed.remaining_alignment_time(), Duration::from_secs(0));
     }
 
+    #[test]
+    fn remaining_alignment_time_is_the_longest_out_of_all_aligning_adirus() {
+        let mut test_bed =
+            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run_without_delta();
+        test_bed.run_with_delta(Duration::from_secs(60));
+        let single_adiru_remaining_alignment_time = test_bed.remaining_alignment_time();
+
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(2, InertialReferenceMode::Navigation);
+        test_bed.run();
+
+        assert!(test_bed.remaining_alignment_time() > single_adiru_remaining_alignment_time);
+    }
+
+    #[test]
+    fn remaining_alignment_time_is_greater_than_zero_when_a_single_adiru_is_aligned_but_another_is_still_aligning(
+    ) {
+        let mut test_bed =
+            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run_without_delta();
+
+        while test_bed.remaining_alignment_time() > Duration::from_secs(0) {
+            test_bed.run();
+        }
+
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(2, InertialReferenceMode::Navigation);
+        test_bed.run();
+
+        assert!(test_bed.remaining_alignment_time() > Duration::from_secs(0));
+    }
+
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
     // PFD attitude is shown 28 seconds after alignment of any ADIRU began, while
     // this should be fed by the selected ADIRU for the captain side (1 or 3), it is now
@@ -839,50 +877,6 @@ mod tests {
         test_bed.run_without_delta();
 
         assert_eq!(nav_mode_alignment_time, test_bed.remaining_alignment_time());
-    }
-
-    #[test]
-    fn remaining_alignment_time_is_the_shortest_out_of_all_aligning_adirus() {
-        // Note that this seems to be incorrect. I'm keeping it as is for the purpose of the JS to Rust refactoring.
-        // This will change later.
-        let one_minute = Duration::from_secs(60);
-
-        let mut test_bed =
-            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-        test_bed.run_with_delta(one_minute);
-        let remaining_alignment_time = test_bed.remaining_alignment_time();
-
-        test_bed = test_bed
-            .then_continue_with()
-            .ir_mode_selector_set_to(2, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-        test_bed.run_with_delta(one_minute);
-
-        assert_eq!(
-            test_bed.remaining_alignment_time(),
-            remaining_alignment_time - one_minute
-        );
-    }
-
-    #[test]
-    fn remaining_alignment_time_is_zero_when_a_single_adiru_aligned() {
-        // Note that this seems to be incorrect. I'm keeping it as is for the purpose of the JS to Rust refactoring.
-        // This will change later.
-        let mut test_bed =
-            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-
-        while test_bed.remaining_alignment_time() > Duration::from_secs(0) {
-            test_bed.run();
-        }
-
-        test_bed = test_bed
-            .then_continue_with()
-            .ir_mode_selector_set_to(2, InertialReferenceMode::Navigation);
-        test_bed.run();
-
-        assert_eq!(test_bed.remaining_alignment_time(), Duration::from_secs(0));
     }
 
     #[test]

@@ -1035,7 +1035,7 @@
       Aligning | 1
       Aligned | 2
 
-- A32NX_ADIRS_TIME
+- A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME
     - Seconds
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 

@@ -123,10 +123,10 @@ var A320_Neo_UpperECAM;
             return value;
         }
         getADIRSMins() {
-            const secs = this.getCachedSimVar("L:A32NX_ADIRS_TIME", "seconds");
-            const mins = Math.ceil(secs / 60);
-            if (secs > 0 && this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") === 1) {
-                return mins;
+            const secs = this.getCachedSimVar("L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME", "seconds");
+            if (secs > 0) {
+                const minutes = Math.ceil(secs / 60);
+                return minutes;
             } else {
                 return -1;
             }
