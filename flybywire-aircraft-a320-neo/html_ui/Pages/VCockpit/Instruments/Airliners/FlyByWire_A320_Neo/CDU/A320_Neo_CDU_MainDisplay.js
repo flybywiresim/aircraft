@@ -55,6 +55,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             mainFrame = this;
         }
         this.generateHTMLLayout(mainFrame);
+        this.initKeyboardScratchpad();
         this._titleLeftElement = this.getChildById("title-left");
         this._titleElement = this.getChildById("title");
         this._pageCurrentElement = this.getChildById("page-current");
@@ -76,8 +77,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._inOutElement = this.getChildById("in-out");
         this._inOutElement.style.removeProperty("color");
         this._inOutElement.className = "white";
-
-        this.initKeyboardScratchpad();
 
         this.setTimeout = (func) => {
             setTimeout(() => {
