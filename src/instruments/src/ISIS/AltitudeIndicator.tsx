@@ -3,15 +3,7 @@ import { Bug, BugType } from './Bug';
 import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';
 import { VerticalTape } from './ISISUtils';
 
-type AltitudeIndicatorProps = {
-    maskWidth: number;
-    altitude: number;
-    mda: number
-    bugs: Bug[]
-}
-
 type TickProps = { offset: number, altitude: number }
-
 const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
     const shouldShowText = altitude % 500 === 0;
     const tickLength = shouldShowText ? 5 : 20;
@@ -41,6 +33,12 @@ const BugElement: React.FC<BugProps> = ({ bug, offset, maskWidth }) => {
     );
 };
 
+type AltitudeIndicatorProps = {
+    maskWidth: number;
+    altitude: number;
+    mda: number
+    bugs: Bug[]
+}
 export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ maskWidth, altitude, mda, bugs }) => {
     const height = 512 - 2 * maskWidth;
     const createTick = (altitude: number, offset: number) => <Tick altitude={altitude} offset={offset} />;
@@ -62,6 +60,22 @@ export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ maskWidth,
                 />
             </svg>
             <DigitalAltitudeIndicator altitude={Math.floor(altitude)} mda={mda} bugs={bugs} />
+            <MetricAltitudeIndicator altitude={altitude} />
+        </g>
+    );
+};
+
+type MetricAltitudeIndicatorProps = {
+    altitude: number;
+}
+export const MetricAltitudeIndicator: React.FC<MetricAltitudeIndicatorProps> = ({ altitude }) => {
+    const metricAltitude = Math.round(altitude * 0.3048 / 10) * 10;
+
+    return (
+        <g id="MetricAltitudeIndicator" strokeWidth={3} fontSize={32}>
+            <rect className="StrokeYellow NoFill" x={276} y={40} width={164} height={40} />
+            <text className="Green" x={392} y={72} textAnchor="end">{metricAltitude}</text>
+            <text className="TextCyan" x={400} y={72}>M</text>
         </g>
     );
 };
