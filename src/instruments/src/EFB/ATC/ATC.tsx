@@ -20,24 +20,6 @@ export const ATC = () => {
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
 
-    useEffect(() => {
-        loadAtc();
-    }, [atisSource]);
-
-    useEffect(() => {
-        setAtc();
-    }, [frequency]);
-
-    useEffect(() => {
-        if (frequency) {
-            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
-        }
-    }, [controllers]);
-
-    useInterval(() => {
-        loadAtc();
-    }, 60 * 1000);
-
     const loadAtc = useCallback(() => {
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
@@ -53,7 +35,7 @@ export const ATC = () => {
             allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.RADAR, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
             setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
         });
-    }, [currentLatitude, currentLongitude]);
+    }, [currentLatitude, currentLongitude, atisSource]);
 
     const setAtc = () => {
         const converted = fromFrequency(frequency);
@@ -90,6 +72,24 @@ export const ATC = () => {
         }
         return '';
     };
+
+    useEffect(() => {
+        loadAtc();
+    }, [loadAtc]);
+
+    useEffect(() => {
+        setAtc();
+    }, [frequency]);
+
+    useEffect(() => {
+        if (frequency) {
+            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
+        }
+    }, [controllers]);
+
+    useInterval(() => {
+        loadAtc();
+    }, 60 * 1000);
 
     return (
         <div className="flex p-6 w-full">
