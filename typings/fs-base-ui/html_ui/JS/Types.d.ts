@@ -1,11 +1,11 @@
 import {Feet, Latitude, Longitude} from "../../../types";
 
-declare global {
-    interface LatLongData {
-        lat: Latitude,
-        long: Longitude,
-    }
+interface LatLongData {
+    lat: Latitude,
+    long: Longitude,
+}
 
+declare global {
     class LatLong implements LatLongData {
         constructor(latitude: Latitude, longitude: Longitude);
         constructor(data: { lat: Latitude, long: Longitude });
@@ -188,4 +188,6 @@ declare global {
     }
 }
 
-export {};
+export {
+    LatLongData,
+}
