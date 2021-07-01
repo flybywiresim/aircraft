@@ -1067,6 +1067,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Knots
     - The computed airspeed (CAS). -1000 when unavailable.
 
+- A32NX_ADIRS_ADR_{number}_MACH
+    - Mach
+    - The Mach number (M). -1 when unavailable.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

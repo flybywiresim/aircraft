@@ -311,6 +311,10 @@ pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
 }
 
+/// The ratio of flow velocity past a boundary to the local speed of sound.
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+pub struct MachNumber(pub f64);
+
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;

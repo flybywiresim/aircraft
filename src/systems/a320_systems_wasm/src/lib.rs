@@ -48,6 +48,7 @@ fn create_aircraft_variable_reader(
     reader.add("TURB ENG CORRECTED N2", "Percent", 1)?;
     reader.add("TURB ENG CORRECTED N2", "Percent", 2)?;
     reader.add("AIRSPEED INDICATED", "Knots", 0)?;
+    reader.add("AIRSPEED MACH", "Mach", 0)?;
     reader.add("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?;
     reader.add("UNLIMITED FUEL", "Bool", 0)?;
     reader.add("INDICATED ALTITUDE", "Feet", 0)?;

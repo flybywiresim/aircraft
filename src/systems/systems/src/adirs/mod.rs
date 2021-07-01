@@ -1,5 +1,6 @@
 use crate::{
     overhead::IndicationLight,
+    shared::MachNumber,
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, Write, Writer,
@@ -275,12 +276,16 @@ impl Default for AirDataInertialReferenceSystem {
 struct AirDataInertialReferenceUnit {
     adr: AirDataReference,
     ir: InertialReference,
+
+    mach: MachNumber,
 }
 impl AirDataInertialReferenceUnit {
     fn new(number: usize) -> Self {
         Self {
             adr: AirDataReference::new(number),
             ir: InertialReference::new(number),
+
+            mach: MachNumber(0.),
         }
     }
 
@@ -291,7 +296,7 @@ impl AirDataInertialReferenceUnit {
         align_time: AlignTime,
         latitude: Angle,
     ) {
-        self.adr.update(context, overhead);
+        self.adr.update(context, overhead, self.mach);
         self.ir.update(context, overhead, align_time, latitude);
     }
 
@@ -318,28 +323,44 @@ impl SimulationElement for AirDataInertialReferenceUnit {
 
         visitor.visit(self);
     }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        // To reduce reads, we only read this value once and then share it with the underlying ADRs.
+        self.mach = reader.read("AIRSPEED MACH");
+    }
 }
 
 struct AirDataReference {
     altitude_id: String,
     computed_airspeed_id: String,
+    mach_id: String,
+
     number: usize,
+
     indicated_altitude: Length,
     indicated_airspeed: Velocity,
+    mach: MachNumber,
+
     remaining_initialisation_duration: Option<Duration>,
 }
 impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
     const UNINITIALISED_ALTITUDE_FEET: f64 = -10000.;
     const UNINITIALISED_COMPUTED_AIRSPEED_KNOTS: f64 = -1000.;
+    const UNINITIALISED_MACH: MachNumber = MachNumber(-1.);
 
     fn new(number: usize) -> Self {
         Self {
             altitude_id: Self::altitude_id(number),
             computed_airspeed_id: Self::computed_airspeed_id(number),
+            mach_id: Self::mach_id(number),
+
             number,
+
             indicated_altitude: Length::new::<foot>(0.),
             indicated_airspeed: Velocity::new::<knot>(0.),
+            mach: MachNumber(0.),
+
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
         }
@@ -353,16 +374,23 @@ impl AirDataReference {
         format!("ADIRS_ADR_{}_COMPUTED_AIRSPEED", number)
     }
 
+    fn mach_id(number: usize) -> String {
+        format!("ADIRS_ADR_{}_MACH", number)
+    }
+
     fn update(
         &mut self,
         context: &UpdateContext,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
+        mach: MachNumber,
     ) {
         // For now we'll read from the context. Later the context will no longer
         // contain the indicated airspeed (and instead all usages of IAS will be replaced by
         // requests to the ADIRUs).
         self.indicated_altitude = context.indicated_altitude();
         self.indicated_airspeed = context.indicated_airspeed();
+
+        self.mach = mach;
 
         self.remaining_initialisation_duration = match overhead.mode_of(self.number) {
             InertialReferenceMode::Navigation | InertialReferenceMode::Attitude => {
@@ -378,26 +406,33 @@ impl AirDataReference {
     fn is_initialised(&self) -> bool {
         self.remaining_initialisation_duration == Some(Duration::from_secs(0))
     }
+
+    fn write<T: Write<U>, U>(&self, writer: &mut T, id: &str, initialised: U, uninitialised: U) {
+        writer.write(
+            id,
+            if self.is_initialised() {
+                initialised
+            } else {
+                uninitialised
+            },
+        );
+    }
 }
 impl SimulationElement for AirDataReference {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let is_initialised = self.is_initialised();
-        writer.write(
+        self.write(
+            writer,
             &self.altitude_id,
-            if is_initialised {
-                self.indicated_altitude
-            } else {
-                Length::new::<foot>(Self::UNINITIALISED_ALTITUDE_FEET)
-            },
+            self.indicated_altitude,
+            Length::new::<foot>(Self::UNINITIALISED_ALTITUDE_FEET),
         );
-        writer.write(
+        self.write(
+            writer,
             &self.computed_airspeed_id,
-            if is_initialised {
-                self.indicated_airspeed
-            } else {
-                Velocity::new::<knot>(Self::UNINITIALISED_COMPUTED_AIRSPEED_KNOTS)
-            },
+            self.indicated_airspeed,
+            Velocity::new::<knot>(Self::UNINITIALISED_COMPUTED_AIRSPEED_KNOTS),
         );
+        self.write(writer, &self.mach_id, self.mach, Self::UNINITIALISED_MACH);
     }
 }
 
@@ -590,6 +625,11 @@ mod tests {
             self
         }
 
+        fn mach_of(mut self, mach: MachNumber) -> Self {
+            self.write("AIRSPEED MACH", mach);
+            self
+        }
+
         fn align_time_configured_as(mut self, align_time: AlignTime) -> Self {
             Write::<f64>::write(
                 &mut self,
@@ -671,6 +711,14 @@ mod tests {
             self.computed_airspeed(adiru_number)
                 > Velocity::new::<knot>(AirDataReference::UNINITIALISED_COMPUTED_AIRSPEED_KNOTS)
         }
+
+        fn mach(&mut self, adiru_number: usize) -> MachNumber {
+            self.read(&AirDataReference::mach_id(adiru_number))
+        }
+
+        fn mach_is_available(&mut self, adiru_number: usize) -> bool {
+            self.mach(adiru_number) > AirDataReference::UNINITIALISED_MACH
+        }
     }
     impl TestBed for AdirsTestBed {
         type Aircraft = TestAircraft;
@@ -691,6 +739,10 @@ mod tests {
     fn test_bed() -> AdirsTestBed {
         // Nearly all tests require mode selectors to be off, therefore it is the default.
         all_adirus_aligned_test_bed().all_mode_selectors_off()
+    }
+
+    fn all_adirus_aligned_test_bed_with() -> AdirsTestBed {
+        all_adirus_aligned_test_bed()
     }
 
     fn all_adirus_aligned_test_bed() -> AdirsTestBed {
@@ -994,6 +1046,18 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
+    fn mach_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+        let mach = MachNumber(0.7844);
+        let mut test_bed = all_adirus_aligned_test_bed_with().mach_of(mach);
+        test_bed.run();
+
+        assert_eq!(test_bed.mach(adiru_number), mach);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
     fn adr_data_is_available_18_seconds_after_alignment_began(#[case] adiru_number: usize) {
         let mut test_bed = test_bed_with()
             .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
@@ -1003,10 +1067,12 @@ mod tests {
             .run_with_delta(AirDataReference::INITIALISATION_DURATION - Duration::from_millis(1));
         assert!(!test_bed.altitude_is_available(adiru_number));
         assert!(!test_bed.computed_airspeed_is_available(adiru_number));
+        assert!(!test_bed.mach_is_available(adiru_number));
 
         test_bed.run_with_delta(Duration::from_millis(1));
         assert!(test_bed.altitude_is_available(adiru_number));
         assert!(test_bed.computed_airspeed_is_available(adiru_number));
+        assert!(test_bed.mach_is_available(adiru_number));
     }
 
     #[rstest]
@@ -1027,6 +1093,10 @@ mod tests {
             test_bed.computed_airspeed_is_available(adiru_number),
             "Test precondition: computed airspeed should be available at this point."
         );
+        assert!(
+            test_bed.mach_is_available(adiru_number),
+            "Test precondition: mach should be available at this point."
+        );
 
         test_bed = test_bed
             .then_continue_with()
@@ -1035,6 +1105,7 @@ mod tests {
 
         assert!(!test_bed.altitude_is_available(adiru_number));
         assert!(!test_bed.computed_airspeed_is_available(adiru_number));
+        assert!(!test_bed.mach_is_available(adiru_number));
     }
 
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
