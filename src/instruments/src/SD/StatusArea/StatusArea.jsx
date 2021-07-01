@@ -13,7 +13,7 @@ export const StatusArea = () => {
     if (sat > 99 || sat < -99) {
         sat = sat > 99 ? 99 : -99;
     }
-    const adirsState = getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum');
+    const adirsState = getSimVar('L:A32NX_ADIRS_STATE', 'Enum');
     const satPrefix = sat > 0 ? '+' : '';
     const tatPrefix = tat > 0 ? '+' : '';
     const seconds = Math.floor(zulu);

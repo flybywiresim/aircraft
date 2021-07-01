@@ -103,7 +103,6 @@
             <NORMALIZED_TIME_1>0.2</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>wipers_backward</WWISE_EVENT_2>
             <NORMALIZED_TIME_2>0.8</NORMALIZED_TIME_2>
-            <AIRSPEED_DISABLED>230</AIRSPEED_DISABLED>
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
             <ONE_MINUS_MIN_SPEED Process="Float">1 #MIN_SPEED_PERCENT# -</ONE_MINUS_MIN_SPEED>
@@ -154,7 +153,7 @@
                 }
                 (O:NewAnimCode)
             </ANIM_CODE>
-            <FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID_WIPERS#, Bool) (A:AIRSPEED INDICATED, Knots) #AIRSPEED_DISABLED# &lt; and</FAILURE>
+            <FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID_WIPERS#, Bool)</FAILURE>
         </UseTemplate>
         <UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents"/>
     </Template>

@@ -776,6 +776,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "rand",
+ "rstest",
  "uom",
 ]
 
