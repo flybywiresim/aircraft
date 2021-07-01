@@ -24,6 +24,64 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.clrStop = false;
         this.aocAirportList = new CDUAocAirportList;
         this.initB = false;
+        this.PageTimeout = {
+            Prog: 2000,
+            Dyn: 1500
+        };
+        this.page = {
+            SelfPtr: false,
+            Current: 0,
+            Clear: 0,
+            AirportsMonitor: 1,
+            AirwaysFromWaypointPage: 2,
+            // AirwaysFromWaypointPageGetAllRows: 3,
+            AvailableArrivalsPage: 4,
+            AvailableArrivalsPageVias: 5,
+            AvailableDeparturesPage: 6,
+            AvailableFlightPlanPage: 7,
+            DataIndexPage1: 8,
+            DataIndexPage2: 9,
+            DirectToPage: 10,
+            FlightPlanPage: 11,
+            FuelPredPage: 12,
+            GPSMonitor: 13,
+            HoldAtPage: 14,
+            IdentPage: 15,
+            InitPageA: 16,
+            InitPageB: 17,
+            IRSInit: 18,
+            IRSMonitor: 19,
+            IRSStatus: 20,
+            IRSStatusFrozen: 21,
+            LateralRevisionPage: 22,
+            MenuPage: 23,
+            NavaidPage: 24,
+            NavRadioPage: 25,
+            NewWaypoint: 26,
+            PerformancePageTakeoff: 27,
+            PerformancePageClb: 28,
+            PerformancePageCrz: 29,
+            PerformancePageDes: 30,
+            PerformancePageAppr: 31,
+            PerformancePageGoAround: 32,
+            PilotsWaypoint: 33,
+            PosFrozen: 34,
+            PositionMonitorPage: 35,
+            ProgressPage: 36,
+            ProgressPageReport: 37,
+            ProgressPagePredictiveGPS: 38,
+            SelectedNavaids: 39,
+            SelectWptPage: 40,
+            VerticalRevisionPage: 41,
+            WaypointPage: 42,
+            AOCInit: 43,
+            AOCInit2: 44,
+            AOCOfpData: 45,
+            AOCOfpData2: 46,
+            ClimbWind: 47,
+            CruiseWind: 48,
+            DescentWind: 49,
+        };
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -50,11 +108,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Init() {
         super.Init();
         Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
-        let mainFrame = this.getChildById("Mainframe");
-        if (mainFrame == null) {
-            mainFrame = this;
-        }
-        this.generateHTMLLayout(mainFrame);
+
+        this.generateHTMLLayout(this.getChildById("Mainframe") || this);
         this.initKeyboardScratchpad();
         this._titleLeftElement = this.getChildById("title-left");
         this._titleElement = this.getChildById("title");
@@ -170,65 +225,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }, this.rightInputDelay[f] ? this.rightInputDelay[f]() : this.getDelayBasic());
                 }
             }
-        };
-
-        this.PageTimeout = {
-            Prog: 2000,
-            Dyn: 1500
-        };
-        this.page = {
-            SelfPtr: false,
-            Current: 0,
-            Clear: 0,
-            AirportsMonitor: 1,
-            AirwaysFromWaypointPage: 2,
-            // AirwaysFromWaypointPageGetAllRows: 3,
-            AvailableArrivalsPage: 4,
-            AvailableArrivalsPageVias: 5,
-            AvailableDeparturesPage: 6,
-            AvailableFlightPlanPage: 7,
-            DataIndexPage1: 8,
-            DataIndexPage2: 9,
-            DirectToPage: 10,
-            FlightPlanPage: 11,
-            FuelPredPage: 12,
-            GPSMonitor: 13,
-            HoldAtPage: 14,
-            IdentPage: 15,
-            InitPageA: 16,
-            InitPageB: 17,
-            IRSInit: 18,
-            IRSMonitor: 19,
-            IRSStatus: 20,
-            IRSStatusFrozen: 21,
-            LateralRevisionPage: 22,
-            MenuPage: 23,
-            NavaidPage: 24,
-            NavRadioPage: 25,
-            NewWaypoint: 26,
-            PerformancePageTakeoff: 27,
-            PerformancePageClb: 28,
-            PerformancePageCrz: 29,
-            PerformancePageDes: 30,
-            PerformancePageAppr: 31,
-            PerformancePageGoAround: 32,
-            PilotsWaypoint: 33,
-            PosFrozen: 34,
-            PositionMonitorPage: 35,
-            ProgressPage: 36,
-            ProgressPageReport: 37,
-            ProgressPagePredictiveGPS: 38,
-            SelectedNavaids: 39,
-            SelectWptPage: 40,
-            VerticalRevisionPage: 41,
-            WaypointPage: 42,
-            AOCInit: 43,
-            AOCInit2: 44,
-            AOCOfpData: 45,
-            AOCOfpData2: 46,
-            ClimbWind: 47,
-            CruiseWind: 48,
-            DescentWind: 49,
         };
 
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
