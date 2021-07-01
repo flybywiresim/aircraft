@@ -343,8 +343,8 @@
 
     <Template Name="FBW_Airbus_Push_EFIS_GPWS">
         <UseTemplate Name="FBW_Push_Held">
-            <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
 
             <SEQ1_CODE>(L:A32NX_GPWS_Warning_Active, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(L:A32NX_GPWS_GS_Warning_Active, Bool)</SEQ2_CODE>
