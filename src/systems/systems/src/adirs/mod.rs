@@ -6,7 +6,7 @@ use crate::{
     },
 };
 use std::time::Duration;
-use uom::si::{angle::degree, f64::*};
+use uom::si::{angle::degree, f64::*, velocity::knot};
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
     mode_selectors: [InertialReferenceModeSelector; 3],
@@ -92,7 +92,7 @@ struct InertialReferenceModeSelector {
     not_off_duration: Duration,
 }
 impl InertialReferenceModeSelector {
-    fn new(number: u8) -> Self {
+    fn new(number: usize) -> Self {
         Self {
             mode_id: Self::mode_id(number),
             // We start in an aligned state to support starting on the
@@ -102,7 +102,7 @@ impl InertialReferenceModeSelector {
         }
     }
 
-    fn mode_id(number: u8) -> String {
+    fn mode_id(number: usize) -> String {
         format!("OVHD_ADIRS_IR_{}_MODE_SELECTOR_KNOB", number)
     }
 
@@ -151,8 +151,6 @@ pub struct AirDataInertialReferenceSystem {
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
     latitude: Angle,
-    // Once ADRs are split, we can move this into each individual ADR.
-    remaining_adr_initialisation_duration: Option<Duration>,
     // Once IRs are split, we can move this into each individual IR.
     remaining_ir_initialisation_duration: Option<Duration>,
 }
@@ -161,7 +159,6 @@ impl AirDataInertialReferenceSystem {
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
     const LATITUDE_KEY: &'static str = "GPS POSITION LAT";
-    const ADR_INITIALISATION_DURATION: Duration = Duration::from_secs(18);
     const ADR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_FIRST";
     const IR_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
     const IR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_ATT";
@@ -175,8 +172,6 @@ impl AirDataInertialReferenceSystem {
             ],
             configured_align_time: AlignTime::Realistic,
             latitude: Angle::new::<degree>(0.),
-            // Start fully initialised.
-            remaining_adr_initialisation_duration: Some(Duration::from_secs(0)),
             // Start fully initialised.
             remaining_ir_initialisation_duration: Some(Duration::from_secs(0)),
         }
@@ -192,12 +187,6 @@ impl AirDataInertialReferenceSystem {
         self.adirus
             .iter_mut()
             .for_each(|adiru| adiru.update(context, overhead, align_time, latitude));
-
-        self.remaining_adr_initialisation_duration = self.update_initialisation(
-            context,
-            self.remaining_adr_initialisation_duration,
-            Self::ADR_INITIALISATION_DURATION,
-        );
 
         self.remaining_ir_initialisation_duration = self.update_initialisation(
             context,
@@ -245,6 +234,10 @@ impl AirDataInertialReferenceSystem {
             })
             .unwrap_or_else(|| Duration::from_secs(0))
     }
+
+    fn any_adr_is_initialised(&self) -> bool {
+        self.adirus.iter().any(|adiru| adiru.adr_initialised())
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -266,10 +259,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
             Self::REMAINING_ALIGNMENT_TIME_KEY,
             self.remaining_align_duration(),
         );
-        writer.write(
-            Self::ADR_ALIGNED_KEY,
-            self.remaining_adr_initialisation_duration == Some(Duration::from_secs(0)),
-        );
+        writer.write(Self::ADR_ALIGNED_KEY, self.any_adr_is_initialised());
         writer.write(
             Self::IR_ALIGNED_KEY,
             self.remaining_ir_initialisation_duration == Some(Duration::from_secs(0)),
@@ -283,11 +273,13 @@ impl Default for AirDataInertialReferenceSystem {
 }
 
 struct AirDataInertialReferenceUnit {
+    adr: AirDataReference,
     ir: InertialReference,
 }
 impl AirDataInertialReferenceUnit {
     fn new(number: usize) -> Self {
         Self {
+            adr: AirDataReference::new(number),
             ir: InertialReference::new(number),
         }
     }
@@ -299,6 +291,7 @@ impl AirDataInertialReferenceUnit {
         align_time: AlignTime,
         latitude: Angle,
     ) {
+        self.adr.update(context, overhead);
         self.ir.update(context, overhead, align_time, latitude);
     }
 
@@ -313,12 +306,80 @@ impl AirDataInertialReferenceUnit {
     fn remaining_align_duration(&self) -> Option<Duration> {
         self.ir.remaining_align_duration()
     }
+
+    fn adr_initialised(&self) -> bool {
+        self.adr.is_initialised()
+    }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.adr.accept(visitor);
         self.ir.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+
+struct AirDataReference {
+    computed_airspeed_id: String,
+    number: usize,
+    indicated_airspeed: Velocity,
+    remaining_initialisation_duration: Option<Duration>,
+}
+impl AirDataReference {
+    const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
+    const UNINITIALISED_COMPUTED_AIRSPEED_KNOTS: f64 = -1000.;
+
+    fn new(number: usize) -> Self {
+        Self {
+            computed_airspeed_id: Self::computed_airspeed_id(number),
+            number,
+            indicated_airspeed: Velocity::new::<knot>(0.),
+            // Start fully initialised.
+            remaining_initialisation_duration: Some(Duration::from_secs(0)),
+        }
+    }
+
+    fn computed_airspeed_id(number: usize) -> String {
+        format!("ADIRS_ADR_{}_COMPUTED_AIRSPEED", number)
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        overhead: &AirDataInertialReferenceSystemOverheadPanel,
+    ) {
+        // For now we'll read from the context. Later the context will no longer
+        // contain the indicated airspeed (and instead all usages of IAS will be replaced by
+        // requests to the ADIRUs).
+        self.indicated_airspeed = context.indicated_airspeed();
+
+        self.remaining_initialisation_duration = match overhead.mode_of(self.number) {
+            InertialReferenceMode::Navigation | InertialReferenceMode::Attitude => {
+                match self.remaining_initialisation_duration {
+                    Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
+                    None => Some(Self::INITIALISATION_DURATION),
+                }
+            }
+            InertialReferenceMode::Off => None,
+        }
+    }
+
+    fn is_initialised(&self) -> bool {
+        self.remaining_initialisation_duration == Some(Duration::from_secs(0))
+    }
+}
+impl SimulationElement for AirDataReference {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let is_initialised = self.is_initialised();
+        writer.write(
+            &self.computed_airspeed_id,
+            if is_initialised {
+                self.indicated_airspeed
+            } else {
+                Velocity::new::<knot>(Self::UNINITIALISED_COMPUTED_AIRSPEED_KNOTS)
+            },
+        );
     }
 }
 
@@ -452,7 +513,7 @@ mod tests {
     use ntest::timeout;
     use rstest::rstest;
     use std::time::Duration;
-    use uom::si::angle::degree;
+    use uom::si::{angle::degree, velocity::knot};
 
     struct TestAircraft {
         adirs: AirDataInertialReferenceSystem,
@@ -520,7 +581,7 @@ mod tests {
             self
         }
 
-        fn ir_mode_selector_set_to(mut self, number: u8, mode: InertialReferenceMode) -> Self {
+        fn ir_mode_selector_set_to(mut self, number: usize, mode: InertialReferenceMode) -> Self {
             Write::<f64>::write(
                 &mut self,
                 &InertialReferenceModeSelector::mode_id(number),
@@ -574,6 +635,14 @@ mod tests {
         fn attitude_available(&mut self) -> bool {
             self.read(AirDataInertialReferenceSystem::IR_ALIGNED_KEY)
         }
+
+        fn computed_airspeed(&mut self, adiru_number: usize) -> Velocity {
+            self.read(&AirDataReference::computed_airspeed_id(adiru_number))
+        }
+
+        fn computed_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
+            self.computed_airspeed(adiru_number) >= Velocity::new::<knot>(0.)
+        }
     }
     impl TestBed for AdirsTestBed {
         type Aircraft = TestAircraft;
@@ -588,6 +657,10 @@ mod tests {
     }
 
     fn test_bed_with() -> AdirsTestBed {
+        test_bed()
+    }
+
+    fn test_bed() -> AdirsTestBed {
         // Nearly all tests require mode selectors to be off, therefore it is the default.
         all_adirus_aligned_test_bed().all_mode_selectors_off()
     }
@@ -860,6 +933,62 @@ mod tests {
         assert!(test_bed.remaining_alignment_time() > Duration::from_secs(0));
     }
 
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn computed_airspeed_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+        let mut test_bed = all_adirus_aligned_test_bed();
+        test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
+
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.computed_airspeed(adiru_number),
+            Velocity::new::<knot>(250.)
+        );
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn adr_data_is_available_18_seconds_after_alignment_began(#[case] adiru_number: usize) {
+        let mut test_bed = test_bed_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
+        test_bed.run_without_delta();
+
+        test_bed
+            .run_with_delta(AirDataReference::INITIALISATION_DURATION - Duration::from_millis(1));
+        assert!(!test_bed.computed_airspeed_is_available(adiru_number));
+
+        test_bed.run_with_delta(Duration::from_millis(1));
+        assert!(test_bed.computed_airspeed_is_available(adiru_number));
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn adr_data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
+        let mut test_bed = test_bed_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
+        test_bed.run_without_delta();
+
+        test_bed.run_with_delta(AirDataReference::INITIALISATION_DURATION);
+        assert!(
+            test_bed.computed_airspeed_is_available(adiru_number),
+            "Test precondition: computed airspeed should be available at this point."
+        );
+
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
+        test_bed.run();
+
+        assert!(!test_bed.computed_airspeed_is_available(adiru_number));
+    }
+
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
     // PFD attitude is shown 28 seconds after alignment of any ADIRU began, while
     // this should be fed by the selected ADIRU for the captain side (1 or 3), it is now
@@ -900,9 +1029,8 @@ mod tests {
             test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
         test_bed.run_without_delta();
 
-        test_bed.run_with_delta(
-            AirDataInertialReferenceSystem::ADR_INITIALISATION_DURATION - Duration::from_millis(1),
-        );
+        test_bed
+            .run_with_delta(AirDataReference::INITIALISATION_DURATION - Duration::from_millis(1));
         assert!(!test_bed.altitude_speed_and_vertical_speed_available());
 
         test_bed.run_with_delta(Duration::from_millis(1));
@@ -916,7 +1044,7 @@ mod tests {
             test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
         test_bed.run_without_delta();
 
-        test_bed.run_with_delta(AirDataInertialReferenceSystem::ADR_INITIALISATION_DURATION);
+        test_bed.run_with_delta(AirDataReference::INITIALISATION_DURATION);
         assert!(test_bed.altitude_speed_and_vertical_speed_available(), "Test precondition: altitude, speed and vertical speed should be available at this point.");
 
         test_bed = test_bed

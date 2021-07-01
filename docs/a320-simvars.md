@@ -997,6 +997,8 @@
 
 ## ADIRS
 
+In the variables below, {number} should be replaced with one item in the set: { 1, 2, 3 }.
+
 - A32NX_CONFIG_ADIRS_IR_ALIGN_TIME
     - Enum
     - Input for: systems.wasm
@@ -1009,7 +1011,6 @@
 
 - A32NX_OVHD_ADIRS_IR_{number}_MODE_SELECTOR_KNOB
     - Enum
-    - number: { 1, 2, 3 }
     - The Inertial Reference mode selected through the selector knobs.
       Description | Value
       --- | ---
@@ -1024,22 +1025,18 @@
 - A32NX_OVHD_ADIRS_IR_{number}_PB_HAS_FAULT
     - Bool
     - Whether the FAULT light illuminates for IR {number}.
-    - number: { 1, 2, 3 }
 
 - A32NX_OVHD_ADIRS_IR_{number}_PB_IS_OFF
     - Bool
     - Whether the IR push button is in the OFF position.
-    - number: { 1, 2, 3 }
 
 - A32NX_OVHD_ADIRS_ADR_{number}_PB_HAS_FAULT
     - Bool
     - Whether the FAULT light illuminates for ADR {number}.
-    - number: { 1, 2, 3 }
 
 - A32NX_OVHD_ADIRS_ADR_{number}_PB_IS_OFF
     - Bool
     - Whether the ADR push button is in the OFF position.
-    - number: { 1, 2, 3 }
 
 - A32NX_ADIRS_STATE
     - Enum
@@ -1061,6 +1058,10 @@
 - A32NX_ADIRS_PFD_ALIGNED_ATT
     - Bool
     - Indicates whether the PFD should display attitude information.
+
+- A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
+    - Knots
+    - The computed airspeed (CAS). -1000 when unavailable.
 
 ## Autopilot System
 
