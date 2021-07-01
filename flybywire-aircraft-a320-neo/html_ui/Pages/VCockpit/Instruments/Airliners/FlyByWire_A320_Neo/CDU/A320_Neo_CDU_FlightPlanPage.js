@@ -313,8 +313,19 @@ class CDUFlightPlanPage {
                         }
 
                         // TODO actually use the correct prediction
-                        const distance = stats[stats.length === 1 ? 0 : index + 1].distanceFromPpos;
-                        let dstnc;
+                        /**
+                         *  as we display the past waypoint as well but the prediction only goes for the visible waypoints
+                         *  we need to get one waypoint further to have the correct stats for all the waypoints
+                         *  If the last is reached then we need to check for index bounds as there is no more that can be calculated
+                         * */
+                        const currentWaypointStatistics = stats[stats.length === 1 ? 0 : index + 1];
+                        let distance;
+                        // active waypoint is live distance, others are distances in the flight plan
+                        if (index === first) {
+                            distance = currentWaypointStatistics.distanceFromPpos;
+                        } else {
+                            distance = currentWaypointStatistics.distdistanceInFP;
+                        }
                         if (i === 1) {
                             dstnc = distance.toFixed(0).toString() + "NM";
                         } else {

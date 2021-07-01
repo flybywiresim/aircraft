@@ -110,6 +110,7 @@ export class ManagedFlightPlan {
         return [firstData, ...(this.visibleWaypoints.map((waypoint) => ({
             ident: waypoint.ident,
             bearingInFp: waypoint.bearingInFP,
+            distanceInFP: waypoint.distanceInFP,
             distanceFromPpos: waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos,
             timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
             etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
@@ -132,6 +133,7 @@ export class ManagedFlightPlan {
         return {
             ident: this.activeWaypoint.ident,
             bearingInFp,
+            distanceInFP: this.activeWaypoint.distanceInFP,
             distanceFromPpos,
             timeFromPpos: this.computeWaypointTime(distanceFromPpos),
         };
@@ -739,13 +741,13 @@ export class ManagedFlightPlan {
                 procedure = new LegsProcedure(legs, origin, this._parentInstrument);
             }
 
-            const waypointIndex = segment.offset;
+            let waypointIndex = segment.offset;
             while (procedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
                 const waypoint = await procedure.getNext();
 
                 if (waypoint !== undefined) {
-                    this.addWaypointAvoidingDuplicates(waypoint, waypointIndex, segment);
+                    this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
             }
         }
@@ -1023,9 +1025,9 @@ export class ManagedFlightPlan {
     private addWaypointAvoidingDuplicates(waypoint, waypointIndex, segment): void {
         const index = this.waypoints.findIndex((wp) => wp.ident === waypoint.ident);
 
-        if (index !== -1 && index === waypointIndex + 1) {
+        if (index !== -1 && (index === waypointIndex - 1 || index === waypointIndex + 1)) {
             this.removeWaypoint(index);
         }
-        this.addWaypoint(waypoint, ++waypointIndex, segment.type);
+        this.addWaypoint(waypoint, waypointIndex, segment.type);
     }
 }
