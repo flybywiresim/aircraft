@@ -202,6 +202,12 @@ class CDUFlightPlanPage {
                 iWaypoint = iWaypoint % (waypointsWithDiscontinuities.length + 1);
             }
             const index = iWaypoint;
+            /**
+             * @var stats contains only the waypoints which are in the active flightplan
+             * The page displays the waypoint before the active one for which we don't have statistics.
+             * The index must be incremented therefore
+             *  */
+            const statIndex = stats.length === 1 ? 0 : index + 1;
             iWaypoint++;
 
             if (index === waypointsWithDiscontinuities.length - 1) {
@@ -269,11 +275,11 @@ class CDUFlightPlanPage {
                     let timeCell = "----";
                     if (isFlying) {
                         if (isFinite(waypoint.liveUTCTo) || isFinite(waypoint.waypointReachedAt)) {
-                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[stats.length === 1 ? 0 : index + 1].etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
+                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[statIndex].etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
                         }
                     } else {
                         if (isFinite(waypoint.liveETATo)) {
-                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[stats.length === 1 ? 0 : index + 1].timeFromPpos : 0) + "[s-text]";
+                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[statIndex].timeFromPpos : 0) + "[s-text]";
                         }
                     }
                     if (fpIndex > fpm.getDepartureWaypointsCount()) {
@@ -313,18 +319,14 @@ class CDUFlightPlanPage {
                         }
 
                         // TODO actually use the correct prediction
-                        /**
-                         *  as we display the past waypoint as well but the prediction only goes for the visible waypoints
-                         *  we need to get one waypoint further to have the correct stats for all the waypoints
-                         *  If the last is reached then we need to check for index bounds as there is no more that can be calculated
-                         * */
-                        const currentWaypointStatistics = stats[stats.length === 1 ? 0 : index + 1];
+                        const currentWaypointStatistics = stats[statIndex];
                         let distance;
+                        let dstnc;
                         // active waypoint is live distance, others are distances in the flight plan
                         if (index === first) {
                             distance = currentWaypointStatistics.distanceFromPpos;
                         } else {
-                            distance = currentWaypointStatistics.distdistanceInFP;
+                            distance = currentWaypointStatistics.distanceInFP;
                         }
                         if (i === 1) {
                             dstnc = distance.toFixed(0).toString() + "NM";
