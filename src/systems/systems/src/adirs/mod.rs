@@ -7,7 +7,12 @@ use crate::{
     },
 };
 use std::time::Duration;
-use uom::si::{angle::degree, f64::*, length::foot, velocity::knot};
+use uom::si::{
+    angle::degree,
+    f64::*,
+    length::foot,
+    velocity::{foot_per_minute, knot},
+};
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
     mode_selectors: [InertialReferenceModeSelector; 3],
@@ -278,14 +283,19 @@ struct AirDataInertialReferenceUnit {
     ir: InertialReference,
 
     mach: MachNumber,
+    vertical_speed: Velocity,
 }
 impl AirDataInertialReferenceUnit {
+    const MACH_KEY: &'static str = "AIRSPEED MACH";
+    const VERTICAL_SPEED_KEY: &'static str = "VELOCITY WORLD Y";
+
     fn new(number: usize) -> Self {
         Self {
             adr: AirDataReference::new(number),
             ir: InertialReference::new(number),
 
             mach: MachNumber(0.),
+            vertical_speed: Velocity::new::<foot_per_minute>(0.),
         }
     }
 
@@ -296,7 +306,8 @@ impl AirDataInertialReferenceUnit {
         align_time: AlignTime,
         latitude: Angle,
     ) {
-        self.adr.update(context, overhead, self.mach);
+        self.adr
+            .update(context, overhead, self.mach, self.vertical_speed);
         self.ir.update(context, overhead, align_time, latitude);
     }
 
@@ -326,7 +337,9 @@ impl SimulationElement for AirDataInertialReferenceUnit {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         // To reduce reads, we only read this value once and then share it with the underlying ADRs.
-        self.mach = reader.read("AIRSPEED MACH");
+        self.mach = reader.read(Self::MACH_KEY);
+        let vertical_speed: f64 = reader.read(Self::VERTICAL_SPEED_KEY);
+        self.vertical_speed = Velocity::new::<foot_per_minute>(vertical_speed);
     }
 }
 
@@ -334,32 +347,37 @@ struct AirDataReference {
     altitude_id: String,
     computed_airspeed_id: String,
     mach_id: String,
+    barometric_vertical_speed_id: String,
 
     number: usize,
 
     indicated_altitude: Length,
     indicated_airspeed: Velocity,
     mach: MachNumber,
+    vertical_speed: Velocity,
 
     remaining_initialisation_duration: Option<Duration>,
 }
 impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
-    const UNINITIALISED_ALTITUDE_FEET: f64 = -10000.;
+    const UNINITIALISED_ALTITUDE_FEET: f64 = -10_000.;
     const UNINITIALISED_COMPUTED_AIRSPEED_KNOTS: f64 = -1000.;
     const UNINITIALISED_MACH: MachNumber = MachNumber(-1.);
+    const UNINITIALISED_BAROMETRIC_VERTICAL_SPEED_FEET_PER_MINUTE: f64 = -1_000_000.;
 
     fn new(number: usize) -> Self {
         Self {
             altitude_id: Self::altitude_id(number),
             computed_airspeed_id: Self::computed_airspeed_id(number),
             mach_id: Self::mach_id(number),
+            barometric_vertical_speed_id: Self::barometric_vertical_speed_id(number),
 
             number,
 
             indicated_altitude: Length::new::<foot>(0.),
             indicated_airspeed: Velocity::new::<knot>(0.),
             mach: MachNumber(0.),
+            vertical_speed: Velocity::new::<foot_per_minute>(0.),
 
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
@@ -378,11 +396,16 @@ impl AirDataReference {
         format!("ADIRS_ADR_{}_MACH", number)
     }
 
+    fn barometric_vertical_speed_id(number: usize) -> String {
+        format!("ADIRS_ADR_{}_BAROMETRIC_VERTICAL_SPEED", number)
+    }
+
     fn update(
         &mut self,
         context: &UpdateContext,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         mach: MachNumber,
+        vertical_speed: Velocity,
     ) {
         // For now we'll read from the context. Later the context will no longer
         // contain the indicated airspeed (and instead all usages of IAS will be replaced by
@@ -391,6 +414,7 @@ impl AirDataReference {
         self.indicated_airspeed = context.indicated_airspeed();
 
         self.mach = mach;
+        self.vertical_speed = vertical_speed;
 
         self.remaining_initialisation_duration = match overhead.mode_of(self.number) {
             InertialReferenceMode::Navigation | InertialReferenceMode::Attitude => {
@@ -433,6 +457,12 @@ impl SimulationElement for AirDataReference {
             Velocity::new::<knot>(Self::UNINITIALISED_COMPUTED_AIRSPEED_KNOTS),
         );
         self.write(writer, &self.mach_id, self.mach, Self::UNINITIALISED_MACH);
+        self.write(
+            writer,
+            &self.barometric_vertical_speed_id,
+            self.vertical_speed.get::<foot_per_minute>(),
+            Self::UNINITIALISED_BAROMETRIC_VERTICAL_SPEED_FEET_PER_MINUTE,
+        );
     }
 }
 
@@ -566,7 +596,11 @@ mod tests {
     use ntest::timeout;
     use rstest::rstest;
     use std::time::Duration;
-    use uom::si::{angle::degree, length::foot, velocity::knot};
+    use uom::si::{
+        angle::degree,
+        length::foot,
+        velocity::{foot_per_minute, knot},
+    };
 
     struct TestAircraft {
         adirs: AirDataInertialReferenceSystem,
@@ -626,7 +660,15 @@ mod tests {
         }
 
         fn mach_of(mut self, mach: MachNumber) -> Self {
-            self.write("AIRSPEED MACH", mach);
+            self.write(AirDataInertialReferenceUnit::MACH_KEY, mach);
+            self
+        }
+
+        fn vertical_speed_of(mut self, velocity: Velocity) -> Self {
+            self.write(
+                AirDataInertialReferenceUnit::VERTICAL_SPEED_KEY,
+                velocity.get::<foot_per_minute>(),
+            );
             self
         }
 
@@ -718,6 +760,20 @@ mod tests {
 
         fn mach_is_available(&mut self, adiru_number: usize) -> bool {
             self.mach(adiru_number) > AirDataReference::UNINITIALISED_MACH
+        }
+
+        fn barometric_vertical_speed(&mut self, adiru_number: usize) -> Velocity {
+            let vertical_speed: f64 = self.read(&AirDataReference::barometric_vertical_speed_id(
+                adiru_number,
+            ));
+            Velocity::new::<foot_per_minute>(vertical_speed)
+        }
+
+        fn barometric_vertical_speed_is_available(&mut self, adiru_number: usize) -> bool {
+            self.barometric_vertical_speed(adiru_number)
+                > Velocity::new::<foot_per_minute>(
+                    AirDataReference::UNINITIALISED_BAROMETRIC_VERTICAL_SPEED_FEET_PER_MINUTE,
+                )
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1058,6 +1114,21 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
+    fn barometric_vertical_speed_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+        let vertical_speed = Velocity::new::<foot_per_minute>(300.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().vertical_speed_of(vertical_speed);
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.barometric_vertical_speed(adiru_number),
+            vertical_speed
+        );
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
     fn adr_data_is_available_18_seconds_after_alignment_began(#[case] adiru_number: usize) {
         let mut test_bed = test_bed_with()
             .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
@@ -1068,11 +1139,13 @@ mod tests {
         assert!(!test_bed.altitude_is_available(adiru_number));
         assert!(!test_bed.computed_airspeed_is_available(adiru_number));
         assert!(!test_bed.mach_is_available(adiru_number));
+        assert!(!test_bed.barometric_vertical_speed_is_available(adiru_number));
 
         test_bed.run_with_delta(Duration::from_millis(1));
         assert!(test_bed.altitude_is_available(adiru_number));
         assert!(test_bed.computed_airspeed_is_available(adiru_number));
         assert!(test_bed.mach_is_available(adiru_number));
+        assert!(test_bed.barometric_vertical_speed_is_available(adiru_number));
     }
 
     #[rstest]
@@ -1097,6 +1170,10 @@ mod tests {
             test_bed.mach_is_available(adiru_number),
             "Test precondition: mach should be available at this point."
         );
+        assert!(
+            test_bed.barometric_vertical_speed_is_available(adiru_number),
+            "Test precondition: barometric vertical speed should be available at this point."
+        );
 
         test_bed = test_bed
             .then_continue_with()
@@ -1106,6 +1183,7 @@ mod tests {
         assert!(!test_bed.altitude_is_available(adiru_number));
         assert!(!test_bed.computed_airspeed_is_available(adiru_number));
         assert!(!test_bed.mach_is_available(adiru_number));
+        assert!(!test_bed.barometric_vertical_speed_is_available(adiru_number));
     }
 
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,

@@ -1071,6 +1071,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Mach
     - The Mach number (M). -1 when unavailable.
 
+- A32NX_ADIRS_ADR_{number}_BAROMETRIC_VERTICAL_SPEED
+    - Feet per minute
+    - The vertical speed (V/S) based on barometric altitude data. -1000000 when unavailable.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
