@@ -20,7 +20,7 @@
 
             <KNOB_NUM_STATE>3</KNOB_NUM_STATE>
             <KNOB_POSITION_TYPE>L</KNOB_POSITION_TYPE>
-            <KNOB_POSITION_VAR>A32NX_ADIRS_KNOB_#ID#</KNOB_POSITION_VAR>
+            <KNOB_POSITION_VAR>A32NX_OVHD_ADIRS_IR_#ID#_MODE_SELECTOR_KNOB</KNOB_POSITION_VAR>
             <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
         </DefaultTemplateParameters>
 
@@ -53,7 +53,7 @@
             <SEQ2_CODE>(L:A32NX_ADIRS_OFF_LIGHT_#ID#, Bool)</SEQ2_CODE>
             -->
 
-            <SEQ1_CODE>(L:A32NX_ADIRS_#ID#_FAULT, Bool)</SEQ1_CODE>
+            <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_IR_#ID#_HAS_FAULT, Bool)</SEQ1_CODE>
 
             <DUMMY_BUTTON/>
         </UseTemplate>
