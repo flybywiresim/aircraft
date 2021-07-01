@@ -128,6 +128,7 @@
 1. [ISIS] Implement automatic brightness adjustment for standby instrument - @BlueberryKing (BlueberryKing#6641)
 1. [ECAM] Implement amber REV message while reverser doors are in transit. - @BlueberryKing (BlueberryKing#6641)
 1. [HYD] Switched hydraulics to new engine model simvars - @Crocket63 (crocket)
+1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
