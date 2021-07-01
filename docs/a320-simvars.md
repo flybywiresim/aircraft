@@ -1059,6 +1059,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Indicates whether the PFD should display attitude information.
 
+- A32NX_ADIRS_ADR_{number}_ALTITUDE
+    - Feet
+    - The altitude. -10000 when unavailable.
+
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
     - Knots
     - The computed airspeed (CAS). -1000 when unavailable.

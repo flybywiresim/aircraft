@@ -6,7 +6,7 @@ use crate::{
     },
 };
 use std::time::Duration;
-use uom::si::{angle::degree, f64::*, velocity::knot};
+use uom::si::{angle::degree, f64::*, length::foot, velocity::knot};
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
     mode_selectors: [InertialReferenceModeSelector; 3],
@@ -321,23 +321,32 @@ impl SimulationElement for AirDataInertialReferenceUnit {
 }
 
 struct AirDataReference {
+    altitude_id: String,
     computed_airspeed_id: String,
     number: usize,
+    indicated_altitude: Length,
     indicated_airspeed: Velocity,
     remaining_initialisation_duration: Option<Duration>,
 }
 impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
+    const UNINITIALISED_ALTITUDE_FEET: f64 = -10000.;
     const UNINITIALISED_COMPUTED_AIRSPEED_KNOTS: f64 = -1000.;
 
     fn new(number: usize) -> Self {
         Self {
+            altitude_id: Self::altitude_id(number),
             computed_airspeed_id: Self::computed_airspeed_id(number),
             number,
+            indicated_altitude: Length::new::<foot>(0.),
             indicated_airspeed: Velocity::new::<knot>(0.),
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
         }
+    }
+
+    fn altitude_id(number: usize) -> String {
+        format!("ADIRS_ADR_{}_ALTITUDE", number)
     }
 
     fn computed_airspeed_id(number: usize) -> String {
@@ -352,6 +361,7 @@ impl AirDataReference {
         // For now we'll read from the context. Later the context will no longer
         // contain the indicated airspeed (and instead all usages of IAS will be replaced by
         // requests to the ADIRUs).
+        self.indicated_altitude = context.indicated_altitude();
         self.indicated_airspeed = context.indicated_airspeed();
 
         self.remaining_initialisation_duration = match overhead.mode_of(self.number) {
@@ -372,6 +382,14 @@ impl AirDataReference {
 impl SimulationElement for AirDataReference {
     fn write(&self, writer: &mut SimulatorWriter) {
         let is_initialised = self.is_initialised();
+        writer.write(
+            &self.altitude_id,
+            if is_initialised {
+                self.indicated_altitude
+            } else {
+                Length::new::<foot>(Self::UNINITIALISED_ALTITUDE_FEET)
+            },
+        );
         writer.write(
             &self.computed_airspeed_id,
             if is_initialised {
@@ -513,7 +531,7 @@ mod tests {
     use ntest::timeout;
     use rstest::rstest;
     use std::time::Duration;
-    use uom::si::{angle::degree, velocity::knot};
+    use uom::si::{angle::degree, length::foot, velocity::knot};
 
     struct TestAircraft {
         adirs: AirDataInertialReferenceSystem,
@@ -636,12 +654,22 @@ mod tests {
             self.read(AirDataInertialReferenceSystem::IR_ALIGNED_KEY)
         }
 
+        fn altitude(&mut self, adiru_number: usize) -> Length {
+            self.read(&AirDataReference::altitude_id(adiru_number))
+        }
+
+        fn altitude_is_available(&mut self, adiru_number: usize) -> bool {
+            self.altitude(adiru_number)
+                > Length::new::<foot>(AirDataReference::UNINITIALISED_ALTITUDE_FEET)
+        }
+
         fn computed_airspeed(&mut self, adiru_number: usize) -> Velocity {
             self.read(&AirDataReference::computed_airspeed_id(adiru_number))
         }
 
         fn computed_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
-            self.computed_airspeed(adiru_number) >= Velocity::new::<knot>(0.)
+            self.computed_airspeed(adiru_number)
+                > Velocity::new::<knot>(AirDataReference::UNINITIALISED_COMPUTED_AIRSPEED_KNOTS)
         }
     }
     impl TestBed for AdirsTestBed {
@@ -937,6 +965,19 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
+    fn altitude_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+        let mut test_bed = all_adirus_aligned_test_bed();
+        test_bed.set_indicated_altitude(Length::new::<foot>(10000.));
+
+        test_bed.run();
+
+        assert_eq!(test_bed.altitude(adiru_number), Length::new::<foot>(10000.));
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
     fn computed_airspeed_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
         let mut test_bed = all_adirus_aligned_test_bed();
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
@@ -960,9 +1001,11 @@ mod tests {
 
         test_bed
             .run_with_delta(AirDataReference::INITIALISATION_DURATION - Duration::from_millis(1));
+        assert!(!test_bed.altitude_is_available(adiru_number));
         assert!(!test_bed.computed_airspeed_is_available(adiru_number));
 
         test_bed.run_with_delta(Duration::from_millis(1));
+        assert!(test_bed.altitude_is_available(adiru_number));
         assert!(test_bed.computed_airspeed_is_available(adiru_number));
     }
 
@@ -977,6 +1020,10 @@ mod tests {
 
         test_bed.run_with_delta(AirDataReference::INITIALISATION_DURATION);
         assert!(
+            test_bed.altitude_is_available(adiru_number),
+            "Test precondition: altitude should be available at this point."
+        );
+        assert!(
             test_bed.computed_airspeed_is_available(adiru_number),
             "Test precondition: computed airspeed should be available at this point."
         );
@@ -986,6 +1033,7 @@ mod tests {
             .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
         test_bed.run();
 
+        assert!(!test_bed.altitude_is_available(adiru_number));
         assert!(!test_bed.computed_airspeed_is_available(adiru_number));
     }
 
