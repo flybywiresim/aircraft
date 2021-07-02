@@ -1,13 +1,15 @@
 use std::{cell::Ref, collections::HashMap, time::Duration};
-use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
-
-use crate::electrical::{Electricity, Potential};
+use uom::si::{
+    f64::*, length::foot, ratio::ratio, thermodynamic_temperature::degree_celsius, velocity::knot,
+};
 
 use super::{
     Aircraft, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
     Writer,
 };
+use crate::electrical::{Electricity, Potential};
+use crate::landing_gear::LandingGear;
 
 pub trait TestBed {
     type Aircraft: Aircraft;
@@ -179,6 +181,15 @@ impl<T: Aircraft> SimulationTestBed<T> {
 
     fn set_on_ground(&mut self, on_ground: bool) {
         self.write(UpdateContext::IS_ON_GROUND_KEY, on_ground);
+
+        let mut gear_compression = Ratio::new::<ratio>(0.5);
+        if on_ground {
+            gear_compression = Ratio::new::<ratio>(0.8);
+        }
+
+        self.write(LandingGear::GEAR_CENTER_COMPRESSION, gear_compression);
+        self.write(LandingGear::GEAR_LEFT_COMPRESSION, gear_compression);
+        self.write(LandingGear::GEAR_RIGHT_COMPRESSION, gear_compression);
     }
 
     fn write_f64(&mut self, name: &str, value: f64) {
