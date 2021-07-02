@@ -1079,6 +1079,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Knots
     - The true airspeed (TAS). -1000 when unavailable.
 
+- A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE
+    - Celsius
+    - The static air temperature (SAT). -1000 when unavailable.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

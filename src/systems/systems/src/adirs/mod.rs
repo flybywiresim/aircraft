@@ -11,6 +11,7 @@ use uom::si::{
     angle::degree,
     f64::*,
     length::foot,
+    thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
 };
 
@@ -172,9 +173,9 @@ impl AirDataInertialReferenceSystem {
     pub fn new() -> Self {
         Self {
             adirus: [
-                AirDataInertialReferenceUnit::new(1),
-                AirDataInertialReferenceUnit::new(2),
-                AirDataInertialReferenceUnit::new(3),
+                AirDataInertialReferenceUnit::new(1, true),
+                AirDataInertialReferenceUnit::new(2, false),
+                AirDataInertialReferenceUnit::new(3, false),
             ],
             configured_align_time: AlignTime::Realistic,
             latitude: Angle::new::<degree>(0.),
@@ -291,9 +292,9 @@ impl AirDataInertialReferenceUnit {
     const VERTICAL_SPEED_KEY: &'static str = "VELOCITY WORLD Y";
     const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
 
-    fn new(number: usize) -> Self {
+    fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
-            adr: AirDataReference::new(number),
+            adr: AirDataReference::new(number, outputs_temperatures),
             ir: InertialReference::new(number),
 
             mach: MachNumber(0.),
@@ -358,14 +359,18 @@ struct AirDataReference {
     mach_id: String,
     barometric_vertical_speed_id: String,
     true_airspeed_id: String,
+    static_air_temperature_id: String,
 
     number: usize,
+    outputs_temperatures: bool,
 
     indicated_altitude: Length,
     indicated_airspeed: Velocity,
     mach: MachNumber,
     vertical_speed: Velocity,
     true_airspeed: Velocity,
+
+    ambient_temperature: ThermodynamicTemperature,
 
     remaining_initialisation_duration: Option<Duration>,
 }
@@ -376,22 +381,27 @@ impl AirDataReference {
     const UNINITIALISED_MACH: MachNumber = MachNumber(-1.);
     const UNINITIALISED_BAROMETRIC_VERTICAL_SPEED_FEET_PER_MINUTE: f64 = -1_000_000.;
     const UNINITIALISED_TRUE_AIRSPEED_KNOTS: f64 = -1000.;
+    const UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS: f64 = -1000.;
 
-    fn new(number: usize) -> Self {
+    fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
             altitude_id: Self::altitude_id(number),
             computed_airspeed_id: Self::computed_airspeed_id(number),
             mach_id: Self::mach_id(number),
             barometric_vertical_speed_id: Self::barometric_vertical_speed_id(number),
             true_airspeed_id: Self::true_airspeed_id(number),
+            static_air_temperature_id: Self::static_air_temperature_id(number),
 
             number,
+            outputs_temperatures,
 
             indicated_altitude: Length::new::<foot>(0.),
             indicated_airspeed: Velocity::new::<knot>(0.),
             mach: MachNumber(0.),
             vertical_speed: Velocity::new::<foot_per_minute>(0.),
             true_airspeed: Velocity::new::<knot>(0.),
+
+            ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
 
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
@@ -418,6 +428,10 @@ impl AirDataReference {
         format!("ADIRS_ADR_{}_TRUE_AIRSPEED", number)
     }
 
+    fn static_air_temperature_id(number: usize) -> String {
+        format!("ADIRS_ADR_{}_STATIC_AIR_TEMPERATURE", number)
+    }
+
     fn update(
         &mut self,
         context: &UpdateContext,
@@ -431,6 +445,7 @@ impl AirDataReference {
         // requests to the ADIRUs).
         self.indicated_altitude = context.indicated_altitude();
         self.indicated_airspeed = context.indicated_airspeed();
+        self.ambient_temperature = context.ambient_temperature();
 
         self.mach = mach;
         self.vertical_speed = vertical_speed;
@@ -488,7 +503,18 @@ impl SimulationElement for AirDataReference {
             &self.true_airspeed_id,
             self.true_airspeed,
             Velocity::new::<knot>(Self::UNINITIALISED_TRUE_AIRSPEED_KNOTS),
-        )
+        );
+
+        if self.outputs_temperatures {
+            self.write(
+                writer,
+                &self.static_air_temperature_id,
+                self.ambient_temperature,
+                ThermodynamicTemperature::new::<degree_celsius>(
+                    Self::UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS,
+                ),
+            )
+        }
     }
 }
 
@@ -625,6 +651,7 @@ mod tests {
     use uom::si::{
         angle::degree,
         length::foot,
+        thermodynamic_temperature::degree_celsius,
         velocity::{foot_per_minute, knot},
     };
 
@@ -814,6 +841,17 @@ mod tests {
         fn true_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
             self.true_airspeed(adiru_number)
                 > Velocity::new::<knot>(AirDataReference::UNINITIALISED_TRUE_AIRSPEED_KNOTS)
+        }
+
+        fn static_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
+            self.read(&AirDataReference::static_air_temperature_id(adiru_number))
+        }
+
+        fn static_air_temperature_is_available(&mut self, adiru_number: usize) -> bool {
+            self.static_air_temperature(adiru_number)
+                > ThermodynamicTemperature::new::<degree_celsius>(
+                    AirDataReference::UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS,
+                )
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1177,6 +1215,31 @@ mod tests {
         assert_eq!(test_bed.true_airspeed(adiru_number), tas);
     }
 
+    #[test]
+    fn static_air_temperature_is_supplied_by_adr_1() {
+        let sat = ThermodynamicTemperature::new::<degree_celsius>(15.);
+        let mut test_bed = all_adirus_aligned_test_bed();
+        test_bed.set_ambient_temperature(sat);
+        test_bed.run();
+
+        assert_eq!(test_bed.static_air_temperature(1), sat);
+    }
+
+    #[rstest]
+    #[case(2)]
+    #[case(3)]
+    fn static_air_temperature_is_not_supplied_by_adr_2_and_3(#[case] adiru_number: usize) {
+        let sat = ThermodynamicTemperature::new::<degree_celsius>(15.);
+        let mut test_bed = all_adirus_aligned_test_bed();
+        test_bed.set_ambient_temperature(sat);
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.static_air_temperature(adiru_number),
+            ThermodynamicTemperature::new::<degree_celsius>(0.)
+        );
+    }
+
     #[rstest]
     #[case(1)]
     #[case(2)]
@@ -1194,12 +1257,20 @@ mod tests {
         assert!(!test_bed.barometric_vertical_speed_is_available(adiru_number));
         assert!(!test_bed.true_airspeed_is_available(adiru_number));
 
+        if adiru_number == 1 {
+            assert!(!test_bed.static_air_temperature_is_available(adiru_number));
+        }
+
         test_bed.run_with_delta(Duration::from_millis(1));
         assert!(test_bed.altitude_is_available(adiru_number));
         assert!(test_bed.computed_airspeed_is_available(adiru_number));
         assert!(test_bed.mach_is_available(adiru_number));
         assert!(test_bed.barometric_vertical_speed_is_available(adiru_number));
         assert!(test_bed.true_airspeed_is_available(adiru_number));
+
+        if adiru_number == 1 {
+            assert!(test_bed.static_air_temperature_is_available(adiru_number));
+        }
     }
 
     #[rstest]
@@ -1233,6 +1304,13 @@ mod tests {
             "Test precondition: true airspeed should be available at this point."
         );
 
+        if adiru_number == 1 {
+            assert!(
+                test_bed.static_air_temperature_is_available(adiru_number),
+                "Test precondition: static air temperature should be available at this point."
+            );
+        }
+
         test_bed = test_bed
             .then_continue_with()
             .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
@@ -1243,6 +1321,10 @@ mod tests {
         assert!(!test_bed.mach_is_available(adiru_number));
         assert!(!test_bed.barometric_vertical_speed_is_available(adiru_number));
         assert!(!test_bed.true_airspeed_is_available(adiru_number));
+
+        if adiru_number == 1 {
+            assert!(!test_bed.static_air_temperature_is_available(adiru_number));
+        }
     }
 
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
