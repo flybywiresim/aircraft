@@ -3959,7 +3959,7 @@ mod tests {
         }
 
         #[test]
-        fn controller_blue_epump_activates_when_no_weight_on_wheels() {
+        fn controller_blue_epump_activates_when_no_weight_on_center_wheel() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -3968,7 +3968,7 @@ mod tests {
 
             assert!(!test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
 
-            test_bed = test_bed.in_flight().run_one_tick();
+            test_bed = test_bed.rotates_on_runway().run_one_tick();
 
             assert!(test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
         }
