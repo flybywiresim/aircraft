@@ -38,7 +38,7 @@ const GraduationElement = (heading, offset) => {
 };
 
 export const HeadingTape = ({ heading }) => {
-    if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
+    if (getSimVar('L:A32NX_ADIRS_STATE', 'Enum') !== 2) {
         return null;
     }
 
@@ -54,7 +54,7 @@ export const HeadingTape = ({ heading }) => {
 };
 
 export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse, groundTrack }) => {
-    if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
+    if (getSimVar('L:A32NX_ADIRS_STATE', 'Enum') !== 2) {
         return (
             <>
                 <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />
