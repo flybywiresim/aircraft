@@ -41,7 +41,7 @@ impl PressureValve {
     }
 
     fn get_valve_change_for_delta(&self, context: &UpdateContext) -> f64 {
-        100. * (context.delta().as_secs_f64() / self.full_travel_time.as_secs_f64())
+        100. * (context.delta_as_secs_f64() / self.full_travel_time.as_secs_f64())
     }
 
     pub fn open_amount(&self) -> Ratio {
