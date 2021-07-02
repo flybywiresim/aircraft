@@ -166,6 +166,7 @@ pub struct AirDataInertialReferenceSystem {
     pitch: Angle,
     roll: Angle,
     heading: Angle,
+    ground_speed: Velocity,
 }
 impl AirDataInertialReferenceSystem {
     const STATE_KEY: &'static str = "ADIRS_STATE";
@@ -180,6 +181,7 @@ impl AirDataInertialReferenceSystem {
     const PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     const ROLL_KEY: &'static str = "PLANE BANK DEGREES";
     const HEADING_KEY: &'static str = "PLANE HEADING DEGREES MAGNETIC";
+    const GROUND_SPEED_KEY: &'static str = "GPS GROUND SPEED";
 
     pub fn new() -> Self {
         Self {
@@ -198,6 +200,7 @@ impl AirDataInertialReferenceSystem {
             pitch: Angle::new::<degree>(0.),
             roll: Angle::new::<degree>(0.),
             heading: Angle::new::<degree>(0.),
+            ground_speed: Velocity::new::<knot>(0.),
         }
     }
 
@@ -214,6 +217,7 @@ impl AirDataInertialReferenceSystem {
         let pitch = self.pitch;
         let roll = self.roll;
         let heading = self.heading;
+        let ground_speed = self.ground_speed;
         self.adirus.iter_mut().for_each(|adiru| {
             adiru.update(
                 context,
@@ -226,6 +230,7 @@ impl AirDataInertialReferenceSystem {
                 pitch,
                 roll,
                 heading,
+                ground_speed,
             )
         });
     }
@@ -284,6 +289,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
         self.pitch = reader.read(Self::PITCH_KEY);
         self.roll = reader.read(Self::ROLL_KEY);
         self.heading = reader.read(Self::HEADING_KEY);
+        self.ground_speed = reader.read(Self::GROUND_SPEED_KEY);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -327,11 +333,19 @@ impl AirDataInertialReferenceUnit {
         pitch: Angle,
         roll: Angle,
         heading: Angle,
+        ground_speed: Velocity,
     ) {
         self.adr
             .update(context, overhead, mach, vertical_speed, true_airspeed);
         self.ir.update(
-            context, overhead, align_time, latitude, pitch, roll, heading,
+            context,
+            overhead,
+            align_time,
+            latitude,
+            pitch,
+            roll,
+            heading,
+            ground_speed,
         );
     }
 
@@ -609,6 +623,7 @@ struct InertialReference {
     pitch: OutputData<Angle>,
     roll: OutputData<Angle>,
     heading: OutputData<Angle>,
+    ground_speed: OutputData<Velocity>,
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
@@ -618,6 +633,7 @@ impl InertialReference {
     const PITCH: &'static str = "PITCH";
     const ROLL: &'static str = "ROLL";
     const HEADING: &'static str = "HEADING";
+    const GROUND_SPEED: &'static str = "GROUND_SPEED";
 
     fn new(number: usize) -> Self {
         Self {
@@ -644,6 +660,11 @@ impl InertialReference {
                 Self::HEADING,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
+            ground_speed: OutputData::new_ir(
+                number,
+                Self::GROUND_SPEED,
+                Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
+            ),
         }
     }
 
@@ -651,6 +672,7 @@ impl InertialReference {
         format!("OVHD_ADIRS_IR_{}_PB_HAS_FAULT", number)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         context: &UpdateContext,
@@ -660,10 +682,12 @@ impl InertialReference {
         pitch: Angle,
         roll: Angle,
         heading: Angle,
+        ground_speed: Velocity,
     ) {
         self.pitch.set_value(pitch);
         self.roll.set_value(roll);
         self.heading.set_value(heading);
+        self.ground_speed.set_value(ground_speed);
 
         let selected_mode = overhead.mode_of(self.number);
 
@@ -738,7 +762,9 @@ impl SimulationElement for InertialReference {
         self.pitch.write_to(writer, attitude_is_initialised);
         self.roll.write_to(writer, attitude_is_initialised);
 
-        self.heading.write_to(writer, self.is_aligned());
+        let is_aligned = self.is_aligned();
+        self.heading.write_to(writer, is_aligned);
+        self.ground_speed.write_to(writer, is_aligned);
     }
 }
 
@@ -870,6 +896,11 @@ mod tests {
 
         fn heading_of(mut self, angle: Angle) -> Self {
             self.write(AirDataInertialReferenceSystem::HEADING_KEY, angle);
+            self
+        }
+
+        fn ground_speed_of(mut self, velocity: Velocity) -> Self {
+            self.write(AirDataInertialReferenceSystem::GROUND_SPEED_KEY, velocity);
             self
         }
 
@@ -1087,6 +1118,19 @@ mod tests {
         fn heading_is_available(&mut self, adiru_number: usize) -> bool {
             self.heading(adiru_number)
                 > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
+        }
+
+        fn ground_speed(&mut self, adiru_number: usize) -> Velocity {
+            self.read(&output_data_id(
+                OutputDataType::IR,
+                adiru_number,
+                InertialReference::GROUND_SPEED,
+            ))
+        }
+
+        fn ground_speed_is_available(&mut self, adiru_number: usize) -> bool {
+            self.ground_speed(adiru_number)
+                > Velocity::new::<knot>(InertialReference::UNINITIALISED_VALUE)
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1687,11 +1731,7 @@ mod tests {
     #[case(2)]
     #[case(3)]
     fn ir_data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
-        let mut test_bed = test_bed_with()
-            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-
-        test_bed.run_with_delta(InertialReference::ATTITUDE_INITIALISATION_DURATION);
+        let mut test_bed = all_adirus_aligned_test_bed();
         assert!(
             test_bed.pitch_is_available(adiru_number),
             "Test precondition: pitch should be available at this point."
@@ -1704,6 +1744,10 @@ mod tests {
             test_bed.heading_is_available(adiru_number),
             "Test precondition: heading should be available at this point."
         );
+        assert!(
+            test_bed.ground_speed_is_available(adiru_number),
+            "Test precondition: ground speed should be available at this point."
+        );
 
         test_bed = test_bed
             .then_continue_with()
@@ -1713,6 +1757,7 @@ mod tests {
         assert!(!test_bed.pitch_is_available(adiru_number));
         assert!(!test_bed.roll_is_available(adiru_number));
         assert!(!test_bed.heading_is_available(adiru_number));
+        assert!(!test_bed.ground_speed_is_available(adiru_number));
     }
 
     #[rstest]
@@ -1731,16 +1776,32 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn ir_heading_is_available_after_full_alignment_completed(#[case] adiru_number: usize) {
+    fn ground_speed_is_supplied_by_ir(#[case] adiru_number: usize) {
+        let gs = Velocity::new::<knot>(200.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().ground_speed_of(gs);
+        test_bed.run();
+
+        assert_eq!(test_bed.ground_speed(adiru_number), gs);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn ir_heading_and_ground_speed_are_available_after_full_alignment_completed(
+        #[case] adiru_number: usize,
+    ) {
         let mut test_bed = test_bed_with()
             .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
 
         while test_bed.align_state() != AlignState::Aligned {
             assert!(!test_bed.heading_is_available(adiru_number));
+            assert!(!test_bed.ground_speed_is_available(adiru_number));
             test_bed.run();
         }
 
         assert!(test_bed.heading_is_available(adiru_number));
+        assert!(test_bed.ground_speed_is_available(adiru_number));
     }
 
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
