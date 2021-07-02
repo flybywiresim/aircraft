@@ -449,7 +449,7 @@ impl A320Hydraulic {
         self.engine_driven_pump_1_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine1.corrected_n2(),
+            engine1.uncorrected_n2(),
             engine1.oil_pressure(),
             self.engine_driven_pump_1_pressure_switch.is_pressurised(),
         );
@@ -468,7 +468,7 @@ impl A320Hydraulic {
         self.engine_driven_pump_2_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine2.corrected_n2(),
+            engine2.uncorrected_n2(),
             engine2.oil_pressure(),
             self.engine_driven_pump_2_pressure_switch.is_pressurised(),
         );
@@ -1979,42 +1979,42 @@ mod tests {
 
             fn start_eng1(mut self, n2: Ratio) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:1", true);
-                self.write("TURB ENG CORRECTED N2:1", n2);
+                self.write("ENGINE_N2:1", n2);
 
                 self
             }
 
             fn start_eng2(mut self, n2: Ratio) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:2", true);
-                self.write("TURB ENG CORRECTED N2:2", n2);
+                self.write("ENGINE_N2:2", n2);
 
                 self
             }
 
             fn stop_eng1(mut self) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:1", false);
-                self.write("TURB ENG CORRECTED N2:1", 0.);
+                self.write("ENGINE_N2:1", 0.);
 
                 self
             }
 
             fn stopping_eng1(mut self) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:1", false);
-                self.write("TURB ENG CORRECTED N2:1", 25.);
+                self.write("ENGINE_N2:1", 25.);
 
                 self
             }
 
             fn stop_eng2(mut self) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:2", false);
-                self.write("TURB ENG CORRECTED N2:2", 0.);
+                self.write("ENGINE_N2:2", 0.);
 
                 self
             }
 
             fn stopping_eng2(mut self) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:2", false);
-                self.write("TURB ENG CORRECTED N2:2", 25.);
+                self.write("ENGINE_N2:2", 25.);
 
                 self
             }
