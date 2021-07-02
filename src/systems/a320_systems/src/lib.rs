@@ -21,7 +21,7 @@ use systems::{
     electrical::{Electricity, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     landing_gear::LandingGear,
-    pressurization::{Pressurization},
+    pressurization::Pressurization,
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };

@@ -101,29 +101,18 @@ impl Pressurization {
         }
     }
 
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        eng_1_n1: Ratio,
-        eng_2_n1: Ratio,
-    ) {
+    pub fn update(&mut self, context: &UpdateContext, eng_1_n1: Ratio, eng_2_n1: Ratio) {
         self.aircraft_inputs.set_eng_n1(eng_1_n1, eng_2_n1);
 
         if !self.is_sys1_active() && !self.is_sys2_active() {
             self.set_active_system();
         };
         if self.is_sys1_active() {
-            self.cpc_1.update(
-                context,
-                &self.aircraft_inputs,
-            );
+            self.cpc_1.update(context, &self.aircraft_inputs);
             self.outflow_valve.update(context, &self.cpc_1);
             self.switch_active_system();
         } else if self.is_sys2_active() {
-            self.cpc_2.update(
-                context,
-                &self.aircraft_inputs,
-            );
+            self.cpc_2.update(context, &self.aircraft_inputs);
             self.outflow_valve.update(context, &self.cpc_2);
             self.switch_active_system();
         }
@@ -258,11 +247,8 @@ mod tests {
 
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.pressurization.update(
-                context,
-                self.engine_1_n1,
-                self.engine_2_n1,
-            );
+            self.pressurization
+                .update(context, self.engine_1_n1, self.engine_2_n1);
             self.set_active_sys1();
         }
     }

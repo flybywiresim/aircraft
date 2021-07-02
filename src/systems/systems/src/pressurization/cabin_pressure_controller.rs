@@ -1,8 +1,6 @@
 use crate::simulation::UpdateContext;
 
-use super::{
-    AircraftInputsPressurization, PressureValveActuator,
-};
+use super::{AircraftInputsPressurization, PressureValveActuator};
 
 use std::time::Duration;
 use uom::si::{
@@ -72,8 +70,7 @@ impl CabinPressureController {
 
         let cab_press_var =
             -self.cabin_vs.get::<foot_per_second>() * KPA_FT * context.delta_as_secs_f64();
-        self.cabin_pressure =
-            self.cabin_pressure + Pressure::new::<hectopascal>(cab_press_var);
+        self.cabin_pressure += Pressure::new::<hectopascal>(cab_press_var);
     }
 
     fn update_cabin_altitude(&mut self, sea_level_pressure: Pressure, destination_qnh: Pressure) {
@@ -85,21 +82,21 @@ impl CabinPressureController {
                 .get::<foot>()
                 .abs()
                 < 5000.
-            {
-                if destination_qnh > Pressure::new::<hectopascal>(0.) {
-                    destination_qnh
-                } else {
-                    sea_level_pressure
-                }
-            } else if (self.cabin_altitude() - self.departure_elevation())
-                .get::<foot>()
-                .abs()
-                < 5000.
-            {
-                sea_level_pressure
+        {
+            if destination_qnh > Pressure::new::<hectopascal>(0.) {
+                destination_qnh
             } else {
-                Pressure::new::<hectopascal>(1013.25)
-            };
+                sea_level_pressure
+            }
+        } else if (self.cabin_altitude() - self.departure_elevation())
+            .get::<foot>()
+            .abs()
+            < 5000.
+        {
+            sea_level_pressure
+        } else {
+            Pressure::new::<hectopascal>(1013.25)
+        };
 
         let pressure_ratio = (p / p_0).get::<ratio>();
 
