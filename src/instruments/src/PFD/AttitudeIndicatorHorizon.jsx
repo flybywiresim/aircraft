@@ -30,7 +30,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
         return null;
     }
 
-    const headingAvail = getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') === 2;
+    const headingAvail = getSimVar('L:A32NX_ADIRS_STATE', 'Enum') === 2;
 
     const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch), 31.563), -31.563);
 
