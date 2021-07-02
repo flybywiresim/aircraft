@@ -1106,6 +1106,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Knots
     - The ground speed (GS) of the aircraft. -1000000 when unavailable.
 
+- A32NX_ADIRS_IR_{number}_WIND_DIRECTION
+    - Degrees
+    - The direction of the wind. -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_WIND_VELOCITY
+    - Degrees
+    - The direction of the wind. -1000000 when unavailable.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

@@ -52,6 +52,8 @@ fn create_aircraft_variable_reader(
     reader.add("AIRSPEED MACH", "Mach", 0)?;
     reader.add("AIRSPEED TRUE", "Knots", 0)?;
     reader.add("VELOCITY WORLD Y", "feet per minute", 0)?;
+    reader.add("AMBIENT WIND DIRECTION", "Degrees", 0)?;
+    reader.add("AMBIENT WIND VELOCITY", "Knots", 0)?;
     reader.add("GPS GROUND SPEED", "Knots", 0)?;
     reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
     reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
