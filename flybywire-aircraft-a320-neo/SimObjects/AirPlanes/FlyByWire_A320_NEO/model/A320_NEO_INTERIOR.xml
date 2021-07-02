@@ -51,8 +51,6 @@
             <!-- FLOOD LT PED -->
             <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Pedestal</NODE_ID>
-                <PART_ID>LIGHTING_Knob_Pedestal</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Pedestal</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>76</POTENTIOMETER>
@@ -66,8 +64,6 @@
             <!-- INTEG LT MAIN PNL & PED -->
             <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Panel</NODE_ID>
-                <PART_ID>LIGHTING_Knob_Panel</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Panel</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>85</POTENTIOMETER>
@@ -97,7 +93,6 @@
             <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield_1</NODE_ID>
                 <PART_ID>Lighting_Knob_Glareshield_Pilot_0</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield_1</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>10</POTENTIOMETER>
@@ -113,7 +108,6 @@
             <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield_4</NODE_ID>
                 <PART_ID>Lighting_Knob_Glareshield_Copilot_0</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield_4</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>11</POTENTIOMETER>
@@ -128,7 +122,6 @@
             <!-- FLOOD LT MAIN PNL-->
             <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield</NODE_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_1</PART_ID>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_INCREASE</ANIMTIP_1>
@@ -163,8 +156,6 @@
             <!-- FCU INTEG LT -->
             <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield_2</NODE_ID>
-                <PART_ID>LIGHTING_Knob_Glareshield_2</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield_2</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>84</POTENTIOMETER>
@@ -180,8 +171,6 @@
             <!-- FCU LED DISPLAY LT -->
             <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield_3</NODE_ID>
-                <PART_ID>LIGHTING_Knob_Glareshield_3</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield_3</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.FD_DISPLAY_BRIGHTNESS_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.FD_DISPLAY_BRIGHTNESS_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>87</POTENTIOMETER>
@@ -519,7 +508,6 @@
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
                     <PART_ID>PFD_Brightness</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_CS_PFD</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>88</POTENTIOMETER>
@@ -610,7 +598,6 @@
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
                     <PART_ID>ND_Brightness</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_CS_ND_SMALL</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>89</POTENTIOMETER>
@@ -620,7 +607,6 @@
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND</NODE_ID>
                     <PART_ID>ND_WX_Brightness_CS</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_CS_ND</ANIM_NAME>
                     <ANIMTIP_0>Decrease left WX/TERR brightness</ANIMTIP_0>
                     <ANIMTIP_1>Increase left WX/TERR brightness</ANIMTIP_1>
                     <POTENTIOMETER>94</POTENTIOMETER>
@@ -657,7 +643,6 @@
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
                     <PART_ID>PFD_Brightness_FO</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_FO_PFD</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>90</POTENTIOMETER>
@@ -679,7 +664,6 @@
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_ND_SMALL</NODE_ID>
                     <PART_ID>ND_Brightness_FO</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_FO_ND_SMALL</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_ND_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_ND_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>91</POTENTIOMETER>
@@ -689,7 +673,6 @@
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_ND</NODE_ID>
                     <PART_ID>ND_WX_Brightness_FO</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_FO_ND</ANIM_NAME>
                     <ANIMTIP_0>Decrease right WX/TERR brightness</ANIMTIP_0>
                     <ANIMTIP_1>Increase right WX/TERR brightness</ANIMTIP_1>
                     <POTENTIOMETER>95</POTENTIOMETER>
@@ -872,11 +855,9 @@
 
             <Component ID="EICAS_Screens">
 
-                <!-- ECAM UPPER DISPLAY BRIGHTNESS -->
+                <!-- UPPER ECAM SCREEN -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_ECAM_UPPER</NODE_ID>
-                    <PART_ID>KNOB_ECAM_UPPER</PART_ID>
-                    <ANIM_NAME>KNOB_ECAM_UPPER</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_UPPER_ECAM_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_UPPER_ECAM_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>92</POTENTIOMETER>
@@ -889,11 +870,9 @@
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
 
-                <!-- ECAM LOWER DISPLAY BRIGHTNESS -->
+                <!-- LOWER ECAM SCREEN -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_ECAM_LOWER</NODE_ID>
-                    <PART_ID>KNOB_ECAM_LOWER</PART_ID>
-                    <ANIM_NAME>KNOB_ECAM_LOWER</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LOWER_ECAM_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LOWER_ECAM_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>93</POTENTIOMETER>
@@ -905,7 +884,6 @@
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
-
             </Component>
 
             <!-- DCDU / CPDLC screens -->
@@ -1482,8 +1460,6 @@
                 <!-- OVHD INTEG LT -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_OVHD_INTLT_BRT</NODE_ID>
-                    <PART_ID>KNOB_OVHD_INTLT_BRT</PART_ID>
-                    <ANIM_NAME>KNOB_OVHD_INTLT_BRT</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>86</POTENTIOMETER>
@@ -2827,7 +2803,6 @@
                     <!-- Left knob: READING LT -->
                     <UseTemplate Name="FBW_Stepless_Potentiometer">
                         <NODE_ID>KNOB_OVHD_READINGLTL</NODE_ID>
-                        <ANIM_NAME>KNOB_OVHD_READINGLTL</ANIM_NAME>
                         <POTENTIOMETER>96</POTENTIOMETER>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_INCREASE</ANIMTIP_1>
@@ -2843,7 +2818,6 @@
                     <!-- Right knob: READING LT -->
                     <UseTemplate Name="FBW_Stepless_Potentiometer">
                         <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
-                        <ANIM_NAME>KNOB_OVHD_READINGLTR</ANIM_NAME>
                         <POTENTIOMETER>97</POTENTIOMETER>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_INCREASE</ANIMTIP_1>
@@ -2971,11 +2945,8 @@
                     <Component ID="KNOB_OVHD_CABINPRESS_LDGELEV" Node="KNOB_OVHD_CABINPRESS_LDGELEV">
                         <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
                             <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
-                            <PART_ID>KNOB_OVHD_CABINPRESS_LDGELEV</PART_ID>
-                            <ANIM_NAME>KNOB_OVHD_CABINPRESS_LDGELEV</ANIM_NAME>
                             <ANIM_SIMVAR_MAX>88</ANIM_SIMVAR_MAX>
-                            <ANIM_SIMVAR_TYPE>L</ANIM_SIMVAR_TYPE>
-                            <LOCAL_SIMVAR>A32NX_LANDING_ELEVATION</LOCAL_SIMVAR>
+                            <LOCAL_SIMVAR>L:A32NX_LANDING_ELEVATION</LOCAL_SIMVAR>
                             <LOCAL_SIMVAR_UNITS>feet</LOCAL_SIMVAR_UNITS>
                             <INCREMENT>0.5</INCREMENT>
                             <CONVERSION_FORMULA>193.182 * 2000 -</CONVERSION_FORMULA>
