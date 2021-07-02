@@ -1075,6 +1075,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Feet per minute
     - The vertical speed (V/S) based on barometric altitude data. -1000000 when unavailable.
 
+- A32NX_ADIRS_ADR_{number}_TRUE_AIRSPEED
+    - Knots
+    - The true airspeed (TAS). -1000 when unavailable.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
