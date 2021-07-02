@@ -173,7 +173,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     }
     refreshADIRS() {
         if (this.tatText != null && this.satText != null) {
-            const areAdirsAlignedNow = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") == 2;
+            const areAdirsAlignedNow = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") == 2;
 
             if (areAdirsAlignedNow === this.areAdirsAligned) {
                 return;
