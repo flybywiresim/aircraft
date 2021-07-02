@@ -1094,6 +1094,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - The delta (deviation) from international standard atmosphere temperature. -1000000 when unavailable.
       {number}: 1 or 3
 
+- A32NX_ADIRS_IR_{number}_PITCH
+    - Degrees
+    - The pitch angle of the aircraft. -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_ROLL
+    - Degrees
+    - The roll angle of the aircraft. -1000000 when unavailable.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

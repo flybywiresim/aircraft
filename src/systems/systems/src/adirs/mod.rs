@@ -6,7 +6,7 @@ use crate::{
         SimulatorWriter, UpdateContext, Write, Writer,
     },
 };
-use std::time::Duration;
+use std::{fmt::Display, time::Duration};
 use uom::si::{
     angle::degree,
     f64::*,
@@ -158,6 +158,9 @@ pub struct AirDataInertialReferenceSystem {
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
     latitude: Angle,
+
+    pitch: Angle,
+    roll: Angle,
 }
 impl AirDataInertialReferenceSystem {
     const STATE_KEY: &'static str = "ADIRS_STATE";
@@ -166,6 +169,8 @@ impl AirDataInertialReferenceSystem {
     const LATITUDE_KEY: &'static str = "GPS POSITION LAT";
     const ADR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_FIRST";
     const IR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_ATT";
+    const PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
+    const ROLL_KEY: &'static str = "PLANE BANK DEGREES";
 
     pub fn new() -> Self {
         Self {
@@ -176,6 +181,9 @@ impl AirDataInertialReferenceSystem {
             ],
             configured_align_time: AlignTime::Realistic,
             latitude: Angle::new::<degree>(0.),
+
+            pitch: Angle::new::<degree>(0.),
+            roll: Angle::new::<degree>(0.),
         }
     }
 
@@ -186,9 +194,11 @@ impl AirDataInertialReferenceSystem {
     ) {
         let align_time = self.configured_align_time;
         let latitude = self.latitude;
+        let pitch = self.pitch;
+        let roll = self.roll;
         self.adirus
             .iter_mut()
-            .for_each(|adiru| adiru.update(context, overhead, align_time, latitude));
+            .for_each(|adiru| adiru.update(context, overhead, align_time, latitude, pitch, roll));
     }
 
     fn state(&self) -> AlignState {
@@ -234,7 +244,11 @@ impl SimulationElement for AirDataInertialReferenceSystem {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.configured_align_time = reader.read(Self::CONFIGURED_ALIGN_TIME_KEY);
+
+        // To reduce reads, we only read these values once and then share it with the underlying ADRs and IRs.
         self.latitude = reader.read(Self::LATITUDE_KEY);
+        self.pitch = reader.read(Self::PITCH_KEY);
+        self.roll = reader.read(Self::ROLL_KEY);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -283,6 +297,8 @@ impl AirDataInertialReferenceUnit {
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         align_time: AlignTime,
         latitude: Angle,
+        pitch: Angle,
+        roll: Angle,
     ) {
         self.adr.update(
             context,
@@ -291,7 +307,8 @@ impl AirDataInertialReferenceUnit {
             self.vertical_speed,
             self.true_airspeed,
         );
-        self.ir.update(context, overhead, align_time, latitude);
+        self.ir
+            .update(context, overhead, align_time, latitude, pitch, roll);
     }
 
     fn is_aligned(&self) -> bool {
@@ -337,9 +354,17 @@ struct OutputData<T> {
     uninitialised_value: T,
 }
 impl<T: Copy + Default> OutputData<T> {
-    fn new(number: usize, name: &str, uninitialised_value: T) -> Self {
+    fn new_adr(number: usize, name: &str, uninitialised_value: T) -> Self {
+        Self::new(OutputDataType::ADR, number, name, uninitialised_value)
+    }
+
+    fn new_ir(number: usize, name: &str, uninitialised_value: T) -> Self {
+        Self::new(OutputDataType::IR, number, name, uninitialised_value)
+    }
+
+    fn new(data_type: OutputDataType, number: usize, name: &str, uninitialised_value: T) -> Self {
         Self {
-            id: output_data_id(number, name),
+            id: output_data_id(data_type, number, name),
             value: Default::default(),
             uninitialised_value,
         }
@@ -361,8 +386,22 @@ impl<T: Copy + Default> OutputData<T> {
     }
 }
 
-fn output_data_id(number: usize, name: &str) -> String {
-    format!("ADIRS_ADR_{}_{}", number, name)
+#[derive(Clone, Copy)]
+enum OutputDataType {
+    ADR,
+    IR,
+}
+impl Display for OutputDataType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OutputDataType::ADR => write!(f, "ADR"),
+            OutputDataType::IR => write!(f, "IR"),
+        }
+    }
+}
+
+fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> String {
+    format!("ADIRS_{}_{}_{}", data_type, number, name)
 }
 
 struct AirDataReference {
@@ -400,38 +439,38 @@ impl AirDataReference {
             number,
             outputs_temperatures,
 
-            altitude: OutputData::new(
+            altitude: OutputData::new_adr(
                 number,
                 Self::ALTITUDE,
                 Length::new::<foot>(Self::UNINITIALISED_VALUE),
             ),
-            computed_airspeed: OutputData::new(
+            computed_airspeed: OutputData::new_adr(
                 number,
                 Self::COMPUTED_AIRSPEED,
                 Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
             ),
-            mach: OutputData::new(number, Self::MACH, Self::UNINITIALISED_MACH),
-            barometric_vertical_speed: OutputData::new(
+            mach: OutputData::new_adr(number, Self::MACH, Self::UNINITIALISED_MACH),
+            barometric_vertical_speed: OutputData::new_adr(
                 number,
                 Self::BAROMETRIC_VERTICAL_SPEED,
                 Self::UNINITIALISED_VALUE,
             ),
-            true_airspeed: OutputData::new(
+            true_airspeed: OutputData::new_adr(
                 number,
                 Self::TRUE_AIRSPEED,
                 Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
             ),
-            static_air_temperature: OutputData::new(
+            static_air_temperature: OutputData::new_adr(
                 number,
                 Self::STATIC_AIR_TEMPERATURE,
                 ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
             ),
-            total_air_temperature: OutputData::new(
+            total_air_temperature: OutputData::new_adr(
                 number,
                 Self::TOTAL_AIR_TEMPERATURE,
                 ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
             ),
-            international_standard_atmosphere_delta: OutputData::new(
+            international_standard_atmosphere_delta: OutputData::new_adr(
                 number,
                 Self::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
                 ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
@@ -550,11 +589,17 @@ struct InertialReference {
     remaining_align_duration: Option<Duration>,
     ir_fault_flash_duration: Option<Duration>,
     remaining_attitude_initialisation_duration: Option<Duration>,
+
+    pitch: OutputData<Angle>,
+    roll: OutputData<Angle>,
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
     const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
-    const IR_ATTITUDE_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
+    const ATTITUDE_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
+    const UNINITIALISED_VALUE: f64 = -1_000_000.;
+    const PITCH: &'static str = "PITCH";
+    const ROLL: &'static str = "ROLL";
 
     fn new(number: usize) -> Self {
         Self {
@@ -566,6 +611,16 @@ impl InertialReference {
             ir_fault_flash_duration: None,
             // Start fully initialised.
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
+            pitch: OutputData::new_ir(
+                number,
+                Self::PITCH,
+                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
+            ),
+            roll: OutputData::new_ir(
+                number,
+                Self::ROLL,
+                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
+            ),
         }
     }
 
@@ -579,7 +634,12 @@ impl InertialReference {
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         configured_align_time: AlignTime,
         latitude: Angle,
+        pitch: Angle,
+        roll: Angle,
     ) {
+        self.pitch.set_value(pitch);
+        self.roll.set_value(roll);
+
         let selected_mode = overhead.mode_of(self.number);
 
         if self.alignment_starting(selected_mode) {
@@ -608,7 +668,7 @@ impl InertialReference {
 
         self.remaining_attitude_initialisation_duration = remaining_initialisation_duration(
             context,
-            Self::IR_ATTITUDE_INITIALISATION_DURATION,
+            Self::ATTITUDE_INITIALISATION_DURATION,
             overhead.mode_of(self.number),
             self.remaining_attitude_initialisation_duration,
         );
@@ -651,6 +711,10 @@ impl InertialReference {
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.has_fault_id, self.ir_fault_flash_duration.is_some());
+
+        let attitude_is_initialised = self.attitude_is_initialised();
+        self.pitch.write_to(writer, attitude_is_initialised);
+        self.roll.write_to(writer, attitude_is_initialised);
     }
 }
 
@@ -770,6 +834,16 @@ mod tests {
             self
         }
 
+        fn pitch_of(mut self, angle: Angle) -> Self {
+            self.write(AirDataInertialReferenceSystem::PITCH_KEY, angle);
+            self
+        }
+
+        fn roll_of(mut self, angle: Angle) -> Self {
+            self.write(AirDataInertialReferenceSystem::ROLL_KEY, angle);
+            self
+        }
+
         fn align_time_configured_as(mut self, align_time: AlignTime) -> Self {
             Write::<f64>::write(
                 &mut self,
@@ -835,7 +909,11 @@ mod tests {
         }
 
         fn altitude(&mut self, adiru_number: usize) -> Length {
-            self.read(&output_data_id(adiru_number, AirDataReference::ALTITUDE))
+            self.read(&output_data_id(
+                OutputDataType::ADR,
+                adiru_number,
+                AirDataReference::ALTITUDE,
+            ))
         }
 
         fn altitude_is_available(&mut self, adiru_number: usize) -> bool {
@@ -844,6 +922,7 @@ mod tests {
 
         fn computed_airspeed(&mut self, adiru_number: usize) -> Velocity {
             self.read(&output_data_id(
+                OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::COMPUTED_AIRSPEED,
             ))
@@ -855,7 +934,11 @@ mod tests {
         }
 
         fn mach(&mut self, adiru_number: usize) -> MachNumber {
-            self.read(&output_data_id(adiru_number, AirDataReference::MACH))
+            self.read(&output_data_id(
+                OutputDataType::ADR,
+                adiru_number,
+                AirDataReference::MACH,
+            ))
         }
 
         fn mach_is_available(&mut self, adiru_number: usize) -> bool {
@@ -864,6 +947,7 @@ mod tests {
 
         fn barometric_vertical_speed(&mut self, adiru_number: usize) -> Velocity {
             let vertical_speed: f64 = self.read(&output_data_id(
+                OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::BAROMETRIC_VERTICAL_SPEED,
             ));
@@ -877,6 +961,7 @@ mod tests {
 
         fn true_airspeed(&mut self, adiru_number: usize) -> Velocity {
             self.read(&output_data_id(
+                OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::TRUE_AIRSPEED,
             ))
@@ -889,6 +974,7 @@ mod tests {
 
         fn static_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
             self.read(&output_data_id(
+                OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::STATIC_AIR_TEMPERATURE,
             ))
@@ -903,6 +989,7 @@ mod tests {
 
         fn total_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
             self.read(&output_data_id(
+                OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::TOTAL_AIR_TEMPERATURE,
             ))
@@ -920,6 +1007,7 @@ mod tests {
             adiru_number: usize,
         ) -> ThermodynamicTemperature {
             self.read(&output_data_id(
+                OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
             ))
@@ -933,6 +1021,30 @@ mod tests {
                 > ThermodynamicTemperature::new::<degree_celsius>(
                     AirDataReference::UNINITIALISED_VALUE,
                 )
+        }
+
+        fn pitch(&mut self, adiru_number: usize) -> Angle {
+            self.read(&output_data_id(
+                OutputDataType::IR,
+                adiru_number,
+                InertialReference::PITCH,
+            ))
+        }
+
+        fn pitch_is_available(&mut self, adiru_number: usize) -> bool {
+            self.pitch(adiru_number) > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
+        }
+
+        fn roll(&mut self, adiru_number: usize) -> Angle {
+            self.read(&output_data_id(
+                OutputDataType::IR,
+                adiru_number,
+                InertialReference::ROLL,
+            ))
+        }
+
+        fn roll_is_available(&mut self, adiru_number: usize) -> bool {
+            self.roll(adiru_number) > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1484,6 +1596,80 @@ mod tests {
         }
     }
 
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn pitch_is_supplied_by_ir(#[case] adiru_number: usize) {
+        let angle = Angle::new::<degree>(5.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().pitch_of(angle);
+        test_bed.run();
+
+        assert_eq!(test_bed.pitch(adiru_number), angle);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn roll_is_supplied_by_ir(#[case] adiru_number: usize) {
+        let angle = Angle::new::<degree>(5.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().roll_of(angle);
+        test_bed.run();
+
+        assert_eq!(test_bed.roll(adiru_number), angle);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn ir_attitude_is_available_28_seconds_after_alignment_began(#[case] adiru_number: usize) {
+        let mut test_bed = test_bed_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
+        test_bed.run_without_delta();
+
+        test_bed.run_with_delta(
+            InertialReference::ATTITUDE_INITIALISATION_DURATION - Duration::from_millis(1),
+        );
+        assert!(!test_bed.pitch_is_available(adiru_number));
+        assert!(!test_bed.roll_is_available(adiru_number));
+
+        test_bed.run_with_delta(Duration::from_millis(1));
+        assert!(test_bed.pitch_is_available(adiru_number));
+        assert!(test_bed.roll_is_available(adiru_number));
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn ir_attitude_is_no_longer_available_when_adiru_mode_selector_off(
+        #[case] adiru_number: usize,
+    ) {
+        let mut test_bed = test_bed_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
+        test_bed.run_without_delta();
+
+        test_bed.run_with_delta(InertialReference::ATTITUDE_INITIALISATION_DURATION);
+        assert!(
+            test_bed.pitch_is_available(adiru_number),
+            "Test precondition: pitch should be available at this point."
+        );
+        assert!(
+            test_bed.roll_is_available(adiru_number),
+            "Test precondition: roll should be available at this point."
+        );
+
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
+        test_bed.run();
+
+        assert!(!test_bed.pitch_is_available(adiru_number));
+        assert!(!test_bed.roll_is_available(adiru_number));
+    }
+
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
     // PFD attitude is shown 28 seconds after alignment of any ADIRU began, while
     // this should be fed by the selected ADIRU for the captain side (1 or 3), it is now
@@ -1557,7 +1743,7 @@ mod tests {
         test_bed.run_without_delta();
 
         test_bed.run_with_delta(
-            InertialReference::IR_ATTITUDE_INITIALISATION_DURATION - Duration::from_millis(1),
+            InertialReference::ATTITUDE_INITIALISATION_DURATION - Duration::from_millis(1),
         );
         assert!(!test_bed.attitude_available());
 
@@ -1571,7 +1757,7 @@ mod tests {
             test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
         test_bed.run_without_delta();
 
-        test_bed.run_with_delta(InertialReference::IR_ATTITUDE_INITIALISATION_DURATION);
+        test_bed.run_with_delta(InertialReference::ATTITUDE_INITIALISATION_DURATION);
         assert!(
             test_bed.attitude_available(),
             "Test precondition: attitude should be available at this point."
