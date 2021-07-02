@@ -53,14 +53,6 @@ impl LandingGearWeightOnWheels for LandingGear {
         self.center_weight_on_wheel_sensor_on_ground
     }
 
-    fn any_main_gear_on_ground(&self) -> bool {
-        self.left_weight_on_wheel_sensor_on_ground || self.right_weight_on_wheel_sensor_on_ground
-    }
-
-    fn all_main_gear_on_ground(&self) -> bool {
-        self.left_weight_on_wheel_sensor_on_ground && self.right_weight_on_wheel_sensor_on_ground
-    }
-
     fn left_gear_on_ground(&self) -> bool {
         self.left_weight_on_wheel_sensor_on_ground
     }
@@ -241,7 +233,8 @@ mod tests {
         );
 
         assert!(test_bed.query_element(|e| e.center_gear_on_ground()));
-        assert!(test_bed.query_element(|e| e.any_main_gear_on_ground()));
+        assert!(test_bed.query_element(|e| e.left_gear_on_ground()));
+        assert!(test_bed.query_element(|e| e.right_gear_on_ground()));
     }
 
     #[test]
@@ -253,7 +246,8 @@ mod tests {
         );
 
         assert!(!test_bed.query_element(|e| e.center_gear_on_ground()));
-        assert!(!test_bed.query_element(|e| e.any_main_gear_on_ground()));
+        assert!(!test_bed.query_element(|e| e.left_gear_on_ground()));
+        assert!(!test_bed.query_element(|e| e.right_gear_on_ground()));
     }
 
     #[test]
@@ -265,9 +259,8 @@ mod tests {
         );
 
         assert!(!test_bed.query_element(|e| e.center_gear_on_ground()));
-        assert!(test_bed.query_element(|e| e.any_main_gear_on_ground()));
-        assert!(test_bed.query_element(|e| e.left_weight_on_wheel_sensor_on_ground));
-        assert!(!test_bed.query_element(|e| e.right_weight_on_wheel_sensor_on_ground));
+        assert!(test_bed.query_element(|e| e.left_gear_on_ground()));
+        assert!(!test_bed.query_element(|e| e.right_gear_on_ground()));
     }
 
     fn run_test_bed_on_with_position(

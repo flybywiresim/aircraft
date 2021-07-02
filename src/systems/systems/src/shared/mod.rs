@@ -50,10 +50,7 @@ pub trait LandingGearPosition {
 
 pub trait LandingGearWeightOnWheels {
     fn center_gear_on_ground(&self) -> bool;
-    fn any_main_gear_on_ground(&self) -> bool;
-    fn all_main_gear_on_ground(&self) -> bool;
     fn left_gear_on_ground(&self) -> bool;
-
     fn right_gear_on_ground(&self) -> bool;
 }
 
