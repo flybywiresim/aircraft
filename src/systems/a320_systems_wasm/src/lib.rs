@@ -44,6 +44,9 @@ fn create_aircraft_variable_reader(
         &vec!["OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"],
     )?;
     reader.add("GEAR CENTER POSITION", "Percent", 0)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 0)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 1)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 2)?;
     reader.add("GEAR HANDLE POSITION", "Bool", 0)?;
     reader.add("TURB ENG CORRECTED N2", "Percent", 1)?;
     reader.add("TURB ENG CORRECTED N2", "Percent", 2)?;

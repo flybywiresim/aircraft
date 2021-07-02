@@ -48,6 +48,12 @@ pub trait LandingGearPosition {
     fn is_down_and_locked(&self) -> bool;
 }
 
+pub trait LandingGearWeightOnWheels {
+    fn center_gear_on_ground(&self) -> bool;
+    fn any_main_gear_on_ground(&self) -> bool;
+    fn all_main_gear_on_ground(&self) -> bool;
+}
+
 pub trait EngineCorrectedN2 {
     fn corrected_n2(&self) -> Ratio;
 }
