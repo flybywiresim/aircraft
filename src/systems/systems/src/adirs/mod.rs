@@ -175,7 +175,7 @@ impl AirDataInertialReferenceSystem {
             adirus: [
                 AirDataInertialReferenceUnit::new(1, true),
                 AirDataInertialReferenceUnit::new(2, false),
-                AirDataInertialReferenceUnit::new(3, false),
+                AirDataInertialReferenceUnit::new(3, true),
             ],
             configured_align_time: AlignTime::Realistic,
             latitude: Angle::new::<degree>(0.),
@@ -1291,20 +1291,21 @@ mod tests {
         assert_eq!(test_bed.true_airspeed(adiru_number), tas);
     }
 
-    #[test]
-    fn static_air_temperature_is_supplied_by_adr_1() {
+    #[rstest]
+    #[case(1)]
+    #[case(3)]
+    fn static_air_temperature_is_supplied_by_adr(#[case] adiru_number: usize) {
         let sat = ThermodynamicTemperature::new::<degree_celsius>(15.);
         let mut test_bed = all_adirus_aligned_test_bed();
         test_bed.set_ambient_temperature(sat);
         test_bed.run();
 
-        assert_eq!(test_bed.static_air_temperature(1), sat);
+        assert_eq!(test_bed.static_air_temperature(adiru_number), sat);
     }
 
     #[rstest]
     #[case(2)]
-    #[case(3)]
-    fn static_air_temperature_is_not_supplied_by_adr_2_and_3(#[case] adiru_number: usize) {
+    fn static_air_temperature_is_not_supplied_by_adr(#[case] adiru_number: usize) {
         let sat = ThermodynamicTemperature::new::<degree_celsius>(15.);
         let mut test_bed = all_adirus_aligned_test_bed();
         test_bed.set_ambient_temperature(sat);
@@ -1316,19 +1317,20 @@ mod tests {
         );
     }
 
-    #[test]
-    fn total_air_temperature_is_supplied_by_adr_1() {
+    #[rstest]
+    #[case(1)]
+    #[case(3)]
+    fn total_air_temperature_is_supplied_by_adr(#[case] adiru_number: usize) {
         let tat = ThermodynamicTemperature::new::<degree_celsius>(15.);
         let mut test_bed = all_adirus_aligned_test_bed_with().total_air_temperature_of(tat);
         test_bed.run();
 
-        assert_eq!(test_bed.total_air_temperature(1), tat);
+        assert_eq!(test_bed.total_air_temperature(adiru_number), tat);
     }
 
     #[rstest]
     #[case(2)]
-    #[case(3)]
-    fn total_air_temperature_is_not_supplied_by_adr_2_and_3(#[case] adiru_number: usize) {
+    fn total_air_temperature_is_not_supplied_by_adr(#[case] adiru_number: usize) {
         let tat = ThermodynamicTemperature::new::<degree_celsius>(15.);
         let mut test_bed = all_adirus_aligned_test_bed_with().total_air_temperature_of(tat);
         test_bed.run();
@@ -1339,8 +1341,10 @@ mod tests {
         );
     }
 
-    #[test]
-    fn international_standard_atmosphere_delta_is_supplied_by_adr_1() {
+    #[rstest]
+    #[case(1)]
+    #[case(3)]
+    fn international_standard_atmosphere_delta_is_supplied_by_adr(#[case] adiru_number: usize) {
         let sea_level_temperature = 15.;
         let deviation = 5.;
         let mut test_bed = all_adirus_aligned_test_bed();
@@ -1351,17 +1355,14 @@ mod tests {
         test_bed.run();
 
         assert_eq!(
-            test_bed.international_standard_atmosphere_delta(1),
+            test_bed.international_standard_atmosphere_delta(adiru_number),
             ThermodynamicTemperature::new::<degree_celsius>(deviation)
         );
     }
 
     #[rstest]
     #[case(2)]
-    #[case(3)]
-    fn international_standard_atmosphere_delta_is_not_supplied_by_adr_2_and_3(
-        #[case] adiru_number: usize,
-    ) {
+    fn international_standard_atmosphere_delta_is_not_supplied_by_adr(#[case] adiru_number: usize) {
         let sea_level_temperature = 15.;
         let deviation = 5.;
         let mut test_bed = all_adirus_aligned_test_bed_with();
@@ -1394,7 +1395,7 @@ mod tests {
         assert!(!test_bed.barometric_vertical_speed_is_available(adiru_number));
         assert!(!test_bed.true_airspeed_is_available(adiru_number));
 
-        if adiru_number == 1 {
+        if adiru_number == 1 || adiru_number == 3 {
             assert!(!test_bed.static_air_temperature_is_available(adiru_number));
             assert!(!test_bed.total_air_temperature_is_available(adiru_number));
             assert!(!test_bed.international_standard_atmosphere_delta_is_available(adiru_number));
@@ -1407,7 +1408,7 @@ mod tests {
         assert!(test_bed.barometric_vertical_speed_is_available(adiru_number));
         assert!(test_bed.true_airspeed_is_available(adiru_number));
 
-        if adiru_number == 1 {
+        if adiru_number == 1 || adiru_number == 3 {
             assert!(test_bed.static_air_temperature_is_available(adiru_number));
             assert!(test_bed.total_air_temperature_is_available(adiru_number));
             assert!(test_bed.international_standard_atmosphere_delta_is_available(adiru_number));
@@ -1445,7 +1446,7 @@ mod tests {
             "Test precondition: true airspeed should be available at this point."
         );
 
-        if adiru_number == 1 {
+        if adiru_number == 1 || adiru_number == 3 {
             assert!(
                 test_bed.static_air_temperature_is_available(adiru_number),
                 "Test precondition: static air temperature should be available at this point."
@@ -1471,7 +1472,7 @@ mod tests {
         assert!(!test_bed.barometric_vertical_speed_is_available(adiru_number));
         assert!(!test_bed.true_airspeed_is_available(adiru_number));
 
-        if adiru_number == 1 {
+        if adiru_number == 1 || adiru_number == 3 {
             assert!(!test_bed.static_air_temperature_is_available(adiru_number));
             assert!(!test_bed.total_air_temperature_is_available(adiru_number));
             assert!(!test_bed.international_standard_atmosphere_delta_is_available(adiru_number));

@@ -997,7 +997,7 @@
 
 ## ADIRS
 
-In the variables below, {number} should be replaced with one item in the set: { 1, 2, 3 }.
+In the variables below, {number} should be replaced with one item in the set: { 1, 2, 3 }, unless declared otherwise.
 
 - A32NX_CONFIG_ADIRS_IR_ALIGN_TIME
     - Enum
@@ -1079,17 +1079,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Knots
     - The true airspeed (TAS). -1000000 when unavailable.
 
-- A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE
+- A32NX_ADIRS_ADR_{number}_STATIC_AIR_TEMPERATURE
     - Celsius
     - The static air temperature (SAT). -1000000 when unavailable.
+      {number}: 1 or 3
 
-- A32NX_ADIRS_ADR_1_TOTAL_AIR_TEMPERATURE
+- A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
     - Celsius
     - The total air temperature (TAT). -1000000 when unavailable.
+      {number}: 1 or 3
 
-- A32NX_ADIRS_ADR_1_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
+- A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
     - Celsius
     - The delta (deviation) from international standard atmosphere temperature. -1000000 when unavailable.
+      {number}: 1 or 3
 
 ## Autopilot System
 
