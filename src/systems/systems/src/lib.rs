@@ -8,6 +8,7 @@
 #[macro_use]
 pub mod macros;
 
+pub mod adirs;
 pub mod apu;
 pub mod electrical;
 pub mod engine;

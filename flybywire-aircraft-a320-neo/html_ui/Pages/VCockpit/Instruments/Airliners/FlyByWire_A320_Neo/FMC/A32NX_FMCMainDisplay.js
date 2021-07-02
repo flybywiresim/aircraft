@@ -6,7 +6,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
         this.ilsUpdateThrottler = new UpdateThrottler(5000);
-        this.currentFlightPhase = FmgcFlightPhases.PREFLIGHT;
+        this.currentFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number") || FmgcFlightPhases.PREFLIGHT;
+        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
         this._apCooldown = 500;
         this._radioNavOn = false;
         this._vhf1Frequency = 0;
@@ -183,8 +184,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.dataManager = new FMCDataManager(this);
 
-        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
-
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
         this.tempCurve.add(-10 * 3.28084, 21.50);
@@ -211,6 +210,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
+        this._cruiseFlightLevel = this.cruiseFlightLevel;
 
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
@@ -225,6 +225,7 @@ class FMCMainDisplay extends BaseAirliners {
                     console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
                     if (cruiseAlt > 0) {
                         this.cruiseFlightLevel = cruiseAlt;
+                        this._cruiseFlightLevel = cruiseAlt;
                     }
                 };
                 const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
@@ -242,6 +243,8 @@ class FMCMainDisplay extends BaseAirliners {
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+
+        this.flightPhaseManager.init();
 
         /** It takes some time until origin and destination are known, placing this inside callback of the flight plan loader doesn't work */
         setTimeout(() => {
@@ -1725,7 +1728,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryUpdateTOW() {
-        this.takeOffWeight = this.getGW() - this.taxiFuelWeight;
+        this.takeOffWeight = this.zeroFuelWeight + this.blockFuel - this.taxiFuelWeight;
     }
 
     tryUpdateLW() {
@@ -3932,7 +3935,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (!this._progBrgDist) {
             return;
         }
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
+        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
             this._progBrgDist.distance = -1;
             this._progBrgDist.bearing = -1;
             return;
