@@ -353,27 +353,52 @@ impl SimulationElement for AirDataInertialReferenceUnit {
     }
 }
 
-struct AirDataReference {
-    altitude_id: String,
-    computed_airspeed_id: String,
-    mach_id: String,
-    barometric_vertical_speed_id: String,
-    true_airspeed_id: String,
-    static_air_temperature_id: String,
-    total_air_temperature_id: String,
-    international_standard_atmosphere_delta_id: String,
+struct OutputData<T> {
+    id: String,
+    value: T,
+    uninitialised_value: T,
+}
+impl<T: Copy + Default> OutputData<T> {
+    fn new(number: usize, name: &str, uninitialised_value: T) -> Self {
+        Self {
+            id: output_data_id(number, name),
+            value: Default::default(),
+            uninitialised_value,
+        }
+    }
 
+    fn set_value(&mut self, value: T) {
+        self.value = value;
+    }
+
+    fn write_to<U: Write<T>>(&self, writer: &mut U, is_initialised: bool) {
+        writer.write(
+            &self.id,
+            if is_initialised {
+                self.value
+            } else {
+                self.uninitialised_value
+            },
+        );
+    }
+}
+
+fn output_data_id(number: usize, name: &str) -> String {
+    format!("ADIRS_ADR_{}_{}", number, name)
+}
+
+struct AirDataReference {
     number: usize,
     outputs_temperatures: bool,
 
-    indicated_altitude: Length,
-    indicated_airspeed: Velocity,
-    mach: MachNumber,
-    vertical_speed: Velocity,
-    true_airspeed: Velocity,
-
-    ambient_temperature: ThermodynamicTemperature,
-    total_air_temperature: ThermodynamicTemperature,
+    altitude: OutputData<Length>,
+    computed_airspeed: OutputData<Velocity>,
+    mach: OutputData<MachNumber>,
+    barometric_vertical_speed: OutputData<f64>,
+    true_airspeed: OutputData<Velocity>,
+    static_air_temperature: OutputData<ThermodynamicTemperature>,
+    total_air_temperature: OutputData<ThermodynamicTemperature>,
+    international_standard_atmosphere_delta: OutputData<ThermodynamicTemperature>,
 
     remaining_initialisation_duration: Option<Duration>,
 }
@@ -382,69 +407,61 @@ impl AirDataReference {
     const UNINITIALISED_MACH: MachNumber = MachNumber(-1_000_000.);
     const UNINITIALISED_VALUE: f64 = -1_000_000.;
     const TOTAL_AIR_TEMPERATURE_KEY: &'static str = "TOTAL AIR TEMPERATURE";
+    const ALTITUDE: &'static str = "ALTITUDE";
+    const COMPUTED_AIRSPEED: &'static str = "COMPUTED_AIRSPEED";
+    const MACH: &'static str = "MACH";
+    const BAROMETRIC_VERTICAL_SPEED: &'static str = "BAROMETRIC_VERTICAL_SPEED";
+    const TRUE_AIRSPEED: &'static str = "TRUE_AIRSPEED";
+    const STATIC_AIR_TEMPERATURE: &'static str = "STATIC_AIR_TEMPERATURE";
+    const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL_AIR_TEMPERATURE";
+    const INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA: &'static str =
+        "INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA";
 
     fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
-            altitude_id: Self::altitude_id(number),
-            computed_airspeed_id: Self::computed_airspeed_id(number),
-            mach_id: Self::mach_id(number),
-            barometric_vertical_speed_id: Self::barometric_vertical_speed_id(number),
-            true_airspeed_id: Self::true_airspeed_id(number),
-            static_air_temperature_id: Self::static_air_temperature_id(number),
-            total_air_temperature_id: Self::total_air_temperature_id(number),
-            international_standard_atmosphere_delta_id:
-                Self::international_standard_atmosphere_delta_id(number),
-
             number,
             outputs_temperatures,
 
-            indicated_altitude: Length::new::<foot>(0.),
-            indicated_airspeed: Velocity::new::<knot>(0.),
-            mach: MachNumber(0.),
-            vertical_speed: Velocity::new::<foot_per_minute>(0.),
-            true_airspeed: Velocity::new::<knot>(0.),
-
-            ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
-            total_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
+            altitude: OutputData::new(
+                number,
+                Self::ALTITUDE,
+                Length::new::<foot>(Self::UNINITIALISED_VALUE),
+            ),
+            computed_airspeed: OutputData::new(
+                number,
+                Self::COMPUTED_AIRSPEED,
+                Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
+            ),
+            mach: OutputData::new(number, Self::MACH, Self::UNINITIALISED_MACH),
+            barometric_vertical_speed: OutputData::new(
+                number,
+                Self::BAROMETRIC_VERTICAL_SPEED,
+                Self::UNINITIALISED_VALUE,
+            ),
+            true_airspeed: OutputData::new(
+                number,
+                Self::TRUE_AIRSPEED,
+                Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
+            ),
+            static_air_temperature: OutputData::new(
+                number,
+                Self::STATIC_AIR_TEMPERATURE,
+                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
+            ),
+            total_air_temperature: OutputData::new(
+                number,
+                Self::TOTAL_AIR_TEMPERATURE,
+                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
+            ),
+            international_standard_atmosphere_delta: OutputData::new(
+                number,
+                Self::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
+                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
+            ),
 
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
         }
-    }
-
-    fn altitude_id(number: usize) -> String {
-        format!("ADIRS_ADR_{}_ALTITUDE", number)
-    }
-
-    fn computed_airspeed_id(number: usize) -> String {
-        format!("ADIRS_ADR_{}_COMPUTED_AIRSPEED", number)
-    }
-
-    fn mach_id(number: usize) -> String {
-        format!("ADIRS_ADR_{}_MACH", number)
-    }
-
-    fn barometric_vertical_speed_id(number: usize) -> String {
-        format!("ADIRS_ADR_{}_BAROMETRIC_VERTICAL_SPEED", number)
-    }
-
-    fn true_airspeed_id(number: usize) -> String {
-        format!("ADIRS_ADR_{}_TRUE_AIRSPEED", number)
-    }
-
-    fn static_air_temperature_id(number: usize) -> String {
-        format!("ADIRS_ADR_{}_STATIC_AIR_TEMPERATURE", number)
-    }
-
-    fn total_air_temperature_id(number: usize) -> String {
-        format!("ADIRS_ADR_{}_TOTAL_AIR_TEMPERATURE", number)
-    }
-
-    fn international_standard_atmosphere_delta_id(number: usize) -> String {
-        format!(
-            "ADIRS_ADR_{}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA",
-            number
-        )
     }
 
     fn update(
@@ -455,16 +472,28 @@ impl AirDataReference {
         vertical_speed: Velocity,
         true_airspeed: Velocity,
     ) {
-        // For now we'll read from the context. Later the context will no longer
-        // contain the indicated airspeed (and instead all usages of IAS will be replaced by
-        // requests to the ADIRUs).
-        self.indicated_altitude = context.indicated_altitude();
-        self.indicated_airspeed = context.indicated_airspeed();
-        self.ambient_temperature = context.ambient_temperature();
+        // For now some of the data will be read from the context. Later the context will no longer
+        // contain this information (and instead all usages will be replaced by requests to the ADIRUs).
+        self.altitude.set_value(context.indicated_altitude());
+        self.barometric_vertical_speed
+            .set_value(vertical_speed.get::<foot_per_minute>());
 
-        self.mach = mach;
-        self.vertical_speed = vertical_speed;
-        self.true_airspeed = true_airspeed;
+        self.computed_airspeed
+            .set_value(context.indicated_airspeed());
+        self.true_airspeed.set_value(true_airspeed);
+        self.mach.set_value(mach);
+
+        if self.outputs_temperatures {
+            self.static_air_temperature
+                .set_value(context.ambient_temperature());
+
+            self.international_standard_atmosphere_delta.set_value(
+                self.international_standard_atmosphere_delta(
+                    context.indicated_altitude(),
+                    context.ambient_temperature(),
+                ),
+            );
+        }
 
         self.remaining_initialisation_duration = match overhead.mode_of(self.number) {
             InertialReferenceMode::Navigation | InertialReferenceMode::Attitude => {
@@ -481,75 +510,40 @@ impl AirDataReference {
         self.remaining_initialisation_duration == Some(Duration::from_secs(0))
     }
 
-    fn international_standard_atmosphere_delta(&self) -> ThermodynamicTemperature {
-        let isa = self.indicated_altitude.get::<foot>().min(36_089.) * -0.0019812 + 15.;
+    fn international_standard_atmosphere_delta(
+        &self,
+        indicated_altitude: Length,
+        static_air_temperature: ThermodynamicTemperature,
+    ) -> ThermodynamicTemperature {
+        let isa = indicated_altitude.get::<foot>().min(36_089.) * -0.0019812 + 15.;
         ThermodynamicTemperature::new::<degree_celsius>(
-            self.ambient_temperature.get::<degree_celsius>() - isa,
+            static_air_temperature.get::<degree_celsius>() - isa,
         )
-    }
-
-    fn write<T: Write<U>, U>(&self, writer: &mut T, id: &str, initialised: U, uninitialised: U) {
-        writer.write(
-            id,
-            if self.is_initialised() {
-                initialised
-            } else {
-                uninitialised
-            },
-        );
     }
 }
 impl SimulationElement for AirDataReference {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.total_air_temperature = reader.read(Self::TOTAL_AIR_TEMPERATURE_KEY);
+        if self.outputs_temperatures {
+            self.total_air_temperature
+                .set_value(reader.read(Self::TOTAL_AIR_TEMPERATURE_KEY));
+        }
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        self.write(
-            writer,
-            &self.altitude_id,
-            self.indicated_altitude,
-            Length::new::<foot>(Self::UNINITIALISED_VALUE),
-        );
-        self.write(
-            writer,
-            &self.computed_airspeed_id,
-            self.indicated_airspeed,
-            Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
-        );
-        self.write(writer, &self.mach_id, self.mach, Self::UNINITIALISED_MACH);
-        self.write(
-            writer,
-            &self.barometric_vertical_speed_id,
-            self.vertical_speed.get::<foot_per_minute>(),
-            Self::UNINITIALISED_VALUE,
-        );
-        self.write(
-            writer,
-            &self.true_airspeed_id,
-            self.true_airspeed,
-            Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
-        );
+        let is_initialised = self.is_initialised();
+
+        self.altitude.write_to(writer, is_initialised);
+        self.computed_airspeed.write_to(writer, is_initialised);
+        self.mach.write_to(writer, is_initialised);
+        self.barometric_vertical_speed
+            .write_to(writer, is_initialised);
+        self.true_airspeed.write_to(writer, is_initialised);
 
         if self.outputs_temperatures {
-            self.write(
-                writer,
-                &self.static_air_temperature_id,
-                self.ambient_temperature,
-                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
-            );
-            self.write(
-                writer,
-                &self.total_air_temperature_id,
-                self.total_air_temperature,
-                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
-            );
-            self.write(
-                writer,
-                &self.international_standard_atmosphere_delta_id,
-                self.international_standard_atmosphere_delta(),
-                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
-            )
+            self.static_air_temperature.write_to(writer, is_initialised);
+            self.total_air_temperature.write_to(writer, is_initialised);
+            self.international_standard_atmosphere_delta
+                .write_to(writer, is_initialised);
         }
     }
 }
@@ -836,7 +830,7 @@ mod tests {
         }
 
         fn altitude(&mut self, adiru_number: usize) -> Length {
-            self.read(&AirDataReference::altitude_id(adiru_number))
+            self.read(&output_data_id(adiru_number, AirDataReference::ALTITUDE))
         }
 
         fn altitude_is_available(&mut self, adiru_number: usize) -> bool {
@@ -844,7 +838,10 @@ mod tests {
         }
 
         fn computed_airspeed(&mut self, adiru_number: usize) -> Velocity {
-            self.read(&AirDataReference::computed_airspeed_id(adiru_number))
+            self.read(&output_data_id(
+                adiru_number,
+                AirDataReference::COMPUTED_AIRSPEED,
+            ))
         }
 
         fn computed_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
@@ -853,7 +850,7 @@ mod tests {
         }
 
         fn mach(&mut self, adiru_number: usize) -> MachNumber {
-            self.read(&AirDataReference::mach_id(adiru_number))
+            self.read(&output_data_id(adiru_number, AirDataReference::MACH))
         }
 
         fn mach_is_available(&mut self, adiru_number: usize) -> bool {
@@ -861,8 +858,9 @@ mod tests {
         }
 
         fn barometric_vertical_speed(&mut self, adiru_number: usize) -> Velocity {
-            let vertical_speed: f64 = self.read(&AirDataReference::barometric_vertical_speed_id(
+            let vertical_speed: f64 = self.read(&output_data_id(
                 adiru_number,
+                AirDataReference::BAROMETRIC_VERTICAL_SPEED,
             ));
             Velocity::new::<foot_per_minute>(vertical_speed)
         }
@@ -873,7 +871,10 @@ mod tests {
         }
 
         fn true_airspeed(&mut self, adiru_number: usize) -> Velocity {
-            self.read(&AirDataReference::true_airspeed_id(adiru_number))
+            self.read(&output_data_id(
+                adiru_number,
+                AirDataReference::TRUE_AIRSPEED,
+            ))
         }
 
         fn true_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
@@ -882,7 +883,10 @@ mod tests {
         }
 
         fn static_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
-            self.read(&AirDataReference::static_air_temperature_id(adiru_number))
+            self.read(&output_data_id(
+                adiru_number,
+                AirDataReference::STATIC_AIR_TEMPERATURE,
+            ))
         }
 
         fn static_air_temperature_is_available(&mut self, adiru_number: usize) -> bool {
@@ -893,7 +897,10 @@ mod tests {
         }
 
         fn total_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
-            self.read(&AirDataReference::total_air_temperature_id(adiru_number))
+            self.read(&output_data_id(
+                adiru_number,
+                AirDataReference::TOTAL_AIR_TEMPERATURE,
+            ))
         }
 
         fn total_air_temperature_is_available(&mut self, adiru_number: usize) -> bool {
@@ -907,7 +914,10 @@ mod tests {
             &mut self,
             adiru_number: usize,
         ) -> ThermodynamicTemperature {
-            self.read(&AirDataReference::international_standard_atmosphere_delta_id(adiru_number))
+            self.read(&output_data_id(
+                adiru_number,
+                AirDataReference::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
+            ))
         }
 
         fn international_standard_atmosphere_delta_is_available(
