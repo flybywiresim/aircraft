@@ -157,8 +157,12 @@ impl From<f64> for AlignState {
 pub struct AirDataInertialReferenceSystem {
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
-    latitude: Angle,
 
+    mach: MachNumber,
+    vertical_speed: Velocity,
+    true_airspeed: Velocity,
+
+    latitude: Angle,
     pitch: Angle,
     roll: Angle,
 }
@@ -166,9 +170,12 @@ impl AirDataInertialReferenceSystem {
     const STATE_KEY: &'static str = "ADIRS_STATE";
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
-    const LATITUDE_KEY: &'static str = "GPS POSITION LAT";
     const ADR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_FIRST";
     const IR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_ATT";
+    const LATITUDE_KEY: &'static str = "GPS POSITION LAT";
+    const MACH_KEY: &'static str = "AIRSPEED MACH";
+    const VERTICAL_SPEED_KEY: &'static str = "VELOCITY WORLD Y";
+    const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
     const PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     const ROLL_KEY: &'static str = "PLANE BANK DEGREES";
 
@@ -182,6 +189,10 @@ impl AirDataInertialReferenceSystem {
             configured_align_time: AlignTime::Realistic,
             latitude: Angle::new::<degree>(0.),
 
+            mach: MachNumber(0.),
+            vertical_speed: Velocity::new::<foot_per_minute>(0.),
+            true_airspeed: Velocity::new::<knot>(0.),
+
             pitch: Angle::new::<degree>(0.),
             roll: Angle::new::<degree>(0.),
         }
@@ -194,11 +205,24 @@ impl AirDataInertialReferenceSystem {
     ) {
         let align_time = self.configured_align_time;
         let latitude = self.latitude;
+        let mach = self.mach;
+        let vertical_speed = self.vertical_speed;
+        let true_airspeed = self.true_airspeed;
         let pitch = self.pitch;
         let roll = self.roll;
-        self.adirus
-            .iter_mut()
-            .for_each(|adiru| adiru.update(context, overhead, align_time, latitude, pitch, roll));
+        self.adirus.iter_mut().for_each(|adiru| {
+            adiru.update(
+                context,
+                overhead,
+                align_time,
+                latitude,
+                mach,
+                vertical_speed,
+                true_airspeed,
+                pitch,
+                roll,
+            )
+        });
     }
 
     fn state(&self) -> AlignState {
@@ -247,6 +271,12 @@ impl SimulationElement for AirDataInertialReferenceSystem {
 
         // To reduce reads, we only read these values once and then share it with the underlying ADRs and IRs.
         self.latitude = reader.read(Self::LATITUDE_KEY);
+
+        self.mach = reader.read(Self::MACH_KEY);
+        let vertical_speed: f64 = reader.read(Self::VERTICAL_SPEED_KEY);
+        self.vertical_speed = Velocity::new::<foot_per_minute>(vertical_speed);
+        self.true_airspeed = reader.read(Self::TRUE_AIRSPEED_KEY);
+
         self.pitch = reader.read(Self::PITCH_KEY);
         self.roll = reader.read(Self::ROLL_KEY);
     }
@@ -270,43 +300,30 @@ impl Default for AirDataInertialReferenceSystem {
 struct AirDataInertialReferenceUnit {
     adr: AirDataReference,
     ir: InertialReference,
-
-    mach: MachNumber,
-    vertical_speed: Velocity,
-    true_airspeed: Velocity,
 }
 impl AirDataInertialReferenceUnit {
-    const MACH_KEY: &'static str = "AIRSPEED MACH";
-    const VERTICAL_SPEED_KEY: &'static str = "VELOCITY WORLD Y";
-    const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
-
     fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
             adr: AirDataReference::new(number, outputs_temperatures),
             ir: InertialReference::new(number),
-
-            mach: MachNumber(0.),
-            vertical_speed: Velocity::new::<foot_per_minute>(0.),
-            true_airspeed: Velocity::new::<knot>(0.),
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         context: &UpdateContext,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         align_time: AlignTime,
         latitude: Angle,
+        mach: MachNumber,
+        vertical_speed: Velocity,
+        true_airspeed: Velocity,
         pitch: Angle,
         roll: Angle,
     ) {
-        self.adr.update(
-            context,
-            overhead,
-            self.mach,
-            self.vertical_speed,
-            self.true_airspeed,
-        );
+        self.adr
+            .update(context, overhead, mach, vertical_speed, true_airspeed);
         self.ir
             .update(context, overhead, align_time, latitude, pitch, roll);
     }
@@ -337,14 +354,6 @@ impl SimulationElement for AirDataInertialReferenceUnit {
         self.ir.accept(visitor);
 
         visitor.visit(self);
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        // To reduce reads, we only read this value once and then share it with the underlying ADRs.
-        self.mach = reader.read(Self::MACH_KEY);
-        let vertical_speed: f64 = reader.read(Self::VERTICAL_SPEED_KEY);
-        self.vertical_speed = Velocity::new::<foot_per_minute>(vertical_speed);
-        self.true_airspeed = reader.read(Self::TRUE_AIRSPEED_KEY);
     }
 }
 
@@ -812,20 +821,20 @@ mod tests {
         }
 
         fn mach_of(mut self, mach: MachNumber) -> Self {
-            self.write(AirDataInertialReferenceUnit::MACH_KEY, mach);
+            self.write(AirDataInertialReferenceSystem::MACH_KEY, mach);
             self
         }
 
         fn vertical_speed_of(mut self, velocity: Velocity) -> Self {
             self.write(
-                AirDataInertialReferenceUnit::VERTICAL_SPEED_KEY,
+                AirDataInertialReferenceSystem::VERTICAL_SPEED_KEY,
                 velocity.get::<foot_per_minute>(),
             );
             self
         }
 
         fn true_airspeed_of(mut self, velocity: Velocity) -> Self {
-            self.write(AirDataInertialReferenceUnit::TRUE_AIRSPEED_KEY, velocity);
+            self.write(AirDataInertialReferenceSystem::TRUE_AIRSPEED_KEY, velocity);
             self
         }
 
