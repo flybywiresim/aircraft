@@ -67,6 +67,10 @@ pub(super) struct A320Hydraulic {
     lag_time_accumulator: Duration,
 }
 impl A320Hydraulic {
+    const FORWARD_CARGO_DOOR_ID: usize = 5;
+    // Same id for aft door as a place holder until it gets animated
+    const AFT_CARGO_DOOR_ID: usize = 5;
+
     const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
     const BLUE_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
@@ -186,8 +190,8 @@ impl A320Hydraulic {
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
 
-            forward_cargo_door: Door::new(5),
-            aft_cargo_door: Door::new(3),
+            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
+            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID),
             pushback_tug: PushbackTug::new(),
 
             ram_air_turbine: RamAirTurbine::new(),
