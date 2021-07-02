@@ -92,10 +92,6 @@ impl A320Hydraulic {
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(2);
 
-    const FORWARD_CARGO_DOOR_ID: usize = 5;
-    // Same id for aft door as a place holder until it gets animated
-    const AFT_CARGO_DOOR_ID: usize = 5;
-
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
@@ -190,8 +186,8 @@ impl A320Hydraulic {
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
 
-            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
-            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID),
+            forward_cargo_door: Door::new(5),
+            aft_cargo_door: Door::new(3),
             pushback_tug: PushbackTug::new(),
 
             ram_air_turbine: RamAirTurbine::new(),
@@ -4097,8 +4093,8 @@ mod tests {
 
         #[test]
         fn controller_yellow_epump_overhead_button_logic() {
-            let fwd_door = Door::new(A320Hydraulic::FORWARD_CARGO_DOOR_ID);
-            let aft_door = Door::new(A320Hydraulic::AFT_CARGO_DOOR_ID);
+            let fwd_door = Door::new(1);
+            let aft_door = Door::new(2);
             let context = context(Duration::from_millis(100));
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
@@ -4125,8 +4121,8 @@ mod tests {
 
         #[test]
         fn controller_yellow_epump_unpowered_cant_command_pump() {
-            let fwd_door = Door::new(A320Hydraulic::FORWARD_CARGO_DOOR_ID);
-            let aft_door = Door::new(A320Hydraulic::AFT_CARGO_DOOR_ID);
+            let fwd_door = Door::new(1);
+            let aft_door = Door::new(2);
             let context = context(Duration::from_millis(100));
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
@@ -4161,19 +4157,19 @@ mod tests {
             overhead_panel.yellow_epump_push_button.push_auto();
             assert!(!yellow_epump_controller.should_pressurise());
 
-            let aft_door = non_moving_door(A320Hydraulic::AFT_CARGO_DOOR_ID);
-            let fwd_door = moving_door(A320Hydraulic::FORWARD_CARGO_DOOR_ID);
+            let aft_door = non_moving_door(2);
+            let fwd_door = moving_door(1);
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
             assert!(yellow_epump_controller.should_pressurise());
-            let fwd_door = non_moving_door(A320Hydraulic::FORWARD_CARGO_DOOR_ID);
+            let fwd_door = non_moving_door(1);
 
             yellow_epump_controller.update(&context.with_delta(Duration::from_secs(1) + A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION), &overhead_panel,&fwd_door,&aft_door, true);
             assert!(!yellow_epump_controller.should_pressurise());
 
-            let aft_door = moving_door(A320Hydraulic::AFT_CARGO_DOOR_ID);
+            let aft_door = moving_door(2);
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
             assert!(yellow_epump_controller.should_pressurise());
-            let aft_door = non_moving_door(A320Hydraulic::AFT_CARGO_DOOR_ID);
+            let aft_door = non_moving_door(2);
 
             yellow_epump_controller.update(&context.with_delta(Duration::from_secs(1) + A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION), &overhead_panel,&fwd_door,&aft_door, true);
             assert!(!yellow_epump_controller.should_pressurise());
@@ -4197,8 +4193,8 @@ mod tests {
             overhead_panel.yellow_epump_push_button.push_auto();
             assert!(!yellow_epump_controller.should_pressurise());
 
-            let aft_door = non_moving_door(A320Hydraulic::AFT_CARGO_DOOR_ID);
-            let fwd_door = moving_door(A320Hydraulic::FORWARD_CARGO_DOOR_ID);
+            let aft_door = non_moving_door(2);
+            let fwd_door = moving_door(1);
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
 
             // Need to run again the receive power state as now cargo door is operated
@@ -4446,8 +4442,8 @@ mod tests {
 
         #[test]
         fn controller_ptu_tug() {
-            let fwd_door = Door::new(A320Hydraulic::FORWARD_CARGO_DOOR_ID);
-            let aft_door = Door::new(A320Hydraulic::AFT_CARGO_DOOR_ID);
+            let fwd_door = Door::new(1);
+            let aft_door = Door::new(2);
             let mut tug = PushbackTug::new();
             let context = context(Duration::from_millis(100));
 
