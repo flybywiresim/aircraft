@@ -1061,15 +1061,15 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Feet
-    - The altitude. -10000 when unavailable.
+    - The altitude. -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
     - Knots
-    - The computed airspeed (CAS). -1000 when unavailable.
+    - The computed airspeed (CAS). -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_{number}_MACH
     - Mach
-    - The Mach number (M). -1 when unavailable.
+    - The Mach number (M). -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_{number}_BAROMETRIC_VERTICAL_SPEED
     - Feet per minute
@@ -1077,19 +1077,19 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_ADR_{number}_TRUE_AIRSPEED
     - Knots
-    - The true airspeed (TAS). -1000 when unavailable.
+    - The true airspeed (TAS). -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE
     - Celsius
-    - The static air temperature (SAT). -1000 when unavailable.
+    - The static air temperature (SAT). -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_1_TOTAL_AIR_TEMPERATURE
     - Celsius
-    - The total air temperature (TAT). -1000 when unavailable.
+    - The total air temperature (TAT). -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_1_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
     - Celsius
-    - The delta (deviation) from international standard atmosphere temperature. -1000 when unavailable.
+    - The delta (deviation) from international standard atmosphere temperature. -1000000 when unavailable.
 
 ## Autopilot System
 

@@ -379,15 +379,9 @@ struct AirDataReference {
 }
 impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
-    const UNINITIALISED_ALTITUDE_FEET: f64 = -10_000.;
-    const UNINITIALISED_COMPUTED_AIRSPEED_KNOTS: f64 = -1000.;
-    const UNINITIALISED_MACH: MachNumber = MachNumber(-1.);
-    const UNINITIALISED_BAROMETRIC_VERTICAL_SPEED_FEET_PER_MINUTE: f64 = -1_000_000.;
-    const UNINITIALISED_TRUE_AIRSPEED_KNOTS: f64 = -1000.;
-    const UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS: f64 = -1000.;
+    const UNINITIALISED_MACH: MachNumber = MachNumber(-1_000_000.);
+    const UNINITIALISED_VALUE: f64 = -1_000_000.;
     const TOTAL_AIR_TEMPERATURE_KEY: &'static str = "TOTAL AIR TEMPERATURE";
-    const UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS: f64 = -1000.;
-    const UNINITIALISED_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA_DEGREE_CELSIUS: f64 = -1000.;
 
     fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
@@ -515,26 +509,26 @@ impl SimulationElement for AirDataReference {
             writer,
             &self.altitude_id,
             self.indicated_altitude,
-            Length::new::<foot>(Self::UNINITIALISED_ALTITUDE_FEET),
+            Length::new::<foot>(Self::UNINITIALISED_VALUE),
         );
         self.write(
             writer,
             &self.computed_airspeed_id,
             self.indicated_airspeed,
-            Velocity::new::<knot>(Self::UNINITIALISED_COMPUTED_AIRSPEED_KNOTS),
+            Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
         );
         self.write(writer, &self.mach_id, self.mach, Self::UNINITIALISED_MACH);
         self.write(
             writer,
             &self.barometric_vertical_speed_id,
             self.vertical_speed.get::<foot_per_minute>(),
-            Self::UNINITIALISED_BAROMETRIC_VERTICAL_SPEED_FEET_PER_MINUTE,
+            Self::UNINITIALISED_VALUE,
         );
         self.write(
             writer,
             &self.true_airspeed_id,
             self.true_airspeed,
-            Velocity::new::<knot>(Self::UNINITIALISED_TRUE_AIRSPEED_KNOTS),
+            Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
         );
 
         if self.outputs_temperatures {
@@ -542,25 +536,19 @@ impl SimulationElement for AirDataReference {
                 writer,
                 &self.static_air_temperature_id,
                 self.ambient_temperature,
-                ThermodynamicTemperature::new::<degree_celsius>(
-                    Self::UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS,
-                ),
+                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
             );
             self.write(
                 writer,
                 &self.total_air_temperature_id,
                 self.total_air_temperature,
-                ThermodynamicTemperature::new::<degree_celsius>(
-                    Self::UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS,
-                ),
+                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
             );
             self.write(
                 writer,
                 &self.international_standard_atmosphere_delta_id,
                 self.international_standard_atmosphere_delta(),
-                ThermodynamicTemperature::new::<degree_celsius>(
-                    Self::UNINITIALISED_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA_DEGREE_CELSIUS,
-                ),
+                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
             )
         }
     }
@@ -852,8 +840,7 @@ mod tests {
         }
 
         fn altitude_is_available(&mut self, adiru_number: usize) -> bool {
-            self.altitude(adiru_number)
-                > Length::new::<foot>(AirDataReference::UNINITIALISED_ALTITUDE_FEET)
+            self.altitude(adiru_number) > Length::new::<foot>(AirDataReference::UNINITIALISED_VALUE)
         }
 
         fn computed_airspeed(&mut self, adiru_number: usize) -> Velocity {
@@ -862,7 +849,7 @@ mod tests {
 
         fn computed_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
             self.computed_airspeed(adiru_number)
-                > Velocity::new::<knot>(AirDataReference::UNINITIALISED_COMPUTED_AIRSPEED_KNOTS)
+                > Velocity::new::<knot>(AirDataReference::UNINITIALISED_VALUE)
         }
 
         fn mach(&mut self, adiru_number: usize) -> MachNumber {
@@ -882,9 +869,7 @@ mod tests {
 
         fn barometric_vertical_speed_is_available(&mut self, adiru_number: usize) -> bool {
             self.barometric_vertical_speed(adiru_number)
-                > Velocity::new::<foot_per_minute>(
-                    AirDataReference::UNINITIALISED_BAROMETRIC_VERTICAL_SPEED_FEET_PER_MINUTE,
-                )
+                > Velocity::new::<foot_per_minute>(AirDataReference::UNINITIALISED_VALUE)
         }
 
         fn true_airspeed(&mut self, adiru_number: usize) -> Velocity {
@@ -893,7 +878,7 @@ mod tests {
 
         fn true_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
             self.true_airspeed(adiru_number)
-                > Velocity::new::<knot>(AirDataReference::UNINITIALISED_TRUE_AIRSPEED_KNOTS)
+                > Velocity::new::<knot>(AirDataReference::UNINITIALISED_VALUE)
         }
 
         fn static_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
@@ -903,7 +888,7 @@ mod tests {
         fn static_air_temperature_is_available(&mut self, adiru_number: usize) -> bool {
             self.static_air_temperature(adiru_number)
                 > ThermodynamicTemperature::new::<degree_celsius>(
-                    AirDataReference::UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS,
+                    AirDataReference::UNINITIALISED_VALUE,
                 )
         }
 
@@ -914,7 +899,7 @@ mod tests {
         fn total_air_temperature_is_available(&mut self, adiru_number: usize) -> bool {
             self.total_air_temperature(adiru_number)
                 > ThermodynamicTemperature::new::<degree_celsius>(
-                    AirDataReference::UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS,
+                    AirDataReference::UNINITIALISED_VALUE,
                 )
         }
 
@@ -931,7 +916,7 @@ mod tests {
         ) -> bool {
             self.total_air_temperature(adiru_number)
                 > ThermodynamicTemperature::new::<degree_celsius>(
-                    AirDataReference::UNINITIALISED_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA_DEGREE_CELSIUS,
+                    AirDataReference::UNINITIALISED_VALUE,
                 )
         }
     }
