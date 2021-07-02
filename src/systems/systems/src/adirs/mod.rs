@@ -165,6 +165,7 @@ pub struct AirDataInertialReferenceSystem {
     latitude: Angle,
     pitch: Angle,
     roll: Angle,
+    heading: Angle,
 }
 impl AirDataInertialReferenceSystem {
     const STATE_KEY: &'static str = "ADIRS_STATE";
@@ -178,6 +179,7 @@ impl AirDataInertialReferenceSystem {
     const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
     const PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     const ROLL_KEY: &'static str = "PLANE BANK DEGREES";
+    const HEADING_KEY: &'static str = "PLANE HEADING DEGREES MAGNETIC";
 
     pub fn new() -> Self {
         Self {
@@ -187,14 +189,15 @@ impl AirDataInertialReferenceSystem {
                 AirDataInertialReferenceUnit::new(3, true),
             ],
             configured_align_time: AlignTime::Realistic,
-            latitude: Angle::new::<degree>(0.),
 
             mach: MachNumber(0.),
             vertical_speed: Velocity::new::<foot_per_minute>(0.),
             true_airspeed: Velocity::new::<knot>(0.),
 
+            latitude: Angle::new::<degree>(0.),
             pitch: Angle::new::<degree>(0.),
             roll: Angle::new::<degree>(0.),
+            heading: Angle::new::<degree>(0.),
         }
     }
 
@@ -210,6 +213,7 @@ impl AirDataInertialReferenceSystem {
         let true_airspeed = self.true_airspeed;
         let pitch = self.pitch;
         let roll = self.roll;
+        let heading = self.heading;
         self.adirus.iter_mut().for_each(|adiru| {
             adiru.update(
                 context,
@@ -221,6 +225,7 @@ impl AirDataInertialReferenceSystem {
                 true_airspeed,
                 pitch,
                 roll,
+                heading,
             )
         });
     }
@@ -270,15 +275,15 @@ impl SimulationElement for AirDataInertialReferenceSystem {
         self.configured_align_time = reader.read(Self::CONFIGURED_ALIGN_TIME_KEY);
 
         // To reduce reads, we only read these values once and then share it with the underlying ADRs and IRs.
-        self.latitude = reader.read(Self::LATITUDE_KEY);
-
         self.mach = reader.read(Self::MACH_KEY);
         let vertical_speed: f64 = reader.read(Self::VERTICAL_SPEED_KEY);
         self.vertical_speed = Velocity::new::<foot_per_minute>(vertical_speed);
         self.true_airspeed = reader.read(Self::TRUE_AIRSPEED_KEY);
 
+        self.latitude = reader.read(Self::LATITUDE_KEY);
         self.pitch = reader.read(Self::PITCH_KEY);
         self.roll = reader.read(Self::ROLL_KEY);
+        self.heading = reader.read(Self::HEADING_KEY);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -321,11 +326,13 @@ impl AirDataInertialReferenceUnit {
         true_airspeed: Velocity,
         pitch: Angle,
         roll: Angle,
+        heading: Angle,
     ) {
         self.adr
             .update(context, overhead, mach, vertical_speed, true_airspeed);
-        self.ir
-            .update(context, overhead, align_time, latitude, pitch, roll);
+        self.ir.update(
+            context, overhead, align_time, latitude, pitch, roll, heading,
+        );
     }
 
     fn is_aligned(&self) -> bool {
@@ -601,6 +608,7 @@ struct InertialReference {
 
     pitch: OutputData<Angle>,
     roll: OutputData<Angle>,
+    heading: OutputData<Angle>,
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
@@ -609,6 +617,7 @@ impl InertialReference {
     const UNINITIALISED_VALUE: f64 = -1_000_000.;
     const PITCH: &'static str = "PITCH";
     const ROLL: &'static str = "ROLL";
+    const HEADING: &'static str = "HEADING";
 
     fn new(number: usize) -> Self {
         Self {
@@ -630,6 +639,11 @@ impl InertialReference {
                 Self::ROLL,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
+            heading: OutputData::new_ir(
+                number,
+                Self::HEADING,
+                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
+            ),
         }
     }
 
@@ -645,9 +659,11 @@ impl InertialReference {
         latitude: Angle,
         pitch: Angle,
         roll: Angle,
+        heading: Angle,
     ) {
         self.pitch.set_value(pitch);
         self.roll.set_value(roll);
+        self.heading.set_value(heading);
 
         let selected_mode = overhead.mode_of(self.number);
 
@@ -696,10 +712,7 @@ impl InertialReference {
     }
 
     fn is_aligned(&self) -> bool {
-        match self.remaining_align_duration.as_ref() {
-            Some(remaining) => *remaining == Duration::from_secs(0),
-            None => false,
-        }
+        self.remaining_align_duration == Some(Duration::from_secs(0))
     }
 
     fn is_aligning(&self) -> bool {
@@ -724,6 +737,8 @@ impl SimulationElement for InertialReference {
         let attitude_is_initialised = self.attitude_is_initialised();
         self.pitch.write_to(writer, attitude_is_initialised);
         self.roll.write_to(writer, attitude_is_initialised);
+
+        self.heading.write_to(writer, self.is_aligned());
     }
 }
 
@@ -850,6 +865,11 @@ mod tests {
 
         fn roll_of(mut self, angle: Angle) -> Self {
             self.write(AirDataInertialReferenceSystem::ROLL_KEY, angle);
+            self
+        }
+
+        fn heading_of(mut self, angle: Angle) -> Self {
+            self.write(AirDataInertialReferenceSystem::HEADING_KEY, angle);
             self
         }
 
@@ -1054,6 +1074,19 @@ mod tests {
 
         fn roll_is_available(&mut self, adiru_number: usize) -> bool {
             self.roll(adiru_number) > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
+        }
+
+        fn heading(&mut self, adiru_number: usize) -> Angle {
+            self.read(&output_data_id(
+                OutputDataType::IR,
+                adiru_number,
+                InertialReference::HEADING,
+            ))
+        }
+
+        fn heading_is_available(&mut self, adiru_number: usize) -> bool {
+            self.heading(adiru_number)
+                > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1679,6 +1712,54 @@ mod tests {
         assert!(!test_bed.roll_is_available(adiru_number));
     }
 
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn heading_is_supplied_by_ir(#[case] adiru_number: usize) {
+        let angle = Angle::new::<degree>(160.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().heading_of(angle);
+        test_bed.run();
+
+        assert_eq!(test_bed.heading(adiru_number), angle);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn ir_heading_is_available_after_full_alignment_completed(#[case] adiru_number: usize) {
+        let mut test_bed = test_bed_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
+
+        while test_bed.align_state() != AlignState::Aligned {
+            assert!(!test_bed.heading_is_available(adiru_number));
+            test_bed.run();
+        }
+
+        assert!(test_bed.heading_is_available(adiru_number));
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn ir_heading_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
+        let mut test_bed = all_adirus_aligned_test_bed();
+        test_bed.run_without_delta();
+
+        assert!(
+            test_bed.heading_is_available(adiru_number),
+            "Test precondition: heading should be available at this point."
+        );
+
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
+        test_bed.run();
+
+        assert!(!test_bed.heading_is_available(adiru_number));
+    }
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
     // PFD attitude is shown 28 seconds after alignment of any ADIRU began, while
     // this should be fed by the selected ADIRU for the captain side (1 or 3), it is now
