@@ -15,10 +15,6 @@ use uom::si::{
 pub struct LandingGear {
     position: Ratio,
 
-    center_gear_compression: Ratio,
-    left_gear_compression: Ratio,
-    right_gear_compression: Ratio,
-
     center_weight_on_wheel_sensor_on_ground: bool,
     left_weight_on_wheel_sensor_on_ground: bool,
     right_weight_on_wheel_sensor_on_ground: bool,
@@ -30,15 +26,12 @@ impl LandingGear {
     pub const GEAR_LEFT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:1";
     pub const GEAR_RIGHT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:2";
 
-    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.6;
+    // Is extended at 0.5, we set a super small margin of 0.02 from fully extended so 0.52
+    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.52;
 
     pub fn new() -> Self {
         Self {
             position: Ratio::new::<percent>(0.),
-
-            center_gear_compression: Ratio::new::<ratio>(0.5),
-            left_gear_compression: Ratio::new::<ratio>(0.5),
-            right_gear_compression: Ratio::new::<ratio>(0.5),
 
             center_weight_on_wheel_sensor_on_ground: false,
             left_weight_on_wheel_sensor_on_ground: false,
@@ -72,17 +65,17 @@ impl SimulationElement for LandingGear {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.position = reader.read(LandingGear::GEAR_CENTER_POSITION);
 
-        self.center_gear_compression = reader.read(LandingGear::GEAR_CENTER_COMPRESSION);
-        self.center_weight_on_wheel_sensor_on_ground = self.center_gear_compression.get::<ratio>()
-            > Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO;
+        let center_gear_compression: Ratio = reader.read(LandingGear::GEAR_CENTER_COMPRESSION);
+        self.center_weight_on_wheel_sensor_on_ground = center_gear_compression
+            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO);
 
-        self.left_gear_compression = reader.read(LandingGear::GEAR_LEFT_COMPRESSION);
-        self.left_weight_on_wheel_sensor_on_ground = self.left_gear_compression.get::<ratio>()
-            > Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO;
+        let left_gear_compression: Ratio = reader.read(LandingGear::GEAR_LEFT_COMPRESSION);
+        self.left_weight_on_wheel_sensor_on_ground = left_gear_compression
+            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO);
 
-        self.right_gear_compression = reader.read(LandingGear::GEAR_RIGHT_COMPRESSION);
-        self.right_weight_on_wheel_sensor_on_ground = self.right_gear_compression.get::<ratio>()
-            > Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO;
+        let right_gear_compression: Ratio = reader.read(LandingGear::GEAR_RIGHT_COMPRESSION);
+        self.right_weight_on_wheel_sensor_on_ground = right_gear_compression
+            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO);
     }
 }
 impl Default for LandingGear {
