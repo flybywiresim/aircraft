@@ -1,7 +1,7 @@
 use crate::simulation::UpdateContext;
 
 use super::{
-    AircraftInputsPressurization, PressureValve, PressureValveActuator, PressurizationOverheadPanel,
+    AircraftInputsPressurization, PressureValve, PressureValveActuator,
 };
 
 use std::time::Duration;
@@ -21,13 +21,11 @@ pub struct CabinPressureController {
     last_cabin_pressure: Pressure,
     departure_elev: Length,
     landing_elev: Length,
-    is_ldg_elev_auto: bool,
     cabin_alt: Length,
     aircraft_vs: Velocity,
     cabin_target_vs: Velocity,
     cabin_vs: Velocity,
     is_standby: bool,
-    // is_faulted: bool,
 }
 
 impl CabinPressureController {
@@ -44,7 +42,6 @@ impl CabinPressureController {
             last_cabin_pressure: Pressure::new::<inch_of_mercury>(29.92),
             departure_elev: Length::new::<foot>(-5000.),
             landing_elev: Length::new::<meter>(0.),
-            is_ldg_elev_auto: true,
             is_standby: true,
         }
     }
@@ -53,7 +50,6 @@ impl CabinPressureController {
         &mut self,
         context: &UpdateContext,
         outflow_valve: &PressureValve,
-        overhead: &PressurizationOverheadPanel,
         aircraft_inputs: &AircraftInputsPressurization,
     ) {
         self.pressure_schedule_manager.update(
@@ -74,7 +70,6 @@ impl CabinPressureController {
         self.set_cabin_vs(context); //Smooth function
         self.update_departure_elev(context);
         self.update_landing_elev(aircraft_inputs.landing_elev());
-        self.is_ldg_elev_auto = !overhead.mode_is_man();
         self.update_active_system(context);
     }
 
@@ -120,7 +115,6 @@ impl CabinPressureController {
             p_0 = 1013.25;
         }
 
-        // Vars
         let pressure_ratio: f64 = p / p_0;
 
         // Hydrostatic equation with linear temp changes and constant R, g
@@ -218,7 +212,7 @@ impl CabinPressureController {
     }
 
     fn set_cabin_vs(&mut self, context: &UpdateContext) {
-        const INTERNAL_VS_RATE_CHANGE: f64 = 100.; // Guessed value, rate of change of 100fpm per second
+        const INTERNAL_VS_RATE_CHANGE: f64 = 100.; // Rate of change of 100fpm per second
 
         let rate_of_change_for_delta = INTERNAL_VS_RATE_CHANGE * context.delta().as_secs_f64();
         if self.cabin_target_vs > self.cabin_vs() {

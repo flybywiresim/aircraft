@@ -21,7 +21,7 @@ use systems::{
     electrical::{Electricity, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     landing_gear::LandingGear,
-    pressurization::{Pressurization, PressurizationOverheadPanel},
+    pressurization::{Pressurization},
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -44,7 +44,6 @@ pub struct A320 {
     hydraulic_overhead: A320HydraulicOverheadPanel,
     landing_gear: LandingGear,
     pressurization: Pressurization,
-    pressurization_overhead: PressurizationOverheadPanel,
 }
 impl A320 {
     pub fn new(electricity: &mut Electricity) -> A320 {
@@ -72,7 +71,6 @@ impl A320 {
             hydraulic_overhead: A320HydraulicOverheadPanel::new(),
             landing_gear: LandingGear::new(),
             pressurization: Pressurization::new(),
-            pressurization_overhead: PressurizationOverheadPanel::new(),
         }
     }
 }
@@ -122,7 +120,6 @@ impl Aircraft for A320 {
 
         self.pressurization.update(
             context,
-            &self.pressurization_overhead,
             self.engine_1.corrected_n1(),
             self.engine_2.corrected_n1(),
         );

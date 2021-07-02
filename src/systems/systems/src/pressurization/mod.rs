@@ -1,6 +1,5 @@
 use self::{cabin_pressure_controller::CabinPressureController, pressure_valve::PressureValve};
 use crate::{
-    overhead::{AutoManFaultPushButton, OnOffPushButton, ValueKnob},
     shared::random_number,
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
@@ -81,10 +80,6 @@ pub struct Pressurization {
     cpc_1: CabinPressureController,
     cpc_2: CabinPressureController,
     outflow_valve: PressureValve,
-    // safety_valve: PressureValve,
-    // rcpu: bool,
-    // is_in_man_mode: bool,
-    // man_mode_duration: Duration,
     active_system: usize,
     aircraft_inputs: AircraftInputsPressurization,
 }
@@ -101,10 +96,6 @@ impl Pressurization {
             cpc_1: CabinPressureController::new(),
             cpc_2: CabinPressureController::new(),
             outflow_valve: PressureValve::new(),
-            // safety_valve: PressureValve::new(),
-            // rcpu:
-            // is_in_man_mode: false,
-            // man_mode_duration: Duration::from_millis(0),
             active_system: active,
             aircraft_inputs: AircraftInputsPressurization::new(),
         }
@@ -113,7 +104,6 @@ impl Pressurization {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        press_overhead: &PressurizationOverheadPanel,
         eng_1_n1: Ratio,
         eng_2_n1: Ratio,
     ) {
@@ -126,7 +116,6 @@ impl Pressurization {
             self.cpc_1.update(
                 context,
                 &self.outflow_valve,
-                press_overhead,
                 &self.aircraft_inputs,
             );
             self.outflow_valve.update(context, &self.cpc_1);
@@ -135,7 +124,6 @@ impl Pressurization {
             self.cpc_2.update(
                 context,
                 &self.outflow_valve,
-                press_overhead,
                 &self.aircraft_inputs,
             );
             self.outflow_valve.update(context, &self.cpc_2);
@@ -158,7 +146,7 @@ impl Pressurization {
         } else if self.active_system == 2 {
             self.cpc_1.set_active(false);
             self.cpc_2.set_active(true);
-        } // else: Manual mode or both systems failed
+        }
     }
 
     pub fn switch_active_system(&mut self) {
@@ -226,44 +214,6 @@ impl Default for Pressurization {
     }
 }
 
-pub struct PressurizationOverheadPanel {
-    pub vs_control_switch: usize,
-    pub mode_sel: AutoManFaultPushButton,
-    pub ldg_elev_knob: ValueKnob,
-    pub ldg_elev_is_auto: bool,
-    pub ditching: OnOffPushButton,
-}
-
-impl PressurizationOverheadPanel {
-    pub fn new() -> Self {
-        Self {
-            vs_control_switch: 1,
-            mode_sel: AutoManFaultPushButton::new_auto("MODE_SEL"),
-            ldg_elev_knob: ValueKnob::new_with_value("LDG_ELEV", -2000.),
-            ldg_elev_is_auto: true,
-            ditching: OnOffPushButton::new_off("DITCHING"),
-        }
-    }
-
-    pub fn mode_is_man(&self) -> bool {
-        self.mode_sel.is_man()
-    }
-
-    pub fn ldg_elev_knob_value(&self) -> f64 {
-        self.ldg_elev_knob.value()
-    }
-
-    pub fn ldg_elev_is_auto(&self) -> bool {
-        self.ldg_elev_is_auto
-    }
-}
-
-impl Default for PressurizationOverheadPanel {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -282,7 +232,6 @@ mod tests {
 
     struct TestAircraft {
         pressurization: Pressurization,
-        pressurization_overhead: PressurizationOverheadPanel,
         engine_1_n1: Ratio,
         engine_2_n1: Ratio,
     }
@@ -294,7 +243,6 @@ mod tests {
 
             Self {
                 pressurization: press,
-                pressurization_overhead: PressurizationOverheadPanel::new(),
                 engine_1_n1: Ratio::new::<percent>(0.),
                 engine_2_n1: Ratio::new::<percent>(0.),
             }
@@ -314,7 +262,6 @@ mod tests {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.pressurization.update(
                 context,
-                &self.pressurization_overhead,
                 self.engine_1_n1,
                 self.engine_2_n1,
             );
