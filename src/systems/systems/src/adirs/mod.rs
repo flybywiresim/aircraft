@@ -158,8 +158,6 @@ pub struct AirDataInertialReferenceSystem {
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
     latitude: Angle,
-    // Once IRs are split, we can move this into each individual IR.
-    remaining_ir_initialisation_duration: Option<Duration>,
 }
 impl AirDataInertialReferenceSystem {
     const STATE_KEY: &'static str = "ADIRS_STATE";
@@ -167,7 +165,6 @@ impl AirDataInertialReferenceSystem {
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
     const LATITUDE_KEY: &'static str = "GPS POSITION LAT";
     const ADR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_FIRST";
-    const IR_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
     const IR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_ATT";
 
     pub fn new() -> Self {
@@ -179,8 +176,6 @@ impl AirDataInertialReferenceSystem {
             ],
             configured_align_time: AlignTime::Realistic,
             latitude: Angle::new::<degree>(0.),
-            // Start fully initialised.
-            remaining_ir_initialisation_duration: Some(Duration::from_secs(0)),
         }
     }
 
@@ -194,30 +189,6 @@ impl AirDataInertialReferenceSystem {
         self.adirus
             .iter_mut()
             .for_each(|adiru| adiru.update(context, overhead, align_time, latitude));
-
-        self.remaining_ir_initialisation_duration = self.update_initialisation(
-            context,
-            self.remaining_ir_initialisation_duration,
-            Self::IR_INITIALISATION_DURATION,
-        );
-    }
-
-    fn update_initialisation(
-        &mut self,
-        context: &UpdateContext,
-        current: Option<Duration>,
-        initialisation_duration: Duration,
-    ) -> Option<Duration> {
-        if self.adirus.iter().any(|adiru| adiru.is_aligned()) {
-            Some(Duration::from_secs(0))
-        } else if self.adirus.iter().any(|adiru| adiru.is_aligning()) {
-            Some(match current {
-                Some(remaining) => subtract_delta_from_duration(context, remaining),
-                None => initialisation_duration,
-            })
-        } else {
-            None
-        }
     }
 
     fn state(&self) -> AlignState {
@@ -245,6 +216,12 @@ impl AirDataInertialReferenceSystem {
     fn any_adr_is_initialised(&self) -> bool {
         self.adirus.iter().any(|adiru| adiru.adr_initialised())
     }
+
+    fn any_ir_attitude_is_initialised(&self) -> bool {
+        self.adirus
+            .iter()
+            .any(|adiru| adiru.ir_attitude_is_initialised())
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -267,10 +244,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
             self.remaining_align_duration(),
         );
         writer.write(Self::ADR_ALIGNED_KEY, self.any_adr_is_initialised());
-        writer.write(
-            Self::IR_ALIGNED_KEY,
-            self.remaining_ir_initialisation_duration == Some(Duration::from_secs(0)),
-        );
+        writer.write(Self::IR_ALIGNED_KEY, self.any_ir_attitude_is_initialised());
     }
 }
 impl Default for AirDataInertialReferenceSystem {
@@ -334,6 +308,10 @@ impl AirDataInertialReferenceUnit {
 
     fn adr_initialised(&self) -> bool {
         self.adr.is_initialised()
+    }
+
+    fn ir_attitude_is_initialised(&self) -> bool {
+        self.ir.attitude_is_initialised()
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
@@ -495,15 +473,12 @@ impl AirDataReference {
             );
         }
 
-        self.remaining_initialisation_duration = match overhead.mode_of(self.number) {
-            InertialReferenceMode::Navigation | InertialReferenceMode::Attitude => {
-                match self.remaining_initialisation_duration {
-                    Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
-                    None => Some(Self::INITIALISATION_DURATION),
-                }
-            }
-            InertialReferenceMode::Off => None,
-        }
+        self.remaining_initialisation_duration = remaining_initialisation_duration(
+            context,
+            Self::INITIALISATION_DURATION,
+            overhead.mode_of(self.number),
+            self.remaining_initialisation_duration,
+        );
     }
 
     fn is_initialised(&self) -> bool {
@@ -574,10 +549,12 @@ struct InertialReference {
     /// None indicates the IR system isn't aligning nor aligned.
     remaining_align_duration: Option<Duration>,
     ir_fault_flash_duration: Option<Duration>,
+    remaining_attitude_initialisation_duration: Option<Duration>,
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
     const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
+    const IR_ATTITUDE_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
 
     fn new(number: usize) -> Self {
         Self {
@@ -587,6 +564,8 @@ impl InertialReference {
             // runway or in the air.
             remaining_align_duration: Some(Duration::from_secs(0)),
             ir_fault_flash_duration: None,
+            // Start fully initialised.
+            remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
         }
     }
 
@@ -625,7 +604,14 @@ impl InertialReference {
                 }
             }
             InertialReferenceMode::Off => None,
-        }
+        };
+
+        self.remaining_attitude_initialisation_duration = remaining_initialisation_duration(
+            context,
+            Self::IR_ATTITUDE_INITIALISATION_DURATION,
+            overhead.mode_of(self.number),
+            self.remaining_attitude_initialisation_duration,
+        );
     }
 
     fn alignment_starting(&self, selected_mode: InertialReferenceMode) -> bool {
@@ -657,10 +643,29 @@ impl InertialReference {
     fn remaining_align_duration(&self) -> Option<Duration> {
         self.remaining_align_duration
     }
+
+    fn attitude_is_initialised(&self) -> bool {
+        self.remaining_attitude_initialisation_duration == Some(Duration::from_secs(0))
+    }
 }
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.has_fault_id, self.ir_fault_flash_duration.is_some());
+    }
+}
+
+fn remaining_initialisation_duration(
+    context: &UpdateContext,
+    starting_initialisation_duration: Duration,
+    mode: InertialReferenceMode,
+    remaining: Option<Duration>,
+) -> Option<Duration> {
+    match mode {
+        InertialReferenceMode::Navigation | InertialReferenceMode::Attitude => match remaining {
+            Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
+            None => Some(starting_initialisation_duration),
+        },
+        InertialReferenceMode::Off => None,
     }
 }
 
@@ -1552,7 +1557,7 @@ mod tests {
         test_bed.run_without_delta();
 
         test_bed.run_with_delta(
-            AirDataInertialReferenceSystem::IR_INITIALISATION_DURATION - Duration::from_millis(1),
+            InertialReference::IR_ATTITUDE_INITIALISATION_DURATION - Duration::from_millis(1),
         );
         assert!(!test_bed.attitude_available());
 
@@ -1566,7 +1571,7 @@ mod tests {
             test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
         test_bed.run_without_delta();
 
-        test_bed.run_with_delta(AirDataInertialReferenceSystem::IR_INITIALISATION_DURATION);
+        test_bed.run_with_delta(InertialReference::IR_ATTITUDE_INITIALISATION_DURATION);
         assert!(
             test_bed.attitude_available(),
             "Test precondition: attitude should be available at this point."
