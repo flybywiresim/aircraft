@@ -361,6 +361,7 @@ struct AirDataReference {
     true_airspeed_id: String,
     static_air_temperature_id: String,
     total_air_temperature_id: String,
+    international_standard_atmosphere_delta_id: String,
 
     number: usize,
     outputs_temperatures: bool,
@@ -386,6 +387,7 @@ impl AirDataReference {
     const UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS: f64 = -1000.;
     const TOTAL_AIR_TEMPERATURE_KEY: &'static str = "TOTAL AIR TEMPERATURE";
     const UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS: f64 = -1000.;
+    const UNINITIALISED_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA_DEGREE_CELSIUS: f64 = -1000.;
 
     fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
@@ -396,6 +398,8 @@ impl AirDataReference {
             true_airspeed_id: Self::true_airspeed_id(number),
             static_air_temperature_id: Self::static_air_temperature_id(number),
             total_air_temperature_id: Self::total_air_temperature_id(number),
+            international_standard_atmosphere_delta_id:
+                Self::international_standard_atmosphere_delta_id(number),
 
             number,
             outputs_temperatures,
@@ -442,6 +446,13 @@ impl AirDataReference {
         format!("ADIRS_ADR_{}_TOTAL_AIR_TEMPERATURE", number)
     }
 
+    fn international_standard_atmosphere_delta_id(number: usize) -> String {
+        format!(
+            "ADIRS_ADR_{}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA",
+            number
+        )
+    }
+
     fn update(
         &mut self,
         context: &UpdateContext,
@@ -474,6 +485,13 @@ impl AirDataReference {
 
     fn is_initialised(&self) -> bool {
         self.remaining_initialisation_duration == Some(Duration::from_secs(0))
+    }
+
+    fn international_standard_atmosphere_delta(&self) -> ThermodynamicTemperature {
+        let isa = self.indicated_altitude.get::<foot>().min(36_089.) * -0.0019812 + 15.;
+        ThermodynamicTemperature::new::<degree_celsius>(
+            self.ambient_temperature.get::<degree_celsius>() - isa,
+        )
     }
 
     fn write<T: Write<U>, U>(&self, writer: &mut T, id: &str, initialised: U, uninitialised: U) {
@@ -536,6 +554,14 @@ impl SimulationElement for AirDataReference {
                     Self::UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS,
                 ),
             );
+            self.write(
+                writer,
+                &self.international_standard_atmosphere_delta_id,
+                self.international_standard_atmosphere_delta(),
+                ThermodynamicTemperature::new::<degree_celsius>(
+                    Self::UNINITIALISED_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA_DEGREE_CELSIUS,
+                ),
+            )
         }
     }
 }
@@ -889,6 +915,23 @@ mod tests {
             self.total_air_temperature(adiru_number)
                 > ThermodynamicTemperature::new::<degree_celsius>(
                     AirDataReference::UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS,
+                )
+        }
+
+        fn international_standard_atmosphere_delta(
+            &mut self,
+            adiru_number: usize,
+        ) -> ThermodynamicTemperature {
+            self.read(&AirDataReference::international_standard_atmosphere_delta_id(adiru_number))
+        }
+
+        fn international_standard_atmosphere_delta_is_available(
+            &mut self,
+            adiru_number: usize,
+        ) -> bool {
+            self.total_air_temperature(adiru_number)
+                > ThermodynamicTemperature::new::<degree_celsius>(
+                    AirDataReference::UNINITIALISED_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA_DEGREE_CELSIUS,
                 )
         }
     }
@@ -1301,6 +1344,44 @@ mod tests {
         );
     }
 
+    #[test]
+    fn international_standard_atmosphere_delta_is_supplied_by_adr_1() {
+        let sea_level_temperature = 15.;
+        let deviation = 5.;
+        let mut test_bed = all_adirus_aligned_test_bed();
+        test_bed.set_indicated_altitude(Length::new::<foot>(0.));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+            sea_level_temperature + deviation,
+        ));
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.international_standard_atmosphere_delta(1),
+            ThermodynamicTemperature::new::<degree_celsius>(deviation)
+        );
+    }
+
+    #[rstest]
+    #[case(2)]
+    #[case(3)]
+    fn international_standard_atmosphere_delta_is_not_supplied_by_adr_2_and_3(
+        #[case] adiru_number: usize,
+    ) {
+        let sea_level_temperature = 15.;
+        let deviation = 5.;
+        let mut test_bed = all_adirus_aligned_test_bed_with();
+        test_bed.set_indicated_altitude(Length::new::<foot>(0.));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+            sea_level_temperature + deviation,
+        ));
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.international_standard_atmosphere_delta(adiru_number),
+            ThermodynamicTemperature::new::<degree_celsius>(0.)
+        );
+    }
+
     #[rstest]
     #[case(1)]
     #[case(2)]
@@ -1321,6 +1402,7 @@ mod tests {
         if adiru_number == 1 {
             assert!(!test_bed.static_air_temperature_is_available(adiru_number));
             assert!(!test_bed.total_air_temperature_is_available(adiru_number));
+            assert!(!test_bed.international_standard_atmosphere_delta_is_available(adiru_number));
         }
 
         test_bed.run_with_delta(Duration::from_millis(1));
@@ -1333,6 +1415,7 @@ mod tests {
         if adiru_number == 1 {
             assert!(test_bed.static_air_temperature_is_available(adiru_number));
             assert!(test_bed.total_air_temperature_is_available(adiru_number));
+            assert!(test_bed.international_standard_atmosphere_delta_is_available(adiru_number));
         }
     }
 
@@ -1376,6 +1459,10 @@ mod tests {
                 test_bed.total_air_temperature_is_available(adiru_number),
                 "Test precondition: total air temperature should be available at this point."
             );
+            assert!(
+                test_bed.international_standard_atmosphere_delta_is_available(adiru_number),
+                "Test precondition: total air temperature should be available at this point."
+            );
         }
 
         test_bed = test_bed
@@ -1392,6 +1479,7 @@ mod tests {
         if adiru_number == 1 {
             assert!(!test_bed.static_air_temperature_is_available(adiru_number));
             assert!(!test_bed.total_air_temperature_is_available(adiru_number));
+            assert!(!test_bed.international_standard_atmosphere_delta_is_available(adiru_number));
         }
     }
 

@@ -1087,6 +1087,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Celsius
     - The total air temperature (TAT). -1000 when unavailable.
 
+- A32NX_ADIRS_ADR_1_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
+    - Celsius
+    - The delta (deviation) from international standard atmosphere temperature. -1000 when unavailable.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
