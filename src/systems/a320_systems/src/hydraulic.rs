@@ -1482,7 +1482,11 @@ mod tests {
         use systems::shared::PotentialOrigin;
         use systems::simulation::test::TestBed;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
-        use uom::si::{length::foot, ratio::percent, velocity::knot};
+        use uom::si::{
+            length::foot,
+            ratio::{percent, ratio},
+            velocity::knot,
+        };
 
         struct A320TestEmergencyElectricalOverheadPanel {
             rat_and_emer_gen_man_on: MomentaryPushButton,
@@ -1962,6 +1966,22 @@ mod tests {
                 self
             }
 
+            fn rotates_on_runway(mut self) -> Self {
+                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_on_ground(false);
+                self.set_indicated_airspeed(Velocity::new::<knot>(135.));
+                self.write(
+                    LandingGear::GEAR_CENTER_COMPRESSION,
+                    Ratio::new::<ratio>(0.5),
+                );
+                self.write(LandingGear::GEAR_LEFT_COMPRESSION, Ratio::new::<ratio>(0.8));
+                self.write(
+                    LandingGear::GEAR_RIGHT_COMPRESSION,
+                    Ratio::new::<ratio>(0.8),
+                );
+                self
+            }
+
             fn in_flight(mut self) -> Self {
                 self.set_on_ground(false);
                 self.set_indicated_altitude(Length::new::<foot>(2500.));
@@ -1970,11 +1990,6 @@ mod tests {
                     .start_eng2(Ratio::new::<percent>(80.))
                     .set_gear_up()
                     .set_park_brake(false)
-            }
-
-            fn set_gear_compressed_switch(mut self, is_compressed: bool) -> Self {
-                self.set_on_ground(is_compressed);
-                self
             }
 
             fn set_eng1_fire_button(mut self, is_active: bool) -> Self {
@@ -2291,7 +2306,7 @@ mod tests {
         }
 
         #[test]
-        fn ptu_inhibits() {
+        fn ptu_inhibited_by_overhead_off_push_button() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2306,18 +2321,38 @@ mod tests {
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.set_ptu_state(true).run_one_tick();
             assert!(test_bed.is_ptu_enabled());
+        }
 
-            // Not all engines on or off should disable ptu if on ground and park brake on
-            test_bed = test_bed
+        #[test]
+        fn ptu_inhibited_on_ground_when_only_one_engine_on_and_park_brake_on() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
+
             assert!(!test_bed.is_ptu_enabled());
+
             test_bed = test_bed.set_park_brake(false).run_one_tick();
             assert!(test_bed.is_ptu_enabled());
+
             test_bed = test_bed.set_park_brake(true).run_one_tick();
-            test_bed = test_bed.set_gear_compressed_switch(true).run_one_tick();
             assert!(!test_bed.is_ptu_enabled());
-            test_bed = test_bed.set_gear_compressed_switch(false).run_one_tick();
+        }
+
+        #[test]
+        fn ptu_inhibited_on_ground_is_activated_when_center_gear_in_air() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_ptu_enabled());
+
+            test_bed = test_bed.rotates_on_runway().run_one_tick();
             assert!(test_bed.is_ptu_enabled());
         }
 
