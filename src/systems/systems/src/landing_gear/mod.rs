@@ -1,5 +1,5 @@
 use crate::{
-    shared::{LandingGearPosition, LandingGearWeightOnWheels},
+    shared::{ElectricalBusType, ElectricalBuses, LandingGearPosition, LandingGearWeightOnWheels},
     simulation::{Read, SimulationElement, SimulatorReader},
 };
 use uom::si::{
@@ -60,6 +60,14 @@ impl LandingGearWeightOnWheels for LandingGear {
     fn all_main_gear_on_ground(&self) -> bool {
         self.left_weight_on_wheel_sensor_on_ground && self.right_weight_on_wheel_sensor_on_ground
     }
+
+    fn left_gear_on_ground(&self) -> bool {
+        self.left_weight_on_wheel_sensor_on_ground
+    }
+
+    fn right_gear_on_ground(&self) -> bool {
+        self.right_weight_on_wheel_sensor_on_ground
+    }
 }
 impl SimulationElement for LandingGear {
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -84,6 +92,84 @@ impl Default for LandingGear {
     }
 }
 
+pub struct LandingGearControlUnit {
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+    external_power_available: bool,
+
+    right_gear_sensor_compressed: bool,
+    left_gear_sensor_compressed: bool,
+    nose_gear_sensor_compressed: bool,
+}
+impl LandingGearControlUnit {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            is_powered: false,
+            powered_by,
+            external_power_available: false,
+            right_gear_sensor_compressed: true,
+            left_gear_sensor_compressed: true,
+            nose_gear_sensor_compressed: true,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        landing_gear: &impl LandingGearWeightOnWheels,
+        external_power_available: bool,
+    ) {
+        self.nose_gear_sensor_compressed = landing_gear.center_gear_on_ground();
+        self.left_gear_sensor_compressed = landing_gear.left_gear_on_ground();
+        self.right_gear_sensor_compressed = landing_gear.right_gear_on_ground();
+        self.external_power_available = external_power_available;
+    }
+}
+impl SimulationElement for LandingGearControlUnit {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+}
+
+trait LandingGearControlUnitInterface {
+    fn right_gear_compressed_1(&self) -> bool;
+    fn right_gear_compressed_or_ext_power_2(&self) -> bool;
+    fn left_gear_compressed_3(&self) -> bool;
+    fn left_gear_compressed_or_ext_power_4(&self) -> bool;
+    fn left_and_right_gear_compressed_5(&self) -> bool;
+    fn left_and_right_gear_compressed_or_ext_power_6(&self) -> bool;
+    fn nose_gear_compressed_7(&self) -> bool;
+    fn nose_gear_compressed_or_ext_power_8(&self) -> bool;
+}
+
+impl LandingGearControlUnitInterface for LandingGearControlUnit {
+    fn right_gear_compressed_1(&self) -> bool {
+        self.is_powered && self.right_gear_sensor_compressed
+    }
+    fn right_gear_compressed_or_ext_power_2(&self) -> bool {
+        self.is_powered && self.right_gear_sensor_compressed && self.external_power_available
+    }
+    fn left_gear_compressed_3(&self) -> bool {
+        self.is_powered && self.left_gear_sensor_compressed
+    }
+    fn left_gear_compressed_or_ext_power_4(&self) -> bool {
+        self.is_powered && self.left_gear_sensor_compressed && self.external_power_available
+    }
+    fn left_and_right_gear_compressed_5(&self) -> bool {
+        self.is_powered && self.left_gear_sensor_compressed && self.right_gear_sensor_compressed
+    }
+    fn left_and_right_gear_compressed_or_ext_power_6(&self) -> bool {
+        self.is_powered
+            && self.left_gear_sensor_compressed
+            && self.right_gear_sensor_compressed
+            && self.external_power_available
+    }
+    fn nose_gear_compressed_7(&self) -> bool {
+        self.is_powered && self.nose_gear_sensor_compressed
+    }
+    fn nose_gear_compressed_or_ext_power_8(&self) -> bool {
+        self.is_powered && self.nose_gear_sensor_compressed && self.external_power_available
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

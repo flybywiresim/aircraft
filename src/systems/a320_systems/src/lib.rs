@@ -19,9 +19,9 @@ use systems::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
-    electrical::{Electricity, ExternalPowerSource},
+    electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
-    landing_gear::LandingGear,
+    landing_gear::{LandingGear, LandingGearControlUnit},
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -42,6 +42,8 @@ pub struct A320 {
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
+    lgcuis1: LandingGearControlUnit,
+    lgcuis2: LandingGearControlUnit,
     hydraulic: A320Hydraulic,
     hydraulic_overhead: A320HydraulicOverheadPanel,
     landing_gear: LandingGear,
@@ -70,6 +72,8 @@ impl A320 {
             electrical: A320Electrical::new(electricity),
             power_consumption: A320PowerConsumption::new(),
             ext_pwr: ExternalPowerSource::new(electricity),
+            lgcuis1: LandingGearControlUnit::new(ElectricalBusType::DirectCurrentBattery),
+            lgcuis2: LandingGearControlUnit::new(ElectricalBusType::DirectCurrentBattery),
             hydraulic: A320Hydraulic::new(),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(),
             landing_gear: LandingGear::new(),
@@ -120,6 +124,15 @@ impl Aircraft for A320 {
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
+        self.lgcuis1.update(
+            &self.landing_gear,
+            self.ext_pwr.output_potential().is_powered(),
+        );
+        self.lgcuis2.update(
+            &self.landing_gear,
+            self.ext_pwr.output_potential().is_powered(),
+        );
+
         self.hydraulic.update(
             context,
             &self.engine_1,
@@ -156,6 +169,8 @@ impl SimulationElement for A320 {
         self.electrical.accept(visitor);
         self.power_consumption.accept(visitor);
         self.ext_pwr.accept(visitor);
+        self.lgcuis1.accept(visitor);
+        self.lgcuis2.accept(visitor);
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
