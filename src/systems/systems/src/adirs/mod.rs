@@ -1686,9 +1686,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn ir_attitude_is_no_longer_available_when_adiru_mode_selector_off(
-        #[case] adiru_number: usize,
-    ) {
+    fn ir_data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
         let mut test_bed = test_bed_with()
             .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
         test_bed.run_without_delta();
@@ -1702,6 +1700,10 @@ mod tests {
             test_bed.roll_is_available(adiru_number),
             "Test precondition: roll should be available at this point."
         );
+        assert!(
+            test_bed.heading_is_available(adiru_number),
+            "Test precondition: heading should be available at this point."
+        );
 
         test_bed = test_bed
             .then_continue_with()
@@ -1710,6 +1712,7 @@ mod tests {
 
         assert!(!test_bed.pitch_is_available(adiru_number));
         assert!(!test_bed.roll_is_available(adiru_number));
+        assert!(!test_bed.heading_is_available(adiru_number));
     }
 
     #[rstest]
@@ -1740,26 +1743,6 @@ mod tests {
         assert!(test_bed.heading_is_available(adiru_number));
     }
 
-    #[rstest]
-    #[case(1)]
-    #[case(2)]
-    #[case(3)]
-    fn ir_heading_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
-        let mut test_bed = all_adirus_aligned_test_bed();
-        test_bed.run_without_delta();
-
-        assert!(
-            test_bed.heading_is_available(adiru_number),
-            "Test precondition: heading should be available at this point."
-        );
-
-        test_bed = test_bed
-            .then_continue_with()
-            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
-        test_bed.run();
-
-        assert!(!test_bed.heading_is_available(adiru_number));
-    }
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
     // PFD attitude is shown 28 seconds after alignment of any ADIRU began, while
     // this should be fed by the selected ADIRU for the captain side (1 or 3), it is now
