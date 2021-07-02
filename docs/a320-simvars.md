@@ -1083,6 +1083,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Celsius
     - The static air temperature (SAT). -1000 when unavailable.
 
+- A32NX_ADIRS_ADR_1_TOTAL_AIR_TEMPERATURE
+    - Celsius
+    - The total air temperature (TAT). -1000 when unavailable.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

@@ -360,6 +360,7 @@ struct AirDataReference {
     barometric_vertical_speed_id: String,
     true_airspeed_id: String,
     static_air_temperature_id: String,
+    total_air_temperature_id: String,
 
     number: usize,
     outputs_temperatures: bool,
@@ -371,6 +372,7 @@ struct AirDataReference {
     true_airspeed: Velocity,
 
     ambient_temperature: ThermodynamicTemperature,
+    total_air_temperature: ThermodynamicTemperature,
 
     remaining_initialisation_duration: Option<Duration>,
 }
@@ -382,6 +384,8 @@ impl AirDataReference {
     const UNINITIALISED_BAROMETRIC_VERTICAL_SPEED_FEET_PER_MINUTE: f64 = -1_000_000.;
     const UNINITIALISED_TRUE_AIRSPEED_KNOTS: f64 = -1000.;
     const UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS: f64 = -1000.;
+    const TOTAL_AIR_TEMPERATURE_KEY: &'static str = "TOTAL AIR TEMPERATURE";
+    const UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS: f64 = -1000.;
 
     fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
@@ -391,6 +395,7 @@ impl AirDataReference {
             barometric_vertical_speed_id: Self::barometric_vertical_speed_id(number),
             true_airspeed_id: Self::true_airspeed_id(number),
             static_air_temperature_id: Self::static_air_temperature_id(number),
+            total_air_temperature_id: Self::total_air_temperature_id(number),
 
             number,
             outputs_temperatures,
@@ -402,6 +407,7 @@ impl AirDataReference {
             true_airspeed: Velocity::new::<knot>(0.),
 
             ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
+            total_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
 
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
@@ -430,6 +436,10 @@ impl AirDataReference {
 
     fn static_air_temperature_id(number: usize) -> String {
         format!("ADIRS_ADR_{}_STATIC_AIR_TEMPERATURE", number)
+    }
+
+    fn total_air_temperature_id(number: usize) -> String {
+        format!("ADIRS_ADR_{}_TOTAL_AIR_TEMPERATURE", number)
     }
 
     fn update(
@@ -478,6 +488,10 @@ impl AirDataReference {
     }
 }
 impl SimulationElement for AirDataReference {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.total_air_temperature = reader.read(Self::TOTAL_AIR_TEMPERATURE_KEY);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         self.write(
             writer,
@@ -513,7 +527,15 @@ impl SimulationElement for AirDataReference {
                 ThermodynamicTemperature::new::<degree_celsius>(
                     Self::UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS,
                 ),
-            )
+            );
+            self.write(
+                writer,
+                &self.total_air_temperature_id,
+                self.total_air_temperature,
+                ThermodynamicTemperature::new::<degree_celsius>(
+                    Self::UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS,
+                ),
+            );
         }
     }
 }
@@ -730,6 +752,11 @@ mod tests {
             self
         }
 
+        fn total_air_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
+            self.write(AirDataReference::TOTAL_AIR_TEMPERATURE_KEY, temperature);
+            self
+        }
+
         fn align_time_configured_as(mut self, align_time: AlignTime) -> Self {
             Write::<f64>::write(
                 &mut self,
@@ -851,6 +878,17 @@ mod tests {
             self.static_air_temperature(adiru_number)
                 > ThermodynamicTemperature::new::<degree_celsius>(
                     AirDataReference::UNINITIALISED_STATIC_AIR_TEMPERATURE_DEGREE_CELSIUS,
+                )
+        }
+
+        fn total_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
+            self.read(&AirDataReference::total_air_temperature_id(adiru_number))
+        }
+
+        fn total_air_temperature_is_available(&mut self, adiru_number: usize) -> bool {
+            self.total_air_temperature(adiru_number)
+                > ThermodynamicTemperature::new::<degree_celsius>(
+                    AirDataReference::UNINITIALISED_TOTAL_AIR_TEMPERATURE_DEGREE_CELSIUS,
                 )
         }
     }
@@ -1240,6 +1278,29 @@ mod tests {
         );
     }
 
+    #[test]
+    fn total_air_temperature_is_supplied_by_adr_1() {
+        let tat = ThermodynamicTemperature::new::<degree_celsius>(15.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().total_air_temperature_of(tat);
+        test_bed.run();
+
+        assert_eq!(test_bed.total_air_temperature(1), tat);
+    }
+
+    #[rstest]
+    #[case(2)]
+    #[case(3)]
+    fn total_air_temperature_is_not_supplied_by_adr_2_and_3(#[case] adiru_number: usize) {
+        let tat = ThermodynamicTemperature::new::<degree_celsius>(15.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().total_air_temperature_of(tat);
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.total_air_temperature(adiru_number),
+            ThermodynamicTemperature::new::<degree_celsius>(0.)
+        );
+    }
+
     #[rstest]
     #[case(1)]
     #[case(2)]
@@ -1259,6 +1320,7 @@ mod tests {
 
         if adiru_number == 1 {
             assert!(!test_bed.static_air_temperature_is_available(adiru_number));
+            assert!(!test_bed.total_air_temperature_is_available(adiru_number));
         }
 
         test_bed.run_with_delta(Duration::from_millis(1));
@@ -1270,6 +1332,7 @@ mod tests {
 
         if adiru_number == 1 {
             assert!(test_bed.static_air_temperature_is_available(adiru_number));
+            assert!(test_bed.total_air_temperature_is_available(adiru_number));
         }
     }
 
@@ -1309,6 +1372,10 @@ mod tests {
                 test_bed.static_air_temperature_is_available(adiru_number),
                 "Test precondition: static air temperature should be available at this point."
             );
+            assert!(
+                test_bed.total_air_temperature_is_available(adiru_number),
+                "Test precondition: total air temperature should be available at this point."
+            );
         }
 
         test_bed = test_bed
@@ -1324,6 +1391,7 @@ mod tests {
 
         if adiru_number == 1 {
             assert!(!test_bed.static_air_temperature_is_available(adiru_number));
+            assert!(!test_bed.total_air_temperature_is_available(adiru_number));
         }
     }
 

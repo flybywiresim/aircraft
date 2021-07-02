@@ -37,6 +37,7 @@ fn create_aircraft_variable_reader(
 ) -> Result<MsfsAircraftVariableReader, Box<dyn std::error::Error>> {
     let mut reader = MsfsAircraftVariableReader::new();
     reader.add("AMBIENT TEMPERATURE", "celsius", 0)?;
+    reader.add("TOTAL AIR TEMPERATURE", "celsius", 0)?;
     reader.add_with_additional_names(
         "EXTERNAL POWER AVAILABLE",
         "Bool",
