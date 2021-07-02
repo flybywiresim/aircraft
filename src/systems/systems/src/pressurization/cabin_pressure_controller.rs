@@ -1,7 +1,7 @@
 use crate::simulation::UpdateContext;
 
 use super::{
-    AircraftInputsPressurization, PressureValve, PressureValveActuator,
+    AircraftInputsPressurization, PressureValveActuator,
 };
 
 use std::time::Duration;
@@ -15,7 +15,6 @@ use uom::si::{
 
 pub struct CabinPressureController {
     pressure_schedule_manager: PressureScheduleManager,
-    outflow_valve_open_amount: Ratio,
     exterior_pressure: Pressure,
     cabin_pressure: Pressure,
     last_cabin_pressure: Pressure,
@@ -32,7 +31,6 @@ impl CabinPressureController {
     pub fn new() -> Self {
         Self {
             pressure_schedule_manager: PressureScheduleManager::new(),
-            outflow_valve_open_amount: Ratio::new::<percent>(100.),
             exterior_pressure: Pressure::new::<inch_of_mercury>(29.92),
             cabin_pressure: Pressure::new::<inch_of_mercury>(29.92),
             cabin_alt: Length::new::<meter>(0.),
@@ -49,7 +47,6 @@ impl CabinPressureController {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        outflow_valve: &PressureValve,
         aircraft_inputs: &AircraftInputsPressurization,
     ) {
         self.pressure_schedule_manager.update(
@@ -57,7 +54,6 @@ impl CabinPressureController {
             aircraft_inputs.eng_1_n1(),
             aircraft_inputs.eng_2_n1(),
         );
-        self.outflow_valve_open_amount = outflow_valve.open_amount();
         self.exterior_pressure = context.ambient_pressure();
         self.aircraft_vs = context.vertical_speed();
         self.last_cabin_pressure = self.cabin_pressure;
@@ -271,10 +267,6 @@ impl CabinPressureController {
 
     pub fn cabin_delta_p(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure
-    }
-
-    pub fn outflow_valve_open_amount(&self) -> Ratio {
-        self.outflow_valve_open_amount
     }
 
     pub fn pressure_schedule(&self) -> PressureSchedule {

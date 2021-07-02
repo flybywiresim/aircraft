@@ -115,7 +115,6 @@ impl Pressurization {
         if self.is_sys1_active() {
             self.cpc_1.update(
                 context,
-                &self.outflow_valve,
                 &self.aircraft_inputs,
             );
             self.outflow_valve.update(context, &self.cpc_1);
@@ -123,7 +122,6 @@ impl Pressurization {
         } else if self.is_sys2_active() {
             self.cpc_2.update(
                 context,
-                &self.outflow_valve,
                 &self.aircraft_inputs,
             );
             self.outflow_valve.update(context, &self.cpc_2);
@@ -186,7 +184,7 @@ impl SimulationElement for Pressurization {
             writer.write("CABIN_DELTA_PRESSURE", self.cpc_1.cabin_delta_p());
             writer.write(
                 "OUTFLOW_VALVE_OPEN_PERCENTAGE",
-                self.cpc_1.outflow_valve_open_amount(),
+                self.outflow_valve.open_amount(),
             );
         } else if self.is_sys2_active() {
             writer.write("CABIN_ALTITUDE", self.cpc_2.cabin_altitude());
@@ -194,7 +192,7 @@ impl SimulationElement for Pressurization {
             writer.write("CABIN_DELTA_PRESSURE", self.cpc_2.cabin_delta_p());
             writer.write(
                 "OUTFLOW_VALVE_OPEN_PERCENTAGE",
-                self.cpc_2.outflow_valve_open_amount(),
+                self.outflow_valve.open_amount(),
             );
         }
     }
