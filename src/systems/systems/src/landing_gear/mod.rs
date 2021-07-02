@@ -100,6 +100,9 @@ pub struct LandingGearControlUnit {
     right_gear_sensor_compressed: bool,
     left_gear_sensor_compressed: bool,
     nose_gear_sensor_compressed: bool,
+
+    all_up_and_locked: bool,
+    all_down_and_locked: bool,
 }
 impl LandingGearControlUnit {
     pub fn new(powered_by: ElectricalBusType) -> Self {
@@ -110,18 +113,18 @@ impl LandingGearControlUnit {
             right_gear_sensor_compressed: true,
             left_gear_sensor_compressed: true,
             nose_gear_sensor_compressed: true,
+            all_up_and_locked: false,
+            all_down_and_locked: false,
         }
     }
 
-    pub fn update(
-        &mut self,
-        landing_gear: &impl LandingGearWeightOnWheels,
-        external_power_available: bool,
-    ) {
+    pub fn update(&mut self, landing_gear: &LandingGear, external_power_available: bool) {
         self.nose_gear_sensor_compressed = landing_gear.center_gear_on_ground();
         self.left_gear_sensor_compressed = landing_gear.left_gear_on_ground();
         self.right_gear_sensor_compressed = landing_gear.right_gear_on_ground();
         self.external_power_available = external_power_available;
+        self.all_up_and_locked = landing_gear.is_up_and_locked();
+        self.all_down_and_locked = landing_gear.is_down_and_locked();
     }
 }
 impl SimulationElement for LandingGearControlUnit {
@@ -130,7 +133,7 @@ impl SimulationElement for LandingGearControlUnit {
     }
 }
 
-trait LandingGearControlUnitInterface {
+pub trait LandingGearControlUnitInterface {
     fn right_gear_compressed_1(&self) -> bool;
     fn right_gear_compressed_or_ext_power_2(&self) -> bool;
     fn left_gear_compressed_3(&self) -> bool;
@@ -139,6 +142,9 @@ trait LandingGearControlUnitInterface {
     fn left_and_right_gear_compressed_or_ext_power_6(&self) -> bool;
     fn nose_gear_compressed_7(&self) -> bool;
     fn nose_gear_compressed_or_ext_power_8(&self) -> bool;
+
+    fn all_down_and_locked_14(&self) -> bool;
+    fn all_up_and_locked_19(&self) -> bool;
 }
 
 impl LandingGearControlUnitInterface for LandingGearControlUnit {
@@ -168,6 +174,12 @@ impl LandingGearControlUnitInterface for LandingGearControlUnit {
     }
     fn nose_gear_compressed_or_ext_power_8(&self) -> bool {
         self.is_powered && self.nose_gear_sensor_compressed && self.external_power_available
+    }
+    fn all_down_and_locked_14(&self) -> bool {
+        self.is_powered && self.all_down_and_locked
+    }
+    fn all_up_and_locked_19(&self) -> bool {
+        self.is_powered && self.all_up_and_locked
     }
 }
 #[cfg(test)]

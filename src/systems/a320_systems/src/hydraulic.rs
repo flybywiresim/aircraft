@@ -11,7 +11,7 @@ use systems::{
         HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
         PumpController, RamAirTurbine, RamAirTurbineController,
     },
-    landing_gear::LandingGear,
+    landing_gear::{LandingGear, LandingGearControlUnitInterface},
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
@@ -230,7 +230,8 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
-        landing_gear: &LandingGear,
+        lgcui1: &impl LandingGearControlUnitInterface,
+        lgcui2: &impl LandingGearControlUnitInterface,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
@@ -286,7 +287,8 @@ impl A320Hydraulic {
                     engine2,
                     overhead_panel,
                     engine_fire_push_buttons,
-                    landing_gear,
+                    lgcui1,
+                    lgcui2,
                 );
             }
 
@@ -409,14 +411,16 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
-        landing_gear: &LandingGear,
+        lgcui1: &impl LandingGearControlUnitInterface,
+        lgcui2: &impl LandingGearControlUnitInterface,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic.update_brake_demands(
             context,
             &self.green_loop,
             &self.braking_circuit_altn,
-            &landing_gear,
+            lgcui1,
+            lgcui2,
         );
         self.hyd_brake_logic.update_brake_pressure_limitation(
             &mut self.braking_circuit_norm,
@@ -433,7 +437,7 @@ impl A320Hydraulic {
             &self.forward_cargo_door,
             &self.aft_cargo_door,
             &self.pushback_tug,
-            landing_gear,
+            lgcui2,
         );
         self.power_transfer_unit.update(
             &self.green_loop,
@@ -449,7 +453,7 @@ impl A320Hydraulic {
             engine1.uncorrected_n2(),
             engine1.oil_pressure(),
             self.engine_driven_pump_1_pressure_switch.is_pressurised(),
-            landing_gear,
+            lgcui1,
         );
 
         self.engine_driven_pump_1.update(
@@ -469,7 +473,7 @@ impl A320Hydraulic {
             engine2.uncorrected_n2(),
             engine2.oil_pressure(),
             self.engine_driven_pump_2_pressure_switch.is_pressurised(),
-            landing_gear,
+            lgcui2,
         );
 
         self.engine_driven_pump_2.update(
@@ -488,7 +492,8 @@ impl A320Hydraulic {
             engine2.oil_pressure(),
             engine1.is_above_minimum_idle(),
             engine2.is_above_minimum_idle(),
-            landing_gear,
+            lgcui1,
+            lgcui2,
         );
         self.blue_electric_pump.update(
             context,
@@ -644,7 +649,7 @@ impl A320EngineDrivenPumpController {
         engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
-        landing_gear: &impl LandingGearWeightOnWheels,
+        lgcui: &impl LandingGearControlUnitInterface,
     ) {
         // Faking edp section pressure low level as if engine is slow we shouldn't have pressure
         let faked_is_edp_section_low_pressure = engine_n2.get::<percent>() < 5.;
@@ -659,7 +664,8 @@ impl A320EngineDrivenPumpController {
 
         // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
         self.has_pressure_low_fault = self.is_pressure_low
-            && (!is_engine_low_oil_pressure || !landing_gear.all_main_gear_on_ground());
+            && (!is_engine_low_oil_pressure
+                || !(lgcui.right_gear_compressed_1() && lgcui.left_gear_compressed_3()));
     }
 
     fn update<T: EngineFirePushButtons>(
@@ -669,7 +675,7 @@ impl A320EngineDrivenPumpController {
         engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
-        landing_gear: &impl LandingGearWeightOnWheels,
+        lgcui: &impl LandingGearControlUnitInterface,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.engine_number)
@@ -689,7 +695,7 @@ impl A320EngineDrivenPumpController {
             engine_n2,
             engine_oil_pressure,
             pressure_switch_state,
-            landing_gear,
+            lgcui,
         );
     }
 
@@ -751,11 +757,12 @@ impl A320BlueElectricPumpController {
         engine2_oil_pressure: Pressure,
         engine1_above_min_idle: bool,
         engine2_above_min_idle: bool,
-        landing_gear: &impl LandingGearWeightOnWheels,
+        lgcui1: &impl LandingGearControlUnitInterface,
+        lgcui2: &impl LandingGearControlUnitInterface,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
-            if !landing_gear.center_gear_on_ground()
+            if !lgcui1.nose_gear_compressed_7()
                 || engine1_above_min_idle
                 || engine2_above_min_idle
                 || overhead_panel.blue_epump_override_push_button_is_on()
@@ -775,7 +782,8 @@ impl A320BlueElectricPumpController {
             pressure_switch_state,
             engine1_oil_pressure,
             engine2_oil_pressure,
-            landing_gear,
+            lgcui1,
+            lgcui2,
         );
     }
 
@@ -785,7 +793,8 @@ impl A320BlueElectricPumpController {
         pressure_switch_state: bool,
         engine1_oil_pressure: Pressure,
         engine2_oil_pressure: Pressure,
-        landing_gear: &impl LandingGearWeightOnWheels,
+        lgcui1: &impl LandingGearControlUnitInterface,
+        lgcui2: &impl LandingGearControlUnitInterface,
     ) {
         // Low engine oil pressure inhibits fault under 18psi level
         let is_engine_low_oil_pressure = engine1_oil_pressure.get::<psi>()
@@ -797,7 +806,8 @@ impl A320BlueElectricPumpController {
 
         self.has_pressure_low_fault = self.is_pressure_low
             && (!is_engine_low_oil_pressure
-                || !landing_gear.all_main_gear_on_ground()
+                || (!(lgcui1.left_gear_compressed_3() && lgcui1.right_gear_compressed_1())
+                    || !(lgcui2.left_gear_compressed_3() && lgcui2.right_gear_compressed_1()))
                 || overhead_panel.blue_epump_override_push_button_is_on());
     }
 
@@ -952,7 +962,7 @@ impl A320PowerTransferUnitController {
         forward_cargo_door: &Door,
         aft_cargo_door: &Door,
         pushback_tug: &PushbackTug,
-        landing_gear: &impl LandingGearWeightOnWheels,
+        lgcu2: &impl LandingGearControlUnitInterface,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
@@ -965,7 +975,7 @@ impl A320PowerTransferUnitController {
             && overhead_panel.yellow_epump_push_button_is_auto();
 
         let should_enable_if_powered = overhead_panel.ptu_push_button_is_auto()
-            && (!landing_gear.center_gear_on_ground()
+            && (!lgcu2.nose_gear_compressed_7()
                 || self.eng_1_master_on && self.eng_2_master_on
                 || !self.eng_1_master_on && !self.eng_2_master_on
                 || (!self.parking_brake_lever_pos
@@ -1159,16 +1169,18 @@ impl A320HydraulicBrakingLogic {
         context: &UpdateContext,
         green_loop: &HydraulicLoop,
         alternate_circuit: &BrakeCircuit,
-        landing_gear: &LandingGear,
+        lgcui1: &impl LandingGearControlUnitInterface,
+        lgcui2: &impl LandingGearControlUnitInterface,
     ) {
         self.update_normal_braking_availability(&green_loop.pressure());
 
-        let is_in_flight_gear_lever_up =
-            !landing_gear.any_main_gear_on_ground() && !self.is_gear_lever_down;
+        let is_in_flight_gear_lever_up = !(lgcui1.left_and_right_gear_compressed_or_ext_power_6()
+            || lgcui2.left_and_right_gear_compressed_or_ext_power_6())
+            && !self.is_gear_lever_down;
 
         self.should_disable_auto_brake_when_retracting.update(
             context,
-            !landing_gear.is_down_and_locked() && !self.is_gear_lever_down,
+            !lgcui1.all_down_and_locked_14() && !self.is_gear_lever_down,
         );
 
         if is_in_flight_gear_lever_up {
@@ -1478,6 +1490,7 @@ mod tests {
         use systems::electrical::ElectricalBus;
         use systems::electrical::Electricity;
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
+        use systems::landing_gear::LandingGearControlUnit;
         use systems::shared::EmergencyElectricalState;
         use systems::shared::PotentialOrigin;
         use systems::simulation::test::TestBed;
@@ -1547,6 +1560,8 @@ mod tests {
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
+            lgcui1: LandingGearControlUnit,
+            lgcui2: LandingGearControlUnit,
             electrical: A320TestElectrical,
 
             powered_source: TestElectricitySource,
@@ -1581,6 +1596,8 @@ mod tests {
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     engine_fire_overhead: EngineFireOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
+                    lgcui1: LandingGearControlUnit::new(ElectricalBusType::DirectCurrentHot(1)),
+                    lgcui2: LandingGearControlUnit::new(ElectricalBusType::DirectCurrentHot(2)),
                     electrical: A320TestElectrical::new(),
                     powered_source: TestElectricitySource::powered(
                         PotentialOrigin::EngineGenerator(1),
@@ -1777,13 +1794,17 @@ mod tests {
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
                 self.electrical.update(context);
 
+                self.lgcui1.update(&self.landing_gear, true);
+                self.lgcui2.update(&self.landing_gear, true);
+
                 self.hydraulics.update(
                     context,
                     &self.engine_1,
                     &self.engine_2,
                     &self.overhead,
                     &self.engine_fire_overhead,
-                    &self.landing_gear,
+                    &self.lgcui1,
+                    &self.lgcui2,
                     &self.emergency_electrical_overhead,
                     &self.electrical,
                 );
@@ -1795,10 +1816,12 @@ mod tests {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
                 self.engine_1.accept(visitor);
                 self.engine_2.accept(visitor);
+                self.landing_gear.accept(visitor);
+                self.lgcui1.accept(visitor);
+                self.lgcui2.accept(visitor);
                 self.hydraulics.accept(visitor);
                 self.overhead.accept(visitor);
                 self.engine_fire_overhead.accept(visitor);
-                self.landing_gear.accept(visitor);
                 self.emergency_electrical_overhead.accept(visitor);
                 self.electrical.accept(visitor);
 
