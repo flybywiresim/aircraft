@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
 import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconRadio, IconTrafficLights } from '@tabler/icons';
+import { useInterval } from '@flybywiresim/react-components';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
@@ -19,33 +20,14 @@ export const ATC = () => {
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
 
-    useEffect(() => {
-        loadAtc();
-        setInterval(() => loadAtc(), 2 * 60 * 1000);
-    }, []);
-
-    useEffect(() => {
-        setAtc();
-    }, [frequency]);
-
-    useEffect(() => {
-        if (frequency) {
-            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
-        }
-    }, [controllers]);
-
-    useEffect(() => {
-        loadAtc();
-    }, [atisSource]);
-
-    const loadAtc = () => {
+    const loadAtc = useCallback(() => {
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
             for (const a of allAtc) {
-                a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude) * 1.3;
+                a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude);
                 if (a.visualRange === 0 && a.type === apiClient.AtcType.ATIS) {
-                    a.visualRange = 50;
+                    a.visualRange = 100;
                 }
             }
             allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
@@ -53,7 +35,7 @@ export const ATC = () => {
             allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.RADAR, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
             setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
         });
-    };
+    }, [currentLatitude, currentLongitude, atisSource]);
 
     const setAtc = () => {
         const converted = fromFrequency(frequency);
@@ -91,6 +73,24 @@ export const ATC = () => {
         return '';
     };
 
+    useEffect(() => {
+        loadAtc();
+    }, [loadAtc]);
+
+    useEffect(() => {
+        setAtc();
+    }, [frequency]);
+
+    useEffect(() => {
+        if (frequency) {
+            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
+        }
+    }, [controllers]);
+
+    useInterval(() => {
+        loadAtc();
+    }, 60 * 1000);
+
     return (
         <div className="flex p-6 w-full">
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') && (
@@ -108,7 +108,7 @@ export const ATC = () => {
                                     id="atc.callsign"
                                     onClick={() => setFrequency(toFrequency(atc.frequency))}
                                 >
-                                    <div className="flex w-full justify-start text-base">
+                                    <div className="flex w-full justify-start text-lg">
                                         <div>
                                             { atc.type === apiClient.AtcType.RADAR && <IconChartRadar size="2rem" /> }
                                             { atc.type === apiClient.AtcType.GROUND && <IconTrafficLights size="2rem" /> }
@@ -157,7 +157,7 @@ export const ATC = () => {
                             </div>
                             <div className="active-atis flex-wrap mt-8 text-2xl">
                                 { currentAtc?.textAtis && currentAtc.textAtis.map((line) => (
-                                    <p className="flex flex-wrap mt-2">{line}</p>
+                                    <p className="flex text-base flex-wrap mt-2">{line}</p>
                                 )) }
                             </div>
                         </div>
