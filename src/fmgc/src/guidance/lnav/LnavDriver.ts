@@ -114,6 +114,8 @@ export class LnavDriver implements GuidanceComponent {
         console.log('[FMGC/Guidance] LNAV - sequencing leg');
 
         let wpIndex = this.guidanceController.flightPlanManager.getActiveWaypointIndex();
+        const wp = this.guidanceController.flightPlanManager.getActiveWaypoint();
+        wp.waypointReachedAt = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
         this.guidanceController.flightPlanManager.setActiveWaypointIndex(++wpIndex);
     }
