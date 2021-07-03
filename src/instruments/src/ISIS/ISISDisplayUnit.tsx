@@ -75,6 +75,6 @@ export const ISISDisplayUnit: React.FC<Props> = ({ indicatedAirspeed, children }
         );
     }
     return (
-        <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{children}</div>
+        <>{children}</>
     );
 };

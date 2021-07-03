@@ -6,6 +6,7 @@ import { ISISDisplayUnit } from './ISISDisplayUnit';
 import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';
 import { BugSetupDisplay } from './BugSetupDisplay';
 import { initialBugs } from './Bug';
+import { AutoBrightness } from './AutoBrightness';
 
 import './style.scss';
 
@@ -73,14 +74,16 @@ export const ISISDisplay: React.FC = () => {
     });
 
     return (
-        <ISISDisplayUnit indicatedAirspeed={ias}>
-            <svg className="isis-svg" version="1.1" viewBox="0 0 512 512">
-                {{
-                    AHI: <ArtificialHorizonDisplay indicatedAirspeed={ias} bugs={bugs} />,
-                    BUG: <BugSetupDisplay bugs={bugs} selectedIndex={selectedIndex} />,
-                }[mode]}
-            </svg>
-        </ISISDisplayUnit>
+        <AutoBrightness bugsActive={bugsActive}>
+            <ISISDisplayUnit indicatedAirspeed={ias}>
+                <svg className="isis-svg" version="1.1" viewBox="0 0 512 512">
+                    {{
+                        AHI: <ArtificialHorizonDisplay indicatedAirspeed={ias} bugs={bugs} />,
+                        BUG: <BugSetupDisplay bugs={bugs} selectedIndex={selectedIndex} />,
+                    }[mode]}
+                </svg>
+            </ISISDisplayUnit>
+        </AutoBrightness>
     );
 };
 
