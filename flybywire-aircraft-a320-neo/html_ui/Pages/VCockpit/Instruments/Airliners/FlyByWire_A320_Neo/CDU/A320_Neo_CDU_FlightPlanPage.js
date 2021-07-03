@@ -503,6 +503,8 @@ class CDUFlightPlanPage {
             }
         }
         mcdu.currentFlightPlanWaypointIndex = offset + first;
+        SimVar.SetSimVarValue("L:A32NX_SELECTED_WAYPOINT", "number", offset + first);
+
         const wpCount = fpm.getWaypointsCount();
         if (wpCount > 0) {
             while (mcdu.currentFlightPlanWaypointIndex < 0) {

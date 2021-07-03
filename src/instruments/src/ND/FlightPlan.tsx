@@ -32,7 +32,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     if (geometry) {
         return (
             <Layer x={x} y={y}>
-                {flightPlan.visibleWaypoints.map((waypoint) => {
+                {flightPlan.waypoints.map((waypoint) => {
                     if (!waypoint.isVectors) {
                         return <Waypoint key={waypoint.ident} waypoint={waypoint} mapParams={mapParams} />;
                     }
