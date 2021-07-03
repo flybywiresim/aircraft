@@ -28,7 +28,7 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info })
     }
 
     let timeText;
-    if (info.timeFromPpos) {
+    if (info.etaFromPpos) {
         const timeMinutes = Math.floor(info.timeFromPpos / 60).toString().padStart(2, '0');
         const timeSeconds = Math.floor(info.timeFromPpos % 60).toString().padStart(2, '0');
 
