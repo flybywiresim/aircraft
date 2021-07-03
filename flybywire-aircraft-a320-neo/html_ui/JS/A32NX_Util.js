@@ -186,6 +186,9 @@ class UpdateThrottler {
     }
 }
 
+/**
+ * PopUpParams class container for popups to package popup metadata
+ */
 class PopUpParams {
     constructor() {
         this.__Type = "PopUpParams";
@@ -195,38 +198,35 @@ class PopUpParams {
     }
 }
 
+/**
+ * NXPopUp utility class to create a pop-up UI element
+ */
 class NXPopUp {
-    constructor(params = { title: "A32NX POPUP", message: "Default Message", style: "big"}, func = ()=>{}) {
+    constructor() {
         this.g_popUplistener;
         this.params = new PopUpParams();
-        this.params.id = params.title + "_" + this.params.time;
         //this.params.contentUrl = "/templates/Controls/PopUp_EditPreset/PopUp_EditPreset.html";
         //this.params.contentTemplate = "popup-edit-preset";
-        this.params.title = params.title;
-        this.params.contentData = params.message;
-        this.params.style = params.style;
-        this.params.buttons.push(new NotificationButton("TT:MENU.YES", "A32NX_CLOSE_" + this.params.id));
-        this.params.buttons.push(new NotificationButton("TT:MENU.NO"));
-        this.func = func;
-        Coherent.on("A32NX_CLOSE_" + this.params.id, () => {
-            this.func;
-        });
+        this.params.title = "A32NX POPUP";
+        this.params.id = this.params.title + "_" + this.params.time;
+        this.params.contentData = "Default Message";
+        this.params.style = "small";
+        this.params.buttons.push(new NotificationButton("TT:MENU.YES", "A32NX_POP_" + this.params.id + "_YES"));
+        this.params.buttons.push(new NotificationButton("TT:MENU.NO", "A32NX_POP_" + this.params.id + "_NO"));
     }
 
     _showPopUp(params) {
         Coherent.trigger("SHOW_POP_UP", params);
     }
 
-    showPopUp(message) {
-        if (!this.g_popUplistener) {
-            this.g_popUplistener = RegisterViewListener("JS_LISTENER_POPUP", this._showPopUp.bind(null, this.params));
-        } else {
-            this.params.contentData = message;
-            this._showPopUp(this.params);
-        }
-    }
-
-    showPopUp(params = {}, func) {
+    /**
+     * Show popup with given or already initiated parameters
+     * @param {string} params.title Title for popup - will show in menu bar
+     * @param {string} params.message Popup message
+     * @param {string} params.style Style/Type of popup. Valid types are small|big|big-help
+     * @param {function} callback Callback function -> YES button is clicked.
+     */
+    showPopUp(params = {}, callback_yes, callback_no) {
         if (params.title) {
             this.params.title = params.title;
         }
@@ -236,8 +236,11 @@ class NXPopUp {
         if (params.style) {
             this.params.style = params.style;
         }
-        if (func) {
-            this.func = func;
+        if (callback_yes) {
+            Coherent.on("A32NX_POP_" + this.params.id + "_YES", callback_yes);
+        }
+        if (callback_no) {
+            Coherent.on("A32NX_POP_" + this.params.id + "_NO", callback_no);
         }
 
         if (!this.g_popUplistener) {
@@ -247,16 +250,36 @@ class NXPopUp {
         }
     }
 }
+
+/**
+ * NXNotif utility class to create a notification event and element
+ */
 class NXNotif {
-    constructor(params = { title: "A32NX ALERT", type: "MESSAGE", theme: "GAMEPLAY", image: "IMAGE_NOTIFICATION", message:  "Default Message", timeout: 10000}) {
-        this.params = params;
-        this.params.time = new Date().getTime();
-        this.params.id = params.title + "_" + this.params.time;
+    constructor() {
+        this.params = {
+            title: "A32NX ALERT",
+            type: "MESSAGE",
+            theme: "GAMEPLAY",
+            image: "IMAGE_NOTIFICATION",
+            message:  "Default Message",
+            timeout: 10000,
+            time: new Date().getTime(),
+        };
+        this.params.id = this.params.title + "_" + this.params.time;
     }
 
-    sendNotification(params = {}) {
+    /**
+     * Show notification with given or already initiated parametrs.
+     * @param {string} params.title Title for notification - will show as the message header
+     * @param {string} params.type Type of Notification - Valid types are MESSAGE|SUBTITLES
+     * @param {string} params.theme Theme of Notification. Valid types are TIPS|GAMEPLAY|SYSTEM
+     * @param {string} params.image Notification image. Valid types are IMAGE_NOTIFICATION|IMAGE_SCORE
+     * @param {string} params.message Notification message
+     * @param {string} params.timeout Time in ms before notification message will disappear
+     */
+    showNotification(params = {}) {
         if (params.id) {
-            this.params.id = params.id;
+            this.params.id = params.title + "_" + new Date().getTime();
         }
         if (params.title) {
             this.params.title = params.title;

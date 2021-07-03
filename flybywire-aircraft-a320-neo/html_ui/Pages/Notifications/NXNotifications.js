@@ -86,5 +86,3 @@ window.onload = () => {
 
     document.body.appendChild(notification_border_box);
 };
-
-//window.document.body.insertAfter(notification_border_box, document.body.lastChild);

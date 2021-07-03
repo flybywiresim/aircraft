@@ -102,6 +102,12 @@ class CDU_OPTIONS_FMGC {
             } else {
                 NXDataStore.set("CONFIG_USING_METRIC_UNIT", storedUsingMetric === 1 ? "2.20462" : "1");
                 mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
+                const notif = new NXNotif();
+                const popup = new NXPopUp();
+                function show_notif() {
+                    notif.showNotification({title: "RELOAD AIRCRAFT", theme: "GAMEPLAY", message:"Reload the aircraft to apply settings"});
+                };
+                popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Please reload the aircraft to apply your new settings.", style: "small"}, show_notif, show_notif);
             }
             CDU_OPTIONS_FMGC.ShowPage(mcdu);
         };
