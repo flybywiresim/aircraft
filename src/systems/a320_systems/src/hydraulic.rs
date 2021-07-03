@@ -304,6 +304,50 @@ impl A320Hydraulic {
         }
     }
 
+    fn blue_electric_pump_estimated_flow(&self) -> VolumeRate {
+        let ram_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
+
+        let estimated_blue_epump_flow: VolumeRate;
+        if self.blue_electric_pump_controller.should_pressurise() {
+            if ram_produces_flow {
+                estimated_blue_epump_flow = self.blue_loop.current_flow() * 0.4;
+            } else {
+                estimated_blue_epump_flow = self.blue_loop.current_flow();
+            }
+        } else {
+            estimated_blue_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+
+        estimated_blue_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
+    }
+
+    fn yellow_electric_pump_estimated_flow(&self) -> VolumeRate {
+        // Here we estimate yellow epump flow
+        // If no edp all the yellow loop flow is from yellow epump
+        // If EDP started pumping then we consider epump provides a fraction of the flow
+        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
+            && self.engine_driven_pump_2_controller.should_pressurise();
+
+        let mut estimated_yellow_epump_flow: VolumeRate;
+        if self.yellow_electric_pump_controller.should_pressurise() {
+            if yellow_edp_outputs_some_flow {
+                estimated_yellow_epump_flow = self.yellow_loop.current_flow() * 0.2;
+            } else {
+                estimated_yellow_epump_flow = self.yellow_loop.current_flow();
+            }
+
+            if self.power_transfer_unit.is_active_right_to_left() {
+                estimated_yellow_epump_flow += self.power_transfer_unit.flow();
+            } else if self.power_transfer_unit.is_active_left_to_right() {
+                estimated_yellow_epump_flow -= self.power_transfer_unit.flow();
+            }
+        } else {
+            estimated_yellow_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+
+        estimated_yellow_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
+    }
+
     fn green_edp_has_low_press_fault(&self) -> bool {
         self.engine_driven_pump_1_controller
             .has_pressure_low_fault()
@@ -586,55 +630,16 @@ impl SimulationElement for A320Hydraulic {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
-            "HYD_YELLOW_EPUMP_IS_STARTING",
-            self.yellow_electric_pump.is_starting(),
+            "HYD_YELLOW_EPUMP_FLOW",
+            self.yellow_electric_pump_estimated_flow()
+                .get::<gallon_per_second>(),
         );
+
         writer.write(
-            "HYD_BLUE_EPUMP_IS_STARTING",
-            self.blue_electric_pump.is_starting(),
+            "HYD_BLUE_EPUMP_FLOW",
+            self.blue_electric_pump_estimated_flow()
+                .get::<gallon_per_second>(),
         );
-
-        // Here we estimate yellow epump flow
-        // If no edp all the yellow loop flow is from yellow epump
-        // If EDP started pumping then we consider epump provides a fraction of the flow
-        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
-            && self.engine_driven_pump_2_controller.should_pressurise();
-
-        let mut estimated_yellow_epump_flow: VolumeRate;
-        if self.yellow_electric_pump_controller.should_pressurise() {
-            if yellow_edp_outputs_some_flow {
-                estimated_yellow_epump_flow = self.yellow_loop.current_flow() * 0.2;
-            } else {
-                estimated_yellow_epump_flow = self.yellow_loop.current_flow();
-            }
-
-            if self.power_transfer_unit.is_active_right_to_left() {
-                estimated_yellow_epump_flow += self.power_transfer_unit.flow();
-            } else if self.power_transfer_unit.is_active_left_to_right() {
-                estimated_yellow_epump_flow -= self.power_transfer_unit.flow();
-            }
-        } else {
-            estimated_yellow_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
-        }
-        let yellow_flow_simvar = estimated_yellow_epump_flow
-            .get::<gallon_per_second>()
-            .max(0.);
-        writer.write("HYD_YELLOW_EPUMP_FLOW", yellow_flow_simvar);
-
-        let ram_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
-
-        let estimated_blue_epump_flow: VolumeRate;
-        if self.blue_electric_pump_controller.should_pressurise() {
-            if ram_produces_flow {
-                estimated_blue_epump_flow = self.blue_loop.current_flow() * 0.4;
-            } else {
-                estimated_blue_epump_flow = self.blue_loop.current_flow();
-            }
-        } else {
-            estimated_blue_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
-        }
-        let blue_flow_simvar = estimated_blue_epump_flow.get::<gallon_per_second>().max(0.);
-        writer.write("HYD_BLUE_EPUMP_FLOW", blue_flow_simvar);
     }
 }
 
