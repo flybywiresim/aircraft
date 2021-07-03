@@ -102,19 +102,29 @@ export class ManagedFlightPlan {
      * @return {WaypointStats[]} array of statistics for the waypoints in the flight plan, with matching indices to
      *                           flight plan waypoints
      */
-    public computeWaypointStatistics(ppos: LatLongData): WaypointStats[] {
+    public computeWaypointStatistics(ppos: LatLongData): Map<number, WaypointStats> {
         // TODO this should be moved into its own dedicated module
+
+        const stats = new Map<number, WaypointStats>();
 
         const firstData = this.computeActiveWaypointStatistics(ppos);
 
-        return [firstData, ...(this.visibleWaypoints.map((waypoint) => ({
-            ident: waypoint.ident,
-            bearingInFp: waypoint.bearingInFP,
-            distanceInFP: waypoint.distanceInFP,
-            distanceFromPpos: waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos,
-            timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
-            etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
-        })))];
+        stats.set(this.activeWaypointIndex, firstData);
+
+        this.waypoints.slice(0).forEach((waypoint, index) => {
+            const data = {
+                ident: waypoint.ident,
+                bearingInFp: waypoint.bearingInFP,
+                distanceInFP: waypoint.distanceInFP,
+                distanceFromPpos: waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos,
+                timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
+                etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
+            };
+
+            stats.set(index, data);
+        });
+
+        return stats;
     }
 
     /**
@@ -129,13 +139,16 @@ export class ManagedFlightPlan {
 
         const bearingInFp = Avionics.Utils.computeGreatCircleHeading(ppos, this.activeWaypoint.infos.coordinates);
         const distanceFromPpos = Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
+        const timeFromPpos = this.computeWaypointTime(distanceFromPpos);
+        const etaFromPpos = this.computeWaypointEta(distanceFromPpos, timeFromPpos);
 
         return {
             ident: this.activeWaypoint.ident,
             bearingInFp,
             distanceInFP: this.activeWaypoint.distanceInFP,
             distanceFromPpos,
-            timeFromPpos: this.computeWaypointTime(distanceFromPpos),
+            timeFromPpos,
+            etaFromPpos,
         };
     }
 
@@ -150,10 +163,13 @@ export class ManagedFlightPlan {
         return (distance / groundSpeed) * 3600;
     }
 
-    private computeWaypointEta(distance: number) {
-        const eta = this.computeWaypointTime(distance);
+    private computeWaypointEta(distance: number, preComputedTime? :number) {
+        const eta = preComputedTime ?? this.computeWaypointTime(distance);
 
         const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+
+        console.log(`BRUHEGG: ${utcTime}, BRUHHH #2: ${eta}`);
+        debugger;
 
         return eta + utcTime;
     }
@@ -196,7 +212,7 @@ export class ManagedFlightPlan {
             return allWaypoints.slice(Math.max(this.activeWaypointIndex - 1, directToWaypointIndex), allWaypoints.length - 1);
         }
 
-        return allWaypoints.slice(this.activeWaypointIndex - 1, allWaypoints.length - 1);
+        return allWaypoints.slice(this.activeWaypointIndex - 1, allWaypoints.length);
     }
 
     public get segments(): FlightPlanSegment[] {

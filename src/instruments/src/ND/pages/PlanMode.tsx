@@ -34,7 +34,7 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos }) => {
         if (selectedWaypoint) {
             mapParams.compute(selectedWaypoint.infos.coordinates, rangeSetting * 2, 768, 0);
         }
-    }, [selectedWaypoint?.infos.coordinates.lat ?? 0, selectedWaypoint?.infos.coordinates.long ?? 0, 0, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
+    }, [selectedWaypoint?.infos.coordinates.lat, selectedWaypoint?.infos.coordinates.long, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     return (
         <>
