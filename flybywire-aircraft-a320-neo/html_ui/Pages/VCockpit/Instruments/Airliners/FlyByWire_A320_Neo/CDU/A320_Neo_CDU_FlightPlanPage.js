@@ -130,7 +130,7 @@ class CDUFlightPlanPage {
             let destEFOBCell = "---";
 
             if (fpm.getDestination()) {
-                const destStats = stats[fpm.getCurrentFlightPlan().visibleWaypoints.length];
+                const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
                 destDistCell = destStats.distanceFromPpos.toFixed(0);
                 destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(isFlying))).toFixed(1);
                 if (isFlying) {
@@ -208,7 +208,7 @@ class CDUFlightPlanPage {
              * The page displays the waypoint before the active one for which we don't have statistics.
              * The index must be incremented therefore
              *  */
-            const statIndex = stats.length === 1 ? 0 : index + 1;
+            const statIndex = index;
             iWaypoint++;
 
             if (index === waypointsWithDiscontinuities.length - 1) {
@@ -224,7 +224,7 @@ class CDUFlightPlanPage {
                 apprElev = apprElev.padStart(6,"\xa0");
 
                 if (fpm.getDestination()) {
-                    const destStats = stats[fpm.getCurrentFlightPlan().visibleWaypoints.length];
+                    const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
                     if (isFlying) {
                         destTimeCell = FMCMainDisplay.secondsToUTC(destStats.etaFromPpos);
                     } else {
@@ -275,11 +275,11 @@ class CDUFlightPlanPage {
                     let timeCell = "----";
                     if (isFlying) {
                         if (isFinite(waypoint.liveUTCTo) || isFinite(waypoint.waypointReachedAt)) {
-                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[statIndex].etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
+                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? stats.get(statIndex).etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
                         }
                     } else {
                         if (isFinite(waypoint.liveETATo)) {
-                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[statIndex].timeFromPpos : 0) + "[s-text]";
+                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? stats.get(statIndex).timeFromPpos : 0) + "[s-text]";
                         }
                     }
                     if (fpIndex > fpm.getDepartureWaypointsCount()) {
@@ -319,7 +319,7 @@ class CDUFlightPlanPage {
                         }
 
                         // TODO actually use the correct prediction
-                        const currentWaypointStatistics = stats[statIndex];
+                        const currentWaypointStatistics = stats.get(statIndex);
                         let distance;
                         let dstnc;
                         // active waypoint is live distance, others are distances in the flight plan
@@ -480,7 +480,7 @@ class CDUFlightPlanPage {
                         let destTimeCell = "----";
                         let destDistCell = "---";
                         if (fpm.getDestination()) {
-                            const destStats = stats[fpm.getCurrentFlightPlan().visibleWaypoints.length];
+                            const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
 
                             destDistCell = fpm.getDestination().infos.totalDistInFP.toFixed(0);
                             if (isFlying) {
