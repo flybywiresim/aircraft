@@ -31,6 +31,7 @@ class CDUFlightPlanPage {
         let runway = null;
         let showFrom = false;
         let showTMPY = false;
+        let stats = null;
 
         const fpm = mcdu.flightPlanManager;
 
@@ -49,6 +50,11 @@ class CDUFlightPlanPage {
         let approachRunway = null;
         if (fpm.getDestination()) {
             destCell = fpm.getDestination().ident;
+            const ppos = {
+                lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+                long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+            };
+            stats = fpm.getCurrentFlightPlan().computeWaypointStatistics(ppos);
             approachRunway = fpm.getApproachRunway();
             if (approachRunway) {
                 destCell += Avionics.Utils.formatRunway(approachRunway.designation);
@@ -122,13 +128,15 @@ class CDUFlightPlanPage {
             let destTimeCell = "----";
             let destDistCell = "---";
             let destEFOBCell = "---";
+
             if (fpm.getDestination()) {
-                destDistCell = fpm.getDestination().liveDistanceTo.toFixed(0);
+                const destStats = stats[fpm.getCurrentFlightPlan().visibleWaypoints.length];
+                destDistCell = destStats.distanceFromPpos.toFixed(0);
                 destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(isFlying))).toFixed(1);
                 if (isFlying) {
-                    destTimeCell = FMCMainDisplay.secondsToUTC(fpm.getDestination().liveUTCTo);
+                    destTimeCell = FMCMainDisplay.secondsToUTC(destStats.etaFromPpos);
                 } else {
-                    destTimeCell = FMCMainDisplay.secondsTohhmm(fpm.getDestination().liveETATo);
+                    destTimeCell = FMCMainDisplay.secondsTohhmm(destStats.timeFromPpos);
                 }
             }
             if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {
@@ -195,13 +203,19 @@ class CDUFlightPlanPage {
                 iWaypoint = iWaypoint % (waypointsWithDiscontinuities.length + 1);
             }
             const index = iWaypoint;
+            /**
+             * @var stats contains only the waypoints which are in the active flightplan
+             * The page displays the waypoint before the active one for which we don't have statistics.
+             * The index must be incremented therefore
+             *  */
+            const statIndex = stats.length === 1 ? 0 : index + 1;
             iWaypoint++;
 
             if (index === waypointsWithDiscontinuities.length - 1) {
                 // Is last waypoint
 
                 let destTimeCell = "----";
-                let destDistCell = "---";
+                const destDistCell = "---";
                 let apprElev = "-----";
                 let apprColor = "white";
                 if (approachRunway) {
@@ -210,11 +224,11 @@ class CDUFlightPlanPage {
                 apprElev = apprElev.padStart(6,"\xa0");
 
                 if (fpm.getDestination()) {
-                    destDistCell = fpm.getDestination().liveDistanceTo.toFixed(0);
+                    const destStats = stats[fpm.getCurrentFlightPlan().visibleWaypoints.length];
                     if (isFlying) {
-                        destTimeCell = FMCMainDisplay.secondsToUTC(fpm.getDestination().liveUTCTo);
+                        destTimeCell = FMCMainDisplay.secondsToUTC(destStats.etaFromPpos);
                     } else {
-                        destTimeCell = FMCMainDisplay.secondsTohhmm(fpm.getDestination().liveETATo);
+                        destTimeCell = FMCMainDisplay.secondsTohhmm(destStats.timeFromPpos);
                     }
                 }
 
@@ -260,12 +274,12 @@ class CDUFlightPlanPage {
                 } else {
                     let timeCell = "----";
                     if (isFlying) {
-                        if (isFinite(waypoint.liveUTCTo) || isFinite(fpm._waypointReachedAt)) {
-                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? waypoint.liveUTCTo : fpm._waypointReachedAt)) + "[s-text]";
+                        if (isFinite(waypoint.liveUTCTo) || isFinite(waypoint.waypointReachedAt)) {
+                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[statIndex].etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
                         }
                     } else {
                         if (isFinite(waypoint.liveETATo)) {
-                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? waypoint.liveETATo : 0) + "[s-text]";
+                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? stats[statIndex].timeFromPpos : 0) + "[s-text]";
                         }
                     }
                     if (fpIndex > fpm.getDepartureWaypointsCount()) {
@@ -305,16 +319,15 @@ class CDUFlightPlanPage {
                         }
 
                         // TODO actually use the correct prediction
-
-                        const ppos = {
-                            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
-                            long: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree longitude'),
-                        };
-
-                        const stats = fpm.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos);
-
-                        const distance = stats.distanceFromPpos;
+                        const currentWaypointStatistics = stats[statIndex];
+                        let distance;
                         let dstnc;
+                        // active waypoint is live distance, others are distances in the flight plan
+                        if (index === first) {
+                            distance = currentWaypointStatistics.distanceFromPpos;
+                        } else {
+                            distance = currentWaypointStatistics.distanceInFP;
+                        }
                         if (i === 1) {
                             dstnc = distance.toFixed(0).toString() + "NM";
                         } else {
@@ -467,11 +480,13 @@ class CDUFlightPlanPage {
                         let destTimeCell = "----";
                         let destDistCell = "---";
                         if (fpm.getDestination()) {
+                            const destStats = stats[fpm.getCurrentFlightPlan().visibleWaypoints.length];
+
                             destDistCell = fpm.getDestination().infos.totalDistInFP.toFixed(0);
                             if (isFlying) {
-                                destTimeCell = FMCMainDisplay.secondsToUTC(fpm.getDestination().estimatedTimeOfArrivalFP);
+                                destTimeCell = FMCMainDisplay.secondsToUTC(destStats.etaFromPpos);
                             } else {
-                                destTimeCell = FMCMainDisplay.secondsTohhmm(fpm.getDestination().cumulativeEstimatedTimeEnRouteFP);
+                                destTimeCell = FMCMainDisplay.secondsTohhmm(destStats.timeFromPpos);
                             }
                         }
 
@@ -488,6 +503,8 @@ class CDUFlightPlanPage {
             }
         }
         mcdu.currentFlightPlanWaypointIndex = offset + first;
+        SimVar.SetSimVarValue("L:A32NX_SELECTED_WAYPOINT", "number", offset + first);
+
         const wpCount = fpm.getWaypointsCount();
         if (wpCount > 0) {
             while (mcdu.currentFlightPlanWaypointIndex < 0) {
