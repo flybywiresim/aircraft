@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bug, BugType } from './Bug';
+import { Bug } from './Bug';
 import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';
 import { VerticalTape } from './ISISUtils';
 

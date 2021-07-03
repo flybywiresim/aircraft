@@ -14,7 +14,7 @@ const TensDigits: ElementFunction = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLarge Text${color}`} x="0" y="52">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLarge Text${color}`} x="18" y="52">{text}</text>
     );
 };
 
@@ -29,7 +29,7 @@ const HundredsDigit: ElementFunction = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="60" y="48">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="62" y="32">{text}</text>
     );
 };
 const ThousandsDigit: ElementFunction = (value, offset, color) => {
@@ -40,7 +40,7 @@ const ThousandsDigit: ElementFunction = (value, offset, color) => {
         text = '';
     }
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="30" y="48">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="40" y="32">{text}</text>
     );
 };
 const TenThousandsDigit: ElementFunction = (value, offset, color) => {
@@ -51,7 +51,7 @@ const TenThousandsDigit: ElementFunction = (value, offset, color) => {
         text = '';
     }
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="0" y="48">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="0" y="32">{text}</text>
     );
 };
 
@@ -141,20 +141,20 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
     return (
         <g>
             <path
-                d="M512,224 L440,224 L440,232 L340,232 L340,288 L440,288 L440,296 L512,296"
-                className={isAltitudeInBugRange ? 'StrokeCyan' : 'StrokeYellow'}
-                fill="black"
+                d="M 512 224 h -84 v 8 l -72 0 l 0 42 l 72 0 l 0 8 l 84 0"
+                className="FillBackground"
                 strokeWidth={3}
+                stroke="none"
             />
             { /* if alt < 0 show NEG banner */ }
             { /* <text x={434} y={257} fontSize={48} textAnchor="end" alignmentBaseline="central" fill="lime">{Math.round(alt / 100).toFixed(0).padStart(3)}</text> */ }
-            <svg x={340} y={234} color={color} width="100" height="52" viewBox="0 0 100 52">
+            <svg x={340} y={234} color={color} width="100" height="40" viewBox="0 0 100 40">
                 <Drum
                     displayRange={1}
                     value={TenThousandsValue}
                     showZero={false}
                     valueSpacing={1}
-                    distanceSpacing={52}
+                    distanceSpacing={42}
                     positionOffset={TenThousandsPosition}
                     color={color}
                     elementFunction={TenThousandsDigit}
@@ -164,7 +164,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                     value={ThousandsValue}
                     showZero={showThousandsZero}
                     valueSpacing={1}
-                    distanceSpacing={52}
+                    distanceSpacing={42}
                     positionOffset={ThousandsPosition}
                     color={color}
                     elementFunction={ThousandsDigit}
@@ -173,23 +173,29 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                     displayRange={1}
                     value={HundredsValue}
                     valueSpacing={1}
-                    distanceSpacing={52}
+                    distanceSpacing={42}
                     positionOffset={HundredsPosition}
                     color={color}
                     elementFunction={HundredsDigit}
                 />
             </svg>
-            <svg viewBox="0 0 100 70" x={440} y={226} width="100" height="70">
+            <svg viewBox="0 0 100 56" x={422} y={226} width="100" height="56">
                 <Drum
                     displayRange={40}
                     value={tensDigits}
                     valueSpacing={20}
-                    distanceSpacing={48}
+                    distanceSpacing={36}
                     positionOffset={tensDigits}
                     color={color}
                     elementFunction={TensDigits}
                 />
             </svg>
+            <path
+                d="M 512 224 h -84 v 8 l -72 0 l 0 42 l 72 0 l 0 8 l 84 0"
+                className={isAltitudeInBugRange ? 'StrokeCyan' : 'StrokeYellow'}
+                fill="none"
+                strokeWidth={3}
+            />
         </g>
     );
 };

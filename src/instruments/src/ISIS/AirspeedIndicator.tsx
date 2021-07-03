@@ -58,7 +58,7 @@ export const AirspeedIndicator: React.FC<AirspeedIndicatorProps> = ({ maskWidth,
                 <VerticalTape
                     displayRange={42}
                     valueSpacing={5}
-                    distanceSpacing={20}
+                    distanceSpacing={15}
                     graduationElementFunction={createTick}
                     bugs={bugs}
                     bugElementFunction={createBug}

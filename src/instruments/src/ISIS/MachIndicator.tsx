@@ -15,7 +15,7 @@ export const MachIndicator: React.FC = () => {
 
     return (
         <>
-            {visible && <text x={60} y={456} fill="lime" fontSize={38}>{mach.toFixed(2).slice(1)}</text>}
+            {(visible) && <text x={40} y={464} className="TextGreen FontLarge">{mach.toFixed(2).slice(1)}</text>}
         </>
     );
 };
