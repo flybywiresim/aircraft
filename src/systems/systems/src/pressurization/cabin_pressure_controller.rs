@@ -18,7 +18,6 @@ pub struct CabinPressureController {
     cabin_alt: Length,
     departure_elev: Length,
     landing_elev: Length,
-    aircraft_vs: Velocity,
     cabin_target_vs: Velocity,
     cabin_vs: Velocity,
     is_standby: bool,
@@ -33,7 +32,6 @@ impl CabinPressureController {
             cabin_alt: Length::new::<meter>(0.),
             departure_elev: Length::new::<foot>(-5000.),
             landing_elev: Length::new::<meter>(0.),
-            aircraft_vs: Velocity::new::<meter_per_second>(0.),
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
             cabin_vs: Velocity::new::<meter_per_second>(0.),
             is_standby: true,
@@ -51,29 +49,42 @@ impl CabinPressureController {
             aircraft_inputs.eng_2_n1(),
         );
         self.exterior_pressure = context.ambient_pressure();
-        self.update_cabin_pressure(context);
-        self.update_cabin_altitude(
+        self.cabin_pressure = self.calculate_cabin_pressure(context);
+        self.cabin_alt = self.calculate_cabin_altitude(
             aircraft_inputs.sea_level_pressure(),
             aircraft_inputs.destination_qnh(),
         );
-        self.update_departure_elev(context);
+        self.departure_elev = self.calculate_departure_elev(context);
         self.landing_elev = aircraft_inputs.landing_elev();
-        self.aircraft_vs = context.vertical_speed();
-        self.update_cabin_vs(context); //Pre-smooth function
-        self.set_cabin_vs(context); //Smooth function
+        self.cabin_target_vs = self.calculate_cabin_vs(context); //Pre-smooth function
+        self.cabin_vs = self.set_cabin_vs(context); //Smooth function
         self.update_active_system(context);
     }
 
-    fn update_cabin_pressure(&mut self, context: &UpdateContext) {
-        // Convert cabin V/S to pressure/delta
-        const KPA_FT: f64 = 0.0366; //KPa/ft ASL
-
-        let cab_press_var =
-            -self.cabin_vs.get::<foot_per_second>() * KPA_FT * context.delta_as_secs_f64();
-        self.cabin_pressure += Pressure::new::<hectopascal>(cab_press_var);
+    fn calculate_cabin_pressure(&self, context: &UpdateContext) -> Pressure {
+        if self.pressure_schedule() == PressureSchedule::Ground && context.is_on_ground() {
+            context.ambient_pressure()
+        } else if self.pressure_schedule() == PressureSchedule::Ground && !context.is_on_ground() {
+            // Formula to simulate pressure start state if starting in flight
+            let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
+            Pressure::new::<hectopascal>(
+                -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85,
+            )
+        } else {
+            // Convert cabin V/S to pressure/delta
+            const KPA_FT: f64 = 0.0366; //KPa/ft ASL
+            self.cabin_pressure
+                + Pressure::new::<hectopascal>(
+                    -self.cabin_vs.get::<foot_per_second>() * KPA_FT * context.delta_as_secs_f64(),
+                )
+        }
     }
 
-    fn update_cabin_altitude(&mut self, sea_level_pressure: Pressure, destination_qnh: Pressure) {
+    fn calculate_cabin_altitude(
+        &self,
+        sea_level_pressure: Pressure,
+        destination_qnh: Pressure,
+    ) -> Length {
         let p = self.cabin_pressure();
 
         // Based on local QNH when below 5000ft from departure or arrival airport, ISA when above
@@ -108,82 +119,69 @@ impl CabinPressureController {
 
         // Hydrostatic equation with linear temp changes and constant R, g
         let z: f64 = ((T_0 / pressure_ratio.powf((L * R) / G)) - T_0) / L;
-        self.cabin_alt = Length::new::<meter>(z);
+        Length::new::<meter>(z)
     }
 
-    fn update_cabin_vs(&mut self, context: &UpdateContext) {
+    fn calculate_departure_elev(&self, context: &UpdateContext) -> Length {
+        if self.pressure_schedule() == PressureSchedule::Ground
+            && self.departure_elev != context.indicated_altitude()
+        {
+            context.indicated_altitude()
+        } else {
+            self.departure_elev
+        }
+    }
+
+    fn calculate_cabin_vs(&mut self, context: &UpdateContext) -> Velocity {
         match self.pressure_schedule() {
-            PressureSchedule::Ground => {
-                if context.is_on_ground() {
-                    self.cabin_pressure = self.exterior_pressure;
-                } else {
-                    // Formula to simulate pressure start state if starting in flight
-                    let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
-                    self.cabin_pressure = Pressure::new::<hectopascal>(
-                        -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85,
-                    );
-                }
-                self.cabin_target_vs = Velocity::new::<foot_per_minute>(0.);
-            }
+            PressureSchedule::Ground => Velocity::new::<foot_per_minute>(0.),
             PressureSchedule::TakeOff => {
                 if self.cabin_delta_p() < Pressure::new::<psi>(0.1) {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(-400.)
+                    Velocity::new::<foot_per_minute>(-400.)
                 } else {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(0.)
+                    Velocity::new::<foot_per_minute>(0.)
                 }
             }
             PressureSchedule::ClimbInternal => {
                 if self.cabin_delta_p() >= Pressure::new::<psi>(8.06) {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(750.);
+                    Velocity::new::<foot_per_minute>(750.)
                 } else if self.cabin_altitude() >= Length::new::<foot>(8050.) {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(0.);
-                } else if self.cabin_delta_p() < Pressure::new::<psi>(8.06) {
+                    Velocity::new::<foot_per_minute>(0.)
+                } else {
                     // Formula based on existing graphs and tables to simulate climb schedule
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(
-                        self.aircraft_vs.get::<foot_per_minute>()
+                    Velocity::new::<foot_per_minute>(
+                        context.vertical_speed().get::<foot_per_minute>()
                             * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
-                    );
+                    )
                 }
             }
-            PressureSchedule::Cruise => {
-                self.cabin_target_vs = Velocity::new::<foot_per_minute>(0.);
-            }
+            PressureSchedule::Cruise => Velocity::new::<foot_per_minute>(0.),
             PressureSchedule::DescentInternal => {
                 let target_vs = Velocity::new::<foot_per_minute>(
                     self.get_int_diff_with_ldg_elev().get::<foot>()
-                        * self.aircraft_vs.get::<foot_per_minute>()
+                        * context.vertical_speed().get::<foot_per_minute>()
                         / self.get_ext_diff_with_ldg_elev(context).get::<foot>(),
                 );
                 if target_vs <= Velocity::new::<foot_per_minute>(-750.) {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(-750.);
+                    Velocity::new::<foot_per_minute>(-750.)
                 } else if target_vs >= Velocity::new::<foot_per_minute>(500.) {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(500.);
+                    Velocity::new::<foot_per_minute>(500.)
                 } else {
-                    self.cabin_target_vs = target_vs;
+                    target_vs
                 }
             }
             PressureSchedule::Abort => {
                 if self.cabin_altitude() < self.departure_elevation() - Length::new::<foot>(187.818)
                 {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(500.)
-                } else if self.cabin_altitude()
-                    == self.departure_elevation() - Length::new::<foot>(187.818)
-                {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(0.)
+                    Velocity::new::<foot_per_minute>(500.)
                 } else if self.cabin_altitude()
                     > self.departure_elevation() - Length::new::<foot>(187.818)
                 {
-                    self.cabin_target_vs = Velocity::new::<foot_per_minute>(-500.)
+                    Velocity::new::<foot_per_minute>(-500.)
+                } else {
+                    Velocity::new::<foot_per_minute>(0.)
                 }
             }
-        }
-    }
-
-    fn update_departure_elev(&mut self, context: &UpdateContext) {
-        if self.pressure_schedule() == PressureSchedule::Ground
-            && self.departure_elev != context.indicated_altitude()
-        {
-            self.departure_elev = context.indicated_altitude()
         }
     }
 
@@ -196,22 +194,24 @@ impl CabinPressureController {
         self.cabin_altitude() - self.landing_elevation()
     }
 
-    fn set_cabin_vs(&mut self, context: &UpdateContext) {
+    fn set_cabin_vs(&self, context: &UpdateContext) -> Velocity {
         const INTERNAL_VS_RATE_CHANGE: f64 = 100.; // Rate of change of 100fpm per second
 
         let rate_of_change_for_delta = INTERNAL_VS_RATE_CHANGE * context.delta_as_secs_f64();
         if self.cabin_target_vs > self.cabin_vs() {
-            self.cabin_vs += Velocity::new::<foot_per_minute>(rate_of_change_for_delta.min(
-                self.cabin_target_vs.get::<foot_per_minute>()
-                    - self.cabin_vs().get::<foot_per_minute>(),
-            ));
+            self.cabin_vs
+                + Velocity::new::<foot_per_minute>(rate_of_change_for_delta.min(
+                    self.cabin_target_vs.get::<foot_per_minute>()
+                        - self.cabin_vs().get::<foot_per_minute>(),
+                ))
         } else if self.cabin_target_vs < self.cabin_vs() {
-            self.cabin_vs -= Velocity::new::<foot_per_minute>(rate_of_change_for_delta.min(
-                self.cabin_vs().get::<foot_per_minute>()
-                    - self.cabin_target_vs.get::<foot_per_minute>(),
-            ));
+            self.cabin_vs
+                - Velocity::new::<foot_per_minute>(rate_of_change_for_delta.min(
+                    self.cabin_vs().get::<foot_per_minute>()
+                        - self.cabin_target_vs.get::<foot_per_minute>(),
+                ))
         } else {
-            self.cabin_vs = self.cabin_target_vs;
+            self.cabin_target_vs
         }
     }
 
