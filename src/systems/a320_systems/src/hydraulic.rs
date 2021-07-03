@@ -305,6 +305,7 @@ impl A320Hydraulic {
     }
 
     fn blue_electric_pump_estimated_flow(&self) -> VolumeRate {
+        // If RAT pump has some RPM then we consider epump provides only a fraction of the loop total flow
         let ram_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
 
         let estimated_blue_epump_flow: VolumeRate;
@@ -322,15 +323,14 @@ impl A320Hydraulic {
     }
 
     fn yellow_electric_pump_estimated_flow(&self) -> VolumeRate {
-        // Here we estimate yellow epump flow
-        // If no edp all the yellow loop flow is from yellow epump
-        // If EDP started pumping then we consider epump provides a fraction of the flow
+        // If EDP started pumping and has some RPM then we consider epump provides a fraction of the flow
         let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
             && self.engine_driven_pump_2_controller.should_pressurise();
 
         let mut estimated_yellow_epump_flow: VolumeRate;
         if self.yellow_electric_pump_controller.should_pressurise() {
             if yellow_edp_outputs_some_flow {
+                // If electric pump is not the only pump to work we only consider it gives a 0.2 fraction of the loop total flow
                 estimated_yellow_epump_flow = self.yellow_loop.current_flow() * 0.2;
             } else {
                 estimated_yellow_epump_flow = self.yellow_loop.current_flow();
