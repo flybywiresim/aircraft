@@ -1,6 +1,6 @@
 use crate::simulation::UpdateContext;
 
-use super::{AircraftInputsPressurization, PressureValveActuator};
+use super::PressureValveActuator;
 
 use std::time::Duration;
 use uom::si::{
@@ -41,21 +41,19 @@ impl CabinPressureController {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        aircraft_inputs: &AircraftInputsPressurization,
+        eng_1_n1: Ratio,
+        eng_2_n1: Ratio,
+        landing_elevation: Length,
+        sea_level_pressure: Pressure,
+        destination_qnh: Pressure,
     ) {
-        self.pressure_schedule_manager.update(
-            context,
-            aircraft_inputs.eng_1_n1(),
-            aircraft_inputs.eng_2_n1(),
-        );
+        self.pressure_schedule_manager
+            .update(context, eng_1_n1, eng_2_n1);
         self.exterior_pressure = context.ambient_pressure();
         self.cabin_pressure = self.calculate_cabin_pressure(context);
-        self.cabin_alt = self.calculate_cabin_altitude(
-            aircraft_inputs.sea_level_pressure(),
-            aircraft_inputs.destination_qnh(),
-        );
+        self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
         self.departure_elev = self.calculate_departure_elev(context);
-        self.landing_elev = aircraft_inputs.landing_elev();
+        self.landing_elev = landing_elevation;
         self.cabin_target_vs = self.calculate_cabin_vs(context); //Pre-smooth function
         self.cabin_vs = self.set_cabin_vs(context); //Smooth function
         self.update_active_system(context);

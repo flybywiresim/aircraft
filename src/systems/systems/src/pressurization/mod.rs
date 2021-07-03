@@ -6,9 +6,7 @@ use crate::{
         UpdateContext, Write,
     },
 };
-use uom::si::{
-    f64::*, length::foot, pressure::hectopascal, ratio::percent, velocity::foot_per_minute,
-};
+use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::foot_per_minute};
 
 mod cabin_pressure_controller;
 mod pressure_valve;
@@ -19,69 +17,14 @@ pub trait PressureValveActuator {
     fn target_valve_position(&self) -> Ratio;
 }
 
-pub struct AircraftInputsPressurization {
-    eng_1_n1: Ratio,
-    eng_2_n1: Ratio,
-    landing_elevation: Length,
-    sea_level_pressure: Pressure,
-    destination_qnh: Pressure,
-}
-
-impl AircraftInputsPressurization {
-    fn new() -> Self {
-        Self {
-            eng_1_n1: Ratio::new::<percent>(0.),
-            eng_2_n1: Ratio::new::<percent>(0.),
-            landing_elevation: Length::new::<foot>(0.),
-            sea_level_pressure: Pressure::new::<hectopascal>(1013.),
-            destination_qnh: Pressure::new::<hectopascal>(1013.),
-        }
-    }
-
-    pub fn set_eng_n1(&mut self, eng_1_n1: Ratio, eng_2_n1: Ratio) {
-        self.eng_1_n1 = eng_1_n1;
-        self.eng_2_n1 = eng_2_n1;
-    }
-
-    pub fn set_landing_elev(&mut self, landing_elev: Length) {
-        self.landing_elevation = landing_elev;
-    }
-
-    pub fn set_sea_level_pressure(&mut self, sea_level_pressure: Pressure) {
-        self.sea_level_pressure = sea_level_pressure;
-    }
-
-    pub fn set_destination_qnh(&mut self, dest_qnh: Pressure) {
-        self.destination_qnh = dest_qnh;
-    }
-
-    pub fn eng_1_n1(&self) -> Ratio {
-        self.eng_1_n1
-    }
-
-    pub fn eng_2_n1(&self) -> Ratio {
-        self.eng_2_n1
-    }
-
-    pub fn landing_elev(&self) -> Length {
-        self.landing_elevation
-    }
-
-    pub fn sea_level_pressure(&self) -> Pressure {
-        self.sea_level_pressure
-    }
-
-    pub fn destination_qnh(&self) -> Pressure {
-        self.destination_qnh
-    }
-}
-
 pub struct Pressurization {
     cpc_1: CabinPressureController,
     cpc_2: CabinPressureController,
     outflow_valve: PressureValve,
     active_system: usize,
-    aircraft_inputs: AircraftInputsPressurization,
+    landing_elevation: Length,
+    sea_level_pressure: Pressure,
+    destination_qnh: Pressure,
 }
 
 impl Pressurization {
@@ -97,22 +40,36 @@ impl Pressurization {
             cpc_2: CabinPressureController::new(),
             outflow_valve: PressureValve::new(),
             active_system: active,
-            aircraft_inputs: AircraftInputsPressurization::new(),
+            landing_elevation: Length::new::<foot>(0.),
+            sea_level_pressure: Pressure::new::<hectopascal>(1013.25),
+            destination_qnh: Pressure::new::<hectopascal>(0.),
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext, eng_1_n1: Ratio, eng_2_n1: Ratio) {
-        self.aircraft_inputs.set_eng_n1(eng_1_n1, eng_2_n1);
-
         if !self.is_sys1_active() && !self.is_sys2_active() {
             self.set_active_system();
         };
         if self.is_sys1_active() {
-            self.cpc_1.update(context, &self.aircraft_inputs);
+            self.cpc_1.update(
+                context,
+                eng_1_n1,
+                eng_2_n1,
+                self.landing_elevation,
+                self.sea_level_pressure,
+                self.destination_qnh,
+            );
             self.outflow_valve.update(context, &self.cpc_1);
             self.switch_active_system();
         } else if self.is_sys2_active() {
-            self.cpc_2.update(context, &self.aircraft_inputs);
+            self.cpc_2.update(
+                context,
+                eng_1_n1,
+                eng_2_n1,
+                self.landing_elevation,
+                self.sea_level_pressure,
+                self.destination_qnh,
+            );
             self.outflow_valve.update(context, &self.cpc_2);
             self.switch_active_system();
         }
@@ -147,15 +104,15 @@ impl Pressurization {
     }
 
     fn set_landing_elev(&mut self, reading: Length) {
-        self.aircraft_inputs.set_landing_elev(reading);
+        self.landing_elevation = reading;
     }
 
     fn set_sl_pressure(&mut self, reading: Pressure) {
-        self.aircraft_inputs.set_sea_level_pressure(reading);
+        self.sea_level_pressure = reading;
     }
 
     fn set_dest_qnh(&mut self, reading: Pressure) {
-        self.aircraft_inputs.set_destination_qnh(reading);
+        self.destination_qnh = reading;
     }
 }
 
