@@ -312,8 +312,9 @@
             <BASE_NAME>OVFY</BASE_NAME>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+        <UseTemplate Name="FBW_MCDU_Holdable_BUTTON_Template">
             <BASE_NAME>CLR</BASE_NAME>
+            <MIN_HELD_DURATION>1</MIN_HELD_DURATION>
         </UseTemplate>
     </Template>
 
@@ -321,6 +322,8 @@
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_MCDU#SIDE#_#BASE_NAME#</NODE_ID>
             <LEFT_SINGLE_CODE_BTN_NAME>#BASE_NAME#</LEFT_SINGLE_CODE_BTN_NAME>
+            <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+            <SWITCH_POSITION_VAR>A32NX_MCDU_PUSH_ANIM_#SIDE_NUMERIC#_#BASE_NAME#</SWITCH_POSITION_VAR>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -336,6 +339,47 @@
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                 <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_CDU_#SIDE_NUMERIC#_BTN_#LEFT_SINGLE_CODE_BTN_NAME#)</LEFT_SINGLE_CODE>
             </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_MCDU_Holdable_BUTTON_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_MCDU#SIDE#_#BASE_NAME#</NODE_ID>
+            <LEFT_SINGLE_CODE_BTN_NAME>#BASE_NAME#</LEFT_SINGLE_CODE_BTN_NAME>
+            <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+            <SWITCH_POSITION_VAR>A32NX_MCDU_PUSH_ANIM_#SIDE_NUMERIC#_#BASE_NAME#</SWITCH_POSITION_VAR>
+            <MIN_HELD_DURATION>2</MIN_HELD_DURATION>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <NO_SEQ2/>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
+                <SEQ1_EMISSIVE_CODE>#BUTTON_LIGHTS_POWERED#</SEQ1_EMISSIVE_CODE>
+                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                <LEFT_SINGLE_CODE>
+                    (E:SIMULATION TIME, seconds) #MIN_HELD_DURATION# + (&gt;L:A32NX_MCDU_#BASE_NAME#_MinReleaseTime)
+                    1 (&gt;L:A32NX_MCDU_#BASE_NAME#_Pressed)
+                    (&gt;H:A320_Neo_CDU_#SIDE_NUMERIC#_BTN_#LEFT_SINGLE_CODE_BTN_NAME#)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:A32NX_MCDU_#BASE_NAME#_Pressed)
+                </LEFT_LEAVE_CODE>
+            </UseTemplate>
+
+            <Update Frequency="0.5" InteractionModel="All">
+                (L:A32NX_MCDU_#BASE_NAME#_Pressed) if{
+                    (E:SIMULATION TIME, seconds) (L:A32NX_MCDU_#BASE_NAME#_MinReleaseTime) &gt; if{
+                        (&gt;H:A320_Neo_CDU_#SIDE_NUMERIC#_BTN_#LEFT_SINGLE_CODE_BTN_NAME#_Held)
+                        0 (&gt;L:A32NX_MCDU_#BASE_NAME#_Pressed)
+                    }
+                }
+            </Update>
         </Component>
     </Template>
 

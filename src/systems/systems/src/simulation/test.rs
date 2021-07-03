@@ -1,256 +1,332 @@
-use std::{collections::HashMap, time::Duration};
-use uom::si::{
-    acceleration::foot_per_second_squared, f64::*, length::foot,
-    thermodynamic_temperature::degree_celsius, velocity::knot,
-};
+use std::{cell::Ref, collections::HashMap, time::Duration};
+use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
 
-use crate::electrical::consumption::SuppliedPower;
+use crate::electrical::{Electricity, Potential};
 
 use super::{
-    from_bool, to_bool, Aircraft, Simulation, SimulationElement, SimulationElementVisitor,
-    SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext,
+    Aircraft, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
+    SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
+    Writer,
 };
+
+pub trait TestBed {
+    type Aircraft: Aircraft;
+
+    fn test_bed(&self) -> &SimulationTestBed<Self::Aircraft>;
+    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<Self::Aircraft>;
+
+    fn run(&mut self) {
+        self.test_bed_mut().run();
+    }
+
+    fn run_without_delta(&mut self) {
+        self.test_bed_mut().run_without_time();
+    }
+
+    fn run_with_delta(&mut self, delta: Duration) {
+        self.test_bed_mut().run_with_delta(delta);
+    }
+
+    fn command<V: FnOnce(&mut Self::Aircraft)>(&mut self, func: V) {
+        self.test_bed_mut().command(func);
+    }
+
+    fn query<V: FnOnce(&Self::Aircraft) -> W, W>(&self, func: V) -> W {
+        self.test_bed().query(func)
+    }
+
+    fn query_elec<V: FnOnce(&Self::Aircraft, &Electricity) -> W, W>(&self, func: V) -> W {
+        self.test_bed().query_elec(func)
+    }
+
+    fn query_elec_ref<'a, U: FnOnce(&Self::Aircraft, &'a Electricity) -> Ref<'a, Potential>>(
+        &'a self,
+        func: U,
+    ) -> Ref<'a, Potential> {
+        self.test_bed().query_elec_ref(func)
+    }
+
+    fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
+        self.test_bed_mut()
+            .set_indicated_airspeed(indicated_airspeed);
+    }
+
+    fn indicated_airspeed(&mut self) -> Velocity {
+        self.test_bed_mut().indicated_airspeed()
+    }
+
+    fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
+        self.test_bed_mut()
+            .set_indicated_altitude(indicated_altitude);
+    }
+
+    fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
+        self.test_bed_mut()
+            .set_ambient_temperature(ambient_temperature);
+    }
+
+    fn set_on_ground(&mut self, on_ground: bool) {
+        self.test_bed_mut().set_on_ground(on_ground);
+    }
+
+    fn contains_key(&self, name: &str) -> bool {
+        self.test_bed().contains_key(name)
+    }
+}
+impl<T: TestBed> Writer for T {
+    fn write_f64(&mut self, name: &str, value: f64) {
+        self.test_bed_mut().write_f64(name, value);
+    }
+}
+impl<T: TestBed> Reader for T {
+    fn read_f64(&mut self, name: &str) -> f64 {
+        self.test_bed_mut().read_f64(name)
+    }
+}
 
 /// The simulation test bed handles the testing of [`Aircraft`] and [`SimulationElement`]
 /// by running a full simulation tick on them.
 ///
 /// [`Aircraft`]: ../trait.Aircraft.html
 /// [`SimulationElement`]: ../trait.SimulationElement.html
-pub struct SimulationTestBed {
+pub struct SimulationTestBed<T: Aircraft> {
     reader_writer: TestReaderWriter,
-    get_supplied_power_fn: Box<dyn Fn() -> SuppliedPower>,
-    delta: Duration,
+    simulation: Simulation<T>,
 }
-impl SimulationTestBed {
-    pub fn new() -> Self {
-        Self::new_with_delta(Duration::from_secs(1))
-    }
-
-    pub fn new_with_delta(delta: Duration) -> Self {
+impl<T: Aircraft> SimulationTestBed<T> {
+    pub fn new<U: FnOnce(&mut Electricity) -> T>(aircraft_ctor_fn: U) -> Self {
         let mut test_bed = Self {
             reader_writer: TestReaderWriter::new(),
-            get_supplied_power_fn: Box::new(SuppliedPower::new),
-            delta,
+            simulation: Simulation::new(aircraft_ctor_fn),
         };
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
         test_bed.set_indicated_altitude(Length::new::<foot>(5000.));
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
         test_bed.set_on_ground(false);
+        test_bed.seed();
 
         test_bed
     }
 
-    /// Creates an instance seeded with the state found in the given element.
+    /// Creates an instance seeded with the starting state found in the given element.
     ///
-    /// By default the unseeded simulation will return 0.0 or false for any requested
-    /// variables. If this is a problem for your test, then use this function.
-    pub fn seeded_with(element: &mut impl SimulationElement) -> Self {
-        let mut test_bed = Self::new();
-
-        let mut writer = SimulatorWriter::new(&mut test_bed.reader_writer);
+    /// By default an unseeded simulation will return 0.0 or false for any requested
+    /// variables. This function sets simvars to the the initial programmed state
+    /// (e.g. `OnOffFaultPushButton::new_on` would be a push button which initially
+    /// is ON).
+    fn seed(&mut self) {
+        let mut writer = SimulatorWriter::new(&mut self.reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
-        element.accept(&mut visitor);
-
-        test_bed
+        self.simulation.accept(&mut visitor);
     }
 
-    /// Runs a single [`Simulation`] tick on the provided [`Aircraft`].
-    ///
-    /// [`Aircraft`]: ../trait.Aircraft.html
-    /// [`Simulation`]: ../struct.Simulation.html
-    pub fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
-        Simulation::tick(self.delta, aircraft, &mut self.reader_writer);
+    /// Runs a single 1 second duration [Simulation] tick on the contained [Aircraft].
+    fn run(&mut self) {
+        self.run_with_delta(Duration::from_secs(1));
     }
 
-    /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing
-    /// the given update before electrical power is distributed.
-    ///
-    /// Prefer using [`run`] over this if electrical power distribution does not
-    /// matter for the test you're executing.
-    ///
-    /// [`Simulation`]: ../struct.Simulation.html
-    /// [`SimulationElement`]: ../trait.SimulationElement.html
-    /// [`run`]: #method.run
-    pub fn run_before_power_distribution<T: SimulationElement, U: Fn(&mut T, &UpdateContext)>(
-        &mut self,
-        element: &mut T,
-        update_fn: U,
-    ) {
-        self.run_within_test_aircraft(element, update_fn, true);
+    fn run_without_time(&mut self) {
+        self.run_with_delta(Duration::from_secs(0));
     }
 
-    /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`].
-    ///
-    /// Prefer using [`run_without_update`] over this if electrical power distribution does not
-    /// matter for the test you're executing.
-    ///
-    /// [`Simulation`]: ../struct.Simulation.html
-    /// [`SimulationElement`]: ../trait.SimulationElement.html
-    /// [`run_without_update`]: #method.run_without_update
-    pub fn run_before_power_distribution_without_update<T: SimulationElement>(
-        &mut self,
-        element: &mut T,
-    ) {
-        self.run_before_power_distribution(element, |_, _| {});
+    fn run_with_delta(&mut self, delta: Duration) {
+        self.simulation.tick(delta, &mut self.reader_writer);
     }
 
-    /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing
-    /// the given update after electrical power is distributed.
-    ///
-    /// [`Simulation`]: ../struct.Simulation.html
-    /// [`SimulationElement`]: ../trait.SimulationElement.html
-    pub fn run<T: SimulationElement, U: Fn(&mut T, &UpdateContext)>(
-        &mut self,
-        element: &mut T,
-        update_fn: U,
-    ) {
-        self.run_within_test_aircraft(element, update_fn, false);
+    fn aircraft(&self) -> &T {
+        self.simulation.aircraft()
     }
 
-    /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`].
-    ///
-    /// [`Simulation`]: ../struct.Simulation.html
-    /// [`SimulationElement`]: ../trait.SimulationElement.html
-    pub fn run_without_update(&mut self, element: &mut impl SimulationElement) {
-        self.run(element, |_, _| {});
+    fn aircraft_mut(&mut self) -> &mut T {
+        self.simulation.aircraft_mut()
     }
 
-    fn run_within_test_aircraft<T: SimulationElement, U: Fn(&mut T, &UpdateContext)>(
-        &mut self,
-        element: &mut T,
-        update_fn: U,
-        before_power_distribution: bool,
-    ) {
-        let mut aircraft = TestAircraft::new(
-            element,
-            update_fn,
-            (self.get_supplied_power_fn)(),
-            before_power_distribution,
-        );
-
-        self.run_aircraft(&mut aircraft);
+    fn command<U: FnOnce(&mut T)>(&mut self, func: U) {
+        (func)(self.simulation.aircraft_mut())
     }
 
-    pub fn set_delta(&mut self, delta: Duration) {
-        self.delta = delta;
+    fn query<U: FnOnce(&T) -> V, V>(&self, func: U) -> V {
+        (func)(self.simulation.aircraft())
     }
 
-    pub fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
-        self.reader_writer.write_f64(
-            UpdateContext::INDICATED_AIRSPEED_KEY,
-            indicated_airspeed.get::<knot>(),
-        );
+    fn query_elec<U: FnOnce(&T, &Electricity) -> V, V>(&self, func: U) -> V {
+        (func)(self.simulation.aircraft(), self.simulation.electricity())
     }
 
-    pub fn indicated_airspeed(&mut self) -> Velocity {
-        Velocity::new::<knot>(
-            self.reader_writer
-                .read_f64(UpdateContext::INDICATED_AIRSPEED_KEY),
-        )
+    fn query_elec_ref<'a, U: FnOnce(&T, &'a Electricity) -> Ref<'a, Potential>>(
+        &'a self,
+        func: U,
+    ) -> Ref<'a, Potential> {
+        (func)(self.simulation.aircraft(), self.simulation.electricity())
     }
 
-    pub fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
-        self.reader_writer.write_f64(
-            UpdateContext::INDICATED_ALTITUDE_KEY,
-            indicated_altitude.get::<foot>(),
-        );
+    fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
+        self.write(UpdateContext::INDICATED_AIRSPEED_KEY, indicated_airspeed);
     }
 
-    pub fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
-        self.reader_writer.write_f64(
-            UpdateContext::AMBIENT_TEMPERATURE_KEY,
-            ambient_temperature.get::<degree_celsius>(),
-        );
+    fn indicated_airspeed(&mut self) -> Velocity {
+        self.read(UpdateContext::INDICATED_AIRSPEED_KEY)
     }
 
-    pub fn set_on_ground(&mut self, on_ground: bool) {
-        self.reader_writer
-            .write_bool(UpdateContext::IS_ON_GROUND_KEY, on_ground);
+    fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
+        self.write(UpdateContext::INDICATED_ALTITUDE_KEY, indicated_altitude);
     }
 
-    pub fn set_long_acceleration(&mut self, accel: Acceleration) {
-        self.reader_writer.write_f64(
-            UpdateContext::ACCEL_BODY_Z_KEY,
-            accel.get::<foot_per_second_squared>(),
-        );
+    fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
+        self.write(UpdateContext::AMBIENT_TEMPERATURE_KEY, ambient_temperature);
     }
 
-    pub fn supplied_power_fn(
-        mut self,
-        supplied_power_fn: impl Fn() -> SuppliedPower + 'static,
-    ) -> Self {
-        self.get_supplied_power_fn = Box::new(supplied_power_fn);
-        self
+    fn set_on_ground(&mut self, on_ground: bool) {
+        self.write(UpdateContext::IS_ON_GROUND_KEY, on_ground);
     }
 
-    pub fn write_bool(&mut self, name: &str, value: bool) {
-        self.reader_writer.write_bool(name, value);
-    }
-
-    pub fn write_f64(&mut self, name: &str, value: f64) {
+    fn write_f64(&mut self, name: &str, value: f64) {
         self.reader_writer.write_f64(name, value);
     }
 
-    pub fn read_bool(&mut self, name: &str) -> bool {
-        self.reader_writer.read_bool(name)
-    }
-
-    pub fn read_f64(&mut self, name: &str) -> f64 {
+    fn read_f64(&mut self, name: &str) -> f64 {
         self.reader_writer.read_f64(name)
     }
 
-    pub fn contains_key(&self, name: &str) -> bool {
+    fn contains_key(&self, name: &str) -> bool {
         self.reader_writer.contains_key(name)
     }
 }
-impl Default for SimulationTestBed {
-    fn default() -> Self {
-        Self::new()
+impl<T: Aircraft> TestBed for SimulationTestBed<T> {
+    type Aircraft = T;
+
+    fn test_bed(&self) -> &SimulationTestBed<T> {
+        self
+    }
+
+    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<T> {
+        self
+    }
+}
+impl<T: SimulationElement> SimulationTestBed<TestAircraft<T>> {
+    pub fn command_element<V: FnOnce(&mut T)>(&mut self, func: V) {
+        (func)(self.aircraft_mut().element_mut())
+    }
+
+    pub fn query_element<V: FnOnce(&T) -> W, W>(&self, func: V) -> W {
+        (func)(self.aircraft().element())
+    }
+
+    pub fn query_element_elec<V: FnOnce(&T, &Electricity) -> W, W>(&self, func: V) -> W {
+        (func)(self.aircraft().element(), self.simulation.electricity())
+    }
+
+    pub fn with_update_before_power_distribution<
+        U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
+    >(
+        mut self,
+        func: U,
+    ) -> Self {
+        self.aircraft_mut()
+            .set_update_before_power_distribution(func);
+
+        self
+    }
+
+    pub fn with_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
+        mut self,
+        func: U,
+    ) -> Self {
+        self.aircraft_mut()
+            .set_update_after_power_distribution(func);
+
+        self
+    }
+
+    pub fn set_update_before_power_distribution<
+        U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
+    >(
+        &mut self,
+        func: U,
+    ) {
+        self.aircraft_mut()
+            .set_update_before_power_distribution(func);
+    }
+
+    pub fn set_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
+        &mut self,
+        func: U,
+    ) {
+        self.aircraft_mut()
+            .set_update_after_power_distribution(func);
     }
 }
 
-struct TestAircraft<'a, T: SimulationElement, U: Fn(&mut T, &UpdateContext)> {
-    element: &'a mut T,
-    update_fn: U,
-    supplied_power: Option<SuppliedPower>,
-    update_before_power_distribution: bool,
-}
-impl<'a, T: SimulationElement, U: Fn(&mut T, &UpdateContext)> TestAircraft<'a, T, U> {
-    fn new(
-        element: &'a mut T,
-        update_fn: U,
-        supplied_power: SuppliedPower,
-        update_before_power_distribution: bool,
-    ) -> Self {
-        Self {
-            element,
-            update_fn,
-            supplied_power: Some(supplied_power),
-            update_before_power_distribution,
-        }
+/// Wrapper for converting the given constructor function to
+/// a [`SimulationTestBed<TestAircraft<T>>`] instance.
+pub struct ElementCtorFn<T: SimulationElement, U: Fn(&mut Electricity) -> T>(pub U);
+impl<T: SimulationElement, U: Fn(&mut Electricity) -> T> From<ElementCtorFn<T, U>>
+    for SimulationTestBed<TestAircraft<T>>
+{
+    fn from(func: ElementCtorFn<T, U>) -> Self {
+        Self::new(|electricity| TestAircraft::new((func.0)(electricity)))
     }
 }
-impl<'a, T: SimulationElement, U: Fn(&mut T, &UpdateContext)> Aircraft for TestAircraft<'a, T, U> {
-    fn update_before_power_distribution(&mut self, context: &UpdateContext) {
-        if self.update_before_power_distribution {
-            (self.update_fn)(&mut self.element, context);
+impl<T: SimulationElement> From<T> for SimulationTestBed<TestAircraft<T>> {
+    fn from(element: T) -> Self {
+        Self::new(|_| TestAircraft::new(element))
+    }
+}
+
+pub struct TestAircraft<T: SimulationElement> {
+    element: T,
+    update_before_power_distribution_fn:
+        Box<dyn Fn(&mut T, &UpdateContext, &mut Electricity) + 'static>,
+    update_after_power_distribution_fn: Box<dyn Fn(&mut T, &UpdateContext) + 'static>,
+}
+impl<T: SimulationElement> TestAircraft<T> {
+    pub fn new(element: T) -> Self {
+        Self {
+            element,
+            update_before_power_distribution_fn: Box::new(|_, _, _| {}),
+            update_after_power_distribution_fn: Box::new(|_, _| {}),
         }
+    }
+
+    fn set_update_before_power_distribution<
+        U: Fn(&mut T, &UpdateContext, &mut Electricity) + 'static,
+    >(
+        &mut self,
+        func: U,
+    ) {
+        self.update_before_power_distribution_fn = Box::new(func);
+    }
+
+    fn set_update_after_power_distribution<U: Fn(&mut T, &UpdateContext) + 'static>(
+        &mut self,
+        func: U,
+    ) {
+        self.update_after_power_distribution_fn = Box::new(func);
+    }
+
+    fn element_mut(&mut self) -> &mut T {
+        &mut self.element
+    }
+
+    fn element(&self) -> &T {
+        &self.element
+    }
+}
+impl<T: SimulationElement> Aircraft for TestAircraft<T> {
+    fn update_before_power_distribution(
+        &mut self,
+        context: &UpdateContext,
+        electricity: &mut Electricity,
+    ) {
+        (self.update_before_power_distribution_fn)(&mut self.element, context, electricity);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-        if !self.update_before_power_distribution {
-            (self.update_fn)(&mut self.element, context);
-        }
-    }
-
-    fn get_supplied_power(&mut self) -> SuppliedPower {
-        self.supplied_power.take().unwrap()
+        (self.update_after_power_distribution_fn)(&mut self.element, context);
     }
 }
-impl<'a, T: SimulationElement, U: Fn(&mut T, &UpdateContext)> SimulationElement
-    for TestAircraft<'a, T, U>
-{
+impl<T: SimulationElement> SimulationElement for TestAircraft<T> {
     fn accept<W: SimulationElementVisitor>(&mut self, visitor: &mut W) {
         self.element.accept(visitor);
 
@@ -272,16 +348,8 @@ impl TestReaderWriter {
         self.variables.contains_key(name)
     }
 
-    fn write_bool(&mut self, name: &str, value: bool) {
-        self.write(name, from_bool(value));
-    }
-
     fn write_f64(&mut self, name: &str, value: f64) {
         self.write(name, value);
-    }
-
-    fn read_bool(&mut self, name: &str) -> bool {
-        to_bool(self.read(name))
     }
 
     fn read_f64(&mut self, name: &str) -> f64 {
@@ -364,54 +432,59 @@ mod tests {
             self.receive_power_called = true;
         }
 
-        fn consume_power<T: ConsumePower>(&mut self, _: &mut T) {
+        fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, _: &mut T) {
             self.consume_power_called = true;
         }
 
-        fn consume_power_in_converters<T: ConsumePower>(&mut self, _: &mut T) {
+        fn consume_power_in_converters<T: ConsumePower>(&mut self, _: &UpdateContext, _: &mut T) {
             self.consume_power_in_converters_called = true;
         }
 
-        fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, _: &T) {
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            _: &T,
+        ) {
             self.process_power_consumption_report_called = true;
         }
     }
 
     #[test]
     fn test_aircraft_can_run_in_simulation() {
-        let mut element = ElementUnderTest::default();
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.run_before_power_distribution(&mut element, |el, context| {
-            el.update(context);
-        });
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+        test_bed.run();
 
-        assert!(element.all_functions_called());
+        assert!(test_bed.query_element(|e| e.all_functions_called()));
     }
 
     #[test]
     fn defaults_to_receiving_power_before_update() {
-        let mut element = ElementUnderTest::default();
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.run(&mut element, |el, context| {
-            el.update(context);
-        });
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_after_power_distribution(|el, context| {
+                el.update(context);
+            });
+        test_bed.run();
 
         assert_eq!(
-            element.update_called_before_or_after_receive_power(),
+            test_bed.query_element(|e| e.update_called_before_or_after_receive_power()),
             Some(CallOrder::After)
         );
     }
 
     #[test]
     fn when_update_before_receive_power_requested_executes_update_before_receive_power() {
-        let mut element = ElementUnderTest::default();
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.run_before_power_distribution(&mut element, |el, context| {
-            el.update(context);
-        });
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        test_bed.run();
 
         assert_eq!(
-            element.update_called_before_or_after_receive_power(),
+            test_bed.query_element(|e| e.update_called_before_or_after_receive_power()),
             Some(CallOrder::Before)
         );
     }

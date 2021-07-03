@@ -448,9 +448,86 @@ impl SimulationElement for MomentaryPushButton {
     }
 }
 
+pub struct MomentaryOnPushButton {
+    is_pressed_id: String,
+    is_on_id: String,
+    is_pressed: bool,
+    last_pressed_state: bool,
+    is_on: bool,
+}
+impl MomentaryOnPushButton {
+    pub fn new(name: &str) -> Self {
+        Self {
+            is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
+            is_on_id: format!("OVHD_{}_IS_ON", name),
+            is_pressed: false,
+            last_pressed_state: false,
+            is_on: false,
+        }
+    }
+
+    fn is_pressed(&self) -> bool {
+        self.is_pressed
+    }
+
+    pub fn is_on(&self) -> bool {
+        self.is_on
+    }
+
+    fn update_on_state(&mut self) {
+        self.is_on = self.is_on() ^ (self.is_pressed() && !self.last_pressed_state);
+    }
+
+    pub fn turn_off(&mut self) {
+        self.is_on = false;
+    }
+
+    pub fn turn_on(&mut self) {
+        self.is_on = true;
+    }
+}
+impl SimulationElement for MomentaryOnPushButton {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.last_pressed_state = self.is_pressed;
+        self.is_pressed = reader.read(&self.is_pressed_id);
+
+        self.update_on_state();
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_on_id, self.is_on);
+    }
+}
+
+pub struct IndicationLight {
+    is_illuminated_id: String,
+    is_illuminated: bool,
+}
+impl IndicationLight {
+    pub fn new(name: &str) -> Self {
+        Self {
+            is_illuminated_id: Self::is_illuminated_id(name),
+            is_illuminated: false,
+        }
+    }
+
+    pub fn set_illuminated(&mut self, illuminated: bool) {
+        self.is_illuminated = illuminated;
+    }
+
+    pub fn is_illuminated_id(name: &str) -> String {
+        format!("OVHD_{}_IS_ILLUMINATED", name)
+    }
+}
+impl SimulationElement for IndicationLight {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_illuminated_id, self.is_illuminated);
+    }
+}
+
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     use super::*;
 
@@ -466,10 +543,9 @@ mod on_off_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut button = OnOffFaultPushButton::new_on("ELEC_GEN_1");
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::from(OnOffFaultPushButton::new_on("ELEC_GEN_1"));
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_ELEC_GEN_1_PB_IS_ON"));
         assert!(test_bed.contains_key("OVHD_ELEC_GEN_1_PB_HAS_FAULT"));
@@ -478,7 +554,7 @@ mod on_off_fault_push_button_tests {
 
 #[cfg(test)]
 mod on_off_available_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     use super::*;
 
@@ -494,10 +570,10 @@ mod on_off_available_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut button = OnOffAvailablePushButton::new_on("ELEC_EXT_PWR");
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed =
+            SimulationTestBed::from(OnOffAvailablePushButton::new_on("ELEC_EXT_PWR"));
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_ELEC_EXT_PWR_PB_IS_ON"));
         assert!(test_bed.contains_key("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"));
@@ -506,7 +582,7 @@ mod on_off_available_push_button_tests {
 
 #[cfg(test)]
 mod normal_altn_fault_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     use super::*;
 
@@ -522,10 +598,10 @@ mod normal_altn_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut button = NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED");
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed =
+            SimulationTestBed::from(NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED"));
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL"));
         assert!(test_bed.contains_key("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT"));
@@ -534,7 +610,7 @@ mod normal_altn_fault_push_button_tests {
 
 #[cfg(test)]
 mod auto_off_fault_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     use super::*;
 
@@ -550,10 +626,10 @@ mod auto_off_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut button = AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE");
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed =
+            SimulationTestBed::from(AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE"));
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_ELEC_BUS_TIE_PB_IS_AUTO"));
         assert!(test_bed.contains_key("OVHD_ELEC_BUS_TIE_PB_HAS_FAULT"));
@@ -562,7 +638,7 @@ mod auto_off_fault_push_button_tests {
 
 #[cfg(test)]
 mod fault_release_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     use super::*;
 
@@ -599,10 +675,9 @@ mod fault_release_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut button = FaultReleasePushButton::new_in("IDG_1");
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::from(FaultReleasePushButton::new_in("IDG_1"));
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_IDG_1_PB_IS_RELEASED"));
         assert!(test_bed.contains_key("OVHD_IDG_1_PB_HAS_FAULT"));
@@ -611,7 +686,7 @@ mod fault_release_push_button_tests {
 
 #[cfg(test)]
 mod fire_push_button_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     use super::*;
 
@@ -641,10 +716,9 @@ mod fire_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut button = FirePushButton::new("APU");
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::from(FirePushButton::new("APU"));
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
         assert!(test_bed.contains_key("FIRE_BUTTON_APU"));
     }
@@ -653,7 +727,7 @@ mod fire_push_button_tests {
 #[cfg(test)]
 mod fault_indication_tests {
     use super::*;
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     #[test]
     fn new_does_not_have_fault() {
@@ -662,10 +736,9 @@ mod fault_indication_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut button = FaultIndication::new("TEST");
-        let mut test_bed = SimulationTestBed::new();
+        let mut test_bed = SimulationTestBed::from(FaultIndication::new("TEST"));
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_TEST_HAS_FAULT"));
     }
@@ -674,7 +747,7 @@ mod fault_indication_tests {
 #[cfg(test)]
 mod momentary_push_button_tests {
     use super::*;
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
 
     #[test]
     fn new_is_not_pressed() {
@@ -683,12 +756,142 @@ mod momentary_push_button_tests {
 
     #[test]
     fn reads_its_state() {
-        let mut button = MomentaryPushButton::new("TEST");
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_bool("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(MomentaryPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
 
-        test_bed.run_without_update(&mut button);
+        test_bed.run();
 
-        assert!(button.is_pressed());
+        assert!(test_bed.query_element(|e| e.is_pressed()));
+    }
+}
+
+#[cfg(test)]
+mod momentary_on_push_button_tests {
+    use super::*;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+
+    #[test]
+    fn new_is_not_pressed() {
+        assert!(!MomentaryOnPushButton::new("TEST").is_pressed());
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+
+        assert!(test_bed.query_element(|button| button.is_pressed()));
+    }
+
+    #[test]
+    fn stays_on_while_kept_pressed() {
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
+    }
+
+    #[test]
+    fn can_be_forced_off() {
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
+
+        test_bed.command_element(|button| button.turn_off());
+
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_on()));
+    }
+
+    #[test]
+    fn remains_off_when_forced_off() {
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        test_bed.run();
+
+        test_bed.command_element(|button| button.turn_off());
+
+        assert!(!test_bed.query_element(|button| button.is_on()));
+
+        test_bed.write("OVHD_TEST_IS_PRESSED", false);
+        test_bed.run();
+
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        test_bed.run();
+        test_bed.command_element(|button| button.turn_off());
+
+        assert!(!test_bed.query_element(|button| button.is_on()));
+    }
+
+    #[test]
+    fn can_press_on_and_off() {
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
+
+        test_bed.write("OVHD_TEST_IS_PRESSED", false);
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_on()));
+
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_on()));
+
+        test_bed.write("OVHD_TEST_IS_PRESSED", false);
+
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_on()));
+    }
+
+    #[test]
+    fn writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_key("OVHD_TEST_IS_ON"));
+    }
+}
+
+#[cfg(test)]
+mod indication_light_tests {
+    use super::*;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use rstest::rstest;
+
+    #[test]
+    fn new_is_not_illuminated() {
+        let mut test_bed = SimulationTestBed::from(IndicationLight::new("TEST"));
+        test_bed.run();
+
+        let is_illuminated: bool = test_bed.read(&IndicationLight::is_illuminated_id("TEST"));
+        assert!(!is_illuminated);
+    }
+
+    #[rstest]
+    #[case(true, true)]
+    #[case(false, false)]
+    fn written_illuminated_state_matches_set_state(
+        #[case] set_illuminated: bool,
+        #[case] expected: bool,
+    ) {
+        let mut test_bed = SimulationTestBed::from(IndicationLight::new("TEST"));
+        test_bed.command_element(|light| light.set_illuminated(set_illuminated));
+        test_bed.run();
+
+        let is_illuminated: bool = test_bed.read(&IndicationLight::is_illuminated_id("TEST"));
+        assert_eq!(is_illuminated, expected);
     }
 }
