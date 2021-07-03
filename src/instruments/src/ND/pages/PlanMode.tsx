@@ -3,6 +3,7 @@ import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { useSimVar } from '@instruments/common/simVars';
 import { ToWaypointIndicator } from '../ToWaypointIndicator';
 import { FlightPlan } from '../FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
@@ -15,7 +16,7 @@ export interface PlanModeProps {
 export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos }) => {
     const flightPlanManager = useFlightPlanManager();
 
-    const [selectedWaypointIndex] = useState(1);
+    const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
     const [selectedWaypoint, setSelectedWaypoint] = useState<WayPoint>();
 
     useEffect(() => {
