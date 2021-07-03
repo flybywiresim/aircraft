@@ -23,6 +23,11 @@ export interface WaypointStats {
      * Predicted time from PPOS in seconds
      */
     timeFromPpos: number;
+
+    /**
+     * Predicted ETA from PPOS in seconds
+     */
+    etaFromPpos: number;
 }
 
 export interface ApproachStats {
