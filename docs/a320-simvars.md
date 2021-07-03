@@ -9,6 +9,7 @@
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
 1. [Engine and FADEC System](#engine-fadec-system)
+1. [Air Conditioning / Pressurisation / Ventilation](#aircon-press-vent-systems)
 
 ## Uncategorized
 
@@ -246,31 +247,6 @@
     - Bool
     - Determines if the FAULT light on the CABIN PRESS MODE SEL pushbutton
       should be on
-
-- A32NX_CABIN_ALTITUDE
-    - Feet
-    - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
-
-- A32NX_CABIN_DELTA_PRESSURE
-    - PSI
-    - The difference in pressure between the cabin interior and the exterior air.
-    Positive when cabin pressure is higher than external pressure.
-
-- A32NX_CABIN_VS
-    - Feet per minute
-    - Rate of pressurization or depressurization of the cabin expressed as altitude change
-
-- A32NX_CPC_SYS1
-    - Bool
-    - Indicates that the cabin pressure controller 1 is active
-
-- A32NX_CPC_SYS2
-    - Bool
-    - Indicates that the cabin pressure controller 2 is active
-
-- A32NX_OUTFLOW_VALVE_OPEN_PERCENTAGE
-    - Ratio
-    - Percent open of the cabin pressure outflow valve
 
 - A32NX_AUTO_LANDING_ELEVATION
     - Feet
@@ -1593,3 +1569,26 @@
 - A32NX_ENGINE_TANK_OIL:{index}
     - Number (quarts)
     - Total engine {index} oil quantity in the oil tank
+
+## Air Conditioning / Pressurisation / Ventilation
+
+- A32NX_CABIN_ALTITUDE
+    - Feet
+    - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
+
+- A32NX_CABIN_DELTA_PRESSURE
+    - PSI
+    - The difference in pressure between the cabin interior and the exterior air.
+    Positive when cabin pressure is higher than external pressure.
+
+- A32NX_CABIN_VS
+    - Feet per minute
+    - Rate of pressurization or depressurization of the cabin expressed as altitude change
+
+- A32NX_ACTIVE_CPC_SYS
+    - Number [0, 1, 2]
+    - Indicates which cabin pressure controller is active. 0 indicates neither is active.
+
+- A32NX_OUTFLOW_VALVE_OPEN_PERCENTAGE
+    - Ratio
+    - Percent open of the cabin pressure outflow valve

@@ -11,6 +11,7 @@ use uom::si::{
     velocity::{foot_per_minute, foot_per_second, knot, meter_per_second},
 };
 
+#[derive(Copy, Clone)]
 pub struct CabinPressureController {
     pressure_schedule_manager: PressureScheduleManager,
     exterior_pressure: Pressure,
@@ -20,7 +21,6 @@ pub struct CabinPressureController {
     landing_elev: Length,
     cabin_target_vs: Velocity,
     cabin_vs: Velocity,
-    is_standby: bool,
 }
 
 impl CabinPressureController {
@@ -34,7 +34,6 @@ impl CabinPressureController {
             landing_elev: Length::new::<meter>(0.),
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
             cabin_vs: Velocity::new::<meter_per_second>(0.),
-            is_standby: true,
         }
     }
 
@@ -56,7 +55,6 @@ impl CabinPressureController {
         self.landing_elev = landing_elevation;
         self.cabin_target_vs = self.calculate_cabin_vs(context); //Pre-smooth function
         self.cabin_vs = self.set_cabin_vs(context); //Smooth function
-        self.update_active_system(context);
     }
 
     fn calculate_cabin_pressure(&self, context: &UpdateContext) -> Pressure {
@@ -213,33 +211,6 @@ impl CabinPressureController {
         }
     }
 
-    fn update_active_system(&mut self, context: &UpdateContext) {
-        if self.is_active() {
-            if self.pressure_schedule_manager.pressure_schedule() == PressureSchedule::Ground
-                && self.pressure_schedule_manager.timer() > Duration::from_secs_f64(70.)
-                && self.pressure_schedule_manager.timer()
-                    <= (Duration::from_secs_f64(70.) + context.delta())
-            {
-                self.set_active(false);
-            }
-        } else if !self.is_active()
-            && self.pressure_schedule_manager.pressure_schedule() == PressureSchedule::Ground
-            && self.pressure_schedule_manager.timer() > Duration::from_secs_f64(70.)
-            && self.pressure_schedule_manager.timer()
-                <= (Duration::from_secs_f64(70.) + context.delta())
-        {
-            self.set_active(true);
-        }
-    }
-
-    pub fn set_active(&mut self, is_active: bool) {
-        self.is_standby = !is_active;
-    }
-
-    pub fn is_active(&self) -> bool {
-        !self.is_standby
-    }
-
     pub fn cabin_pressure(&self) -> Pressure {
         self.cabin_pressure
     }
@@ -267,6 +238,14 @@ impl CabinPressureController {
     pub fn landing_elevation(&self) -> Length {
         self.landing_elev
     }
+
+    pub fn should_switch_cpc(&self) -> bool {
+        self.pressure_schedule_manager.should_switch_cpc()
+    }
+
+    pub fn reset_cpc_switch(&mut self) {
+        self.pressure_schedule_manager.reset_cpc_switch();
+    }
 }
 
 impl PressureValveActuator for CabinPressureController {
@@ -285,7 +264,7 @@ impl PressureValveActuator for CabinPressureController {
         let vs_ratio: f64 = self.cabin_target_vs.get::<foot_per_minute>() / 2000. * pressure_ratio;
         if (pressure_ratio + vs_ratio) > 1.
             || (self.pressure_schedule() == PressureSchedule::Ground
-                && self.pressure_schedule_manager.timer().as_secs_f64() > 55.)
+                && self.pressure_schedule_manager.should_open_outflow_valve())
         {
             Ratio::new::<percent>(100.)
         } else if (pressure_ratio + vs_ratio) < 0. {
@@ -306,9 +285,11 @@ pub enum PressureSchedule {
     Abort,
 }
 
+#[derive(Copy, Clone)]
 pub struct PressureScheduleManager {
     pressure_schedule: PressureSchedule,
     timer: Duration,
+    cpc_switch_reset: bool,
 }
 
 impl PressureScheduleManager {
@@ -316,6 +297,7 @@ impl PressureScheduleManager {
         Self {
             pressure_schedule: PressureSchedule::Ground,
             timer: Duration::from_secs_f64(100.),
+            cpc_switch_reset: false,
         }
     }
 
@@ -341,13 +323,15 @@ impl PressureScheduleManager {
         {
             self.pressure_schedule = PressureSchedule::TakeOff;
             self.timer = Duration::from_secs_f64(0.);
+            self.cpc_switch_reset = true;
         } else if !context.is_on_ground()
             && context.indicated_airspeed().get::<knot>() > 100.
             && context.ambient_pressure().get::<hectopascal>() > 0.
         {
             self.pressure_schedule = PressureSchedule::ClimbInternal;
             self.timer = Duration::from_secs_f64(0.);
-        } else if self.timer < (Duration::from_secs_f64(70.) + context.delta()) {
+            self.cpc_switch_reset = true;
+        } else if self.timer < (Duration::from_secs_f64(100.)) {
             self.timer += context.delta();
         }
     }
@@ -442,7 +426,20 @@ impl PressureScheduleManager {
         }
     }
 
-    pub fn timer(&self) -> Duration {
-        self.timer
+    fn should_open_outflow_valve(&self) -> bool {
+        self.pressure_schedule == PressureSchedule::Ground
+            && self.timer > Duration::from_secs_f64(55.)
+    }
+
+    fn reset_cpc_switch(&mut self) {
+        if self.should_switch_cpc() {
+            self.cpc_switch_reset = false;
+        }
+    }
+
+    fn should_switch_cpc(&self) -> bool {
+        self.pressure_schedule == PressureSchedule::Ground
+            && self.timer > Duration::from_secs_f64(70.)
+            && self.cpc_switch_reset
     }
 }
