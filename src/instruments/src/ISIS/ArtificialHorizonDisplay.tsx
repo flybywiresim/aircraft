@@ -18,8 +18,8 @@ type Props = {
 
 export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed, bugs }) => {
     const [alt] = useSimVar('INDICATED ALTITUDE:2', 'feet');
+    const [mda] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
-    const [heading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
     const [lsActive, setLsActive] = useState(false);
     useInteractionEvent('A32NX_ISIS_LS_PRESSED', () => setLsActive(!lsActive));
 
@@ -34,7 +34,7 @@ export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed, b
                 <path d="M0,108 L512,108" fill="white" stroke="white" strokeWidth={4} />
                 <path d="M0,404 L512,404" fill="white" stroke="white" strokeWidth={4} /> */}
                 <AirspeedIndicator maskWidth={maskWidth} indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
-                <AltitudeIndicator maskWidth={maskWidth} altitude={Math.floor(alt)} mda={200} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
+                <AltitudeIndicator maskWidth={maskWidth} altitude={Math.floor(alt)} mda={mda} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
                 <AirplaneSymbol />
                 { lsActive && <LandingSystem /> }
                 <PressureIndicator />

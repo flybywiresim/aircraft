@@ -1,8 +1,10 @@
 import React from 'react';
 import { Bug } from './Bug';
 
-const TensDigits = (value, offset, color) => {
-    let text;
+type ElementFunction = (value: number, offset: number, color: string) => React.ReactElement;
+
+const TensDigits: ElementFunction = (value, offset, color) => {
+    let text: string;
     if (value < 0) {
         text = (value + 100).toString();
     } else if (value >= 100) {
@@ -12,12 +14,12 @@ const TensDigits = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLarge ${color}`} x="0" y="52">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLarge Text${color}`} x="0" y="52">{text}</text>
     );
 };
 
-const HundredsDigit = (value, offset, color) => {
-    let text;
+const HundredsDigit: ElementFunction = (value, offset, color) => {
+    let text: string;
     if (value < 0) {
         text = (value + 1).toString();
     } else if (value >= 10) {
@@ -27,29 +29,29 @@ const HundredsDigit = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest ${color}`} x="60" y="48">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="60" y="48">{text}</text>
     );
 };
-const ThousandsDigit = (value, offset, color) => {
-    let text;
+const ThousandsDigit: ElementFunction = (value, offset, color) => {
+    let text: string;
     if (!Number.isNaN(value)) {
         text = (value % 10).toString();
     } else {
         text = '';
     }
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest ${color}`} x="30" y="48">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="30" y="48">{text}</text>
     );
 };
-const TenThousandsDigit = (value, offset, color) => {
-    let text;
+const TenThousandsDigit: ElementFunction = (value, offset, color) => {
+    let text: string;
     if (!Number.isNaN(value)) {
         text = value.toString();
     } else {
         text = '';
     }
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest ${color}`} x="0" y="48">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="0" y="48">{text}</text>
     );
 };
 
@@ -59,11 +61,12 @@ type DrumProps = {
     distanceSpacing: number;
     positionOffset: number;
     value: number;
+    color: string;
+    elementFunction: (value: number, offset: number, color: string) => React.ReactElement;
     showZero?: boolean;
-    elementFunction: (value: number, offset: number, color: string) => JSX.Element;
 }
 
-const Drum: React.FC<DrumProps> = ({ displayRange, valueSpacing, distanceSpacing, positionOffset, value, elementFunction, showZero = true }) => {
+const Drum: React.FC<DrumProps> = ({ displayRange, valueSpacing, distanceSpacing, positionOffset, value, color, elementFunction, showZero = true }) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing); // How many numbers to draw (at most)
 
     // Where to draw topmost number
@@ -89,7 +92,7 @@ const Drum: React.FC<DrumProps> = ({ displayRange, valueSpacing, distanceSpacing
             elementVal = NaN;
         }
 
-        graduationElements.push(elementFunction(elementVal, offset, 'Green'));
+        graduationElements.push(elementFunction(elementVal, offset, color));
     }
 
     return (
@@ -153,6 +156,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                     valueSpacing={1}
                     distanceSpacing={52}
                     positionOffset={TenThousandsPosition}
+                    color={color}
                     elementFunction={TenThousandsDigit}
                 />
                 <Drum
@@ -162,6 +166,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                     valueSpacing={1}
                     distanceSpacing={52}
                     positionOffset={ThousandsPosition}
+                    color={color}
                     elementFunction={ThousandsDigit}
                 />
                 <Drum
@@ -170,6 +175,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                     valueSpacing={1}
                     distanceSpacing={52}
                     positionOffset={HundredsPosition}
+                    color={color}
                     elementFunction={HundredsDigit}
                 />
             </svg>
@@ -180,6 +186,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                     valueSpacing={20}
                     distanceSpacing={48}
                     positionOffset={tensDigits}
+                    color={color}
                     elementFunction={TensDigits}
                 />
             </svg>

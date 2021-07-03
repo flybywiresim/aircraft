@@ -48,7 +48,7 @@ export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ maskWidth,
         <g id="AltitudeIndicator">
             <svg x={512 - maskWidth} y={maskWidth} width={maskWidth} height={height} viewBox={`0 0 ${maskWidth} ${height}`}>
                 <VerticalTape
-                    displayRange={1500}
+                    displayRange={1000}
                     valueSpacing={100}
                     distanceSpacing={20}
                     graduationElementFunction={createTick}
@@ -74,7 +74,7 @@ export const MetricAltitudeIndicator: React.FC<MetricAltitudeIndicatorProps> = (
     return (
         <g id="MetricAltitudeIndicator" strokeWidth={3} fontSize={32}>
             <rect className="StrokeYellow NoFill" x={276} y={40} width={164} height={40} />
-            <text className="Green" x={392} y={72} textAnchor="end">{metricAltitude}</text>
+            <text className="TextGreen" x={392} y={72} textAnchor="end">{metricAltitude}</text>
             <text className="TextCyan" x={400} y={72}>M</text>
         </g>
     );

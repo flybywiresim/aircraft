@@ -56,10 +56,6 @@
   fill: none;
 }
 
-text.Green {
-  fill: $display-green;
-  stroke: none;
-}
 
 .FillYellow {
 	fill: $display-yellow;
@@ -79,6 +75,16 @@ text.Green {
 
 .StrokeRed {
 	stroke: $display-red
+}
+
+.TextGreen {
+  fill: $display-green;
+  stroke: none;
+}
+
+.TextAmber {
+  fill: $display-amber;
+  stroke: none;
 }
 
 .TextCyan {
