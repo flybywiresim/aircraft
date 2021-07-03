@@ -69,7 +69,7 @@ module.exports = {
         }),
     ],
     output: {
-        file: join(root, 'flybywire-aircraft-a320-neo/html_ui/JS/fmgc/fmgcBundle.js'),
+        file: join(root, 'flybywire-aircraft-a320-neo/html_ui/JS/fmgc/fmgc.js'),
         format: 'umd',
         name: 'Fmgc',
     },
