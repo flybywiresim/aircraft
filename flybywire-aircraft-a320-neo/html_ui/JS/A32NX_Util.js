@@ -185,3 +185,94 @@ class UpdateThrottler {
         }
     }
 }
+
+class PopUpParams {
+    constructor() {
+        this.__Type = "PopUpParams";
+        this.buttons = [];
+        this.style = "normal";
+        this.displayGlobalPopup = true;
+    }
+}
+
+class NXPopUp {
+    constructor(params = { title: "A32NX POPUP", message: "Default Message", style: "big"}, func = ()=>{}) {
+        this.g_popUplistener;
+        this.params = new PopUpParams();
+        this.params.id = params.title + "_" + this.params.time;
+        //this.params.contentUrl = "/templates/Controls/PopUp_EditPreset/PopUp_EditPreset.html";
+        //this.params.contentTemplate = "popup-edit-preset";
+        this.params.title = params.title;
+        this.params.contentData = params.message;
+        this.params.style = params.style;
+        this.params.buttons.push(new NotificationButton("TT:MENU.YES", "A32NX_CLOSE_" + this.params.id));
+        this.params.buttons.push(new NotificationButton("TT:MENU.NO"));
+        this.func = func;
+        Coherent.on("A32NX_CLOSE_" + this.params.id, () => {
+            this.func;
+        });
+    }
+
+    _showPopUp(params) {
+        Coherent.trigger("SHOW_POP_UP", params);
+    }
+
+    showPopUp(message) {
+        if (!this.g_popUplistener) {
+            this.g_popUplistener = RegisterViewListener("JS_LISTENER_POPUP", this._showPopUp.bind(null, this.params));
+        } else {
+            this.params.contentData = message;
+            this._showPopUp(this.params);
+        }
+    }
+
+    showPopUp(params = {}, func) {
+        if (params.title) {
+            this.params.title = params.title;
+        }
+        if (params.message) {
+            this.params.contentData = params.message;
+        }
+        if (params.style) {
+            this.params.style = params.style;
+        }
+        if (func) {
+            this.func = func;
+        }
+
+        if (!this.g_popUplistener) {
+            this.g_popUplistener = RegisterViewListener("JS_LISTENER_POPUP", this._showPopUp.bind(null, this.params));
+        } else {
+            this._showPopUp();
+        }
+    }
+}
+class NXNotif {
+    constructor(params = { title: "A32NX ALERT", type: "MESSAGE", theme: "GAMEPLAY", image: "IMAGE_NOTIFICATION", message:  "Default Message", timeout: 10000}) {
+        this.params = params;
+        this.params.time = new Date().getTime();
+        this.params.id = params.title + "_" + this.params.time;
+    }
+
+    sendNotification(params = {}) {
+        if (params.id) {
+            this.params.id = params.id;
+        }
+        if (params.title) {
+            this.params.title = params.title;
+        }
+        if (params.theme) {
+            this.params.theme = params.theme;
+        }
+        if (params.image) {
+            this.params.image = params.image;
+        }
+        if (params.message) {
+            this.params.message = params.message;
+        }
+        if (params.timeout) {
+            this.params.timeout = params.timeout;
+        }
+        localStorage.notification = JSON.stringify(this.params);
+    }
+}
