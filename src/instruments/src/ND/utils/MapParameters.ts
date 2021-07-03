@@ -68,7 +68,7 @@ export class MapParameters {
 
         return [
             x + (this.pxWidth / 2),
-            x + (this.pxWidth / 2),
+            y + (this.pxWidth / 2),
         ];
     }
 

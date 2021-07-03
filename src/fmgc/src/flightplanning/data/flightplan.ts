@@ -10,6 +10,11 @@ export interface WaypointStats {
     bearingInFp: number;
 
     /**
+     * Distance from previous waypoint in flight plan in nautical miles
+     */
+    distanceInFP: number;
+
+    /**
      * Distance from PPOS in nautical miles
      */
     distanceFromPpos: number;
