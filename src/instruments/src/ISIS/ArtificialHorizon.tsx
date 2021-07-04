@@ -5,9 +5,6 @@ import { RollScale } from './RollScale';
 import { RollIndex } from './RollIndex';
 import { Att10sFlag } from './Att10sFlag';
 
-const Sky: React.FC = () => <rect x={-256} y={-512} width={1024} height={768} className="sky" />;
-const Earth: React.FC = () => <rect x={-256} y={256} width={1024} height={768} className="earth" />;
-
 export const ArtificialHorizon: React.FC<{ maskWidth: number }> = ({ maskWidth }) => {
     const [pitch] = useSimVar('PLANE PITCH DEGREES', 'degrees');
     const [roll] = useSimVar('PLANE BANK DEGREES', 'degrees');
@@ -22,8 +19,8 @@ export const ArtificialHorizon: React.FC<{ maskWidth: number }> = ({ maskWidth }
             <g id="ArtificialHorizon">
                 <g id="RollGroup" transform={`rotate(${roll} 256 256)`}>
                     <g id="PitchGroup" transform={`translate(0 ${pitchShift})`}>
-                        <Sky />
-                        <Earth />
+                        <rect id="Sky" x={-256} y={-512} width={1024} height={768} className="sky" />
+                        <rect id="Earth" x={-256} y={256} width={1024} height={768} className="earth" />
                         <PitchScale pitchDegPixels={pitchDegPixels} />
                     </g>
                     {/* TODO: Add actual delta time */}

@@ -1,25 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-
-const useInterval = (callback: () => void, delay: number | null) => {
-    const savedCallback = useRef<() => void>(() => { });
-
-    // Remember the latest callback.
-    useEffect(() => {
-        savedCallback.current = callback;
-    }, [callback]);
-
-    // Set up the interval.
-    useEffect(() => {
-        if (delay !== null) {
-            const id = setInterval(() => savedCallback.current(), delay);
-            return () => clearInterval(id);
-        }
-
-        return () => { };
-    }, [delay]);
-};
+import { useInterval } from '@flybywiresim/react-components';
 
 type AutoBrightnessProps = {
     bugsActive: boolean
@@ -82,13 +64,13 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
         }
     }, [timeOfDay]);
 
-    useInterval(useCallback(
+    useInterval(
         () => setCurrentBrightness(targetBrightness > currentBrightness
             ? Math.min(currentBrightness + transitionSpeedModifier, targetBrightness)
             : Math.max(currentBrightness - transitionSpeedModifier, targetBrightness)),
-        [currentBrightness, targetBrightness],
-    ),
-    targetBrightness === currentBrightness ? null : 150);
+        targetBrightness === currentBrightness ? null : 150,
+        { additionalDeps: [currentBrightness, targetBrightness], runOnStart: false },
+    );
 
     return (
         <g style={{ opacity: currentBrightness }}>
