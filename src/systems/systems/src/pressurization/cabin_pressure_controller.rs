@@ -12,7 +12,7 @@ use uom::si::{
 };
 
 #[derive(Copy, Clone)]
-pub struct CabinPressureController {
+pub(super) struct CabinPressureController {
     pressure_schedule_manager: PressureScheduleManager,
     exterior_pressure: Pressure,
     cabin_pressure: Pressure,
@@ -85,7 +85,7 @@ impl CabinPressureController {
 
         // Based on local QNH when below 5000ft from departure or arrival airport, ISA when above
         let p_0 = if self.pressure_schedule() == PressureSchedule::DescentInternal
-            && (self.cabin_altitude() - self.landing_elevation())
+            && (self.cabin_altitude() - self.landing_elev)
                 .get::<foot>()
                 .abs()
                 < 5000.
@@ -95,7 +95,7 @@ impl CabinPressureController {
             } else {
                 sea_level_pressure
             }
-        } else if (self.cabin_altitude() - self.departure_elevation())
+        } else if (self.cabin_altitude() - self.departure_elev)
             .get::<foot>()
             .abs()
             < 5000.
@@ -110,8 +110,8 @@ impl CabinPressureController {
         // ISA constants for calculating cabin altitude
         const T_0: f64 = 288.2; // ISA standard temperature - K
         const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
-        const L: f64 = -0.00651; // Adiabatic lapse rate K/m
-        const G: f64 = 9.80665; // Gravity m/s2
+        const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
+        const G: f64 = 9.80665; // Gravity - m/s2
 
         // Hydrostatic equation with linear temp changes and constant R, g
         let z: f64 = ((T_0 / pressure_ratio.powf((L * R) / G)) - T_0) / L;
@@ -139,12 +139,15 @@ impl CabinPressureController {
                 }
             }
             PressureSchedule::ClimbInternal => {
-                if self.cabin_delta_p() >= Pressure::new::<psi>(8.06) {
+                const DELTA_PRESSURE_LIMIT: f64 = 8.06; // PSI
+                const CABIN_ALTITUDE_LIMIT: f64 = 8050.; // Feet
+
+                if self.cabin_delta_p() >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT) {
                     Velocity::new::<foot_per_minute>(750.)
-                } else if self.cabin_altitude() >= Length::new::<foot>(8050.) {
+                } else if self.cabin_altitude() >= Length::new::<foot>(CABIN_ALTITUDE_LIMIT) {
                     Velocity::new::<foot_per_minute>(0.)
                 } else {
-                    // Formula based on existing graphs and tables to simulate climb schedule
+                    // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
                     Velocity::new::<foot_per_minute>(
                         context.vertical_speed().get::<foot_per_minute>()
                             * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
@@ -167,11 +170,14 @@ impl CabinPressureController {
                 }
             }
             PressureSchedule::Abort => {
-                if self.cabin_altitude() < self.departure_elevation() - Length::new::<foot>(187.818)
+                const TARGET_LANDING_ALT_DIFF: f64 = 187.818; // Altitude in ft equivalent to 0.1 PSI delta P at sea level
+
+                if self.cabin_altitude()
+                    < self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
                     Velocity::new::<foot_per_minute>(500.)
                 } else if self.cabin_altitude()
-                    > self.departure_elevation() - Length::new::<foot>(187.818)
+                    > self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
                     Velocity::new::<foot_per_minute>(-500.)
                 } else {
@@ -182,12 +188,15 @@ impl CabinPressureController {
     }
 
     fn get_ext_diff_with_ldg_elev(&self, context: &UpdateContext) -> Length {
-        context.indicated_altitude() - self.landing_elevation() - Length::new::<foot>(187.818)
-        // Equivalent to 0.1 PSI at sea level
+        const TARGET_LANDING_ALT_DIFF: f64 = 187.818; // Altitude in ft equivalent to 0.1 PSI delta P at sea level
+
+        context.indicated_altitude()
+            - self.landing_elev
+            - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
     }
 
     fn get_int_diff_with_ldg_elev(&self) -> Length {
-        self.cabin_altitude() - self.landing_elevation()
+        self.cabin_altitude() - self.landing_elev
     }
 
     fn set_cabin_vs(&self, context: &UpdateContext) -> Velocity {
@@ -231,14 +240,6 @@ impl CabinPressureController {
         self.pressure_schedule_manager.pressure_schedule()
     }
 
-    pub fn departure_elevation(&self) -> Length {
-        self.departure_elev
-    }
-
-    pub fn landing_elevation(&self) -> Length {
-        self.landing_elev
-    }
-
     pub fn should_switch_cpc(&self) -> bool {
         self.pressure_schedule_manager.should_switch_cpc()
     }
@@ -259,6 +260,7 @@ impl PressureValveActuator for CabinPressureController {
     }
 
     fn target_valve_position(&self) -> Ratio {
+        // Placeholder formula to simulate OFV behaviour based on empirical data
         let pressure_ratio: f64 = self.exterior_pressure.get::<hectopascal>()
             / (self.cabin_pressure().get::<hectopascal>() * 2.);
         let vs_ratio: f64 = self.cabin_target_vs.get::<foot_per_minute>() / 2000. * pressure_ratio;
@@ -286,14 +288,14 @@ pub enum PressureSchedule {
 }
 
 #[derive(Copy, Clone)]
-pub struct PressureScheduleManager {
+struct PressureScheduleManager {
     pressure_schedule: PressureSchedule,
     timer: Duration,
     cpc_switch_reset: bool,
 }
 
 impl PressureScheduleManager {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             pressure_schedule: PressureSchedule::Ground,
             timer: Duration::from_secs_f64(100.),
@@ -301,7 +303,7 @@ impl PressureScheduleManager {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, eng_1_n1: Ratio, eng_2_n1: Ratio) {
+    fn update(&mut self, context: &UpdateContext, eng_1_n1: Ratio, eng_2_n1: Ratio) {
         match self.pressure_schedule {
             PressureSchedule::Ground => self.update_from_ground(context, eng_1_n1, eng_2_n1),
             PressureSchedule::TakeOff => self.update_from_takeoff(context, eng_1_n1, eng_2_n1),
@@ -312,7 +314,7 @@ impl PressureScheduleManager {
         }
     }
 
-    pub fn pressure_schedule(&self) -> PressureSchedule {
+    fn pressure_schedule(&self) -> PressureSchedule {
         self.pressure_schedule
     }
 

@@ -5,7 +5,7 @@ use super::PressureValveActuator;
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
 
-pub struct PressureValve {
+pub(super) struct PressureValve {
     open_amount: Ratio,
     target_open: Ratio,
     full_travel_time: Duration,
@@ -22,22 +22,17 @@ impl PressureValve {
 
     pub fn update<T: PressureValveActuator>(&mut self, context: &UpdateContext, actuator: &T) {
         self.target_open = actuator.target_valve_position();
-        if actuator.should_open_pressure_valve() && self.open_amount() < self.target_open() {
+        if actuator.should_open_pressure_valve() && self.open_amount < self.target_open {
             self.open_amount += Ratio::new::<percent>(
                 self.get_valve_change_for_delta(context)
-                    .min(self.target_open().get::<percent>() - self.open_amount.get::<percent>()),
+                    .min(self.target_open.get::<percent>() - self.open_amount.get::<percent>()),
             );
-        } else if actuator.should_close_pressure_valve() && self.open_amount() > self.target_open()
-        {
+        } else if actuator.should_close_pressure_valve() && self.open_amount > self.target_open {
             self.open_amount -= Ratio::new::<percent>(
                 self.get_valve_change_for_delta(context)
-                    .min(self.open_amount.get::<percent>() - self.target_open().get::<percent>()),
+                    .min(self.open_amount.get::<percent>() - self.target_open.get::<percent>()),
             );
         }
-    }
-
-    fn target_open(&self) -> Ratio {
-        self.target_open
     }
 
     fn get_valve_change_for_delta(&self, context: &UpdateContext) -> f64 {

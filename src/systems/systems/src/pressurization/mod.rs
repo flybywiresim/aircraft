@@ -11,7 +11,7 @@ use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::foot_per_mi
 mod cabin_pressure_controller;
 mod pressure_valve;
 
-pub trait PressureValveActuator {
+trait PressureValveActuator {
     fn should_open_pressure_valve(&self) -> bool;
     fn should_close_pressure_valve(&self) -> bool;
     fn target_valve_position(&self) -> Ratio;
