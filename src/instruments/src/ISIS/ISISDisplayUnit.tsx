@@ -63,7 +63,7 @@ export const ISISDisplayUnit: React.FC<Props> = ({ indicatedAirspeed, children }
                 <g id="TimerFlag">
                     <rect id="TmrTest" className="FillYellow" width="120" height="40" x="204" y="324" />
                     <text id="TmrTestTxt" className="StrokeBackground FillBackground" textAnchor="middle" x="256" y="366">
-                        {`INIT ${Math.floor(timer!)}s`}
+                        {`INIT ${Math.max(0, Math.ceil(timer!))}s`}
                         {/* INIT 35s */}
                     </text>
                 </g>

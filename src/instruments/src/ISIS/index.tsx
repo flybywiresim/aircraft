@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
+import { useInterval } from '@flybywiresim/react-components';
 import { render } from '../Common';
 import { ISISDisplayUnit } from './ISISDisplayUnit';
 import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';
@@ -13,9 +14,8 @@ import './style.scss';
 export const ISISDisplay: React.FC = () => {
     const [ias] = useSimVar('AIRSPEED INDICATED', 'knots');
     const [bugsActive] = useInteractionSimVar('L:A32NX_ISIS_BUGS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_BUGS_PRESSED');
-    const [mode, setMode] = useState('AHI');
-    const [isBrightnessUpPressed, setIsBrightnessUpPressed] = useState(false);
-    const [isBrightnessDownPressed, setIsBrightnessDownPressed] = useState(false);
+    const isBrightnessUpPressed = useRef(false);
+    const isBrightnessDownPressed = useRef(false);
 
     const [bugs, setBugs] = useState(initialBugs);
     const [selectedIndex, setSelectedIndex] = useState(5);
@@ -45,8 +45,8 @@ export const ISISDisplay: React.FC = () => {
     });
 
     useInteractionEvent('A32NX_ISIS_PLUS_PRESSED', () => {
-        setIsBrightnessUpPressed(!isBrightnessUpPressed);
-        if (isBrightnessUpPressed) {
+        isBrightnessUpPressed.current = !isBrightnessUpPressed.current;
+        if (!isBrightnessUpPressed.current) {
             return;
         }
 
@@ -54,31 +54,21 @@ export const ISISDisplay: React.FC = () => {
     });
 
     useInteractionEvent('A32NX_ISIS_MINUS_PRESSED', () => {
-        setIsBrightnessDownPressed(!isBrightnessDownPressed);
-        if (isBrightnessDownPressed) {
+        isBrightnessDownPressed.current = !isBrightnessDownPressed.current;
+        if (!isBrightnessDownPressed.current) {
             return;
         }
 
         setSelectedIndex((5 + selectedIndex) % 6);
     });
 
-    // TODO: Automatically switch away from BUGS after 15s of no pilot input
-    useInteractionEvent('A32NX_ISIS_BUGS_PRESSED', () => {
-        if (mode === 'AHI') {
-            setMode('BUG');
-        } else {
-            setMode('AHI');
-        }
-    });
-
     return (
         <AutoBrightness bugsActive={bugsActive}>
             <ISISDisplayUnit indicatedAirspeed={ias}>
                 <svg className="isis-svg" version="1.1" viewBox="0 0 512 512">
-                    {{
-                        AHI: <ArtificialHorizonDisplay indicatedAirspeed={ias} bugs={bugs} />,
-                        BUG: <BugSetupDisplay bugs={bugs} selectedIndex={selectedIndex} />,
-                    }[mode]}
+                    {bugsActive
+                        ? <BugSetupDisplay bugs={bugs} selectedIndex={selectedIndex} />
+                        : <ArtificialHorizonDisplay indicatedAirspeed={ias} bugs={bugs} />}
                 </svg>
             </ISISDisplayUnit>
         </AutoBrightness>

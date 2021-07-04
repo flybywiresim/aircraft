@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useInteractionEvent } from '@instruments/common/hooks';
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 
 import { AltitudeIndicator } from './AltitudeIndicator';
@@ -25,20 +24,14 @@ export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed, b
     const maskWidth = 108;
 
     return (
-        <g>
+        <g id="ArtificialHorizonDisplay">
             <ArtificialHorizon maskWidth={maskWidth} />
-            <g id="fixedOverlay">
-                {/* <path d="M32,8 L32,504" fill="white" stroke="white" strokeWidth={4} />
-                <path d="M480,8 L480,504" fill="white" stroke="white" strokeWidth={4} />
-                <path d="M0,108 L512,108" fill="white" stroke="white" strokeWidth={4} />
-                <path d="M0,404 L512,404" fill="white" stroke="white" strokeWidth={4} /> */}
-                <AirspeedIndicator maskWidth={maskWidth} indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
-                <AltitudeIndicator maskWidth={maskWidth} altitude={Math.floor(alt)} mda={mda} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
-                <AirplaneSymbol />
-                { lsActive && <LandingSystem /> }
-                <PressureIndicator />
-                <MachIndicator />
-            </g>
+            <AirspeedIndicator maskWidth={maskWidth} indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
+            <AltitudeIndicator maskWidth={maskWidth} altitude={Math.floor(alt)} mda={mda} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
+            <AirplaneSymbol />
+            { lsActive && <LandingSystem /> }
+            <PressureIndicator />
+            <MachIndicator />
         </g>
     );
 };
