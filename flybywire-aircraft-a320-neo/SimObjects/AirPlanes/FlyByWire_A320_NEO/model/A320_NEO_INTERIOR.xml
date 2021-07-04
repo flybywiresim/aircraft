@@ -812,7 +812,7 @@
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Template">
                         <NODE_ID>PUSH_BARO_LS</NODE_ID>
-                        <TOOLTIPID>Inop.</TOOLTIPID>
+                        <TOOLTIPID>Toggle LS scales</TOOLTIPID>
                         <BTN_ID>LS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>

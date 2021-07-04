@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import { useSimVar } from '@instruments/common/simVars';
+import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 
 import { AltitudeIndicator } from './AltitudeIndicator';
 import { LandingSystem } from './LandingSystem';
@@ -20,8 +20,7 @@ export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed, b
     const [alt] = useSimVar('INDICATED ALTITUDE:2', 'feet');
     const [mda] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
-    const [lsActive, setLsActive] = useState(false);
-    useInteractionEvent('A32NX_ISIS_LS_PRESSED', () => setLsActive(!lsActive));
+    const [lsActive] = useInteractionSimVar('L:A32NX_ISIS_LS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_LS_PRESSED');
 
     const maskWidth = 108;
 

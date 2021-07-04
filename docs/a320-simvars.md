@@ -964,6 +964,16 @@
       0 | inactive
       1 | active
 
+- A32NX_ISIS_LS_ACTIVE
+	- Bool
+	- Indicates whether LS scales are shown on the ISIS
+	- Toggled by `H:A32NX_ISIS_LS_PRESSED`
+
+- A32NX_ISIS_BUGS_ACTIVE
+	- Bool
+	- Indicates whether bugs page is shown on the ISIS
+	- Toggled by `H:A32NX_ISIS_BUGS_PRESSED`
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
@@ -1204,7 +1214,7 @@
       --- | ---
       SELECTED | 0
       MANAGED | 1
-      
+
 - A32NX_FCU_SPD_MANAGED_DOT
   - Boolean
   - Indicates if managed speed/mach mode is active
