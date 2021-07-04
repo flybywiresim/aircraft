@@ -1,7 +1,7 @@
 use std::time::Duration;
 use uom::si::{
-    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
-    pressure::pascal, pressure::psi, ratio::percent, volume::gallon,
+    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
+    ratio::percent, velocity::knot, volume::gallon,
 };
 
 use systems::{
@@ -1255,16 +1255,13 @@ struct A320BrakingForce {
     left_braking_force_corrected: f64,
     right_braking_force_corrected: f64,
 
-    acceleration: Acceleration,
-
     flap_position: f64,
-    indicated_airspeed: f64,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
 
-    const FLAPS_BREAKPOINTS: [f64; 3] = [0., 75., 100.];
-    const FLAPS_PENALTY_PERCENT: [f64; 3] = [10., 8., 0.];
+    const FLAPS_BREAKPOINTS: [f64; 3] = [0., 50., 100.];
+    const FLAPS_PENALTY_PERCENT: [f64; 3] = [8., 8., 0.];
 
     pub fn new() -> Self {
         A320BrakingForce {
@@ -1274,10 +1271,7 @@ impl A320BrakingForce {
             left_braking_force_corrected: 0.,
             right_braking_force_corrected: 0.,
 
-            acceleration: Acceleration::new::<meter_per_second_squared>(0.),
-
             flap_position: 0.,
-            indicated_airspeed: 0.,
         }
     }
 
@@ -1301,24 +1295,25 @@ impl A320BrakingForce {
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
 
-        self.correct_final_force_with_flaps_state();
-
-        let accel = context.long_accel();
-        self.acceleration = self.acceleration
-            + (accel - self.acceleration)
-                * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / 0.1));
+        self.correct_final_force_with_flaps_state(context);
     }
 
-    fn correct_final_force_with_flaps_state(&mut self) {
+    fn correct_final_force_with_flaps_state(&mut self, context: &UpdateContext) {
         let flap_correction = interpolation(
             &Self::FLAPS_BREAKPOINTS,
             &Self::FLAPS_PENALTY_PERCENT,
             self.flap_position,
         );
-        let final_flaps_percent_with_speed =
-            flap_correction * 0.08 * self.indicated_airspeed.sqrt();
 
-        let debug_left_force = self.left_braking_force_corrected;
+        // Using airspeed with formula 0.1 * sqrt(airspeed) to get a 0 to 1 ratio to use our flap correction
+        // This way the less airspeed, the less our correction is used as it is an aerodynamic effect on brakes
+        let mut airspeed_corrective_factor =
+            0.1 * context.indicated_airspeed().get::<knot>().sqrt();
+        airspeed_corrective_factor = airspeed_corrective_factor.min(1.0).max(0.);
+
+        let final_flaps_percent_with_speed = flap_correction * airspeed_corrective_factor;
+
+        let debug_left_force = self.left_braking_force;
         self.left_braking_force_corrected = self.left_braking_force
             - (self.left_braking_force * final_flaps_percent_with_speed / 100.);
 
@@ -1326,8 +1321,9 @@ impl A320BrakingForce {
             - (self.right_braking_force * final_flaps_percent_with_speed / 100.);
 
         println!(
-            "CORR Flaps PRCT{:.2} speedcorrected{:.2} force_without_corr{:.2} final_force{:.2}",
+            "CORR Flaps PRCT{:.2} airspeed_corrective_factor{:.2} speedcorrected{:.2} force_without_corr{:.2} final_force{:.2}",
             flap_correction,
+            airspeed_corrective_factor,
             final_flaps_percent_with_speed,
             debug_left_force,
             self.left_braking_force_corrected
@@ -1343,20 +1339,12 @@ impl SimulationElement for A320BrakingForce {
             "BRAKE RIGHT FORCE FACTOR",
             self.right_braking_force_corrected,
         );
-        // println!(
-        //     "BRAKE FACTOR SENT TO SIM L{:.2}/R{:.2} ReferencePressure:{:.0}",
-        //     self.left_braking_force_corrected,
-        //     self.right_braking_force_corrected,
-        //     self.tunable_brake_press_factor
-        // );
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
         let left_flap: f64 = state.read("TRAILING EDGE FLAPS LEFT PERCENT");
         let right_flap: f64 = state.read("TRAILING EDGE FLAPS RIGHT PERCENT");
         self.flap_position = (left_flap + right_flap) / 2.;
-
-        println!("PARAMS:F{:.1}", self.flap_position,);
     }
 }
 
