@@ -828,7 +828,7 @@
                         <BTN_ID>MINUS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_ISIS_Push_Template">
+                    <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
                         <NODE_ID>PUSH_BARO_RST</NODE_ID>
                         <TOOLTIPID>Reset ISI Attitude</TOOLTIPID>
                         <BTN_ID>RST</BTN_ID>

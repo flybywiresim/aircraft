@@ -38,6 +38,10 @@
 	stroke: none;
 }
 
+.FontMedium {
+  font-size: 30px;
+}
+
 .FontLarge {
   font-size: 32px;
 }
@@ -88,8 +92,13 @@
 }
 
 .TextCyan {
-	// stroke: $display-cyan;
+	stroke: none;
 	fill: $display-cyan
+}
+
+.TextBackground {
+	fill: $display-background;
+  	stroke: none;
 }
 
 .FillBackground {
