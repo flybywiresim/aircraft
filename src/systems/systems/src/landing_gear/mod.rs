@@ -178,7 +178,7 @@ pub trait LgciuWeightOnWheels {
     fn nose_gear_compressed_7(&self) -> bool;
     fn nose_gear_compressed_or_ext_power_8(&self) -> bool;
 }
-pub trait LgciuExtensionInterface {
+pub trait LgciuExtension {
     fn all_down_and_locked_14(&self) -> bool;
     fn all_up_and_locked_19(&self) -> bool;
 }
@@ -212,7 +212,7 @@ impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
         self.is_powered && self.nose_gear_sensor_compressed && self.external_power_available
     }
 }
-impl LgciuExtensionInterface for LandingGearControlInterfaceUnit {
+impl LgciuExtension for LandingGearControlInterfaceUnit {
     fn all_down_and_locked_14(&self) -> bool {
         self.is_powered
             && self.nose_gear_down_and_locked
@@ -226,7 +226,7 @@ impl LgciuExtensionInterface for LandingGearControlInterfaceUnit {
             && self.left_gear_up_and_locked
     }
 }
-pub trait LandingGearControlUnitInterface: LgciuWeightOnWheels + LgciuExtensionInterface {}
+pub trait LandingGearControlUnitInterface: LgciuWeightOnWheels + LgciuExtension {}
 impl LandingGearControlUnitInterface for LandingGearControlInterfaceUnit {}
 
 #[cfg(test)]
