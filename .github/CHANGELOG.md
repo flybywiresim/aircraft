@@ -130,6 +130,7 @@
 1. [ECAM] Implement amber REV message while reverser doors are in transit. - @BlueberryKing (BlueberryKing#6641)
 1. [HYD] Switched hydraulics to new engine model simvars - @Crocket63 (crocket)
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
+1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
