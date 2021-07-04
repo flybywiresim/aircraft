@@ -43,7 +43,7 @@ pub trait RamAirTurbineHydraulicLoopPressurised {
     fn is_rat_hydraulic_loop_pressurised(&self) -> bool;
 }
 
-pub trait LandingGearPosition {
+pub trait LandingGearRealPosition {
     fn is_up_and_locked(&self) -> bool;
     fn is_down_and_locked(&self) -> bool;
 }

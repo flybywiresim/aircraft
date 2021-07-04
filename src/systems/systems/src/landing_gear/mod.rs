@@ -1,5 +1,5 @@
 use crate::{
-    shared::{ElectricalBusType, ElectricalBuses, LandingGearPosition, LandingGearWeightOnWheels},
+    shared::{ElectricalBusType, ElectricalBuses, LandingGearRealPosition},
     simulation::{Read, SimulationElement, SimulatorReader},
 };
 use uom::si::{
@@ -13,14 +13,18 @@ use uom::si::{
 /// locked or down and locked. No in between state.
 /// It provides as well the state of all weight on wheel sensors
 pub struct LandingGear {
-    position: Ratio,
+    center_position: Ratio,
+    left_position: Ratio,
+    right_position: Ratio,
 
-    center_weight_on_wheel_sensor_on_ground: bool,
-    left_weight_on_wheel_sensor_on_ground: bool,
-    right_weight_on_wheel_sensor_on_ground: bool,
+    center_compression: Ratio,
+    left_compression: Ratio,
+    right_compression: Ratio,
 }
 impl LandingGear {
     const GEAR_CENTER_POSITION: &'static str = "GEAR CENTER POSITION";
+    const GEAR_LEFT_POSITION: &'static str = "GEAR LEFT POSITION";
+    const GEAR_RIGHT_POSITION: &'static str = "GEAR RIGHT POSITION";
 
     pub const GEAR_CENTER_COMPRESSION: &'static str = "GEAR ANIMATION POSITION";
     pub const GEAR_LEFT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:1";
@@ -31,51 +35,77 @@ impl LandingGear {
 
     pub fn new() -> Self {
         Self {
-            position: Ratio::new::<percent>(0.),
+            center_position: Ratio::new::<percent>(0.),
+            left_position: Ratio::new::<percent>(0.),
+            right_position: Ratio::new::<percent>(0.),
 
-            center_weight_on_wheel_sensor_on_ground: false,
-            left_weight_on_wheel_sensor_on_ground: false,
-            right_weight_on_wheel_sensor_on_ground: false,
+            center_compression: Ratio::new::<percent>(0.),
+            left_compression: Ratio::new::<percent>(0.),
+            right_compression: Ratio::new::<percent>(0.),
         }
     }
+
+    fn is_center_up_and_locked(&self) -> bool {
+        (self.center_position.get::<percent>() - 0.).abs() < f64::EPSILON
+    }
+
+    fn is_left_up_and_locked(&self) -> bool {
+        (self.left_position.get::<percent>() - 0.).abs() < f64::EPSILON
+    }
+
+    fn is_right_up_and_locked(&self) -> bool {
+        (self.right_position.get::<percent>() - 0.).abs() < f64::EPSILON
+    }
+
+    fn is_center_down_and_locked(&self) -> bool {
+        (self.center_position.get::<percent>() - 100.).abs() < f64::EPSILON
+    }
+
+    fn is_left_down_and_locked(&self) -> bool {
+        (self.left_position.get::<percent>() - 100.).abs() < f64::EPSILON
+    }
+
+    fn is_right_down_and_locked(&self) -> bool {
+        (self.right_position.get::<percent>() - 100.).abs() < f64::EPSILON
+    }
+
+    fn is_center_compressed(&self) -> bool {
+        self.center_compression
+            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+    }
+
+    fn is_left_compressed(&self) -> bool {
+        self.left_compression
+            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+    }
+
+    fn is_right_compressed(&self) -> bool {
+        self.right_compression
+            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+    }
 }
-impl LandingGearPosition for LandingGear {
+impl LandingGearRealPosition for LandingGear {
     fn is_up_and_locked(&self) -> bool {
-        (self.position.get::<percent>() - 0.).abs() < f64::EPSILON
+        self.is_center_up_and_locked()
+            && self.is_left_up_and_locked()
+            && self.is_right_up_and_locked()
     }
 
     fn is_down_and_locked(&self) -> bool {
-        (self.position.get::<percent>() - 100.).abs() < f64::EPSILON
-    }
-}
-impl LandingGearWeightOnWheels for LandingGear {
-    fn center_gear_on_ground(&self) -> bool {
-        self.center_weight_on_wheel_sensor_on_ground
-    }
-
-    fn left_gear_on_ground(&self) -> bool {
-        self.left_weight_on_wheel_sensor_on_ground
-    }
-
-    fn right_gear_on_ground(&self) -> bool {
-        self.right_weight_on_wheel_sensor_on_ground
+        self.is_center_down_and_locked()
+            && self.is_left_down_and_locked()
+            && self.is_right_down_and_locked()
     }
 }
 impl SimulationElement for LandingGear {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.position = reader.read(LandingGear::GEAR_CENTER_POSITION);
+        self.center_position = reader.read(LandingGear::GEAR_CENTER_POSITION);
+        self.left_position = reader.read(LandingGear::GEAR_LEFT_POSITION);
+        self.right_position = reader.read(LandingGear::GEAR_RIGHT_POSITION);
 
-        let center_gear_compression: Ratio = reader.read(LandingGear::GEAR_CENTER_COMPRESSION);
-        self.center_weight_on_wheel_sensor_on_ground = center_gear_compression
-            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO);
-
-        let left_gear_compression: Ratio = reader.read(LandingGear::GEAR_LEFT_COMPRESSION);
-        self.left_weight_on_wheel_sensor_on_ground = left_gear_compression
-            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO);
-
-        let right_gear_compression: Ratio = reader.read(LandingGear::GEAR_RIGHT_COMPRESSION);
-        self.right_weight_on_wheel_sensor_on_ground = right_gear_compression
-            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO);
+        self.center_compression = reader.read(LandingGear::GEAR_CENTER_COMPRESSION);
+        self.left_compression = reader.read(LandingGear::GEAR_LEFT_COMPRESSION);
+        self.right_compression = reader.read(LandingGear::GEAR_RIGHT_COMPRESSION);
     }
 }
 impl Default for LandingGear {
@@ -84,7 +114,7 @@ impl Default for LandingGear {
     }
 }
 
-pub struct LandingGearControlUnit {
+pub struct LandingGearControlInterfaceUnit {
     is_powered: bool,
     powered_by: ElectricalBusType,
     external_power_available: bool,
@@ -93,10 +123,15 @@ pub struct LandingGearControlUnit {
     left_gear_sensor_compressed: bool,
     nose_gear_sensor_compressed: bool,
 
-    all_up_and_locked: bool,
-    all_down_and_locked: bool,
+    right_gear_up_and_locked: bool,
+    left_gear_up_and_locked: bool,
+    nose_gear_up_and_locked: bool,
+
+    right_gear_down_and_locked: bool,
+    left_gear_down_and_locked: bool,
+    nose_gear_down_and_locked: bool,
 }
-impl LandingGearControlUnit {
+impl LandingGearControlInterfaceUnit {
     pub fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             is_powered: false,
@@ -105,27 +140,37 @@ impl LandingGearControlUnit {
             right_gear_sensor_compressed: true,
             left_gear_sensor_compressed: true,
             nose_gear_sensor_compressed: true,
-            all_up_and_locked: false,
-            all_down_and_locked: false,
+            right_gear_up_and_locked: false,
+            left_gear_up_and_locked: false,
+            nose_gear_up_and_locked: false,
+            right_gear_down_and_locked: false,
+            left_gear_down_and_locked: false,
+            nose_gear_down_and_locked: false,
         }
     }
 
     pub fn update(&mut self, landing_gear: &LandingGear, external_power_available: bool) {
-        self.nose_gear_sensor_compressed = landing_gear.center_gear_on_ground();
-        self.left_gear_sensor_compressed = landing_gear.left_gear_on_ground();
-        self.right_gear_sensor_compressed = landing_gear.right_gear_on_ground();
+        self.nose_gear_sensor_compressed = landing_gear.is_center_compressed();
+        self.left_gear_sensor_compressed = landing_gear.is_left_compressed();
+        self.right_gear_sensor_compressed = landing_gear.is_right_compressed();
+
         self.external_power_available = external_power_available;
-        self.all_up_and_locked = landing_gear.is_up_and_locked();
-        self.all_down_and_locked = landing_gear.is_down_and_locked();
+
+        self.right_gear_up_and_locked = landing_gear.is_right_up_and_locked();
+        self.left_gear_up_and_locked = landing_gear.is_left_up_and_locked();
+        self.nose_gear_up_and_locked = landing_gear.is_center_up_and_locked();
+        self.right_gear_down_and_locked = landing_gear.is_right_down_and_locked();
+        self.left_gear_down_and_locked = landing_gear.is_left_down_and_locked();
+        self.nose_gear_down_and_locked = landing_gear.is_center_down_and_locked();
     }
 }
-impl SimulationElement for LandingGearControlUnit {
+impl SimulationElement for LandingGearControlInterfaceUnit {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
-pub trait LandingGearControlUnitInterface {
+pub trait LgciuWeightOnWheels {
     fn right_gear_compressed_1(&self) -> bool;
     fn right_gear_compressed_or_ext_power_2(&self) -> bool;
     fn left_gear_compressed_3(&self) -> bool;
@@ -134,12 +179,13 @@ pub trait LandingGearControlUnitInterface {
     fn left_and_right_gear_compressed_or_ext_power_6(&self) -> bool;
     fn nose_gear_compressed_7(&self) -> bool;
     fn nose_gear_compressed_or_ext_power_8(&self) -> bool;
-
+}
+pub trait LandingGearControlUnitExtensionInterface {
     fn all_down_and_locked_14(&self) -> bool;
     fn all_up_and_locked_19(&self) -> bool;
 }
 
-impl LandingGearControlUnitInterface for LandingGearControlUnit {
+impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
     fn right_gear_compressed_1(&self) -> bool {
         self.is_powered && self.right_gear_sensor_compressed
     }
@@ -167,13 +213,27 @@ impl LandingGearControlUnitInterface for LandingGearControlUnit {
     fn nose_gear_compressed_or_ext_power_8(&self) -> bool {
         self.is_powered && self.nose_gear_sensor_compressed && self.external_power_available
     }
+}
+impl LandingGearControlUnitExtensionInterface for LandingGearControlInterfaceUnit {
     fn all_down_and_locked_14(&self) -> bool {
-        self.is_powered && self.all_down_and_locked
+        self.is_powered
+            && self.nose_gear_down_and_locked
+            && self.right_gear_down_and_locked
+            && self.left_gear_down_and_locked
     }
     fn all_up_and_locked_19(&self) -> bool {
-        self.is_powered && self.all_up_and_locked
+        self.is_powered
+            && self.nose_gear_up_and_locked
+            && self.right_gear_up_and_locked
+            && self.left_gear_up_and_locked
     }
 }
+pub trait LandingGearControlUnitInterface:
+    LgciuWeightOnWheels + LandingGearControlUnitExtensionInterface
+{
+}
+impl LandingGearControlUnitInterface for LandingGearControlInterfaceUnit {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -232,9 +292,9 @@ mod tests {
             Ratio::new::<ratio>(0.9),
         );
 
-        assert!(test_bed.query_element(|e| e.center_gear_on_ground()));
-        assert!(test_bed.query_element(|e| e.left_gear_on_ground()));
-        assert!(test_bed.query_element(|e| e.right_gear_on_ground()));
+        assert!(test_bed.query_element(|e| e.is_center_compressed()));
+        assert!(test_bed.query_element(|e| e.is_left_compressed()));
+        assert!(test_bed.query_element(|e| e.is_right_compressed()));
     }
 
     #[test]
@@ -245,9 +305,9 @@ mod tests {
             Ratio::new::<ratio>(0.51),
         );
 
-        assert!(!test_bed.query_element(|e| e.center_gear_on_ground()));
-        assert!(!test_bed.query_element(|e| e.left_gear_on_ground()));
-        assert!(!test_bed.query_element(|e| e.right_gear_on_ground()));
+        assert!(!test_bed.query_element(|e| e.is_center_compressed()));
+        assert!(!test_bed.query_element(|e| e.is_left_compressed()));
+        assert!(!test_bed.query_element(|e| e.is_right_compressed()));
     }
 
     #[test]
@@ -258,9 +318,9 @@ mod tests {
             Ratio::new::<ratio>(0.51),
         );
 
-        assert!(!test_bed.query_element(|e| e.center_gear_on_ground()));
-        assert!(test_bed.query_element(|e| e.left_gear_on_ground()));
-        assert!(!test_bed.query_element(|e| e.right_gear_on_ground()));
+        assert!(!test_bed.query_element(|e| e.is_center_compressed()));
+        assert!(test_bed.query_element(|e| e.is_left_compressed()));
+        assert!(!test_bed.query_element(|e| e.is_right_compressed()));
     }
 
     fn run_test_bed_on_with_position(
@@ -268,6 +328,8 @@ mod tests {
     ) -> SimulationTestBed<TestAircraft<LandingGear>> {
         let mut test_bed = SimulationTestBed::from(LandingGear::new());
         test_bed.write(LandingGear::GEAR_CENTER_POSITION, position);
+        test_bed.write(LandingGear::GEAR_LEFT_POSITION, position);
+        test_bed.write(LandingGear::GEAR_RIGHT_POSITION, position);
 
         test_bed.run();
 

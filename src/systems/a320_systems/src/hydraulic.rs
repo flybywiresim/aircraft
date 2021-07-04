@@ -11,14 +11,14 @@ use systems::{
         HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
         PumpController, RamAirTurbine, RamAirTurbineController,
     },
-    landing_gear::{LandingGear, LandingGearControlUnitInterface},
+    landing_gear::LandingGearControlUnitInterface,
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
         DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineFirePushButtons,
-        LandingGearPosition, LandingGearWeightOnWheels, RamAirTurbineHydraulicLoopPressurised,
+        RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
@@ -1490,7 +1490,7 @@ mod tests {
         use systems::electrical::ElectricalBus;
         use systems::electrical::Electricity;
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
-        use systems::landing_gear::LandingGearControlUnit;
+        use systems::landing_gear::{LandingGear, LandingGearControlInterfaceUnit};
         use systems::shared::EmergencyElectricalState;
         use systems::shared::PotentialOrigin;
         use systems::simulation::test::TestBed;
@@ -1560,8 +1560,8 @@ mod tests {
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
-            lgcui1: LandingGearControlUnit,
-            lgcui2: LandingGearControlUnit,
+            lgcui1: LandingGearControlInterfaceUnit,
+            lgcui2: LandingGearControlInterfaceUnit,
             electrical: A320TestElectrical,
 
             powered_source: TestElectricitySource,
@@ -1596,8 +1596,12 @@ mod tests {
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     engine_fire_overhead: EngineFireOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
-                    lgcui1: LandingGearControlUnit::new(ElectricalBusType::DirectCurrentHot(1)),
-                    lgcui2: LandingGearControlUnit::new(ElectricalBusType::DirectCurrentHot(2)),
+                    lgcui1: LandingGearControlInterfaceUnit::new(
+                        ElectricalBusType::DirectCurrentEssential,
+                    ),
+                    lgcui2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(
+                        2,
+                    )),
                     electrical: A320TestElectrical::new(),
                     powered_source: TestElectricitySource::powered(
                         PotentialOrigin::EngineGenerator(1),
