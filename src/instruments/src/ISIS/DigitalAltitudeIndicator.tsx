@@ -51,7 +51,7 @@ const TenThousandsDigit: ElementFunction = (value, offset, color) => {
         text = '';
     }
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="0" y="32">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="18" y="32">{text}</text>
     );
 };
 
