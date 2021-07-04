@@ -49,7 +49,6 @@ class A32NX_GPWS {
     }
 
     update(deltaTime, _core) {
-        this.faults();
         this.gpws(deltaTime);
     }
     gpws(deltaTime) {
@@ -413,43 +412,6 @@ class A32NX_GPWS {
             this.Mode5Code = 1;
         } else {
             this.Mode5Code = 0;
-        }
-    }
-
-    faults() { //GPWS System Fault Checks
-        this.terr_fault();
-        this.sys_fault();
-    }
-
-    terr_fault() {
-        const posLAT = SimVar.GetSimVarValue("A:GPS POSITION LAT", "degree latitude");
-        const ADIRS = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        const ADIRS_TIME = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
-
-        if (ADIRS === 0) {
-            SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 1);
-        } else if (ADIRS === 1) { //Maths will only be calculated if ADIRS in state 1 to save update time
-            if (ADIRS_TIME > 120 + (0.055 * Math.pow(posLAT, 2))) { //120 0.055 (A:GPS POSITION LAT, degree latitude) 2 pow * +
-                SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 1);
-            } else {
-                SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 0);
-            }
-        }
-    }
-
-    sys_fault() {
-        const posLAT = SimVar.GetSimVarValue("A:GPS POSITION LAT", "degree latitude");
-        const ADIRS = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        const ADIRS_TIME = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
-
-        if (ADIRS === 0) {
-            SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 1);
-        } else if (ADIRS === 1) { //Maths will only be calculated if ADIRS in state 1 to save update time
-            if (ADIRS_TIME > 305 + (0.095 * Math.pow(posLAT, 2)) - posLAT / 2) { //305 0.095 (A:GPS POSITION LAT, degree latitude) 2 pow * + (A:GPS POSITION LAT, degree latitude) 2 / -
-                SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 1);
-            } else {
-                SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 0);
-            }
         }
     }
 

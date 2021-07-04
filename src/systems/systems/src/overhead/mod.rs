@@ -499,6 +499,32 @@ impl SimulationElement for MomentaryOnPushButton {
     }
 }
 
+pub struct IndicationLight {
+    is_illuminated_id: String,
+    is_illuminated: bool,
+}
+impl IndicationLight {
+    pub fn new(name: &str) -> Self {
+        Self {
+            is_illuminated_id: Self::is_illuminated_id(name),
+            is_illuminated: false,
+        }
+    }
+
+    pub fn set_illuminated(&mut self, illuminated: bool) {
+        self.is_illuminated = illuminated;
+    }
+
+    pub fn is_illuminated_id(name: &str) -> String {
+        format!("OVHD_{}_IS_ILLUMINATED", name)
+    }
+}
+impl SimulationElement for IndicationLight {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_illuminated_id, self.is_illuminated);
+    }
+}
+
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
     use crate::simulation::test::{SimulationTestBed, TestBed};
@@ -836,5 +862,36 @@ mod momentary_on_push_button_tests {
         test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_TEST_IS_ON"));
+    }
+}
+
+#[cfg(test)]
+mod indication_light_tests {
+    use super::*;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use rstest::rstest;
+
+    #[test]
+    fn new_is_not_illuminated() {
+        let mut test_bed = SimulationTestBed::from(IndicationLight::new("TEST"));
+        test_bed.run();
+
+        let is_illuminated: bool = test_bed.read(&IndicationLight::is_illuminated_id("TEST"));
+        assert!(!is_illuminated);
+    }
+
+    #[rstest]
+    #[case(true, true)]
+    #[case(false, false)]
+    fn written_illuminated_state_matches_set_state(
+        #[case] set_illuminated: bool,
+        #[case] expected: bool,
+    ) {
+        let mut test_bed = SimulationTestBed::from(IndicationLight::new("TEST"));
+        test_bed.command_element(|light| light.set_illuminated(set_illuminated));
+        test_bed.run();
+
+        let is_illuminated: bool = test_bed.read(&IndicationLight::is_illuminated_id("TEST"));
+        assert_eq!(is_illuminated, expected);
     }
 }

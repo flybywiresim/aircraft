@@ -19,6 +19,10 @@ pub trait TestBed {
         self.test_bed_mut().run();
     }
 
+    fn run_without_delta(&mut self) {
+        self.test_bed_mut().run_without_time();
+    }
+
     fn run_with_delta(&mut self, delta: Duration) {
         self.test_bed_mut().run_with_delta(delta);
     }
@@ -119,7 +123,11 @@ impl<T: Aircraft> SimulationTestBed<T> {
 
     /// Runs a single 1 second duration [Simulation] tick on the contained [Aircraft].
     fn run(&mut self) {
-        self.run_with_delta(Duration::from_secs(1))
+        self.run_with_delta(Duration::from_secs(1));
+    }
+
+    fn run_without_time(&mut self) {
+        self.run_with_delta(Duration::from_secs(0));
     }
 
     fn run_with_delta(&mut self, delta: Duration) {
