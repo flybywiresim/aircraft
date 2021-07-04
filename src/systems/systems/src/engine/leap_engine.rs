@@ -1,7 +1,7 @@
 use uom::si::{angular_velocity::revolution_per_minute, f64::*, pressure::psi, ratio::percent};
 
 use crate::{
-    shared::{EngineCorrectedN2, EngineUncorrectedN2},
+    shared::{EngineCorrectedN1, EngineCorrectedN2, EngineUncorrectedN2},
     simulation::{Read, SimulationElement, SimulatorReader, UpdateContext},
 };
 
@@ -54,10 +54,6 @@ impl LeapEngine {
         // Ultra stupid model just to have 18psi crossing at 25% N2
         self.oil_pressure = Pressure::new::<psi>(18. / 25. * self.uncorrected_n2.get::<percent>());
     }
-
-    pub fn corrected_n1(&self) -> Ratio {
-        self.corrected_n1
-    }
 }
 impl SimulationElement for LeapEngine {
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -65,6 +61,11 @@ impl SimulationElement for LeapEngine {
         self.corrected_n2 = reader.read(&self.corrected_n2_id);
         self.uncorrected_n2 = reader.read(&self.uncorrected_n2_id);
         self.update_parameters();
+    }
+}
+impl EngineCorrectedN1 for LeapEngine {
+    fn corrected_n1(&self) -> Ratio {
+        self.corrected_n1
     }
 }
 impl EngineCorrectedN2 for LeapEngine {

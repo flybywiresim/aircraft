@@ -1,4 +1,4 @@
-use crate::simulation::UpdateContext;
+use crate::{shared::EngineCorrectedN1, simulation::UpdateContext};
 
 use super::PressureValveActuator;
 
@@ -40,14 +40,12 @@ impl CabinPressureController {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        eng_1_n1: Ratio,
-        eng_2_n1: Ratio,
+        engines: [&impl EngineCorrectedN1; 2],
         landing_elevation: Length,
         sea_level_pressure: Pressure,
         destination_qnh: Pressure,
     ) {
-        self.pressure_schedule_manager
-            .update(context, eng_1_n1, eng_2_n1);
+        self.pressure_schedule_manager.update(context, engines);
         self.exterior_pressure = context.ambient_pressure();
         self.cabin_pressure = self.calculate_cabin_pressure(context);
         self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
@@ -303,10 +301,10 @@ impl PressureScheduleManager {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, eng_1_n1: Ratio, eng_2_n1: Ratio) {
+    fn update(&mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) {
         match self.pressure_schedule {
-            PressureSchedule::Ground => self.update_from_ground(context, eng_1_n1, eng_2_n1),
-            PressureSchedule::TakeOff => self.update_from_takeoff(context, eng_1_n1, eng_2_n1),
+            PressureSchedule::Ground => self.update_from_ground(context, engines),
+            PressureSchedule::TakeOff => self.update_from_takeoff(context, engines),
             PressureSchedule::ClimbInternal => self.update_from_climb(context),
             PressureSchedule::Cruise => self.update_from_cruise(context),
             PressureSchedule::DescentInternal => self.update_from_descent(context),
@@ -318,9 +316,14 @@ impl PressureScheduleManager {
         self.pressure_schedule
     }
 
-    fn update_from_ground(&mut self, context: &UpdateContext, eng_1_n1: Ratio, eng_2_n1: Ratio) {
-        if eng_1_n1 > Ratio::new::<percent>(70.)
-            && eng_2_n1 > Ratio::new::<percent>(70.)
+    fn update_from_ground(
+        &mut self,
+        context: &UpdateContext,
+        engines: [&impl EngineCorrectedN1; 2],
+    ) {
+        if engines
+            .iter()
+            .all(|&x| x.corrected_n1() > Ratio::new::<percent>(70.))
             && context.is_on_ground()
         {
             self.pressure_schedule = PressureSchedule::TakeOff;
@@ -338,9 +341,14 @@ impl PressureScheduleManager {
         }
     }
 
-    fn update_from_takeoff(&mut self, context: &UpdateContext, eng_1_n1: Ratio, eng_2_n1: Ratio) {
-        if eng_1_n1 < Ratio::new::<percent>(70.)
-            && eng_2_n1 < Ratio::new::<percent>(70.)
+    fn update_from_takeoff(
+        &mut self,
+        context: &UpdateContext,
+        engines: [&impl EngineCorrectedN1; 2],
+    ) {
+        if engines
+            .iter()
+            .all(|&x| x.corrected_n1() < Ratio::new::<percent>(70.))
             && context.is_on_ground()
         {
             self.pressure_schedule = PressureSchedule::Ground;

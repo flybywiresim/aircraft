@@ -123,11 +123,8 @@ impl Aircraft for A320 {
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
-        self.pressurization.update(
-            context,
-            self.engine_1.corrected_n1(),
-            self.engine_2.corrected_n1(),
-        );
+        self.pressurization
+            .update(context, [&self.engine_1, &self.engine_2]);
 
         self.hydraulic.update(
             context,

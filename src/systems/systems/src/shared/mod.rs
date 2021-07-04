@@ -48,6 +48,10 @@ pub trait LandingGearPosition {
     fn is_down_and_locked(&self) -> bool;
 }
 
+pub trait EngineCorrectedN1 {
+    fn corrected_n1(&self) -> Ratio;
+}
+
 pub trait EngineCorrectedN2 {
     fn corrected_n2(&self) -> Ratio;
 }

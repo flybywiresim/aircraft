@@ -1,6 +1,6 @@
 use self::{cabin_pressure_controller::CabinPressureController, pressure_valve::PressureValve};
 use crate::{
-    shared::random_number,
+    shared::{random_number, EngineCorrectedN1},
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext, Write,
@@ -44,12 +44,11 @@ impl Pressurization {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, eng_1_n1: Ratio, eng_2_n1: Ratio) {
+    pub fn update(&mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) {
         for c in self.cpc.iter_mut() {
             c.update(
                 context,
-                eng_1_n1,
-                eng_2_n1,
+                engines,
                 self.landing_elevation,
                 self.sea_level_pressure,
                 self.destination_qnh,
@@ -130,8 +129,11 @@ impl Default for Pressurization {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement};
+    use crate::{
+        shared::EngineCorrectedN1,
+        simulation::test::{SimulationTestBed, TestBed},
+    };
 
     use self::cabin_pressure_controller::PressureSchedule;
 
@@ -143,10 +145,30 @@ mod tests {
         velocity::{foot_per_minute, knot},
     };
 
+    struct TestEngine {
+        corrected_n1: Ratio,
+    }
+    impl TestEngine {
+        fn new(engine_corrected_n1: Ratio) -> Self {
+            Self {
+                corrected_n1: engine_corrected_n1,
+            }
+        }
+
+        fn set_engine_n1(&mut self, n: Ratio) {
+            self.corrected_n1 = n;
+        }
+    }
+    impl EngineCorrectedN1 for TestEngine {
+        fn corrected_n1(&self) -> Ratio {
+            self.corrected_n1
+        }
+    }
+
     struct TestAircraft {
         pressurization: Pressurization,
-        engine_1_n1: Ratio,
-        engine_2_n1: Ratio,
+        engine_1: TestEngine,
+        engine_2: TestEngine,
     }
 
     impl TestAircraft {
@@ -156,21 +178,21 @@ mod tests {
 
             Self {
                 pressurization: press,
-                engine_1_n1: Ratio::new::<percent>(0.),
-                engine_2_n1: Ratio::new::<percent>(0.),
+                engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
+                engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
             }
         }
 
         fn set_engine_n1(&mut self, n: Ratio) {
-            self.engine_1_n1 = n;
-            self.engine_2_n1 = n;
+            self.engine_1.set_engine_n1(n);
+            self.engine_2.set_engine_n1(n)
         }
     }
 
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.pressurization
-                .update(context, self.engine_1_n1, self.engine_2_n1);
+                .update(context, [&self.engine_1, &self.engine_2]);
         }
     }
 
