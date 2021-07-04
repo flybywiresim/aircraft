@@ -51,7 +51,7 @@ const SIMVAR_TYPES = {
     'L:A32NX_COLD_AND_DARK_SPAWN': 'Bool',
     'TOTAL AIR TEMPERATURE': 'Celsius',
     'AMBIENT TEMPERATURE': 'Celsius',
-    'L:A320_Neo_ADIRS_STATE': 'Enum',
+    'L:A32NX_ADIRS_STATE': 'Enum',
 };
 
 const SIMVAR_CACHE = new Map();

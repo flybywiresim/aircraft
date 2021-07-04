@@ -96,11 +96,14 @@ class A32NX_FlightPhaseManager {
             [FmgcFlightPhases.DONE]: new A32NX_FlightPhase_Done()
         };
 
-        this.activeFlightPhase = this.flightPhases[FmgcFlightPhases.PREFLIGHT];
+        this.activeFlightPhase = this.flightPhases[this.fmc.currentFlightPhase];
 
-        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", FmgcFlightPhases.PREFLIGHT);
+        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", this.fmc.currentFlightPhase);
+    }
 
-        this.activeFlightPhase.init(_fmc);
+    init() {
+        console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase);
+        this.activeFlightPhase.init(this.fmc);
     }
 
     checkFlightPhase(_deltaTime) {
@@ -175,7 +178,6 @@ class A32NX_FlightPhase_PreFlight {
     }
 
     init(_fmc) {
-        _fmc.climbTransitionGroundAltitude = null;
     }
 
     check(_deltaTime, _fmc) {
@@ -366,7 +368,6 @@ class A32NX_FlightPhase_Done {
         _fmc.initVariables();
         _fmc.initMcduVariables();
         _fmc.forceClearScratchpad();
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         CDUIdentPage.ShowPage(_fmc);
     }
 

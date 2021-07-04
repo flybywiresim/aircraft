@@ -1711,7 +1711,7 @@
                                 implementation the necessary logic should be implemented and the appropriate
                                 power sources used.
                             -->
-                            <SEQ1_CODE>(L:A32NX_ADIRS_ON_BAT, Bool)</SEQ1_CODE>
+                            <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_ON_BAT_IS_ILLUMINATED, Bool)</SEQ1_CODE>
                             <NO_SEQ2 />
                             <DUMMY_BUTTON/>
                         </UseTemplate>
@@ -2846,17 +2846,16 @@
 
                 <Component ID="Overhead_Back_Panel">
                     <!-- "BLUE PUMP OVRD" -->
-
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
-                        <!-- This name is wrong, but it refers to the node we want -->
                         <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</LOCK_NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPY_OVRD_PB_IS_ON</TOGGLE_SIMVAR>
+                        <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_SINGLE_CODE>
+                        <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_LEAVE_CODE>
+                        <TOOLTIPID>Runs the blue electric pump</TOOLTIPID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE>(L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_ON, Bool)</SEQ2_CODE>
+                        <MOMENTARY/>
+                        <NO_SEQ1 />
                     </UseTemplate>
 
                     <!-- "HYD LEAK MEASUREMENT VALVES" -->
@@ -3004,6 +3003,8 @@
             <DefaultTemplateParameters>
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ3_EMISSIVE_DRIVES_VISIBILITY>False</SEQ3_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ4_EMISSIVE_DRIVES_VISIBILITY>False</SEQ4_EMISSIVE_DRIVES_VISIBILITY>
                 <DEFAULT_TEMPLATE_EMISSIVE>ASOBO_LIGHTING_Potentiometer_Emissive_Template</DEFAULT_TEMPLATE_EMISSIVE>
 
                 <PLANE_NAME>A32NX</PLANE_NAME>
@@ -3011,13 +3012,13 @@
 
             <UseTemplate Name="FBW_Airbus_Autoland_Warning">
                 <SIDE>L</SIDE>
-                <!-- Note there is only a single emissive. Once two emissives are available SEQ1 should use AC ESS SHED, and SEQ 2 should use AC 2. -->
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
+                <BUS_TOP>AC_ESS_SHED</BUS_TOP>
+                <BUS_BOTTOM>AC_2</BUS_BOTTOM>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_Autoland_Warning">
                 <SIDE>R</SIDE>
-                <!-- Note there is only a single emissive. Once two emissives are available SEQ1 should use AC ESS SHED, and SEQ 2 should use AC 2. -->
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
+                <BUS_TOP>AC_2</BUS_TOP>
+                <BUS_BOTTOM>AC_ESS_SHED</BUS_BOTTOM>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
