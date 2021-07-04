@@ -7,6 +7,11 @@ use uom::si::{
     ratio::{percent, ratio},
 };
 
+pub enum GearWheel {
+    CENTER = 0,
+    LEFT = 1,
+    RIGHT = 2,
+}
 /// Represents a landing gear on Airbus aircraft.
 /// Note that this type somewhat hides the gear's position.
 /// The real aircraft also can only check whether or not the gear is up and
@@ -45,56 +50,46 @@ impl LandingGear {
         }
     }
 
-    fn is_center_up_and_locked(&self) -> bool {
-        (self.center_position.get::<percent>() - 0.).abs() < f64::EPSILON
+    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel) -> bool {
+        (self.wheel_id_position(wheel_id).get::<percent>() - 0.).abs() < f64::EPSILON
     }
 
-    fn is_left_up_and_locked(&self) -> bool {
-        (self.left_position.get::<percent>() - 0.).abs() < f64::EPSILON
+    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel) -> bool {
+        (self.wheel_id_position(wheel_id).get::<percent>() - 100.).abs() < f64::EPSILON
     }
 
-    fn is_right_up_and_locked(&self) -> bool {
-        (self.right_position.get::<percent>() - 0.).abs() < f64::EPSILON
-    }
-
-    fn is_center_down_and_locked(&self) -> bool {
-        (self.center_position.get::<percent>() - 100.).abs() < f64::EPSILON
-    }
-
-    fn is_left_down_and_locked(&self) -> bool {
-        (self.left_position.get::<percent>() - 100.).abs() < f64::EPSILON
-    }
-
-    fn is_right_down_and_locked(&self) -> bool {
-        (self.right_position.get::<percent>() - 100.).abs() < f64::EPSILON
-    }
-
-    fn is_center_compressed(&self) -> bool {
-        self.center_compression
+    fn is_wheel_id_compressed(&self, wheel_id: GearWheel) -> bool {
+        self.wheel_id_compression(wheel_id)
             > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
     }
 
-    fn is_left_compressed(&self) -> bool {
-        self.left_compression
-            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+    fn wheel_id_position(&self, wheel_id: GearWheel) -> Ratio {
+        match wheel_id {
+            GearWheel::CENTER => self.center_position,
+            GearWheel::LEFT => self.left_position,
+            GearWheel::RIGHT => self.right_position,
+        }
     }
 
-    fn is_right_compressed(&self) -> bool {
-        self.right_compression
-            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+    fn wheel_id_compression(&self, wheel_id: GearWheel) -> Ratio {
+        match wheel_id {
+            GearWheel::CENTER => self.center_compression,
+            GearWheel::LEFT => self.left_compression,
+            GearWheel::RIGHT => self.right_compression,
+        }
     }
 }
 impl LandingGearRealPosition for LandingGear {
     fn is_up_and_locked(&self) -> bool {
-        self.is_center_up_and_locked()
-            && self.is_left_up_and_locked()
-            && self.is_right_up_and_locked()
+        self.is_wheel_id_up_and_locked(GearWheel::CENTER)
+            && self.is_wheel_id_up_and_locked(GearWheel::LEFT)
+            && self.is_wheel_id_up_and_locked(GearWheel::RIGHT)
     }
 
     fn is_down_and_locked(&self) -> bool {
-        self.is_center_down_and_locked()
-            && self.is_left_down_and_locked()
-            && self.is_right_down_and_locked()
+        self.is_wheel_id_down_and_locked(GearWheel::CENTER)
+            && self.is_wheel_id_down_and_locked(GearWheel::LEFT)
+            && self.is_wheel_id_down_and_locked(GearWheel::RIGHT)
     }
 }
 impl SimulationElement for LandingGear {
@@ -150,18 +145,21 @@ impl LandingGearControlInterfaceUnit {
     }
 
     pub fn update(&mut self, landing_gear: &LandingGear, external_power_available: bool) {
-        self.nose_gear_sensor_compressed = landing_gear.is_center_compressed();
-        self.left_gear_sensor_compressed = landing_gear.is_left_compressed();
-        self.right_gear_sensor_compressed = landing_gear.is_right_compressed();
+        self.nose_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::CENTER);
+        self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT);
+        self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT);
 
         self.external_power_available = external_power_available;
 
-        self.right_gear_up_and_locked = landing_gear.is_right_up_and_locked();
-        self.left_gear_up_and_locked = landing_gear.is_left_up_and_locked();
-        self.nose_gear_up_and_locked = landing_gear.is_center_up_and_locked();
-        self.right_gear_down_and_locked = landing_gear.is_right_down_and_locked();
-        self.left_gear_down_and_locked = landing_gear.is_left_down_and_locked();
-        self.nose_gear_down_and_locked = landing_gear.is_center_down_and_locked();
+        self.right_gear_up_and_locked = landing_gear.is_wheel_id_up_and_locked(GearWheel::RIGHT);
+        self.left_gear_up_and_locked = landing_gear.is_wheel_id_up_and_locked(GearWheel::LEFT);
+        self.nose_gear_up_and_locked = landing_gear.is_wheel_id_up_and_locked(GearWheel::CENTER);
+
+        self.right_gear_down_and_locked =
+            landing_gear.is_wheel_id_down_and_locked(GearWheel::RIGHT);
+        self.left_gear_down_and_locked = landing_gear.is_wheel_id_down_and_locked(GearWheel::LEFT);
+        self.nose_gear_down_and_locked =
+            landing_gear.is_wheel_id_down_and_locked(GearWheel::CENTER);
     }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {
@@ -180,7 +178,7 @@ pub trait LgciuWeightOnWheels {
     fn nose_gear_compressed_7(&self) -> bool;
     fn nose_gear_compressed_or_ext_power_8(&self) -> bool;
 }
-pub trait LandingGearControlUnitExtensionInterface {
+pub trait LgciuExtensionInterface {
     fn all_down_and_locked_14(&self) -> bool;
     fn all_up_and_locked_19(&self) -> bool;
 }
@@ -214,7 +212,7 @@ impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
         self.is_powered && self.nose_gear_sensor_compressed && self.external_power_available
     }
 }
-impl LandingGearControlUnitExtensionInterface for LandingGearControlInterfaceUnit {
+impl LgciuExtensionInterface for LandingGearControlInterfaceUnit {
     fn all_down_and_locked_14(&self) -> bool {
         self.is_powered
             && self.nose_gear_down_and_locked
@@ -228,10 +226,7 @@ impl LandingGearControlUnitExtensionInterface for LandingGearControlInterfaceUni
             && self.left_gear_up_and_locked
     }
 }
-pub trait LandingGearControlUnitInterface:
-    LgciuWeightOnWheels + LandingGearControlUnitExtensionInterface
-{
-}
+pub trait LandingGearControlUnitInterface: LgciuWeightOnWheels + LgciuExtensionInterface {}
 impl LandingGearControlUnitInterface for LandingGearControlInterfaceUnit {}
 
 #[cfg(test)]
@@ -292,9 +287,9 @@ mod tests {
             Ratio::new::<ratio>(0.9),
         );
 
-        assert!(test_bed.query_element(|e| e.is_center_compressed()));
-        assert!(test_bed.query_element(|e| e.is_left_compressed()));
-        assert!(test_bed.query_element(|e| e.is_right_compressed()));
+        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::CENTER)));
+        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
+        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
     }
 
     #[test]
@@ -305,9 +300,9 @@ mod tests {
             Ratio::new::<ratio>(0.51),
         );
 
-        assert!(!test_bed.query_element(|e| e.is_center_compressed()));
-        assert!(!test_bed.query_element(|e| e.is_left_compressed()));
-        assert!(!test_bed.query_element(|e| e.is_right_compressed()));
+        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::CENTER)));
+        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
+        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
     }
 
     #[test]
@@ -318,9 +313,9 @@ mod tests {
             Ratio::new::<ratio>(0.51),
         );
 
-        assert!(!test_bed.query_element(|e| e.is_center_compressed()));
-        assert!(test_bed.query_element(|e| e.is_left_compressed()));
-        assert!(!test_bed.query_element(|e| e.is_right_compressed()));
+        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::CENTER)));
+        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
+        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
     }
 
     fn run_test_bed_on_with_position(
