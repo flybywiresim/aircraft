@@ -165,16 +165,16 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const fwcFlightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
 
         switch (fwcFlightPhase) {
-            case 10 :
-            case 1 :
+            case 10:
+            case 1:
                 this.CrzCondTimer = 60;
                 this.pageNameWhenUnselected = "DOOR";
                 //TODO: Emergency Generator Test displays ELEC
-                //Needs system implemenetation (see A320_NEO_INTERIOR Component ID EMER_ELEC_PWR [LVar: L:A32NX_EMERELECPWR_GEN_TEST])
+                //Needs system implementation (see A320_NEO_INTERIOR Component ID EMER_ELEC_PWR [LVar: L:A32NX_EMERELECPWR_GEN_TEST])
                 this.checkApuPage(deltaTime);
                 this.checkEnginePage(deltaTime);
                 break;
-            case 2 :
+            case 2:
                 const sidestickPosX = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_X", "Number");
                 const sidestickPosY = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_Y", "Number");
                 const rudderPos = SimVar.GetSimVarValue("RUDDER PEDAL POSITION", "Position");
@@ -192,15 +192,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.checkApuPage(deltaTime);
                 this.checkEnginePage(deltaTime);
                 break;
-            case 3 :
-            case 4 :
-            case 5 :
+            case 3:
+            case 4:
+            case 5:
                 this.pageNameWhenUnselected = "ENG";
                 break;
-            case 6 :
-            case 7 :
-            case 8 :
-            case 9 :
+            case 6:
+            case 7:
+            case 8:
+            case 9:
                 const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
                 const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
                 const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") !== 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") !== 0;
@@ -227,7 +227,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                     this.checkEnginePage(deltaTime);
                 }
                 break;
-            default :
+            default:
                 // Sometimes happens when loading in, in which case we have to initialise pageNameWhenUnselected here.
                 this.pageNameWhenUnselected = "DOOR";
                 break;
@@ -283,7 +283,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     checkApuPage(deltaTime) {
         const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
         const apuRpm = SimVar.GetSimVarValue("L:A32NX_APU_N", "Percent Over 100");
-        console.log(apuRpm);
         if (currentAPUMasterState && (apuRpm <= 95 || this.ApuAboveThresholdTimer >= 0)) {
             // Show APU on Lower ECAM until 15s after RPM > 95%
             if (this.ApuAboveThresholdTimer <= 0 && apuRpm <= 95) {
