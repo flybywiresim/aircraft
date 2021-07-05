@@ -745,37 +745,51 @@
             <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
                 <ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_AUTOBKR_LO</NODE_ID>
-                <PART_ID>Autobrake_1</PART_ID>
-                <ANIM_NAME>PUSH_AUTOBKR_LO</ANIM_NAME>
-                <NODE_ID_DECEL>PUSH_AUTOBKR_LO_SEQ1</NODE_ID_DECEL>
-                <NODE_ID_ON>PUSH_AUTOBKR_LO_SEQ2</NODE_ID_ON>
-                <AUTOBRAKE_LEVEL>1</AUTOBRAKE_LEVEL>
-                <MIN_DECEL_FPSS>-7</MIN_DECEL_FPSS>
-                <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_LO</OFF_TOOLTIP>
+                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 1 == and</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 1 ==</SEQ2_CODE>
+                <MOMENTARY/>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                <TOOLTIPID>Auto brake LOW</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
-                <PART_ID>Autobrake_2</PART_ID>
-                <ANIM_NAME>PUSH_AUTOBKR_MED</ANIM_NAME>
-                <NODE_ID_DECEL>PUSH_AUTOBKR_MED_SEQ1</NODE_ID_DECEL>
-                <NODE_ID_ON>PUSH_AUTOBKR_MED_SEQ2</NODE_ID_ON>
-                <AUTOBRAKE_LEVEL>2</AUTOBRAKE_LEVEL>
-                <MIN_DECEL_FPSS>-14</MIN_DECEL_FPSS>
-                <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_MED</OFF_TOOLTIP>
+                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 2 == and</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 2 ==</SEQ2_CODE>
+                <MOMENTARY/>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                <TOOLTIPID>Auto brake MEDIUM</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
-                <PART_ID>Autobrake_3</PART_ID>
-                <ANIM_NAME>PUSH_AUTOBKR_MAX</ANIM_NAME>
-                <NODE_ID_DECEL>PUSH_AUTOBKR_MAX_SEQ1</NODE_ID_DECEL>
-                <NODE_ID_ON>PUSH_AUTOBKR_MAX_SEQ2</NODE_ID_ON>
-                <AUTOBRAKE_LEVEL>3</AUTOBRAKE_LEVEL>
-                <MIN_DECEL_FPSS>-21</MIN_DECEL_FPSS>
-                <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_MAX</OFF_TOOLTIP>
+                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 3 == and</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 3 ==</SEQ2_CODE>
+                <MOMENTARY/>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                <TOOLTIPID>Auto brake MAX</TOOLTIPID>
             </UseTemplate>
-
             <UseTemplate Name="ASOBO_HANDLING_Switch_AntiSkid_Template">
                 <NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>
                 <PART_ID>Antiskid_Switch</PART_ID>
