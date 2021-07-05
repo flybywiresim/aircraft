@@ -4,6 +4,7 @@ import { LandingFlapsConfig, LandingRunwayConditions } from '../Performance/Calc
 import { DistanceLabel } from '../Performance/Widgets/RunwayVisualizationWidget';
 
 export const performanceInitialState: TPerformanceState = {
+    currentView: 0,
     landing: {
         icao: '',
         windDirection: 0,
@@ -29,7 +30,8 @@ export const performanceInitialState: TPerformanceState = {
     },
 };
 
-export enum EPerformanceActions {
+export enum PerformanceActions {
+    SET_CURRENT_VIEW,
     SET_TOP_OF_DESCENT,
     SET_LANDING
 }
@@ -59,6 +61,7 @@ type TPerformanceLanding = {
 }
 
 type TPerformanceState = {
+    currentView: number
     landing: TPerformanceLanding
 }
 
@@ -69,11 +72,17 @@ export type TPerformanceContext = {
 
 const Reducer = (state, action) => {
     switch (action.type) {
-    case EPerformanceActions.SET_LANDING: {
+    case PerformanceActions.SET_LANDING: {
         return produce(state, (draft) => {
             Object.keys(action.payload).forEach((key) => {
                 draft.landing[key] = action.payload[key];
             });
+        });
+    }
+
+    case PerformanceActions.SET_CURRENT_VIEW: {
+        return produce(state, (draft) => {
+            draft.currentView = action.payload.currentView;
         });
     }
 

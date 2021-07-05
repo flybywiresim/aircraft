@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 export type NavbarProps = {
     tabs: string[],
     onSelected: (index: number) => void;
+    activeIndex?: number
 };
 
 const c = {
@@ -14,7 +15,9 @@ export const Navbar = (props: NavbarProps) => {
     const [activeIndex, setActiveIndex] = useState(0);
 
     const handleClick = (index: number) => {
-        setActiveIndex(index);
+        // if activeIndex exists in props then we'll use activeIndex from props to manage state
+        // this should be refactored to being a managed component
+        if (!props.activeIndex) setActiveIndex(index);
         props.onSelected(index);
     };
 
@@ -25,7 +28,7 @@ export const Navbar = (props: NavbarProps) => {
                     <div className="flex text-xl">
                         {
                             props.tabs.map((tab, index) => (
-                                <a className={index === activeIndex ? c.active : c.inactive} key={tab} onClick={() => handleClick(index)}>
+                                <a className={index === (props.activeIndex || activeIndex) ? c.active : c.inactive} key={tab} onClick={() => handleClick(index)}>
                                     {tab}
                                 </a>
                             ))
