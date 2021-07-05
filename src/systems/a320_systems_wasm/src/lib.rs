@@ -186,6 +186,7 @@ impl Autobrakes {
 impl SimulatorAspect for Autobrakes {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
+            "AUTOBRAKE_DISARM" => Some(self.disarm_requested as u8 as f64),
             "OVHD_AUTOBRK_LOW_ON_IS_PRESSED" => Some(self.low_mode_requested as u8 as f64),
             "OVHD_AUTOBRK_MED_ON_IS_PRESSED" => Some(self.med_mode_requested as u8 as f64),
             "OVHD_AUTOBRK_MAX_ON_IS_PRESSED" => Some(self.max_mode_requested as u8 as f64),
@@ -204,6 +205,9 @@ impl SimulatorAspect for Autobrakes {
                     true
                 } else if e.id() == self.id_mode_max {
                     self.set_mode_max();
+                    true
+                } else if e.id() == self.id_disarm {
+                    self.set_disarm();
                     true
                 } else {
                     false
