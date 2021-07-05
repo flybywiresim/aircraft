@@ -8,6 +8,7 @@
 1. [TEXTURE] Corrected fire panel - @ImenesFBW (Imenes)
 1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
 1. [MODEL] Fixed artifacting of pedestal and push buttons - @tyler58546 (tyler58546)
+1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
 1. [TERR] Fixed terrain radar for SU5 - @2hwk (2Cas#1022)
 ## 0.6.1
 1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
