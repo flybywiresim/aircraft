@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
 import { Navbar } from '../Components/Navbar';
 import { FuelPage } from './Pages/FuelPage';
+import { GlobalContext } from '../Store/global-context';
+import { PerformanceActions } from '../Store/performance-context';
+import { DispatchActions } from '../Store/dispatch-context';
 
 type DispatchProps = {
     loadsheet: string,
@@ -48,7 +51,7 @@ type DispatchProps = {
 };
 
 const Dispatch: React.FC<DispatchProps> = (props) => {
-    const [activeIndex, setActiveIndex] = useState(0);
+    const { dispatchState, dispatchDispatch } = useContext(GlobalContext);
 
     const tabs = [
         'Overview',
@@ -57,11 +60,14 @@ const Dispatch: React.FC<DispatchProps> = (props) => {
     ];
 
     const handleClick = (index: number) => {
-        setActiveIndex(index);
+        dispatchDispatch({
+            type: DispatchActions.SET_CURRENT_VIEW,
+            payload: { currentView: index },
+        });
     };
 
     const currentPage = () => {
-        switch (activeIndex) {
+        switch (dispatchState.currentView) {
         case 1:
             return (
                 <LoadsheetPage loadsheet={props.loadsheet} />
@@ -101,7 +107,7 @@ const Dispatch: React.FC<DispatchProps> = (props) => {
     return (
         <div className="w-full">
             <h1 className="text-3xl pt-6 text-white">Dispatch</h1>
-            <Navbar tabs={tabs} onSelected={(index) => handleClick(index)} />
+            <Navbar activeIndex={dispatchState.currentView} tabs={tabs} onSelected={(index) => handleClick(index)} />
             <div>
                 {currentPage()}
             </div>
