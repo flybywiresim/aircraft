@@ -7,14 +7,14 @@ type BugSetupDisplayProps = {
 }
 
 export const BugSetupDisplay: React.FC<BugSetupDisplayProps> = ({ selectedIndex, bugs }) => (
-    <g id="BugDisplay" fontSize={32} stroke="white" strokeWidth={3} fill="white">
+    <g id="BugDisplay" strokeWidth={3} className="TextWhite NoFill FontLarge">
         <text x={40} y={55} className="TextCyan">EXIT↑</text>
-        <text x={256} y={53} textAnchor="middle">BUGS</text>
-        <text textAnchor="middle" x={150} y={100}>SPD</text>
-        <text textAnchor="middle" x={325} y={100}>ALT</text>
-        <text fontSize={16} x={196} y={126}>(+)</text>
-        <text fontSize={16} x={106} y={180}>(-)</text>
-        <path fill="none" d="M150 136 v225 h176 v-225z" />
+        <text x={256} y={53} textAnchor="middle" className="TextWhite">BUGS</text>
+        <text x={150} y={100} textAnchor="middle" className="TextWhite">SPD</text>
+        <text x={325} y={100} textAnchor="middle" className="TextWhite">ALT</text>
+        <text fontSize={16} x={196} y={126} className="TextWhite">(+)</text>
+        <text fontSize={16} x={106} y={180} className="TextWhite">(-)</text>
+        <path fill="none" stroke="white" d="M150 136 v225 h176 v-225z" />
         <g>
             <OffText x={30} y={150} isVisible={!bugs[5].isActive} />
             <BugBox x={150} y={150} value={bugs[5].value} isSelected={selectedIndex === 5} numDigits={3} />
@@ -60,8 +60,8 @@ export const BugBox: React.FC<BugBoxProps> = ({ x, y, value, isSelected = false,
 
     return (
         <g>
-            <rect className={`FillBackground${isSelected ? ' BlinkInfinite' : ''}`} x={x - width / 2} y={y - 36 - padding + strokeWidth} width={width} height={height} />
-            <text x={x} y={y} textAnchor="middle">{value.toString().padStart(numDigits, '0')}</text>
+            <rect className={`StrokeWhite FillBackground${isSelected ? ' BlinkInfinite' : ''}`} x={x - width / 2} y={y - 36 - padding + strokeWidth} width={width} height={height} />
+            <text x={x} y={y} textAnchor="middle" className="TextWhite">{value.toString().padStart(numDigits, '0')}</text>
         </g>
     );
 };
@@ -74,6 +74,6 @@ type OffTextProps = {
 
 export const OffText: React.FC<OffTextProps> = ({ x, y, isVisible = false }) => (
     <>
-        {isVisible && <text x={x} y={y}>OFF</text>}
+        {isVisible && <text x={x} y={y} className="TextWhite">OFF</text>}
     </>
 );

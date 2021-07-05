@@ -141,14 +141,12 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
     return (
         <g>
             <path
-                d="M 512 224 h -84 v 8 l -72 0 l 0 42 l 72 0 l 0 8 l 84 0"
+                d="M 512 238 h -84 v 8 h -84 v 42 h 84 v 8 h 84"
                 className="FillBackground"
                 strokeWidth={3}
                 stroke="none"
             />
-            { /* if alt < 0 show NEG banner */ }
-            { /* <text x={434} y={257} fontSize={48} textAnchor="end" alignmentBaseline="central" fill="lime">{Math.round(alt / 100).toFixed(0).padStart(3)}</text> */ }
-            <svg x={340} y={234} color={color} width="100" height="40" viewBox="0 0 100 40">
+            <svg x={340} y={248} color={color} width="100" height="40" viewBox="0 0 100 40">
                 <Drum
                     displayRange={1}
                     value={TenThousandsValue}
@@ -179,7 +177,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                     elementFunction={HundredsDigit}
                 />
             </svg>
-            <svg viewBox="0 0 100 56" x={422} y={226} width="100" height="56">
+            <svg viewBox="0 0 100 58" x={422} y={238} width="100" height="58">
                 <Drum
                     displayRange={40}
                     value={tensDigits}
@@ -191,11 +189,18 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                 />
             </svg>
             <path
-                d="M 512 224 h -84 v 8 l -72 0 l 0 42 l 72 0 l 0 8 l 84 0"
+                d="M 512 238 h -84 v 8 h -84 v 42 h 84 v 8 h 84"
                 className={isAltitudeInBugRange ? 'StrokeCyan' : 'StrokeYellow'}
                 fill="none"
                 strokeWidth={3}
             />
+            {isNegative && (
+                <g id="NegativeAltitudeText" className="TextWhite FontLarge">
+                    <text x="350" y="240">N</text>
+                    <text x="350" y="280">E</text>
+                    <text x="350" y="320">G</text>
+                </g>
+            )}
         </g>
     );
 };

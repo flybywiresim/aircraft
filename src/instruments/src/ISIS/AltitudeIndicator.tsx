@@ -9,9 +9,9 @@ const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
     const tickLength = shouldShowText ? 5 : 20;
 
     return (
-        <g stroke="white" fill="white" transform={`translate(0 ${offset})`}>
-            <path strokeWidth={3} d={`M0,${148} h${tickLength}`} />
-            {shouldShowText && <text x={5} y={148 + 12} fontSize={30}>{Math.abs(altitude).toString().padStart(5, '0').slice(0, 3)}</text>}
+        <g transform={`translate(0 ${offset})`}>
+            <path stroke="white" strokeWidth={3} d={`M0,${158} h${tickLength}`} />
+            {shouldShowText && <text x={5} y={158 + 12} className="TextWhite FontMedium">{Math.abs(altitude).toString().padStart(5, '0').slice(0, 3)}</text>}
         </g>
     );
 };
@@ -21,14 +21,14 @@ const BugElement: React.FC<BugProps> = ({ bug, offset, maskWidth }) => {
     if (bug.value % 500 === 0) {
         return (
             <g className="StrokeCyan NoFill" transform={`translate(0 ${offset})`}>
-                <path strokeWidth={3} d={`M3,${142} v-10 h65 v30 h-65 v-6`} />
+                <path strokeWidth={3} d={`M3,${152} v-10 h65 v30 h-65 v-6`} />
             </g>
         );
     }
 
     return (
         <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
-            <path strokeWidth={7} d={`M0,${148} h30`} />
+            <path strokeWidth={7} d={`M0,${158} h30`} />
         </g>
     );
 };
@@ -46,7 +46,7 @@ export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ maskWidth,
 
     return (
         <g id="AltitudeIndicator">
-            <svg x={512 - maskWidth} y={maskWidth} width={maskWidth} height={height} viewBox={`0 0 ${maskWidth} ${height}`}>
+            <svg x={512 - maskWidth} y={112} width={maskWidth} height={height} viewBox={`0 0 ${maskWidth} ${height}`}>
                 <VerticalTape
                     displayRange={1000}
                     valueSpacing={100}

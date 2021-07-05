@@ -32,7 +32,7 @@ type RollIndexProps = {
 
 export const RollIndex: React.FC<RollIndexProps> = ({ isOnGround, roll, deltaTime }) => (
     <g id="RollIndex">
-        <rect x={-256} y={-256} width={1024} height={392.48849427774746} className="sky" />
+        <rect x={-256} y={-256} width={1024} height={394} className="sky" />
         <path strokeWidth={3} stroke="white" fill="#040405" d="M256 118 l10 18 h-20z" />
         <SideslipIndicator isOnGround={isOnGround} roll={roll} deltaTime={deltaTime} />
     </g>

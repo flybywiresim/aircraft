@@ -23,7 +23,7 @@ export const ISISDisplay: React.FC = () => {
 
     useInteractionEvent('A32NX_ISIS_KNOB_PRESSED', () => {
         selectedBug.isActive = !selectedBug.isActive;
-        setBugs(bugs);
+		setBugs(bugs);
     });
 
     useInteractionEvent('A32NX_ISIS_KNOB_CLOCKWISE', () => {

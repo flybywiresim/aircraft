@@ -1,12 +1,12 @@
 import React from 'react';
 
 export const AirplaneSymbol: React.FC = () => {
-    const wingWidth = 50;
+    const wingWidth = 52;
     const spaceBetween = 32;
     const longHeight = 15;
     const thickness = 10;
     const strokeWidth = 3;
-    const yStart = 256 - (thickness + strokeWidth) / 2;
+    const yStart = 270 - (thickness + strokeWidth) / 2;
 
     return (
         <g>
