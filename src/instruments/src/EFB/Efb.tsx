@@ -14,7 +14,9 @@ import Performance from './Performance/Performance';
 import Navigation from './Navigation/Navigation';
 import Settings from './Settings/Settings';
 
-import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
+import { GlobalContext } from './Store/global-context';
+import { PerformanceReducer, performanceInitialState } from './Store/performance-reducer';
+import { DispatchReducer, dispatchInitialState } from './Store/dispatch-reducer';
 import store from './Store';
 import ATC from './ATC/ATC';
 
@@ -116,6 +118,7 @@ const Efb = () => {
     const history = useHistory();
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
+    const [dispatchState, dispatchDispatch] = useReducer(DispatchReducer, dispatchInitialState);
     const [navigraph] = useState(() => new NavigraphClient());
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
     const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
@@ -157,7 +160,7 @@ const Efb = () => {
             return;
         }
 
-        console.log('Fetching simbriefData');
+        console.info('Fetching simbriefData');
         const returnedSimbriefData = await getSimbriefData(simbriefUsername);
         console.info(returnedSimbriefData);
         setSimbriefData({
@@ -227,7 +230,7 @@ const Efb = () => {
 
     return (
         <Provider store={store}>
-            <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
+            <GlobalContext.Provider value={{ performanceState, performanceDispatch, dispatchState, dispatchDispatch }}>
                 <NavigraphContext.Provider value={navigraph}>
                     <div className="flex flex-col">
                         <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
@@ -280,7 +283,7 @@ const Efb = () => {
                         </div>
                     </div>
                 </NavigraphContext.Provider>
-            </PerformanceContext.Provider>
+            </GlobalContext.Provider>
         </Provider>
     );
 };

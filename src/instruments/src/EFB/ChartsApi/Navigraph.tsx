@@ -120,7 +120,7 @@ export default class NavigraphClient {
                 });
             }
         }).catch(() => {
-            console.log('Unable to Authorize Device. #NV101');
+            console.error('Unable to Authorize Device. #NV101');
         });
     }
 
@@ -141,7 +141,7 @@ export default class NavigraphClient {
                 });
             }
         }).catch(() => {
-            console.log('Token Authentication Failed. #NV102');
+            console.error('Token Authentication Failed. #NV102');
         });
     }
 
@@ -253,7 +253,7 @@ export default class NavigraphClient {
     public async userInfo() {
         if (this.hasToken()) {
             const userInfoResp = await fetch('https://identity.api.navigraph.com/connect/userinfo', { headers: { Authorization: `Bearer ${this.accessToken}` } }).catch(() => {
-                console.log('Unable to Fetch User Info. #NV103');
+                console.error('Unable to Fetch User Info. #NV103');
             });
 
             if (userInfoResp.ok) {
@@ -269,7 +269,7 @@ export default class NavigraphClient {
     public async subscriptionStatus() {
         if (this.hasToken()) {
             const subscriptionResp = await fetch('https://subscriptions.api.navigraph.com/2/subscriptions/valid', { headers: { Authorization: `Bearer ${this.accessToken}` } }).catch(() => {
-                console.log('Unable to Fetch Subscription Status. #NV104');
+                console.error('Unable to Fetch Subscription Status. #NV104');
             });
 
             if (subscriptionResp.ok) {

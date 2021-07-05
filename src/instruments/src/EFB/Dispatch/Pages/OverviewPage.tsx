@@ -51,7 +51,7 @@ const OverviewPage = (props: OverviewPageProps) => {
 
     useEffect(() => {
         const unitConv = (props.units === 'kgs') ? 1000 : 2240;
-        console.log(`Units changed to ${unitConv}`);
+        console.info(`Units changed to ${unitConv}`);
         setUnitConversion(unitConv);
     }, [props.units]);
 
