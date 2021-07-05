@@ -1339,31 +1339,31 @@ impl A320BrakingForce {
     }
 
     fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
-        let flap_correction = interpolation(
+        let flap_correction = Ratio::new::<percent>(interpolation(
             &Self::FLAPS_BREAKPOINTS,
             &Self::FLAPS_PENALTY_PERCENT,
             self.flap_position,
-        );
+        ));
 
         // Using airspeed with formula 0.1 * sqrt(airspeed) to get a 0 to 1 ratio to use our flap correction
         // This way the less airspeed, the less our correction is used as it is an aerodynamic effect on brakes
         let mut airspeed_corrective_factor =
-            0.1 * context.indicated_airspeed().get::<knot>().sqrt();
-        airspeed_corrective_factor = airspeed_corrective_factor.min(1.0).max(0.);
+            0.1 * context.indicated_airspeed().get::<knot>().abs().sqrt();
+        airspeed_corrective_factor = airspeed_corrective_factor.min(1.0);
 
-        let final_flaps_percent_with_speed = flap_correction * airspeed_corrective_factor;
+        let final_flaps_correction_with_speed = flap_correction * airspeed_corrective_factor;
 
         self.left_braking_force = self.left_braking_force
-            - (self.left_braking_force * final_flaps_percent_with_speed / 100.);
+            - (self.left_braking_force * final_flaps_correction_with_speed.get::<ratio>());
 
         self.right_braking_force = self.right_braking_force
-            - (self.right_braking_force * final_flaps_percent_with_speed / 100.);
+            - (self.right_braking_force * final_flaps_correction_with_speed.get::<ratio>());
 
         println!(
             "CORR Flaps PRCT{:.2} airspeed_corrective_factor{:.2} speedcorrected{:.2} final_force{:.2}",
-            flap_correction,
+            flap_correction.get::<percent>(),
             airspeed_corrective_factor,
-            final_flaps_percent_with_speed,
+            final_flaps_correction_with_speed.get::<percent>(),
             self.left_braking_force
         );
     }
