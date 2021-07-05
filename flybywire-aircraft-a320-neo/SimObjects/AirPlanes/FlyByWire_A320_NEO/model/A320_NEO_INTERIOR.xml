@@ -1238,10 +1238,10 @@
                     <HAS_AUTO>True</HAS_AUTO>
                     <INVERT_ANIM>True</INVERT_ANIM>
                     <POTENTIOMETER>24</POTENTIOMETER>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_OFF</ANIMTIP_0>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_0>
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
                     <ANIMTIP_1>Set strobe lights to AUTO</ANIMTIP_1>
-                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_2>
+                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_OFF</ANIMTIP_2>
 
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
