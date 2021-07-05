@@ -117,6 +117,7 @@ struct Autobrakes {
     id_mode_max: sys::DWORD,
     id_mode_med: sys::DWORD,
     id_mode_low: sys::DWORD,
+    id_disarm: sys::DWORD,
 
     low_mode_panel_pushbutton: NamedVariable,
     med_mode_panel_pushbutton: NamedVariable,
@@ -125,6 +126,7 @@ struct Autobrakes {
     low_mode_requested: bool,
     med_mode_requested: bool,
     max_mode_requested: bool,
+    disarm_requested: bool,
 }
 impl Autobrakes {
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
@@ -133,6 +135,7 @@ impl Autobrakes {
             id_mode_max: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_HI_SET", false)?,
             id_mode_med: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_MED_SET", false)?,
             id_mode_low: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_LO_SET", false)?,
+            id_disarm: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_DISARM", false)?,
 
             low_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
             med_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
@@ -141,6 +144,7 @@ impl Autobrakes {
             low_mode_requested: false,
             med_mode_requested: false,
             max_mode_requested: false,
+            disarm_requested: false,
         })
     }
 
@@ -160,6 +164,7 @@ impl Autobrakes {
         self.max_mode_requested = false;
         self.med_mode_requested = false;
         self.low_mode_requested = false;
+        self.disarm_requested = false;
     }
 
     fn set_mode_max(&mut self) {
@@ -172,6 +177,10 @@ impl Autobrakes {
 
     fn set_mode_low(&mut self) {
         self.low_mode_requested = true;
+    }
+
+    fn set_disarm(&mut self) {
+        self.disarm_requested = true;
     }
 }
 impl SimulatorAspect for Autobrakes {
