@@ -1,5 +1,5 @@
 function updateDisplayDMC(displayName, displayElement, maintElement) {
-    const dmcSwitchingKnob = SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum");
+    const dmcSwitchingKnob = SimVar.GetSimVarValue("L:A32NX_EIS_DMC_SWITCHING_KNOB", "Enum");
     const dmc3displayTest = SimVar.GetSimVarValue("L:A32NX_DMC_DISPLAYTEST:3", "Enum");
     let dmc1displayTest = SimVar.GetSimVarValue("L:A32NX_DMC_DISPLAYTEST:1", "Enum");
     let dmc2displayTest = SimVar.GetSimVarValue("L:A32NX_DMC_DISPLAYTEST:2", "Enum");

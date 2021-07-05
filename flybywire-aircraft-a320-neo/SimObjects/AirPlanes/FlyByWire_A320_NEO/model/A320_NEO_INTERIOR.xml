@@ -3753,40 +3753,24 @@
         <Component ID="Airbus_Pedestal_Radios">
             <Component ID="Switching_Panel">
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
-                    <Node_ID>KNOB_SWITCHING_1</Node_ID>
-                    <PART_ID>KNOB_SWITCHING_1</PART_ID>
-                    <ANIM_NAME>KNOB_SWITCHING_1</ANIM_NAME>
-                    <ANIM_CODE>50</ANIM_CODE>
-                    <ANIMTIP_0>Set ATT HDG to CAPT</ANIMTIP_0>
-                    <ANIMTIP_1>Set ATT HDG to NORM</ANIMTIP_1>
-                    <ANIMTIP_2>Set ATT HDG to F/O</ANIMTIP_2>
+                    <ID>1</ID>
+                    <TYPE>ATT_HDG</TYPE>
+                    <TIP_TEXT>ATT HDG</TIP_TEXT>
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
-                    <Node_ID>KNOB_SWITCHING_2</Node_ID>
-                    <PART_ID>KNOB_SWITCHING_2</PART_ID>
-                    <ANIM_NAME>KNOB_SWITCHING_2</ANIM_NAME>
-                    <ANIM_CODE>50</ANIM_CODE>
-                    <ANIMTIP_0>Set AIR DATA to CAPT</ANIMTIP_0>
-                    <ANIMTIP_1>Set AIR DATA to NORM</ANIMTIP_1>
-                    <ANIMTIP_2>Set AIR DATA to F/O</ANIMTIP_2>
+                    <ID>2</ID>
+                    <TYPE>AIR_DATA</TYPE>
+                    <TIP_TEXT>AIR DATA</TIP_TEXT>
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
-                    <Node_ID>KNOB_SWITCHING_3</Node_ID>
-                    <PART_ID>KNOB_SWITCHING_3</PART_ID>
-                    <ANIM_NAME>KNOB_SWITCHING_3</ANIM_NAME>
-                    <ANIM_CODE>50</ANIM_CODE>
-                    <ANIMTIP_0>Set EIS DMC to CAPT</ANIMTIP_0>
-                    <ANIMTIP_1>Set EIS DMC to NORM</ANIMTIP_1>
-                    <ANIMTIP_2>Set EIS DMC to F/O</ANIMTIP_2>
+                    <ID>3</ID>
+                    <TYPE>EIS_DMC</TYPE>
+                    <TIP_TEXT>EIS DMC</TIP_TEXT>
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
-                    <Node_ID>KNOB_SWITCHING_4</Node_ID>
-                    <PART_ID>KNOB_SWITCHING_4</PART_ID>
-                    <ANIM_NAME>KNOB_SWITCHING_4</ANIM_NAME>
-                    <ANIM_CODE>50</ANIM_CODE>
-                    <ANIMTIP_0>Set ECAM/ND XFR to CAPT</ANIMTIP_0>
-                    <ANIMTIP_1>Set ECAM/ND XFR to NORM</ANIMTIP_1>
-                    <ANIMTIP_2>Set ECAM/ND XFR to F/O</ANIMTIP_2>
+                    <ID>4</ID>
+                    <TYPE>ECAM_ND_XFR</TYPE>
+                    <TIP_TEXT>ECAM/ND XFR</TIP_TEXT>
                 </UseTemplate>
             </Component>
         </Component>

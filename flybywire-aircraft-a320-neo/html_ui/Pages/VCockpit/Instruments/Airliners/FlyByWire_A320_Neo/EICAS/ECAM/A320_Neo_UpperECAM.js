@@ -1390,8 +1390,8 @@ var A320_Neo_UpperECAM;
                         message: "SWITCHG PNL",
                         isActive: () => {
                             return (
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum") != 1) ||
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_4_Position", "Enum") != 1)
+                                (SimVar.GetSimVarValue("L:A32NX_EIS_DMC_SWITCHING_KNOB", "Enum") != 1) ||
+                                (SimVar.GetSimVarValue("L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB", "Enum") != 1)
                             );
                         }
                     },
@@ -1439,8 +1439,8 @@ var A320_Neo_UpperECAM;
                         message: "ADIRS SWTG",
                         isActive: () => {
                             return (
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_1_Position", "Enum") != 1) ||
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_2_Position", "Enum") != 1)
+                                (SimVar.GetSimVarValue("L:A32NX_ATT_HDG_SWITCHING_KNOB", "Enum") != 1) ||
+                                (SimVar.GetSimVarValue("L:A32NX_AIR_DATA_SWITCHING_KNOB", "Enum") != 1)
                             );
                         }
                     },

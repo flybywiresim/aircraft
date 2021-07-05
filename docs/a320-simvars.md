@@ -178,22 +178,12 @@
     - Bool
     - True if evac switch set to CAPT
 
-- A32NX_KNOB_SWITCHING_1_Position
-    - ATT HDG
-    - Position (0-2)
-    - 0 is CAPT, 1 is NORM, 2 is F/O
-
-- A32NX_KNOB_SWITCHING_2_Position
-    - AIR DATA
-    - Position (0-2)
-    - 0 is CAPT, 1 is NORM, 2 is F/O
-
-- A32NX_KNOB_SWITCHING_3_Position
+- A32NX_EIS_DMC_SWITCHING_KNOB
     - EIS DMC
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
-- A32NX_KNOB_SWITCHING_4_Position
+- A32NX_ECAM_ND_XFR_SWITCHING_KNOB
     - ECAM/ND XFR
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
@@ -1037,6 +1027,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_ADIRS_ADR_{number}_PB_IS_OFF
     - Bool
     - Whether the ADR push button is in the OFF position.
+
+- A32NX_ATT_HDG_SWITCHING_KNOB
+    - ATT HDG
+    - Position (0-2)
+    - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- A32NX_AIR_DATA_SWITCHING_KNOB
+    - AIR DATA
+    - Position (0-2)
+    - 0 is CAPT, 1 is NORM, 2 is F/O
 
 - A32NX_ADIRS_STATE
     - Enum
