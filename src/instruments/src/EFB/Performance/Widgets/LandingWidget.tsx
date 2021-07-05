@@ -26,7 +26,7 @@ import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
-import { PerformanceActions, performanceInitialState } from '../../Store/performance-context';
+import { PerformanceActions, performanceInitialState } from '../../Store/performance-reducer';
 import { GlobalContext } from '../../Store/global-context';
 
 const poundsToKgs = 0.453592;

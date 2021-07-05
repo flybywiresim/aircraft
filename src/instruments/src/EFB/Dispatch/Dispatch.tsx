@@ -1,12 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
 import { Navbar } from '../Components/Navbar';
 import { FuelPage } from './Pages/FuelPage';
 import { GlobalContext } from '../Store/global-context';
-import { PerformanceActions } from '../Store/performance-context';
-import { DispatchActions } from '../Store/dispatch-context';
+import { DispatchActions } from '../Store/dispatch-reducer';
 
 type DispatchProps = {
     loadsheet: string,

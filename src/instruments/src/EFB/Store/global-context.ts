@@ -1,6 +1,6 @@
 import React, { Context, createContext } from 'react';
-import { performanceInitialState, PerformanceStateType } from './performance-context';
-import { dispatchInitialState, DispatchStateType } from './dispatch-context';
+import { performanceInitialState, PerformanceStateType } from './performance-reducer';
+import { dispatchInitialState, DispatchStateType } from './dispatch-reducer';
 
 export type GlobalContextType = {
     performanceState: PerformanceStateType;

@@ -5,7 +5,7 @@ import { Navbar } from '../Components/Navbar';
 import TODCalculator from '../TODCalculator/TODCalculator';
 import LandingWidget from './Widgets/LandingWidget';
 import { GlobalContext } from '../Store/global-context';
-import { PerformanceActions } from '../Store/performance-context';
+import { PerformanceActions } from '../Store/performance-reducer';
 
 const tabs = [
     { name: 'Top of Descent', renderComponent: () => <TODCalculator /> },
