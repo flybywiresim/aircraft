@@ -91,11 +91,6 @@ fn create_aircraft_variable_reader(
 
     reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
     reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
-    reader.add("SPOILERS LEFT POSITION", "Enum", 0)?;
-    reader.add("SPOILERS RIGHT POSITION", "Enum", 0)?;
-    reader.add("TOTAL WEIGHT", "Pounds", 0)?;
-    reader.add("PLANE ALTITUDE", "Feet", 0)?;
-    reader.add("AIRSPEED INDICATED", "Knots", 0)?;
 
     Ok(reader)
 }
