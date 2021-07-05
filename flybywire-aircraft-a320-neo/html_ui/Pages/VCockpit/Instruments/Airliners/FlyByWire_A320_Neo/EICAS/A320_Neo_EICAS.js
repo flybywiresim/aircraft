@@ -312,7 +312,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     updateAnnunciations() {
         const infoPanelManager = this.upperTopScreen.getInfoPanelManager();
         if (infoPanelManager) {
-
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
 
             if (this.warnings) {

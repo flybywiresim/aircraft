@@ -96,7 +96,6 @@ Pump.9=True
 BatterySwitch=True
 StructuralDeiceSwitch=False
 PropDeiceSwitch=False
-Autobrakes=1
 StandbyVacuum=False
 PropSync=False
 AutoFeatherSwitch=False
@@ -233,6 +232,7 @@ A32NX_FBW_SEC_SWITCH:2=1
 A32NX_FBW_SEC_SWITCH:3=1
 A32NX_FBW_FAC_SWITCH:1=1
 A32NX_FBW_FAC_SWITCH:2=1
+A32NX_AUTOBRAKES_ARMED_MODE=2
 A32NX_PARK_BRAKE_LEVER_POS=0
 
 [Gauges.0]
