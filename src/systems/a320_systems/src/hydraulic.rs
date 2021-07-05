@@ -1298,9 +1298,6 @@ struct A320BrakingForce {
     left_braking_force: f64,
     right_braking_force: f64,
 
-    left_braking_force_corrected: f64,
-    right_braking_force_corrected: f64,
-
     flap_position: f64,
 }
 impl A320BrakingForce {
@@ -1313,9 +1310,6 @@ impl A320BrakingForce {
         A320BrakingForce {
             left_braking_force: 0.,
             right_braking_force: 0.,
-
-            left_braking_force_corrected: 0.,
-            right_braking_force_corrected: 0.,
 
             flap_position: 0.,
         }
@@ -1341,10 +1335,10 @@ impl A320BrakingForce {
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
 
-        self.correct_final_force_with_flaps_state(context);
+        self.correct_with_flaps_state(context);
     }
 
-    fn correct_final_force_with_flaps_state(&mut self, context: &UpdateContext) {
+    fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
         let flap_correction = interpolation(
             &Self::FLAPS_BREAKPOINTS,
             &Self::FLAPS_PENALTY_PERCENT,
@@ -1359,20 +1353,18 @@ impl A320BrakingForce {
 
         let final_flaps_percent_with_speed = flap_correction * airspeed_corrective_factor;
 
-        let debug_left_force = self.left_braking_force;
-        self.left_braking_force_corrected = self.left_braking_force
+        self.left_braking_force = self.left_braking_force
             - (self.left_braking_force * final_flaps_percent_with_speed / 100.);
 
-        self.right_braking_force_corrected = self.right_braking_force
+        self.right_braking_force = self.right_braking_force
             - (self.right_braking_force * final_flaps_percent_with_speed / 100.);
 
         println!(
-            "CORR Flaps PRCT{:.2} airspeed_corrective_factor{:.2} speedcorrected{:.2} force_without_corr{:.2} final_force{:.2}",
+            "CORR Flaps PRCT{:.2} airspeed_corrective_factor{:.2} speedcorrected{:.2} final_force{:.2}",
             flap_correction,
             airspeed_corrective_factor,
             final_flaps_percent_with_speed,
-            debug_left_force,
-            self.left_braking_force_corrected
+            self.left_braking_force
         );
     }
 }
@@ -1380,11 +1372,8 @@ impl A320BrakingForce {
 impl SimulationElement for A320BrakingForce {
     fn write(&self, writer: &mut SimulatorWriter) {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
-        writer.write("BRAKE LEFT FORCE FACTOR", self.left_braking_force_corrected);
-        writer.write(
-            "BRAKE RIGHT FORCE FACTOR",
-            self.right_braking_force_corrected,
-        );
+        writer.write("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
+        writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {

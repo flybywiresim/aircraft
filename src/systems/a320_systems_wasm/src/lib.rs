@@ -88,7 +88,6 @@ fn create_aircraft_variable_reader(
         &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
     );
     reader.add("GPS POSITION LAT", "degree latitude", 0)?;
-
     reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
     reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
 
