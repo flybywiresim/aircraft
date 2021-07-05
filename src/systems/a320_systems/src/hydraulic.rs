@@ -325,11 +325,11 @@ impl A320Hydraulic {
     // Todo remove when hydraulics gives directly correct values of flow and displacement
     fn blue_electric_pump_estimated_flow(&self) -> VolumeRate {
         // If RAT pump has some RPM then we consider epump provides only a fraction of the loop total flow
-        let ram_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
+        let rat_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
 
         let estimated_blue_epump_flow: VolumeRate;
         if self.blue_electric_pump_controller.should_pressurise() {
-            if ram_produces_flow {
+            if rat_produces_flow {
                 estimated_blue_epump_flow = self.blue_loop.current_flow() * 0.4;
             } else {
                 estimated_blue_epump_flow = self.blue_loop.current_flow();
