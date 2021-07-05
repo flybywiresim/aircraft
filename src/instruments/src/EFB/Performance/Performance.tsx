@@ -4,7 +4,8 @@ import { map } from 'lodash';
 import { Navbar } from '../Components/Navbar';
 import TODCalculator from '../TODCalculator/TODCalculator';
 import LandingWidget from './Widgets/LandingWidget';
-import { PerformanceActions, PerformanceContext } from '../Store/performance-context';
+import { GlobalContext } from '../Store/global-context';
+import { PerformanceActions } from '../Store/performance-context';
 
 const tabs = [
     { name: 'Top of Descent', renderComponent: () => <TODCalculator /> },
@@ -12,7 +13,7 @@ const tabs = [
 ];
 
 const Performance = () => {
-    const { performanceState, performanceDispatch } = useContext(PerformanceContext);
+    const { performanceState, performanceDispatch } = useContext(GlobalContext);
 
     return (
         <div className="w-full">

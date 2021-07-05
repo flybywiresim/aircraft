@@ -1,9 +1,9 @@
-import React, { Context, createContext } from 'react';
+import React from 'react';
 import { produce } from 'immer';
 import { LandingFlapsConfig, LandingRunwayConditions } from '../Performance/Calculators/LandingCalculator';
 import { DistanceLabel } from '../Performance/Widgets/RunwayVisualizationWidget';
 
-export const performanceInitialState: TPerformanceState = {
+export const performanceInitialState: PerformanceStateType = {
     currentView: 0,
     landing: {
         icao: '',
@@ -36,7 +36,7 @@ export enum PerformanceActions {
     SET_LANDING
 }
 
-type TPerformanceLanding = {
+type PerformanceLanding = {
     icao: string,
     windDirection: number,
     windMagnitude: number,
@@ -60,13 +60,13 @@ type TPerformanceLanding = {
     displayedRunwayLength: number,
 }
 
-type TPerformanceState = {
+export type PerformanceStateType = {
     currentView: number
-    landing: TPerformanceLanding
+    landing: PerformanceLanding
 }
 
-export type TPerformanceContext = {
-    performanceState: TPerformanceState;
+export type PerformanceContextType = {
+    performanceState: PerformanceStateType;
     performanceDispatch: React.Dispatch<any>;
 }
 
@@ -95,4 +95,4 @@ const Reducer = (state, action) => {
 // Curried
 export const PerformanceReducer = produce(Reducer);
 
-export const PerformanceContext:Context<TPerformanceContext> = createContext<TPerformanceContext>({ performanceState: performanceInitialState, performanceDispatch: () => {} });
+// export const PerformanceContext:Context<PerformanceContextType> = createContext<PerformanceContextType>({ performanceState: performanceInitialState, performanceDispatch: () => {} });
