@@ -95,15 +95,15 @@ If you would like to contribute to the project, see [Contributing.md](.github/Co
 
 ## Known Issues
 
-- Black screens/THALES maintenance screens/unable to start (Outdated sim version, conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
-- Invisible plane or no sounds - Reinstall A32NX, delete any old version from your `Community` folder.
-- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher - start from 10% deadzone]
-- Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
-- Upper ECAM displays wrong THR levers position / N1 rating.
-- THR CLB flashing symbol on PFD - Calibrate your throttles using the EFB (flyPad - Click on the settings gear icon).
+- Black screens/THALES maintenance screens/unable to start. Causes: Outdated sim version, conflict with another mod/livery or incorrect installation of the A32NX mod - Update Sim, clean up your community folder of outdated and conflicting addons and use the [installer](https://api.flybywiresim.com/installer) to install A32NX.
+- Invisible plane or no sounds. Caused by installing multiple conflicting versions of A32NX. - Delete any old version from your `Community` folder, or remove all and reinstall A32NX.
+- AP not following the flight plan. Caused by leaking input affecting values but not disconnecting the AP. - Workaround: Set dead-zones for your input device higher - start from 10% dead-zone
+- Autopilot goes direct to RWY on APP. Caused by the default Asobo flight plan manager - Workaround: Use DIR to a waypoint or selected heading
+- THR CLB flashing symbol on PFD when thrust levers already set to climb. Caused by missing or incorrect throttle calibration - Calibrate your throttles using the EFB (flyPad).
 - No Smoking switch doesn't use a full range of motion.
+- No Smoking switch will sometimes not be switched to ON when spawning on the runway.
 
-See the [Issues](https://github.com/flybywiresim/a32nx/issues) page for a more complete breakdown of issues that have been discovered and which are being worked on by the development team.
+See the [Issues](https://github.com/flybywiresim/a32nx/issues) page for a more complete breakdown of issues which have been discovered and are being worked on by the development team.
 
 ## License
 
