@@ -1085,58 +1085,66 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Feet
-    - The altitude. -1000000 when unavailable.
+    - The altitude. Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
     - Knots
-    - The computed airspeed (CAS). -1000000 when unavailable.
+    - The computed airspeed (CAS). Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_{number}_MACH
     - Mach
-    - The Mach number (M). -1000000 when unavailable.
+    - The Mach number (M). Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_{number}_BAROMETRIC_VERTICAL_SPEED
     - Feet per minute
-    - The vertical speed (V/S) based on barometric altitude data. -1000000 when unavailable.
+    - The vertical speed (V/S) based on barometric altitude data. Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_{number}_TRUE_AIRSPEED
     - Knots
-    - The true airspeed (TAS). -1000000 when unavailable.
+    - The true airspeed (TAS). Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_ADR_{number}_STATIC_AIR_TEMPERATURE
     - Celsius
-    - The static air temperature (SAT). -1000000 when unavailable.
+    - The static air temperature (SAT). Approximately -1000000 when unavailable.
       {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
     - Celsius
-    - The total air temperature (TAT). -1000000 when unavailable.
+    - The total air temperature (TAT). Approximately -1000000 when unavailable.
       {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
     - Celsius
-    - The delta (deviation) from international standard atmosphere temperature. -1000000 when unavailable.
+    - The delta (deviation) from international standard atmosphere temperature. Approximately -1000000 when unavailable.
       {number}: 1 or 3
 
 - A32NX_ADIRS_IR_{number}_PITCH
     - Degrees
-    - The pitch angle of the aircraft. -1000000 when unavailable.
+    - The pitch angle of the aircraft. Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_IR_{number}_ROLL
     - Degrees
-    - The roll angle of the aircraft. -1000000 when unavailable.
+    - The roll angle of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_HEADING
+    - Degrees
+    - The inertial heading of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_TRACK
+    - Degrees
+    - The inertial track of the aircraft. Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_IR_{number}_GROUND_SPEED
     - Knots
-    - The ground speed (GS) of the aircraft. -1000000 when unavailable.
+    - The ground speed (GS) of the aircraft. Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_IR_{number}_WIND_DIRECTION
     - Degrees
-    - The direction of the wind. -1000000 when unavailable.
+    - The direction of the wind. Approximately -1000000 when unavailable.
 
 - A32NX_ADIRS_IR_{number}_WIND_VELOCITY
     - Degrees
-    - The direction of the wind. -1000000 when unavailable.
+    - The direction of the wind. Approximately -1000000 when unavailable.
 
 ## Autopilot System
 

@@ -56,6 +56,7 @@ fn create_aircraft_variable_reader(
     reader.add("AMBIENT WIND DIRECTION", "Degrees", 0)?;
     reader.add("AMBIENT WIND VELOCITY", "Knots", 0)?;
     reader.add("GPS GROUND SPEED", "Knots", 0)?;
+    reader.add("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?;
     reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
     reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
     reader.add("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?;

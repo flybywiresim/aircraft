@@ -163,6 +163,7 @@ struct AdirsSimulatorData {
     pitch: Angle,
     roll: Angle,
     heading: Angle,
+    track: Angle,
     ground_speed: Velocity,
     wind_direction: Angle,
     wind_velocity: Velocity,
@@ -175,6 +176,7 @@ impl AdirsSimulatorData {
     const PITCH: &'static str = "PLANE PITCH DEGREES";
     const ROLL: &'static str = "PLANE BANK DEGREES";
     const HEADING: &'static str = "PLANE HEADING DEGREES MAGNETIC";
+    const TRACK: &'static str = "GPS GROUND MAGNETIC TRACK";
     const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
     const WIND_DIRECTION: &'static str = "AMBIENT WIND DIRECTION";
     const WIND_VELOCITY: &'static str = "AMBIENT WIND VELOCITY";
@@ -190,6 +192,7 @@ impl SimulationElement for AdirsSimulatorData {
         self.pitch = reader.read(Self::PITCH);
         self.roll = reader.read(Self::ROLL);
         self.heading = reader.read(Self::HEADING);
+        self.track = reader.read(Self::TRACK);
         self.ground_speed = reader.read(Self::GROUND_SPEED);
         self.wind_direction = reader.read(Self::WIND_DIRECTION);
         self.wind_velocity = reader.read(Self::WIND_VELOCITY);
@@ -591,6 +594,7 @@ struct InertialReference {
     pitch: OutputData<Angle>,
     roll: OutputData<Angle>,
     heading: OutputData<Angle>,
+    track: OutputData<Angle>,
     ground_speed: OutputData<Velocity>,
     wind_direction: OutputData<Angle>,
     wind_velocity: OutputData<Velocity>,
@@ -603,6 +607,7 @@ impl InertialReference {
     const PITCH: &'static str = "PITCH";
     const ROLL: &'static str = "ROLL";
     const HEADING: &'static str = "HEADING";
+    const TRACK: &'static str = "TRACK";
     const GROUND_SPEED: &'static str = "GROUND_SPEED";
     const WIND_DIRECTION: &'static str = "WIND_DIRECTION";
     const WIND_VELOCITY: &'static str = "WIND_VELOCITY";
@@ -630,6 +635,11 @@ impl InertialReference {
             heading: OutputData::new_ir(
                 number,
                 Self::HEADING,
+                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
+            ),
+            track: OutputData::new_ir(
+                number,
+                Self::TRACK,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
             ground_speed: OutputData::new_ir(
@@ -665,6 +675,7 @@ impl InertialReference {
         self.pitch.set_value(simulator_data.pitch);
         self.roll.set_value(simulator_data.roll);
         self.heading.set_value(simulator_data.heading);
+        self.track.set_value(simulator_data.track);
         self.ground_speed.set_value(simulator_data.ground_speed);
         self.wind_direction.set_value(simulator_data.wind_direction);
         self.wind_velocity.set_value(simulator_data.wind_velocity);
@@ -744,6 +755,7 @@ impl SimulationElement for InertialReference {
 
         let is_aligned = self.is_aligned();
         self.heading.write_to(writer, is_aligned);
+        self.track.write_to(writer, is_aligned);
         self.ground_speed.write_to(writer, is_aligned);
         self.wind_direction.write_to(writer, is_aligned);
         self.wind_velocity.write_to(writer, is_aligned);
@@ -878,6 +890,11 @@ mod tests {
 
         fn heading_of(mut self, angle: Angle) -> Self {
             self.write(AdirsSimulatorData::HEADING, angle);
+            self
+        }
+
+        fn track_of(mut self, angle: Angle) -> Self {
+            self.write(AdirsSimulatorData::TRACK, angle);
             self
         }
 
@@ -1106,6 +1123,18 @@ mod tests {
         fn heading_is_available(&mut self, adiru_number: usize) -> bool {
             self.heading(adiru_number)
                 > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
+        }
+
+        fn track(&mut self, adiru_number: usize) -> Angle {
+            self.read(&output_data_id(
+                OutputDataType::IR,
+                adiru_number,
+                InertialReference::TRACK,
+            ))
+        }
+
+        fn track_is_available(&mut self, adiru_number: usize) -> bool {
+            self.track(adiru_number) > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
         }
 
         fn ground_speed(&mut self, adiru_number: usize) -> Velocity {
@@ -1759,6 +1788,10 @@ mod tests {
             "Test precondition: heading should be available at this point."
         );
         assert!(
+            test_bed.track_is_available(adiru_number),
+            "Test precondition: track should be available at this point."
+        );
+        assert!(
             test_bed.ground_speed_is_available(adiru_number),
             "Test precondition: ground speed should be available at this point."
         );
@@ -1779,6 +1812,7 @@ mod tests {
         assert!(!test_bed.pitch_is_available(adiru_number));
         assert!(!test_bed.roll_is_available(adiru_number));
         assert!(!test_bed.heading_is_available(adiru_number));
+        assert!(!test_bed.track_is_available(adiru_number));
         assert!(!test_bed.ground_speed_is_available(adiru_number));
         assert!(!test_bed.wind_direction_is_available(adiru_number));
         assert!(!test_bed.wind_velocity_is_available(adiru_number));
@@ -1794,6 +1828,18 @@ mod tests {
         test_bed.run();
 
         assert_eq!(test_bed.heading(adiru_number), angle);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn track_is_supplied_by_ir(#[case] adiru_number: usize) {
+        let angle = Angle::new::<degree>(160.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().track_of(angle);
+        test_bed.run();
+
+        assert_eq!(test_bed.track(adiru_number), angle);
     }
 
     #[rstest]
@@ -1826,7 +1872,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn ir_heading_and_ground_speed_and_wind_are_available_after_full_alignment_completed(
+    fn ir_heading_and_track_and_ground_speed_and_wind_are_available_after_full_alignment_completed(
         #[case] adiru_number: usize,
     ) {
         let mut test_bed = test_bed_with()
@@ -1834,6 +1880,7 @@ mod tests {
 
         while test_bed.align_state() != AlignState::Aligned {
             assert!(!test_bed.heading_is_available(adiru_number));
+            assert!(!test_bed.track_is_available(adiru_number));
             assert!(!test_bed.ground_speed_is_available(adiru_number));
             assert!(!test_bed.wind_direction_is_available(adiru_number));
             assert!(!test_bed.wind_velocity_is_available(adiru_number));
@@ -1841,6 +1888,7 @@ mod tests {
         }
 
         assert!(test_bed.heading_is_available(adiru_number));
+        assert!(test_bed.track_is_available(adiru_number));
         assert!(test_bed.ground_speed_is_available(adiru_number));
         assert!(test_bed.wind_direction_is_available(adiru_number));
         assert!(test_bed.wind_velocity_is_available(adiru_number));
