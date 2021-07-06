@@ -22,6 +22,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             8,
         )?),
         Box::new(Brakes::new(&mut sim_connect.as_mut())?),
+        Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
         Box::new(create_aircraft_variable_reader()?),
         Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
     ]);
@@ -61,7 +62,7 @@ fn create_aircraft_variable_reader(
     reader.add("PUSHBACK STATE", "Enum", 0)?;
     reader.add("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
     reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
-    reader.add("SURFACE TYPE", "Enum", 0)?;
+
     reader.add_with_additional_names(
         "APU GENERATOR SWITCH",
         "Bool",
@@ -110,6 +111,111 @@ fn create_electrical_buses() -> MsfsElectricalBuses {
     buses.add("DC_GND_FLT_SVC", 1, 15);
 
     buses
+}
+
+struct Autobrakes {
+    id_mode_max: sys::DWORD,
+    id_mode_med: sys::DWORD,
+    id_mode_low: sys::DWORD,
+
+    low_mode_panel_pushbutton: NamedVariable,
+    med_mode_panel_pushbutton: NamedVariable,
+    max_mode_panel_pushbutton: NamedVariable,
+
+    low_mode_requested: bool,
+    med_mode_requested: bool,
+    max_mode_requested: bool,
+}
+impl Autobrakes {
+    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self {
+            // SimConnect inputs masking
+            id_mode_max: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_HI_SET", false)?,
+            id_mode_med: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_MED_SET", false)?,
+            id_mode_low: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_LO_SET", false)?,
+
+            low_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
+            med_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
+            max_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
+
+            low_mode_requested: false,
+            med_mode_requested: false,
+            max_mode_requested: false,
+        })
+    }
+
+    fn synchronise_with_sim(&mut self) {
+        if self.low_mode_panel_pushbutton.get_value() {
+            self.set_mode_low();
+        }
+        if self.med_mode_panel_pushbutton.get_value() {
+            self.set_mode_med();
+        }
+        if self.max_mode_panel_pushbutton.get_value() {
+            self.set_mode_max();
+        }
+    }
+
+    fn reset_events(&mut self) {
+        self.max_mode_requested = false;
+        self.med_mode_requested = false;
+        self.low_mode_requested = false;
+    }
+
+    fn set_mode_max(&mut self) {
+        self.max_mode_requested = true;
+    }
+
+    fn set_mode_med(&mut self) {
+        self.med_mode_requested = true;
+    }
+
+    fn set_mode_low(&mut self) {
+        self.low_mode_requested = true;
+    }
+}
+impl SimulatorAspect for Autobrakes {
+    fn read(&mut self, name: &str) -> Option<f64> {
+        match name {
+            "OVHD_AUTOBRK_LOW_ON_IS_PRESSED" => Some(self.low_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MED_ON_IS_PRESSED" => Some(self.med_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MAX_ON_IS_PRESSED" => Some(self.max_mode_requested as u8 as f64),
+            _ => None,
+        }
+    }
+
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        match message {
+            SimConnectRecv::Event(e) => {
+                if e.id() == self.id_mode_low {
+                    self.set_mode_low();
+                    true
+                } else if e.id() == self.id_mode_med {
+                    self.set_mode_med();
+                    true
+                } else if e.id() == self.id_mode_max {
+                    self.set_mode_max();
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+
+    fn pre_tick(&mut self, delta: Duration) {
+        self.synchronise_with_sim();
+    }
+
+    fn post_tick(
+        &mut self,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.reset_events();
+
+        Ok(())
+    }
 }
 
 struct Brakes {
