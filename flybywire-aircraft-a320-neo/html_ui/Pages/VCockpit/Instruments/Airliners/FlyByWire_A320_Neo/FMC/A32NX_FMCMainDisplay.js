@@ -6,7 +6,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
         this.ilsUpdateThrottler = new UpdateThrottler(5000);
-        this.currentFlightPhase = FmgcFlightPhases.PREFLIGHT;
+        this.currentFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number") || FmgcFlightPhases.PREFLIGHT;
+        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
         this._apCooldown = 500;
         this._radioNavOn = false;
         this._vhf1Frequency = 0;
@@ -183,8 +184,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.dataManager = new FMCDataManager(this);
 
-        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
-
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
         this.tempCurve.add(-10 * 3.28084, 21.50);
@@ -211,6 +210,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
+        this._cruiseFlightLevel = this.cruiseFlightLevel;
 
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
@@ -225,6 +225,7 @@ class FMCMainDisplay extends BaseAirliners {
                     console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
                     if (cruiseAlt > 0) {
                         this.cruiseFlightLevel = cruiseAlt;
+                        this._cruiseFlightLevel = cruiseAlt;
                     }
                 };
                 const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
@@ -242,6 +243,8 @@ class FMCMainDisplay extends BaseAirliners {
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+
+        this.flightPhaseManager.init();
 
         /** It takes some time until origin and destination are known, placing this inside callback of the flight plan loader doesn't work */
         setTimeout(() => {
@@ -572,8 +575,6 @@ class FMCMainDisplay extends BaseAirliners {
                 if (_lastFlightPhase === FmgcFlightPhases.TAKEOFF) {
                     this.activatePreSelSpeedMach(this.preSelectedClbSpeed);
                 }
-
-                SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
 
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedCrzSpeed);
@@ -1092,43 +1093,12 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
 
-            if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-                if (Simplane.getAltitudeAboveGround() < 1.5) {
-                    if (this.landingAutoBrakeTimer == null) {
-                        this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-                    }
-                    this.landingAutoBrakeTimer -= dt / 1000;
-                    if (this.landingAutoBrakeTimer <= 0) {
-                        this.landingAutoBrakeTimer = null;
-                        SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
-                    }
-                } else {
-                    //Reset timer to 30 when airborne in case of go around
-                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-                }
-            } else if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
-                if (apLogicOn) {
-                    //depending if on HDR/TRK or NAV mode, select appropriate Alt Mode (WIP)
-                    //this._onModeManagedAltitude();
-                    this._onModeSelectedAltitude();
-                }
+            if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND && apLogicOn) {
+                //depending if on HDR/TRK or NAV mode, select appropriate Alt Mode (WIP)
+                //this._onModeManagedAltitude();
+                this._onModeSelectedAltitude();
             }
             this.updateAutopilotCooldown = this._apCooldown;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            if (Simplane.getAltitudeAboveGround() < 1.5) {
-                if (this.landingAutoBrakeTimer == null) {
-                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-                }
-                this.landingAutoBrakeTimer -= dt / 1000;
-                if (this.landingAutoBrakeTimer <= 0) {
-                    this.landingAutoBrakeTimer = null;
-                    SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
-                }
-            } else {
-                //Reset timer to 30 when airborne in case of go around
-                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-            }
         }
     }
 
@@ -1725,7 +1695,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryUpdateTOW() {
-        this.takeOffWeight = this.getGW() - this.taxiFuelWeight;
+        this.takeOffWeight = this.zeroFuelWeight + this.blockFuel - this.taxiFuelWeight;
     }
 
     tryUpdateLW() {

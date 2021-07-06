@@ -97,7 +97,6 @@ Pump.9=True
 BatterySwitch=True
 StructuralDeiceSwitch=False
 PropDeiceSwitch=False
-Autobrakes=4
 StandbyVacuum=False
 PropSync=False
 AutoFeatherSwitch=False

@@ -109,9 +109,16 @@ If you would like to contribute to the project, see [Contributing.md](.github/Co
 
 ## License
 
-The original contents of this repository are licensed under the MIT license.
+Original source code assets present in this repository are licensed under the GNU GPLv3.
+Original 3D assets are licensed under CC BY-NC 4.0.
 
 **Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A32NX was created under Microsoft's "Game Content Usage Rules" using assets from Microsoft Flight Simulator, and it is not endorsed by or affiliated with Microsoft.**
+
+The contents of distribution packages built from the sources in this repository are therefore licensed as follows:
+
+- in the case of original source code from FBW or compiled binaries generated from it, under GPLv3.
+- in the case of original 3D assets from FBW, under CC BY-NC 4.0.
+- in the case of assets covered by the "Game Content Usage Rules", under the license granted by those rules.
 
 ## FAQ
 
