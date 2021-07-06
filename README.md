@@ -93,19 +93,16 @@ If the above methods do not work:
 
 If you would like to contribute to the project, see [Contributing.md](.github/Contributing.md)
 
-## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the master branch)
+## Known Issues
 
-- Captain's PFD may occasionally turn off during flight
-- No Smoking switch doesn't use a full range of motion.
-- Automatic ECAM page switching has minor bugs.
-- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher]
+- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher - start from 10% deadzone]
 - Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
 - Upper ECAM displays wrong THR levers position / N1 rating.
-- Newly added ASOBO A320 liveries are incompatible with the A32NX mod.
-- Rudder keybindings not working (you have to set your keybinding to rudder axis right and left)
-- Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
 - Black screens/unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
-- Invisible plane, no sounds? Reinstall A32NX, delete any old version from your `Community` folder.
+- No Smoking switch doesn't use a full range of motion.
+- Invisible plane or no sounds - Reinstall A32NX, delete any old version from your `Community` folder.
+
+See the [Issues](https://github.com/flybywiresim/a32nx/issues) page for a more complete breakdown of issues that have been discovered and which are being worked on by the development team.
 
 ## License
 
