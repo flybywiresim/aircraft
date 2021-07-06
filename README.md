@@ -95,12 +95,13 @@ If you would like to contribute to the project, see [Contributing.md](.github/Co
 
 ## Known Issues
 
+- Black screens/THALES maintenance screens/unable to start (Outdated sim version, conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
+- Invisible plane or no sounds - Reinstall A32NX, delete any old version from your `Community` folder.
 - AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher - start from 10% deadzone]
 - Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
 - Upper ECAM displays wrong THR levers position / N1 rating.
-- Black screens/unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
+- THR CLB flashing symbol on PFD - Calibrate your throttles using the EFB (flyPad - Click on the settings gear icon).
 - No Smoking switch doesn't use a full range of motion.
-- Invisible plane or no sounds - Reinstall A32NX, delete any old version from your `Community` folder.
 
 See the [Issues](https://github.com/flybywiresim/a32nx/issues) page for a more complete breakdown of issues that have been discovered and which are being worked on by the development team.
 
