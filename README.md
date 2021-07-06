@@ -95,27 +95,7 @@ If you would like to contribute to the project, see [Contributing.md](.github/Co
 
 ## Known Issues
 
-- Black screens/THALES maintenance screens/unable to start.
-  - Caused by: Outdated sim version, conflict with another mod/livery or incorrect installation of the A32NX mod
-  - Update Sim, clean up your community folder of outdated and conflicting addons and use the [installer](https://api.flybywiresim.com/installer) to install A32NX.
-- Invisible plane or no sounds.
-  - Caused by:  installing multiple conflicting versions of A32NX.
-  - Delete any old version from your `Community` folder, or remove all and reinstall A32NX.
-- AP not following the flight plan.
-  - Caused by: Leaking input from peripherals affecting values but not disconnecting the AP.
-  - Set dead-zones for your input device higher - start from 10% dead-zone
-- Autopilot goes direct to RWY on APP.
-   - Caused by: Default Asobo flight plan manager
-   - Use DIR to a waypoint or selected heading
-- THR CLB flashing symbol on PFD when thrust levers already set to climb.
-  - Caused by: Missing or incorrect throttle calibration
-  - Calibrate your throttles using the EFB (flyPad), setting enough dead-zone for this message to not appear.
-- No Smoking switch doesn't use a full range of motion.
-- No Smoking switch will sometimes not be switched to ON when spawning on the runway.
-
-See the [Issues](https://github.com/flybywiresim/a32nx/issues) page for a more complete breakdown of issues which have been discovered and are being worked on by the development team.
-
-See the [Issues](https://github.com/flybywiresim/a32nx/issues) page for a more complete breakdown of issues which have been discovered and are being worked on by the development team.
+[List of most commonly reported and known issues](https://docs.flybywiresim.com/start/reported-issues/). To request a new feature or report a new issue, please see our [Issues](https://github.com/flybywiresim/a32nx/issues) tracker.
 
 ## License
 
