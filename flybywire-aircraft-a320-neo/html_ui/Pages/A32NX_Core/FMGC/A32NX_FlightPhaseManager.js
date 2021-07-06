@@ -96,12 +96,14 @@ class A32NX_FlightPhaseManager {
             [FmgcFlightPhases.DONE]: new A32NX_FlightPhase_Done()
         };
 
-        const initialFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number") || FmgcFlightPhases.PREFLIGHT;
-        this.activeFlightPhase = this.flightPhases[initialFlightPhase];
+        this.activeFlightPhase = this.flightPhases[this.fmc.currentFlightPhase];
 
-        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", initialFlightPhase);
+        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", this.fmc.currentFlightPhase);
+    }
 
-        this.activeFlightPhase.init(_fmc);
+    init() {
+        console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase);
+        this.activeFlightPhase.init(this.fmc);
     }
 
     checkFlightPhase(_deltaTime) {

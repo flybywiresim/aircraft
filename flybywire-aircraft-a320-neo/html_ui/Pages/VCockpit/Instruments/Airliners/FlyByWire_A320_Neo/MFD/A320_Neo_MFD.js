@@ -197,7 +197,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#TAOnly").setAttribute("visibility", "hidden");
         }
 
-        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        const ADIRSState = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum");
 
         if (ADIRSState != 2) {
             document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
@@ -859,7 +859,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         if (this.ndInfo != null) {
             this.ndInfo.update(_deltaTime);
         }
-        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        const ADIRSState = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum");
         const groundSpeed = Math.round(Simplane.getGroundSpeed());
         const trueAirSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
         const windDirection = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees");

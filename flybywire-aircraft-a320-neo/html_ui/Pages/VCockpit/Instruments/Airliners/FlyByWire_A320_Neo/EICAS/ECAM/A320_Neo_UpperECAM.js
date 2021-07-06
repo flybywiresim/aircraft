@@ -123,9 +123,9 @@ var A320_Neo_UpperECAM;
             return value;
         }
         getADIRSMins() {
-            const secs = this.getCachedSimVar("L:A320_Neo_ADIRS_TIME", "seconds");
+            const secs = this.getCachedSimVar("L:A32NX_ADIRS_TIME", "seconds");
             const mins = Math.ceil(secs / 60);
-            if (secs > 0 && this.getCachedSimVar("L:A320_Neo_ADIRS_IN_ALIGN", "Bool")) {
+            if (secs > 0 && this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") === 1) {
                 return mins;
             } else {
                 return -1;
@@ -1030,7 +1030,7 @@ var A320_Neo_UpperECAM;
                                     "TCAS"
                                 ],
                                 flightPhasesInhib: [3, 4, 5, 7, 8],
-                                isActive: () => !this.isInFlightPhase(1, 10) && this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") !== 2,
+                                isActive: () => !this.isInFlightPhase(1, 10) && this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") !== 2,
                             },
                             {
                                 message: "TCAS STBY",
@@ -1039,7 +1039,7 @@ var A320_Neo_UpperECAM;
                                 isActive: () => (
                                     this.fwcFlightPhase === 6 &&
                                     this.getCachedSimVar("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0 &&
-                                    this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") === 2
+                                    this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") === 2
                                 ),
                             }
                         ]
@@ -1403,7 +1403,7 @@ var A320_Neo_UpperECAM;
                         message: "AUTO BRK LO",
                         isActive: () => (
                             (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                            SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1
+                            this.getCachedSimVar("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 1
                         )
                     },
                     {
@@ -1411,7 +1411,7 @@ var A320_Neo_UpperECAM;
                         isActive: () => {
                             return (
                                 (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 2
+                                this.getCachedSimVar("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 2
                             );
                         }
                     },
@@ -1420,7 +1420,7 @@ var A320_Neo_UpperECAM;
                         isActive: () => {
                             return (
                                 (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 3
+                                this.getCachedSimVar("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 3
                             );
                         }
                     },
@@ -1454,7 +1454,7 @@ var A320_Neo_UpperECAM;
                     "AUTO BRK",
                     "MAX",
                     "MAX",
-                    () => SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 3
+                    () => this.getCachedSimVar("L:A32NX_AUTOBRAKES_ARMED_MODE", "Enum") === 3
                 ),
                 new A320_Neo_UpperECAM.MemoItem(
                     "to-memo-signs",
