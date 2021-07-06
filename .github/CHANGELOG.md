@@ -131,7 +131,9 @@
 1. [SOUND] Added custom FCU and GPWS, push-button sounds @ImenesFBW - (Imenes)
 1. [ECAM] Implement amber REV message while reverser doors are in transit. - @BlueberryKing (BlueberryKing#6641)
 1. [HYD] Switched hydraulics to new engine model simvars - @Crocket63 (crocket)
+1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
+1. [FCU] Fix FCU DISPLAY AC1 BUS power. - @bouveng (Johan Bouveng)
 1. [DISPLAYS] Fix Self-Test no longer triggers when spawning from an in-flight state i.e. cruise/landing/takeoff on runway - @2hwk (2Cas#1022)
 
 ## 0.6.0
