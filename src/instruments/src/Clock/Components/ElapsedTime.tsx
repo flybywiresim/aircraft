@@ -22,7 +22,7 @@ export const ElapsedTime = () => {
             }
             setPrevTime(absTime);
         }
-    }, [absTime, elapsedKnobPos]);
+    }, [absTime, elapsedKnobPos, dcEssIsPowered]);
 
     return (
         <text x="47" y="247" className="fontBig">{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, elapsedKnobPos === 0)}</text>
