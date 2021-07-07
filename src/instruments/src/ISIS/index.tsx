@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import { useInterval } from '@flybywiresim/react-components';
 import { render } from '../Common';
 import { ISISDisplayUnit } from './ISISDisplayUnit';
 import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';
@@ -23,7 +22,7 @@ export const ISISDisplay: React.FC = () => {
 
     useInteractionEvent('A32NX_ISIS_KNOB_PRESSED', () => {
         selectedBug.isActive = !selectedBug.isActive;
-		setBugs(bugs);
+        setBugs(bugs);
     });
 
     useInteractionEvent('A32NX_ISIS_KNOB_CLOCKWISE', () => {

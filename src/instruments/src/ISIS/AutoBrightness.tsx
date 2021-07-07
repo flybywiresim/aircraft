@@ -20,16 +20,16 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
     const [targetBrightness, setTargetBrightness] = useState(isDaytimeRef.current ? dayBrightness : nightBrightness);
     const [currentBrightness, setCurrentBrightness] = useSimVar('L:A32NX_BARO_BRIGHTNESS', 'number', 10000);
 
-    const [isBrightnessUpPressed, setIsBrightnessUpPressed] = useState(false);
-    const [isBrightnessDownPressed, setIsBrightnessDownPressed] = useState(false);
+    const isBrightnessUpPressed = useRef(false);
+    const isBrightnessDownPressed = useRef(false);
 
     useInteractionEvent('A32NX_ISIS_PLUS_PRESSED', () => {
         if (bugsActive) {
             return;
         }
 
-        setIsBrightnessUpPressed(!isBrightnessUpPressed);
-        if (!isBrightnessUpPressed || currentBrightness >= maxBrightness) {
+        isBrightnessUpPressed.current = !isBrightnessUpPressed.current;
+        if (!isBrightnessUpPressed.current) {
             return;
         }
 
@@ -43,15 +43,30 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
             return;
         }
 
-        setIsBrightnessDownPressed(!isBrightnessUpPressed);
-        if (!isBrightnessDownPressed || currentBrightness <= minBrightness) {
+        isBrightnessDownPressed.current = !isBrightnessDownPressed.current;
+        if (!isBrightnessDownPressed.current) {
             return;
         }
 
-        const newBrightness = Math.min(maxBrightness, currentBrightness - brightnessGranularity);
+        const newBrightness = Math.max(minBrightness, currentBrightness - brightnessGranularity);
         setTargetBrightness(newBrightness);
         setCurrentBrightness(newBrightness);
     });
+
+    useInterval(() => {
+        if (isBrightnessUpPressed.current && currentBrightness < maxBrightness) {
+            const newBrightness = Math.min(maxBrightness, currentBrightness + brightnessGranularity);
+
+            setTargetBrightness(newBrightness);
+            setCurrentBrightness(newBrightness);
+        } else if (isBrightnessDownPressed.current && currentBrightness > minBrightness) {
+            const newBrightness = Math.max(minBrightness, currentBrightness - brightnessGranularity);
+
+            setTargetBrightness(newBrightness);
+            setCurrentBrightness(newBrightness);
+        }
+    }, isBrightnessUpPressed.current || isBrightnessDownPressed.current ? 150 : null,
+    { runOnStart: false, additionalDeps: [isBrightnessDownPressed.current, isBrightnessUpPressed.current] });
 
     useEffect(() => {
         const newIsDaytime = timeOfDay === 1 || timeOfDay === 2;
