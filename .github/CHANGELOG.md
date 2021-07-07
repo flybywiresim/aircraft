@@ -133,7 +133,6 @@
 1. [HYD] Switched hydraulics to new engine model simvars - @Crocket63 (crocket)
 1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
-1. [FCU] Fix FCU DISPLAY AC1 BUS power. - @bouveng (Johan Bouveng)
 1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022)
 
 ## 0.6.0
