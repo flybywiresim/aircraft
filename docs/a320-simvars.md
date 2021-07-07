@@ -1134,6 +1134,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Degrees
     - The inertial track of the aircraft. Approximately -1000000 when unavailable.
 
+- A32NX_ADIRS_IR_{number}_VERTICAL_SPEED
+    - Feet per minute
+    - The vertical speed (V/S) based on inertial reference data. Approximately -1000000 when unavailable.
+
 - A32NX_ADIRS_IR_{number}_GROUND_SPEED
     - Knots
     - The ground speed (GS) of the aircraft. Approximately -1000000 when unavailable.

@@ -595,6 +595,7 @@ struct InertialReference {
     roll: OutputData<Angle>,
     heading: OutputData<Angle>,
     track: OutputData<Angle>,
+    vertical_speed: OutputData<f64>,
     ground_speed: OutputData<Velocity>,
     wind_direction: OutputData<Angle>,
     wind_velocity: OutputData<Velocity>,
@@ -608,6 +609,7 @@ impl InertialReference {
     const ROLL: &'static str = "ROLL";
     const HEADING: &'static str = "HEADING";
     const TRACK: &'static str = "TRACK";
+    const VERTICAL_SPEED: &'static str = "VERTICAL_SPEED";
     const GROUND_SPEED: &'static str = "GROUND_SPEED";
     const WIND_DIRECTION: &'static str = "WIND_DIRECTION";
     const WIND_VELOCITY: &'static str = "WIND_VELOCITY";
@@ -641,6 +643,11 @@ impl InertialReference {
                 number,
                 Self::TRACK,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
+            ),
+            vertical_speed: OutputData::new_ir(
+                number,
+                Self::VERTICAL_SPEED,
+                Self::UNINITIALISED_VALUE,
             ),
             ground_speed: OutputData::new_ir(
                 number,
@@ -676,6 +683,8 @@ impl InertialReference {
         self.roll.set_value(simulator_data.roll);
         self.heading.set_value(simulator_data.heading);
         self.track.set_value(simulator_data.track);
+        self.vertical_speed
+            .set_value(simulator_data.vertical_speed.get::<foot_per_minute>());
         self.ground_speed.set_value(simulator_data.ground_speed);
         self.wind_direction.set_value(simulator_data.wind_direction);
         self.wind_velocity.set_value(simulator_data.wind_velocity);
@@ -756,6 +765,7 @@ impl SimulationElement for InertialReference {
         let is_aligned = self.is_aligned();
         self.heading.write_to(writer, is_aligned);
         self.track.write_to(writer, is_aligned);
+        self.vertical_speed.write_to(writer, is_aligned);
         self.ground_speed.write_to(writer, is_aligned);
         self.wind_direction.write_to(writer, is_aligned);
         self.wind_velocity.write_to(writer, is_aligned);
@@ -1175,6 +1185,20 @@ mod tests {
             self.wind_velocity(adiru_number)
                 > Velocity::new::<knot>(InertialReference::UNINITIALISED_VALUE)
         }
+
+        fn inertial_vertical_speed(&mut self, adiru_number: usize) -> Velocity {
+            let vertical_speed: f64 = self.read(&output_data_id(
+                OutputDataType::IR,
+                adiru_number,
+                InertialReference::VERTICAL_SPEED,
+            ));
+            Velocity::new::<foot_per_minute>(vertical_speed)
+        }
+
+        fn inertial_vertical_speed_is_available(&mut self, adiru_number: usize) -> bool {
+            self.inertial_vertical_speed(adiru_number)
+                > Velocity::new::<foot_per_minute>(InertialReference::UNINITIALISED_VALUE)
+        }
     }
     impl TestBed for AdirsTestBed {
         type Aircraft = TestAircraft;
@@ -1473,7 +1497,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn altitude_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+    fn altitude_is_supplied_by_adr(#[case] adiru_number: usize) {
         let mut test_bed = all_adirus_aligned_test_bed();
         test_bed.set_indicated_altitude(Length::new::<foot>(10000.));
 
@@ -1486,7 +1510,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn computed_airspeed_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+    fn computed_airspeed_is_supplied_by_adr(#[case] adiru_number: usize) {
         let mut test_bed = all_adirus_aligned_test_bed();
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
 
@@ -1502,7 +1526,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn mach_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+    fn mach_is_supplied_by_adr(#[case] adiru_number: usize) {
         let mach = MachNumber(0.7844);
         let mut test_bed = all_adirus_aligned_test_bed_with().mach_of(mach);
         test_bed.run();
@@ -1514,7 +1538,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn barometric_vertical_speed_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+    fn barometric_vertical_speed_is_supplied_by_adr(#[case] adiru_number: usize) {
         let vertical_speed = Velocity::new::<foot_per_minute>(300.);
         let mut test_bed = all_adirus_aligned_test_bed_with().vertical_speed_of(vertical_speed);
         test_bed.run();
@@ -1529,7 +1553,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn true_airspeed_is_supplied_by_each_individual_adr(#[case] adiru_number: usize) {
+    fn true_airspeed_is_supplied_by_adr(#[case] adiru_number: usize) {
         let tas = Velocity::new::<knot>(200.);
         let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(tas);
         test_bed.run();
@@ -1792,6 +1816,10 @@ mod tests {
             "Test precondition: track should be available at this point."
         );
         assert!(
+            test_bed.inertial_vertical_speed_is_available(adiru_number),
+            "Test precondition: inertial vertical speed should be available at this point."
+        );
+        assert!(
             test_bed.ground_speed_is_available(adiru_number),
             "Test precondition: ground speed should be available at this point."
         );
@@ -1813,6 +1841,7 @@ mod tests {
         assert!(!test_bed.roll_is_available(adiru_number));
         assert!(!test_bed.heading_is_available(adiru_number));
         assert!(!test_bed.track_is_available(adiru_number));
+        assert!(!test_bed.inertial_vertical_speed_is_available(adiru_number));
         assert!(!test_bed.ground_speed_is_available(adiru_number));
         assert!(!test_bed.wind_direction_is_available(adiru_number));
         assert!(!test_bed.wind_velocity_is_available(adiru_number));
@@ -1846,6 +1875,21 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
+    fn vertical_speed_is_supplied_by_ir(#[case] adiru_number: usize) {
+        let vertical_speed = Velocity::new::<foot_per_minute>(300.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().vertical_speed_of(vertical_speed);
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.inertial_vertical_speed(adiru_number),
+            vertical_speed
+        );
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
     fn ground_speed_is_supplied_by_ir(#[case] adiru_number: usize) {
         let gs = Velocity::new::<knot>(200.);
         let mut test_bed = all_adirus_aligned_test_bed_with().ground_speed_of(gs);
@@ -1872,7 +1916,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn ir_heading_and_track_and_ground_speed_and_wind_are_available_after_full_alignment_completed(
+    fn ir_heading_and_track_and_vertical_speed_and_ground_speed_and_wind_are_available_after_full_alignment_completed(
         #[case] adiru_number: usize,
     ) {
         let mut test_bed = test_bed_with()
@@ -1881,6 +1925,7 @@ mod tests {
         while test_bed.align_state() != AlignState::Aligned {
             assert!(!test_bed.heading_is_available(adiru_number));
             assert!(!test_bed.track_is_available(adiru_number));
+            assert!(!test_bed.inertial_vertical_speed_is_available(adiru_number));
             assert!(!test_bed.ground_speed_is_available(adiru_number));
             assert!(!test_bed.wind_direction_is_available(adiru_number));
             assert!(!test_bed.wind_velocity_is_available(adiru_number));
@@ -1889,6 +1934,7 @@ mod tests {
 
         assert!(test_bed.heading_is_available(adiru_number));
         assert!(test_bed.track_is_available(adiru_number));
+        assert!(test_bed.inertial_vertical_speed_is_available(adiru_number));
         assert!(test_bed.ground_speed_is_available(adiru_number));
         assert!(test_bed.wind_direction_is_available(adiru_number));
         assert!(test_bed.wind_velocity_is_available(adiru_number));
