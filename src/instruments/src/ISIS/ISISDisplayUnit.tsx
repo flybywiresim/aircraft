@@ -13,7 +13,7 @@ type Props = {
 }
 
 export const ISISDisplayUnit: React.FC<Props> = ({ indicatedAirspeed, children }) => {
-    const powerUpTime = 10;
+    const powerUpTime = 90;
 
     const [state, setState] = useState(DisplayUnitState.Off);
     const [timer, setTimer] = useState<number | null>(null);
@@ -50,21 +50,22 @@ export const ISISDisplayUnit: React.FC<Props> = ({ indicatedAirspeed, children }
                 <rect x="0" y="0" width="100%" height="100%" fill="#1f242d" />
                 <g id="AttFlag">
                     <rect id="AttTest" className="FillYellow" width="84" height="40" x="214" y="174" />
-                    <text id="AltTestTxt" className="StrokeBackground FillBackground" textAnchor="middle" x="256" y="206">ATT</text>
+                    <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="256" y="206">ATT</text>
                 </g>
                 <g id="SpeedFlag">
                     <rect id="SpeedTest" className="FillYellow" width="84" height="40" x="70" y="244" />
-                    <text id="SpeedTestTxt" className="StrokeBackground FillBackground" textAnchor="middle" x="112" y="276">SPD</text>
+                    <text id="SpeedTestTxt" className="TextBackground" textAnchor="middle" x="112" y="276">SPD</text>
                 </g>
                 <g id="AltFlag">
-                    <rect id="AltTest" className="FillYellow" width="84" height="40" x="266" y="244" />
-                    <text id="AltTestTxt" className="StrokeBackground FillBackground" textAnchor="middle" x="316" y="276">ALT</text>
+                    <rect id="AltTest" className="FillYellow" width="84" height="40" x="358" y="244" />
+                    <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="400" y="276">ALT</text>
                 </g>
                 <g id="TimerFlag">
-                    <rect id="TmrTest" className="FillYellow" width="120" height="40" x="204" y="324" />
-                    <text id="TmrTestTxt" className="StrokeBackground FillBackground" textAnchor="middle" x="256" y="366">
-                        {`INIT ${Math.max(0, Math.ceil(timer!))}s`}
-                        {/* INIT 35s */}
+                    <rect id="TmrTest" className="FillYellow" width="160" height="40" x="178" y="332" />
+                    <text id="TmrTestTxt" className="TextBackground" x="186" y="366">INIT</text>
+                    <text id="TmrTestCountdown" className="TextBackground" textAnchor="end" x="330" y="366">
+                        {Math.max(0, Math.ceil(timer!))}
+                        s
                     </text>
                 </g>
             </svg>
