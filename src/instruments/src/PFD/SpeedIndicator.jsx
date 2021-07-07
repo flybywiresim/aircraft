@@ -75,7 +75,7 @@ const VProtBug = (offset) => (
 );
 
 export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+    if (Number.isNaN(airspeed)) {
         return (
             <>
                 <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
@@ -179,7 +179,7 @@ const VLsBar = ({ VAlphaProt, VLs, airspeed }) => {
 };
 
 export const AirspeedIndicatorOfftape = ({ airspeed, mach, airspeedAcc, targetSpeed, speedIsManaged }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+    if (Number.isNaN(airspeed)) {
         return (
             <>
                 <path id="SpeedTapeOutlineUpper" className="NormalStroke Red" d="m1.9058 38.086h21.859" />
@@ -230,7 +230,7 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
 };
 
 const MachNumber = ({ mach, airspeedAcc }) => {
-    if ((airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
+    if (Number.isNaN(mach) || (airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
         return null;
     }
 

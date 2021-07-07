@@ -208,8 +208,6 @@ impl AirDataInertialReferenceSystem {
     const STATE_KEY: &'static str = "ADIRS_STATE";
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
-    const ADR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_FIRST";
-    const IR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_ATT";
 
     pub fn new() -> Self {
         Self {
@@ -256,16 +254,6 @@ impl AirDataInertialReferenceSystem {
             })
             .unwrap_or_else(|| Duration::from_secs(0))
     }
-
-    fn any_adr_is_initialised(&self) -> bool {
-        self.adirus.iter().any(|adiru| adiru.adr_initialised())
-    }
-
-    fn any_ir_attitude_is_initialised(&self) -> bool {
-        self.adirus
-            .iter()
-            .any(|adiru| adiru.ir_attitude_is_initialised())
-    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -287,8 +275,6 @@ impl SimulationElement for AirDataInertialReferenceSystem {
             Self::REMAINING_ALIGNMENT_TIME_KEY,
             self.remaining_align_duration(),
         );
-        writer.write(Self::ADR_ALIGNED_KEY, self.any_adr_is_initialised());
-        writer.write(Self::IR_ALIGNED_KEY, self.any_ir_attitude_is_initialised());
     }
 }
 impl Default for AirDataInertialReferenceSystem {
@@ -332,14 +318,6 @@ impl AirDataInertialReferenceUnit {
 
     fn remaining_align_duration(&self) -> Option<Duration> {
         self.ir.remaining_align_duration()
-    }
-
-    fn adr_initialised(&self) -> bool {
-        self.adr.is_initialised()
-    }
-
-    fn ir_attitude_is_initialised(&self) -> bool {
-        self.ir.attitude_is_initialised()
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
@@ -973,14 +951,6 @@ mod tests {
             self.read(&IndicationLight::is_illuminated_id(
                 AirDataInertialReferenceSystemOverheadPanel::ADIRS_ON_BAT_NAME,
             ))
-        }
-
-        fn altitude_speed_and_vertical_speed_available(&mut self) -> bool {
-            self.read(AirDataInertialReferenceSystem::ADR_ALIGNED_KEY)
-        }
-
-        fn attitude_available(&mut self) -> bool {
-            self.read(AirDataInertialReferenceSystem::IR_ALIGNED_KEY)
         }
 
         fn altitude(&mut self, adiru_number: usize) -> Length {
@@ -1971,73 +1941,5 @@ mod tests {
         test_bed.run();
 
         assert!(!test_bed.is_aligned());
-    }
-
-    #[test]
-    fn pfd_altitude_speed_and_vertical_speed_are_available_18_seconds_after_alignment_of_any_adiru_began(
-    ) {
-        let mut test_bed =
-            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-
-        test_bed
-            .run_with_delta(AirDataReference::INITIALISATION_DURATION - Duration::from_millis(1));
-        assert!(!test_bed.altitude_speed_and_vertical_speed_available());
-
-        test_bed.run_with_delta(Duration::from_millis(1));
-        assert!(test_bed.altitude_speed_and_vertical_speed_available());
-    }
-
-    #[test]
-    fn pfd_altitude_speed_and_vertical_speed_are_no_longer_available_when_all_adiru_mode_selectors_off(
-    ) {
-        let mut test_bed =
-            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-
-        test_bed.run_with_delta(AirDataReference::INITIALISATION_DURATION);
-        assert!(test_bed.altitude_speed_and_vertical_speed_available(), "Test precondition: altitude, speed and vertical speed should be available at this point.");
-
-        test_bed = test_bed
-            .then_continue_with()
-            .ir_mode_selector_set_to(1, InertialReferenceMode::Off);
-        test_bed.run();
-
-        assert!(!test_bed.altitude_speed_and_vertical_speed_available());
-    }
-
-    #[test]
-    fn pfd_attitude_is_available_28_seconds_after_alignment_of_any_adiru_began() {
-        let mut test_bed =
-            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-
-        test_bed.run_with_delta(
-            InertialReference::ATTITUDE_INITIALISATION_DURATION - Duration::from_millis(1),
-        );
-        assert!(!test_bed.attitude_available());
-
-        test_bed.run_with_delta(Duration::from_millis(1));
-        assert!(test_bed.attitude_available());
-    }
-
-    #[test]
-    fn pfd_attitude_is_no_longer_available_when_all_adiru_mode_selectors_off() {
-        let mut test_bed =
-            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-
-        test_bed.run_with_delta(InertialReference::ATTITUDE_INITIALISATION_DURATION);
-        assert!(
-            test_bed.attitude_available(),
-            "Test precondition: attitude should be available at this point."
-        );
-
-        test_bed = test_bed
-            .then_continue_with()
-            .ir_mode_selector_set_to(1, InertialReferenceMode::Off);
-        test_bed.run();
-
-        assert!(!test_bed.attitude_available());
     }
 }

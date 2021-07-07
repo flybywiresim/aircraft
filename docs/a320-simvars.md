@@ -1075,14 +1075,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Seconds
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
-- A32NX_ADIRS_PFD_ALIGNED_FIRST
-    - Bool
-    - Indicates whether the PFD should display altitude, air speed and vertical speed information.
-
-- A32NX_ADIRS_PFD_ALIGNED_ATT
-    - Bool
-    - Indicates whether the PFD should display attitude information.
-
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Feet
     - The altitude. Approximately -1000000 when unavailable.
