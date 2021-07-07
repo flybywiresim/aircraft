@@ -8,7 +8,7 @@ import { Directories } from './directories.mjs';
 process.chdir(Directories.src);
 
 function getInputs() {
-    const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src', { withFileTypes: true })
+    const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src'), { withFileTypes: true })
         .filter((d) => d.isDirectory() && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
 
     return [
@@ -21,13 +21,13 @@ function getInputs() {
 
 const builds = getInputs()
     .map(({ path }) => {
-        const config = JSON.parse(fs.readFileSync(`${Directories.instruments}/src/${path}/config.json`));
+        const config = JSON.parse(fs.readFileSync(join(Directories.instruments, 'src', path, 'config.json')));
 
         return {
             watch: true,
-            input: `${Directories.instruments}/src/${path}/${config.index}`,
+            input: join(Directories.instruments, 'src', path, config.index),
             output: {
-                file: `${Directories.instruments}/devServer/bundles/${path}/bundle.js`,
+                file: join(Directories.instruments, 'devServer/bundles', path, 'bundle.js'),
                 format: 'iife',
             },
             plugins: [
@@ -40,6 +40,6 @@ const builds = getInputs()
 
 const instruments = getInputs().map(({ path }) => path);
 
-fs.writeFileSync(`${Directories.instruments}/devServer/instruments.json`, JSON.stringify(instruments));
+fs.writeFileSync(join(Directories.instruments, 'devServer/instruments.json'), JSON.stringify(instruments));
 
 export default builds;
