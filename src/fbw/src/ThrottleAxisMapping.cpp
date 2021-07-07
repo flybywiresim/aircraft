@@ -255,18 +255,18 @@ void ThrottleAxisMapping::decreaseThrottleBy(double value) {
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration() {
   return {
-      true,  // use reverse on axis
+      false,  // use reverse on axis
       -1.00,  // reverse low
-      -0.95,  // reverse high
+      -0.90,  // reverse high
       -0.72,  // reverse idle low
       -0.62,  // reverse idle high
       -0.50,  // idle low
       -0.40,  // idle high
       -0.03,  // climb low
-      -0.07,  // climb high
+      -0.20,  // climb high
       +0.42,  // flex/mct low
       +0.52,  // flex/mct high
-      +0.95,  // toga low
+      +0.90,  // toga low
       +1.00   // toga high
   };
 }
