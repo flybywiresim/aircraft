@@ -1,5 +1,7 @@
 # Instruments
 
+## How to create a new instrument
+
 To create a new instrument, create a folder in `/src/instruments/src`, with a `config.json` file, for example:
 
 ```json
@@ -24,4 +26,12 @@ renderTarget.style.backgroundColor = 'red';
 ReactDOM.render(<MyAwesomeThing/>, renderTarget);
 
 // or something else!
+```
+
+## How to build in watch mode
+
+After running `npm install`, from the root folder, run:
+
+```
+rollup -wc .\src\instruments\buildSrc\simulatorBuild.mjs
 ```
