@@ -5,12 +5,12 @@ import { RollScale } from './RollScale';
 import { RollIndex } from './RollIndex';
 import { Att10sFlag } from './Att10sFlag';
 
-export const ArtificialHorizon: React.FC<{ maskWidth: number }> = ({ maskWidth }) => {
+export const ArtificialHorizon: React.FC = () => {
     const [pitch] = useSimVar('PLANE PITCH DEGREES', 'degrees');
     const [roll] = useSimVar('PLANE BANK DEGREES', 'degrees');
     const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool');
 
-    const pitchDegPixels = (512 - 2 * maskWidth) / 40;
+    const pitchDegPixels = 7.4;
 
     const pitchShift = -pitch * pitchDegPixels;
 

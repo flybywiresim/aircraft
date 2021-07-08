@@ -16,8 +16,8 @@ const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
     );
 };
 
-type BugProps = { bug: Bug, offset: number, maskWidth: number }
-const BugElement: React.FC<BugProps> = ({ bug, offset, maskWidth }) => {
+type BugProps = { bug: Bug, offset: number }
+const BugElement: React.FC<BugProps> = ({ bug, offset }) => {
     if (bug.value % 500 === 0) {
         return (
             <g className="StrokeCyan NoFill" transform={`translate(0 ${offset})`}>
@@ -34,19 +34,17 @@ const BugElement: React.FC<BugProps> = ({ bug, offset, maskWidth }) => {
 };
 
 type AltitudeIndicatorProps = {
-    maskWidth: number;
     altitude: number;
     mda: number
     bugs: Bug[]
 }
-export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ maskWidth, altitude, mda, bugs }) => {
-    const height = 512 - 2 * maskWidth;
+export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, mda, bugs }) => {
     const createTick = (altitude: number, offset: number) => <Tick altitude={altitude} offset={offset} />;
-    const createBug = (bug: Bug, offset: number) => <BugElement maskWidth={maskWidth} bug={bug} offset={offset} />;
+    const createBug = (bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />;
 
     return (
         <g id="AltitudeIndicator">
-            <svg x={512 - maskWidth} y={112} width={maskWidth} height={height} viewBox={`0 0 ${maskWidth} ${height}`}>
+            <svg x={404} y={112} width={108} height={296} viewBox="0 0 108 296">
                 <VerticalTape
                     displayRange={1000}
                     valueSpacing={100}

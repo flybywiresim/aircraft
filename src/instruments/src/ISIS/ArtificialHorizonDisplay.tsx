@@ -21,13 +21,11 @@ export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed, b
 
     const [lsActive] = useInteractionSimVar('L:A32NX_ISIS_LS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_LS_PRESSED');
 
-    const maskWidth = 108;
-
     return (
         <g id="ArtificialHorizonDisplay">
-            <ArtificialHorizon maskWidth={maskWidth} />
-            <AirspeedIndicator maskWidth={maskWidth} indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
-            <AltitudeIndicator maskWidth={maskWidth} altitude={Math.floor(alt)} mda={mda} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
+            <ArtificialHorizon />
+            <AirspeedIndicator indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
+            <AltitudeIndicator altitude={Math.floor(alt)} mda={mda} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
             <AirplaneSymbol />
             { lsActive && <LandingSystem /> }
             <PressureIndicator />
