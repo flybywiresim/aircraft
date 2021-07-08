@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
-import { NXDataStore } from '../../../Common/persistence';
+import { usePersistentProperty } from '../../../Common/persistence';
 import { splitDecimals, valueRadianAngleConverter, polarToCartesian } from './common';
 
 import './Crz.scss';
@@ -27,7 +27,7 @@ export const CrzPage = () => (
 );
 
 export const FuelComponent = () => {
-    const unit = parseFloat(NXDataStore.get('CONFIG_USING_METRIC_UNIT', '1'));
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT');
 
     const fuelConsumptionForDisplay = (fuelConsumption, unitsC) => parseInt(((fuelConsumption * unitsC) - (fuelConsumption % 10)).toFixed(0));
 
@@ -44,7 +44,7 @@ export const FuelComponent = () => {
             <text id="FuelUsedLeft" className="Large Green" x="210" y="95" textAnchor="end">{leftFuel}</text>
             <text id="FuelUsedRight" className="Large Green" x="455" y="95" textAnchor="end">{rightFuel}</text>
             <text id="FuelUsedTotal" className="Large Green Center" x="300" y="112">{leftFuel + rightFuel}</text>
-            <text id="FuelUsedUnit" className="Standard Cyan Center" x="300" y="132">{unit === 1 ? 'KG' : 'LBS'}</text>
+            <text id="FuelUsedUnit" className="Standard Cyan Center" x="300" y="132">{unit === '1' ? 'KG' : 'LBS'}</text>
             <path className="WingPlaneSym" d="M230 80 l20 -2" />
             <path className="WingPlaneSym" d="M370 80 l-20 -2" />
         </>
