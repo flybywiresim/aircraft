@@ -448,6 +448,33 @@ impl SimulationElement for MomentaryPushButton {
     }
 }
 
+/// Same implementation as MomentaryPushButton but is only "pressed" for one update even if kept pressed
+pub struct PressSingleSignalButton {
+    is_pressed_id: String,
+    is_pressed: bool,
+    last_pressed_state: bool,
+}
+impl PressSingleSignalButton {
+    pub fn new(name: &str) -> Self {
+        Self {
+            is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
+            is_pressed: false,
+            last_pressed_state: false,
+        }
+    }
+
+    pub fn is_pressed(&self) -> bool {
+        self.is_pressed
+    }
+}
+impl SimulationElement for PressSingleSignalButton {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let current_button_pos = reader.read(&self.is_pressed_id);
+        self.is_pressed = current_button_pos && !self.last_pressed_state;
+        self.last_pressed_state = current_button_pos;
+    }
+}
+
 pub struct MomentaryOnPushButton {
     is_pressed_id: String,
     is_on_id: String,
@@ -862,6 +889,51 @@ mod momentary_on_push_button_tests {
         test_bed.run();
 
         assert!(test_bed.contains_key("OVHD_TEST_IS_ON"));
+    }
+}
+
+#[cfg(test)]
+mod momentary_rising_edge_push_button_tests {
+    use super::*;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+
+    #[test]
+    fn new_is_not_pressed() {
+        assert!(!PressSingleSignalButton::new("TEST").is_pressed());
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+
+        assert!(test_bed.query_element(|button| button.is_pressed()));
+    }
+
+    #[test]
+    fn can_be_pressed() {
+        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_pressed()));
+    }
+
+    #[test]
+    fn is_only_pressed_for_one_update() {
+        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
+        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+
+        test_bed.run();
+        assert!(test_bed.query_element(|button| button.is_pressed()));
+
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_pressed()));
+
+        test_bed.run();
+        assert!(!test_bed.query_element(|button| button.is_pressed()));
     }
 }
 

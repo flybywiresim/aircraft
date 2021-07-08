@@ -99,6 +99,7 @@
 1. [AP+PFD] Added triple click and FMA mode reversion logic - @aguther (Andreas Guther)
 1. [AP] Automatically arm NAV on ground when flight plan becomes available - @aguther (Andreas Guther)
 1. [FCU] Automatically connect flight directors when FCU is powered on - @aguther (Andreas Guther)
+1. [HYD] New custom auto brakes replace default one - @crocket63 (crocket)
 1. [MISC] Chrono auto-brightness - @sidnov (Sid)
 1. [AP] Improved disengage conditions for ROLL OUT and when excessive pitch or roll attitude - @aguther (Andreas Guther)
 1. [FBW] Improved ground spoiler logic - @aguther (Andreas Guther)
@@ -130,7 +131,9 @@
 1. [SOUND] Added custom FCU and GPWS, push-button sounds @ImenesFBW - (Imenes)
 1. [ECAM] Implement amber REV message while reverser doors are in transit. - @BlueberryKing (BlueberryKing#6641)
 1. [HYD] Switched hydraulics to new engine model simvars - @Crocket63 (crocket)
+1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
+
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
