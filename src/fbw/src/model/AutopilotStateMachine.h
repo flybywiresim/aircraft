@@ -39,9 +39,13 @@ class AutopilotStateMachineModelClass {
     real_T Delay_DSTATE_f;
     real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_e;
+    real_T Delay_DSTATE_n;
     real_T local_H_fcu_ft;
     real_T local_H_constraint_ft;
     real_T local_H_GA_init_ft;
+    real_T eventTimeTC;
+    real_T eventTimeMR;
+    real_T lastVsTarget;
     real_T eventTime;
     real_T eventTime_n;
     real_T eventTime_i;
@@ -50,6 +54,8 @@ class AutopilotStateMachineModelClass {
     real_T timeDeltaSpeed4;
     real_T timeDeltaSpeed10;
     real_T timeConditionSoftAlt;
+    real_T eventTime_h;
+    real_T runwayHeadingStored;
     real_T eventTime_a;
     real_T eventTime_iz;
     real_T eventTime_c;
@@ -83,6 +89,12 @@ class AutopilotStateMachineModelClass {
     boolean_T wereAllEnginesOperative_d;
     boolean_T wereAllEnginesOperative_not_empty_a;
     boolean_T verticalSpeedCancelMode;
+    boolean_T eventTimeTC_not_empty;
+    boolean_T eventTimeMR_not_empty;
+    boolean_T warningArmedNAV;
+    boolean_T warningArmedVS;
+    boolean_T modeReversionFMA;
+    boolean_T lastVsTarget_not_empty;
     boolean_T sAP1;
     boolean_T sAP2;
     boolean_T sLandModeArmedOrActive;
@@ -98,13 +110,16 @@ class AutopilotStateMachineModelClass {
     boolean_T timeConditionSoftAlt_not_empty;
     boolean_T stateSoftAlt;
     boolean_T newFcuAltitudeSelected_c;
+    boolean_T eventTime_not_empty_j;
     boolean_T state;
     boolean_T eventTime_not_empty_m;
     boolean_T eventTime_not_empty_i;
     boolean_T eventTime_not_empty_e;
     boolean_T sThrottleCondition;
-    boolean_T state_h;
+    boolean_T wasFlightPlanAvailable;
+    boolean_T wasFlightPlanAvailable_not_empty;
     boolean_T state_d;
+    boolean_T state_dg;
     boolean_T state_j;
     boolean_T sDES;
     boolean_T sCLB;
@@ -135,14 +150,17 @@ class AutopilotStateMachineModelClass {
     real_T RateLimiterDynamicVariableTs_InitialCondition;
     real_T RateLimiterDynamicVariableTs_InitialCondition_d;
     real_T RateLimiterDynamicVariableTs_InitialCondition_g;
+    real_T RateLimiterDynamicVariableTs_InitialCondition_h;
     real_T Debounce_Value;
     real_T Debounce_Value_a;
     real_T Debounce_Value_j;
+    real_T Debounce1_Value;
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_l;
     real_T CompareToConstant_const_d;
     real_T CompareToConstant_const_j;
     real_T CompareToConstant_const_da;
+    real_T CompareToConstant_const_n;
     real_T DetectDecrease_vinit;
     boolean_T DetectIncrease12_vinit;
     boolean_T DetectIncrease_vinit;
@@ -191,6 +209,8 @@ class AutopilotStateMachineModelClass {
     real_T Falling_Value_b;
     real_T Raising_Value_c;
     real_T Falling_Value_a;
+    real_T Raising_Value_a;
+    real_T Falling_Value_k;
   };
 
   void initialize();
@@ -275,6 +295,7 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_ALT_CST_CPT_entry(void);
   void AutopilotStateMachine_DES_during(void);
   void AutopilotStateMachine_DES(void);
+  void AutopilotStateMachine_FLARE_during(void);
   void AutopilotStateMachine_ROLL_OUT_entry_o(void);
   boolean_T AutopilotStateMachine_GS_TO_X(void);
   boolean_T AutopilotStateMachine_GS_TO_X_MR(void);

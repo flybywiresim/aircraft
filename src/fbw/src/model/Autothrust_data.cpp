@@ -44,7 +44,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
       false,
       false,
       false,
-      false
+      false,
+      0.0
     },
 
     {
@@ -72,6 +73,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
       0.0,
       0.0,
       0.0,
+      false,
+      false,
       false,
       false,
       false,
@@ -95,7 +98,9 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
       0.0,
       athr_status_DISENGAGED,
       athr_mode_NONE,
-      athr_mode_message_NONE
+      athr_mode_message_NONE,
+      false,
+      false
     }
   },
 

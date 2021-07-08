@@ -1,6 +1,6 @@
 use crate::{
     shared::LandingGearPosition,
-    simulation::{SimulationElement, SimulatorReader},
+    simulation::{Read, SimulationElement, SimulatorReader},
 };
 use uom::si::{f64::*, ratio::percent};
 
@@ -31,7 +31,7 @@ impl LandingGearPosition for LandingGear {
 }
 impl SimulationElement for LandingGear {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.position = Ratio::new::<percent>(reader.read_f64(LandingGear::GEAR_CENTER_POSITION));
+        self.position = reader.read(LandingGear::GEAR_CENTER_POSITION);
     }
 }
 impl Default for LandingGear {
@@ -43,60 +43,59 @@ impl Default for LandingGear {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::{
+        test::{SimulationTestBed, TestAircraft, TestBed},
+        Write,
+    };
 
     #[test]
     fn is_up_and_locked_returns_false_when_fully_down() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 100.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(100.));
 
-        assert!(!landing_gear.is_up_and_locked());
+        assert!(!test_bed.query_element(|e| e.is_up_and_locked()));
     }
 
     #[test]
     fn is_up_and_locked_returns_false_when_somewhat_down() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 1.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(1.));
 
-        assert!(!landing_gear.is_up_and_locked());
+        assert!(!test_bed.query_element(|e| e.is_up_and_locked()));
     }
 
     #[test]
     fn is_up_and_locked_returns_true_when_fully_up() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 0.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(0.));
 
-        assert!(landing_gear.is_up_and_locked());
+        assert!(test_bed.query_element(|e| e.is_up_and_locked()));
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_fully_up() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 0.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(0.));
 
-        assert!(!landing_gear.is_down_and_locked());
+        assert!(!test_bed.query_element(|e| e.is_down_and_locked()));
     }
 
     #[test]
     fn is_down_and_locked_returns_false_when_somewhat_up() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 99.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(99.));
 
-        assert!(!landing_gear.is_down_and_locked());
+        assert!(!test_bed.query_element(|e| e.is_down_and_locked()));
     }
 
     #[test]
     fn is_down_and_locked_returns_true_when_fully_down() {
-        let mut landing_gear = LandingGear::new();
-        run_test_bed_on(&mut landing_gear, 100.);
+        let test_bed = run_test_bed_on(Ratio::new::<percent>(100.));
 
-        assert!(landing_gear.is_down_and_locked());
+        assert!(test_bed.query_element(|e| e.is_down_and_locked()));
     }
 
-    fn run_test_bed_on(landing_gear: &mut LandingGear, position: f64) {
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_f64(LandingGear::GEAR_CENTER_POSITION, position);
+    fn run_test_bed_on(position: Ratio) -> SimulationTestBed<TestAircraft<LandingGear>> {
+        let mut test_bed = SimulationTestBed::from(LandingGear::new());
+        test_bed.write(LandingGear::GEAR_CENTER_POSITION, position);
 
-        test_bed.run_without_update(landing_gear);
+        test_bed.run();
+
+        test_bed
     }
 }

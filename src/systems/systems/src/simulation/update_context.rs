@@ -1,10 +1,7 @@
 use std::time::Duration;
-use uom::si::{
-    acceleration::foot_per_second_squared, f64::*, length::foot,
-    thermodynamic_temperature::degree_celsius, time::second, velocity::knot,
-};
+use uom::si::{f64::*, time::second};
 
-use super::SimulatorReader;
+use super::{Read, SimulatorReader};
 
 /// Provides data unowned by any system in the aircraft system simulation
 /// for the purpose of handling a simulation tick.
@@ -45,20 +42,12 @@ impl UpdateContext {
     /// Creates a context based on the data that was read from the simulator.
     pub(super) fn from_reader(reader: &mut SimulatorReader, delta_time: Duration) -> UpdateContext {
         UpdateContext {
-            ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(
-                reader.read_f64(UpdateContext::AMBIENT_TEMPERATURE_KEY),
-            ),
-            indicated_airspeed: Velocity::new::<knot>(
-                reader.read_f64(UpdateContext::INDICATED_AIRSPEED_KEY),
-            ),
-            indicated_altitude: Length::new::<foot>(
-                reader.read_f64(UpdateContext::INDICATED_ALTITUDE_KEY),
-            ),
-            is_on_ground: reader.read_bool(UpdateContext::IS_ON_GROUND_KEY),
+            ambient_temperature: reader.read(UpdateContext::AMBIENT_TEMPERATURE_KEY),
+            indicated_airspeed: reader.read(UpdateContext::INDICATED_AIRSPEED_KEY),
+            indicated_altitude: reader.read(UpdateContext::INDICATED_ALTITUDE_KEY),
+            is_on_ground: reader.read(UpdateContext::IS_ON_GROUND_KEY),
             delta: delta_time,
-            longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(
-                reader.read_f64(UpdateContext::ACCEL_BODY_Z_KEY),
-            ),
+            longitudinal_acceleration: reader.read(UpdateContext::ACCEL_BODY_Z_KEY),
         }
     }
 

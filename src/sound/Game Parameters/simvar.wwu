@@ -1450,6 +1450,25 @@ Unit : Percent</Comment>
 								<Property Name="Max" Type="Real64" Value="1"/>
 							</PropertyList>
 						</GameParameter>
+						<GameParameter Name="LOCALVAR_A32NX_BLOWER_OVRD" ID="{8846A9D7-43A7-44D5-8893-C98424ABBDBC}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="LOCALVAR_A32NX_DC_ESS_BUS" ID="{49CC0886-E43F-4002-B53D-DDA23D4AF942}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="LOCALVAR_A32NX_EPUMP_FLOW" ID="{BBCA3622-2204-4B96-A7C0-4BD1B6699958}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="0.2"/>
+								<Property Name="Max" Type="Real64" Value="0.2"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="LOCALVAR_A32NX_LEFT_WIPER_SETTING" ID="{20E51AB4-7E07-49D6-B6E3-20F89B6E15E4}"/>
 					</ChildrenList>
 				</Folder>
 			</ChildrenList>

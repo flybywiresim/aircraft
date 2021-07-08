@@ -114,20 +114,14 @@ class CDUNavRadioPage {
             };
             ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
             ilsCourseCell = "";
-            const approach = mcdu.flightPlanManager.getApproach();
-            const ilsIdent = mcdu.radioNav.getILSBeacon(1);
-            const runway = mcdu.flightPlanManager.getApproachRunway();
             if (mcdu.ilsFrequency != 0) {
-                let ilsIdentStr = "[\xa0\xa0]";
-                if (ilsIdent.ident != "") {
-                    ilsIdentStr = "{small}" + ilsIdent.ident + "{end}";
-                }
                 if (mcdu._ilsFrequencyPilotEntered) {
-                    ilsFrequencyCell = ilsIdentStr + "/" + mcdu.ilsFrequency.toFixed(2);
-                    ilsCourseCell = "{inop}____{end}";
-                } else {
-                    ilsFrequencyCell = ilsIdentStr + "{small}" + "/" + mcdu.ilsFrequency.toFixed(2) + "{end}";
-                    ilsCourseCell = "{small}" + ilsIdent.course.toFixed(0).padStart(3, "0") + "{end}";
+                    const ilsIdent = mcdu.radioNav.getILSBeacon(1);
+                    ilsFrequencyCell = `{small}${ilsIdent.ident.trim().padStart(4, "\xa0")}{end}/${mcdu.ilsFrequency.toFixed(2)}`;
+                    ilsCourseCell = "{small}F" + ilsIdent.course.toFixed(0).padStart(3, "0") + "{end}";
+                } else if (mcdu.ilsAutoTuned) {
+                    ilsFrequencyCell = `{small}${mcdu.ilsAutoIdent.padStart(4, "\xa0")}/${mcdu.ilsFrequency.toFixed(2)}{end}`;
+                    ilsCourseCell = `{small}F${mcdu.ilsAutoCourse.toFixed(0).padStart(3, "0")}{end}`;
                 }
             }
             mcdu.onLeftInput[2] = (value) => {

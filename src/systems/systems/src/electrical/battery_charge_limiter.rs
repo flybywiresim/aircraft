@@ -1,10 +1,10 @@
 use super::{
-    AlternatingCurrentElectricalSystem, BatteryPushButtons, EmergencyElectrical, PotentialSource,
-    ProvideCurrent, ProvidePotential,
+    AlternatingCurrentElectricalSystem, BatteryPushButtons, ElectricalElement, Electricity,
+    ElectricitySource, EmergencyElectrical, ProvideCurrent, ProvidePotential,
 };
 use crate::{
     shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearPosition},
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
 use uom::si::{electric_current::ampere, electric_potential::volt, f64::*, velocity::knot};
@@ -27,11 +27,12 @@ impl State {
     fn update(
         self,
         context: &UpdateContext,
+        electricity: &Electricity,
         battery_number: usize,
         emergency_elec: &EmergencyElectrical,
-        emergency_generator: &impl PotentialSource,
+        emergency_generator: &impl ElectricitySource,
         battery: &(impl ProvidePotential + ProvideCurrent),
-        battery_bus: &impl PotentialSource,
+        battery_bus: &impl ElectricalElement,
         landing_gear: &impl LandingGearPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
@@ -42,6 +43,7 @@ impl State {
             State::Off(observer) => observer.update(context, battery_number, battery_push_buttons),
             State::Open(observer) => observer.update(
                 context,
+                electricity,
                 battery_number,
                 emergency_elec,
                 emergency_generator,
@@ -55,6 +57,7 @@ impl State {
             ),
             State::Closed(observer) => observer.update(
                 context,
+                electricity,
                 battery_number,
                 emergency_elec,
                 battery,
@@ -95,10 +98,11 @@ impl BatteryChargeLimiter {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
-        emergency_generator: &impl PotentialSource,
+        emergency_generator: &impl ElectricitySource,
         battery: &(impl ProvidePotential + ProvideCurrent),
-        battery_bus: &impl PotentialSource,
+        battery_bus: &impl ElectricalElement,
         landing_gear: &impl LandingGearPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
@@ -110,6 +114,7 @@ impl BatteryChargeLimiter {
         if let Some(observer) = self.observer.take() {
             self.observer = Some(observer.update(
                 context,
+                electricity,
                 self.number,
                 emergency_elec,
                 emergency_generator,
@@ -130,7 +135,7 @@ impl BatteryChargeLimiter {
 }
 impl SimulationElement for BatteryChargeLimiter {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(
+        writer.write(
             &self.should_show_arrow_when_contactor_closed_id,
             self.arrow.should_show_when_contactor_closed(),
         );
@@ -216,11 +221,12 @@ impl Open {
     fn update_state(
         &mut self,
         context: &UpdateContext,
+        electricity: &Electricity,
         battery: &impl ProvidePotential,
-        battery_bus: &impl PotentialSource,
+        battery_bus: &impl ElectricalElement,
         apu_overhead: &impl ApuMaster,
     ) {
-        self.update_begin_charging_cycle_delay(context, battery, battery_bus);
+        self.update_begin_charging_cycle_delay(context, electricity, battery, battery_bus);
 
         if self.open_due_to_exceeding_emergency_elec_closing_time_allowance
             && !apu_overhead.master_sw_is_on()
@@ -233,18 +239,28 @@ impl Open {
     fn should_close(
         &self,
         context: &UpdateContext,
+        electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
-        emergency_generator: &impl PotentialSource,
+        emergency_generator: &impl ElectricitySource,
         landing_gear: &impl LandingGearPosition,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
     ) -> bool {
         !self.open_due_to_exceeding_emergency_elec_closing_time_allowance
-            && !self.emergency_elec_inhibited(emergency_elec, emergency_generator, landing_gear)
+            && !self.emergency_elec_inhibited(
+                electricity,
+                emergency_elec,
+                emergency_generator,
+                landing_gear,
+            )
             && !self.open_due_to_discharge_protection
             && (self.should_get_ready_for_apu_start(apu, apu_overhead)
-                || on_ground_at_low_speed_with_unpowered_ac_buses(context, ac_electrical_system)
+                || on_ground_at_low_speed_with_unpowered_ac_buses(
+                    context,
+                    electricity,
+                    ac_electrical_system,
+                )
                 || self.should_charge_battery())
     }
 
@@ -262,13 +278,14 @@ impl Open {
 
     fn emergency_elec_inhibited(
         &self,
+        electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
-        emergency_generator: &impl PotentialSource,
+        emergency_generator: &impl ElectricitySource,
         landing_gear: &impl LandingGearPosition,
     ) -> bool {
         emergency_elec.is_active()
             && (!landing_gear.is_up_and_locked()
-                || (!emergency_generator.is_powered()
+                || (!electricity.is_powered(emergency_generator)
                     && emergency_elec.active_duration()
                         < Duration::from_secs(Self::APU_START_INHIBIT_DELAY_SECONDS)))
     }
@@ -276,14 +293,15 @@ impl Open {
     fn update_begin_charging_cycle_delay(
         &mut self,
         context: &UpdateContext,
+        electricity: &Electricity,
         battery: &impl ProvidePotential,
-        battery_bus: &impl PotentialSource,
+        battery_bus: &impl ElectricalElement,
     ) {
         self.begin_charging_cycle_delay.update(
             context,
             battery.potential()
                 < ElectricPotential::new::<volt>(Open::CHARGE_BATTERY_BELOW_VOLTAGE)
-                && battery_bus.potential()
+                && electricity.output_of(battery_bus).raw()
                     > ElectricPotential::new::<volt>(Open::BATTERY_BUS_BELOW_CHARGING_VOLTAGE),
         );
     }
@@ -292,23 +310,25 @@ impl Open {
     fn update(
         mut self,
         context: &UpdateContext,
+        electricity: &Electricity,
         battery_number: usize,
         emergency_elec: &EmergencyElectrical,
-        emergency_generator: &impl PotentialSource,
+        emergency_generator: &impl ElectricitySource,
         battery: &impl ProvidePotential,
-        battery_bus: &impl PotentialSource,
+        battery_bus: &impl ElectricalElement,
         landing_gear: &impl LandingGearPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
     ) -> State {
-        self.update_state(context, battery, battery_bus, apu_overhead);
+        self.update_state(context, electricity, battery, battery_bus, apu_overhead);
 
         if !battery_push_buttons.bat_is_auto(battery_number) {
             State::Off(Off::new())
         } else if self.should_close(
             context,
+            electricity,
             emergency_elec,
             emergency_generator,
             landing_gear,
@@ -398,9 +418,11 @@ impl Closed {
         emergency_elec.is_active() && self.beyond_emergency_elec_closed_time_allowance()
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn should_open(
         &self,
         context: &UpdateContext,
+        electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         landing_gear: &impl LandingGearPosition,
         apu: &impl ApuAvailable,
@@ -411,7 +433,11 @@ impl Closed {
             !apu_overhead.master_sw_is_on() || self.emergency_elec_inhibited(landing_gear)
         } else {
             !self.awaiting_apu_start(apu, apu_overhead)
-                && !on_ground_at_low_speed_with_unpowered_ac_buses(context, ac_electrical_system)
+                && !on_ground_at_low_speed_with_unpowered_ac_buses(
+                    context,
+                    electricity,
+                    ac_electrical_system,
+                )
                 && (self.beyond_charge_duration_on_ground_without_apu_start(context)
                     || self
                         .beyond_charge_duration_above_100_knots_or_after_apu_start_attempt(context))
@@ -452,6 +478,7 @@ impl Closed {
     fn update(
         mut self,
         context: &UpdateContext,
+        electricity: &Electricity,
         battery_number: usize,
         emergency_elec: &EmergencyElectrical,
         battery: &(impl ProvidePotential + ProvideCurrent),
@@ -473,6 +500,7 @@ impl Closed {
             State::Open(Open::due_to_exceeding_emergency_elec_closing_time_allowance())
         } else if self.should_open(
             context,
+            electricity,
             emergency_elec,
             landing_gear,
             apu,
@@ -488,9 +516,10 @@ impl Closed {
 
 fn on_ground_at_low_speed_with_unpowered_ac_buses(
     context: &UpdateContext,
+    electricity: &Electricity,
     ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
 ) -> bool {
-    !ac_electrical_system.any_non_essential_bus_powered()
+    !ac_electrical_system.any_non_essential_bus_powered(electricity)
         && context.is_on_ground()
         && context.indicated_airspeed() < Velocity::new::<knot>(100.)
 }
@@ -539,67 +568,65 @@ mod tests {
         use super::*;
         use crate::{
             electrical::{
-                battery::Battery,
-                consumption::{PowerConsumer, SuppliedPower},
-                Contactor, ElectricalBus, ElectricalBusType, Potential, PotentialOrigin,
-                PotentialTarget,
+                battery::Battery, consumption::PowerConsumer, test::TestElectricitySource,
+                Contactor, ElectricalBus, ElectricalBusType, ElectricalElement,
+                ElectricalElementIdentifier, ElectricalElementIdentifierProvider, Electricity,
+                Potential, PotentialOrigin,
             },
-            simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
+            simulation::{
+                test::{SimulationTestBed, TestBed},
+                Aircraft, Read, SimulationElementVisitor,
+            },
         };
         use std::time::Duration;
         use uom::si::{length::foot, power::watt};
 
         struct BatteryChargeLimiterTestBed {
-            test_bed: SimulationTestBed,
-            aircraft: TestAircraft,
+            test_bed: SimulationTestBed<TestAircraft>,
         }
         impl BatteryChargeLimiterTestBed {
             fn new() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(),
-                    aircraft: TestAircraft::new(Battery::half(1)),
+                    test_bed: SimulationTestBed::new(|electricity| {
+                        TestAircraft::new(Battery::half(1, electricity), electricity)
+                    }),
                 }
             }
 
             fn on_the_ground(mut self) -> Self {
-                self.test_bed.set_on_ground(true);
-                self.test_bed
-                    .set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_on_ground(true);
+                self.set_indicated_altitude(Length::new::<foot>(0.));
 
                 self
             }
 
             fn indicated_airspeed_of(mut self, indicated_airspeed: Velocity) -> Self {
-                self.test_bed.set_indicated_airspeed(indicated_airspeed);
+                self.set_indicated_airspeed(indicated_airspeed);
                 self
             }
 
             fn run(mut self, delta: Duration) -> Self {
                 // The battery's current is updated after the BCL, thus we need two ticks.
-                self.test_bed.set_delta(Duration::from_secs(0));
-                self.test_bed.run_aircraft(&mut self.aircraft);
-
-                self.test_bed.set_delta(delta);
-                self.test_bed.run_aircraft(&mut self.aircraft);
+                self.run_with_delta(Duration::from_secs(0));
+                self.run_with_delta(delta);
 
                 // Run once more to detect programming errors where the state goes from
                 // open to closed (or vice versa) and then back to the other state within
                 // the next tick while this shouldn't happen.
-                self.test_bed.set_delta(Duration::from_secs(0));
-                self.test_bed.run_aircraft(&mut self.aircraft);
+                self.run_with_delta(Duration::from_secs(0));
 
                 self
             }
 
             fn wait_for_closed_contactor(mut self, assert_is_closed: bool) -> Self {
-                self.aircraft.set_battery_bus_at_minimum_charging_voltage();
+                self.command(|a| a.set_battery_bus_at_minimum_charging_voltage());
                 self = self.run(Duration::from_millis(
                     Open::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
                 ));
 
                 if assert_is_closed {
                     assert!(
-                        self.aircraft.battery_contactor_is_closed(),
+                        self.query(|a| a.battery_contactor_is_closed()),
                         "Battery contactor didn't close within the expected time frame.
                             Is the battery bus at a high enough voltage and the battery not full?"
                     );
@@ -654,41 +681,41 @@ mod tests {
             }
 
             fn battery_push_button_off(mut self) -> Self {
-                self.aircraft.set_battery_push_button_off();
+                self.command(|a| a.set_battery_push_button_off());
                 self = self.run(Duration::from_secs(0));
 
                 self
             }
 
             fn battery_push_button_auto(mut self) -> Self {
-                self.aircraft.set_battery_push_button_auto();
+                self.command(|a| a.set_battery_push_button_auto());
                 self = self.run(Duration::from_secs(0));
 
                 self
             }
 
             fn available_emergency_generator(mut self) -> Self {
-                self.aircraft.set_emergency_generator_available();
+                self.command(|a| a.set_emergency_generator_available());
                 self
             }
 
             fn started_apu(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_on();
-                self.aircraft.set_apu_start_pb_on();
+                self.command(|a| a.set_apu_master_sw_pb_on());
+                self.command(|a| a.set_apu_start_pb_on());
 
                 self = self.run(Duration::from_secs(0));
 
-                self.aircraft.set_apu_available();
-                self.aircraft.set_apu_start_pb_off();
+                self.command(|a| a.set_apu_available());
+                self.command(|a| a.set_apu_start_pb_off());
 
                 self
             }
 
             fn stopped_apu(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_off();
+                self.command(|a| a.set_apu_master_sw_pb_off());
                 self = self.run(Duration::from_secs(0));
 
-                self.aircraft.set_apu_unavailable();
+                self.command(|a| a.set_apu_unavailable());
 
                 self
             }
@@ -702,74 +729,80 @@ mod tests {
             }
 
             fn full_battery_charge(mut self) -> Self {
-                self.aircraft.set_full_battery_charge();
+                self.command(|a| a.set_full_battery_charge());
                 self
             }
 
             fn nearly_empty_battery_charge(mut self) -> Self {
-                self.aircraft.set_nearly_empty_battery_charge();
+                self.command(|a| a.set_nearly_empty_battery_charge());
                 self
             }
 
             fn no_power_outside_of_battery(mut self) -> Self {
-                self.aircraft.set_battery_bus_unpowered();
-                self.aircraft.set_both_ac_buses_unpowered();
+                self.command(|a| a.set_battery_bus_unpowered());
+                self.command(|a| a.set_both_ac_buses_unpowered());
                 self
             }
 
             fn power_demand_of(mut self, power: Power) -> Self {
-                self.aircraft.set_power_demand(power);
+                self.command(|a| a.set_power_demand(power));
                 self
             }
 
             fn battery_bus_at_minimum_charging_voltage(mut self) -> Self {
-                self.aircraft.set_battery_bus_at_minimum_charging_voltage();
+                self.command(|a| a.set_battery_bus_at_minimum_charging_voltage());
                 self
             }
 
             fn battery_bus_below_minimum_charging_voltage(mut self) -> Self {
-                self.aircraft
-                    .set_battery_bus_below_minimum_charging_voltage();
+                self.command(|a| a.set_battery_bus_below_minimum_charging_voltage());
                 self
             }
 
             fn current(&mut self) -> ElectricCurrent {
-                ElectricCurrent::new::<ampere>(
-                    self.test_bed.read_f64(&format!("ELEC_BAT_{}_CURRENT", 1)),
-                )
+                self.read(&format!("ELEC_BAT_{}_CURRENT", 1))
             }
 
             fn battery_contactor_is_closed(&self) -> bool {
-                self.aircraft.battery_contactor_is_closed()
+                self.query(|a| a.battery_contactor_is_closed())
             }
 
             fn apu_master_sw_pb_on(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_on();
+                self.command(|a| a.set_apu_master_sw_pb_on());
                 self
             }
 
             fn apu_master_sw_pb_off(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_off();
+                self.command(|a| a.set_apu_master_sw_pb_off());
                 self
             }
 
             fn should_show_arrow_when_contactor_closed(&mut self) -> bool {
-                self.test_bed
-                    .read_bool("ELEC_CONTACTOR_TEST_SHOW_ARROW_WHEN_CLOSED")
+                self.read("ELEC_CONTACTOR_TEST_SHOW_ARROW_WHEN_CLOSED")
             }
 
             fn emergency_elec(mut self) -> Self {
                 self = self.no_power_outside_of_battery();
-                self.test_bed
-                    .set_indicated_airspeed(Velocity::new::<knot>(101.));
+                self.set_indicated_airspeed(Velocity::new::<knot>(101.));
 
                 self
             }
 
             fn gear_down(mut self) -> Self {
-                self.aircraft.set_gear_down();
+                self.command(|a| a.set_gear_down());
 
                 self
+            }
+        }
+        impl TestBed for BatteryChargeLimiterTestBed {
+            type Aircraft = TestAircraft;
+
+            fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
+                &self.test_bed
+            }
+
+            fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
+                &mut self.test_bed
             }
         }
 
@@ -784,7 +817,7 @@ mod tests {
             }
         }
         impl AlternatingCurrentElectricalSystem for TestAlternatingCurrentElectricalSystem {
-            fn any_non_essential_bus_powered(&self) -> bool {
+            fn any_non_essential_bus_powered(&self, _: &Electricity) -> bool {
                 self.any_non_essential_bus_powered
             }
         }
@@ -808,17 +841,38 @@ mod tests {
         }
 
         struct TestEmergencyGenerator {
+            identifier: ElectricalElementIdentifier,
             is_available: bool,
         }
         impl TestEmergencyGenerator {
-            fn new(is_available: bool) -> Self {
-                Self { is_available }
+            fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+                Self {
+                    identifier: identifier_provider.next(),
+                    is_available: false,
+                }
+            }
+
+            fn set_available(&mut self) {
+                self.is_available = true;
             }
         }
-        impl PotentialSource for TestEmergencyGenerator {
-            fn output(&self) -> Potential {
+        impl ElectricalElement for TestEmergencyGenerator {
+            fn input_identifier(&self) -> crate::electrical::ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn output_identifier(&self) -> crate::electrical::ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn is_conductive(&self) -> bool {
+                true
+            }
+        }
+        impl ElectricitySource for TestEmergencyGenerator {
+            fn output_potential(&self) -> Potential {
                 if self.is_available {
-                    Potential::single(
+                    Potential::new(
                         PotentialOrigin::EmergencyGenerator,
                         ElectricPotential::new::<volt>(115.),
                     )
@@ -880,34 +934,42 @@ mod tests {
         }
 
         struct TestAircraft {
+            battery_bus_electricity_source: TestElectricitySource,
             battery: Battery,
             battery_charge_limiter: BatteryChargeLimiter,
             battery_bus: ElectricalBus,
             battery_contactor: Contactor,
+            emergency_generator: TestEmergencyGenerator,
             consumer: PowerConsumer,
             apu_master_sw_pb_on: bool,
             apu_start_pb_on: bool,
             apu_available: bool,
             battery_push_button_auto: bool,
             landing_gear_is_down: bool,
-            emergency_generator_is_available: bool,
             emergency_elec: EmergencyElectrical,
             any_non_essential_bus_powered: bool,
         }
         impl TestAircraft {
-            fn new(battery: Battery) -> Self {
+            fn new(battery: Battery, electricity: &mut Electricity) -> Self {
                 Self {
+                    battery_bus_electricity_source: TestElectricitySource::powered(
+                        PotentialOrigin::TransformerRectifier(1),
+                        electricity,
+                    ),
                     battery,
                     battery_charge_limiter: BatteryChargeLimiter::new(1, "TEST"),
-                    battery_bus: ElectricalBus::new(ElectricalBusType::DirectCurrentBattery),
-                    battery_contactor: Contactor::new("TEST"),
+                    battery_bus: ElectricalBus::new(
+                        ElectricalBusType::DirectCurrentBattery,
+                        electricity,
+                    ),
+                    battery_contactor: Contactor::new("TEST", electricity),
+                    emergency_generator: TestEmergencyGenerator::new(electricity),
                     consumer: PowerConsumer::from(ElectricalBusType::DirectCurrentBattery),
                     apu_master_sw_pb_on: false,
                     apu_start_pb_on: false,
                     apu_available: false,
                     battery_push_button_auto: true,
                     landing_gear_is_down: false,
-                    emergency_generator_is_available: false,
                     emergency_elec: EmergencyElectrical::new(),
                     any_non_essential_bus_powered: true,
                 }
@@ -922,23 +984,21 @@ mod tests {
             }
 
             fn set_battery_bus_at_minimum_charging_voltage(&mut self) {
-                self.battery_bus.powered_by(&Potential::single(
-                    PotentialOrigin::TransformerRectifier(1),
-                    ElectricPotential::new::<volt>(
+                self.battery_bus_electricity_source
+                    .set_potential(ElectricPotential::new::<volt>(
                         Open::BATTERY_BUS_BELOW_CHARGING_VOLTAGE + 0.000001,
-                    ),
-                ));
+                    ));
             }
 
             fn set_battery_bus_below_minimum_charging_voltage(&mut self) {
-                self.battery_bus.powered_by(&Potential::single(
-                    PotentialOrigin::TransformerRectifier(1),
-                    ElectricPotential::new::<volt>(Open::BATTERY_BUS_BELOW_CHARGING_VOLTAGE),
-                ));
+                self.battery_bus_electricity_source
+                    .set_potential(ElectricPotential::new::<volt>(
+                        Open::BATTERY_BUS_BELOW_CHARGING_VOLTAGE,
+                    ));
             }
 
             fn set_battery_bus_unpowered(&mut self) {
-                self.battery_bus.powered_by(&Potential::none());
+                self.battery_bus_electricity_source.unpower();
             }
 
             fn set_both_ac_buses_unpowered(&mut self) {
@@ -990,22 +1050,33 @@ mod tests {
             }
 
             fn set_emergency_generator_available(&mut self) {
-                self.emergency_generator_is_available = true;
+                self.emergency_generator.set_available()
             }
         }
         impl Aircraft for TestAircraft {
-            fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+            fn update_before_power_distribution(
+                &mut self,
+                context: &UpdateContext,
+                electricity: &mut Electricity,
+            ) {
                 self.emergency_elec.update(
                     context,
+                    electricity,
                     &TestAlternatingCurrentElectricalSystem::new(
                         self.any_non_essential_bus_powered,
                     ),
                 );
 
+                electricity.supplied_by(&self.battery);
+                electricity.supplied_by(&self.emergency_generator);
+                electricity.supplied_by(&self.battery_bus_electricity_source);
+                electricity.flow(&self.battery_bus_electricity_source, &self.battery_bus);
+
                 self.battery_charge_limiter.update(
                     context,
+                    electricity,
                     &self.emergency_elec,
-                    &TestEmergencyGenerator::new(self.emergency_generator_is_available),
+                    &self.emergency_generator,
                     &self.battery,
                     &self.battery_bus,
                     &TestLandingGear::new(self.landing_gear_is_down),
@@ -1020,20 +1091,8 @@ mod tests {
                 self.battery_contactor
                     .close_when(self.battery_charge_limiter.should_close_contactor());
 
-                self.battery_contactor.powered_by(&self.battery_bus);
-                self.battery.powered_by(&self.battery_contactor);
-                self.battery_contactor.or_powered_by(&self.battery);
-                self.battery_bus.or_powered_by(&self.battery_contactor);
-            }
-
-            fn get_supplied_power(&mut self) -> SuppliedPower {
-                let mut supplied_power = SuppliedPower::new();
-                supplied_power.add(
-                    ElectricalBusType::DirectCurrentBattery,
-                    self.battery_bus.output(),
-                );
-
-                supplied_power
+                electricity.flow(&self.battery_bus, &self.battery_contactor);
+                electricity.flow(&self.battery_contactor, &self.battery);
             }
         }
         impl SimulationElement for TestAircraft {

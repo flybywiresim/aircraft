@@ -7,6 +7,11 @@
 class AutothrustModelClass {
  public:
   typedef struct {
+    real_T eventTime;
+    boolean_T eventTime_not_empty;
+  } rtDW_TimeSinceCondition_Autothrust_T;
+
+  typedef struct {
     real_T pY;
     boolean_T pY_not_empty;
   } rtDW_RateLimiter_Autothrust_T;
@@ -19,12 +24,15 @@ class AutothrustModelClass {
     real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_lz;
     real_T Delay_DSTATE_h;
+    real_T eventTime;
+    real_T eventTime_i;
     real_T prev_TLA_1;
     real_T prev_TLA_2;
+    real_T eventTime_o;
+    real_T eventTime_d;
     real_T pY;
     real_T pU;
-    real_T eventTime;
-    real_T eventTime_h;
+    real_T eventTime_du;
     real_T eventTime_f;
     athr_mode pMode;
     athr_status pStatus;
@@ -35,27 +43,33 @@ class AutothrustModelClass {
     uint8_T is_c5_Autothrust;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_m;
+    boolean_T eventTime_not_empty;
+    boolean_T eventTime_not_empty_a;
     boolean_T ATHR_ENGAGED;
     boolean_T prev_TLA_1_not_empty;
     boolean_T prev_TLA_2_not_empty;
+    boolean_T flightDirectorOffTakeOff;
+    boolean_T eventTime_not_empty_c;
     boolean_T pConditionAlphaFloor;
     boolean_T was_SRS_TO_active;
     boolean_T was_SRS_GA_active;
     boolean_T inhibitAboveThrustReductionAltitude;
     boolean_T condition_THR_LK;
+    boolean_T eventTime_not_empty_n;
     boolean_T pThrustMemoActive;
     boolean_T pUseAutoThrustControl;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-    boolean_T eventTime_not_empty;
+    boolean_T eventTime_not_empty_b;
     boolean_T latch;
-    boolean_T eventTime_not_empty_i;
     boolean_T eventTime_not_empty_g;
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter_p;
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter_f;
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter_b;
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter_k;
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter;
+    rtDW_TimeSinceCondition_Autothrust_T sf_TimeSinceCondition1;
+    rtDW_TimeSinceCondition_Autothrust_T sf_TimeSinceCondition_o;
   } D_Work_Autothrust_T;
 
   typedef struct {
@@ -261,6 +275,8 @@ class AutothrustModelClass {
   D_Work_Autothrust_T Autothrust_DWork;
   ExternalInputs_Autothrust_T Autothrust_U;
   ExternalOutputs_Autothrust_T Autothrust_Y;
+  static void Autothrust_TimeSinceCondition(real_T rtu_time, boolean_T rtu_condition, real_T *rty_y,
+    rtDW_TimeSinceCondition_Autothrust_T *localDW);
   static void Autothrust_ThrustMode1(real_T rtu_u, real_T *rty_y);
   static void Autothrust_TLAComputation1(const athr_out *rtu_in, real_T rtu_TLA, real_T *rty_N1c, boolean_T
     *rty_inReverse);
