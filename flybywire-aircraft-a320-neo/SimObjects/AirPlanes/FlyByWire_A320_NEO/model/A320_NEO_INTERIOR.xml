@@ -179,7 +179,6 @@
             <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>SCREEN_AUTOPILOT</NODE_ID>
                 <POTENTIOMETER>87</POTENTIOMETER>
-                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
             <CameraTitle>PA</CameraTitle>
 
