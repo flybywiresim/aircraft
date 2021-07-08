@@ -22,7 +22,6 @@ export const CrzPage = () => (
             <PressureComponent />
 
             <CondComponent />
-
         </svg>
     </>
 );
