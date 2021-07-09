@@ -22,6 +22,7 @@ use systems::{
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
+    hydraulic::brake_circuit::AutobrakePanel,
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -46,6 +47,7 @@ pub struct A320 {
     lgcuis2: LandingGearControlInterfaceUnit,
     hydraulic: A320Hydraulic,
     hydraulic_overhead: A320HydraulicOverheadPanel,
+    autobrake_panel: AutobrakePanel,
     landing_gear: LandingGear,
 }
 impl A320 {
@@ -78,6 +80,7 @@ impl A320 {
             lgcuis2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2)),
             hydraulic: A320Hydraulic::new(),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(),
+            autobrake_panel: AutobrakePanel::new(),
             landing_gear: LandingGear::new(),
         }
     }
@@ -140,6 +143,7 @@ impl Aircraft for A320 {
             &self.engine_1,
             &self.engine_2,
             &self.hydraulic_overhead,
+            &self.autobrake_panel,
             &self.engine_fire_overhead,
             &self.lgcuis1,
             &self.lgcuis2,
@@ -174,6 +178,7 @@ impl SimulationElement for A320 {
         self.ext_pwr.accept(visitor);
         self.lgcuis1.accept(visitor);
         self.lgcuis2.accept(visitor);
+        self.autobrake_panel.accept(visitor);
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);

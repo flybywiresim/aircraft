@@ -17,7 +17,7 @@ class DisplayUnit {
 
     isOn() {
         const brightness = SimVar.GetSimVarValue(`LIGHT POTENTIOMETER:${this.potentiometerId}`, "number");
-        return brightness >= 0.1 && this.isPowered();
+        return brightness >= 0.01 && this.isPowered();
     }
 
     update(deltaTime) {

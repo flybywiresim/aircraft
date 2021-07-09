@@ -1,14 +1,17 @@
+use rand::Rng;
 use std::{cell::Ref, collections::HashMap, time::Duration};
 use uom::si::{
-    f64::*, length::foot, ratio::ratio, thermodynamic_temperature::degree_celsius, velocity::knot,
+    acceleration::foot_per_second_squared, f64::*, length::foot, ratio::ratio,
+    thermodynamic_temperature::degree_celsius, velocity::knot,
 };
+
+use crate::electrical::{Electricity, Potential};
 
 use super::{
     Aircraft, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
     Writer,
 };
-use crate::electrical::{Electricity, Potential};
 use crate::landing_gear::LandingGear;
 
 pub trait TestBed {
@@ -132,8 +135,33 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.run_with_delta(Duration::from_secs(0));
     }
 
-    fn run_with_delta(&mut self, delta: Duration) {
+    pub fn run_with_delta(&mut self, delta: Duration) {
         self.simulation.tick(delta, &mut self.reader_writer);
+    }
+
+    /// Runs a multiple [Simulation] ticks by subdividing given delta on the contained [Aircraft].
+    ///
+    /// [`Aircraft`]: ../trait.Aircraft.html
+    /// [`Simulation`]: ../struct.Simulation.html
+    pub fn run_multiple_frames(&mut self, delta: Duration) {
+        let mut rng = rand::thread_rng();
+
+        let mut executed_duration = Duration::from_secs(0);
+        while executed_duration < delta {
+            // Randomly set delta for 12 to 200ms, giving a simulated 83 to 5 fps refresh
+            let current_delta = Duration::from_millis(rng.gen_range(12..200));
+
+            if executed_duration + current_delta > delta {
+                self.simulation.tick(
+                    (executed_duration + current_delta) - delta,
+                    &mut self.reader_writer,
+                );
+                break;
+            } else {
+                self.simulation.tick(current_delta, &mut self.reader_writer);
+            }
+            executed_duration += current_delta;
+        }
     }
 
     fn aircraft(&self) -> &T {
@@ -190,6 +218,13 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.write(LandingGear::GEAR_CENTER_COMPRESSION, gear_compression);
         self.write(LandingGear::GEAR_LEFT_COMPRESSION, gear_compression);
         self.write(LandingGear::GEAR_RIGHT_COMPRESSION, gear_compression);
+    }
+
+    pub fn set_long_acceleration(&mut self, accel: Acceleration) {
+        self.reader_writer.write_f64(
+            UpdateContext::ACCEL_BODY_Z_KEY,
+            accel.get::<foot_per_second_squared>(),
+        );
     }
 
     fn write_f64(&mut self, name: &str, value: f64) {
