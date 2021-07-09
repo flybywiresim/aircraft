@@ -180,7 +180,7 @@ impl Autobrakes {
         }
     }
 
-    fn key_event_is_received(&mut self) {
+    fn on_receive_key_event(&mut self) {
         self.last_button_press = Instant::now();
     }
 
@@ -216,19 +216,19 @@ impl SimulatorAspect for Autobrakes {
             SimConnectRecv::Event(e) => {
                 if e.id() == self.id_mode_low {
                     self.set_mode_low();
-                    self.key_event_is_received();
+                    self.on_receive_key_event();
                     true
                 } else if e.id() == self.id_mode_med {
                     self.set_mode_med();
-                    self.key_event_is_received();
+                    self.on_receive_key_event();
                     true
                 } else if e.id() == self.id_mode_max {
                     self.set_mode_max();
-                    self.key_event_is_received();
+                    self.on_receive_key_event();
                     true
                 } else if e.id() == self.id_disarm {
                     self.set_disarm();
-                    self.key_event_is_received();
+                    self.on_receive_key_event();
                     true
                 } else {
                     false
