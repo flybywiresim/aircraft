@@ -19,7 +19,7 @@ use systems::{
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
     },
-    landing_gear::LandingGearControlUnitInterface,
+    landing_gear::LgciuInterface,
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
@@ -244,8 +244,8 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &U,
-        lgcui1: &impl LandingGearControlUnitInterface,
-        lgcui2: &impl LandingGearControlUnitInterface,
+        lgcui1: &impl LgciuInterface,
+        lgcui2: &impl LgciuInterface,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
@@ -377,8 +377,8 @@ impl A320Hydraulic {
         autobrake_panel: &AutobrakePanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
-        lgcui1: &impl LandingGearControlUnitInterface,
-        lgcui2: &impl LandingGearControlUnitInterface,
+        lgcui1: &impl LgciuInterface,
+        lgcui2: &impl LgciuInterface,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.brake_computer.update_brake_demands(
@@ -443,8 +443,8 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
-        lgcui1: &impl LandingGearControlUnitInterface,
-        lgcui2: &impl LandingGearControlUnitInterface,
+        lgcui1: &impl LgciuInterface,
+        lgcui2: &impl LgciuInterface,
     ) {
         self.brake_computer.send_brake_demands(
             &mut self.braking_circuit_norm,
@@ -665,7 +665,7 @@ impl A320EngineDrivenPumpController {
         engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
-        lgcui: &impl LandingGearControlUnitInterface,
+        lgcui: &impl LgciuInterface,
     ) {
         // Faking edp section pressure low level as if engine is slow we shouldn't have pressure
         let faked_is_edp_section_low_pressure = engine_n2.get::<percent>() < 5.;
@@ -691,7 +691,7 @@ impl A320EngineDrivenPumpController {
         engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
-        lgcui: &impl LandingGearControlUnitInterface,
+        lgcui: &impl LgciuInterface,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.engine_number)
@@ -769,8 +769,8 @@ impl A320BlueElectricPumpController {
         engine2_oil_pressure: Pressure,
         engine1_above_min_idle: bool,
         engine2_above_min_idle: bool,
-        lgcui1: &impl LandingGearControlUnitInterface,
-        lgcui2: &impl LandingGearControlUnitInterface,
+        lgcui1: &impl LgciuInterface,
+        lgcui2: &impl LgciuInterface,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
@@ -805,8 +805,8 @@ impl A320BlueElectricPumpController {
         pressure_switch_state: bool,
         engine1_oil_pressure: Pressure,
         engine2_oil_pressure: Pressure,
-        lgcui1: &impl LandingGearControlUnitInterface,
-        lgcui2: &impl LandingGearControlUnitInterface,
+        lgcui1: &impl LgciuInterface,
+        lgcui2: &impl LgciuInterface,
     ) {
         // Low engine oil pressure inhibits fault under 18psi level
         let is_engine_low_oil_pressure = engine1_oil_pressure.get::<psi>()
@@ -974,7 +974,7 @@ impl A320PowerTransferUnitController {
         forward_cargo_door: &Door,
         aft_cargo_door: &Door,
         pushback_tug: &PushbackTug,
-        lgcu2: &impl LandingGearControlUnitInterface,
+        lgcu2: &impl LgciuInterface,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
@@ -1186,8 +1186,8 @@ impl A320HydraulicBrakeComputerUnit {
         context: &UpdateContext,
         green_loop: &HydraulicLoop,
         alternate_circuit: &BrakeCircuit,
-        lgcui1: &impl LandingGearControlUnitInterface,
-        lgcui2: &impl LandingGearControlUnitInterface,
+        lgcui1: &impl LgciuInterface,
+        lgcui2: &impl LgciuInterface,
         autobrake_panel: &AutobrakePanel,
     ) {
         self.update_normal_braking_availability(&green_loop.pressure());
@@ -1586,8 +1586,8 @@ impl A320AutobrakeController {
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,
-        lgciu1: &impl LandingGearControlUnitInterface,
-        lgciu2: &impl LandingGearControlUnitInterface,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
         let in_flight_lgciu1 =
             !lgciu1.right_gear_compressed_1() && !lgciu1.left_gear_compressed_3();
@@ -1612,8 +1612,8 @@ impl A320AutobrakeController {
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,
-        lgciu1: &impl LandingGearControlUnitInterface,
-        lgciu2: &impl LandingGearControlUnitInterface,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
         self.update_input_conditions(
             &context,
