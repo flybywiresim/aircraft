@@ -4,7 +4,6 @@ import { useUpdate } from '@instruments/common/hooks';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
-    getSmallestAngle,
     HorizontalTape,
     LagFilter,
 } from './PFDUtils';
