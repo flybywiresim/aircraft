@@ -2,7 +2,6 @@ import React from 'react';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
-    getSmallestAngle,
     HorizontalTape,
     LagFilter,
 } from './PFDUtils';

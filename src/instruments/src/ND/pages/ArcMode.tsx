@@ -1,12 +1,12 @@
 import React, { memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
+import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { FlightPlan } from '../FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../RadioNeedles';
-import { Plane } from '../Plane';
 import { ToWaypointIndicator } from '../ToWaypointIndicator';
 import { rangeSettings } from '../index';
 import { ApproachMessage } from '../ApproachMessage';
@@ -20,10 +20,14 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side, ppos }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
+    const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
     const [fmgcFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
+    const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
+    const [ilsCourse] = useSimVar(`NAV LOCALIZER:3`, 'degrees');
+    const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -46,7 +50,16 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side, ppos }) => {
                 debug={false}
             />
 
-            <Overlay heading={Number(MathUtils.fastToFixed(magHeading, 1))} rangeIndex={rangeIndex} side={side} tcasMode={tcasMode} />
+            <Overlay
+                heading={Number(MathUtils.fastToFixed(magHeading, 1))}
+                track={Number(MathUtils.fastToFixed(magTrack, 1))}
+                rangeIndex={rangeIndex}
+                side={side}
+                tcasMode={tcasMode}
+                selectedHeading={selectedHeading}
+                ilsCourse={ilsCourse}
+                lsDisplayed={lsDisplayed}
+            />
 
             <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
 
@@ -57,12 +70,16 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side, ppos }) => {
 
 type OverlayProps = {
     heading: number,
+    track: number,
     rangeIndex: number,
     side: 'L' | 'R',
     tcasMode: number,
+    selectedHeading: number,
+    ilsCourse: number,
+    lsDisplayed: boolean,
 }
 
-const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex, side, tcasMode }) => {
+const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeIndex, side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => {
     const range = rangeSettings[rangeIndex];
 
     return (
@@ -436,6 +453,10 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex, side, tcasM
                             <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(60 384 620)" />
                         </g>
                     )}
+
+                <TrackBug heading={heading} track={track} />
+                { lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
+                <SelectedHeadingBug heading={heading} selected={selectedHeading} />
             </g>
 
             <RadioNeedle index={1} side={side} />
@@ -445,3 +466,80 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeIndex, side, tcasM
         </>
     );
 });
+
+const Plane: React.FC = () => {
+    const [crossTrackError] = useSimVar('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
+
+    let crossTrackText = '';
+    let crossTrackAnchor = 'start';
+    let crossTrackX = 390;
+    const crossTrackAbs = Math.abs(crossTrackError);
+
+    if (crossTrackAbs > 0.02) {
+        crossTrackText = crossTrackAbs.toFixed(crossTrackAbs < 0.3 ? 2 : 1);
+        if (crossTrackError < 0) {
+            crossTrackText += 'R';
+            crossTrackAnchor = "start";
+            crossTrackX = 424;
+        } else {
+            crossTrackText += 'L';
+            crossTrackAnchor = "end";
+            crossTrackX = 352;
+        }
+    }
+
+    return <g>
+        <line id="lubber" x1={384} y1={108} x2={384} y2={148} className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
+        <image x={342} y={596} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
+        <text x={crossTrackX} y={646} textAnchor={crossTrackAnchor} fontSize={24} className="Green">{crossTrackText}</text>
+    </g>;
+};
+
+const TrackBug: React.FC<{heading: number, track: number}> = ({heading, track}) => {
+    const diff = getSmallestAngle(track, heading);
+    if (diff > 48) {
+        return null;
+    }
+    return <path
+        d="M384,128 L378,138 L384,148 L390,138 L384,128"
+        transform={`rotate(${diff} 384 620)`}
+        className="Green rounded"
+    />;
+};
+
+const IlsCourseBug: React.FC<{heading: number, ilsCourse: number}> = ({heading, ilsCourse}) => {
+    const diff = getSmallestAngle(ilsCourse, heading);
+    if (ilsCourse < 0 || Math.abs(diff) > 48) {
+        return null;
+    }
+
+    return <path
+        d="M384,122 L384,74 M376,114 L392,114"
+        transform={`rotate(${diff} 384 620)`}
+        className="Magenta rounded"
+    />;
+};
+
+const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({heading, selected}) => {
+    if (heading < 0) {
+        return null;
+    }
+
+    const diff = getSmallestAngle(selected, heading);
+    if (Math.abs(diff) <= 48) {
+        return <path
+            d="M382,126 L370,99 L398,99 L386,126"
+            transform={`rotate(${diff} 384 620)`}
+            className="Cyan rounded"
+        />;
+    } else {
+        return <text
+            x={384}
+            y={60}
+            textAnchor="middle"
+            transform={`rotate(${(diff) < 0 ? -38 : 38} 384 620)`}
+            className="Cyan"
+            fontSize={22}
+        >{"" + selected}</text>;
+    }
+};
