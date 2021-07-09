@@ -474,9 +474,17 @@ impl AirDataReference {
         self.barometric_vertical_speed
             .set_value(simulator_data.vertical_speed.get::<foot_per_minute>());
 
-        self.computed_airspeed
-            .set_value(context.indicated_airspeed());
-        self.true_airspeed.set_value(simulator_data.true_airspeed);
+        let computed_airspeed = context.indicated_airspeed();
+        self.computed_airspeed.set_value(computed_airspeed);
+
+        // If CAS is below 60 kts, label 210 indicates 0 kt with SSM = NCD.
+        self.true_airspeed
+            .set_value(if computed_airspeed >= Velocity::new::<knot>(60.) {
+                simulator_data.true_airspeed
+            } else {
+                Velocity::new::<knot>(0.)
+            });
+
         self.mach.set_value(simulator_data.mach);
 
         if self.outputs_temperatures {
@@ -776,7 +784,7 @@ mod tests {
         test::{SimulationTestBed, TestBed},
         Aircraft, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     };
-    use ntest::timeout;
+    use ntest::{assert_about_eq, timeout};
     use rstest::rstest;
     use std::time::Duration;
     use uom::si::{
@@ -1523,12 +1531,30 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn true_airspeed_is_supplied_by_adr(#[case] adiru_number: usize) {
-        let tas = Velocity::new::<knot>(200.);
-        let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(tas);
+    fn true_airspeed_is_supplied_by_adr_when_computed_airspeed_greater_than_or_equal_to_60_knots(
+        #[case] adiru_number: usize,
+    ) {
+        let velocity = Velocity::new::<knot>(60.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(velocity);
+        test_bed.set_indicated_airspeed(velocity);
         test_bed.run();
 
-        assert_eq!(test_bed.true_airspeed(adiru_number), tas);
+        assert_eq!(test_bed.true_airspeed(adiru_number), velocity);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn adr_true_airspeed_is_zero_when_computed_airspeed_less_than_60_knots(
+        #[case] adiru_number: usize,
+    ) {
+        let velocity = Velocity::new::<knot>(59.9);
+        let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(velocity);
+        test_bed.set_indicated_airspeed(velocity);
+        test_bed.run();
+
+        assert_about_eq!(test_bed.true_airspeed(adiru_number).get::<knot>(), 0.);
     }
 
     #[rstest]
