@@ -136,7 +136,7 @@ struct Autobrakes {
 impl Autobrakes {
     // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
     // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
-    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(500);
+    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(650);
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
@@ -176,24 +176,33 @@ impl Autobrakes {
             self.max_mode_requested = false;
             self.med_mode_requested = false;
             self.low_mode_requested = false;
-            self.disarm_requested = false;
         }
+        self.disarm_requested = false;
     }
 
-    fn on_receive_key_event(&mut self) {
+    fn on_receive_pushbutton_event(&mut self) {
         self.last_button_press = Instant::now();
     }
 
     fn set_mode_max(&mut self) {
         self.max_mode_requested = true;
+        self.med_mode_requested = false;
+        self.low_mode_requested = false;
+        self.on_receive_pushbutton_event();
     }
 
     fn set_mode_med(&mut self) {
         self.med_mode_requested = true;
+        self.max_mode_requested = false;
+        self.low_mode_requested = false;
+        self.on_receive_pushbutton_event();
     }
 
     fn set_mode_low(&mut self) {
         self.low_mode_requested = true;
+        self.med_mode_requested = false;
+        self.max_mode_requested = false;
+        self.on_receive_pushbutton_event();
     }
 
     fn set_disarm(&mut self) {
@@ -216,19 +225,15 @@ impl SimulatorAspect for Autobrakes {
             SimConnectRecv::Event(e) => {
                 if e.id() == self.id_mode_low {
                     self.set_mode_low();
-                    self.on_receive_key_event();
                     true
                 } else if e.id() == self.id_mode_med {
                     self.set_mode_med();
-                    self.on_receive_key_event();
                     true
                 } else if e.id() == self.id_mode_max {
                     self.set_mode_max();
-                    self.on_receive_key_event();
                     true
                 } else if e.id() == self.id_disarm {
                     self.set_disarm();
-                    self.on_receive_key_event();
                     true
                 } else {
                     false
