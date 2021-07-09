@@ -305,7 +305,7 @@ impl AirDataInertialReferenceUnit {
     ) {
         self.adr.update(context, overhead, simulator_data);
         self.ir
-            .update(context, overhead, align_time, simulator_data);
+            .update(context, &self.adr, overhead, align_time, simulator_data);
     }
 
     fn is_aligned(&self) -> bool {
@@ -351,6 +351,10 @@ impl<T: Copy + Default> OutputData<T> {
         }
     }
 
+    fn value(&self) -> T {
+        self.value
+    }
+
     fn set_value(&mut self, value: T) {
         self.value = value;
     }
@@ -385,6 +389,10 @@ fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> Strin
     format!("ADIRS_{}_{}_{}", data_type, number, name)
 }
 
+trait TrueAirspeedSource {
+    fn true_airspeed(&self) -> Velocity;
+}
+
 struct AirDataReference {
     number: usize,
     outputs_temperatures: bool,
@@ -414,6 +422,7 @@ impl AirDataReference {
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL_AIR_TEMPERATURE";
     const INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA: &'static str =
         "INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA";
+    const MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS: f64 = 60.;
 
     fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
@@ -478,12 +487,17 @@ impl AirDataReference {
         self.computed_airspeed.set_value(computed_airspeed);
 
         // If CAS is below 60 kts, label 210 indicates 0 kt with SSM = NCD.
-        self.true_airspeed
-            .set_value(if computed_airspeed >= Velocity::new::<knot>(60.) {
+        self.true_airspeed.set_value(
+            if computed_airspeed
+                >= Velocity::new::<knot>(
+                    Self::MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS,
+                )
+            {
                 simulator_data.true_airspeed
             } else {
                 Velocity::new::<knot>(0.)
-            });
+            },
+        );
 
         self.mach.set_value(simulator_data.mach);
 
@@ -520,6 +534,11 @@ impl AirDataReference {
         ThermodynamicTemperature::new::<degree_celsius>(
             static_air_temperature.get::<degree_celsius>() - isa,
         )
+    }
+}
+impl TrueAirspeedSource for AirDataReference {
+    fn true_airspeed(&self) -> Velocity {
+        self.true_airspeed.value()
     }
 }
 impl SimulationElement for AirDataReference {
@@ -599,6 +618,7 @@ impl InertialReference {
     const GROUND_SPEED: &'static str = "GROUND_SPEED";
     const WIND_DIRECTION: &'static str = "WIND_DIRECTION";
     const WIND_VELOCITY: &'static str = "WIND_VELOCITY";
+    const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
 
     fn new(number: usize) -> Self {
         Self {
@@ -661,6 +681,7 @@ impl InertialReference {
     fn update(
         &mut self,
         context: &UpdateContext,
+        true_airspeed_source: &impl TrueAirspeedSource,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         configured_align_time: AlignTime,
         simulator_data: AdirsSimulatorData,
@@ -672,8 +693,22 @@ impl InertialReference {
         self.vertical_speed
             .set_value(simulator_data.vertical_speed.get::<foot_per_minute>());
         self.ground_speed.set_value(simulator_data.ground_speed);
-        self.wind_direction.set_value(simulator_data.wind_direction);
-        self.wind_velocity.set_value(simulator_data.wind_velocity);
+
+        // The IR does not compute the wind if the TAS is less than 100 knots or unavailable.
+        let true_airspeed_above_minimum_threshold = true_airspeed_source.true_airspeed()
+            >= Velocity::new::<knot>(Self::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS);
+        self.wind_direction
+            .set_value(if true_airspeed_above_minimum_threshold {
+                simulator_data.wind_direction
+            } else {
+                Angle::new::<degree>(0.)
+            });
+        self.wind_velocity
+            .set_value(if true_airspeed_above_minimum_threshold {
+                simulator_data.wind_velocity
+            } else {
+                Velocity::new::<knot>(0.)
+            });
 
         let selected_mode = overhead.mode_of(self.number);
 
@@ -1534,7 +1569,9 @@ mod tests {
     fn true_airspeed_is_supplied_by_adr_when_computed_airspeed_greater_than_or_equal_to_60_knots(
         #[case] adiru_number: usize,
     ) {
-        let velocity = Velocity::new::<knot>(60.);
+        let velocity = Velocity::new::<knot>(
+            AirDataReference::MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS,
+        );
         let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(velocity);
         test_bed.set_indicated_airspeed(velocity);
         test_bed.run();
@@ -1549,7 +1586,10 @@ mod tests {
     fn adr_true_airspeed_is_zero_when_computed_airspeed_less_than_60_knots(
         #[case] adiru_number: usize,
     ) {
-        let velocity = Velocity::new::<knot>(59.9);
+        let velocity = Velocity::new::<knot>(
+            AirDataReference::MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS
+                - 0.01,
+        );
         let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(velocity);
         test_bed.set_indicated_airspeed(velocity);
         test_bed.run();
@@ -1898,15 +1938,45 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn wind_is_supplied_by_ir(#[case] adiru_number: usize) {
-        let angle = Angle::new::<degree>(150.);
-        let velocity = Velocity::new::<knot>(40.);
-        let mut test_bed = all_adirus_aligned_test_bed_with().wind_of(angle, velocity);
+    fn wind_is_supplied_by_ir_when_true_airspeed_greater_than_or_equal_to_100_knots(
+        #[case] adiru_number: usize,
+    ) {
+        let wind_angle = Angle::new::<degree>(150.);
+        let wind_velocity = Velocity::new::<knot>(40.);
+        let mut test_bed = all_adirus_aligned_test_bed_with()
+            .wind_of(wind_angle, wind_velocity)
+            .and()
+            .true_airspeed_of(Velocity::new::<knot>(
+                InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS,
+            ));
         test_bed.run();
 
-        assert_eq!(test_bed.wind_direction(adiru_number), angle);
-        assert_eq!(test_bed.wind_velocity(adiru_number), velocity);
+        assert_eq!(test_bed.wind_direction(adiru_number), wind_angle);
+        assert_eq!(test_bed.wind_velocity(adiru_number), wind_velocity);
     }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn ir_wind_is_zero_when_true_airspeed_less_than_100_knots(#[case] adiru_number: usize) {
+        let wind_angle = Angle::new::<degree>(150.);
+        let wind_velocity = Velocity::new::<knot>(40.);
+        let mut test_bed = all_adirus_aligned_test_bed_with()
+            .wind_of(wind_angle, wind_velocity)
+            .and()
+            .true_airspeed_of(Velocity::new::<knot>(
+                InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS - 0.01,
+            ));
+        test_bed.run();
+
+        assert_about_eq!(test_bed.wind_direction(adiru_number).get::<degree>(), 0.);
+        assert_about_eq!(test_bed.wind_velocity(adiru_number).get::<knot>(), 0.);
+    }
+
+    #[test]
+    #[ignore = "Once the IR and ADR are fully separated and can be turned off via the overhead panel this feature can be tested."]
+    fn ir_wind_is_zero_when_true_airspeed_is_unavailable() {}
 
     #[rstest]
     #[case(1)]
