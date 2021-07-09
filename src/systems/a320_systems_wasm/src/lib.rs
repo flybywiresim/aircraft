@@ -238,7 +238,7 @@ impl SimulatorAspect for Autobrakes {
         }
     }
 
-    fn pre_tick(&mut self, _delta: Duration) {
+    fn pre_tick(&mut self, _: Duration) {
         self.synchronise_with_sim();
     }
 
