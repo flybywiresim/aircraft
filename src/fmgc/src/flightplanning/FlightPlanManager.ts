@@ -1234,7 +1234,7 @@ export class FlightPlanManager {
     /**
      * Gets the approach procedure from the current flight plan destination airport procedure information.
      */
-    public getApproach(): MSFS.RawApproachData {
+    public getApproach(): RawApproach {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex !== -1) {
             return (currentFlightPlan.destinationAirfield.infos as AirportInfo).approaches[currentFlightPlan.procedureDetails.approachIndex];
