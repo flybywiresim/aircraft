@@ -73,7 +73,9 @@ class CDUFlightPlanPage {
                 rowIndex++;
             }
 
-            rows[rowIndex] = row;
+            if (rowIndex < 10) {
+                rows[rowIndex] = row;
+            }
 
             rowIndex++;
         }
@@ -420,7 +422,6 @@ class CDUFlightPlanPage {
                         }
 
                         // Render fix content
-
                         printRow(renderFixContent(waypoint.ident, color, spdColor, speedConstraint, altColor, altPrefix, altitudeConstraint, timeCell));
 
                         // Setup fix LSK and RSk
