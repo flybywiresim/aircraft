@@ -2,7 +2,10 @@
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
-use std::{pin::Pin, time::Duration};
+use std::{
+    pin::Pin,
+    time::{Duration, Instant},
+};
 use systems::simulation::Simulation;
 use systems_wasm::{
     electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
@@ -127,8 +130,14 @@ struct Autobrakes {
     med_mode_requested: bool,
     max_mode_requested: bool,
     disarm_requested: bool,
+
+    last_button_press: Instant,
 }
 impl Autobrakes {
+    // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
+    // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
+    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(500);
+
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
             // SimConnect inputs masking
@@ -145,6 +154,8 @@ impl Autobrakes {
             med_mode_requested: false,
             max_mode_requested: false,
             disarm_requested: false,
+
+            last_button_press: Instant::now(),
         })
     }
 
@@ -161,10 +172,16 @@ impl Autobrakes {
     }
 
     fn reset_events(&mut self) {
-        self.max_mode_requested = false;
-        self.med_mode_requested = false;
-        self.low_mode_requested = false;
-        self.disarm_requested = false;
+        if self.last_button_press.elapsed() > Self::DEFAULT_REARMING_DURATION {
+            self.max_mode_requested = false;
+            self.med_mode_requested = false;
+            self.low_mode_requested = false;
+            self.disarm_requested = false;
+        }
+    }
+
+    fn key_event_is_received(&mut self) {
+        self.last_button_press = Instant::now();
     }
 
     fn set_mode_max(&mut self) {
@@ -199,15 +216,19 @@ impl SimulatorAspect for Autobrakes {
             SimConnectRecv::Event(e) => {
                 if e.id() == self.id_mode_low {
                     self.set_mode_low();
+                    self.key_event_is_received();
                     true
                 } else if e.id() == self.id_mode_med {
                     self.set_mode_med();
+                    self.key_event_is_received();
                     true
                 } else if e.id() == self.id_mode_max {
                     self.set_mode_max();
+                    self.key_event_is_received();
                     true
                 } else if e.id() == self.id_disarm {
                     self.set_disarm();
+                    self.key_event_is_received();
                     true
                 } else {
                     false
@@ -217,13 +238,13 @@ impl SimulatorAspect for Autobrakes {
         }
     }
 
-    fn pre_tick(&mut self, delta: Duration) {
+    fn pre_tick(&mut self, _delta: Duration) {
         self.synchronise_with_sim();
     }
 
     fn post_tick(
         &mut self,
-        sim_connect: &mut Pin<&mut SimConnect>,
+        _sim_connect: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.reset_events();
 
@@ -313,7 +334,7 @@ impl Brakes {
 
     fn synchronise_with_sim(&mut self) {
         // Synchronising WASM park brake state with simulator park brake lever variable
-        let mut current_in_sim_park_brake: f64 = self.park_brake_lever_masked_input.get_value();
+        let current_in_sim_park_brake: f64 = self.park_brake_lever_masked_input.get_value();
 
         if current_in_sim_park_brake != self.last_transmitted_park_brake_lever_position {
             self.receive_a_park_brake_set_event(current_in_sim_park_brake as u32);
