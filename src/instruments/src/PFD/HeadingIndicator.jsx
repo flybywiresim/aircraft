@@ -1,4 +1,5 @@
-import { HorizontalTape, getSmallestAngle } from './PFDUtils.jsx';
+import { getSmallestAngle } from '@instruments/common/utils.js';
+import { HorizontalTape } from './PFDUtils.jsx';
 import { getSimVar } from '../util.js';
 
 const DisplayRange = 24;

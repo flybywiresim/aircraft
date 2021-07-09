@@ -1,10 +1,10 @@
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
-    getSmallestAngle,
     HorizontalTape,
     LagFilter,
 } from './PFDUtils.jsx';
+import { getSmallestAngle } from '@instruments/common/utils.js';
 import { getSimVar } from '../util.js';
 
 /* eslint-disable max-len */
