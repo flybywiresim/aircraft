@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { join } from 'path';
 import { baseCompile } from './plugins.mjs';
 import { getTemplatePlugin } from './templatePlugins.mjs';
 import { Directories } from './directories.mjs';
@@ -8,14 +9,14 @@ process.chdir(Directories.src);
 
 export default getInputs()
     .map(({ path, name, isInstrument }) => {
-        const config = JSON.parse(fs.readFileSync(`${Directories.instruments}/src/${path}/config.json`));
+        const config = JSON.parse(fs.readFileSync(join(Directories.instruments, 'src', path, 'config.json')));
 
         return {
             watch: true,
             name,
-            input: `${Directories.instruments}/src/${path}/${config.index}`,
+            input: join(Directories.instruments, 'src', path, config.index),
             output: {
-                file: `${Directories.temp}/bundle.js`,
+                file: join(Directories.temp, 'bundle.js'),
                 format: 'iife',
             },
             plugins: [

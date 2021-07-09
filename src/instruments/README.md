@@ -1,6 +1,6 @@
 # Instruments
 
-## Creating an instrument
+## How to create a new instrument
 
 To create a new instrument, create a folder in `/src/instruments/src`, with a `config.json` file, for example:
 
@@ -40,3 +40,11 @@ The instruments and ECAM pages to build are provided by `buildSrc/igniter/tasks.
 ### Igniter task generation
 
 For `igniter` builds, `buildSrc/igniter/tasks.mjs` generates a list of `igniter` tasks which are run by the aircraft build.
+
+## How to build in watch mode
+
+After running `npm install`, from the root folder, run:
+
+```
+rollup -wc .\src\instruments\buildSrc\simulatorBuild.mjs
+```

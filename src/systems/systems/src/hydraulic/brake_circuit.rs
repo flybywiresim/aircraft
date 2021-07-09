@@ -1,12 +1,18 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+    overhead::PressSingleSignalButton,
+    simulation::{
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    },
 };
 
 use std::f64::consts::E;
 use std::string::String;
+use std::time::Duration;
 
-use uom::si::{f64::*, pressure::psi, volume::gallon};
+use uom::si::{
+    acceleration::meter_per_second_squared, f64::*, pressure::psi, ratio::ratio, volume::gallon,
+};
 
 use super::Accumulator;
 
@@ -118,13 +124,12 @@ pub struct BrakeCircuit {
     left_brake_actuator: BrakeActuator,
     right_brake_actuator: BrakeActuator,
 
-    demanded_brake_position_left: f64,
+    demanded_brake_position_left: Ratio,
     pressure_applied_left: Pressure,
-    demanded_brake_position_right: f64,
+    demanded_brake_position_right: Ratio,
     pressure_applied_right: Pressure,
 
     pressure_limitation: Pressure,
-    pressure_limitation_active: bool,
 
     /// Brake accumulator variables. Accumulator can have 0 volume if no accumulator
     has_accumulator: bool,
@@ -171,12 +176,11 @@ impl BrakeCircuit {
             left_brake_actuator: BrakeActuator::new(total_displacement / 2.),
             right_brake_actuator: BrakeActuator::new(total_displacement / 2.),
 
-            demanded_brake_position_left: 0.0,
+            demanded_brake_position_left: Ratio::new::<ratio>(0.0),
             pressure_applied_left: Pressure::new::<psi>(0.0),
-            demanded_brake_position_right: 0.0,
+            demanded_brake_position_right: Ratio::new::<ratio>(0.0),
             pressure_applied_right: Pressure::new::<psi>(0.0),
-            pressure_limitation: Pressure::new::<psi>(0.0),
-            pressure_limitation_active: false,
+            pressure_limitation: Pressure::new::<psi>(5000.0),
             has_accumulator: has_accu,
             accumulator: Accumulator::new(
                 Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
@@ -198,22 +202,13 @@ impl BrakeCircuit {
         self.pressure_limitation = pressure_limit;
     }
 
-    pub fn set_brake_limit_active(&mut self, is_pressure_limit_active: bool) {
-        self.pressure_limitation_active = is_pressure_limit_active;
-    }
-
     fn update_brake_actuators(&mut self, context: &UpdateContext, hyd_pressure: Pressure) {
         self.left_brake_actuator
-            .set_position_demand(self.demanded_brake_position_left);
+            .set_position_demand(self.demanded_brake_position_left.get::<ratio>());
         self.right_brake_actuator
-            .set_position_demand(self.demanded_brake_position_right);
+            .set_position_demand(self.demanded_brake_position_right.get::<ratio>());
 
-        let actual_max_allowed_pressure: Pressure;
-        if self.pressure_limitation_active {
-            actual_max_allowed_pressure = hyd_pressure.min(self.pressure_limitation);
-        } else {
-            actual_max_allowed_pressure = hyd_pressure;
-        }
+        let actual_max_allowed_pressure = hyd_pressure.min(self.pressure_limitation);
 
         self.left_brake_actuator
             .update(context, actual_max_allowed_pressure);
@@ -275,12 +270,16 @@ impl BrakeCircuit {
                     ));
     }
 
-    pub fn set_brake_demand_left(&mut self, brake_ratio: f64) {
-        self.demanded_brake_position_left = brake_ratio.min(1.0).max(0.0);
+    pub fn set_brake_demand_left(&mut self, brake_ratio: Ratio) {
+        self.demanded_brake_position_left = brake_ratio
+            .min(Ratio::new::<ratio>(1.0))
+            .max(Ratio::new::<ratio>(0.0));
     }
 
-    pub fn set_brake_demand_right(&mut self, brake_ratio: f64) {
-        self.demanded_brake_position_right = brake_ratio.min(1.0).max(0.0);
+    pub fn set_brake_demand_right(&mut self, brake_ratio: Ratio) {
+        self.demanded_brake_position_right = brake_ratio
+            .min(Ratio::new::<ratio>(1.0))
+            .max(Ratio::new::<ratio>(0.0));
     }
 
     pub fn left_brake_pressure(&self) -> Pressure {
@@ -319,6 +318,186 @@ impl SimulationElement for BrakeCircuit {
         if self.has_accumulator {
             writer.write(&self.id_acc_press, self.accumulator_pressure());
         }
+    }
+}
+
+#[derive(PartialEq, Clone, Copy)]
+pub enum AutobrakeMode {
+    NONE = 0,
+    LOW = 1,
+    MED = 2,
+    MAX = 3,
+    HIGH = 4,
+    RTO = 5,
+    BTV = 6,
+}
+impl From<f64> for AutobrakeMode {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => AutobrakeMode::NONE,
+            1 => AutobrakeMode::LOW,
+            2 => AutobrakeMode::MED,
+            3 => AutobrakeMode::MAX,
+            4 => AutobrakeMode::HIGH,
+            5 => AutobrakeMode::RTO,
+            6 => AutobrakeMode::BTV,
+            _ => AutobrakeMode::NONE,
+        }
+    }
+}
+
+pub struct AutobrakePanel {
+    lo_button: PressSingleSignalButton,
+    med_button: PressSingleSignalButton,
+    max_button: PressSingleSignalButton,
+}
+impl AutobrakePanel {
+    pub fn new() -> AutobrakePanel {
+        AutobrakePanel {
+            lo_button: PressSingleSignalButton::new("AUTOBRK_LOW_ON"),
+            med_button: PressSingleSignalButton::new("AUTOBRK_MED_ON"),
+            max_button: PressSingleSignalButton::new("AUTOBRK_MAX_ON"),
+        }
+    }
+
+    fn low_pressed(&self) -> bool {
+        self.lo_button.is_pressed()
+    }
+
+    fn med_pressed(&self) -> bool {
+        self.med_button.is_pressed()
+    }
+
+    fn max_pressed(&self) -> bool {
+        self.max_button.is_pressed()
+    }
+
+    pub fn pressed_mode(&self) -> Option<AutobrakeMode> {
+        if self.low_pressed() {
+            Some(AutobrakeMode::LOW)
+        } else if self.med_pressed() {
+            Some(AutobrakeMode::MED)
+        } else if self.max_pressed() {
+            Some(AutobrakeMode::MAX)
+        } else {
+            None
+        }
+    }
+}
+impl SimulationElement for AutobrakePanel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.lo_button.accept(visitor);
+        self.med_button.accept(visitor);
+        self.max_button.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+impl Default for AutobrakePanel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Deceleration governor is the PI controller computing the expected brake force to reach the target
+/// it's been given by update caller
+pub struct AutobrakeDecelerationGovernor {
+    target: Acceleration,
+    i_gain: f64,
+    p_gain: f64,
+    last_error: f64,
+
+    current_output: f64,
+    filtered_acceleration: Acceleration,
+
+    is_engaged: bool,
+    time_engaged: Duration,
+    filter: f64,
+}
+impl AutobrakeDecelerationGovernor {
+    // Low pass filter for controller acceleration input, time constant in second
+    const ACCELERATION_INPUT_FILTER: f64 = 0.15;
+
+    pub fn new() -> AutobrakeDecelerationGovernor {
+        Self {
+            target: Acceleration::new::<meter_per_second_squared>(10.),
+            i_gain: 0.02,
+            p_gain: 0.2,
+            last_error: 0.,
+
+            current_output: 0.,
+            filtered_acceleration: Acceleration::new::<meter_per_second_squared>(0.),
+            is_engaged: false,
+            time_engaged: Duration::from_secs(0),
+            filter: Self::ACCELERATION_INPUT_FILTER,
+        }
+    }
+
+    pub fn engage_when(&mut self, engage_condition: bool) {
+        if engage_condition {
+            self.is_engaged = true;
+        } else {
+            self.disengage();
+        }
+    }
+
+    pub fn is_engaged(&self) -> bool {
+        self.is_engaged
+    }
+
+    fn disengage(&mut self) {
+        self.is_engaged = false;
+        self.time_engaged = Duration::from_secs(0);
+        self.target = Acceleration::new::<meter_per_second_squared>(10.);
+    }
+
+    pub fn time_engaged(&self) -> Duration {
+        self.time_engaged
+    }
+
+    pub fn is_on_target(&self, percent_margin_to_target: Ratio) -> bool {
+        self.is_engaged
+            && self.filtered_acceleration < self.target * percent_margin_to_target.get::<ratio>()
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, target: Acceleration) {
+        self.target = target;
+
+        let accel = context.long_accel();
+        self.filtered_acceleration = self.filtered_acceleration
+            + (accel - self.filtered_acceleration)
+                * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / self.filter));
+
+        if self.is_engaged {
+            self.time_engaged += context.delta();
+
+            let target_error = self.filtered_acceleration.get::<meter_per_second_squared>()
+                - self.target.get::<meter_per_second_squared>();
+
+            let p_term = self.p_gain * (target_error - self.last_error);
+            let i_term = self.i_gain * target_error;
+            self.current_output += p_term + i_term;
+
+            self.last_error = target_error;
+
+            self.current_output = self.current_output.min(1.).max(0.);
+        } else {
+            self.last_error = 0.;
+            self.current_output = 0.;
+        }
+    }
+
+    pub fn output(&self) -> f64 {
+        self.current_output
+    }
+
+    pub fn decelerating_at_or_above_rate(&self, target_threshold: Acceleration) -> bool {
+        self.filtered_acceleration < target_threshold
+    }
+}
+impl Default for AutobrakeDecelerationGovernor {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -506,15 +685,15 @@ mod tests {
                 < Pressure::new::<psi>(10.0)
         );
 
-        brake_circuit_primed.set_brake_demand_left(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), &hyd_loop);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.right_brake_pressure() <= Pressure::new::<psi>(50.));
         assert!(brake_circuit_primed.accumulator.fluid_volume() >= Volume::new::<gallon>(0.1));
 
-        brake_circuit_primed.set_brake_demand_left(0.0);
-        brake_circuit_primed.set_brake_demand_right(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(0.0));
+        brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), &hyd_loop);
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.left_brake_pressure() <= Pressure::new::<psi>(50.));
@@ -548,14 +727,14 @@ mod tests {
                 < Pressure::new::<psi>(10.0)
         );
 
-        brake_circuit_primed.set_brake_demand_left(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.right_brake_pressure() <= Pressure::new::<psi>(50.));
 
-        brake_circuit_primed.set_brake_demand_left(0.0);
-        brake_circuit_primed.set_brake_demand_right(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(0.0));
+        brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.left_brake_pressure() <= Pressure::new::<psi>(50.));
@@ -583,8 +762,8 @@ mod tests {
                 < Pressure::new::<psi>(1.0)
         );
 
-        brake_circuit_primed.set_brake_demand_left(1.0);
-        brake_circuit_primed.set_brake_demand_right(1.0);
+        brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
+        brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2900.));
@@ -592,11 +771,6 @@ mod tests {
 
         let pressure_limit = Pressure::new::<psi>(1200.);
         brake_circuit_primed.set_brake_press_limit(pressure_limit);
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
-        assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2900.));
-        assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(2900.));
-
-        brake_circuit_primed.set_brake_limit_active(true);
         brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), &hyd_loop);
 
         // Now we limit to 1200 but pressure shouldn't drop instantly

@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { join } from 'path';
 import { ExecTask } from '@flybywiresim/igniter';
 import { Directories } from '../directories.mjs';
 
@@ -47,12 +48,12 @@ export function getInstrumentsIgniterTasks() {
         ...baseInstruments.map(({ name }) => new ExecTask(
             name,
             `node src/instruments/buildSrc/igniter/worker.mjs ${name}`,
-            [`src/instruments/src/${name}`, `flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/${name}`],
+            [join('src/instruments/src', name), join('flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX', name)],
         )),
         ...ecamPages.map(({ name, path }) => new ExecTask(
             name,
             `node src/instruments/buildSrc/igniter/worker.mjs ${name}`,
-            [`src/instruments/src/${path}`, `flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EcamPages/${name}`],
+            [join('src/instruments/src', path), join('flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EcamPages', name)],
         )),
     ];
 }

@@ -1,32 +1,34 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
-use msfs::{
-    legacy::{execute_calculator_code, NamedVariable},
-    sim_connect::SimConnect,
-    sys,
-};
+use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
 use std::{pin::Pin, time::Duration};
+use systems::simulation::Simulation;
 use systems_wasm::{
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, HandleMessage,
-    MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter, MsfsSimulationHandler, PrePostTick,
-    ReadWrite, SimulatorAspect,
+    electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader,
+    MsfsNamedVariableReaderWriter, MsfsSimulationHandler, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
-    let mut aircraft = A320::new();
+    let mut simulation = Simulation::new(|electricity| A320::new(electricity));
     let mut msfs_simulation_handler = MsfsSimulationHandler::new(vec![
-        Box::new(ElectricalBuses::new()),
+        Box::new(create_electrical_buses()),
+        Box::new(MsfsAuxiliaryPowerUnit::new(
+            "OVHD_APU_START_PB_IS_AVAILABLE",
+            8,
+        )?),
         Box::new(Brakes::new(&mut sim_connect.as_mut())?),
+        Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
         Box::new(create_aircraft_variable_reader()?),
         Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
     ]);
 
     while let Some(event) = gauge.next_event().await {
-        msfs_simulation_handler.handle(event, &mut aircraft, &mut sim_connect.as_mut())?;
+        msfs_simulation_handler.handle(event, &mut simulation, &mut sim_connect.as_mut())?;
     }
 
     Ok(())
@@ -60,7 +62,7 @@ fn create_aircraft_variable_reader(
     reader.add("PUSHBACK STATE", "Enum", 0)?;
     reader.add("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
     reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
-    reader.add("SURFACE TYPE", "Enum", 0)?;
+
     reader.add_with_additional_names(
         "APU GENERATOR SWITCH",
         "Bool",
@@ -85,101 +87,134 @@ fn create_aircraft_variable_reader(
         2,
         &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
     );
+    reader.add("GPS POSITION LAT", "degree latitude", 0)?;
 
     Ok(reader)
 }
 
-struct ElectricalBuses {
-    ac_bus_1: ElectricalBusConnection,
-    ac_bus_2: ElectricalBusConnection,
-    ac_ess_bus: ElectricalBusConnection,
-    ac_ess_shed_bus: ElectricalBusConnection,
-    ac_stat_inv_bus: ElectricalBusConnection,
-    ac_gnd_flt_svc_bus: ElectricalBusConnection,
-    dc_bus_1: ElectricalBusConnection,
-    dc_bus_2: ElectricalBusConnection,
-    dc_ess_bus: ElectricalBusConnection,
-    dc_ess_shed_bus: ElectricalBusConnection,
-    dc_bat_bus: ElectricalBusConnection,
-    dc_hot_bus_1: ElectricalBusConnection,
-    dc_hot_bus_2: ElectricalBusConnection,
-    dc_gnd_flt_svc_bus: ElectricalBusConnection,
+fn create_electrical_buses() -> MsfsElectricalBuses {
+    let mut buses = MsfsElectricalBuses::new();
+    // The numbers used here are those defined for buses in the systems.cfg [ELECTRICAL] section.
+    buses.add("AC_1", 1, 2);
+    buses.add("AC_2", 1, 3);
+    buses.add("AC_ESS", 1, 4);
+    buses.add("AC_ESS_SHED", 1, 5);
+    buses.add("AC_STAT_INV", 1, 6);
+    buses.add("AC_GND_FLT_SVC", 1, 14);
+    buses.add("DC_1", 1, 7);
+    buses.add("DC_2", 1, 8);
+    buses.add("DC_ESS", 1, 9);
+    buses.add("DC_ESS_SHED", 1, 10);
+    buses.add("DC_BAT", 1, 11);
+    buses.add("DC_HOT_1", 1, 12);
+    buses.add("DC_HOT_2", 1, 13);
+    buses.add("DC_GND_FLT_SVC", 1, 15);
+
+    buses
 }
-impl ElectricalBuses {
-    fn new() -> Self {
-        Self {
-            // The numbers used here are those defined for buses in the systems.cfg [ELECTRICAL] section.
-            ac_bus_1: ElectricalBusConnection::new(1, 2),
-            ac_bus_2: ElectricalBusConnection::new(1, 3),
-            ac_ess_bus: ElectricalBusConnection::new(1, 4),
-            ac_ess_shed_bus: ElectricalBusConnection::new(1, 5),
-            ac_stat_inv_bus: ElectricalBusConnection::new(1, 6),
-            ac_gnd_flt_svc_bus: ElectricalBusConnection::new(1, 14),
-            dc_bus_1: ElectricalBusConnection::new(1, 7),
-            dc_bus_2: ElectricalBusConnection::new(1, 8),
-            dc_ess_bus: ElectricalBusConnection::new(1, 9),
-            dc_ess_shed_bus: ElectricalBusConnection::new(1, 10),
-            dc_bat_bus: ElectricalBusConnection::new(1, 11),
-            dc_hot_bus_1: ElectricalBusConnection::new(1, 12),
-            dc_hot_bus_2: ElectricalBusConnection::new(1, 13),
-            dc_gnd_flt_svc_bus: ElectricalBusConnection::new(1, 15),
+
+struct Autobrakes {
+    id_mode_max: sys::DWORD,
+    id_mode_med: sys::DWORD,
+    id_mode_low: sys::DWORD,
+
+    low_mode_panel_pushbutton: NamedVariable,
+    med_mode_panel_pushbutton: NamedVariable,
+    max_mode_panel_pushbutton: NamedVariable,
+
+    low_mode_requested: bool,
+    med_mode_requested: bool,
+    max_mode_requested: bool,
+}
+impl Autobrakes {
+    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self {
+            // SimConnect inputs masking
+            id_mode_max: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_HI_SET", false)?,
+            id_mode_med: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_MED_SET", false)?,
+            id_mode_low: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_LO_SET", false)?,
+
+            low_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
+            med_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
+            max_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
+
+            low_mode_requested: false,
+            med_mode_requested: false,
+            max_mode_requested: false,
+        })
+    }
+
+    fn synchronise_with_sim(&mut self) {
+        if self.low_mode_panel_pushbutton.get_value() {
+            self.set_mode_low();
+        }
+        if self.med_mode_panel_pushbutton.get_value() {
+            self.set_mode_med();
+        }
+        if self.max_mode_panel_pushbutton.get_value() {
+            self.set_mode_max();
         }
     }
+
+    fn reset_events(&mut self) {
+        self.max_mode_requested = false;
+        self.med_mode_requested = false;
+        self.low_mode_requested = false;
+    }
+
+    fn set_mode_max(&mut self) {
+        self.max_mode_requested = true;
+    }
+
+    fn set_mode_med(&mut self) {
+        self.med_mode_requested = true;
+    }
+
+    fn set_mode_low(&mut self) {
+        self.low_mode_requested = true;
+    }
 }
-impl SimulatorAspect for ElectricalBuses {}
-impl ReadWrite for ElectricalBuses {
-    fn write(&mut self, name: &str, value: f64) -> bool {
-        if name.starts_with("ELEC_") && name.ends_with("_BUS_IS_POWERED") {
-            match name {
-                "ELEC_AC_1_BUS_IS_POWERED" => self.ac_bus_1.update(value),
-                "ELEC_AC_2_BUS_IS_POWERED" => self.ac_bus_2.update(value),
-                "ELEC_AC_ESS_BUS_IS_POWERED" => self.ac_ess_bus.update(value),
-                "ELEC_AC_ESS_SHED_BUS_IS_POWERED" => self.ac_ess_shed_bus.update(value),
-                "ELEC_AC_STAT_INV_BUS_IS_POWERED" => self.ac_stat_inv_bus.update(value),
-                "ELEC_AC_GND_FLT_SVC_BUS_IS_POWERED" => self.ac_gnd_flt_svc_bus.update(value),
-                "ELEC_DC_1_BUS_IS_POWERED" => self.dc_bus_1.update(value),
-                "ELEC_DC_2_BUS_IS_POWERED" => self.dc_bus_2.update(value),
-                "ELEC_DC_ESS_BUS_IS_POWERED" => self.dc_ess_bus.update(value),
-                "ELEC_DC_ESS_SHED_BUS_IS_POWERED" => self.dc_ess_shed_bus.update(value),
-                "ELEC_DC_BAT_BUS_IS_POWERED" => self.dc_bat_bus.update(value),
-                "ELEC_DC_HOT_1_BUS_IS_POWERED" => self.dc_hot_bus_1.update(value),
-                "ELEC_DC_HOT_2_BUS_IS_POWERED" => self.dc_hot_bus_2.update(value),
-                "ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED" => self.dc_gnd_flt_svc_bus.update(value),
-                _ => panic!("No known connection for electrical bus '{}'.", name),
+impl SimulatorAspect for Autobrakes {
+    fn read(&mut self, name: &str) -> Option<f64> {
+        match name {
+            "OVHD_AUTOBRK_LOW_ON_IS_PRESSED" => Some(self.low_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MED_ON_IS_PRESSED" => Some(self.med_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MAX_ON_IS_PRESSED" => Some(self.max_mode_requested as u8 as f64),
+            _ => None,
+        }
+    }
+
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        match message {
+            SimConnectRecv::Event(e) => {
+                if e.id() == self.id_mode_low {
+                    self.set_mode_low();
+                    true
+                } else if e.id() == self.id_mode_med {
+                    self.set_mode_med();
+                    true
+                } else if e.id() == self.id_mode_max {
+                    self.set_mode_max();
+                    true
+                } else {
+                    false
+                }
             }
-        }
-
-        // The powered state of a bus isn't just updated here, but should also be set as a named
-        // variable, therefore we always return false here.
-        false
-    }
-}
-impl HandleMessage for ElectricalBuses {}
-impl PrePostTick for ElectricalBuses {}
-
-struct ElectricalBusConnection {
-    connected: bool,
-    from: usize,
-    to: usize,
-}
-impl ElectricalBusConnection {
-    fn new(from: usize, to: usize) -> Self {
-        Self {
-            connected: true,
-            from,
-            to,
+            _ => false,
         }
     }
 
-    fn update(&mut self, value: f64) {
-        let should_be_connected = (value - 1.).abs() < f64::EPSILON;
-        if should_be_connected != self.connected {
-            execute_calculator_code::<()>(&format!(
-                "{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)",
-                self.from, self.to
-            ));
-            self.connected = !self.connected;
-        }
+    fn pre_tick(&mut self, delta: Duration) {
+        self.synchronise_with_sim();
+    }
+
+    fn post_tick(
+        &mut self,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.reset_events();
+
+        Ok(())
     }
 }
 
@@ -373,8 +408,7 @@ impl Brakes {
         }
     }
 }
-impl SimulatorAspect for Brakes {}
-impl ReadWrite for Brakes {
+impl SimulatorAspect for Brakes {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
             "PARK_BRAKE_LEVER_POS" => Some(self.is_park_brake_set()),
@@ -397,8 +431,7 @@ impl ReadWrite for Brakes {
             _ => false,
         }
     }
-}
-impl HandleMessage for Brakes {
+
     fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
         match message {
             SimConnectRecv::Event(e) => {
@@ -431,8 +464,7 @@ impl HandleMessage for Brakes {
             _ => false,
         }
     }
-}
-impl PrePostTick for Brakes {
+
     fn pre_tick(&mut self, delta: Duration) {
         self.synchronise_with_sim();
         self.update_keyboard_inputs(delta);
