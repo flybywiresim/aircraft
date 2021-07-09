@@ -244,7 +244,7 @@ impl SimulatorAspect for Autobrakes {
 
     fn post_tick(
         &mut self,
-        _sim_connect: &mut Pin<&mut SimConnect>,
+        _: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.reset_events();
 
