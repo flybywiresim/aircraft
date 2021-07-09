@@ -1,33 +1,43 @@
 use std::time::Duration;
 use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, volume::gallon,
+    acceleration::meter_per_second_squared,
+    angular_velocity::revolution_per_minute,
+    f64::*,
+    pressure::pascal,
+    pressure::psi,
+    ratio::{percent, ratio},
+    volume::gallon,
 };
 
 use systems::{
     engine::Engine,
     hydraulic::{
-        brake_circuit::BrakeCircuit, ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop,
-        HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
-        PumpController, RamAirTurbine, RamAirTurbineController,
+        brake_circuit::{
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
+        },
+        ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
+        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
+        RamAirTurbine, RamAirTurbineController,
     },
     landing_gear::LandingGear,
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineFirePushButtons,
-        LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+        interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
+        ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
+        EmergencyElectricalState, EngineFirePushButtons, LandingGearPosition,
+        RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, Write,
+        Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, Write,
     },
 };
 
 pub(super) struct A320Hydraulic {
-    hyd_brake_logic: A320HydraulicBrakingLogic,
+    brake_computer: A320HydraulicBrakeComputerUnit,
+
     blue_loop: HydraulicLoop,
     blue_loop_controller: A320HydraulicLoopController,
     green_loop: HydraulicLoop,
@@ -67,6 +77,10 @@ pub(super) struct A320Hydraulic {
     lag_time_accumulator: Duration,
 }
 impl A320Hydraulic {
+    const FORWARD_CARGO_DOOR_ID: usize = 5;
+    // Same id for aft door as a place holder until it gets animated
+    const AFT_CARGO_DOOR_ID: usize = 5;
+
     const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
     const BLUE_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
@@ -104,7 +118,7 @@ impl A320Hydraulic {
 
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
-            hyd_brake_logic: A320HydraulicBrakingLogic::new(),
+            brake_computer: A320HydraulicBrakeComputerUnit::new(),
 
             blue_loop: HydraulicLoop::new(
                 "BLUE",
@@ -186,8 +200,8 @@ impl A320Hydraulic {
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
 
-            forward_cargo_door: Door::new(5),
-            aft_cargo_door: Door::new(3),
+            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
+            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID),
             pushback_tug: PushbackTug::new(),
 
             ram_air_turbine: RamAirTurbine::new(),
@@ -229,6 +243,7 @@ impl A320Hydraulic {
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
+        autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &U,
         landing_gear: &LandingGear,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
@@ -250,8 +265,10 @@ impl A320Hydraulic {
         self.update_every_frame(
             &context,
             &overhead_panel,
+            &autobrake_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
+            landing_gear,
         );
 
         if number_of_steps_floating_point < 1.0 {
@@ -286,7 +303,6 @@ impl A320Hydraulic {
                     engine2,
                     overhead_panel,
                     engine_fire_push_buttons,
-                    landing_gear,
                 );
             }
 
@@ -354,9 +370,20 @@ impl A320Hydraulic {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
+        autobrake_panel: &AutobrakePanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
+        landing_gear: &LandingGear,
     ) {
+        // Process brake logic (which circuit brakes) and send brake demands (how much)
+        self.brake_computer.update_brake_demands(
+            context,
+            &self.green_loop,
+            &self.braking_circuit_altn,
+            &landing_gear,
+            &autobrake_panel,
+        );
+
         // Updating rat stowed pos on all frames in case it's used for graphics
         self.ram_air_turbine.update_position(&context.delta());
 
@@ -409,20 +436,8 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
-        landing_gear: &LandingGear,
     ) {
-        // Process brake logic (which circuit brakes) and send brake demands (how much)
-        self.hyd_brake_logic.update_brake_demands(
-            context,
-            &self.green_loop,
-            &self.braking_circuit_altn,
-            &landing_gear,
-        );
-        self.hyd_brake_logic.update_brake_pressure_limitation(
-            &mut self.braking_circuit_norm,
-            &mut self.braking_circuit_altn,
-        );
-        self.hyd_brake_logic.send_brake_demands(
+        self.brake_computer.send_brake_demands(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
         );
@@ -575,7 +590,7 @@ impl SimulationElement for A320Hydraulic {
         self.green_loop.accept(visitor);
         self.yellow_loop.accept(visitor);
 
-        self.hyd_brake_logic.accept(visitor);
+        self.brake_computer.accept(visitor);
 
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
@@ -613,8 +628,6 @@ struct A320EngineDrivenPumpController {
     is_powered: bool,
     powered_by: Vec<ElectricalBusType>,
     engine_number: usize,
-    engine_master_on_id: String,
-    engine_master_on: bool,
     weight_on_wheels: bool,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
@@ -628,8 +641,6 @@ impl A320EngineDrivenPumpController {
             is_powered: false,
             powered_by,
             engine_number,
-            engine_master_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", engine_number),
-            engine_master_on: false,
             weight_on_wheels: true,
             should_pressurise: true,
             has_pressure_low_fault: false,
@@ -695,7 +706,6 @@ impl PumpController for A320EngineDrivenPumpController {
 }
 impl SimulationElement for A320EngineDrivenPumpController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.engine_master_on = reader.read(&self.engine_master_on_id);
         self.weight_on_wheels = reader.read("SIM ON GROUND");
     }
 
@@ -1053,23 +1063,26 @@ impl SimulationElement for A320RamAirTurbineController {
     }
 }
 
-struct A320HydraulicBrakingLogic {
+struct A320HydraulicBrakeComputerUnit {
+    autobrake_controller: A320AutobrakeController,
     parking_brake_demand: bool,
     weight_on_wheels: bool,
     is_gear_lever_down: bool,
-    left_brake_pilot_input: f64,
-    right_brake_pilot_input: f64,
-    left_brake_green_output: f64,
-    left_brake_yellow_output: f64,
-    right_brake_green_output: f64,
-    right_brake_yellow_output: f64,
+    left_brake_pilot_input: Ratio,
+    right_brake_pilot_input: Ratio,
+    left_brake_green_output: Ratio,
+    left_brake_yellow_output: Ratio,
+    right_brake_green_output: Ratio,
+    right_brake_yellow_output: Ratio,
     normal_brakes_available: bool,
     should_disable_auto_brake_when_retracting: DelayedTrueLogicGate,
     anti_skid_activated: bool,
-    autobrakes_setting: u8,
+
+    alternate_brake_pressure_limit: Pressure,
+    normal_brake_pressure_limit: Pressure,
 }
 /// Implements brakes computers logic
-impl A320HydraulicBrakingLogic {
+impl A320HydraulicBrakeComputerUnit {
     // Minimum pressure hysteresis on green until main switched on ALTN brakes
     // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
     const MIN_PRESSURE_BRAKE_ALTN_HYST_LO: f64 = 1305.;
@@ -1081,34 +1094,44 @@ impl A320HydraulicBrakingLogic {
 
     const AUTOBRAKE_GEAR_RETRACTION_DURATION_S: f64 = 3.;
 
-    fn new() -> A320HydraulicBrakingLogic {
-        A320HydraulicBrakingLogic {
+    const PILOT_INPUT_DETECTION_TRESHOLD: f64 = 0.2;
+
+    fn new() -> A320HydraulicBrakeComputerUnit {
+        A320HydraulicBrakeComputerUnit {
+            autobrake_controller: A320AutobrakeController::new(),
             // Position of parking brake lever
             parking_brake_demand: true,
             weight_on_wheels: true,
             is_gear_lever_down: true,
-            left_brake_pilot_input: 0.0,
-            right_brake_pilot_input: 0.0,
+            left_brake_pilot_input: Ratio::new::<ratio>(0.0),
+            right_brake_pilot_input: Ratio::new::<ratio>(0.0),
             // Actual command sent to left green circuit
-            left_brake_green_output: 0.0,
+            left_brake_green_output: Ratio::new::<ratio>(0.0),
             // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
-            left_brake_yellow_output: 1.0,
+            left_brake_yellow_output: Ratio::new::<ratio>(1.0),
             // Actual command sent to right green circuit
-            right_brake_green_output: 0.0,
+            right_brake_green_output: Ratio::new::<ratio>(0.0),
             // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
-            right_brake_yellow_output: 1.0,
+            right_brake_yellow_output: Ratio::new::<ratio>(1.0),
             normal_brakes_available: false,
             should_disable_auto_brake_when_retracting: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
             ),
             anti_skid_activated: true,
-            autobrakes_setting: 0,
+            alternate_brake_pressure_limit: Pressure::new::<psi>(3000.),
+            normal_brake_pressure_limit: Pressure::new::<psi>(3000.),
         }
+    }
+
+    fn allow_autobrake_arming(&self) -> bool {
+        self.anti_skid_activated && self.normal_brakes_available
     }
 
     fn update_normal_braking_availability(&mut self, normal_braking_loop_pressure: &Pressure) {
         if normal_braking_loop_pressure.get::<psi>() > Self::MIN_PRESSURE_BRAKE_ALTN_HYST_HI
-            && (self.left_brake_pilot_input < 0.2 && self.right_brake_pilot_input < 0.2)
+            && (self.left_brake_pilot_input.get::<ratio>() < Self::PILOT_INPUT_DETECTION_TRESHOLD
+                && self.right_brake_pilot_input.get::<ratio>()
+                    < Self::PILOT_INPUT_DETECTION_TRESHOLD)
         {
             self.normal_brakes_available = true;
         } else if normal_braking_loop_pressure.get::<psi>() < Self::MIN_PRESSURE_BRAKE_ALTN_HYST_LO
@@ -1117,37 +1140,29 @@ impl A320HydraulicBrakingLogic {
         }
     }
 
-    fn update_brake_pressure_limitation(
-        &mut self,
-        norm_brk: &mut BrakeCircuit,
-        altn_brk: &mut BrakeCircuit,
-    ) {
+    fn update_brake_pressure_limitation(&mut self) {
         let yellow_manual_braking_input = self.left_brake_pilot_input
-            > self.left_brake_yellow_output + 0.2
-            || self.right_brake_pilot_input > self.right_brake_yellow_output + 0.2;
+            > self.left_brake_yellow_output + Ratio::new::<ratio>(0.2)
+            || self.right_brake_pilot_input
+                > self.right_brake_yellow_output + Ratio::new::<ratio>(0.2);
 
         // Nominal braking from pedals is limited to 2538psi
-        norm_brk.set_brake_limit_active(true);
-        norm_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
+        self.normal_brake_pressure_limit = Pressure::new::<psi>(2538.);
 
-        if self.parking_brake_demand {
-            altn_brk.set_brake_limit_active(true);
-
+        self.alternate_brake_pressure_limit = Pressure::new::<psi>(if self.parking_brake_demand {
             // If no pilot action, standard park brake pressure limit
             if !yellow_manual_braking_input {
-                altn_brk.set_brake_press_limit(Pressure::new::<psi>(2103.));
+                2103.
             } else {
                 // Else manual action limited to a higher max nominal pressure
-                altn_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
+                2538.
             }
         } else if !self.anti_skid_activated {
-            altn_brk.set_brake_press_limit(Pressure::new::<psi>(1160.));
-            altn_brk.set_brake_limit_active(true);
+            1160.
         } else {
             // Else if any manual braking we use standard limit
-            altn_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
-            altn_brk.set_brake_limit_active(true);
-        }
+            2538.
+        });
     }
 
     /// Updates final brake demands per hydraulic loop based on pilot pedal demands
@@ -1157,8 +1172,19 @@ impl A320HydraulicBrakingLogic {
         green_loop: &HydraulicLoop,
         alternate_circuit: &BrakeCircuit,
         landing_gear: &LandingGear,
+        autobrake_panel: &AutobrakePanel,
     ) {
         self.update_normal_braking_availability(&green_loop.pressure());
+        self.update_brake_pressure_limitation();
+
+        self.autobrake_controller.update(
+            &context,
+            &autobrake_panel,
+            self.allow_autobrake_arming(),
+            self.left_brake_pilot_input,
+            self.right_brake_pilot_input,
+            self.weight_on_wheels,
+        );
 
         let is_in_flight_gear_lever_up = !self.weight_on_wheels && !self.is_gear_lever_down;
         self.should_disable_auto_brake_when_retracting.update(
@@ -1168,37 +1194,42 @@ impl A320HydraulicBrakingLogic {
 
         if is_in_flight_gear_lever_up {
             if self.should_disable_auto_brake_when_retracting.output() {
-                self.left_brake_green_output = 0.;
-                self.right_brake_green_output = 0.;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.);
             } else {
                 // Slight brake pressure to stop the spinning wheels (have no pressure data available yet, 0.2 is random one)
-                self.left_brake_green_output = 0.2;
-                self.right_brake_green_output = 0.2;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.2);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.2);
             }
 
-            self.left_brake_yellow_output = 0.;
-            self.right_brake_yellow_output = 0.;
+            self.left_brake_yellow_output = Ratio::new::<ratio>(0.);
+            self.right_brake_yellow_output = Ratio::new::<ratio>(0.);
         } else {
             let green_used_for_brakes = self.normal_brakes_available
                 && self.anti_skid_activated
                 && !self.parking_brake_demand;
 
             if green_used_for_brakes {
-                self.left_brake_green_output = self.left_brake_pilot_input;
-                self.right_brake_green_output = self.right_brake_pilot_input;
-                self.left_brake_yellow_output = 0.;
-                self.right_brake_yellow_output = 0.;
+                // Final output on normal brakes is max(pilot demand , autobrake demand) to allow pilot override autobrake demand
+                self.left_brake_green_output = self
+                    .left_brake_pilot_input
+                    .max(self.autobrake_controller.brake_output());
+                self.right_brake_green_output = self
+                    .right_brake_pilot_input
+                    .max(self.autobrake_controller.brake_output());
+                self.left_brake_yellow_output = Ratio::new::<ratio>(0.);
+                self.right_brake_yellow_output = Ratio::new::<ratio>(0.);
             } else {
-                self.left_brake_green_output = 0.;
-                self.right_brake_green_output = 0.;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.);
                 if !self.parking_brake_demand {
                     // Normal braking but using alternate circuit
                     self.left_brake_yellow_output = self.left_brake_pilot_input;
                     self.right_brake_yellow_output = self.right_brake_pilot_input;
                 } else {
                     // Else we just use parking brake
-                    self.left_brake_yellow_output = 1.;
-                    self.right_brake_yellow_output = 1.;
+                    self.left_brake_yellow_output = Ratio::new::<ratio>(1.);
+                    self.right_brake_yellow_output = Ratio::new::<ratio>(1.);
 
                     // Special case: parking brake on but yellow can't provide enough brakes: green are allowed to brake for emergency
                     if alternate_circuit.left_brake_pressure().get::<psi>()
@@ -1214,38 +1245,54 @@ impl A320HydraulicBrakingLogic {
         }
 
         // Limiting final values
-        self.left_brake_yellow_output = self.left_brake_yellow_output.min(1.).max(0.);
-        self.right_brake_yellow_output = self.right_brake_yellow_output.min(1.).max(0.);
-        self.left_brake_green_output = self.left_brake_green_output.min(1.).max(0.);
-        self.right_brake_green_output = self.right_brake_green_output.min(1.).max(0.);
+        self.left_brake_yellow_output = self
+            .left_brake_yellow_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.right_brake_yellow_output = self
+            .right_brake_yellow_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.left_brake_green_output = self
+            .left_brake_green_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.right_brake_green_output = self
+            .right_brake_green_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
     }
 
     fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
+        norm.set_brake_press_limit(self.normal_brake_pressure_limit);
         norm.set_brake_demand_left(self.left_brake_green_output);
         norm.set_brake_demand_right(self.right_brake_green_output);
+
+        altn.set_brake_press_limit(self.alternate_brake_pressure_limit);
         altn.set_brake_demand_left(self.left_brake_yellow_output);
         altn.set_brake_demand_right(self.right_brake_yellow_output);
     }
 }
 
-impl SimulationElement for A320HydraulicBrakingLogic {
+impl SimulationElement for A320HydraulicBrakeComputerUnit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.autobrake_controller.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.parking_brake_demand = reader.read("PARK_BRAKE_LEVER_POS");
         self.weight_on_wheels = reader.read("SIM ON GROUND");
         self.is_gear_lever_down = reader.read("GEAR HANDLE POSITION");
         self.anti_skid_activated = reader.read("ANTISKID BRAKES ACTIVE");
-        self.left_brake_pilot_input = reader.read("LEFT_BRAKE_PEDAL_INPUT");
-        self.right_brake_pilot_input = reader.read("RIGHT_BRAKE_PEDAL_INPUT");
-        let autobrakes_setting: f64 = reader.read("AUTOBRAKES SETTING");
-        self.autobrakes_setting = autobrakes_setting.floor() as u8;
+        self.left_brake_pilot_input = Ratio::new::<ratio>(reader.read("LEFT_BRAKE_PEDAL_INPUT"));
+        self.right_brake_pilot_input = Ratio::new::<ratio>(reader.read("RIGHT_BRAKE_PEDAL_INPUT"));
     }
 }
 
 struct A320BrakingForce {
     left_braking_force: f64,
     right_braking_force: f64,
-
-    park_brake_lever_is_set: bool,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
@@ -1254,8 +1301,6 @@ impl A320BrakingForce {
         A320BrakingForce {
             left_braking_force: 0.,
             right_braking_force: 0.,
-
-            park_brake_lever_is_set: true,
         }
     }
 
@@ -1281,11 +1326,6 @@ impl SimulationElement for A320BrakingForce {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
         writer.write("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
         writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
-    }
-
-    // We receive here the desired parking brake position. This is the parking brake lever input
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.park_brake_lever_is_set = reader.read("PARK_BRAKE_LEVER_POS");
     }
 }
 
@@ -1361,6 +1401,221 @@ impl SimulationElement for PushbackTug {
         self.previous_angle = self.angle;
         self.angle = state.read("PUSHBACK ANGLE");
         self.state = state.read("PUSHBACK STATE");
+    }
+}
+
+/// Autobrake controller computes the state machine of the autobrake logic, and the deceleration target
+/// that we expect for the plane
+pub struct A320AutobrakeController {
+    deceleration_governor: AutobrakeDecelerationGovernor,
+
+    target: Acceleration,
+    mode: AutobrakeMode,
+
+    arming_is_allowed_by_bcu: bool,
+    left_brake_pedal_input: Ratio,
+    right_brake_pedal_input: Ratio,
+
+    ground_spoilers_are_deployed: bool,
+    last_ground_spoilers_are_deployed: bool,
+
+    should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
+    should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate,
+}
+impl A320AutobrakeController {
+    const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
+
+    // Dynamic decel target map versus time for any mode that needs it
+    const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [5., 5., 0., -2.];
+    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 6.];
+
+    const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [5., 5., 0., -2., -3.];
+    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 5., 6.];
+
+    const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
+    const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
+
+    const MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
+    const TARGET_TO_SHOW_DECEL_IN_MAX_MS2: f64 = -2.7;
+
+    fn new() -> A320AutobrakeController {
+        A320AutobrakeController {
+            deceleration_governor: AutobrakeDecelerationGovernor::new(),
+            target: Acceleration::new::<meter_per_second_squared>(0.),
+            mode: AutobrakeMode::NONE,
+            arming_is_allowed_by_bcu: false,
+            left_brake_pedal_input: Ratio::new::<percent>(0.),
+            right_brake_pedal_input: Ratio::new::<percent>(0.),
+            ground_spoilers_are_deployed: false,
+            last_ground_spoilers_are_deployed: false,
+            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
+                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
+            ),
+            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
+                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
+            ),
+        }
+    }
+
+    fn spoilers_retracted_during_this_update(&self) -> bool {
+        !self.ground_spoilers_are_deployed && self.last_ground_spoilers_are_deployed
+    }
+
+    fn brake_output(&self) -> Ratio {
+        Ratio::new::<ratio>(self.deceleration_governor.output())
+    }
+
+    fn determine_mode(&mut self, autobrake_panel: &AutobrakePanel) -> AutobrakeMode {
+        if self.should_disarm() {
+            AutobrakeMode::NONE
+        } else {
+            match autobrake_panel.pressed_mode() {
+                Some(mode) if self.mode == mode => AutobrakeMode::NONE,
+                Some(mode)
+                    if mode != AutobrakeMode::MAX
+                        || !self.should_reject_max_mode_after_time_in_flight.output() =>
+                {
+                    mode
+                }
+                Some(_) | None => self.mode,
+            }
+        }
+    }
+
+    fn should_engage_deceleration_governor(&self) -> bool {
+        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm()
+    }
+
+    fn is_armed(&self) -> bool {
+        self.mode != AutobrakeMode::NONE
+    }
+
+    fn is_decelerating(&self) -> bool {
+        match self.mode {
+            AutobrakeMode::NONE => false,
+            AutobrakeMode::LOW | AutobrakeMode::MED => {
+                self.deceleration_demanded()
+                    && self
+                        .deceleration_governor
+                        .is_on_target(Ratio::new::<percent>(
+                            Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED,
+                        ))
+            }
+            _ => {
+                self.deceleration_demanded()
+                    && self.deceleration_governor.decelerating_at_or_above_rate(
+                        Acceleration::new::<meter_per_second_squared>(
+                            Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2,
+                        ),
+                    )
+            }
+        }
+    }
+
+    fn deceleration_demanded(&self) -> bool {
+        self.deceleration_governor.is_engaged()
+            && self.target.get::<meter_per_second_squared>() < 0.
+    }
+
+    fn should_disarm_due_to_pedal_input(&self) -> bool {
+        match self.mode {
+            AutobrakeMode::NONE => false,
+            AutobrakeMode::LOW | AutobrakeMode::MED => {
+                self.left_brake_pedal_input > Ratio::new::<percent>(53.)
+                    || self.right_brake_pedal_input > Ratio::new::<percent>(53.)
+                    || (self.left_brake_pedal_input > Ratio::new::<percent>(11.)
+                        && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
+            }
+            AutobrakeMode::MAX => {
+                self.left_brake_pedal_input > Ratio::new::<percent>(77.)
+                    || self.right_brake_pedal_input > Ratio::new::<percent>(77.)
+                    || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
+                        && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
+            }
+            _ => false,
+        }
+    }
+
+    fn should_disarm(&self) -> bool {
+        (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
+            || !self.arming_is_allowed_by_bcu
+            || self.spoilers_retracted_during_this_update()
+            || self.should_disarm_after_time_in_flight.output()
+    }
+
+    fn calculate_target(&mut self) -> Acceleration {
+        Acceleration::new::<meter_per_second_squared>(match self.mode {
+            AutobrakeMode::NONE => Self::OFF_MODE_DECEL_TARGET_MS2,
+            AutobrakeMode::LOW => interpolation(
+                &Self::LOW_MODE_DECEL_PROFILE_TIME_S,
+                &Self::LOW_MODE_DECEL_PROFILE_ACCEL_MS2,
+                self.deceleration_governor.time_engaged().as_secs_f64(),
+            ),
+            AutobrakeMode::MED => interpolation(
+                &Self::MED_MODE_DECEL_PROFILE_TIME_S,
+                &Self::MED_MODE_DECEL_PROFILE_ACCEL_MS2,
+                self.deceleration_governor.time_engaged().as_secs_f64(),
+            ),
+            AutobrakeMode::MAX => Self::MAX_MODE_DECEL_TARGET_MS2,
+            _ => Self::OFF_MODE_DECEL_TARGET_MS2,
+        })
+    }
+
+    fn update_input_conditions(
+        &mut self,
+        context: &UpdateContext,
+        allow_arming: bool,
+        pedal_input_left: Ratio,
+        pedal_input_right: Ratio,
+        weight_on_wheels: bool,
+    ) {
+        self.should_disarm_after_time_in_flight
+            .update(context, !weight_on_wheels);
+        self.should_reject_max_mode_after_time_in_flight
+            .update(context, !weight_on_wheels);
+
+        self.arming_is_allowed_by_bcu = allow_arming;
+        self.left_brake_pedal_input = pedal_input_left;
+        self.right_brake_pedal_input = pedal_input_right;
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        autobrake_panel: &AutobrakePanel,
+        allow_arming: bool,
+        pedal_input_left: Ratio,
+        pedal_input_right: Ratio,
+        weight_on_wheels: bool,
+    ) {
+        self.update_input_conditions(
+            &context,
+            allow_arming,
+            pedal_input_left,
+            pedal_input_right,
+            weight_on_wheels,
+        );
+        self.mode = self.determine_mode(&autobrake_panel);
+
+        self.deceleration_governor
+            .engage_when(self.should_engage_deceleration_governor());
+
+        self.target = self.calculate_target();
+        self.deceleration_governor.update(&context, self.target);
+    }
+}
+impl SimulationElement for A320AutobrakeController {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write("AUTOBRAKES_ARMED_MODE", self.mode as u8 as f64);
+        writer.write("AUTOBRAKES_DECEL_LIGHT", self.is_decelerating());
+    }
+
+    fn read(&mut self, state: &mut SimulatorReader) {
+        self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
+        self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
+
+        // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
+        self.mode = state.read_f64("AUTOBRAKES_ARMED_MODE").into();
     }
 }
 
@@ -1479,7 +1734,7 @@ mod tests {
         use systems::simulation::test::TestBed;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
-            acceleration::foot_per_second_squared, length::foot, ratio::percent,
+            acceleration::meter_per_second_squared, length::foot, ratio::percent,
             thermodynamic_temperature::degree_celsius, velocity::knot,
         };
 
@@ -1539,6 +1794,7 @@ mod tests {
             engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
+            autobrake_panel: AutobrakePanel,
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
@@ -1573,6 +1829,7 @@ mod tests {
                     engine_2: LeapEngine::new(2),
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
+                    autobrake_panel: AutobrakePanel::new(),
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     engine_fire_overhead: EngineFireOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
@@ -1747,6 +2004,7 @@ mod tests {
                     &self.engine_1,
                     &self.engine_2,
                     &self.overhead,
+                    &self.autobrake_panel,
                     &self.engine_fire_overhead,
                     &self.landing_gear,
                     &self.emergency_electrical_overhead,
@@ -1761,6 +2019,7 @@ mod tests {
                 self.engine_1.accept(visitor);
                 self.engine_2.accept(visitor);
                 self.hydraulics.accept(visitor);
+                self.autobrake_panel.accept(visitor);
                 self.overhead.accept(visitor);
                 self.engine_fire_overhead.accept(visitor);
                 self.landing_gear.accept(visitor);
@@ -1783,14 +2042,15 @@ mod tests {
                 }
             }
 
-            fn run_one_tick(self) -> Self {
-                self.run_waiting_for(Duration::from_millis(
+            fn run_one_tick(mut self) -> Self {
+                self.run_with_delta(Duration::from_millis(
                     A320Hydraulic::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS,
-                ))
+                ));
+                self
             }
 
             fn run_waiting_for(mut self, delta: Duration) -> Self {
-                self.run_with_delta(delta);
+                self.test_bed.run_multiple_frames(delta);
                 self
             }
 
@@ -1880,6 +2140,10 @@ mod tests {
 
             fn get_blue_reservoir_volume(&mut self) -> Volume {
                 self.read("HYD_BLUE_RESERVOIR")
+            }
+
+            fn autobrake_mode(&mut self) -> AutobrakeMode {
+                self.read_f64("AUTOBRAKES_ARMED_MODE").into()
             }
 
             fn get_brake_left_green_pressure(&mut self) -> Pressure {
@@ -2133,8 +2397,39 @@ mod tests {
             }
 
             fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
-                let scaled_value = position_percent.get::<percent>() / 100.;
+                let scaled_value = position_percent.get::<ratio>();
                 self.write(name, scaled_value.min(1.).max(0.));
+                self
+            }
+
+            fn set_autobrake_low(mut self) -> Self {
+                self.write("OVHD_AUTOBRK_LOW_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.write("OVHD_AUTOBRK_LOW_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_autobrake_med(mut self) -> Self {
+                self.write("OVHD_AUTOBRK_MED_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.write("OVHD_AUTOBRK_MED_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_autobrake_max(mut self) -> Self {
+                self.write("OVHD_AUTOBRK_MAX_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.write("OVHD_AUTOBRK_MAX_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_deploy_spoilers(mut self) -> Self {
+                self.write("SPOILERS_GROUND_SPOILERS_ACTIVE", true);
+                self
+            }
+
+            fn set_retract_spoilers(mut self) -> Self {
+                self.write("SPOILERS_GROUND_SPOILERS_ACTIVE", false);
                 self
             }
 
@@ -3893,6 +4188,386 @@ mod tests {
         }
 
         #[test]
+        fn autobrakes_arms_in_flight_lo_or_med() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_low()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+        }
+
+        #[test]
+        fn autobrakes_disarms_if_green_pressure_low() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_low()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+
+            test_bed = test_bed
+                .set_ptu_state(false)
+                .stop_eng1()
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_disarms_if_askid_off() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_anti_skid(false)
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_max_wont_arm_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_taxiing_wont_disarm_when_braking() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(60.))
+                .start_eng2(Ratio::new::<percent>(60.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+        }
+
+        #[test]
+        fn autobrakes_activates_on_ground_on_spoiler_deploy() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_disengage_on_spoiler_retract() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_retract_spoilers()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        // Should disable with one pedal > 61° over max range of 79.4° thus 77%
+        fn autobrakes_max_disengage_at_77_on_one_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(70.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(78.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_max_disengage_at_52_on_both_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(55.))
+                .set_right_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        // Should disable with one pedals > 42° over max range of 79.4° thus 52%
+        fn autobrakes_med_disengage_at_52_on_one_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(50.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_med_disengage_at_11_on_both_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(15.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(15.))
+                .set_left_brake(Ratio::new::<percent>(15.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_max_disarm_after_10s_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
         fn controller_blue_epump_activates_when_no_weight_on_wheels() {
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
             let overhead_panel = A320HydraulicOverheadPanel::new();
@@ -4222,8 +4897,6 @@ mod tests {
                 true,
             ));
 
-            edp1_controller.engine_master_on = true;
-
             edp1_controller.update(
                 &overhead_panel,
                 &fire_overhead_panel,
@@ -4269,8 +4942,6 @@ mod tests {
                 true,
             ));
 
-            edp1_controller.engine_master_on = true;
-
             edp1_controller.update(
                 &overhead_panel,
                 &fire_overhead_panel,
@@ -4313,8 +4984,6 @@ mod tests {
                 ElectricalBusType::DirectCurrentEssential,
                 true,
             ));
-
-            edp2_controller.engine_master_on = true;
 
             edp2_controller.update(
                 &overhead_panel,
@@ -4363,7 +5032,6 @@ mod tests {
                 ElectricalBusType::DirectCurrentEssential,
                 true,
             ));
-            edp2_controller.engine_master_on = true;
 
             edp2_controller.update(
                 &overhead_panel,
@@ -4596,7 +5264,7 @@ mod tests {
                 Length::new::<foot>(5000.),
                 ThermodynamicTemperature::new::<degree_celsius>(25.0),
                 true,
-                Acceleration::new::<foot_per_second_squared>(0.),
+                Acceleration::new::<meter_per_second_squared>(0.),
             )
         }
 
