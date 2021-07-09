@@ -185,9 +185,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         //TCAS
         this.map.instrument.TCASManager.update(deltaTime);
 
-        const ADIRSState = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum");
+        const failed = ADIRS.mapHasFailed(this.screenIndex);
 
-        if (ADIRSState != 2) {
+        if (failed) {
             document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
             document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "visible");
@@ -220,7 +220,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             SimVar.SetSimVarValue("L:GPSPrimary", "bool", 1);
         }
 
-        if (ADIRSState != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
+        if (failed && !this.map.planMode && this.modeChangeTimer == -1) {
             document.querySelector("#MapFail").setAttribute("visibility", "visible");
             document.querySelector("#Map").setAttribute("style", "display:none");
         } else {
@@ -229,7 +229,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
 
         if (this.map.instrument.airplaneIconElement._image) {
-            this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
+            this.map.instrument.airplaneIconElement._image.setAttribute("visibility", failed ? "hidden" : "visible");
         }
 
         // ND Chrono Logic
@@ -814,57 +814,71 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         if (currentKnobValue <= 0.0) {
             return;
         }
+
+        const airDataReferenceSource = ADIRS.getAirDataReferenceSource(this.screenIndex);
+        const inertialReferenceSource = ADIRS.getInertialReferenceSource(this.screenIndex);
         if (this.ndInfo != null) {
-            this.ndInfo.update(_deltaTime);
+            this.ndInfo.update(_deltaTime, airDataReferenceSource, inertialReferenceSource);
         }
-        const ADIRSState = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum");
-        const groundSpeed = Math.round(Simplane.getGroundSpeed());
-        const trueAirSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
-        const windDirection = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees");
-        const windStrength = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots");
-        const gs = this.ndInfo.querySelector("#GS_Value");
-        const tas = this.ndInfo.querySelector("#TAS_Value");
-        const wd = this.ndInfo.querySelector("#Wind_Direction");
-        const ws = this.ndInfo.querySelector("#Wind_Strength");
-        const wa = this.ndInfo.querySelector("#Wind_Arrow");
+
+        const failed = ADIRS.mapHasFailed(this.screenIndex);
+
+        const tasElement = this.ndInfo.querySelector("#TAS_Value");
+        const trueAirSpeed = ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TRUE_AIRSPEED`, "Knots");
+        if (trueAirSpeed !== this.lastTrueAirSpeed) {
+            this.lastTrueAirSpeed = trueAirSpeed;
+            if (Number.isNaN(trueAirSpeed)) {
+                tasElement.textContent = "";
+            } else if (trueAirSpeed < 0.00001) {
+                tasElement.textContent = "---";
+            } else {
+                tasElement.textContent = Math.round(trueAirSpeed).toString().padStart(3);
+            }
+        }
+
+        const windDirectionElement = this.ndInfo.querySelector("#Wind_Direction");
+        const windVelocityElement = this.ndInfo.querySelector("#Wind_Strength");
+        const windArrowElement = this.ndInfo.querySelector("#Wind_Arrow");
+        const windDirection = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_WIND_DIRECTION`, "Degrees");
+        const windVelocity = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_WIND_VELOCITY`, "Knots");
+        if (windVelocity !== this.lastWindVelocity || windDirection !== this.lastWindDirection) {
+            this.lastWindDirection = windDirection;
+            this.lastWindVelocity = windVelocity;
+            if (Number.isNaN(windVelocity) || Number.isNaN(windDirection)) {
+                windDirectionElement.textContent = "";
+                windVelocityElement.textContent = "";
+                windArrowElement.style.display = "none";
+            } else if (windVelocity < 0.00001) {
+                windDirectionElement.textContent = "---";
+                windVelocityElement.textContent = "---";
+            } else {
+                windDirectionElement.textContent = Math.round(windDirection).toString().padStart(3, '0');
+                windVelocityElement.textContent = Math.round(windVelocity).toString();
+                windArrowElement.style.display = "block";
+            }
+
+            if (Number.isNaN(windVelocity) || Number.isNaN(windDirection) || windVelocity <= 2) {
+                windArrowElement.style.display = "none";
+            }
+        }
+
+        const gsElement = this.ndInfo.querySelector("#GS_Value");
+        const groundSpeed = Math.round(ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`, "Knots"));
+        if (groundSpeed !== this.lastGroundSpeed) {
+            this.lastGroundSpeed = groundSpeed;
+            if (Number.isNaN(groundSpeed)) {
+                gsElement.textContent = "";
+            } else {
+                gsElement.textContent = Math.round(groundSpeed).toString().padStart(3);
+            }
+        }
+
+        // Show/Hide waypoint group when ADIRS not aligned
         const wptg = this.ndInfo.querySelector("#Waypoint_Group");
         const wptPPOS = this.ndInfo.querySelector("#Waypoint_PPOS");
-        if (ADIRSState !== this.lastADIRSState || trueAirSpeed !== this.lasttrueAirSpeed) {
-            this.lastADIRSState = ADIRSState;
-            this.lasttrueAirSpeed = trueAirSpeed;
-            if (ADIRSState !== 2 || trueAirSpeed < 60) {
-                //TAS info Conditions
-                tas.textContent = "---";
-            }
-        }
-        if (ADIRSState !== this.lastADIRSState || windStrength !== this.lastwindStrength || windDirection !== this.lastwindDirection) {
-            this.lastADIRSState = ADIRSState;
-            this.lastwindDirection = windDirection;
-            this.lastwindStrength = windStrength;
-            if (ADIRSState !== 2 || trueAirSpeed < 100 || windStrength < 2) {
-                //Wind Arrow info Conditions
-                wd.textContent = "---";
-                ws.textContent = "---";
-                wa.setAttribute("visibility", "hidden");
-            } else {
-                wd.textContent = (Math.round(windDirection)).toString().padStart(3, '0');
-                ws.textContent = (Math.round(windStrength)).toString().padStart(2, '0');
-                wa.setAttribute("visibility", "visible");
-            }
-        }
-        if (ADIRSState !== this.lastADIRSState || groundSpeed !== this.lastgroundSpeed) {
-            this.lastADIRSState = ADIRSState;
-            this.lastgroundSpeed = groundSpeed;
-            if (ADIRSState != 2) {
-                //GS info Conditions
-                gs.textContent = "---";
-            } else {
-                gs.textContent = groundSpeed.toString().padStart(3);
-            }
-        }
-        // Show/Hide waypoint group when ADIRS not aligned
-        wptPPOS.setAttribute("visibility", (ADIRSState != 2) ? "visible" : "hidden");
-        wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
+
+        wptPPOS.setAttribute("visibility", failed ? "visible" : "hidden");
+        wptg.setAttribute("visibility", failed ? "hidden" : "visible");
     }
     onExit() {
     }
