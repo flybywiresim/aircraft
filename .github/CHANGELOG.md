@@ -133,7 +133,7 @@
 1. [HYD] Switched hydraulics to new engine model simvars - @Crocket63 (crocket)
 1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
-
+1. [HYD] Fixed autobrake inputs response for rotating knob type controllers - @Crocket63 (crocket)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
