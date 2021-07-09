@@ -63,6 +63,8 @@ export declare class WayPoint {
 
     legAltitude2: number;
 
+    speedConstraint: number;
+
     additionalData: { [key: string]: any }
 
     _svgElements: any;
