@@ -169,7 +169,6 @@ export class ManagedFlightPlan {
         const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
         console.log(`BRUHEGG: ${utcTime}, BRUHHH #2: ${eta}`);
-        debugger;
 
         return eta + utcTime;
     }
