@@ -1,10 +1,7 @@
 use self::{cabin_pressure_controller::CabinPressureController, pressure_valve::PressureValve};
 use crate::{
     shared::{random_number, EngineCorrectedN1},
-    simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, Write,
-    },
+    simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext, Write},
 };
 use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::foot_per_minute};
 
@@ -70,25 +67,9 @@ impl Pressurization {
             }
         }
     }
-
-    fn set_landing_elev(&mut self, reading: Length) {
-        self.landing_elevation = reading;
-    }
-
-    fn set_sl_pressure(&mut self, reading: Pressure) {
-        self.sea_level_pressure = reading;
-    }
-
-    fn set_dest_qnh(&mut self, reading: Pressure) {
-        self.destination_qnh = reading;
-    }
 }
 
 impl SimulationElement for Pressurization {
-    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write("ACTIVE_CPC_SYS", self.active_system as f64);
         writer.write(
@@ -112,11 +93,9 @@ impl SimulationElement for Pressurization {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set_landing_elev(reader.read("AUTO_LANDING_ELEVATION"));
-        self.set_sl_pressure(Pressure::new::<hectopascal>(
-            reader.read("SEA LEVEL PRESSURE"),
-        ));
-        self.set_dest_qnh(Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH")));
+        self.landing_elevation = reader.read("AUTO_LANDING_ELEVATION");
+        self.sea_level_pressure = Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE"));
+        self.destination_qnh = Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH"));
     }
 }
 
@@ -129,7 +108,7 @@ impl Default for Pressurization {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use crate::{
         shared::EngineCorrectedN1,
         simulation::test::{SimulationTestBed, TestBed},
