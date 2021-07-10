@@ -5,11 +5,11 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Knots } from '@typings/types';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
-import { WindIndicator } from './WindIndicator';
-import { SpeedIndicator } from './SpeedIndicator';
-import { RadioNavInfo } from './RadioNavInfo';
-import { Chrono } from './Chrono';
-import { NavigationDisplayMessages } from './utils/NavigationDisplayMessages';
+import { WindIndicator } from './elements/WindIndicator';
+import { SpeedIndicator } from './elements/SpeedIndicator';
+import { RadioNavInfo } from './elements/RadioNavInfo';
+import { Chrono } from './elements/Chrono';
+import { NavigationDisplayMessages } from './elements/NavigationDisplayMessages';
 
 import './styles.scss';
 import { PlanMode } from './pages/PlanMode';
