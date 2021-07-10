@@ -42,28 +42,28 @@ impl Pressurization {
     }
 
     pub fn update(&mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) {
-        for c in self.cpc.iter_mut() {
-            c.update(
+        for controller in self.cpc.iter_mut() {
+            controller.update(
                 context,
                 engines,
                 self.landing_elevation,
                 self.sea_level_pressure,
                 self.destination_qnh,
             );
-            self.outflow_valve.update(context, c);
+            self.outflow_valve.update(context, controller);
         }
         self.switch_active_system();
     }
 
     fn switch_active_system(&mut self) {
         let mut changed = false;
-        for c in &mut self.cpc {
-            if c.should_switch_cpc() {
+        for controller in &mut self.cpc {
+            if controller.should_switch_cpc() {
                 if !changed {
                     self.active_system = if self.active_system == 1 { 2 } else { 1 };
                     changed = true;
                 }
-                c.reset_cpc_switch();
+                controller.reset_cpc_switch();
             }
         }
     }
@@ -185,7 +185,8 @@ mod tests {
     fn conversion_from_pressure_to_altitude_works() {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(250.)); //Equivalent to FL340 from tables
+        //Equivalent to FL340 from tables
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(250.));
         test_bed.set_on_ground(true);
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(20));

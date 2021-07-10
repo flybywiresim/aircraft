@@ -51,8 +51,8 @@ impl CabinPressureController {
         self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
         self.departure_elev = self.calculate_departure_elev(context);
         self.landing_elev = landing_elevation;
-        self.cabin_target_vs = self.calculate_cabin_vs(context); //Pre-smooth function
-        self.cabin_vs = self.set_cabin_vs(context); //Smooth function
+        self.cabin_target_vs = self.calculate_cabin_vs(context);
+        self.cabin_vs = self.set_cabin_vs(context);
     }
 
     fn calculate_cabin_pressure(&self, context: &UpdateContext) -> Pressure {
@@ -112,8 +112,8 @@ impl CabinPressureController {
         const G: f64 = 9.80665; // Gravity - m/s2
 
         // Hydrostatic equation with linear temp changes and constant R, g
-        let z: f64 = ((T_0 / pressure_ratio.powf((L * R) / G)) - T_0) / L;
-        Length::new::<meter>(z)
+        let altitude: f64 = ((T_0 / pressure_ratio.powf((L * R) / G)) - T_0) / L;
+        Length::new::<meter>(altitude)
     }
 
     fn calculate_departure_elev(&self, context: &UpdateContext) -> Length {
@@ -168,7 +168,8 @@ impl CabinPressureController {
                 }
             }
             PressureSchedule::Abort => {
-                const TARGET_LANDING_ALT_DIFF: f64 = 187.818; // Altitude in ft equivalent to 0.1 PSI delta P at sea level
+                // Altitude in ft equivalent to 0.1 PSI delta P at sea level
+                const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
 
                 if self.cabin_altitude()
                     < self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
@@ -186,7 +187,8 @@ impl CabinPressureController {
     }
 
     fn get_ext_diff_with_ldg_elev(&self, context: &UpdateContext) -> Length {
-        const TARGET_LANDING_ALT_DIFF: f64 = 187.818; // Altitude in ft equivalent to 0.1 PSI delta P at sea level
+        // Altitude in ft equivalent to 0.1 PSI delta P at sea level
+        const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
 
         context.indicated_altitude()
             - self.landing_elev
@@ -198,7 +200,8 @@ impl CabinPressureController {
     }
 
     fn set_cabin_vs(&self, context: &UpdateContext) -> Velocity {
-        const INTERNAL_VS_RATE_CHANGE: f64 = 100.; // Rate of change of 100fpm per second
+        // Rate of change of 100fpm per second
+        const INTERNAL_VS_RATE_CHANGE: f64 = 100.;
 
         let rate_of_change_for_delta = INTERNAL_VS_RATE_CHANGE * context.delta_as_secs_f64();
         if self.cabin_target_vs > self.cabin_vs() {

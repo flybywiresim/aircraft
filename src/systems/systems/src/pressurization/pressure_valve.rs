@@ -16,7 +16,7 @@ impl PressureValve {
         Self {
             open_amount: Ratio::new::<percent>(100.),
             target_open: Ratio::new::<percent>(100.),
-            full_travel_time: Duration::from_secs(4), //Guessed value
+            full_travel_time: Duration::from_secs(4),
         }
     }
 
