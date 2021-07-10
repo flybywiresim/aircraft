@@ -13,6 +13,7 @@ import { NavigationDisplayMessages } from './utils/NavigationDisplayMessages';
 
 import './styles.scss';
 import { PlanMode } from './pages/PlanMode';
+import { RoseMode } from './pages/RoseMode';
 
 export type RangeSetting = 10 | 20 | 40 | 80 | 160 | 320;
 
@@ -57,7 +58,8 @@ const NavigationDisplay: React.FC = () => {
                     <WindIndicator adirsState={adirsState} tas={tas} />
 
                     {modeIndex === Mode.PLAN && <PlanMode rangeSetting={rangeSettings[rangeIndex]} ppos={ppos} />}
-                    {modeIndex === Mode.ARC && <ArcMode side={side} ppos={ppos} />}
+                    {modeIndex === Mode.ARC && <ArcMode rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} />}
+                    {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV) && <RoseMode rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} />}
 
                     <Chrono side={side} />
 
