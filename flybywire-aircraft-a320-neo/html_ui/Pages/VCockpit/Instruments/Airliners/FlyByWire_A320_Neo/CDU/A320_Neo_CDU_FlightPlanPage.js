@@ -456,17 +456,22 @@ class CDUFlightPlanPage {
                             printRow([""]);
                             printRow(Markers.FPLN_DISCONTINUITY);
 
+                            // waypointsWithDiscontinuities can include the origin airport but the position in the FPM
+                            // visibleWaypoints list never does, so detect when we've included it in the earlier index
+                            // math and fix the off-by-one here.
+                            const fpmIndex = (first == 0) ? (wpIndex - 1) : wpIndex;
+
                             addLsk(0, (value) => {
                                 if (value === FMCMainDisplay.clrValue) {
                                     if (waypoint.discontinuityCanBeCleared) {
-                                        mcdu.clearDiscontinuity(wpIndex, () => {
+                                        mcdu.clearDiscontinuity(fpmIndex, () => {
                                             CDUFlightPlanPage.ShowPage(mcdu, offset);
                                         }, true);
                                     }
                                     return;
                                 }
 
-                                mcdu.insertWaypoint(value, wpIndex + 1, () => {
+                                mcdu.insertWaypoint(value, fpmIndex + 1, () => {
                                     CDUFlightPlanPage.ShowPage(mcdu, offset);
                                 }, true);
                             });
