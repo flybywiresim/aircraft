@@ -998,6 +998,21 @@
         - L
         - R
 
+- A32NX_EFIS_{side}_OPTION
+    - Enum
+    - Selects which optional data is displayed on the ND
+      Value | Meaning
+      --- | ---
+      0 | NONE
+      1 | CSTR
+      2 | VOR D
+      3 | WPT
+      4 | NDB
+      5 | ARPT
+    - {side}
+        - L
+        - R
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
