@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer } from '@instruments/common/utils';
-import { AdirsTasDrivenIndicatorProps } from './index';
+import { AdirsTasDrivenIndicatorProps } from '../index';
 
 export const SpeedIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ adirsState, tas }) => {
     const [gs] = useSimVar('GPS GROUND SPEED', 'knots', 500);
