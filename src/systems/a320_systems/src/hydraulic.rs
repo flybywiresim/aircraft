@@ -1304,7 +1304,7 @@ impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
 
     const FLAPS_BREAKPOINTS: [f64; 3] = [0., 50., 100.];
-    const FLAPS_PENALTY_PERCENT: [f64; 3] = [8., 8., 0.];
+    const FLAPS_PENALTY_PERCENT: [f64; 3] = [5., 5., 0.];
 
     pub fn new() -> Self {
         A320BrakingForce {
@@ -1484,7 +1484,7 @@ impl A320AutobrakeController {
     const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 6.];
 
     const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [4., 4., 0., -2., -3.];
-    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 4., 5.];
+    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 2.5, 4.];
 
     const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
     const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
