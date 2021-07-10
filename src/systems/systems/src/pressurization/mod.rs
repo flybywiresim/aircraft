@@ -71,7 +71,7 @@ impl Pressurization {
 
 impl SimulationElement for Pressurization {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("ACTIVE_CPC_SYS", self.active_system as f64);
+        writer.write("ACTIVE_CPC_SYS", self.active_system);
         writer.write(
             "CABIN_ALTITUDE",
             self.cpc[self.active_system - 1].cabin_altitude(),
