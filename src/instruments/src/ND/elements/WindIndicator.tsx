@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer } from '@instruments/common/utils';
-import { AdirsTasDrivenIndicatorProps } from './index';
+import { AdirsTasDrivenIndicatorProps } from '../index';
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
