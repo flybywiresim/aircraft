@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { TuningMode } from '@fmgc/radionav';
-import { EfisSide } from './index';
+import { EfisSide } from '../index';
 
 export enum NavAidMode {
     Off = 0,
@@ -43,6 +43,7 @@ const VorInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
         );
     };
 
+    // FIXME: Use actual JSX syntax for this
     const freqText = bigLittle(vorFrequency, 2);
     let dmeText = '---';
     if (vorHasDme && dmeDistance > 0) {
