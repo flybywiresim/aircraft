@@ -64,7 +64,7 @@ export const ISISDisplay: React.FC = () => {
     return (
         <AutoBrightness bugsActive={bugsActive}>
             <ISISDisplayUnit indicatedAirspeed={ias}>
-                <svg className="isis-svg" version="1.1" viewBox="0 0 512 512">
+                <svg id="ISIS" className="ISIS" version="1.1" viewBox="0 0 512 512">
                     {bugsActive
                         ? <BugSetupDisplay bugs={bugs} selectedIndex={selectedIndex} />
                         : <ArtificialHorizonDisplay indicatedAirspeed={ias} bugs={bugs} />}

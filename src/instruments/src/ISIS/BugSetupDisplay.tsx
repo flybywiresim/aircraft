@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Bug } from './Bug';
 
 type BugSetupDisplayProps = {
@@ -16,27 +16,27 @@ export const BugSetupDisplay: React.FC<BugSetupDisplayProps> = ({ selectedIndex,
         <text fontSize={16} x={106} y={180} className="TextWhite">(-)</text>
         <path fill="none" stroke="white" d="M150 136 v225 h176 v-225z" />
         <g>
-            <OffText x={30} y={150} isVisible={!bugs[5].isActive} />
+            {!bugs[5].isActive && <text x={30} y={150} className="TextWhite" />}
             <BugBox x={150} y={150} value={bugs[5].value} isSelected={selectedIndex === 5} numDigits={3} />
         </g>
         <g>
-            <OffText x={30} y={225} isVisible={!bugs[4].isActive} />
+            {!bugs[4].isActive && <text x={30} y={225} className="TextWhite" />}
             <BugBox x={150} y={225} value={bugs[4].value} isSelected={selectedIndex === 4} numDigits={3} />
         </g>
         <g>
-            <OffText x={30} y={300} isVisible={!bugs[3].isActive} />
+            {!bugs[3].isActive && <text x={30} y={300} className="TextWhite" />}
             <BugBox x={150} y={300} value={bugs[3].value} isSelected={selectedIndex === 3} numDigits={3} />
         </g>
         <g>
-            <OffText x={30} y={375} isVisible={!bugs[2].isActive} />
+            {!bugs[2].isActive && <text x={30} y={375} className="TextWhite" />}
             <BugBox x={150} y={375} value={bugs[2].value} isSelected={selectedIndex === 2} numDigits={3} />
         </g>
         <g>
-            <OffText x={400} y={225} isVisible={!bugs[0].isActive} />
+            {!bugs[0].isActive && <text x={400} y={225} className="TextWhite" />}
             <BugBox x={325} y={225} value={bugs[0].value} isSelected={selectedIndex === 0} numDigits={5} />
         </g>
         <g>
-            <OffText x={400} y={300} isVisible={!bugs[1].isActive} />
+            {!bugs[1].isActive && <text x={400} y={300} className="TextWhite" />}
             <BugBox x={325} y={300} value={bugs[1].value} isSelected={selectedIndex === 1} numDigits={5} />
         </g>
         <text x={150} y={450} className="TextCyan">SET/SELECT→</text>
@@ -47,33 +47,17 @@ type BugBoxProps = {
     x: number;
     y: number;
     value: number;
-    isSelected?: boolean;
     numDigits: number;
+    isSelected?: boolean;
 }
 
-export const BugBox: React.FC<BugBoxProps> = ({ x, y, value, isSelected = false, numDigits }) => {
-    const padding = 0;
-    const strokeWidth = 2;
-
-    const width = numDigits * 25 + 2 * padding;
-    const height = 36 + 2 * (padding + strokeWidth);
+export const BugBox: React.FC<BugBoxProps> = ({ x, y, value, numDigits, isSelected = false }) => {
+    const width = numDigits * 25;
 
     return (
-        <g>
-            <rect className={`StrokeWhite FillBackground${isSelected ? ' BlinkInfinite' : ''}`} x={x - width / 2} y={y - 36 - padding + strokeWidth} width={width} height={height} />
+        <g id="BugBox">
+            <rect className={`StrokeWhite FillBackground${isSelected ? ' BlinkInfinite' : ''}`} x={x - width / 2} y={y - 34} width={width} height={40} />
             <text x={x} y={y} textAnchor="middle" className="TextWhite">{value.toString().padStart(numDigits, '0')}</text>
         </g>
     );
 };
-
-type OffTextProps = {
-    x: number;
-    y: number;
-    isVisible?: boolean;
-}
-
-export const OffText: React.FC<OffTextProps> = ({ x, y, isVisible = false }) => (
-    <>
-        {isVisible && <text x={x} y={y} className="TextWhite">OFF</text>}
-    </>
-);
