@@ -43,8 +43,8 @@ pub struct A320 {
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
-    lgcius1: LandingGearControlInterfaceUnit,
-    lgcius2: LandingGearControlInterfaceUnit,
+    lgciu1: LandingGearControlInterfaceUnit,
+    lgciu2: LandingGearControlInterfaceUnit,
     hydraulic: A320Hydraulic,
     hydraulic_overhead: A320HydraulicOverheadPanel,
     autobrake_panel: AutobrakePanel,
@@ -74,10 +74,8 @@ impl A320 {
             electrical: A320Electrical::new(electricity),
             power_consumption: A320PowerConsumption::new(),
             ext_pwr: ExternalPowerSource::new(electricity),
-            lgcius1: LandingGearControlInterfaceUnit::new(
-                ElectricalBusType::DirectCurrentEssential,
-            ),
-            lgcius2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2)),
+            lgciu1: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrentEssential),
+            lgciu2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2)),
             hydraulic: A320Hydraulic::new(),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(),
             autobrake_panel: AutobrakePanel::new(),
@@ -129,11 +127,11 @@ impl Aircraft for A320 {
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
-        self.lgcius1.update(
+        self.lgciu1.update(
             &self.landing_gear,
             self.ext_pwr.output_potential().is_powered(),
         );
-        self.lgcius2.update(
+        self.lgciu2.update(
             &self.landing_gear,
             self.ext_pwr.output_potential().is_powered(),
         );
@@ -145,8 +143,8 @@ impl Aircraft for A320 {
             &self.hydraulic_overhead,
             &self.autobrake_panel,
             &self.engine_fire_overhead,
-            &self.lgcius1,
-            &self.lgcius2,
+            &self.lgciu1,
+            &self.lgciu2,
             &self.emergency_electrical_overhead,
             &self.electrical,
         );
@@ -176,8 +174,8 @@ impl SimulationElement for A320 {
         self.electrical.accept(visitor);
         self.power_consumption.accept(visitor);
         self.ext_pwr.accept(visitor);
-        self.lgcius1.accept(visitor);
-        self.lgcius2.accept(visitor);
+        self.lgciu1.accept(visitor);
+        self.lgciu2.accept(visitor);
         self.autobrake_panel.accept(visitor);
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);

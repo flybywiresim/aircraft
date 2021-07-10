@@ -975,7 +975,7 @@ impl A320PowerTransferUnitController {
         forward_cargo_door: &Door,
         aft_cargo_door: &Door,
         pushback_tug: &PushbackTug,
-        lgcu2: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
@@ -988,7 +988,7 @@ impl A320PowerTransferUnitController {
             && overhead_panel.yellow_epump_push_button_is_auto();
 
         let should_enable_if_powered = overhead_panel.ptu_push_button_is_auto()
-            && (!lgcu2.nose_gear_compressed(false)
+            && (!lgciu2.nose_gear_compressed(false)
                 || self.eng_1_master_on && self.eng_2_master_on
                 || !self.eng_1_master_on && !self.eng_2_master_on
                 || (!self.parking_brake_lever_pos
