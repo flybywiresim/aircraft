@@ -27,6 +27,8 @@ export enum Mode {
     PLAN,
 }
 
+export type EfisSide = 'L' | 'R'
+
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
         const url = document.getElementsByTagName('a32nx-nd')[0].getAttribute('url');
