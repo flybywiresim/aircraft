@@ -8,6 +8,7 @@ const Markers = {
 
 class CDUFlightPlanPage {
     static ShowPage(mcdu, offset = 0) {
+
         //mcdu.flightPlanManager.updateWaypointDistances(false /* approach */);
         //mcdu.flightPlanManager.updateWaypointDistances(true /* approach */);
         mcdu.clearDisplay();
@@ -154,13 +155,9 @@ class CDUFlightPlanPage {
         }
         const waypointsWithDiscontinuities = [];
         const routeFirstWaypointIndex = 1 + fpm.getDepartureWaypointsCount();
-        const routeLastWaypointIndex = fpm.getWaypointsCount() - 2 - fpm.getArrivalWaypointsCount();
-        let first = 0;
-        if (fpm.isActiveApproach()) {
-            first = fpm.getWaypointsCount() - 1;
-        } else {
-            first = Math.max(0, fpm.getActiveWaypointIndex() - 1);
-        }
+        const routeLastWaypointIndex = fpm.getLastIndexBeforeApproach();
+        let first = Math.max(0, fpm.getActiveWaypointIndex() - 1);
+
         if (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) {
             first = 0;
         }
@@ -168,7 +165,7 @@ class CDUFlightPlanPage {
             const prev = waypointsWithDiscontinuities[waypointsWithDiscontinuities.length - 1];
             const wp = fpm.getWaypoint(i);
             if (!prev || (prev.wp && prev.wp.ident != wp.ident)) {
-                waypointsWithDiscontinuities.push({ wp: fpm.getWaypoint(i), fpIndex: i });
+                waypointsWithDiscontinuities.push({ wp: fpm.getWaypoint(i) });
             }
         }
         const destination = waypointsWithDiscontinuities.pop();
@@ -264,13 +261,11 @@ class CDUFlightPlanPage {
 
                 let prevWaypoint;
                 let waypoint;
-                let fpIndex = 0;
                 if (waypointsWithDiscontinuities[wpIndex]) {
                     waypoint = waypointsWithDiscontinuities[wpIndex].wp;
                     if (waypointsWithDiscontinuities[wpIndex - 1]) {
                         prevWaypoint = waypointsWithDiscontinuities[wpIndex - 1].wp;
                     }
-                    fpIndex = waypointsWithDiscontinuities[wpIndex].fpIndex;
                 }
                 if (!waypoint) {
                     console.error("Should not reach.");
@@ -285,15 +280,15 @@ class CDUFlightPlanPage {
                             timeCell = FMCMainDisplay.secondsTohhmm(wpIndex >= activeIndex || waypoint.ident === "(DECEL)" ? stats.get(statIndex).timeFromPpos : 0) + "[s-text]";
                         }
                     }
-                    if (fpIndex > fpm.getDepartureWaypointsCount()) {
-                        if (fpIndex < fpm.getWaypointsCount() - fpm.getArrivalWaypointsCount()) {
-                            if (waypoint.infos.airwayIdentInFP === "") {
-                                const prevWaypointWithDiscontinuity = waypointsWithDiscontinuities[wpIndex - 1];
-                                if (prevWaypointWithDiscontinuity) {
-                                    prevWaypoint = prevWaypointWithDiscontinuity.wp;
-                                }
+
+                    if (wpIndex < fpm.getLastIndexBeforeApproach()) {
+                        if (waypoint.infos.airwayIdentInFP === "") {
+                            const prevWaypointWithDiscontinuity = waypointsWithDiscontinuities[wpIndex - 1];
+                            if (prevWaypointWithDiscontinuity) {
+                                prevWaypoint = prevWaypointWithDiscontinuity.wp;
                             }
                         }
+
                     }
 
                     const maxLineCount = rowsCount - discontinuityCount;
@@ -436,14 +431,14 @@ class CDUFlightPlanPage {
                         }, (value) => {
                             if (value === "") {
                                 if (waypoint) {
-                                    CDULateralRevisionPage.ShowPage(mcdu, waypoint, fpIndex);
+                                    CDULateralRevisionPage.ShowPage(mcdu, waypoint, wpIndex);
                                 }
                             } else if (value === FMCMainDisplay.clrValue) {
-                                mcdu.removeWaypoint(fpIndex, () => {
+                                mcdu.removeWaypoint(wpIndex, () => {
                                     CDUFlightPlanPage.ShowPage(mcdu, offset);
                                 }, true);
                             } else if (value.length > 0) {
-                                mcdu.insertWaypoint(value, fpIndex, () => {
+                                mcdu.insertWaypoint(value, wpIndex, () => {
                                     CDUFlightPlanPage.ShowPage(mcdu, offset);
                                 }, true);
                             }
@@ -506,16 +501,6 @@ class CDUFlightPlanPage {
         }
         mcdu.currentFlightPlanWaypointIndex = offset + first;
         SimVar.SetSimVarValue("L:A32NX_SELECTED_WAYPOINT", "number", offset + first);
-
-        const wpCount = fpm.getWaypointsCount();
-        if (wpCount > 0) {
-            while (mcdu.currentFlightPlanWaypointIndex < 0) {
-                mcdu.currentFlightPlanWaypointIndex += wpCount;
-            }
-            while (mcdu.currentFlightPlanWaypointIndex >= wpCount) {
-                mcdu.currentFlightPlanWaypointIndex -= wpCount;
-            }
-        }
 
         // Remove excess lines
         while (rows.length >= 13) {
