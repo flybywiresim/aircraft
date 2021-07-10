@@ -48,11 +48,25 @@ pub trait LandingGearRealPosition {
     fn is_down_and_locked(&self) -> bool;
 }
 
-pub trait LandingGearWeightOnWheels {
-    fn center_gear_on_ground(&self) -> bool;
-    fn left_gear_on_ground(&self) -> bool;
-    fn right_gear_on_ground(&self) -> bool;
+pub trait LgciuWeightOnWheels {
+    fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn left_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn left_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn left_and_right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn left_and_right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn nose_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn nose_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
 }
+pub trait LgciuGearExtension {
+    fn all_down_and_locked(&self) -> bool;
+    fn all_up_and_locked(&self) -> bool;
+}
+
+pub trait LgciuInterface: LgciuWeightOnWheels + LgciuGearExtension {}
 
 pub trait EngineCorrectedN2 {
     fn corrected_n2(&self) -> Ratio;

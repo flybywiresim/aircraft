@@ -1,5 +1,8 @@
 use crate::{
-    shared::{ElectricalBusType, ElectricalBuses, LandingGearRealPosition},
+    shared::{
+        ElectricalBusType, ElectricalBuses, LandingGearRealPosition, LgciuGearExtension,
+        LgciuInterface, LgciuWeightOnWheels,
+    },
     simulation::{Read, SimulationElement, SimulatorReader},
 };
 use uom::si::{
@@ -168,24 +171,6 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
     }
 }
 
-pub trait LgciuWeightOnWheels {
-    fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
-    fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
-
-    fn left_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
-    fn left_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
-
-    fn left_and_right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
-    fn left_and_right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
-
-    fn nose_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
-    fn nose_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
-}
-pub trait LgciuGearExtension {
-    fn all_down_and_locked(&self) -> bool;
-    fn all_up_and_locked(&self) -> bool;
-}
-
 impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
     fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
         self.is_powered
@@ -244,7 +229,7 @@ impl LgciuGearExtension for LandingGearControlInterfaceUnit {
             && self.left_gear_up_and_locked
     }
 }
-pub trait LgciuInterface: LgciuWeightOnWheels + LgciuGearExtension {}
+
 impl LgciuInterface for LandingGearControlInterfaceUnit {}
 
 #[cfg(test)]
