@@ -238,9 +238,15 @@ mod tests {
             PressureSchedule::Ground
         );
 
-        test_bed.run_with_delta(Duration::from_secs_f64(90.));
-        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs_f64(69.));
+        assert!(test_bed.query(|a| a.pressurization.active_system == 1));
 
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+        test_bed.run();
+        assert!(test_bed.query(|a| a.pressurization.active_system == 2));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run();
         assert!(test_bed.query(|a| a.pressurization.active_system == 2));
     }
 
