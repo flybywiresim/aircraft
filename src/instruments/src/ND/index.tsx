@@ -43,7 +43,7 @@ const NavigationDisplay: React.FC = () => {
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [modeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
 
-    const [adirsState] = useSimVar('L:A320_Neo_ADIRS_STATE', 'Enum', 500);
+    const [adirsState] = useSimVar('L:A32NX_ADIRS_STATE', 'Enum', 500);
     const [tas] = useSimVar('AIRSPEED TRUE', 'knots', 500);
 
     return (
