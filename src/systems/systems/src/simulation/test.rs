@@ -235,6 +235,8 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.write(
             UpdateContext::VERTICAL_SPEED_KEY,
             vertical_speed.get::<foot_per_second>(),
+        );
+    }
 
     pub fn set_long_acceleration(&mut self, accel: Acceleration) {
         self.reader_writer.write_f64(
