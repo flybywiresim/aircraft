@@ -199,10 +199,10 @@ impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
             || treat_ext_pwr_as_ground && self.external_power_available
     }
     fn left_and_right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
-        self.is_powered
-            && !self.left_gear_sensor_compressed
-            && !self.right_gear_sensor_compressed
-            && !(treat_ext_pwr_as_ground && self.external_power_available)
+        !(!self.is_powered
+            || self.left_gear_sensor_compressed
+            || self.right_gear_sensor_compressed
+            || treat_ext_pwr_as_ground && self.external_power_available)
     }
     fn nose_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
         self.is_powered
