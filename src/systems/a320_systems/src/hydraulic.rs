@@ -1358,14 +1358,6 @@ impl A320BrakingForce {
 
         self.right_braking_force = self.right_braking_force
             - (self.right_braking_force * final_flaps_correction_with_speed.get::<ratio>());
-
-        println!(
-            "CORR Flaps PRCT{:.2} airspeed_corrective_factor{:.2} speedcorrected{:.2} final_force{:.2}",
-            flap_correction.get::<percent>(),
-            airspeed_corrective_factor,
-            final_flaps_correction_with_speed.get::<percent>(),
-            self.left_braking_force
-        );
     }
 }
 
