@@ -4,12 +4,12 @@ import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { FlightPlan } from '../FlightPlan';
+import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { RadioNeedle } from '../RadioNeedles';
-import { ToWaypointIndicator } from '../ToWaypointIndicator';
+import { RadioNeedle } from '../elements/RadioNeedles';
+import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { EfisSide, Mode } from '../index';
-import { ApproachMessage } from '../ApproachMessage';
+import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface ArcModeProps {
     rangeSetting: number,
