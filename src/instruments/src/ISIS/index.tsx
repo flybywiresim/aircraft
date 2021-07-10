@@ -5,7 +5,7 @@ import { render } from '../Common';
 import { ISISDisplayUnit } from './ISISDisplayUnit';
 import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';
 import { BugSetupDisplay } from './BugSetupDisplay';
-import { initialBugs } from './Bug';
+import { useBugs } from './Bug';
 import { AutoBrightness } from './AutoBrightness';
 
 import './style.scss';
@@ -16,13 +16,15 @@ export const ISISDisplay: React.FC = () => {
     const isBrightnessUpPressed = useRef(false);
     const isBrightnessDownPressed = useRef(false);
 
-    const [bugs, setBugs] = useState(initialBugs);
+    const [bugs, bugSetters] = useBugs();
+
+    // console.log(JSON.stringify(bugs));
     const [selectedIndex, setSelectedIndex] = useState(5);
     const selectedBug = bugs[selectedIndex];
 
     useInteractionEvent('A32NX_ISIS_KNOB_PRESSED', () => {
         selectedBug.isActive = !selectedBug.isActive;
-        setBugs(bugs);
+        bugSetters[selectedIndex](selectedBug);
     });
 
     useInteractionEvent('A32NX_ISIS_KNOB_CLOCKWISE', () => {
@@ -31,7 +33,7 @@ export const ISISDisplay: React.FC = () => {
         }
 
         selectedBug.value = Math.max(Math.min(selectedBug.value + selectedBug.increment, selectedBug.max), selectedBug.min);
-        setBugs(bugs);
+        bugSetters[selectedIndex](selectedBug);
     });
 
     useInteractionEvent('A32NX_ISIS_KNOB_ANTI_CLOCKWISE', () => {
@@ -40,7 +42,7 @@ export const ISISDisplay: React.FC = () => {
         }
 
         selectedBug.value = Math.max(Math.min(selectedBug.value - selectedBug.increment, selectedBug.max), selectedBug.min);
-        setBugs(bugs);
+        bugSetters[selectedIndex](selectedBug);
     });
 
     useInteractionEvent('A32NX_ISIS_PLUS_PRESSED', () => {

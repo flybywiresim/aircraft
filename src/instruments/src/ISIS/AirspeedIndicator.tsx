@@ -37,7 +37,7 @@ const SpeedtapeArrow: React.FC = () => (
 type BugProps = { bug: Bug, offset: number, }
 const BugElement: React.FC<BugProps> = ({ offset }) => (
     <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
-        <path strokeWidth={7} d="M73,148 h30" />
+        <path strokeWidth={7} d="M78,158 h30" />
     </g>
 );
 

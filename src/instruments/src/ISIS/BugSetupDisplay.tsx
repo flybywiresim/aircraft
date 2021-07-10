@@ -16,27 +16,27 @@ export const BugSetupDisplay: React.FC<BugSetupDisplayProps> = ({ selectedIndex,
         <text fontSize={16} x={106} y={180} className="TextWhite">(-)</text>
         <path fill="none" stroke="white" d="M150 136 v225 h176 v-225z" />
         <g>
-            {!bugs[5].isActive && <text x={30} y={150} className="TextWhite" />}
+            {!bugs[5].isActive && <text x={30} y={150} className="TextWhite">OFF</text>}
             <BugBox x={150} y={150} value={bugs[5].value} isSelected={selectedIndex === 5} numDigits={3} />
         </g>
         <g>
-            {!bugs[4].isActive && <text x={30} y={225} className="TextWhite" />}
+            {!bugs[4].isActive && <text x={30} y={225} className="TextWhite">OFF</text>}
             <BugBox x={150} y={225} value={bugs[4].value} isSelected={selectedIndex === 4} numDigits={3} />
         </g>
         <g>
-            {!bugs[3].isActive && <text x={30} y={300} className="TextWhite" />}
+            {!bugs[3].isActive && <text x={30} y={300} className="TextWhite">OFF</text>}
             <BugBox x={150} y={300} value={bugs[3].value} isSelected={selectedIndex === 3} numDigits={3} />
         </g>
         <g>
-            {!bugs[2].isActive && <text x={30} y={375} className="TextWhite" />}
+            {!bugs[2].isActive && <text x={30} y={375} className="TextWhite">OFF</text>}
             <BugBox x={150} y={375} value={bugs[2].value} isSelected={selectedIndex === 2} numDigits={3} />
         </g>
         <g>
-            {!bugs[0].isActive && <text x={400} y={225} className="TextWhite" />}
+            {!bugs[0].isActive && <text x={400} y={225} className="TextWhite">OFF</text>}
             <BugBox x={325} y={225} value={bugs[0].value} isSelected={selectedIndex === 0} numDigits={5} />
         </g>
         <g>
-            {!bugs[1].isActive && <text x={400} y={300} className="TextWhite" />}
+            {!bugs[1].isActive && <text x={400} y={300} className="TextWhite">OFF</text>}
             <BugBox x={325} y={300} value={bugs[1].value} isSelected={selectedIndex === 1} numDigits={5} />
         </g>
         <text x={150} y={450} className="TextCyan">SET/SELECT→</text>
