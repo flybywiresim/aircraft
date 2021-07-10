@@ -5,22 +5,17 @@ export const AirplaneSymbol: React.FC = () => {
     const spaceBetween = 32;
     const longHeight = 15;
     const thickness = 10;
-    const strokeWidth = 3;
-    const yStart = 270 - (thickness + strokeWidth) / 2;
+    const yStart = 269 - thickness / 2;
 
     return (
-        <g>
+        <g strokeWidth={3}>
             <path
-                strokeWidth={strokeWidth}
-                stroke="yellow"
-                fill="black"
+                className="StrokeYellow FillBackground"
                 d={`M${256 - wingWidth - spaceBetween} ${yStart}h${wingWidth}v${longHeight}h${-thickness}v${-5}h${-wingWidth + thickness}z`}
             />
-            <path strokeWidth={strokeWidth} stroke="yellow" fill="black" d={`M${256 - thickness / 2} ${yStart} h${thickness} v${thickness} h${-thickness}z`} />
+            <path className="StrokeYellow FillBackground" d={`M${256 - thickness / 2} ${yStart} h${thickness} v${thickness} h${-thickness}z`} />
             <path
-                strokeWidth={strokeWidth}
-                stroke="yellow"
-                fill="black"
+                className="StrokeYellow FillBackground"
                 d={`M${256 + wingWidth + spaceBetween} ${yStart}h${-wingWidth}v${longHeight}h${thickness}v${-5}h${wingWidth - thickness}z`}
             />
         </g>

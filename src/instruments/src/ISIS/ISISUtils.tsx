@@ -1,6 +1,5 @@
 import React from 'react';
 import { Bug } from './Bug';
-import { BugSetupDisplay } from './BugSetupDisplay';
 
 export const calculateVerticalOffsetFromRoll = (roll: number) => {
     let offset = 0;

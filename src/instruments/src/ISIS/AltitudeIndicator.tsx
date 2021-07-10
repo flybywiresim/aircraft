@@ -52,12 +52,12 @@ export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, 
                     graduationElementFunction={createTick}
                     bugs={bugs}
                     bugElementFunction={createBug}
-                    tapeValue={Math.floor(altitude)}
+                    tapeValue={altitude}
                     lowerLimit={-2000}
                     upperLimit={50000}
                 />
             </svg>
-            <DigitalAltitudeIndicator altitude={Math.floor(altitude)} mda={mda} bugs={bugs} />
+            <DigitalAltitudeIndicator altitude={altitude} mda={mda} bugs={bugs} />
             <MetricAltitudeIndicator altitude={altitude} />
         </g>
     );

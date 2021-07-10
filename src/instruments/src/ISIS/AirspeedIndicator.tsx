@@ -2,11 +2,6 @@ import React from 'react';
 import { Bug } from './Bug';
 import { VerticalTape } from './ISISUtils';
 
-type AirspeedIndicatorProps = {
-    indicatedAirspeed: number;
-    bugs: Bug[]
-}
-
 type TickProps = { offset: number, airspeed: number }
 const Tick: React.FC<TickProps> = ({ offset, airspeed }) => {
     if (airspeed > 250 && airspeed % 10 === 5) {
@@ -23,15 +18,10 @@ const Tick: React.FC<TickProps> = ({ offset, airspeed }) => {
 };
 
 const SpeedtapeArrow: React.FC = () => (
-    <>
-        {/* Speed tape arrow background */}
-        <rect x={108} y={250} width={34} height={40} fill="black" />
-        {/* Speed tape arrow */}
-        <path
-            d="M 108 270 l 34 -20 v 40 l -34 -20"
-            fill="yellow"
-        />
-    </>
+    <g id="SpeedtapeArrow">
+        <rect className="FillBackground" x={108} y={250} width={34} height={40} />
+        <path className="FillYellow" d="M 108 270 l 34 -20 v 40 l -34 -20" />
+    </g>
 );
 
 type BugProps = { bug: Bug, offset: number, }
@@ -41,6 +31,10 @@ const BugElement: React.FC<BugProps> = ({ offset }) => (
     </g>
 );
 
+type AirspeedIndicatorProps = {
+    indicatedAirspeed: number;
+    bugs: Bug[]
+}
 export const AirspeedIndicator: React.FC<AirspeedIndicatorProps> = ({ indicatedAirspeed, bugs }) => {
     const createTick = (elementValue: number, offset: number) => <Tick offset={offset} airspeed={elementValue} />;
     const createBug = (bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />;

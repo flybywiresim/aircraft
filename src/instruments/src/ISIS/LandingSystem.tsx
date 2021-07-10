@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useSimVar } from '@instruments/common/simVars';
+import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 
 const DeviationIndicator: React.FC<{ deviation: number, available: boolean }> = ({ deviation, available }) => (
     <>
@@ -13,10 +13,7 @@ const DeviationIndicator: React.FC<{ deviation: number, available: boolean }> = 
         { available
             && (
                 <g transform={`translate(${(deviation * 50).toFixed(5)} 0)`}>
-                    <path
-                        d="M80,10 L100,2 L120,10 L100,18z"
-                        fill="magenta"
-                    />
+                    <path className="FillMagenta" d="M80,10 L100,2 L120,10 L100,18z" />
                 </g>
             )}
     </>
@@ -28,14 +25,18 @@ export const LandingSystem: React.FC = () => {
     const [lsDeviation] = useSimVar('NAV RADIAL ERROR:3', 'degrees');
     const [lsAvailable] = useSimVar('NAV HAS LOCALIZER:3', 'bool');
 
-    return (
-        <>
-            <g transform="translate(156 380)">
-                <DeviationIndicator deviation={lsDeviation} available={lsAvailable} />
+    const [lsActive] = useInteractionSimVar('L:A32NX_ISIS_LS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_LS_PRESSED');
+
+    return (lsActive
+        && (
+            <g id="LandingSystem">
+                <g transform="translate(156 380)">
+                    <DeviationIndicator deviation={lsDeviation} available={lsAvailable} />
+                </g>
+                <g transform="translate(356 166) rotate(90 0 0)">
+                    <DeviationIndicator deviation={gsDeviation} available={gsAvailable} />
+                </g>
             </g>
-            <g transform="translate(356 156) rotate(90 0 0)">
-                <DeviationIndicator deviation={gsDeviation} available={gsAvailable} />
-            </g>
-        </>
+        )
     );
 };

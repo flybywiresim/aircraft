@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
+import React from 'react';
+import { useSimVar } from '@instruments/common/simVars';
 
 import { AltitudeIndicator } from './AltitudeIndicator';
 import { LandingSystem } from './LandingSystem';
@@ -19,15 +19,13 @@ export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed, b
     const [alt] = useSimVar('INDICATED ALTITUDE:2', 'feet');
     const [mda] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
-    const [lsActive] = useInteractionSimVar('L:A32NX_ISIS_LS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_LS_PRESSED');
-
     return (
         <g id="ArtificialHorizonDisplay">
             <ArtificialHorizon />
             <AirspeedIndicator indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
             <AltitudeIndicator altitude={Math.floor(alt)} mda={mda} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
             <AirplaneSymbol />
-            { lsActive && <LandingSystem /> }
+            <LandingSystem />
             <PressureIndicator />
             <MachIndicator />
         </g>

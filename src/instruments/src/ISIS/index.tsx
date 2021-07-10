@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { render } from '../Common';

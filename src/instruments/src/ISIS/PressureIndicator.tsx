@@ -1,5 +1,5 @@
-import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
+import { useSimVar } from '@instruments/common/simVars';
 
 enum BaroMode {
     QNH = 0,
@@ -12,7 +12,7 @@ export const PressureIndicator: React.FC = () => {
     const [inHgQnh] = useSimVar('A:KOHLSMAN SETTING MB:2', 'inHg');
 
     return (
-        <text x={256} y={466} width="100%" textAnchor="middle" fontSize={36} fill="cyan">
+        <text x={256} y={466} className="TextCyan" textAnchor="middle" fontSize={36}>
             {baroMode === BaroMode.STD ? 'STD' : `${Math.round(hpaQnh)}/${inHgQnh.toFixed(2)}`}
         </text>
     );

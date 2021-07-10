@@ -1,10 +1,6 @@
 import React from 'react';
 
-type RollScaleProps = {
-
-}
-
-export const RollScale: React.FC<RollScaleProps> = () => {
+export const RollScale: React.FC = React.memo(() => {
     const markerAngles = [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60];
 
     const radiusForMarkers = 138;
@@ -34,4 +30,4 @@ export const RollScale: React.FC<RollScaleProps> = () => {
             <path strokeWidth={3} className="FillYellow StrokeYellow" d="M 256 116 l 10 -18 h-20z" />
         </g>
     );
-};
+});

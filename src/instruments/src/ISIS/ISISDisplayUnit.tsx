@@ -15,7 +15,7 @@ type Props = {
 export const ISISDisplayUnit: React.FC<Props> = ({ indicatedAirspeed, children }) => {
     const powerUpTime = 90;
 
-    const [state, setState] = useState(DisplayUnitState.Off);
+    const [state, setState] = useState(DisplayUnitState.On);
     const [timer, setTimer] = useState<number | null>(null);
 
     const [dcEssLive] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool');
