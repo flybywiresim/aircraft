@@ -420,6 +420,7 @@ class CDUFlightPlanPage {
                         printRow(renderFixContent(waypoint.ident, color, spdColor, speedConstraint, altColor, altPrefix, altitudeConstraint, timeCell));
 
                         // Setup fix LSK and RSk
+                        const wpIndexOffset = wpIndex + first;
 
                         addLsk((value) => {
                             if (value === "") {
@@ -434,11 +435,11 @@ class CDUFlightPlanPage {
                                     CDULateralRevisionPage.ShowPage(mcdu, waypoint, wpIndex);
                                 }
                             } else if (value === FMCMainDisplay.clrValue) {
-                                mcdu.removeWaypoint(wpIndex, () => {
+                                mcdu.removeWaypoint(wpIndexOffset, () => {
                                     CDUFlightPlanPage.ShowPage(mcdu, offset);
                                 }, true);
                             } else if (value.length > 0) {
-                                mcdu.insertWaypoint(value, wpIndex, () => {
+                                mcdu.insertWaypoint(value, wpIndexOffset, () => {
                                     CDUFlightPlanPage.ShowPage(mcdu, offset);
                                 }, true);
                             }
