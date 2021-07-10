@@ -64,5 +64,17 @@ const Overlay: FC<OverlayProps> = ({ rangeSetting }) => (
 
         <text x={310} y={474} className="Cyan" fontSize={22}>{rangeSetting}</text>
         <text x={212} y={556} className="Cyan" fontSize={22}>{rangeSetting / 2}</text>
+
+        <text x={384} y={170} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">N</text>
+        <path d="M384,141.5 L390,151 L378,151 L384,141.5" fill="white" stroke="none" />
+
+        <text x={598} y={384} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">E</text>
+        <path d="M626.2,384 L617,390 L617,378 L626.5,384" fill="white" stroke="none" />
+
+        <text x={384} y={598} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">S</text>
+        <path d="M384,626.5 L390,617 L378,617 L384,626.5" fill="white" stroke="none" />
+
+        <text x={170} y={384} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">W</text>
+        <path d="M141.5,384 L151,390 L151,378 L141.5,384" fill="white" stroke="none" />
     </g>
 );
