@@ -8,37 +8,38 @@ import { FlightPlan } from '../FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../RadioNeedles';
 import { ToWaypointIndicator } from '../ToWaypointIndicator';
-import { rangeSettings } from '../index';
+import { Mode, rangeSettings } from '../index';
 import { ApproachMessage } from '../ApproachMessage';
 
 export type ArcModeProps = {
+    rangeSetting: number,
     side: 'L' | 'R',
     ppos: LatLongData,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ side, ppos }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
     const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
-    const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
     const [fmgcFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [ilsCourse] = useSimVar(`NAV LOCALIZER:3`, 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
+    const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSettings[rangeIndex] * 2, 768, trueHeading);
+        params.compute(ppos, rangeSetting * 2, 768, trueHeading);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSettings[rangeIndex] * 2, 768, trueHeading);
-    }, [ppos.lat, ppos.long, magHeading, rangeIndex].map((n) => MathUtils.fastToFixed(n, 6)));
+        mapParams.compute(ppos, rangeSetting, 768, trueHeading);
+    }, [ppos.lat, ppos.long, magHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     return (
         <>
@@ -53,7 +54,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side, ppos }) => {
             <Overlay
                 heading={Number(MathUtils.fastToFixed(magHeading, 1))}
                 track={Number(MathUtils.fastToFixed(magTrack, 1))}
-                rangeIndex={rangeIndex}
+                rangeSetting={rangeSetting}
                 side={side}
                 tcasMode={tcasMode}
                 selectedHeading={selectedHeading}
@@ -71,7 +72,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ side, ppos }) => {
 type OverlayProps = {
     heading: number,
     track: number,
-    rangeIndex: number,
+    rangeSetting: number,
     side: 'L' | 'R',
     tcasMode: number,
     selectedHeading: number,
@@ -79,9 +80,7 @@ type OverlayProps = {
     lsDisplayed: boolean,
 }
 
-const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeIndex, side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => {
-    const range = rangeSettings[rangeIndex];
-
+const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => {
     return (
         <>
             <clipPath id="arc-mode-flight-plan-clip">
@@ -408,8 +407,8 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeIndex, side
                     strokeDashoffset="15"
                     clipPath="url(#arc-mode-overlay-clip-3)"
                 />
-                <text x={58} y={482} fill="#00ffff" stroke="none" fontSize={22}>{(range / 4) * 3}</text>
-                <text x={709} y={482} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{(range / 4) * 3}</text>
+                <text x={58} y={482} fill="#00ffff" stroke="none" fontSize={22}>{(rangeSetting / 4) * 3}</text>
+                <text x={709} y={482} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{(rangeSetting / 4) * 3}</text>
 
                 {/* R = 246 */}
                 <path
@@ -418,11 +417,11 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeIndex, side
                     strokeDashoffset="-6"
                     clipPath="url(#arc-mode-overlay-clip-2)"
                 />
-                <text x={168} y={528} fill="#00ffff" stroke="none" fontSize={22}>{range / 2}</text>
-                <text x={592} y={528} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{range / 2}</text>
+                <text x={168} y={528} fill="#00ffff" stroke="none" fontSize={22}>{rangeSetting / 2}</text>
+                <text x={592} y={528} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{rangeSetting / 2}</text>
 
                 {/* R = 123 */}
-                { (tcasMode === 0 || range > 10)
+                { (tcasMode === 0 || rangeSetting > 10)
                     && (
                         <path
                             d="M261,620a123,123 0 1,0 246,0a123,123 0 1,0 -246,00"
@@ -431,7 +430,7 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeIndex, side
                             clipPath="url(#arc-mode-overlay-clip-1)"
                         />
                     )}
-                { (tcasMode > 0 && range === 10)
+                { (tcasMode > 0 && rangeSetting === 10)
                     && (
                         <g>
                             <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-60 384 620)" />
@@ -443,7 +442,7 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeIndex, side
                     )}
 
                 {/* R = 62 */}
-                { (tcasMode > 0 && range === 20)
+                { (tcasMode > 0 && rangeSetting === 20)
                     && (
                         <g>
                             <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-60 384 620)" />
@@ -459,8 +458,8 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeIndex, side
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
             </g>
 
-            <RadioNeedle index={1} side={side} />
-            <RadioNeedle index={2} side={side} />
+            <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
+            <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
 
             <Plane />
         </>
