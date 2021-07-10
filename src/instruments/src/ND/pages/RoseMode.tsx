@@ -5,12 +5,12 @@ import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
-import { ToWaypointIndicator } from '../ToWaypointIndicator';
-import { FlightPlan } from '../FlightPlan';
+import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
+import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { EfisSide, Mode } from '../index';
-import { RadioNeedle } from '../RadioNeedles';
-import { ApproachMessage } from '../ApproachMessage';
+import { RadioNeedle } from '../elements/RadioNeedles';
+import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface RoseModeProps {
     rangeSetting: number,
