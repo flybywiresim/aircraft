@@ -2393,6 +2393,8 @@ mod tests {
 
             fn set_gear_up(mut self) -> Self {
                 self.write("GEAR CENTER POSITION", 0.);
+                self.write("GEAR LEFT POSITION", 0.);
+                self.write("GEAR RIGHT POSITION", 0.);
                 self.write("GEAR HANDLE POSITION", false);
 
                 self
@@ -2400,6 +2402,8 @@ mod tests {
 
             fn set_gear_down(mut self) -> Self {
                 self.write("GEAR CENTER POSITION", 100.);
+                self.write("GEAR LEFT POSITION", 100.);
+                self.write("GEAR RIGHT POSITION", 100.);
                 self.write("GEAR HANDLE POSITION", true);
 
                 self
