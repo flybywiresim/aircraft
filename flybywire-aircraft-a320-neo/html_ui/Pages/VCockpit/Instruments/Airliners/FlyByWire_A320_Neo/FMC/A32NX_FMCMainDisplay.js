@@ -266,8 +266,13 @@ class FMCMainDisplay extends BaseAirliners {
         // Start the check routine for system health and status
         setInterval(() => {
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE && !this._destDataChecked) {
-                const dest = this.flightPlanManager.getDestination();
-                if (dest && dest.liveDistanceTo < 180) {
+                const ppos = {
+                    lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+                    long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+                };
+                stats = fpm.getCurrentFlightPlan().computeWaypointStatistics(ppos);
+                const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
+                if (dest && destStats.distanceFromPpos < 180) {
                     this._destDataChecked = true;
                     this.checkDestData();
                 }
