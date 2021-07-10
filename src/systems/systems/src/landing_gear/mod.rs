@@ -169,57 +169,75 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
 }
 
 pub trait LgciuWeightOnWheels {
-    fn right_gear_compressed_1(&self) -> bool;
-    fn right_gear_compressed_or_ext_power_2(&self) -> bool;
-    fn left_gear_compressed_3(&self) -> bool;
-    fn left_gear_compressed_or_ext_power_4(&self) -> bool;
-    fn left_and_right_gear_compressed_5(&self) -> bool;
-    fn left_and_right_gear_compressed_or_ext_power_6(&self) -> bool;
-    fn nose_gear_compressed_7(&self) -> bool;
-    fn nose_gear_compressed_or_ext_power_8(&self) -> bool;
+    fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn left_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn left_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn left_and_right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn left_and_right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn nose_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn nose_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
 }
 pub trait LgciuGearExtension {
-    fn all_down_and_locked_14(&self) -> bool;
-    fn all_up_and_locked_19(&self) -> bool;
+    fn all_down_and_locked(&self) -> bool;
+    fn all_up_and_locked(&self) -> bool;
 }
 
 impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
-    fn right_gear_compressed_1(&self) -> bool {
-        self.is_powered && self.right_gear_sensor_compressed
-    }
-    fn right_gear_compressed_or_ext_power_2(&self) -> bool {
-        self.is_powered && self.right_gear_sensor_compressed && self.external_power_available
-    }
-    fn left_gear_compressed_3(&self) -> bool {
-        self.is_powered && self.left_gear_sensor_compressed
-    }
-    fn left_gear_compressed_or_ext_power_4(&self) -> bool {
-        self.is_powered && self.left_gear_sensor_compressed && self.external_power_available
-    }
-    fn left_and_right_gear_compressed_5(&self) -> bool {
-        self.is_powered && self.left_gear_sensor_compressed && self.right_gear_sensor_compressed
-    }
-    fn left_and_right_gear_compressed_or_ext_power_6(&self) -> bool {
+    fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
         self.is_powered
-            && self.left_gear_sensor_compressed
-            && self.right_gear_sensor_compressed
-            && self.external_power_available
+            && (self.right_gear_sensor_compressed
+                || treat_ext_pwr_as_ground && self.external_power_available)
     }
-    fn nose_gear_compressed_7(&self) -> bool {
-        self.is_powered && self.nose_gear_sensor_compressed
+    fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.is_powered
+            && !self.right_gear_sensor_compressed
+            && !(treat_ext_pwr_as_ground && self.external_power_available)
     }
-    fn nose_gear_compressed_or_ext_power_8(&self) -> bool {
-        self.is_powered && self.nose_gear_sensor_compressed && self.external_power_available
+
+    fn left_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.is_powered
+            && (self.left_gear_sensor_compressed
+                || treat_ext_pwr_as_ground && self.external_power_available)
+    }
+    fn left_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.is_powered
+            && !self.left_gear_sensor_compressed
+            && !(treat_ext_pwr_as_ground && self.external_power_available)
+    }
+
+    fn left_and_right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.is_powered && (self.left_gear_sensor_compressed && self.right_gear_sensor_compressed)
+            || treat_ext_pwr_as_ground && self.external_power_available
+    }
+    fn left_and_right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.is_powered
+            && !self.left_gear_sensor_compressed
+            && !self.right_gear_sensor_compressed
+            && !(treat_ext_pwr_as_ground && self.external_power_available)
+    }
+    fn nose_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.is_powered
+            && (self.nose_gear_sensor_compressed
+                || treat_ext_pwr_as_ground && self.external_power_available)
+    }
+    fn nose_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.is_powered
+            && !self.nose_gear_sensor_compressed
+            && !(treat_ext_pwr_as_ground && self.external_power_available)
     }
 }
 impl LgciuGearExtension for LandingGearControlInterfaceUnit {
-    fn all_down_and_locked_14(&self) -> bool {
+    fn all_down_and_locked(&self) -> bool {
         self.is_powered
             && self.nose_gear_down_and_locked
             && self.right_gear_down_and_locked
             && self.left_gear_down_and_locked
     }
-    fn all_up_and_locked_19(&self) -> bool {
+    fn all_up_and_locked(&self) -> bool {
         self.is_powered
             && self.nose_gear_up_and_locked
             && self.right_gear_up_and_locked

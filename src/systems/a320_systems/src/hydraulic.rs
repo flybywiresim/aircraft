@@ -681,7 +681,7 @@ impl A320EngineDrivenPumpController {
         // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
         self.has_pressure_low_fault = self.is_pressure_low
             && (!is_engine_low_oil_pressure
-                || !(lgcui.right_gear_compressed_1() && lgcui.left_gear_compressed_3()));
+                || !(lgcui.right_gear_compressed(false) && lgcui.left_gear_compressed(false)));
     }
 
     fn update<T: EngineFirePushButtons>(
@@ -774,7 +774,7 @@ impl A320BlueElectricPumpController {
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
-            if !lgcui1.nose_gear_compressed_7()
+            if !lgcui1.nose_gear_compressed(false)
                 || engine1_above_min_idle
                 || engine2_above_min_idle
                 || overhead_panel.blue_epump_override_push_button_is_on()
@@ -818,8 +818,9 @@ impl A320BlueElectricPumpController {
 
         self.has_pressure_low_fault = self.is_pressure_low
             && (!is_engine_low_oil_pressure
-                || (!(lgcui1.left_gear_compressed_3() && lgcui1.right_gear_compressed_1())
-                    || !(lgcui2.left_gear_compressed_3() && lgcui2.right_gear_compressed_1()))
+                || (!(lgcui1.left_gear_compressed(false) && lgcui1.right_gear_compressed(false))
+                    || !(lgcui2.left_gear_compressed(false)
+                        && lgcui2.right_gear_compressed(false)))
                 || overhead_panel.blue_epump_override_push_button_is_on());
     }
 
@@ -987,7 +988,7 @@ impl A320PowerTransferUnitController {
             && overhead_panel.yellow_epump_push_button_is_auto();
 
         let should_enable_if_powered = overhead_panel.ptu_push_button_is_auto()
-            && (!lgcu2.nose_gear_compressed_7()
+            && (!lgcu2.nose_gear_compressed(false)
                 || self.eng_1_master_on && self.eng_2_master_on
                 || !self.eng_1_master_on && !self.eng_2_master_on
                 || (!self.parking_brake_lever_pos
@@ -1203,13 +1204,13 @@ impl A320HydraulicBrakeComputerUnit {
             lgcui2,
         );
 
-        let is_in_flight_gear_lever_up = !(lgcui1.left_and_right_gear_compressed_or_ext_power_6()
-            || lgcui2.left_and_right_gear_compressed_or_ext_power_6()
+        let is_in_flight_gear_lever_up = !(lgcui1.left_and_right_gear_compressed(true)
+            || lgcui2.left_and_right_gear_compressed(true)
             || self.is_gear_lever_down);
 
         self.should_disable_auto_brake_when_retracting.update(
             context,
-            !lgcui1.all_down_and_locked_14() && !self.is_gear_lever_down,
+            !lgcui1.all_down_and_locked() && !self.is_gear_lever_down,
         );
 
         if is_in_flight_gear_lever_up {
@@ -1590,9 +1591,9 @@ impl A320AutobrakeController {
         lgciu2: &impl LgciuInterface,
     ) {
         let in_flight_lgciu1 =
-            !lgciu1.right_gear_compressed_1() && !lgciu1.left_gear_compressed_3();
+            !lgciu1.right_gear_compressed(false) && !lgciu1.left_gear_compressed(false);
         let in_flight_lgciu2 =
-            !lgciu2.right_gear_compressed_1() && !lgciu2.left_gear_compressed_3();
+            !lgciu2.right_gear_compressed(false) && !lgciu2.left_gear_compressed(false);
 
         self.should_disarm_after_time_in_flight
             .update(context, in_flight_lgciu1 || in_flight_lgciu2);
@@ -1756,6 +1757,8 @@ mod tests {
         use systems::electrical::test::TestElectricitySource;
         use systems::electrical::ElectricalBus;
         use systems::electrical::Electricity;
+        use systems::electrical::ElectricitySource;
+        use systems::electrical::ExternalPowerSource;
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
         use systems::landing_gear::{LandingGear, LandingGearControlInterfaceUnit};
         use systems::shared::EmergencyElectricalState;
@@ -1831,6 +1834,7 @@ mod tests {
             lgcui1: LandingGearControlInterfaceUnit,
             lgcui2: LandingGearControlInterfaceUnit,
             electrical: A320TestElectrical,
+            ext_pwr: ExternalPowerSource,
 
             powered_source: TestElectricitySource,
             ac_ground_service_bus: ElectricalBus,
@@ -1872,6 +1876,7 @@ mod tests {
                         2,
                     )),
                     electrical: A320TestElectrical::new(),
+                    ext_pwr: ExternalPowerSource::new(electricity),
                     powered_source: TestElectricitySource::powered(
                         PotentialOrigin::EngineGenerator(1),
                         electricity,
@@ -2067,8 +2072,14 @@ mod tests {
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
                 self.electrical.update(context);
 
-                self.lgcui1.update(&self.landing_gear, true);
-                self.lgcui2.update(&self.landing_gear, true);
+                self.lgcui1.update(
+                    &self.landing_gear,
+                    self.ext_pwr.output_potential().is_powered(),
+                );
+                self.lgcui2.update(
+                    &self.landing_gear,
+                    self.ext_pwr.output_potential().is_powered(),
+                );
 
                 self.hydraulics.update(
                     context,
@@ -2099,6 +2110,7 @@ mod tests {
                 self.engine_fire_overhead.accept(visitor);
                 self.emergency_electrical_overhead.accept(visitor);
                 self.electrical.accept(visitor);
+                self.ext_pwr.accept(visitor);
 
                 visitor.visit(self);
             }
@@ -2262,6 +2274,15 @@ mod tests {
                 self.stop_eng1().stop_eng2()
             }
 
+            fn external_power(mut self, is_connected: bool) -> Self {
+                self.write("EXTERNAL POWER AVAILABLE:1", is_connected);
+
+                if is_connected {
+                    self = self.on_the_ground();
+                }
+                self
+            }
+
             fn on_the_ground(mut self) -> Self {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
@@ -2293,6 +2314,7 @@ mod tests {
                     .start_eng2(Ratio::new::<percent>(80.))
                     .set_gear_up()
                     .set_park_brake(false)
+                    .external_power(false)
             }
 
             fn set_eng1_fire_button(mut self, is_active: bool) -> Self {
@@ -4950,10 +4972,10 @@ mod tests {
 
             assert!(!test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            // Ptu should reactivate after 10ish seconds
+            // Ptu should reactivate after 15ish seconds
             test_bed = test_bed
                 .set_pushback_state(false)
-                .run_waiting_for(Duration::from_secs(15));
+                .run_waiting_for(Duration::from_secs(16));
 
             assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
         }
