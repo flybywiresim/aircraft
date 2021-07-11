@@ -56,16 +56,19 @@ impl Pressurization {
     }
 
     fn switch_active_system(&mut self) {
-        let mut changed = false;
-        for controller in &mut self.cpc {
-            if controller.should_switch_cpc() {
-                if !changed {
-                    self.active_system = if self.active_system == 1 { 2 } else { 1 };
-                    changed = true;
-                }
-                controller.reset_cpc_switch();
-            }
+        if self
+            .cpc
+            .iter()
+            .any(|controller| controller.should_switch_cpc())
+        {
+            self.active_system = if self.active_system == 1 { 2 } else { 1 };
         }
+        self.cpc
+            .iter_mut()
+            .filter(|controller| controller.should_switch_cpc())
+            .for_each(|controller| {
+                controller.reset_cpc_switch();
+            });
     }
 }
 
