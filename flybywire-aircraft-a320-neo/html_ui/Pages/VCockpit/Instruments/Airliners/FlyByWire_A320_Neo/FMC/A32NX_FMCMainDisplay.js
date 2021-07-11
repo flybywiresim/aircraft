@@ -270,8 +270,9 @@ class FMCMainDisplay extends BaseAirliners {
                     lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
                     long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
                 };
-                stats = fpm.getCurrentFlightPlan().computeWaypointStatistics(ppos);
-                const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
+                const stats = this.flightPlanManager.getCurrentFlightPlan().computeWaypointStatistics(ppos);
+                const dest = this.flightPlanManager.getDestination();
+                const destStats = stats.get(this.flightPlanManager.getCurrentFlightPlan().waypoints.length - 1);
                 if (dest && destStats.distanceFromPpos < 180) {
                     this._destDataChecked = true;
                     this.checkDestData();
@@ -1809,19 +1810,25 @@ class FMCMainDisplay extends BaseAirliners {
             this.ilsAutoTuned = false;
             // for unknown reasons, the approach returned here doesn't have the approach waypoints which we need
             const appr = this.flightPlanManager.getApproach();
-            if (appr.name.indexOf('ILS') === -1 && appr.name.indexOf('LOC') === -1) {
-                return;
-            }
-            airport = this.flightPlanManager.getDestination();
-            runway = this.flightPlanManager.getApproachRunway();
+            if (appr) {
+                if (appr.name && appr.name.indexOf('ILS') === -1 && appr.name.indexOf('LOC') === -1) {
+                    return;
+                }
+                airport = this.flightPlanManager.getDestination();
+                runway = this.flightPlanManager.getApproachRunway();
 
-            const planeLla = new LatLongAlt(
-                SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
-                SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude")
-            );
-            const runwayDistance = Avionics.Utils.computeGreatCircleDistance(planeLla, runway.beginningCoordinates);
-            if (runwayDistance > 300) {
-                return;
+                const planeLla = new LatLongAlt(
+                    SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
+                    SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude")
+                );
+                if (runway && runway.beginningCoordinates) {
+                    const runwayDistance = Avionics.Utils.computeGreatCircleDistance(planeLla, runway.beginningCoordinates);
+                    if (runwayDistance > 300) {
+                        return;
+                    }
+                }
+            } else {
+                console.log("APPR undefined");
             }
         } else {
             if (this.ilsTakeoffAutoTuned) {
@@ -1840,13 +1847,15 @@ class FMCMainDisplay extends BaseAirliners {
                 // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
                 // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
                 // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
-                const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCRT]?)([\s\-]*[A-Z0-9])?$/);
-                if (
-                    match !== null
-                    && Avionics.Utils.formatRunway(match[3]) === Avionics.Utils.formatRunway(runway.designation)
-                    && appr.wayPoints.length > 0
-                ) {
-                    await this.tuneIlsFromApproach(appr);
+                if (appr && appr.name) {
+                    const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCRT]?)([\s\-]*[A-Z0-9])?$/);
+                    if (
+                        match !== null
+                        && Avionics.Utils.formatRunway(match[3]) === Avionics.Utils.formatRunway(runway.designation)
+                        && appr.wayPoints.length > 0
+                    ) {
+                        await this.tuneIlsFromApproach(appr);
+                    }
                 }
             }
         }
