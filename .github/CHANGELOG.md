@@ -135,6 +135,7 @@
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
 1. [HYD] Fixed autobrake inputs response for rotating knob type controllers - @Crocket63 (crocket)
 1. [ECAM] Autoswitch ECAM pages use proper FWC phase logic - @2hwk (2Cas#1022)
+1. [MISC] Improved logic for chronometer operations - @sidnov (Sid)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
