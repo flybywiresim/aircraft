@@ -94,5 +94,3 @@ const Reducer = (state, action) => {
 
 // Curried
 export const PerformanceReducer = produce(Reducer);
-
-// export const PerformanceContext:Context<PerformanceContextType> = createContext<PerformanceContextType>({ performanceState: performanceInitialState, performanceDispatch: () => {} });
