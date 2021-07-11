@@ -156,11 +156,12 @@ class CDUFlightPlanPage {
         const waypointsWithDiscontinuities = [];
         const routeFirstWaypointIndex = 1 + fpm.getDepartureWaypointsCount();
         const routeLastWaypointIndex = fpm.getLastIndexBeforeApproach();
-        let first = Math.max(0, fpm.getActiveWaypointIndex() - 1);
+        const realFirst = Math.max(0, fpm.getActiveWaypointIndex() - 1);
 
-        if (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) {
-            first = 0;
-        }
+        // If we're still on the ground, force the active leg to be the first one even if we're close enough that the
+        // FPM is trying to advance to the next one.
+        const first = (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) ? 0 : realFirst;
+
         for (let i = first; i < fpm.getWaypointsCount(); i++) {
             const prev = waypointsWithDiscontinuities[waypointsWithDiscontinuities.length - 1];
             const wp = fpm.getWaypoint(i);
@@ -457,10 +458,12 @@ class CDUFlightPlanPage {
                             printRow([""]);
                             printRow(Markers.FPLN_DISCONTINUITY);
 
-                            // waypointsWithDiscontinuities can include the origin airport but the position in the FPM
-                            // visibleWaypoints list never does, so detect when we've included it in the earlier index
-                            // math and fix the off-by-one here.
-                            const fpmIndex = (first == 0) ? (wpIndex - 1) : wpIndex;
+                            // waypointsWithDiscontinuities will contain the list of waypoints the FPM has, except when
+                            // the aircraft is still pre-takeoff - in which case the list is forced to start from the
+                            // origin (to avoid sequencing to the next leg if we're particularly close to the end of
+                            // the initial leg), meaning we need to offset the waypoint index we give to the FPM by the
+                            // equivalent amount to select the correct waypoint.
+                            const fpmIndex = wpIndex - (realFirst - first);
 
                             addLsk(0, (value) => {
                                 if (value === FMCMainDisplay.clrValue) {
