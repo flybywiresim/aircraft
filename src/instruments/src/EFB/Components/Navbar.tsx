@@ -3,7 +3,7 @@ import React from 'react';
 export type NavbarProps = {
     tabs: string[],
     onSelected: (index: number) => void;
-    activeIndex: number
+    activeIndex: number,
 };
 
 const c = {
