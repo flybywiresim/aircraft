@@ -1596,9 +1596,9 @@ impl A320AutobrakeController {
             !lgciu2.right_gear_compressed(false) && !lgciu2.left_gear_compressed(false);
 
         self.should_disarm_after_time_in_flight
-            .update(context, in_flight_lgciu1 || in_flight_lgciu2);
+            .update(context, in_flight_lgciu1 && in_flight_lgciu2);
         self.should_reject_max_mode_after_time_in_flight
-            .update(context, in_flight_lgciu1 || in_flight_lgciu2);
+            .update(context, in_flight_lgciu1 && in_flight_lgciu2);
 
         self.arming_is_allowed_by_bcu = allow_arming;
         self.left_brake_pedal_input = pedal_input_left;
