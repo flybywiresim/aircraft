@@ -164,7 +164,7 @@ class CDUFlightPlanPage {
             const prev = waypointsWithDiscontinuities[waypointsWithDiscontinuities.length - 1];
             const wp = fpm.getWaypoint(i);
             if (!prev || (prev.wp && prev.wp.ident != wp.ident)) {
-                waypointsWithDiscontinuities.push({ wp: fpm.getWaypoint(i) });
+                waypointsWithDiscontinuities.push({ wp: fpm.getWaypoint(i), fpIndex: i });
             }
         }
         const destination = waypointsWithDiscontinuities.pop();
@@ -182,7 +182,6 @@ class CDUFlightPlanPage {
             printRow(["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "UTC{sp}" : "TIME{sp}{sp}"]);
         }
 
-        let wpIndex = offset;
         let lastAltitudeConstraint = "";
         let lastSpeedConstraint = "";
         const activeIdent = fpm.getActiveWaypointIdent();
@@ -192,7 +191,7 @@ class CDUFlightPlanPage {
 
         let discontinuityCount = 0;
 
-        for (let bigRowIndex = 0; bigRowIndex < (waypointsWithDiscontinuities.length < rowsCount ? waypointsWithDiscontinuities.length + 1 : rowsCount); wpIndex++, bigRowIndex++) {
+        for (let bigRowIndex = 0, wpIndex = offset; bigRowIndex < (waypointsWithDiscontinuities.length < rowsCount ? waypointsWithDiscontinuities.length + 1 : rowsCount); wpIndex++, bigRowIndex++) {
             let color = "green";
             if (fpm.getCurrentFlightPlanIndex() === 1) {
                 color = "yellow";
@@ -504,6 +503,7 @@ class CDUFlightPlanPage {
 
         // Remove excess lines
         while (rows.length >= 13) {
+            console.log("REMOVED");
             rows.pop();
         }
 
@@ -532,7 +532,188 @@ class CDUFlightPlanPage {
             };
         }
         mcdu.setArrows(allowScroll, allowScroll, true, true);
+
+        const displayWaypoints = [];
+        let prevWaypoint;
+        waypointsWithDiscontinuities.forEach((waypoint) => {
+            waypoint.prev = prevWaypoint;
+            prevWaypoint = waypoint;
+            displayWaypoints.push(waypoint);
+            if (waypoint.wp.endsInDiscontinuity) {
+                displayWaypoints.push({
+                    fpIndex: waypoint.fpIndex,
+                    marker: Markers.FPLN_DISCONTINUITY,
+                    clr: waypoint.wp.discontinuityCanBeCleared
+                });
+            }
+        });
+        console.log(waypointsWithDiscontinuities);
+        console.log(displayWaypoints);
+        // TODO: Change once alt fpln exists
+        displayWaypoints.push({
+            marker: Markers.END_OF_FPLN,
+            clr: false
+        });
+        displayWaypoints.push({
+            marker: Markers.NO_ALTN_FPLN,
+            clr: false
+        });
+        console.log(displayWaypoints);
+
+        // row:   0      | 1   | 2 3 | 4 5 | 6 7 | 8 9 | 10 11 |
+        // bgRow: HEADER | R0  | R1  | R2  | R3  | R4  | DEST  | SCRATCHPAD
+        if (displayWaypoints.length === 0) {
+            rows = emptyFplnPage();
+        } else {
+            for (let fpI, bgRowI = 0, dwI = offset; (allowScroll) ? bgRowI < 5 : bgRowI < displayWaypoints.length; bgRowI++, dwI++) {
+                dwI = dwI % (displayWaypoints.length);
+
+                if (displayWaypoints[dwI] && displayWaypoints[dwI].wp) {
+                    console.log(dwI + " | [" + fpI + "] " + displayWaypoints[dwI].wp.ident);
+                } else {
+                    console.log(dwI + " | " + displayWaypoints[dwI].marker);
+                }
+            }
+        }
+
+        const obj = {
+            ident: "",
+            color: "",
+            spdColor: "",
+            speedConstraint: "",
+            altColor: "",
+            altPrefix: "",
+            altitudeConstraint: "",
+            timeCell: ""
+        };
+
+        //let allowScroll = displayWaypoints.length >= 5;
+        //let color = "green";
+
+        // row:   0      | 1 2 | 3 4 | 5 6 | 7 8 | 9  | 10 11 |
+        // bgRow: HEADER | R0  | R1  | R2  | R3  | R4 | DEST  | SCRATCHPAD
+        // [ {ident, color, spdColor, spdConstraints, altColor, altPrefix, altConstraint, timeCell}, ...]
+        if (displayWaypoints.length === 0) {
+            rows = emptyFplnPage();
+        } else {
+            console.log("+++++++++++++++++++++++++++++");
+            for (let fpI, bgRowI = 0, dwI = offset; (allowScroll) ? bgRowI < 5 : bgRowI < displayWaypoints.length; bgRowI++, dwI++) {
+                dwI = dwI % (displayWaypoints.length);
+
+                let prevWaypoint;
+                let waypoint;
+                const timeCell = "----";
+                if (displayWaypoints[dwI] && displayWaypoints[dwI].wp) {
+                    /*
+                    waypoint = displayWaypoints[dwI].wp;
+                    if (displayWaypoints[dwI - 1]) {
+                        prevWaypoint = displayWaypoints[dwI - 1];
+                        console.log("prevwaypoint1: [" + prevWaypoint.fpIndex + "] ");
+                        console.log(prevWaypoint);
+                    }
+                    */
+                    fpI = displayWaypoints[dwI].fpIndex;
+                    waypoint = displayWaypoints[dwI].wp;
+                    prevWaypoint = displayWaypoints[dwI].prev;
+                    console.log(dwI + " | [" + fpI + "] " + displayWaypoints[dwI].wp.ident);
+
+                    /*
+                    if (!waypoint) {
+                        console.error("Should not reach");
+                    } else {
+                        console.log(fpm.getLastIndexBeforeApproach());
+                        if (fpI < fpm.getLastIndexBeforeApproach()) {
+                            if (waypoint.infos.airwayIdentInFP === "") {
+                                const prevWaypointWithDiscontinuity = waypointsWithDiscontinuities[fpI - 1];
+                                if (prevWaypointWithDiscontinuity) {
+                                    prevWaypoint = prevWaypointWithDiscontinuity;
+                                    console.log("****prevwaypoint2: [" + prevWaypoint.fpIndex + "] ");
+                                    console.log(prevWaypoint);
+                                }
+                            }
+                        }
+                    }
+                    console.log("----------------------------------");
+                    */
+
+                } else {
+                    console.log(dwI + " | " + displayWaypoints[dwI].marker);
+                }
+            }
+        }
+
+        /*
+        if (allowScroll) {//scroll only if there are more than 5 points
+            mcdu.onDown = () => {//on page down decrement the page offset.
+                if (offset > 0) { // if page not on top
+                    offset--;
+                } else { // else go to the bottom
+                    offset = displayWaypoints.length - 1;
+                }
+                console.log(offset);
+                CDUFlightPlanPage.ShowPage(mcdu, offset);
+            };
+            mcdu.onUp = () => {
+                if (offset < displayWaypoints.length - 1) { // if page not on bottom
+                    offset++;
+                } else { // else go on top
+                    offset = 0;
+                }
+                CDUFlightPlanPage.ShowPage(mcdu, offset);
+            };
+        }
+        mcdu.setArrows(allowScroll, allowScroll, true, true);
+        */
     }
+}
+
+function getFixContent(waypoint, prevWaypoint, activeI, stats) {
+
+    // Time
+    let time;//, timeCell;
+    if (isFlying) {
+        if (isFinite(waypoint.liveUTCTo) || isFinite(waypoint.waypointReachedAt)) {
+            time = fpI >= activeI || waypoint.ident === "(DECEL)" ? stats.get(statI).etaFromPpos : waypoint.waypointReachedAt;
+            //timeCell = FMCMainDisplay.secondsToUTC((fpI >= activeI || waypoint.ident === "(DECEL)" ? stats.get(statI).etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
+        }
+    } else {
+        if (isFinite(waypoint.liveETATo)) {
+            time = fpI >= activeI || waypoint.ident === "(DECEL)" ? stats.get(statI).timeFromPpos : 0;
+            //timeCell = FMCMainDisplay.secondsTohhmm(fpI >= activeI || waypoint.ident === "(DECEL)" ? stats.get(statI).timeFromPpos : 0) + "[s-text]";
+        }
+    }
+
+    // Color
+    let color = "green";
+    if (fpm.getCurrentFlightPlanIndex() === 1) {
+        color = "yellow";
+    } else if (waypoint === fpm.getActiveWaypoint()) {
+        color = "white";
+    }
+
+    let airwayName = "";
+    if (prevWaypoint && waypoint) {
+        let airway = undefined;
+        if (prevWaypoint.infos.airwayOut && prevWaypoint.infos.airwayOut === waypoint.infos.airwayIn) {
+            airway = {name: prevWaypoint.infos.airwayOut };
+        } else if (waypoint.infos.airwayIn && prevWaypoint.infos.airwayOut === undefined) {
+            airway = {name: waypoint.infos.airwayIn };
+        } else {
+            // vanilla Behavior that should not be working this way. (base don pilot feedback)
+            // airway = IntersectionInfo.GetCommonAirway(prevWaypoint, waypoint);
+        }
+        if (airway) {
+            //airwayName = "\xa0" + airway.name;
+            airwayName = airway.name;
+        }
+    }
+
+    //let ident, color, spdColor, speedConstraint, altColor, altPrefix, altitudeConstraint, timeCell;
+    /*return [
+        `${ident}[color]${color}`,
+        `{${spdColor}}${speedConstraint}{end}{${altColor}}/${altPrefix}${altitudeConstraint}{end}[s-text]`,
+        `${timeCell}{sp}{sp}[color]white`
+    ];*/
 }
 
 CDUFlightPlanPage._timer = 0;
