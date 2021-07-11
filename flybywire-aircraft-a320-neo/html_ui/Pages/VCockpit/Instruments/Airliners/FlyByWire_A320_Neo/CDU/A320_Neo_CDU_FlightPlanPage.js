@@ -322,7 +322,7 @@ class CDUFlightPlanPage {
                         let distance;
                         let dstnc;
                         // active waypoint is live distance, others are distances in the flight plan
-                        if (wpIndex === first) {
+                        if (waypoint === fpm.getActiveWaypoint()) {
                             distance = currentWaypointStatistics.distanceFromPpos;
                         } else {
                             distance = currentWaypointStatistics.distanceInFP;
