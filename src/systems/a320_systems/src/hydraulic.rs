@@ -1467,6 +1467,8 @@ pub struct A320AutobrakeController {
 
     should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
     should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate,
+
+    external_disarm_event: bool,
 }
 impl A320AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
@@ -1500,6 +1502,7 @@ impl A320AutobrakeController {
             should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
             ),
+            external_disarm_event: false,
         }
     }
 
@@ -1587,6 +1590,7 @@ impl A320AutobrakeController {
             || !self.arming_is_allowed_by_bcu
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
+            || self.external_disarm_event
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -1659,6 +1663,7 @@ impl SimulationElement for A320AutobrakeController {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
         self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
+        self.external_disarm_event = state.read("AUTOBRAKE_DISARM");
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         self.mode = state.read_f64("AUTOBRAKES_ARMED_MODE").into();
