@@ -322,6 +322,7 @@ class CDUFlightPlanPage {
                         // active waypoint is live distance, others are distances in the flight plan
                         if (wpIndex === first) {
                             distance = currentWaypointStatistics.distanceFromPpos;
+                            console.log("first distance: " + distance);
                         } else {
                             distance = currentWaypointStatistics.distanceInFP;
                         }
@@ -503,7 +504,6 @@ class CDUFlightPlanPage {
 
         // Remove excess lines
         while (rows.length >= 13) {
-            console.log("REMOVED");
             rows.pop();
         }
 
@@ -547,8 +547,6 @@ class CDUFlightPlanPage {
                 });
             }
         });
-        console.log(waypointsWithDiscontinuities);
-        console.log(displayWaypoints);
         // TODO: Change once alt fpln exists
         displayWaypoints.push({
             marker: Markers.END_OF_FPLN,
@@ -558,23 +556,6 @@ class CDUFlightPlanPage {
             marker: Markers.NO_ALTN_FPLN,
             clr: false
         });
-        console.log(displayWaypoints);
-
-        // row:   0      | 1   | 2 3 | 4 5 | 6 7 | 8 9 | 10 11 |
-        // bgRow: HEADER | R0  | R1  | R2  | R3  | R4  | DEST  | SCRATCHPAD
-        if (displayWaypoints.length === 0) {
-            rows = emptyFplnPage();
-        } else {
-            for (let fpI, bgRowI = 0, dwI = offset; (allowScroll) ? bgRowI < 5 : bgRowI < displayWaypoints.length; bgRowI++, dwI++) {
-                dwI = dwI % (displayWaypoints.length);
-
-                if (displayWaypoints[dwI] && displayWaypoints[dwI].wp) {
-                    console.log(dwI + " | [" + fpI + "] " + displayWaypoints[dwI].wp.ident);
-                } else {
-                    console.log(dwI + " | " + displayWaypoints[dwI].marker);
-                }
-            }
-        }
 
         const obj = {
             ident: "",
@@ -593,48 +574,30 @@ class CDUFlightPlanPage {
         // row:   0      | 1 2 | 3 4 | 5 6 | 7 8 | 9  | 10 11 |
         // bgRow: HEADER | R0  | R1  | R2  | R3  | R4 | DEST  | SCRATCHPAD
         // [ {ident, color, spdColor, spdConstraints, altColor, altPrefix, altConstraint, timeCell}, ...]
+        // Render scrolling f-plan elements
         if (displayWaypoints.length === 0) {
             rows = emptyFplnPage();
         } else {
             console.log("+++++++++++++++++++++++++++++");
-            for (let fpI, bgRowI = 0, dwI = offset; (allowScroll) ? bgRowI < 5 : bgRowI < displayWaypoints.length; bgRowI++, dwI++) {
+            //const first = Math.max(0, fpm.getActiveWaypointIndex() - 1);
+            console.log(fpm.getActiveWaypointIndex());
+            console.log("=============================");
+            for (let bgRowI = 0, dwI = offset; (allowScroll) ? bgRowI < 5 : bgRowI < displayWaypoints.length; bgRowI++, dwI++) {
                 dwI = dwI % (displayWaypoints.length);
 
+                let fpI;
                 let prevWaypoint;
                 let waypoint;
-                const timeCell = "----";
                 if (displayWaypoints[dwI] && displayWaypoints[dwI].wp) {
-                    /*
-                    waypoint = displayWaypoints[dwI].wp;
-                    if (displayWaypoints[dwI - 1]) {
-                        prevWaypoint = displayWaypoints[dwI - 1];
-                        console.log("prevwaypoint1: [" + prevWaypoint.fpIndex + "] ");
-                        console.log(prevWaypoint);
-                    }
-                    */
                     fpI = displayWaypoints[dwI].fpIndex;
                     waypoint = displayWaypoints[dwI].wp;
                     prevWaypoint = displayWaypoints[dwI].prev;
-                    console.log(dwI + " | [" + fpI + "] " + displayWaypoints[dwI].wp.ident);
-
                     /*
-                    if (!waypoint) {
-                        console.error("Should not reach");
-                    } else {
-                        console.log(fpm.getLastIndexBeforeApproach());
-                        if (fpI < fpm.getLastIndexBeforeApproach()) {
-                            if (waypoint.infos.airwayIdentInFP === "") {
-                                const prevWaypointWithDiscontinuity = waypointsWithDiscontinuities[fpI - 1];
-                                if (prevWaypointWithDiscontinuity) {
-                                    prevWaypoint = prevWaypointWithDiscontinuity;
-                                    console.log("****prevwaypoint2: [" + prevWaypoint.fpIndex + "] ");
-                                    console.log(prevWaypoint);
-                                }
-                            }
-                        }
+                    if (fpI === 0 && offset == 0) {
+                        showFrom = true;
                     }
-                    console.log("----------------------------------");
                     */
+                    console.log(dwI + " | [" + fpI + "] " + displayWaypoints[dwI].wp.ident);
 
                 } else {
                     console.log(dwI + " | " + displayWaypoints[dwI].marker);
@@ -667,19 +630,19 @@ class CDUFlightPlanPage {
     }
 }
 
-function getFixContent(waypoint, prevWaypoint, activeI, stats) {
+function getFix(waypoint, prevWaypoint, currWpStats, activeIndex) {
 
     // Time
     let time;//, timeCell;
     if (isFlying) {
         if (isFinite(waypoint.liveUTCTo) || isFinite(waypoint.waypointReachedAt)) {
-            time = fpI >= activeI || waypoint.ident === "(DECEL)" ? stats.get(statI).etaFromPpos : waypoint.waypointReachedAt;
-            //timeCell = FMCMainDisplay.secondsToUTC((fpI >= activeI || waypoint.ident === "(DECEL)" ? stats.get(statI).etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
+            time = fpI >= activeI || waypoint.ident === "(DECEL)" ? currWpStats.etaFromPpos : waypoint.waypointReachedAt;
+            //timeCell = FMCMainDisplay.secondsToUTC((fpI >= activeI || waypoint.ident === "(DECEL)" ? currWpStats.etaFromPpos : waypoint.waypointReachedAt)) + "[s-text]";
         }
     } else {
         if (isFinite(waypoint.liveETATo)) {
-            time = fpI >= activeI || waypoint.ident === "(DECEL)" ? stats.get(statI).timeFromPpos : 0;
-            //timeCell = FMCMainDisplay.secondsTohhmm(fpI >= activeI || waypoint.ident === "(DECEL)" ? stats.get(statI).timeFromPpos : 0) + "[s-text]";
+            time = fpI >= activeI || waypoint.ident === "(DECEL)" ? currWpStats.timeFromPpos : 0;
+            //timeCell = FMCMainDisplay.secondsTohhmm(fpI >= activeI || waypoint.ident === "(DECEL)" ? currWpStats.timeFromPpos : 0) + "[s-text]";
         }
     }
 
@@ -691,6 +654,7 @@ function getFixContent(waypoint, prevWaypoint, activeI, stats) {
         color = "white";
     }
 
+    // Airway
     let airwayName = "";
     if (prevWaypoint && waypoint) {
         let airway = undefined;
@@ -698,14 +662,43 @@ function getFixContent(waypoint, prevWaypoint, activeI, stats) {
             airway = {name: prevWaypoint.infos.airwayOut };
         } else if (waypoint.infos.airwayIn && prevWaypoint.infos.airwayOut === undefined) {
             airway = {name: waypoint.infos.airwayIn };
-        } else {
-            // vanilla Behavior that should not be working this way. (base don pilot feedback)
-            // airway = IntersectionInfo.GetCommonAirway(prevWaypoint, waypoint);
         }
         if (airway) {
             //airwayName = "\xa0" + airway.name;
             airwayName = airway.name;
         }
+    }
+
+    // Distance
+    let distance;
+    //let dstnc = "";
+    // active waypoint is live distance, others are distances in the flight plan
+    if (wpIndex === first) {
+        distance = currentWaypointStatistics.distanceFromPpos;
+    } else {
+        distance = currentWaypointStatistics.distanceInFP;
+    }
+    /*
+    if (bigRowIndex === 1) {
+        dstnc = distance.toFixed(0).toString() + "NM";
+    } else {
+        dstnc = distance.toFixed(0).toString() + "\xa0\xa0";
+    }
+    for (let z = 0; z < 9 - dstnc.length; z++) {
+        dstnc = dstnc + "\xa0";
+    }
+    dstnc = dstnc + "[color]" + color;
+    */
+    let speedConstraint;
+    if (waypoint.speedConstraint > 10) {
+        speedConstraint = waypoint.speedConstraint.toFixed(0);
+        /* speedConstraint = "{magenta}*{end}" + waypoint.speedConstraint.toFixed(0);
+        if (speedConstraint === lastSpeedConstraint) {
+            speedConstraint = "\xa0\"\xa0";
+        } else {
+            lastSpeedConstraint = speedConstraint;
+        }
+        */
     }
 
     //let ident, color, spdColor, speedConstraint, altColor, altPrefix, altitudeConstraint, timeCell;
@@ -714,6 +707,50 @@ function getFixContent(waypoint, prevWaypoint, activeI, stats) {
         `{${spdColor}}${speedConstraint}{end}{${altColor}}/${altPrefix}${altitudeConstraint}{end}[s-text]`,
         `${timeCell}{sp}{sp}[color]white`
     ];*/
+
+    let altitudeConstraint;// = "-----";
+    //let altPrefix = "\xa0";
+    const isDepartureWayPoint = routeFirstWaypointIndex > 1 && fpm.getDepartureWaypoints().indexOf(waypointsWithDiscontinuities[wpIndex]) !== -1;
+
+    if (mcdu.transitionAltitude >= 100 && waypoint.legAltitude1 > mcdu.transitionAltitude) {
+        altitudeConstraint = (waypoint.legAltitude1 / 100).toFixed(0).toString();
+        altitudeConstraint = "FL" + altitudeConstraint.padStart(3,"0");
+    } else {
+        altitudeConstraint = waypoint.legAltitude1.toFixed(0).toString().padStart(5,"\xa0");
+    }
+    if (waypoint.legAltitudeDescription !== 0 && waypoint.ident !== "(DECEL)") {
+        altPrefix = "{magenta}*{end}";
+        if (waypoint.legAltitudeDescription === 4) {
+            altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0).toString();
+            altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
+        }
+        //predict altitude for STAR when constraints are missing
+    } else if (isDepartureWayPoint) {
+        altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
+        altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
+        //waypoint is the first or the last of the actual route
+    } else if ((wpIndex === routeFirstWaypointIndex - 1) || (wpIndex === routeLastWaypointIndex + 1)) {
+        altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0"); ;
+        //waypoint is in between on the route
+    } else if (wpIndex <= routeLastWaypointIndex && wpIndex >= routeFirstWaypointIndex) {
+        altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0"); ;
+
+    }
+    if (altitudeConstraint === lastAltitudeConstraint) {
+        altitudeConstraint = "\xa0\xa0\"\xa0\xa0";
+    } else {
+        lastAltitudeConstraint = altitudeConstraint;
+    }
+
+    let spdColor = color;
+    let altColor = color;
+
+    if (speedConstraint === "---") {
+        spdColor = "white";
+    }
+    if (altitudeConstraint === "-----") {
+        altColor = "white";
+    }
 }
 
 CDUFlightPlanPage._timer = 0;
