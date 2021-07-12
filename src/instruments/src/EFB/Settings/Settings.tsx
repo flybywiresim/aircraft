@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
-import Button from '../Components/Button/Button';
+import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 
@@ -348,7 +348,7 @@ const ControlSettings = ({ setShowSettings }) => (
     <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg">
         <div className="flex flex-row justify-between items-center">
             <span className="text-lg text-gray-300">Detents</span>
-            <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
+            <Button type={BUTTON_TYPE.NONE} className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
         </div>
 
     </div>
