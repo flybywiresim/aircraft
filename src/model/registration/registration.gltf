@@ -110,7 +110,7 @@
     ],
     "materials": [
         {
-            "name": "glTFValidator_Added_Default_Material"
+            "name": "REGISTRATION_INVISIBLE"
         }
     ],
     "meshes": [
