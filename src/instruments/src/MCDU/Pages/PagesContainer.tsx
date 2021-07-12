@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import React, { useState } from 'react';
-import { InitPage } from './FMGC/Init/Init';
-import MenuPage from './FMGC/Menu/Menu';
+import { connect } from 'react-redux';
+
 import { useInteractionEvent } from '../../Common/hooks';
+
+import InitPage from './FMGC/Init/Init';
+import MenuPage from './FMGC/Menu/Menu';
 import IdentPage from './FMGC/Ident/Ident';
 
 const PagesContainer = () => {
@@ -29,10 +32,10 @@ const PagesContainer = () => {
         IDENT: <IdentPage />,
     };
 
-    useInteractionEvent('A32NX_MCDU_L_INIT_BUTTON_PRESSED', () => setCurrentPage('INIT'));
-    useInteractionEvent('A32NX_MCDU_L_MENU_BUTTON_PRESSED', () => setCurrentPage('MENU'));
+    useInteractionEvent('A320_Neo_CDU_1_BTN_INIT', () => setCurrentPage('INIT'));
+    useInteractionEvent('A320_Neo_CDU_1_BTN_MENU', () => setCurrentPage('MENU'));
 
     return pages[currentPage];
 };
 
-export default PagesContainer;
+export default connect()(PagesContainer);

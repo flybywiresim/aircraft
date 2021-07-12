@@ -16,20 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import React from 'react';
+import { connect } from 'react-redux';
+import { titleBarState } from '../redux/reducers/titlebarReducer';
+
 import './styles.scss';
-import { useContext } from 'react';
-import { RootContext } from '../RootContext.jsx';
+import '../Components/styles.scss';
 
-const Titlebar = () => {
-    const [, , title] = useContext(RootContext);
+type titlebarProps = {
+    titlebar: titleBarState
+}
 
-    return (
-        <div className="title">
-            <p />
-            <p>{title}</p>
-            <p />
-        </div>
-    );
-};
+const Titlebar: React.FC<titlebarProps> = ({ titlebar }) => (
+    <div className="title">
+        <p />
+        <p>{titlebar.text}</p>
+        <p />
+    </div>
+);
 
-export default Titlebar;
+const mapStateToProps = ({ titlebar }) => ({ titlebar });
+export default connect(mapStateToProps)(Titlebar);

@@ -1,4 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
+
 import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
@@ -10,7 +15,6 @@ import { InteractiveSplitLine } from '../../../Components/Lines/InteractiveSplit
 import { SplitNumberField } from '../../../Components/Fields/Interactive/Split/SplitNumberField';
 import { RowHolder } from '../../../Components/RowHolder';
 import { Content } from '../../../Components/Content';
-import { RootContext } from '../../../RootContext';
 import { StringInputField } from '../../../Components/Fields/Interactive/StringInputField';
 
 const TaxiFuelLine: React.FC = () => {
@@ -276,12 +280,12 @@ const ExtraWeightLine : React.FC = () => (
         />
     </LineHolder>
 );
-
-export const InitBPage: React.FC = () => {
-    const [, , , setTitle] = useContext(RootContext);
-
+type InitBPageProps = {
+    setTitlebar: Function
+}
+export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebar }) => {
     useEffect(() => {
-        setTitle('INIT');
+        setTitlebar('INIT');
     }, []);
 
     return (
@@ -312,3 +316,6 @@ export const InitBPage: React.FC = () => {
         </Content>
     );
 };
+
+const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
+export default connect(null, mapDispatchToProps)(InitBPage);

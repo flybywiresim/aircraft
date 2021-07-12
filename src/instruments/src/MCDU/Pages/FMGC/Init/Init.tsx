@@ -15,20 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import React, { useContext, useEffect, useState } from 'react';
-import { InitAPage } from './InitA';
-import { InitBPage } from './InitB';
-import { RootContext } from '../../../RootContext';
+import React, { useEffect, useState } from 'react';
+
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
+
+import InitAPage from './InitA';
+import InitBPage from './InitB';
+
 import { useInteractionEvent } from '../../../../Common/hooks';
+
 import { slewKeys } from '../../../Components/Buttons';
 
-const InitPage: React.FC = () => {
+type InitPageProps = {
+    setTitlebar: Function,
+}
+const InitPage: React.FC<InitPageProps> = ({ setTitlebar }) => {
     const pages = {
         A: <InitAPage />,
         B: <InitBPage />,
     };
     const [currentPage, setCurrentPage] = useState('A');
-    const [, , , setTitle] = useContext(RootContext);
 
     function determinePage() {
         if (currentPage === 'A') {
@@ -38,7 +46,7 @@ const InitPage: React.FC = () => {
     }
 
     useEffect(() => {
-        setTitle('INIT');
+        setTitlebar('INIT');
     }, []);
 
     useInteractionEvent(slewKeys.right, () => {
@@ -52,4 +60,5 @@ const InitPage: React.FC = () => {
     return pages[currentPage];
 };
 
-export { InitPage };
+const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
+export default connect(null, mapDispatchToProps)(InitPage);

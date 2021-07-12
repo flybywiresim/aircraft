@@ -1,12 +1,17 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import '../../../Components/styles.scss';
+
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
+
 import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { RowHolder } from '../../../Components/RowHolder';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
 import { lineSelectKeys } from '../../../Components/Buttons';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
-import { RootContext } from '../../../RootContext';
 import { Content } from '../../../Components/Content';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
@@ -161,14 +166,14 @@ const ReturnText: React.FC = () => (
 
 type MenuProps = {
     setPage: React.Dispatch<React.SetStateAction<string>>
+    setTitlebar: Function
 }
-const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
+const MenuPage: React.FC<MenuProps> = ({ setPage, setTitlebar }) => {
     const [activeSys, setActiveSys] = useState('FMGC'); // Placeholder till FMGS in place
     const [selected, setSelected] = useState('');
-    const [, , , setTitle] = useContext(RootContext);
 
     useEffect(() => {
-        setTitle('MCDU MENU');
+        setTitlebar('MCDU MENU');
     }, []);
 
     return (
@@ -222,4 +227,5 @@ const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
     );
 };
 
-export default MenuPage;
+const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
+export default connect(null, mapDispatchToProps)(MenuPage);

@@ -1,8 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { lineColors, lineSizes } from '../../Lines/Line';
 import { lineSelectKeys } from '../../Buttons';
 import { useInteractionEvent } from '../../../../Common/hooks';
-import { RootContext } from '../../../RootContext';
 import { fieldSides } from '../NonInteractive/Field';
 
 type StringFieldProps = {
@@ -27,14 +26,14 @@ export const StringInputField: React.FC<StringFieldProps> = (
         lsk,
     },
 ) => {
-    const [scratchpad, setScratchpad, , ] = useContext(RootContext); // eslint-disable-line array-bracket-spacing
+    const [scratchpad, _] = ['TODO', 'TODO'];
 
     useInteractionEvent(lsk, () => {
         if (selectedValidation) {
             if (selectedValidation(scratchpad)) {
                 selectedCallback(scratchpad);
             } else {
-                setScratchpad('FORMAT ERROR');
+                // setScratchpad('FORMAT ERROR'); TODO
             }
         }
     });

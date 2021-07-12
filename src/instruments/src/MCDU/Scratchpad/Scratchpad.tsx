@@ -15,18 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+import React from 'react';
+import { connect } from 'react-redux';
+import { scratchpadState } from '../redux/reducers/scratchpadRedcuer';
+
 import './styles.scss';
 import '../Components/styles.scss';
-import { useContext } from 'react';
-import { RootContext } from '../RootContext.jsx';
 
-const Scratchpad = () => {
-    const [scratchpad] = useContext(RootContext);
-    return (
-        <div className="scratchpad">
-            <p className="scratchpad-input">{scratchpad}</p>
-            <p className="scratchpad-arrow line-right">{'{}'}</p>
-        </div>
-    );
-};
-export default Scratchpad;
+type ScratchpadProps = {
+    scratchpad: scratchpadState
+}
+const Scratchpad: React.FC<ScratchpadProps> = ({ scratchpad }) => (
+    <div className="scratchpad">
+        <p className="scratchpad-input">{scratchpad.text}</p>
+        <p className="scratchpad-arrow line-right">{'{}'}</p>
+    </div>
+);
+const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
+export default connect(mapStateToProps)(Scratchpad);

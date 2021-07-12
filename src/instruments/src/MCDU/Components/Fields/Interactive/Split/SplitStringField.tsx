@@ -1,6 +1,5 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { lineColors, lineSizes } from '../../../Lines/Line';
-import { RootContext } from '../../../../RootContext';
 import { fieldSides } from '../../NonInteractive/Field';
 
 type SplitStringFieldProps = {
@@ -24,14 +23,13 @@ export const SplitStringField : React.FC<SplitStringFieldProps> = (
         selectedValidation,
     },
 ) => {
-    const [, setScratchpad, , ] = useContext(RootContext); // eslint-disable-line array-bracket-spacing
 
     useEffect(() => {
         if (value) {
             if (selectedValidation(value)) {
                 selectedCallback(value);
             } else {
-                setScratchpad('FORMAT ERROR');
+                // setScratchpad('FORMAT ERROR'); TODO
             }
         }
     }, [value]);

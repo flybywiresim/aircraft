@@ -1,5 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { RootContext } from '../../../RootContext';
+import React, { useEffect, useState } from 'react';
+
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
+
+import { useSimVar } from '../../../../Common/simVars';
+
 import { LineHolder } from '../../../Components/LineHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
@@ -10,7 +16,6 @@ import { RowHolder } from '../../../Components/RowHolder';
 import { StringInputField } from '../../../Components/Fields/Interactive/StringInputField';
 import { NumberInputField } from '../../../Components/Fields/Interactive/NumberInputField';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
-import { useSimVar } from '../../../../Common/simVars';
 import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
 import { InteractiveSplitLine } from '../../../Components/Lines/InteractiveSplitLine';
 import { SplitStringField } from '../../../Components/Fields/Interactive/Split/SplitStringField';
@@ -85,7 +90,6 @@ const AltDestLine: React.FC = () => {
 
 const FlightNoLine: React.FC = () => {
     const [flightNo, setFlightNo] = useSimVar('ATC FLIGHT NUMBER', 'string');
-    const [, setScratchpad, , ] = useContext(RootContext); // eslint-disable-line array-bracket-spacing
 
     return (
         <LineHolder>
@@ -102,13 +106,7 @@ const FlightNoLine: React.FC = () => {
                             setFlightNo(value);
                         }}
                         lsk={lineSelectKeys.L3}
-                        selectedValidation={(value) => {
-                            if (value.length > 7) {
-                                setScratchpad('NOT ALLOWED');
-                                return false;
-                            }
-                            return true;
-                        }}
+                        selectedValidation={(value) => value.length <= 7}
                     />
                 )}
             />
@@ -271,12 +269,12 @@ const RequestLine: React.FC = () => (
         />
     </LineHolder>
 );
-
-export const InitAPage: React.FC = () => {
-    const [, , , setTitle] = useContext(RootContext);
-
+type InitAPageProps = {
+    setTitlebar : Function
+}
+const InitAPage: React.FC<InitAPageProps> = ({ setTitlebar }) => {
     useEffect(() => {
-        setTitle('INIT');
+        setTitlebar('INIT');
     }, []);
 
     return (
@@ -307,3 +305,6 @@ export const InitAPage: React.FC = () => {
         </Content>
     );
 };
+
+const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
+export default connect(null, mapDispatchToProps)(InitAPage);

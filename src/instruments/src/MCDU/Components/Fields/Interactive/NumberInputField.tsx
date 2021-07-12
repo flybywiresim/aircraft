@@ -1,7 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { lineColors, lineSizes } from '../../Lines/Line';
 import { lineSelectKeys } from '../../Buttons';
-import { RootContext } from '../../../RootContext';
 import { useInteractionEvent } from '../../../../Common/hooks';
 import { fieldSides } from '../NonInteractive/Field';
 
@@ -29,7 +28,7 @@ export const NumberInputField: React.FC<NumberFieldProps> = (
         lsk,
     },
 ) => {
-    const [scratchpad, setScratchpad, , ] = useContext(RootContext); // eslint-disable-line array-bracket-spacing
+    const [scratchpad, _ ] = ['TODO', 'TODO']; // eslint-disable-line array-bracket-spacing
     let numVal;
     if (typeof value === 'string') {
         numVal = value;
@@ -43,10 +42,10 @@ export const NumberInputField: React.FC<NumberFieldProps> = (
             if (newVal >= min && newVal <= max) {
                 selectedCallback(newVal);
             } else {
-                setScratchpad('ENTRY OUT OF RANGE');
+                // setScratchpad('ENTRY OUT OF RANGE'); TODO
             }
         } else {
-            setScratchpad('FORMAT ERROR');
+            // setScratchpad('FORMAT ERROR'); TODO
         }
     });
 

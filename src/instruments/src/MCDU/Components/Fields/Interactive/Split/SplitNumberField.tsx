@@ -1,6 +1,5 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { lineColors, lineSizes } from '../../../Lines/Line';
-import { RootContext } from '../../../../RootContext';
 import { fieldSides } from '../../NonInteractive/Field';
 
 type SplitNumberFieldProps = {
@@ -26,7 +25,7 @@ export const SplitNumberField : React.FC<SplitNumberFieldProps> = (
         selectedCallback,
     },
 ) => {
-    const [, setScratchpad, , ] = useContext(RootContext); // eslint-disable-line array-bracket-spacing
+    const [_] = ['TODO'];
 
     useEffect(() => {
         if (value) {
@@ -34,10 +33,10 @@ export const SplitNumberField : React.FC<SplitNumberFieldProps> = (
                 if (value >= min && value <= max) {
                     selectedCallback(value);
                 } else {
-                    setScratchpad('ENTRY OUT OF RANGE');
+                    // setScratchpad('ENTRY OUT OF RANGE'); TODO
                 }
             } else {
-                setScratchpad('FORMAT ERROR');
+                // setScratchpad('FORMAT ERROR'); TODO
             }
         }
     }, [value]);

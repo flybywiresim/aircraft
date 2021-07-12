@@ -1,0 +1,1 @@
+export const SET_TITLEBAR_TEXT = 'SET_TITLEBAR_TEXT';
