@@ -815,8 +815,8 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             return;
         }
 
-        const airDataReferenceSource = ADIRS.getAirDataReferenceSource(this.screenIndex);
-        const inertialReferenceSource = ADIRS.getInertialReferenceSource(this.screenIndex);
+        const airDataReferenceSource = ADIRS.getMfdAirDataReferenceSource(this.screenIndex);
+        const inertialReferenceSource = ADIRS.getMfdInertialReferenceSource(this.screenIndex);
         if (this.ndInfo != null) {
             this.ndInfo.update(_deltaTime, airDataReferenceSource, inertialReferenceSource);
         }
