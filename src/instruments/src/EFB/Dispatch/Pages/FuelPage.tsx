@@ -297,7 +297,7 @@ export const FuelPage = () => {
                     <div className="w-4/12 mr-3">
                         <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Left Outer Tank</h2>
-                            <div className="flex mt-4">
+                            <div className="mt-4">
                                 <ProgressBar
                                     height="10px"
                                     width="200px"
@@ -307,7 +307,7 @@ export const FuelPage = () => {
                                     bgcolor="#3b82f6"
                                     completed={(Math.max(LOutCurrent, 0) / outerCellGallon) * 100}
                                 />
-                                <div className="fuel-label">
+                                <div className="mt-4">
                                     <label className="fuel-content-label text-base" htmlFor="fuel-label">
                                         {convertFuelValue(LOutCurrent)}
                                         /
@@ -376,7 +376,7 @@ export const FuelPage = () => {
                     <div className="w-4/12 ml-3">
                         <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Right Outer Tank</h2>
-                            <div className="flex mt-4">
+                            <div className="mt-4">
                                 <ProgressBar
                                     height="10px"
                                     width="200px"
@@ -386,7 +386,7 @@ export const FuelPage = () => {
                                     bgcolor="#3b82f6"
                                     completed={(Math.max(ROutCurrent, 0) / outerCellGallon) * 100}
                                 />
-                                <div className="fuel-label">
+                                <div className="mt-4">
                                     <label className="fuel-content-label" htmlFor="fuel-label">
                                         {convertFuelValue(ROutCurrent)}
                                         /
