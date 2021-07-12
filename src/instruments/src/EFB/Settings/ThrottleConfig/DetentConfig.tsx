@@ -85,11 +85,11 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
             <div>
                 {!props.expertMode
                 && (
-                    <div className="flex flex-row w-full">
+                    <div className="flex flex-col w-full">
                         <Input
                             key={props.index}
                             label="Range"
-                            className="dark-option w-24 mr-4"
+                            className=" w-52 dark-option mb-4"
                             value={deadZone}
                             onChange={(deadZone) => {
                                 if (parseFloat(deadZone) >= 0.01) {
@@ -104,7 +104,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             }}
                         />
                         <Button
-                            className="w-38 border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600"
+                            className="border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600"
                             text="Set From Throttle"
                             onClick={() => {
                                 setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));

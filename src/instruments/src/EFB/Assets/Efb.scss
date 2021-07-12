@@ -1,22 +1,69 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap");
-
-* {
-  font-family: "Nunito Sans", sans-serif;
-  letter-spacing: 0.35px;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /*
-
   Custom CSS for a32nx [EFB]
-
 */
 
+@layer base {
+  @font-face {
+    font-family: "IBMPlexMono";
+    font-weight: 300;
+    src: url("/Fonts/ibm-plex-mono-v6-latin-300.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NunitoSans";
+    font-weight: 200;
+    src: url("/Fonts/nunito-sans-v6-latin-200.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NunitoSans";
+    font-weight: 400;
+    src: url("/Fonts/nunito-sans-v6-latin-regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NunitoSans";
+    font-weight: 700;
+    src: url("/Fonts/nunito-sans-v6-latin-700.ttf") format("truetype");
+  }
+}
+
+html body {
+  @apply font-efb;
+  @apply tracking-nunito;
+}
+
+/* ---- Global Scrollbar ---- */
+
+.scrollbar::-webkit-scrollbar {
+  @apply rounded-xl w-4;
+  @apply bg-navy-regular;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  @apply rounded-xl;
+  @apply bg-navy-regular;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  @apply rounded-xl;
+  @apply bg-teal-light;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ---- Loading/Boot Components ---- */
+
 .loading-screen {
-  @apply bg-black text-4xl font-thin text-gray-100;
+  @apply bg-black text-4xl font-normal text-gray-100;
 
   .center {
     padding: 475px 0;
@@ -61,6 +108,37 @@
   margin-right: 16px;
 }
 
-.flip-vertical {
+/* ---- Dashboard Components ---- */
+
+.flip-horizontal {
   transform: scaleX(-1);
+}
+
+.leaflet-container {
+  @apply rounded-2xl;
+}
+
+/* ---- Dispatch Components ---- */
+
+.loadsheet-container {
+  height: 685px;
+
+  /* fbw flypad theme for simbrief maps */
+  & img {
+    width: 70.5%;
+    filter: brightness(110%) hue-rotate(210deg) saturate(26%) invert(100%);
+  }
+}
+
+.grabbable {
+  cursor: move;
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+
+  &:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+  }
 }
