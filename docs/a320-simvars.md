@@ -1140,7 +1140,15 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_IR_{number}_WIND_VELOCITY
     - Degrees
-    - The direction of the wind. Approximately -1000000 when unavailable.
+    - The velocity of the wind. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_LATITUDE
+    - Degrees
+    - The latitude of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_LONGITUDE
+    - Degrees
+    - The longitude of the aircraft. Approximately -1000000 when unavailable.
 
 ## Autopilot System
 

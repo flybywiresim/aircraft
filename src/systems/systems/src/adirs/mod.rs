@@ -160,6 +160,7 @@ struct AdirsSimulatorData {
     vertical_speed: Velocity,
     true_airspeed: Velocity,
     latitude: Angle,
+    longitude: Angle,
     pitch: Angle,
     roll: Angle,
     heading: Angle,
@@ -169,7 +170,8 @@ struct AdirsSimulatorData {
     wind_velocity: Velocity,
 }
 impl AdirsSimulatorData {
-    const LATITUDE: &'static str = "GPS POSITION LAT";
+    const LATITUDE: &'static str = "PLANE LATITUDE";
+    const LONGITUDE: &'static str = "PLANE LONGITUDE";
     const MACH: &'static str = "AIRSPEED MACH";
     const VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
     const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
@@ -189,6 +191,7 @@ impl SimulationElement for AdirsSimulatorData {
         self.vertical_speed = Velocity::new::<foot_per_minute>(vertical_speed);
         self.true_airspeed = reader.read(Self::TRUE_AIRSPEED);
         self.latitude = reader.read(Self::LATITUDE);
+        self.longitude = reader.read(Self::LONGITUDE);
         self.pitch = reader.read(Self::PITCH);
         self.roll = reader.read(Self::ROLL);
         self.heading = reader.read(Self::HEADING);
@@ -604,6 +607,8 @@ struct InertialReference {
     ground_speed: OutputData<Velocity>,
     wind_direction: OutputData<Angle>,
     wind_velocity: OutputData<Velocity>,
+    latitude: OutputData<Angle>,
+    longitude: OutputData<Angle>,
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
@@ -618,6 +623,8 @@ impl InertialReference {
     const GROUND_SPEED: &'static str = "GROUND_SPEED";
     const WIND_DIRECTION: &'static str = "WIND_DIRECTION";
     const WIND_VELOCITY: &'static str = "WIND_VELOCITY";
+    const LATITUDE: &'static str = "LATITUDE";
+    const LONGITUDE: &'static str = "LONGITUDE";
     const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
 
     fn new(number: usize) -> Self {
@@ -670,6 +677,16 @@ impl InertialReference {
                 Self::WIND_VELOCITY,
                 Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
             ),
+            latitude: OutputData::new_ir(
+                number,
+                Self::LATITUDE,
+                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
+            ),
+            longitude: OutputData::new_ir(
+                number,
+                Self::LONGITUDE,
+                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
+            ),
         }
     }
 
@@ -709,6 +726,9 @@ impl InertialReference {
             } else {
                 Velocity::new::<knot>(0.)
             });
+
+        self.latitude.set_value(simulator_data.latitude);
+        self.longitude.set_value(simulator_data.longitude);
 
         let selected_mode = overhead.mode_of(self.number);
 
@@ -790,6 +810,8 @@ impl SimulationElement for InertialReference {
         self.ground_speed.write_to(writer, is_aligned);
         self.wind_direction.write_to(writer, is_aligned);
         self.wind_velocity.write_to(writer, is_aligned);
+        self.latitude.write_to(writer, is_aligned);
+        self.longitude.write_to(writer, is_aligned);
     }
 }
 
@@ -883,6 +905,11 @@ mod tests {
 
         fn latitude_of(mut self, latitude: Angle) -> Self {
             self.write(AdirsSimulatorData::LATITUDE, latitude);
+            self
+        }
+
+        fn longitude_of(mut self, longitude: Angle) -> Self {
+            self.write(AdirsSimulatorData::LONGITUDE, longitude);
             self
         }
 
@@ -1211,6 +1238,32 @@ mod tests {
         fn inertial_vertical_speed_is_available(&mut self, adiru_number: usize) -> bool {
             self.inertial_vertical_speed(adiru_number)
                 > Velocity::new::<foot_per_minute>(InertialReference::UNINITIALISED_VALUE)
+        }
+
+        fn longitude(&mut self, adiru_number: usize) -> Angle {
+            self.read(&output_data_id(
+                OutputDataType::IR,
+                adiru_number,
+                InertialReference::LONGITUDE,
+            ))
+        }
+
+        fn longitude_is_available(&mut self, adiru_number: usize) -> bool {
+            self.longitude(adiru_number)
+                > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
+        }
+
+        fn latitude(&mut self, adiru_number: usize) -> Angle {
+            self.read(&output_data_id(
+                OutputDataType::IR,
+                adiru_number,
+                InertialReference::LATITUDE,
+            ))
+        }
+
+        fn latitude_is_available(&mut self, adiru_number: usize) -> bool {
+            self.latitude(adiru_number)
+                > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1867,6 +1920,14 @@ mod tests {
             test_bed.wind_velocity_is_available(adiru_number),
             "Test precondition: wind velocity should be available at this point."
         );
+        assert!(
+            test_bed.latitude_is_available(adiru_number),
+            "Test precondition: latitude should be available at this point."
+        );
+        assert!(
+            test_bed.longitude_is_available(adiru_number),
+            "Test precondition: longitude should be available at this point."
+        );
 
         test_bed = test_bed
             .then_continue_with()
@@ -1881,6 +1942,8 @@ mod tests {
         assert!(!test_bed.ground_speed_is_available(adiru_number));
         assert!(!test_bed.wind_direction_is_available(adiru_number));
         assert!(!test_bed.wind_velocity_is_available(adiru_number));
+        assert!(!test_bed.latitude_is_available(adiru_number));
+        assert!(!test_bed.longitude_is_available(adiru_number));
     }
 
     #[rstest]
@@ -1982,7 +2045,31 @@ mod tests {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn ir_heading_and_track_and_vertical_speed_and_ground_speed_and_wind_are_available_after_full_alignment_completed(
+    fn latitude_is_supplied_by_ir(#[case] adiru_number: usize) {
+        let latitude = Angle::new::<degree>(10.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().latitude_of(latitude);
+        test_bed.run();
+
+        assert_eq!(test_bed.latitude(adiru_number), latitude);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn longitude_is_supplied_by_ir(#[case] adiru_number: usize) {
+        let longitude = Angle::new::<degree>(10.);
+        let mut test_bed = all_adirus_aligned_test_bed_with().longitude_of(longitude);
+        test_bed.run();
+
+        assert_eq!(test_bed.longitude(adiru_number), longitude);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn ir_heading_and_track_and_vertical_speed_and_ground_speed_and_wind_and_latitude_and_longitude_are_available_after_full_alignment_completed(
         #[case] adiru_number: usize,
     ) {
         let mut test_bed = test_bed_with()
@@ -1995,6 +2082,8 @@ mod tests {
             assert!(!test_bed.ground_speed_is_available(adiru_number));
             assert!(!test_bed.wind_direction_is_available(adiru_number));
             assert!(!test_bed.wind_velocity_is_available(adiru_number));
+            assert!(!test_bed.latitude_is_available(adiru_number));
+            assert!(!test_bed.longitude_is_available(adiru_number));
             test_bed.run();
         }
 
@@ -2004,6 +2093,8 @@ mod tests {
         assert!(test_bed.ground_speed_is_available(adiru_number));
         assert!(test_bed.wind_direction_is_available(adiru_number));
         assert!(test_bed.wind_velocity_is_available(adiru_number));
+        assert!(test_bed.latitude_is_available(adiru_number));
+        assert!(test_bed.longitude_is_available(adiru_number));
     }
 
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,

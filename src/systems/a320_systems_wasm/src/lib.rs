@@ -98,7 +98,8 @@ fn create_aircraft_variable_reader(
         2,
         &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
     );
-    reader.add("GPS POSITION LAT", "degree latitude", 0)?;
+    reader.add("PLANE LATITUDE", "degree latitude", 0)?;
+    reader.add("PLANE LONGITUDE", "degree longitude", 0)?;
 
     Ok(reader)
 }
