@@ -137,6 +137,7 @@
 1. [HYD] Fixed autobrake inputs response for rotating knob type controllers - @Crocket63 (crocket)
 1. [ECAM] Autoswitch ECAM pages use proper FWC phase logic - @2hwk (2Cas#1022)
 1. [MISC] Improved logic for chronometer operations - @sidnov (Sid)
+1. [DISPLAYS] Fix Self-Test no longer triggers when spawning from an in-flight state i.e. cruise/landing/takeoff on runway - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
