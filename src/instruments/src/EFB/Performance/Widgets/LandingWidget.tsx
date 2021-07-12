@@ -517,7 +517,8 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={syncValues}
-                                className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
+                                className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg
+                                focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
                                 type="button"
                                 disabled={!isValidIcao()}
                             >

@@ -147,6 +147,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
         if (currWidth === 2500) return false;
 
         chart.style.width = `${currWidth + 100}px`;
+        return console.log(chart.style.width);
     };
 
     const zoomout = () => {
@@ -155,6 +156,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
         if (currWidth === 100) return false;
 
         chart.style.width = `${currWidth - 100}px`;
+        return console.log(chart.style.width);
     };
 
     return (
@@ -471,7 +473,8 @@ const ChartsUi = (props: ChartsUiProps) => {
                                         )
                                         : (
                                             <span
-                                                className={`flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition duration-300 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
+                                                className={`flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition
+                                                duration-300 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
                                                 onClick={() => setSelectedTab(organizedChart)}
                                                 key={organizedChart.name}
                                             >
