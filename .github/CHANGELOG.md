@@ -104,6 +104,7 @@
 1. [AP] Improved disengage conditions for ROLL OUT and when excessive pitch or roll attitude - @aguther (Andreas Guther)
 1. [FBW] Improved ground spoiler logic - @aguther (Andreas Guther)
 1. [ATHR] Fixed incorrect THR LK activation when A/THR disconnect buttons have been used - @aguther (Andreas Guther)
+1. [ECAM] Convert Cruise page to React - @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [ATHR] Support flight director off take-off procedure - @aguther (Andreas Guther)
 1. [MCDU] Fixed tropo entry validation - @MisterChocker (Leon)
 1. [AP/FMGC] Improved managed speed and V2 validity - @aguther (Andreas Guther)
