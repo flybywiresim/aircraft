@@ -40,7 +40,29 @@ class ADIRS {
         // the DDRMI (not modelled) stops functioning when the heading signal is invalid.
         // Therefore, we assume heading to be the key indicator for the ready state.
         const inertialReferenceSource = ADIRS.getMfdInertialReferenceSource(mfdIndex);
-        const heading = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`, "degree");
+        const heading = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`, 'degree');
         return Number.isNaN(heading);
+    }
+
+    static getLatitude() {
+        return ADIRS.getLocation('latitude');
+    }
+
+    static getLongitude() {
+        return ADIRS.getLocation('longitude');
+    }
+
+    static getLocation(type) {
+        // In the real aircraft, FMGC 1 is supplied by ADIRU 1, and FMGC 2 by ADIRU 2. When any is unavailable
+        // the FMGC switches to ADIRU 3. If only one ADIRU is available, both FMGCs use the same ADIRU.
+        // As we don't have a split FMGC, we'll just use the following code for now.
+        for (let adiruNumber = 1; adiruNumber <= 3; adiruNumber++) {
+            const longitude = ADIRS.getValue(`L:A32NX_ADIRS_IR_${adiruNumber}_${type.toUpperCase()}`, `degree ${type}`);
+            if (!Number.isNaN(longitude)) {
+                return longitude;
+            }
+        }
+
+        return NaN;
     }
 }

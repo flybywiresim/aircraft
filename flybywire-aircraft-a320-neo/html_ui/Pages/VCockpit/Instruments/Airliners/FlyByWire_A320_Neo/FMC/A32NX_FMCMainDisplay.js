@@ -3892,18 +3892,19 @@ class FMCMainDisplay extends BaseAirliners {
         if (!this._progBrgDist) {
             return;
         }
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
+
+        const latitude = ADIRS.getLatitude();
+        const longitude = ADIRS.getLongitude();
+
+        if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
             this._progBrgDist.distance = -1;
             this._progBrgDist.bearing = -1;
             return;
         }
-        const planeLla = new LatLongAlt(
-            SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
-            SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude")
-        );
-        const magVar = SimVar.GetSimVarValue("MAGVAR", "degree");
-        this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLla, this._progBrgDist.coordinates);
-        this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLla, this._progBrgDist.coordinates));
+
+        const planeLl = new LatLong(latitude, longitude);
+        this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLl, this._progBrgDist.coordinates);
+        this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLl, this._progBrgDist.coordinates));
     }
 
     get progBearing() {
