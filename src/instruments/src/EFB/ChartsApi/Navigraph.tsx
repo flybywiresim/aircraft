@@ -80,6 +80,8 @@ export default class NavigraphClient {
         interval: 5,
     }
 
+    public userName: string = '';
+
     public static sufficientEnv() {
         return !(NavigraphClient.clientSecret === undefined || NavigraphClient.clientId === undefined);
     }
@@ -125,24 +127,27 @@ export default class NavigraphClient {
     }
 
     private tokenCall(body) {
-        fetch('https://identity.api.navigraph.com/connect/token/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-            body: formatFormBody(body),
-        }).then((resp) => {
-            if (resp.ok) {
-                resp.json().then((r) => {
-                    const refreshToken = r.refresh_token;
+        if (this.deviceCode) {
+            fetch('https://identity.api.navigraph.com/connect/token/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                body: formatFormBody(body),
+            }).then((resp) => {
+                if (resp.ok) {
+                    resp.json().then((r) => {
+                        const refreshToken = r.refresh_token;
 
-                    this.refreshToken = refreshToken;
-                    this.accessToken = r.access_token;
+                        this.refreshToken = refreshToken;
+                        this.accessToken = r.access_token;
+                        this.userInfo();
 
-                    NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
-                });
-            }
-        }).catch(() => {
-            console.log('Token Authentication Failed. #NV102');
-        });
+                        NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
+                    });
+                }
+            }).catch(() => {
+                console.log('Token Authentication Failed. #NV102');
+            });
+        }
     }
 
     public getToken() {
@@ -259,7 +264,7 @@ export default class NavigraphClient {
             if (userInfoResp.ok) {
                 const userInfoJson = await userInfoResp.json();
 
-                return userInfoJson.preferred_username;
+                this.userName = userInfoJson.preferred_username;
             }
         }
 

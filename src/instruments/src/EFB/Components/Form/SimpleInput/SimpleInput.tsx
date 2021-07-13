@@ -85,10 +85,12 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
     };
 
     useEffect(() => {
-        if (focused) {
-            Coherent.trigger('FOCUS_INPUT_FIELD');
-        } else {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        if (!process.env.SIMVAR_DISABLE) {
+            if (focused) {
+                Coherent.trigger('FOCUS_INPUT_FIELD');
+            } else {
+                Coherent.trigger('UNFOCUS_INPUT_FIELD');
+            }
         }
     }, [focused]);
 

@@ -30,7 +30,6 @@ type ChartsUiProps = {
 
 type NavigraphChartComponentProps = {
     chartLink: ChartDisplay,
-    userInfo: string,
     isFullscreen: boolean,
     enableDarkCharts: boolean
     setIsFullscreen: (boolean) => void,
@@ -77,9 +76,15 @@ const Loading = () => {
 };
 
 const AuthUi = () => {
-    const { auth } = useNavigraph();
+    const navigraph = useNavigraph();
 
-    const hasQr = !!auth.qrLink;
+    const hasQr = !!navigraph.auth.qrLink;
+
+    useInterval(() => {
+        if (!navigraph.hasToken()) {
+            navigraph.getToken();
+        }
+    }, (navigraph.auth.interval * 1000));
 
     return (
         <div className="h-efb w-full flex items-center justify-center bg-navy-lighter rounded-2xl text-white shadow-lg p-6 overflow-x-hidden">
@@ -95,16 +100,16 @@ const AuthUi = () => {
                         <>
                             <div className="bg-white p-3 rounded-xl ml-auto mr-auto">
                                 <QRCode
-                                    value={auth.qrLink}
+                                    value={navigraph.auth.qrLink}
                                     size={400}
                                 />
                             </div>
                             <p className="mt-8 text-xl ml-auto mr-auto text-white w-2/3 text-center">
                                 Scan the QR Code or open '
-                                <span className="text-teal-regular">{auth.link}</span>
+                                <span className="text-teal-regular">{navigraph.auth.link}</span>
                                 ' into your browser and enter the code below
                             </p>
-                            <p className="ml-auto mr-auto rounded-md bg-navy-medium px-4 py-2 mt-4 text-3xl text-center text-white">{auth.code}</p>
+                            <p className="ml-auto mr-auto rounded-md bg-navy-medium px-4 py-2 mt-4 text-3xl text-center text-white">{navigraph.auth.code}</p>
                         </>
                     )
                     : <Loading />}
@@ -114,6 +119,7 @@ const AuthUi = () => {
 };
 
 const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
+    const navigraph = useNavigraph();
     const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
@@ -204,7 +210,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
 
             <div className="m-auto relative">
                 <span className="absolute mt-2 ml-6 text-red-600 font-bold">
-                    {`This chart is linked to ${props.userInfo}`}
+                    {`This chart is linked to ${navigraph.userName}`}
                 </span>
                 {!props.enableDarkCharts
                     ? <img className="max-w-none" id="chart" draggable={false} src={props.chartLink.light} alt="chart" />
@@ -323,7 +329,6 @@ const ChartsUi = (props: ChartsUiProps) => {
     const navigraph = useNavigraph();
 
     const [enableDarkCharts, setEnableDarkCharts] = useState<boolean>(true); // Navigraph Only
-    const [userInfo, setUserInfo] = useState<string>(''); // Navigraph Only
     const [airportInfo, setAirportInfo] = useState<AirportInfo>({ name: '' }); // Navigraph Only
 
     const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -384,14 +389,6 @@ const ChartsUi = (props: ChartsUiProps) => {
             chartsGet();
         }
     }, [selectedChartName]);
-
-    useEffect(() => {
-        if (props.enableNavigraph) {
-            if (userInfo === '') {
-                navigraph.userInfo().then((r) => setUserInfo(r));
-            }
-        }
-    });
 
     const handleIcaoChange = (value: string) => {
         const newValue = value.toUpperCase();
@@ -511,7 +508,6 @@ const ChartsUi = (props: ChartsUiProps) => {
                             ? (
                                 <NavigraphChartComponent
                                     chartLink={chartLink}
-                                    userInfo={userInfo}
                                     isFullscreen={isFullscreen}
                                     enableDarkCharts={enableDarkCharts}
                                     setIsFullscreen={setIsFullscreen}
@@ -524,7 +520,6 @@ const ChartsUi = (props: ChartsUiProps) => {
                 : (
                     <NavigraphChartComponent
                         chartLink={chartLink}
-                        userInfo={userInfo}
                         isFullscreen={isFullscreen}
                         enableDarkCharts={enableDarkCharts}
                         setIsFullscreen={setIsFullscreen}
@@ -590,14 +585,6 @@ const Navigation = () => {
         departure: [],
         reference: [],
     });
-
-    useInterval(() => {
-        if (enableNavigraph) {
-            if (!navigraph.hasToken()) {
-                navigraph.getToken();
-            }
-        }
-    }, (navigraph.auth.interval * 1000));
 
     useInterval(() => {
         if (enableNavigraph) {
