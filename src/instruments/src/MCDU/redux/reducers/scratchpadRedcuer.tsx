@@ -187,7 +187,7 @@ const clearScratchpad = (state: scratchpadState) => {
 };
 
 export type scratchpadState = {
-    currentMessage: String,
+    currentMessage: string,
     currentColor: lineColors,
     isDisplayingErrorMessage: Boolean,
     isDisplayingTypeTwoMessage: Boolean,

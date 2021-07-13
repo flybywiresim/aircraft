@@ -1,4 +1,9 @@
+import { scratchpadMessage } from 'instruments/src/MCDU/redux/reducers/scratchpadRedcuer';
 import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as scratchpadActions from '../../../../redux/actions/scratchpadActionCreators';
+
 import { lineColors, lineSizes } from '../../../Lines/Line';
 import { fieldSides } from '../../NonInteractive/Field';
 
@@ -8,11 +13,14 @@ type SplitStringFieldProps = {
     color: lineColors,
     side?: fieldSides,
     size: lineSizes,
-    selectedCallback: (value: string) => any,
+    selectedCallback: (value?: string) => any,
     selectedValidation: (value: string) => boolean,
+
+    // REDUX
+    addMessage : (msg: scratchpadMessage) => any,
 }
 
-export const SplitStringField : React.FC<SplitStringFieldProps> = (
+const SplitStringField : React.FC<SplitStringFieldProps> = (
     {
         value,
         nullValue,
@@ -21,14 +29,21 @@ export const SplitStringField : React.FC<SplitStringFieldProps> = (
         side,
         selectedCallback,
         selectedValidation,
+        addMessage,
     },
 ) => {
     useEffect(() => {
         if (value) {
-            if (selectedValidation(value)) {
+            if (value === 'CLR') {
+                selectedCallback('');
+            } else if (selectedValidation(value)) {
                 selectedCallback(value);
             } else {
-                // setScratchpad('FORMAT ERROR'); TODO
+                addMessage({
+                    text: 'FORMAT ERROR',
+                    isAmber: false,
+                    isTypeTwo: false,
+                });
             }
         }
     }, [value]);
@@ -36,3 +51,5 @@ export const SplitStringField : React.FC<SplitStringFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : value}</span>
     );
 };
+const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addNewMessage, dispatch) });
+export default connect(null, mapDispatchToProps)(SplitStringField);

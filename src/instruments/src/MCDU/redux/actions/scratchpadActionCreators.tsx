@@ -3,7 +3,7 @@ import { scratchpadMessage } from '../reducers/scratchpadRedcuer';
 import * as scratchpadTypes from '../types/scratchpadActionTypes';
 
 /**
- * Used for when the clear button is held
+ * Clears the entire scratchpad
  */
 export const clearScratchpad = () => ({ type: scratchpadTypes.CLEAR_SCRATCHPAD });
 

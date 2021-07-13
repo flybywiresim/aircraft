@@ -1,19 +1,27 @@
+import { scratchpadMessage } from 'instruments/src/MCDU/redux/reducers/scratchpadRedcuer';
 import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as scratchpadActions from '../../../../redux/actions/scratchpadActionCreators';
+
 import { lineColors, lineSizes } from '../../../Lines/Line';
 import { fieldSides } from '../../NonInteractive/Field';
 
 type SplitNumberFieldProps = {
-    value: number | undefined,
+    value: string | number | undefined,
     nullValue: string,
     min: number,
     max: number,
     color: lineColors,
     side?: fieldSides,
     size: lineSizes,
-    selectedCallback: (value: number) => any,
+    selectedCallback: (value?: number | string) => any,
+
+    // REDUX
+    addMessage : (msg: scratchpadMessage) => any,
 }
 
-export const SplitNumberField : React.FC<SplitNumberFieldProps> = (
+const SplitNumberField : React.FC<SplitNumberFieldProps> = (
     {
         value,
         nullValue,
@@ -23,20 +31,29 @@ export const SplitNumberField : React.FC<SplitNumberFieldProps> = (
         color,
         side,
         selectedCallback,
+        addMessage,
     },
 ) => {
-    const [_] = ['TODO'];
-
     useEffect(() => {
         if (value) {
-            if (!Number.isNaN(value)) {
+            if (value === 'CLR') {
+                selectedCallback(undefined);
+            } else if (!Number.isNaN(value)) {
                 if (value >= min && value <= max) {
                     selectedCallback(value);
                 } else {
-                    // setScratchpad('ENTRY OUT OF RANGE'); TODO
+                    addMessage({
+                        text: 'ENTRY OUT OF RANGE',
+                        isAmber: false,
+                        isTypeTwo: false,
+                    });
                 }
             } else {
-                // setScratchpad('FORMAT ERROR'); TODO
+                addMessage({
+                    text: 'FORMAT ERROR',
+                    isAmber: false,
+                    isTypeTwo: false,
+                });
             }
         }
     }, [value]);
@@ -44,3 +61,5 @@ export const SplitNumberField : React.FC<SplitNumberFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : value}</span>
     );
 };
+const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addNewMessage, dispatch) });
+export default connect(null, mapDispatchToProps)(SplitNumberField);

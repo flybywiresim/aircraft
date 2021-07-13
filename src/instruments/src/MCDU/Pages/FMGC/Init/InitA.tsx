@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
+import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
 import { useSimVar } from '../../../../Common/simVars';
 
@@ -13,13 +14,13 @@ import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
 import { Content } from '../../../Components/Content';
 import { RowHolder } from '../../../Components/RowHolder';
-import { StringInputField } from '../../../Components/Fields/Interactive/StringInputField';
-import { NumberInputField } from '../../../Components/Fields/Interactive/NumberInputField';
+import StringInputField from '../../../Components/Fields/Interactive/StringInputField';
+import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
-import { InteractiveSplitLine } from '../../../Components/Lines/InteractiveSplitLine';
-import { SplitStringField } from '../../../Components/Fields/Interactive/Split/SplitStringField';
-import { SplitNumberField } from '../../../Components/Fields/Interactive/Split/SplitNumberField';
+import InteractiveSplitLine from '../../../Components/Lines/InteractiveSplitLine';
+import SplitStringField from '../../../Components/Fields/Interactive/Split/SplitStringField';
+import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
 
 // TODO when FMGS is in place then event and color management to these components
 
@@ -63,7 +64,10 @@ const FromToLine: React.FC = () => (
 );
 
 // Should this be split field?
-const AltDestLine: React.FC = () => {
+type altDestLineProps = {
+    clearScratchpad: () => any
+}
+const AltDestLine: React.FC<altDestLineProps> = ({ clearScratchpad }) => {
     const [value, setValue] = useState<string>();
     return (
         <LineHolder>
@@ -77,7 +81,12 @@ const AltDestLine: React.FC = () => {
                         color={value !== undefined ? lineColors.cyan : lineColors.amber}
                         lsk={LINESELECT_KEYS.L2}
                         selectedCallback={(value) => {
-                            setValue(value);
+                            if (value === undefined) {
+                                setValue(undefined);
+                            } else {
+                                setValue(value);
+                            }
+                            clearScratchpad();
                         }}
                         selectedValidation={(() => true)}
                         size={lineSizes.regular}
@@ -88,7 +97,10 @@ const AltDestLine: React.FC = () => {
     );
 };
 
-const FlightNoLine: React.FC = () => {
+type flightNoLineProps = {
+    clearScratchpad: () => {}
+}
+const FlightNoLine: React.FC<flightNoLineProps> = ({ clearScratchpad }) => {
     const [flightNo, setFlightNo] = useSimVar('ATC FLIGHT NUMBER', 'string');
 
     return (
@@ -103,7 +115,12 @@ const FlightNoLine: React.FC = () => {
                         color={flightNo !== undefined ? lineColors.cyan : lineColors.amber}
                         size={lineSizes.regular}
                         selectedCallback={(value) => {
-                            setFlightNo(value);
+                            if (value === undefined) {
+                                setFlightNo(undefined);
+                            } else {
+                                setFlightNo(value);
+                            }
+                            clearScratchpad();
                         }}
                         lsk={LINESELECT_KEYS.L3}
                         selectedValidation={(value) => value.length <= 7}
@@ -134,7 +151,10 @@ const WindTempLine: React.FC = () => (
     </LineHolder>
 );
 
-const CostIndexLine: React.FC = () => {
+type costIndexLineProps = {
+    clearScratchpad: () => {}
+}
+const CostIndexLine: React.FC<costIndexLineProps> = ({ clearScratchpad }) => {
     const [costIndex, setCostIndex] = useState<number>(); // Temp until FMGC in-place
     return (
         <LineHolder>
@@ -143,14 +163,19 @@ const CostIndexLine: React.FC = () => {
                 side={lineSides.left}
                 value={(
                     <NumberInputField
-                        value={costIndex}
+                        value={costIndex?.toFixed(0)}
                         nullValue="___"
                         min={100}
                         max={999}
                         color={costIndex !== undefined ? lineColors.cyan : lineColors.amber}
                         lsk={LINESELECT_KEYS.L5}
                         selectedCallback={(value) => {
-                            setCostIndex(value);
+                            if (value === undefined) {
+                                setCostIndex(undefined);
+                            } else {
+                                setCostIndex(value);
+                            }
+                            clearScratchpad();
                         }}
                         size={lineSizes.regular}
                     />
@@ -161,7 +186,10 @@ const CostIndexLine: React.FC = () => {
 };
 
 // TODO Parse the scratchpad input and do validation for split fields or find a way to do it in Line Component
-const CruiseFLTemp: React.FC = () => {
+type cruiseFLTempProps = {
+    clearScratchpad: () => {}
+}
+const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ clearScratchpad }) => {
     const [flString, setFL] = useState<string>();
     const [temp, setTemp] = useState<number>();
     return (
@@ -177,7 +205,12 @@ const CruiseFLTemp: React.FC = () => {
                         color={flString !== undefined ? lineColors.cyan : lineColors.amber}
                         size={lineSizes.regular}
                         selectedCallback={(value) => {
-                            setFL(value);
+                            if (value === undefined) {
+                                setFL(undefined);
+                            } else {
+                                setFL(value);
+                            }
+                            clearScratchpad();
                         }}
                         selectedValidation={() => true}
                     />
@@ -191,7 +224,12 @@ const CruiseFLTemp: React.FC = () => {
                         size={lineSizes.regular}
                         color={lineColors.inop}
                         selectedCallback={(value) => {
-                            setTemp(value);
+                            if (value === undefined) {
+                                setTemp(undefined);
+                            } else {
+                                setTemp(+value);
+                            }
+                            clearScratchpad();
                         }}
                     />
                 )}
@@ -208,7 +246,10 @@ const AlignOptionLine: React.FC = () => (
     </LineHolder>
 );
 
-const TropoLine: React.FC = () => {
+type tropoLineProps = {
+    clearScratchpad: () => {}
+}
+const TropoLine: React.FC<tropoLineProps> = ({ clearScratchpad }) => {
     const [tropo, setTropo] = useState<number>();
     return (
         <LineHolder>
@@ -225,7 +266,12 @@ const TropoLine: React.FC = () => {
                         size={lineSizes.regular}
                         lsk={LINESELECT_KEYS.R5}
                         selectedCallback={(value) => {
-                            setTropo(value);
+                            if (value === undefined) {
+                                setTropo(undefined);
+                            } else {
+                                setTropo(value);
+                            }
+                            clearScratchpad();
                         }}
                     />
                 )}
@@ -270,9 +316,12 @@ const RequestLine: React.FC = () => (
     </LineHolder>
 );
 type InitAPageProps = {
-    setTitlebar : Function
+
+    // REDUX
+    setTitlebar : (text: any) => any
+    clearScratchpad: () => any
 }
-const InitAPage: React.FC<InitAPageProps> = ({ setTitlebar }) => {
+const InitAPage: React.FC<InitAPageProps> = ({ setTitlebar, clearScratchpad }) => {
     useEffect(() => {
         setTitlebar('INIT');
     }, []);
@@ -284,27 +333,30 @@ const InitAPage: React.FC<InitAPageProps> = ({ setTitlebar }) => {
                 <FromToLine />
             </RowHolder>
             <RowHolder index={2}>
-                <AltDestLine />
+                <AltDestLine clearScratchpad={clearScratchpad} />
                 <RequestLine />
             </RowHolder>
             <RowHolder index={3}>
-                <FlightNoLine />
+                <FlightNoLine clearScratchpad={clearScratchpad} />
                 <AlignOptionLine />
             </RowHolder>
             <RowHolder index={4}>
                 <WindTempLine />
             </RowHolder>
             <RowHolder index={5}>
-                <CostIndexLine />
-                <TropoLine />
+                <CostIndexLine clearScratchpad={clearScratchpad} />
+                <TropoLine clearScratchpad={clearScratchpad} />
             </RowHolder>
             <RowHolder index={6}>
-                <CruiseFLTemp />
+                <CruiseFLTemp clearScratchpad={clearScratchpad} />
                 <GndTempLine />
             </RowHolder>
         </Content>
     );
 };
 
-const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
+const mapDispatchToProps = (dispatch) => ({
+    setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch),
+    clearScratchpad: bindActionCreators(scratchpadActions.clearScratchpad, dispatch),
+});
 export default connect(null, mapDispatchToProps)(InitAPage);

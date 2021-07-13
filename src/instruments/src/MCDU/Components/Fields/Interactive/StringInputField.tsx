@@ -1,7 +1,13 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { scratchpadMessage, scratchpadState } from 'instruments/src/MCDU/redux/reducers/scratchpadRedcuer';
+import { bindActionCreators } from 'redux';
+import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
+
+import { useInteractionEvent } from '../../../../Common/hooks';
+
 import { lineColors, lineSizes } from '../../Lines/Line';
 import { LINESELECT_KEYS } from '../../Buttons';
-import { useInteractionEvent } from '../../../../Common/hooks';
 import { fieldSides } from '../NonInteractive/Field';
 
 type StringFieldProps = {
@@ -10,11 +16,15 @@ type StringFieldProps = {
     color: lineColors,
     side?: fieldSides,
     size: lineSizes,
-    selectedCallback: (value: string) => any,
+    selectedCallback: (value?: string) => any,
     selectedValidation: (value: string) => boolean,
-    lsk: LINESELECT_KEYS
+    lsk: LINESELECT_KEYS,
+
+    // REDUX
+    scratchpad: scratchpadState,
+    addMessage: (msg:scratchpadMessage) => any,
 }
-export const StringInputField: React.FC<StringFieldProps> = (
+const StringInputField: React.FC<StringFieldProps> = (
     {
         value,
         nullValue,
@@ -24,17 +34,25 @@ export const StringInputField: React.FC<StringFieldProps> = (
         selectedCallback,
         selectedValidation,
         lsk,
+        scratchpad,
+        addMessage,
     },
 ) => {
-    const [scratchpad, _] = ['TODO', 'TODO'];
-
     useInteractionEvent(lsk, () => {
-        if (selectedValidation) {
-            if (selectedValidation(scratchpad)) {
-                selectedCallback(scratchpad);
+        if (scratchpad.currentMessage === 'CLR') {
+            selectedCallback('');
+        } else if (selectedValidation) {
+            if (selectedValidation(scratchpad.currentMessage)) {
+                selectedCallback(scratchpad.currentMessage);
             } else {
-                // setScratchpad('FORMAT ERROR'); TODO
+                addMessage({
+                    text: 'FORMAT ERROR',
+                    isAmber: false,
+                    isTypeTwo: false,
+                });
             }
+        } else {
+            console.error('No Validation provided');
         }
     });
 
@@ -42,3 +60,6 @@ export const StringInputField: React.FC<StringFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === '' || value === undefined ? nullValue : value}</span>
     );
 };
+const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
+const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addNewMessage, dispatch) });
+export default connect(mapStateToProps, mapDispatchToProps)(StringInputField);

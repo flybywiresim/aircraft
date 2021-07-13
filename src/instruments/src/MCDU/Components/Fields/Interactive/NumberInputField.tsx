@@ -1,7 +1,13 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { scratchpadMessage, scratchpadState } from 'instruments/src/MCDU/redux/reducers/scratchpadRedcuer';
+import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
+
+import { useInteractionEvent } from '../../../../Common/hooks';
+
 import { lineColors, lineSizes } from '../../Lines/Line';
 import { LINESELECT_KEYS } from '../../Buttons';
-import { useInteractionEvent } from '../../../../Common/hooks';
 import { fieldSides } from '../NonInteractive/Field';
 
 type NumberFieldProps = {
@@ -12,10 +18,14 @@ type NumberFieldProps = {
     color: lineColors,
     side?: fieldSides,
     size: lineSizes,
-    selectedCallback: (value: number) => any,
-    lsk: LINESELECT_KEYS
+    selectedCallback: (value?: number) => any,
+    lsk: LINESELECT_KEYS,
+
+    // REDUX
+    scratchpad: scratchpadState,
+    addMessage: (msg:scratchpadMessage) => any,
 }
-export const NumberInputField: React.FC<NumberFieldProps> = (
+const NumberInputField: React.FC<NumberFieldProps> = (
     {
         value,
         nullValue,
@@ -26,9 +36,10 @@ export const NumberInputField: React.FC<NumberFieldProps> = (
         size,
         selectedCallback,
         lsk,
+        scratchpad,
+        addMessage,
     },
 ) => {
-    const [scratchpad, _ ] = ['TODO', 'TODO']; // eslint-disable-line array-bracket-spacing
     let numVal;
     if (typeof value === 'string') {
         numVal = value;
@@ -37,15 +48,27 @@ export const NumberInputField: React.FC<NumberFieldProps> = (
     }
 
     useInteractionEvent(lsk, () => {
-        const newVal = parseFloat(scratchpad);
-        if (!Number.isNaN(newVal)) {
-            if (newVal >= min && newVal <= max) {
-                selectedCallback(newVal);
-            } else {
-                // setScratchpad('ENTRY OUT OF RANGE'); TODO
-            }
+        if (scratchpad.currentMessage === 'CLR') {
+            selectedCallback(undefined);
         } else {
-            // setScratchpad('FORMAT ERROR'); TODO
+            const newVal = parseFloat(scratchpad.currentMessage);
+            if (!Number.isNaN(newVal)) {
+                if (newVal >= min && newVal <= max) {
+                    selectedCallback(newVal);
+                } else {
+                    addMessage({
+                        text: 'ENTRY OUT OF RANGE',
+                        isAmber: false,
+                        isTypeTwo: false,
+                    });
+                }
+            } else {
+                addMessage({
+                    text: 'FORMAT ERROR',
+                    isAmber: false,
+                    isTypeTwo: false,
+                });
+            }
         }
     });
 
@@ -53,3 +76,6 @@ export const NumberInputField: React.FC<NumberFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : numVal}</span>
     );
 };
+const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
+const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addNewMessage, dispatch) });
+export default connect(mapStateToProps, mapDispatchToProps)(NumberInputField);

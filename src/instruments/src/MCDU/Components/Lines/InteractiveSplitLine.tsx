@@ -1,18 +1,22 @@
 import React, { ReactElement, useState } from 'react';
-import { LINESELECT_KEYS } from '../Buttons';
+import { connect } from 'react-redux';
+
 import { useInteractionEvent } from '../../../Common/hooks';
+
+import { LINESELECT_KEYS } from '../Buttons';
 import { lineColors } from './Line';
+import { scratchpadState } from '../../redux/reducers/scratchpadRedcuer';
 
 type InteractiveSplitLineProps = {
     leftSide: ReactElement,
     rightSide: ReactElement,
     lsk: LINESELECT_KEYS,
-    slashColor: lineColors
+    slashColor: lineColors,
+    scratchpad: scratchpadState
 }
 
-export const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
-    { leftSide, rightSide, lsk, slashColor }: { leftSide: any; rightSide: any; lsk: LINESELECT_KEYS, slashColor: lineColors
-    },
+const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
+    { leftSide, rightSide, lsk, slashColor, scratchpad },
 ) => {
     const [leftValue, setLeftValue] = useState(() => {
         const { value } = leftSide.props;
@@ -23,9 +27,8 @@ export const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
         return value;
     });
 
-    // TODO amend this to work with redux
     function splitScratchpadValue() {
-        let [leftValue, rightValue] = 'scratchpad'.split('/');
+        let [leftValue, rightValue] = scratchpad.currentMessage.split('/');
 
         if (leftValue.length <= 0) {
             leftValue = '';
@@ -55,3 +58,5 @@ export const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
         </>
     );
 };
+const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
+export default connect(mapStateToProps)(InteractiveSplitLine);

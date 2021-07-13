@@ -2,23 +2,28 @@ import React, { useEffect, useState } from 'react';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
 import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
-import { NumberInputField } from '../../../Components/Fields/Interactive/NumberInputField';
+import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import { SplitLine } from '../../../Components/Lines/SplitLine';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
-import { InteractiveSplitLine } from '../../../Components/Lines/InteractiveSplitLine';
-import { SplitNumberField } from '../../../Components/Fields/Interactive/Split/SplitNumberField';
+import InteractiveSplitLine from '../../../Components/Lines/InteractiveSplitLine';
+import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
 import { RowHolder } from '../../../Components/RowHolder';
 import { Content } from '../../../Components/Content';
-import { StringInputField } from '../../../Components/Fields/Interactive/StringInputField';
+import StringInputField from '../../../Components/Fields/Interactive/StringInputField';
 
-const TaxiFuelLine: React.FC = () => {
-    const [taxiVal, setTaxiVal] = useState<number>(0.4);
+type taxiFuelLineProps = {
+    clearScratchpad: Function
+}
+const TaxiFuelLine: React.FC<taxiFuelLineProps> = ({ clearScratchpad }) => {
+    const DEFAULT_TAXI_VAL = 0.4;
+    const [taxiVal, setTaxiVal] = useState<number>(DEFAULT_TAXI_VAL);
     const [entered, setEntered] = useState<boolean>(false);
 
     return (
@@ -35,8 +40,14 @@ const TaxiFuelLine: React.FC = () => {
                         color={lineColors.cyan}
                         size={entered ? lineSizes.regular : lineSizes.small}
                         selectedCallback={(value) => {
-                            setTaxiVal(value);
-                            setEntered(true);
+                            if (value === undefined) {
+                                setTaxiVal(DEFAULT_TAXI_VAL);
+                                setEntered(false);
+                            } else {
+                                setTaxiVal(+value);
+                                setEntered(true);
+                            }
+                            clearScratchpad();
                         }}
                         lsk={LINESELECT_KEYS.L1}
                     />
@@ -282,8 +293,9 @@ const ExtraWeightLine : React.FC = () => (
 );
 type InitBPageProps = {
     setTitlebar: Function
+    clearScratchpad: Function
 }
-export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebar }) => {
+export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebar, clearScratchpad }) => {
     useEffect(() => {
         setTitlebar('INIT');
     }, []);
@@ -291,7 +303,7 @@ export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebar }) => {
     return (
         <Content>
             <RowHolder index={1}>
-                <TaxiFuelLine />
+                <TaxiFuelLine clearScratchpad={clearScratchpad} />
                 <ZeroFuelWeightLine />
             </RowHolder>
             <RowHolder index={2}>
@@ -317,5 +329,8 @@ export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebar }) => {
     );
 };
 
-const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
+const mapDispatchToProps = (dispatch) => ({
+    setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch),
+    clearScratchpad: bindActionCreators(scratchpadActions.clearScratchpad, dispatch),
+});
 export default connect(null, mapDispatchToProps)(InitBPage);
