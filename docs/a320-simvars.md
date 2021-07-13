@@ -1150,6 +1150,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Degrees
     - The longitude of the aircraft. Approximately -1000000 when unavailable.
 
+- A32NX_ADIRS_USES_GPS_AS_PRIMARY
+    - Bool
+    - Whether or not the GPS is used as the primary means of navigation/position determination.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

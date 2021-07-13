@@ -187,7 +187,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         const failed = ADIRS.mapHasFailed(this.screenIndex);
 
-        if (failed) {
+        const usesGpsAsPrimary = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "bool");
+
+        if (!usesGpsAsPrimary) {
             document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
             document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "visible");
@@ -196,16 +198,13 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             var GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
             //Getting the current GPS value to compare whether if the GPS is lost in the middle (After Aligns)
             //OR The aircraft is started from the very first time.
-            var GPSPrimaryCurrVal = SimVar.GetSimVarValue("L:GPSPrimary", "bool");
-            if (GPSPrimaryCurrVal && GPSPrimAck) { //Resetting the acknowledged flag, if the GPS flag changed in the middle.
+            if (usesGpsAsPrimary && GPSPrimAck) { //Resetting the acknowledged flag, if the GPS flag changed in the middle.
                 SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 0);
             }
-            SimVar.SetSimVarValue("L:GPSPrimary", "bool", 0);
         } else {
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
             var GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
-            var GPSPrimaryCurrVal = SimVar.GetSimVarValue("L:GPSPrimary", "bool");
-            if (!GPSPrimaryCurrVal && GPSPrimAck) { //Resetting the acknowledged flag, if the GPS flag changed in the middle.
+            if (!usesGpsAsPrimary && GPSPrimAck) { //Resetting the acknowledged flag, if the GPS flag changed in the middle.
                 SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 0);
             }
 
@@ -217,7 +216,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "hidden");
                 document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
             }
-            SimVar.SetSimVarValue("L:GPSPrimary", "bool", 1);
         }
 
         if (failed && !this.map.planMode && this.modeChangeTimer == -1) {

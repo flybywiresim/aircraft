@@ -211,6 +211,7 @@ impl AirDataInertialReferenceSystem {
     const STATE_KEY: &'static str = "ADIRS_STATE";
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
+    const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
     pub fn new() -> Self {
         Self {
@@ -237,7 +238,7 @@ impl AirDataInertialReferenceSystem {
     }
 
     fn state(&self) -> AlignState {
-        if self.adirus.iter().any(|adiru| adiru.is_aligned()) {
+        if self.any_adiru_aligned() {
             AlignState::Aligned
         } else if self.adirus.iter().any(|adiru| adiru.is_aligning()) {
             AlignState::Aligning
@@ -256,6 +257,10 @@ impl AirDataInertialReferenceSystem {
                 (Some(x), Some(y)) => Some(if x > y { x } else { y }),
             })
             .unwrap_or_else(|| Duration::from_secs(0))
+    }
+
+    fn any_adiru_aligned(&self) -> bool {
+        self.adirus.iter().any(|adiru| adiru.is_aligned())
     }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
@@ -278,6 +283,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
             Self::REMAINING_ALIGNMENT_TIME_KEY,
             self.remaining_align_duration(),
         );
+        writer.write(Self::USES_GPS_AS_PRIMARY_KEY, self.any_adiru_aligned())
     }
 }
 impl Default for AirDataInertialReferenceSystem {
@@ -903,6 +909,14 @@ mod tests {
             self
         }
 
+        fn wait_for_alignment(mut self) -> Self {
+            while self.align_state() != AlignState::Aligned {
+                self.run();
+            }
+
+            self
+        }
+
         fn latitude_of(mut self, latitude: Angle) -> Self {
             self.write(AdirsSimulatorData::LATITUDE, latitude);
             self
@@ -1264,6 +1278,10 @@ mod tests {
         fn latitude_is_available(&mut self, adiru_number: usize) -> bool {
             self.latitude(adiru_number)
                 > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
+        }
+
+        fn uses_gps_as_primary(&mut self) -> bool {
+            self.read(AirDataInertialReferenceSystem::USES_GPS_AS_PRIMARY_KEY)
         }
     }
     impl TestBed for AdirsTestBed {
@@ -2095,6 +2113,28 @@ mod tests {
         assert!(test_bed.wind_velocity_is_available(adiru_number));
         assert!(test_bed.latitude_is_available(adiru_number));
         assert!(test_bed.longitude_is_available(adiru_number));
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn uses_gps_as_primary_when_any_adiru_is_aligned(#[case] adiru_number: usize) {
+        // The GPSSU is for now assumed to always work. Thus, when any ADIRU is aligned
+        // GPS is used as the primary means of navigation.
+        let mut test_bed = test_bed_with()
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation)
+            .wait_for_alignment();
+
+        assert!(test_bed.uses_gps_as_primary());
+    }
+
+    #[test]
+    fn does_not_use_gps_as_primary_when_no_adiru_is_aligned() {
+        let mut test_bed = test_bed();
+        test_bed.run();
+
+        assert!(!test_bed.uses_gps_as_primary());
     }
 
     // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
