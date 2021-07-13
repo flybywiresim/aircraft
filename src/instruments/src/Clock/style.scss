@@ -5,11 +5,21 @@
   font-style: normal;
 }
 
+.off {
+  opacity: 0;
+  transition: opacity 0.01s linear;
+}
+
+.on {
+  opacity: 1;
+  transition: opacity 0.01s linear;
+}
+
 svg {
   position: absolute;
   width: 256px;
   height: 256px;
-  background: rgba(5, 40, 80, 0.09);
+  background: rgba(5, 40, 80, 0.01);
 }
 
 text {
@@ -18,19 +28,19 @@ text {
 }
 
 .day text {
-  fill: rgba(180, 170, 170, 0.95);
+  fill: rgba(220, 220, 220, 0.85);
+  transition: fill 5s linear;
 }
 
 .night text {
-  fill: rgba(155, 148, 148, 0.45);
+  fill: rgba(220, 220, 220, 0.40);
+  transition: fill 5s linear;
 }
 
 .fontBig {
   font-size: 65px;
-  transition: fill 7s ease-in-out;
 }
 
 .fontSmall {
   font-size: 48px;
-  transition: fill 7s ease-in-out;
 }
