@@ -10,7 +10,7 @@ import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { RowHolder } from '../../../Components/RowHolder';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
-import { lineSelectKeys } from '../../../Components/Buttons';
+import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { Content } from '../../../Components/Content';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
@@ -53,7 +53,7 @@ const FMGCText: React.FC<FMGCTextProps> = ({ activeSys, setActiveSys, setPage, s
                     <LineSelectField
                         value={determineText()}
                         color={determineColor()}
-                        lsk={lineSelectKeys.L1}
+                        lsk={LINESELECT_KEYS.L1}
                         selectedCallback={(() => {
                             setActiveSys('FMGC'); // Placeholder until we can retrieve activeSys from FMGC
                             setSelected('FMGC');
@@ -79,7 +79,7 @@ type TextProps = {
     selected: string,
     side: lineSides,
     setSelected: React.Dispatch<React.SetStateAction<string>>,
-    lsk: lineSelectKeys
+    lsk: LINESELECT_KEYS
 }
 const MenuLineText: React.FC<TextProps> = ({ lsk, side, system, activeSys, setActiveSys, selected, setSelected }) => {
     function determineColor() {
@@ -185,7 +185,7 @@ const MenuPage: React.FC<MenuProps> = ({ setPage, setTitlebar }) => {
                 </RowHolder>
                 <RowHolder index={2}>
                     <MenuLineText
-                        lsk={lineSelectKeys.L2}
+                        lsk={LINESELECT_KEYS.L2}
                         system="ATSU"
                         side={lineSides.left}
                         activeSys={activeSys}
@@ -196,7 +196,7 @@ const MenuPage: React.FC<MenuProps> = ({ setPage, setTitlebar }) => {
                 </RowHolder>
                 <RowHolder index={3}>
                     <MenuLineText
-                        lsk={lineSelectKeys.L3}
+                        lsk={LINESELECT_KEYS.L3}
                         system="AIDS"
                         side={lineSides.left}
                         activeSys={activeSys}
@@ -207,7 +207,7 @@ const MenuPage: React.FC<MenuProps> = ({ setPage, setTitlebar }) => {
                 </RowHolder>
                 <RowHolder index={4}>
                     <MenuLineText
-                        lsk={lineSelectKeys.L4}
+                        lsk={LINESELECT_KEYS.L4}
                         system="CFDS"
                         side={lineSides.left}
                         activeSys={activeSys}

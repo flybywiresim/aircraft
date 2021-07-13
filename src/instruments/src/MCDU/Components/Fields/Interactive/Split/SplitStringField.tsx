@@ -23,7 +23,6 @@ export const SplitStringField : React.FC<SplitStringFieldProps> = (
         selectedValidation,
     },
 ) => {
-
     useEffect(() => {
         if (value) {
             if (selectedValidation(value)) {

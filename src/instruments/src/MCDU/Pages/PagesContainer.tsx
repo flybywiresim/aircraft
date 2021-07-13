@@ -23,6 +23,7 @@ import { useInteractionEvent } from '../../Common/hooks';
 import InitPage from './FMGC/Init/Init';
 import MenuPage from './FMGC/Menu/Menu';
 import IdentPage from './FMGC/Ident/Ident';
+import { PAGE_KEYS } from '../Components/Buttons';
 
 const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState('MENU');
@@ -32,8 +33,8 @@ const PagesContainer = () => {
         IDENT: <IdentPage />,
     };
 
-    useInteractionEvent('A320_Neo_CDU_1_BTN_INIT', () => setCurrentPage('INIT'));
-    useInteractionEvent('A320_Neo_CDU_1_BTN_MENU', () => setCurrentPage('MENU'));
+    useInteractionEvent(PAGE_KEYS.INIT, () => setCurrentPage('INIT'));
+    useInteractionEvent(PAGE_KEYS.MENU, () => setCurrentPage('MENU'));
 
     return pages[currentPage];
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { lineColors, lineSizes } from '../../Lines/Line';
-import { lineSelectKeys } from '../../Buttons';
+import { LINESELECT_KEYS } from '../../Buttons';
 import { useInteractionEvent } from '../../../../Common/hooks';
 import { fieldSides } from '../NonInteractive/Field';
 
@@ -12,7 +12,7 @@ type StringFieldProps = {
     size: lineSizes,
     selectedCallback: (value: string) => any,
     selectedValidation: (value: string) => boolean,
-    lsk: lineSelectKeys
+    lsk: LINESELECT_KEYS
 }
 export const StringInputField: React.FC<StringFieldProps> = (
     {

@@ -1,4 +1,4 @@
-export enum lineSelectKeys {
+export enum LINESELECT_KEYS {
     L1 = 'A320_Neo_CDU_1_BTN_L1',
     L2 = 'A320_Neo_CDU_1_BTN_L2',
     L3 = 'A320_Neo_CDU_1_BTN_L3',
@@ -13,9 +13,73 @@ export enum lineSelectKeys {
     R6 = 'A320_Neo_CDU_1_BTN_R6',
 }
 
-export enum slewKeys {
-    left= 'A32NX_MCDU_L_LARROW_BUTTON_PRESSED',
-    right= 'A32NX_MCDU_L_RARROW_BUTTON_PRESSED',
-    up= 'A32NX_MCDU_L_UARROW_BUTTON_PRESSED',
-    down= 'A32NX_MCDU_L_DARROW_BUTTON_PRESSED',
+export enum SLEW_KEYS {
+    DARROW= 'A320_Neo_CDU_1_BTN_DOWN',
+    UARROW= 'A320_Neo_CDU_1_BTN_UP',
+    LARROW= 'A320_Neo_CDU_1_BTN_PREVPAGE',
+    RARROW= 'A320_Neo_CDU_1_BTN_NEXTPAGE',
+}
+
+export enum PAGE_KEYS {
+    DIR = 'A320_Neo_CDU_1_BTN_DIR',
+    PROG = 'A320_Neo_CDU_1_BTN_PROG',
+    PERF = 'A320_Neo_CDU_1_BTN_PERF',
+    INIT = 'A320_Neo_CDU_1_BTN_INIT',
+    DATA = 'A320_Neo_CDU_1_BTN_DATA',
+    FPLN = 'A320_Neo_CDU_1_BTN_FPLN',
+    RAD = 'A320_Neo_CDU_1_BTN_RAD',
+    FUEL = 'A320_Neo_CDU_1_BTN_FUEL',
+    SEC = 'A320_Neo_CDU_1_BTN_SEC',
+    ATC = 'A320_Neo_CDU_1_BTN_ATC',
+    MENU = 'A320_Neo_CDU_1_BTN_MENU',
+    AIRPORT = 'A320_Neo_CDU_1_BTN_AIRPORT',
+}
+
+export enum ALPHABET_KEYS {
+    A = 'A320_Neo_CDU_1_BTN_A',
+    B = 'A320_Neo_CDU_1_BTN_B',
+    C = 'A320_Neo_CDU_1_BTN_C',
+    D = 'A320_Neo_CDU_1_BTN_D',
+    E = 'A320_Neo_CDU_1_BTN_E',
+    F = 'A320_Neo_CDU_1_BTN_F',
+    G = 'A320_Neo_CDU_1_BTN_G',
+    H = 'A320_Neo_CDU_1_BTN_H',
+    I = 'A320_Neo_CDU_1_BTN_I',
+    J = 'A320_Neo_CDU_1_BTN_J',
+    K = 'A320_Neo_CDU_1_BTN_K',
+    L = 'A320_Neo_CDU_1_BTN_L',
+    M = 'A320_Neo_CDU_1_BTN_M',
+    N = 'A320_Neo_CDU_1_BTN_N',
+    O = 'A320_Neo_CDU_1_BTN_O',
+    P = 'A320_Neo_CDU_1_BTN_P',
+    Q = 'A320_Neo_CDU_1_BTN_Q',
+    R = 'A320_Neo_CDU_1_BTN_R',
+    S = 'A320_Neo_CDU_1_BTN_S',
+    T = 'A320_Neo_CDU_1_BTN_T',
+    U = 'A320_Neo_CDU_1_BTN_U',
+    V = 'A320_Neo_CDU_1_BTN_V',
+    W = 'A320_Neo_CDU_1_BTN_W',
+    X = 'A320_Neo_CDU_1_BTN_X',
+    Y = 'A320_Neo_CDU_1_BTN_Y',
+    Z = 'A320_Neo_CDU_1_BTN_Z',
+    DOT = 'A320_Neo_CDU_1_BTN_DOT',
+    PLUSMINUS = 'A320_Neo_CDU_1_BTN_PLUSMINUS',
+    SP = 'A320_Neo_CDU_1_BTN_SP',
+    DIV = 'A320_Neo_CDU_1_BTN_DIV',
+    OVFY = 'A320_Neo_CDU_1_BTN_OVFY',
+    CLR = 'A320_Neo_CDU_1_BTN_CLR',
+    CLR_HELD = 'TODO'
+}
+
+export enum NUMPAD_KEYS {
+    ZERO = 'A320_Neo_CDU_1_BTN_0',
+    ONE = 'A320_Neo_CDU_1_BTN_1',
+    TWO = 'A320_Neo_CDU_1_BTN_2',
+    THREE = 'A320_Neo_CDU_1_BTN_3',
+    FOUR = 'A320_Neo_CDU_1_BTN_4',
+    FIVE = 'A320_Neo_CDU_1_BTN_5',
+    SIX = 'A320_Neo_CDU_1_BTN_6',
+    SEVEN = 'A320_Neo_CDU_1_BTN_7',
+    EIGHT = 'A320_Neo_CDU_1_BTN_8',
+    NINE = 'A320_Neo_CDU_1_BTN_9',
 }

@@ -1,16 +1,19 @@
 import React, { ReactElement, useState } from 'react';
-import { lineSelectKeys } from '../Buttons';
+import { LINESELECT_KEYS } from '../Buttons';
 import { useInteractionEvent } from '../../../Common/hooks';
 import { lineColors } from './Line';
 
 type InteractiveSplitLineProps = {
     leftSide: ReactElement,
     rightSide: ReactElement,
-    lsk: lineSelectKeys,
+    lsk: LINESELECT_KEYS,
     slashColor: lineColors
 }
 
-export const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = ({ leftSide, rightSide, lsk, slashColor }: { leftSide: any; rightSide: any; lsk: any }) => {
+export const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
+    { leftSide, rightSide, lsk, slashColor }: { leftSide: any; rightSide: any; lsk: LINESELECT_KEYS, slashColor: lineColors
+    },
+) => {
     const [leftValue, setLeftValue] = useState(() => {
         const { value } = leftSide.props;
         return value;

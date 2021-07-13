@@ -26,7 +26,7 @@ import InitBPage from './InitB';
 
 import { useInteractionEvent } from '../../../../Common/hooks';
 
-import { slewKeys } from '../../../Components/Buttons';
+import { SLEW_KEYS } from '../../../Components/Buttons';
 
 type InitPageProps = {
     setTitlebar: Function,
@@ -49,11 +49,11 @@ const InitPage: React.FC<InitPageProps> = ({ setTitlebar }) => {
         setTitlebar('INIT');
     }, []);
 
-    useInteractionEvent(slewKeys.right, () => {
+    useInteractionEvent(SLEW_KEYS.RARROW, () => {
         setCurrentPage(determinePage());
     });
 
-    useInteractionEvent(slewKeys.left, () => {
+    useInteractionEvent(SLEW_KEYS.LARROW, () => {
         setCurrentPage(determinePage());
     });
 

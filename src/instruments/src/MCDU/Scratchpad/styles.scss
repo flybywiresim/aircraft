@@ -1,13 +1,13 @@
 .scratchpad {
-  margin-top: 20px;
   margin-left: 20px;
-
+  min-height: 54px;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
 }
 
 .scratchpad-input {
+  white-space:nowrap;
   flex-grow: 2;
 }
 

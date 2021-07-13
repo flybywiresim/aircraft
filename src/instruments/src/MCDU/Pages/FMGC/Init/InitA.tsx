@@ -9,7 +9,7 @@ import { useSimVar } from '../../../../Common/simVars';
 import { LineHolder } from '../../../Components/LineHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
-import { lineSelectKeys } from '../../../Components/Buttons';
+import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
 import { Content } from '../../../Components/Content';
 import { RowHolder } from '../../../Components/RowHolder';
@@ -51,7 +51,7 @@ const FromToLine: React.FC = () => (
                     nullValue="____|____"
                     color={lineColors.amber}
                     size={lineSizes.regular}
-                    lsk={lineSelectKeys.R1}
+                    lsk={LINESELECT_KEYS.R1}
                     selectedCallback={(value) => {
                         console.log(`Inserting FROM/TO ${value}`);
                     }}
@@ -75,7 +75,7 @@ const AltDestLine: React.FC = () => {
                         value={value}
                         nullValue="----|----------"
                         color={value !== undefined ? lineColors.cyan : lineColors.amber}
-                        lsk={lineSelectKeys.L2}
+                        lsk={LINESELECT_KEYS.L2}
                         selectedCallback={(value) => {
                             setValue(value);
                         }}
@@ -105,7 +105,7 @@ const FlightNoLine: React.FC = () => {
                         selectedCallback={(value) => {
                             setFlightNo(value);
                         }}
-                        lsk={lineSelectKeys.L3}
+                        lsk={LINESELECT_KEYS.L3}
                         selectedValidation={(value) => value.length <= 7}
                     />
                 )}
@@ -126,7 +126,7 @@ const WindTempLine: React.FC = () => (
                     selectedCallback={() => {
                         console.log('WIND/TEMP Page called');
                     }}
-                    lsk={lineSelectKeys.R4}
+                    lsk={LINESELECT_KEYS.R4}
                     color={lineColors.white}
                 />
             )}
@@ -148,7 +148,7 @@ const CostIndexLine: React.FC = () => {
                         min={100}
                         max={999}
                         color={costIndex !== undefined ? lineColors.cyan : lineColors.amber}
-                        lsk={lineSelectKeys.L5}
+                        lsk={LINESELECT_KEYS.L5}
                         selectedCallback={(value) => {
                             setCostIndex(value);
                         }}
@@ -169,7 +169,7 @@ const CruiseFLTemp: React.FC = () => {
             <Line side={lineSides.left} value={<LabelField value="CRZ FL/TEMP" color={lineColors.white} />} />
             <InteractiveSplitLine
                 slashColor={flString !== undefined ? lineColors.cyan : lineColors.amber}
-                lsk={lineSelectKeys.L6}
+                lsk={LINESELECT_KEYS.L6}
                 leftSide={(
                     <SplitStringField
                         value={flString}
@@ -223,7 +223,7 @@ const TropoLine: React.FC = () => {
                         min={0}
                         color={lineColors.cyan}
                         size={lineSizes.regular}
-                        lsk={lineSelectKeys.R5}
+                        lsk={LINESELECT_KEYS.R5}
                         selectedCallback={(value) => {
                             setTropo(value);
                         }}
@@ -260,7 +260,7 @@ const RequestLine: React.FC = () => (
                     value="INIT "
                     color={lineColors.amber}
                     size={lineSizes.regular}
-                    lsk={lineSelectKeys.R2}
+                    lsk={LINESELECT_KEYS.R2}
                     selectedCallback={() => {
                         console.log('Pretending to retrieve simbrief data');
                     }}

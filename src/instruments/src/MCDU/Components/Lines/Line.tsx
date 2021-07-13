@@ -23,6 +23,13 @@ export enum lineColors {
     magenta = 'magenta'
 }
 
+export enum lineArrow {
+    left = '{',
+    right = '}',
+    both = '{}',
+    none = ''
+}
+
 type LineProps = {
     value?: ReactElement
     side: lineSides

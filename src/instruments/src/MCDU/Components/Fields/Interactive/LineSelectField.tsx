@@ -1,6 +1,6 @@
 import React from 'react';
 import { lineColors, lineSizes } from '../../Lines/Line';
-import { lineSelectKeys } from '../../Buttons';
+import { LINESELECT_KEYS } from '../../Buttons';
 import { useInteractionEvent } from '../../../../Common/hooks';
 import { fieldSides } from '../NonInteractive/Field';
 
@@ -9,7 +9,7 @@ type LineSelectFieldProps = {
     color: lineColors,
     side?: fieldSides,
     size: lineSizes,
-    lsk: lineSelectKeys,
+    lsk: LINESELECT_KEYS,
     selectedCallback: () => any;
 }
 

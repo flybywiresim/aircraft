@@ -8,7 +8,7 @@ import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { NumberInputField } from '../../../Components/Fields/Interactive/NumberInputField';
-import { lineSelectKeys } from '../../../Components/Buttons';
+import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import { SplitLine } from '../../../Components/Lines/SplitLine';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import { InteractiveSplitLine } from '../../../Components/Lines/InteractiveSplitLine';
@@ -38,7 +38,7 @@ const TaxiFuelLine: React.FC = () => {
                             setTaxiVal(value);
                             setEntered(true);
                         }}
-                        lsk={lineSelectKeys.L1}
+                        lsk={LINESELECT_KEYS.L1}
                     />
                 )}
             />
@@ -78,7 +78,7 @@ const ZeroFuelWeightLine : React.FC = () => (
                             selectedCallback={() => {}}
                         />
                     )}
-                    lsk={lineSelectKeys.R1}
+                    lsk={LINESELECT_KEYS.R1}
                 />
             )}
         />
@@ -113,7 +113,7 @@ const BlockWeightLine: React.FC = () => (
                         color={lineColors.amber}
                         size={lineSizes.regular}
                         selectedCallback={() => {}}
-                        lsk={lineSelectKeys.R2}
+                        lsk={LINESELECT_KEYS.R2}
                     />
                 )}
             />
@@ -151,7 +151,7 @@ const ReserveWeightLine: React.FC = () => (
                     selectedCallback={() => {}}
                 />
             )}
-            lsk={lineSelectKeys.L3}
+            lsk={LINESELECT_KEYS.L3}
         />
     </LineHolder>
 );
@@ -173,7 +173,7 @@ const AlternateWeightLine: React.FC = () => (
                 />
             )}
             rightSide={<Field value="----" color={lineColors.white} size={lineSizes.regular} />}
-            lsk={lineSelectKeys.L4}
+            lsk={LINESELECT_KEYS.L4}
         />
     </LineHolder>
 );
@@ -221,7 +221,7 @@ const FinalWeightCell : React.FC = () => (
                             selectedCallback={() => {}}
                         />
                     )}
-                    lsk={lineSelectKeys.L5}
+                    lsk={LINESELECT_KEYS.L5}
                 />
             )}
         />
@@ -240,7 +240,7 @@ const TripWindLine : React.FC = () => (
                     color={lineColors.cyan}
                     size={lineSizes.regular}
                     selectedCallback={() => {}}
-                    lsk={lineSelectKeys.R5}
+                    lsk={LINESELECT_KEYS.R5}
                     selectedValidation={() => true}
                 />
             )}
@@ -262,7 +262,7 @@ const MinDestFOBLine : React.FC = () => (
                     color={lineColors.white}
                     size={lineSizes.regular}
                     selectedCallback={() => {}}
-                    lsk={lineSelectKeys.L6}
+                    lsk={LINESELECT_KEYS.L6}
                 />
             )}
         />

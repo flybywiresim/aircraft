@@ -1,6 +1,6 @@
 import React from 'react';
 import { lineColors, lineSizes } from '../../Lines/Line';
-import { lineSelectKeys } from '../../Buttons';
+import { LINESELECT_KEYS } from '../../Buttons';
 import { useInteractionEvent } from '../../../../Common/hooks';
 import { fieldSides } from '../NonInteractive/Field';
 
@@ -13,7 +13,7 @@ type NumberFieldProps = {
     side?: fieldSides,
     size: lineSizes,
     selectedCallback: (value: number) => any,
-    lsk: lineSelectKeys
+    lsk: LINESELECT_KEYS
 }
 export const NumberInputField: React.FC<NumberFieldProps> = (
     {
