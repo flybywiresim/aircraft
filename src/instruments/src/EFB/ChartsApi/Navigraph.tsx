@@ -80,6 +80,8 @@ export default class NavigraphClient {
         interval: 5,
     }
 
+    private slowDownCount = 0;
+
     public userName: string = '';
 
     public static sufficientEnv() {
@@ -139,9 +141,27 @@ export default class NavigraphClient {
 
                         this.refreshToken = refreshToken;
                         this.accessToken = r.access_token;
+                        this.slowDownCount = 0;
                         this.userInfo();
 
                         NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
+                    });
+                } else {
+                    resp.text().then((respText) => {
+                        const parsedText = JSON.parse(respText);
+
+                        const { error } = parsedText;
+
+                        if (error === 'slow_down') {
+                            if (this.slowDownCount >= 3 && this.auth.interval !== 20) {
+                                this.auth.interval = 20;
+                            } else if (this.slowDownCount < 3 && this.auth.interval !== 5) {
+                                this.auth.interval = 5;
+                            }
+                            this.slowDownCount += 1;
+                        } else if (error === 'authorization_pending') {
+                            console.log('Token Authorization Pending');
+                        }
                     });
                 }
             }).catch(() => {
