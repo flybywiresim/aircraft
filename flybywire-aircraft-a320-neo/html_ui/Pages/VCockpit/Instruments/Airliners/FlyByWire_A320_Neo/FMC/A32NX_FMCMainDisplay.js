@@ -173,6 +173,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
+        this.gpsPrimaryLostMessageAcknowledged = false;
+        this.gpsPrimaryMessageAcknowledged = false;
     }
 
     Init() {
@@ -1127,27 +1129,27 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateGPSMessage() {
-        if (!SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool")) {
-            if (SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool")) {
-                SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
-                if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
-                    this.tryRemoveMessage(NXSystemMessages.gpsPrimaryLost.text);
-                    this.addNewMessage(NXSystemMessages.gpsPrimary, () => {}, () => {
-                        SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
-                    });
-                }
-            } else {
-                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
-                if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
-                    SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    this.tryRemoveMessage(NXSystemMessages.gpsPrimary.text);
-                    this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {}, () => {
-                        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    });
-                }
-            }
+        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool")) {
+            this.gpsPrimaryLostMessageAcknowledged = false;
+        } else {
+            this.gpsPrimaryMessageAcknowledged = false;
         }
+
+        this.addNewMessage(NXSystemMessages.gpsPrimary, () => {
+            return this.gpsPrimaryMessageAcknowledged ||
+                !SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
+        }, () => {
+            this.gpsPrimaryMessageAcknowledged = true;
+        });
+
+        this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {
+            return this.gpsPrimaryLostMessageAcknowledged ||
+                SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
+        }, () => {
+            this.gpsPrimaryLostMessageAcknowledged = true;
+        });
+
+        SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", this.gpsPrimaryMessageAcknowledged);
     }
 
     updateDisplayedConstraints(force = false) {

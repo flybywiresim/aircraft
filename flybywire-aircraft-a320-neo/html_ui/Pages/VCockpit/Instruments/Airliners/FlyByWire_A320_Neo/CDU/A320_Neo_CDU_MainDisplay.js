@@ -329,8 +329,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     console.log("TELEX MSG FETCH FAILED");
                 });
         }, NXApi.updateRate);
-
-        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0).then();
     }
 
     onUpdate(_deltaTime) {

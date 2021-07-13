@@ -193,22 +193,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
             document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "visible");
-
-            //Simvar to find out if the GPS messages have been already acknowledged in the FCU by clicking the CLR button.
-            var GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
-            //Getting the current GPS value to compare whether if the GPS is lost in the middle (After Aligns)
-            //OR The aircraft is started from the very first time.
-            if (usesGpsAsPrimary && GPSPrimAck) { //Resetting the acknowledged flag, if the GPS flag changed in the middle.
-                SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 0);
-            }
         } else {
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
-            var GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
-            if (!usesGpsAsPrimary && GPSPrimAck) { //Resetting the acknowledged flag, if the GPS flag changed in the middle.
-                SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 0);
-            }
+            const GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
 
-            //Clearing the ND message if the message displayed in the FMC is acknowledged by pressing the CLR button.
+            // Clearing the ND message if the message displayed in the FMC is acknowledged by pressing the CLR button.
             if (!GPSPrimAck) {
                 document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
                 document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "visible");
