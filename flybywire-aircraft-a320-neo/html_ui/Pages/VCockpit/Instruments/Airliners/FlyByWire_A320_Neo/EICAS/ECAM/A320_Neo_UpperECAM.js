@@ -1030,7 +1030,9 @@ var A320_Neo_UpperECAM;
                                     "TCAS"
                                 ],
                                 flightPhasesInhib: [3, 4, 5, 7, 8],
-                                isActive: () => !this.isInFlightPhase(1, 10) && this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") !== 2,
+                                isActive: () => {
+                                    return !this.isInFlightPhase(1, 10) && !this.anyAdiruAligned();
+                                },
                             },
                             {
                                 message: "TCAS STBY",
@@ -1039,7 +1041,7 @@ var A320_Neo_UpperECAM;
                                 isActive: () => (
                                     this.fwcFlightPhase === 6 &&
                                     this.getCachedSimVar("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0 &&
-                                    this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") === 2
+                                    this.anyAdiruAligned()
                                 ),
                             }
                         ]
@@ -1833,6 +1835,12 @@ var A320_Neo_UpperECAM;
         getInfoPanelManager() {
             return this.infoPanelsManager;
         };
+
+        anyAdiruAligned() {
+            return [1, 2, 3].some((number) => {
+                return this.getCachedSimVar(`L:A32NX_ADIRS_ADIRU_${number}_STATE`, "Enum") === 2;
+            });
+        }
     }
     A320_Neo_UpperECAM.Display = Display;
     class PanelBase {

@@ -208,7 +208,6 @@ pub struct AirDataInertialReferenceSystem {
     simulator_data: AdirsSimulatorData,
 }
 impl AirDataInertialReferenceSystem {
-    const STATE_KEY: &'static str = "ADIRS_STATE";
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
     const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
@@ -235,16 +234,6 @@ impl AirDataInertialReferenceSystem {
         self.adirus
             .iter_mut()
             .for_each(|adiru| adiru.update(context, overhead, align_time, simulator_data));
-    }
-
-    fn state(&self) -> AlignState {
-        if self.any_adiru_aligned() {
-            AlignState::Aligned
-        } else if self.adirus.iter().any(|adiru| adiru.is_aligning()) {
-            AlignState::Aligning
-        } else {
-            AlignState::Off
-        }
     }
 
     fn remaining_align_duration(&self) -> Duration {
@@ -278,7 +267,6 @@ impl SimulationElement for AirDataInertialReferenceSystem {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(Self::STATE_KEY, self.state());
         writer.write(
             Self::REMAINING_ALIGNMENT_TIME_KEY,
             self.remaining_align_duration(),
@@ -293,12 +281,15 @@ impl Default for AirDataInertialReferenceSystem {
 }
 
 struct AirDataInertialReferenceUnit {
+    state_id: String,
+
     adr: AirDataReference,
     ir: InertialReference,
 }
 impl AirDataInertialReferenceUnit {
     fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
+            state_id: Self::state_id(number),
             adr: AirDataReference::new(number, outputs_temperatures),
             ir: InertialReference::new(number),
         }
@@ -321,12 +312,22 @@ impl AirDataInertialReferenceUnit {
         self.ir.is_aligned()
     }
 
-    fn is_aligning(&self) -> bool {
-        self.ir.is_aligning()
-    }
-
     fn remaining_align_duration(&self) -> Option<Duration> {
         self.ir.remaining_align_duration()
+    }
+
+    fn state(&self) -> AlignState {
+        if self.is_aligned() {
+            AlignState::Aligned
+        } else if self.ir.is_aligning() {
+            AlignState::Aligning
+        } else {
+            AlignState::Off
+        }
+    }
+
+    fn state_id(number: usize) -> String {
+        format!("ADIRS_ADIRU_{}_STATE", number)
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
@@ -335,6 +336,10 @@ impl SimulationElement for AirDataInertialReferenceUnit {
         self.ir.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.state_id, self.state())
     }
 }
 
@@ -909,8 +914,8 @@ mod tests {
             self
         }
 
-        fn wait_for_alignment(mut self) -> Self {
-            while self.align_state() != AlignState::Aligned {
+        fn wait_for_alignment_of(mut self, adiru_number: usize) -> Self {
+            while self.align_state(adiru_number) != AlignState::Aligned {
                 self.run();
             }
 
@@ -1003,16 +1008,16 @@ mod tests {
             self.read(&InertialReference::has_fault_id(number))
         }
 
-        fn is_aligned(&mut self) -> bool {
-            self.align_state() == AlignState::Aligned
+        fn is_aligned(&mut self, adiru_number: usize) -> bool {
+            self.align_state(adiru_number) == AlignState::Aligned
         }
 
-        fn is_aligning(&mut self) -> bool {
-            self.align_state() == AlignState::Aligning
+        fn is_aligning(&mut self, adiru_number: usize) -> bool {
+            self.align_state(adiru_number) == AlignState::Aligning
         }
 
-        fn align_state(&mut self) -> AlignState {
-            self.read(AirDataInertialReferenceSystem::STATE_KEY)
+        fn align_state(&mut self, adiru_number: usize) -> AlignState {
+            self.read(&AirDataInertialReferenceUnit::state_id(adiru_number))
         }
 
         fn remaining_alignment_time(&mut self) -> Duration {
@@ -1313,53 +1318,63 @@ mod tests {
         AdirsTestBed::new()
     }
 
-    #[test]
-    fn starts_aligned() {
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn starts_aligned(#[case] adiru_number: usize) {
         // The structs start in an aligned state to support starting a flight
         // on the runway or in the air with the mode selectors in the NAV position.
         let mut test_bed = all_adirus_aligned_test_bed();
         test_bed.run();
 
-        assert!(test_bed.is_aligned());
+        assert!(test_bed.is_aligned(adiru_number));
     }
 
-    #[test]
-    fn adirs_is_not_aligning_nor_aligned_when_all_ir_mode_selectors_off() {
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn adiru_is_not_aligning_nor_aligned_when_ir_mode_selector_off(#[case] adiru_number: usize) {
         // TODO: Once the ADIRUs are split, this unit test needs to be modified to test all
         // ADIRUs individually.
-        let mut test_bed = test_bed_with()
-            .ir_mode_selector_set_to(1, InertialReferenceMode::Off)
-            .ir_mode_selector_set_to(2, InertialReferenceMode::Off)
-            .ir_mode_selector_set_to(3, InertialReferenceMode::Off);
+        let mut test_bed =
+            test_bed_with().ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
 
         test_bed.run_with_delta(Duration::from_secs(0));
 
-        assert!(!test_bed.is_aligned());
-        assert!(!test_bed.is_aligning());
+        assert!(!test_bed.is_aligned(adiru_number));
+        assert!(!test_bed.is_aligning(adiru_number));
     }
 
-    #[test]
-    fn adirs_instantly_aligns_when_configured_align_time_is_instant() {
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn adiru_instantly_aligns_when_configured_align_time_is_instant(#[case] adiru_number: usize) {
         // TODO: Once the ADIRUs are split, this unit test needs to be modified to test all
         // ADIRUs individually.
         let mut test_bed = test_bed_with()
             .align_time_configured_as(AlignTime::Instant)
             .and()
-            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
 
         test_bed.run_with_delta(Duration::from_secs(0));
 
-        assert!(test_bed.is_aligned());
+        assert!(test_bed.is_aligned(adiru_number));
     }
 
-    #[test]
-    fn adirs_aligns_in_90_seconds_when_configured_align_time_is_fast() {
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn adirs_aligns_in_90_seconds_when_configured_align_time_is_fast(#[case] adiru_number: usize) {
         // TODO: Once the ADIRUs are split, this unit test needs to be modified to test all
         // ADIRUs individually.
         let mut test_bed = test_bed_with()
             .align_time_configured_as(AlignTime::Fast)
             .and()
-            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+            .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
 
         // Set the state without any time passing to be able to measure exact time afterward.
         test_bed.run_with_delta(Duration::from_secs(0));
@@ -1367,10 +1382,10 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(
             InertialReference::FAST_ALIGNMENT_TIME_IN_SECS - 1.,
         ));
-        assert!(test_bed.is_aligning());
+        assert!(test_bed.is_aligning(adiru_number));
 
         test_bed.run_with_delta(Duration::from_secs(1));
-        assert!(test_bed.is_aligned());
+        assert!(test_bed.is_aligned(adiru_number));
     }
 
     #[rstest]
@@ -2093,7 +2108,7 @@ mod tests {
         let mut test_bed = test_bed_with()
             .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
 
-        while test_bed.align_state() != AlignState::Aligned {
+        while test_bed.align_state(adiru_number) != AlignState::Aligned {
             assert!(!test_bed.heading_is_available(adiru_number));
             assert!(!test_bed.track_is_available(adiru_number));
             assert!(!test_bed.inertial_vertical_speed_is_available(adiru_number));
@@ -2124,7 +2139,7 @@ mod tests {
         // GPS is used as the primary means of navigation.
         let mut test_bed = test_bed_with()
             .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation)
-            .wait_for_alignment();
+            .wait_for_alignment_of(adiru_number);
 
         assert!(test_bed.uses_gps_as_primary());
     }
@@ -2137,13 +2152,10 @@ mod tests {
         assert!(!test_bed.uses_gps_as_primary());
     }
 
-    // NOTE: TESTS BELOW ARE NOT BASED ON REAL AIRCRAFT BEHAVIOUR. For example,
-    // PFD attitude is shown 28 seconds after alignment of any ADIRU began, while
-    // this should be fed by the selected ADIRU for the captain side (1 or 3), it is now
-    // any ADIRU.
-
     #[test]
     fn nav_and_att_mode_alignment_time_are_equal() {
+        // For now we deem them equal.
+
         let mut test_bed =
             test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
         test_bed.run_without_delta();
@@ -2154,19 +2166,5 @@ mod tests {
         test_bed.run_without_delta();
 
         assert_eq!(nav_mode_alignment_time, test_bed.remaining_alignment_time());
-    }
-
-    #[test]
-    fn is_no_longer_aligned_when_all_irs_are_off() {
-        let mut test_bed = all_adirus_aligned_test_bed();
-        assert!(
-            test_bed.is_aligned(),
-            "Test precondition: we're starting aligned."
-        );
-
-        test_bed = test_bed.then_continue_with().all_mode_selectors_off();
-        test_bed.run();
-
-        assert!(!test_bed.is_aligned());
     }
 }

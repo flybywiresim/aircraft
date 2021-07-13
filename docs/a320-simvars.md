@@ -1062,7 +1062,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
-- A32NX_ADIRS_STATE
+- A32NX_ADIRS_ADIRU_{number}_STATE
     - Enum
     - The Inertial Reference alignment state.
       Description | Value
