@@ -669,7 +669,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         }
     }
     updateFail() {
-        const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+        const failed = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") != 2;
         if (this.arcs) {
             for (const arc of this.arcs) {
                 arc.setAttribute("fill", failed ? "red" : "white");
@@ -700,7 +700,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
      */
     updateNavAid() {
         // Don't show arrows if ADIRS not ready
-        const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+        const failed = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") != 2;
         if (failed) {
             this.setAttribute("show_bearing1", "false");
             this.setAttribute("show_bearing2", "false");

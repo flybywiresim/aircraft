@@ -41,6 +41,7 @@ class CDU_OPTIONS_ADIRS {
         mcdu.onLeftInput[0] = () => {
             if (storedAlignTime != "INSTANT") {
                 NXDataStore.set("CONFIG_ALIGN_TIME", "INSTANT");
+                SimVar.SetSimVarValue("L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME", "Enum", 1);
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
         };
@@ -50,6 +51,7 @@ class CDU_OPTIONS_ADIRS {
         mcdu.onLeftInput[1] = () => {
             if (storedAlignTime != "FAST") {
                 NXDataStore.set("CONFIG_ALIGN_TIME", "FAST");
+                SimVar.SetSimVarValue("L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME", "Enum", 2);
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
         };
@@ -59,6 +61,7 @@ class CDU_OPTIONS_ADIRS {
         mcdu.onLeftInput[2] = () => {
             if (storedAlignTime != "REAL") {
                 NXDataStore.set("CONFIG_ALIGN_TIME", "REAL");
+                SimVar.SetSimVarValue("L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME", "Enum", 0);
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
         };

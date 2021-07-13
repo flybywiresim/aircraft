@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { join } from 'path';
 import { baseCompile } from './plugins.mjs';
 import { getTemplatePlugin } from './templatePlugins.mjs';
 import { Directories } from './directories.mjs';
@@ -30,11 +31,15 @@ const ecamPages = [
         name: 'wheel-page',
         path: 'SD/Pages/Wheel',
     },
+    {
+        name: 'crz-page',
+        path: 'SD/Pages/Crz',
+    },
 ];
 
 function getInputs() {
-    const baseInstruments = fs.readdirSync(`${Directories.instruments}/src`, { withFileTypes: true })
-        .filter((d) => d.isDirectory() && fs.existsSync(`${Directories.instruments}/src/${d.name}/config.json`));
+    const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src'), { withFileTypes: true })
+        .filter((d) => d.isDirectory() && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
 
     return [
         ...baseInstruments.map(({ name }) => ({ path: name, name, isInstrument: true })),
@@ -44,14 +49,14 @@ function getInputs() {
 
 export default getInputs()
     .map(({ path, name, isInstrument }) => {
-        const config = JSON.parse(fs.readFileSync(`${Directories.instruments}/src/${path}/config.json`));
+        const config = JSON.parse(fs.readFileSync(join(Directories.instruments, 'src', path, 'config.json')));
 
         return {
             watch: true,
             name,
-            input: `${Directories.instruments}/src/${path}/${config.index}`,
+            input: join(Directories.instruments, 'src', path, config.index),
             output: {
-                file: `${Directories.temp}/bundle.js`,
+                file: join(Directories.temp, 'bundle.js'),
                 format: 'iife',
             },
             plugins: [

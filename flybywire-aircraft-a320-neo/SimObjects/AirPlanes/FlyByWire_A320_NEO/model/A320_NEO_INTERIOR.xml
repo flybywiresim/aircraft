@@ -48,10 +48,9 @@
         <!-- Integrated lighting -->
 
         <Component ID="LIGHTING">
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Pedestal_Template">
+            <!-- FLOOD LT PED -->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Pedestal</NODE_ID>
-                <PART_ID>LIGHTING_Knob_Pedestal</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Pedestal</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>76</POTENTIOMETER>
@@ -59,14 +58,15 @@
 
             <UseTemplate Name="ASOBO_LIGHTING_Pedestal_Emissive_Template">
                 <NODE_ID>LIGHT_OVHD_TOPEDESTAL</NODE_ID>
+                <POTENTIOMETER>76</POTENTIOMETER>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Panel_Template">
-                <POTENTIOMETER>85</POTENTIOMETER>
-                <SIMVAR_INDEX>1</SIMVAR_INDEX>
+            <!-- INTEG LT MAIN PNL & PED -->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Panel</NODE_ID>
-                <PART_ID>LIGHTING_Knob_Panel</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Panel</ANIM_NAME>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_DECREASE</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
+                <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
 
             <!-- All Pedestal & Main Panel Backlighting should be on potentiometer 85 -->
@@ -89,13 +89,13 @@
             </UseTemplate>
 
             <!-- Front Glareshields -->
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
+            <!-- CPT TABLE LIGHT -->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield_1</NODE_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield_1</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_Pilot_0</PART_ID>
-                <POTENTIOMETER>10</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
+                <POTENTIOMETER>10</POTENTIOMETER>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
@@ -104,13 +104,13 @@
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
+            <!-- F/O TABLE LIGHT -->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield_4</NODE_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield_4</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_Copilot_0</PART_ID>
-                <POTENTIOMETER>11</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
+                <POTENTIOMETER>11</POTENTIOMETER>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
@@ -119,14 +119,16 @@
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <!-- Triangle Glareshields -->
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
+            <!-- FLOOD LT MAIN PNL-->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield</NODE_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_1</PART_ID>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_DECREASE</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>83</POTENTIOMETER>
             </UseTemplate>
 
+            <!-- MAIN PNL Triangle Emissives (4) -->
             <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_1</NODE_ID>
                 <POTENTIOMETER>83</POTENTIOMETER>
@@ -151,13 +153,11 @@
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <!-- Panel Lights -->
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Panel_Template">
+            <!-- FCU INTEG LT -->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield_2</NODE_ID>
-                <PART_ID>Lighting_Knob_Glareshield_2</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield_2</ANIM_NAME>
-                <ID>2</ID>
-                <SIMVAR_INDEX>2</SIMVAR_INDEX>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_DECREASE</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
                 <POTENTIOMETER>84</POTENTIOMETER>
             </UseTemplate>
 
@@ -168,13 +168,12 @@
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
+            <!-- FCU LED DISPLAY LT -->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Glareshield_3</NODE_ID>
-                <PART_ID>Lighting_Knob_Glareshield_3</PART_ID>
-                <ANIM_NAME>LIGHTING_Knob_Glareshield_3</ANIM_NAME>
-                <POTENTIOMETER>87</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.FD_DISPLAY_BRIGHTNESS_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.FD_DISPLAY_BRIGHTNESS_INCREASE</ANIMTIP_1>
+                <POTENTIOMETER>87</POTENTIOMETER>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
@@ -505,14 +504,13 @@
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </DefaultTemplateParameters>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
-                    <POTENTIOMETER>88</POTENTIOMETER>
+                <!-- CPT PFD SCREEN -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
                     <PART_ID>PFD_Brightness</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_CS_PFD</ANIM_NAME>
-                    <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE</ANIMTIP_1>
+                    <POTENTIOMETER>88</POTENTIOMETER>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -596,24 +594,22 @@
                     <CAMERA_TITLE>PFD</CAMERA_TITLE>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
-                    <POTENTIOMETER>89</POTENTIOMETER>
+                <!-- CPT ND SCREEN -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
                     <PART_ID>ND_Brightness</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_CS_ND_SMALL</ANIM_NAME>
-                    <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_INCREASE</ANIMTIP_1>
+                    <POTENTIOMETER>89</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
-                    <POTENTIOMETER>94</POTENTIOMETER>
+                <!-- CPT WX SCREEN -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND</NODE_ID>
                     <PART_ID>ND_WX_Brightness_CS</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_CS_ND</ANIM_NAME>
-                    <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>Decrease left WX/TERR brightness</ANIMTIP_0>
                     <ANIMTIP_1>Increase left WX/TERR brightness</ANIMTIP_1>
+                    <POTENTIOMETER>94</POTENTIOMETER>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -643,14 +639,13 @@
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </DefaultTemplateParameters>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
-                    <POTENTIOMETER>90</POTENTIOMETER>
+                <!-- F/O PDF SCREEN -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
                     <PART_ID>PFD_Brightness_FO</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_FO_PFD</ANIM_NAME>
-                    <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE</ANIMTIP_1>
+                    <POTENTIOMETER>90</POTENTIOMETER>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -665,24 +660,22 @@
                     <PART_ID>SCREEN_PFD2</PART_ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
-                    <POTENTIOMETER>91</POTENTIOMETER>
+                <!-- F/O ND SCREEN -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_ND_SMALL</NODE_ID>
                     <PART_ID>ND_Brightness_FO</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_FO_ND_SMALL</ANIM_NAME>
-                    <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_ND_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_ND_INCREASE</ANIMTIP_1>
+                    <POTENTIOMETER>91</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
-                    <POTENTIOMETER>95</POTENTIOMETER>
+                <!-- F/O WX SCREEN -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_ND</NODE_ID>
                     <PART_ID>ND_WX_Brightness_FO</PART_ID>
-                    <ANIM_NAME>KNOB_EFIS_FO_ND</ANIM_NAME>
-                    <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>Decrease right WX/TERR brightness</ANIMTIP_0>
                     <ANIMTIP_1>Increase right WX/TERR brightness</ANIMTIP_1>
+                    <POTENTIOMETER>95</POTENTIOMETER>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -745,37 +738,51 @@
             <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
                 <ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_AUTOBKR_LO</NODE_ID>
-                <PART_ID>Autobrake_1</PART_ID>
-                <ANIM_NAME>PUSH_AUTOBKR_LO</ANIM_NAME>
-                <NODE_ID_DECEL>PUSH_AUTOBKR_LO_SEQ1</NODE_ID_DECEL>
-                <NODE_ID_ON>PUSH_AUTOBKR_LO_SEQ2</NODE_ID_ON>
-                <AUTOBRAKE_LEVEL>1</AUTOBRAKE_LEVEL>
-                <MIN_DECEL_FPSS>-7</MIN_DECEL_FPSS>
-                <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_LO</OFF_TOOLTIP>
+                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 1 == and</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 1 ==</SEQ2_CODE>
+                <MOMENTARY/>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                <TOOLTIPID>Auto brake LOW</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
-                <PART_ID>Autobrake_2</PART_ID>
-                <ANIM_NAME>PUSH_AUTOBKR_MED</ANIM_NAME>
-                <NODE_ID_DECEL>PUSH_AUTOBKR_MED_SEQ1</NODE_ID_DECEL>
-                <NODE_ID_ON>PUSH_AUTOBKR_MED_SEQ2</NODE_ID_ON>
-                <AUTOBRAKE_LEVEL>2</AUTOBRAKE_LEVEL>
-                <MIN_DECEL_FPSS>-14</MIN_DECEL_FPSS>
-                <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_MED</OFF_TOOLTIP>
+                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 2 == and</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 2 ==</SEQ2_CODE>
+                <MOMENTARY/>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                <TOOLTIPID>Auto brake MEDIUM</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
-                <PART_ID>Autobrake_3</PART_ID>
-                <ANIM_NAME>PUSH_AUTOBKR_MAX</ANIM_NAME>
-                <NODE_ID_DECEL>PUSH_AUTOBKR_MAX_SEQ1</NODE_ID_DECEL>
-                <NODE_ID_ON>PUSH_AUTOBKR_MAX_SEQ2</NODE_ID_ON>
-                <AUTOBRAKE_LEVEL>3</AUTOBRAKE_LEVEL>
-                <MIN_DECEL_FPSS>-21</MIN_DECEL_FPSS>
-                <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_MAX</OFF_TOOLTIP>
+                <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_AUTOBRAKES_DECEL_LIGHT, Bool) (L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 3 == and</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_AUTOBRAKES_ARMED_MODE, Number) 3 ==</SEQ2_CODE>
+                <MOMENTARY/>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                <TOOLTIPID>Auto brake MAX</TOOLTIPID>
             </UseTemplate>
-
             <UseTemplate Name="ASOBO_HANDLING_Switch_AntiSkid_Template">
                 <NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>
                 <PART_ID>Antiskid_Switch</PART_ID>
@@ -849,28 +856,30 @@
             </Component>
 
             <Component ID="EICAS_Screens">
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
-                    <POTENTIOMETER>92</POTENTIOMETER>
+
+                <!-- UPPER ECAM SCREEN -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_ECAM_UPPER</NODE_ID>
-                    <ANIM_NAME>KNOB_ECAM_UPPER</ANIM_NAME>
-                    <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_UPPER_ECAM_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_UPPER_ECAM_INCREASE</ANIMTIP_1>
+                    <POTENTIOMETER>92</POTENTIOMETER>
                 </UseTemplate>
+
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_EICAS1</NODE_ID>
                     <POTENTIOMETER>92</POTENTIOMETER>
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
-                    <POTENTIOMETER>93</POTENTIOMETER>
+
+                <!-- LOWER ECAM SCREEN -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_ECAM_LOWER</NODE_ID>
-                    <ANIM_NAME>KNOB_ECAM_LOWER</ANIM_NAME>
-                    <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LOWER_ECAM_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LOWER_ECAM_INCREASE</ANIMTIP_1>
+                    <POTENTIOMETER>93</POTENTIOMETER>
                 </UseTemplate>
+
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_EICAS2</NODE_ID>
                     <POTENTIOMETER>93</POTENTIOMETER>
@@ -1226,10 +1235,10 @@
                     <HAS_AUTO>True</HAS_AUTO>
                     <INVERT_ANIM>True</INVERT_ANIM>
                     <POTENTIOMETER>24</POTENTIOMETER>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_OFF</ANIMTIP_0>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_0>
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
                     <ANIMTIP_1>Set strobe lights to AUTO</ANIMTIP_1>
-                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_2>
+                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_OFF</ANIMTIP_2>
 
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
@@ -1450,18 +1459,12 @@
                     </UPDATE_CODE>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Knob_Panel_Template">
+                <!-- OVHD INTEG LT -->
+                <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_OVHD_INTLT_BRT</NODE_ID>
-                    <PART_ID>KNOB_OVHD_INTLT_BRT</PART_ID>
-                    <ANIM_NAME>KNOB_OVHD_INTLT_BRT</ANIM_NAME>
-                    <WWISE_EVENT></WWISE_EVENT>
-                    <ID>4</ID>
-                    <SIMVAR_INDEX>4</SIMVAR_INDEX>
-                    <SIMVAR_INDEX>4</SIMVAR_INDEX>
-                    <POTENTIOMETER>86</POTENTIOMETER>
-                    <ANIM_WRAP>False</ANIM_WRAP>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_INCREASE</ANIMTIP_1>
+                    <POTENTIOMETER>86</POTENTIOMETER>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
@@ -1699,7 +1702,7 @@
                                 implementation the necessary logic should be implemented and the appropriate
                                 power sources used.
                             -->
-                            <SEQ1_CODE>(L:A32NX_ADIRS_ON_BAT, Bool)</SEQ1_CODE>
+                            <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_ON_BAT_IS_ILLUMINATED, Bool)</SEQ1_CODE>
                             <NO_SEQ2 />
                             <DUMMY_BUTTON/>
                         </UseTemplate>
@@ -2799,10 +2802,9 @@
                 </Component>
 
                 <Component ID="Overhead_Reading_Lights">
-                    <!-- Left knob -->
-                    <UseTemplate Name="FBW_Lighting_Knob_With_Potentiometer">
+                    <!-- Left knob: READING LT -->
+                    <UseTemplate Name="FBW_Stepless_Potentiometer">
                         <NODE_ID>KNOB_OVHD_READINGLTL</NODE_ID>
-                        <ANIM_NAME>KNOB_OVHD_READINGLTL</ANIM_NAME>
                         <POTENTIOMETER>96</POTENTIOMETER>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_INCREASE</ANIMTIP_1>
@@ -2815,10 +2817,9 @@
                         <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
 
-                    <!-- Right knob -->
-                    <UseTemplate Name="FBW_Lighting_Knob_With_Potentiometer">
+                    <!-- Right knob: READING LT -->
+                    <UseTemplate Name="FBW_Stepless_Potentiometer">
                         <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
-                        <ANIM_NAME>KNOB_OVHD_READINGLTR</ANIM_NAME>
                         <POTENTIOMETER>97</POTENTIOMETER>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_INCREASE</ANIMTIP_1>
@@ -2941,17 +2942,17 @@
                     </UseTemplate>
                 </Component>
 
+                <!-- LDG ELEV AUTO -->
                 <Component ID="Overhead_CabinPress">
                     <Component ID="KNOB_OVHD_CABINPRESS_LDGELEV" Node="KNOB_OVHD_CABINPRESS_LDGELEV">
                         <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
                             <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
-                            <PART_ID>KNOB_OVHD_CABINPRESS_LDGELEV</PART_ID>
-                            <ANIM_NAME>KNOB_OVHD_CABINPRESS_LDGELEV</ANIM_NAME>
+                            <ANIM_SIMVAR_MAX>88</ANIM_SIMVAR_MAX>
                             <LOCAL_SIMVAR>L:A32NX_LANDING_ELEVATION</LOCAL_SIMVAR>
                             <LOCAL_SIMVAR_UNITS>feet</LOCAL_SIMVAR_UNITS>
                             <INCREMENT>0.5</INCREMENT>
-                            <MAX_ROT_PERCENT>88</MAX_ROT_PERCENT>
                             <CONVERSION_FORMULA>193.182 * 2000 -</CONVERSION_FORMULA>
+                            <SET_CODE>(&gt;L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV)</SET_CODE>
                         </UseTemplate>
                     </Component>
 
@@ -2991,6 +2992,8 @@
             <DefaultTemplateParameters>
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ3_EMISSIVE_DRIVES_VISIBILITY>False</SEQ3_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ4_EMISSIVE_DRIVES_VISIBILITY>False</SEQ4_EMISSIVE_DRIVES_VISIBILITY>
                 <DEFAULT_TEMPLATE_EMISSIVE>ASOBO_LIGHTING_Potentiometer_Emissive_Template</DEFAULT_TEMPLATE_EMISSIVE>
 
                 <PLANE_NAME>A32NX</PLANE_NAME>
@@ -2998,13 +3001,13 @@
 
             <UseTemplate Name="FBW_Airbus_Autoland_Warning">
                 <SIDE>L</SIDE>
-                <!-- Note there is only a single emissive. Once two emissives are available SEQ1 should use AC ESS SHED, and SEQ 2 should use AC 2. -->
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
+                <BUS_TOP>AC_ESS_SHED</BUS_TOP>
+                <BUS_BOTTOM>AC_2</BUS_BOTTOM>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_Autoland_Warning">
                 <SIDE>R</SIDE>
-                <!-- Note there is only a single emissive. Once two emissives are available SEQ1 should use AC ESS SHED, and SEQ 2 should use AC 2. -->
-                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
+                <BUS_TOP>AC_2</BUS_TOP>
+                <BUS_BOTTOM>AC_ESS_SHED</BUS_BOTTOM>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
