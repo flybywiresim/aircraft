@@ -30,7 +30,7 @@ type titlebarProps = {
 const Titlebar: React.FC<titlebarProps> = ({ titlebar }) => (
     <div className="title">
         <p />
-        <p>{titlebar.text}</p>
+        <p className={`${titlebar.orientation} ${titlebar.color}`}>{titlebar.text}</p>
         <p />
     </div>
 );

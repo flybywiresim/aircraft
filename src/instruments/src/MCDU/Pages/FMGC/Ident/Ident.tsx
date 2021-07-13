@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { calculateActiveDate, calculateSecDate } from '@instruments/common/Date';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
@@ -22,37 +23,43 @@ const EngineLine: React.FC = () => (
     </LineHolder>
 );
 
-const ActiveNavDataLine: React.FC = () => (
-    <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="ACTIVE DATA BASE" color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(
-                <Field
-                    value="TODO"
-                    color={lineColors.cyan}
-                    size={lineSizes.regular}
-                />
-            )}
-        />
-    </LineHolder>
-);
+const ActiveNavDataLine: React.FC = () => {
+    const [activeNavDate] = ['TODO'];
+    return (
+        <LineHolder>
+            <Line side={lineSides.left} value={<LabelField value="ACTIVE DATA BASE" color={lineColors.white} />} />
+            <Line
+                side={lineSides.left}
+                value={(
+                    <Field
+                        value={calculateActiveDate(activeNavDate)}
+                        color={lineColors.cyan}
+                        size={lineSizes.regular}
+                    />
+                )}
+            />
+        </LineHolder>
+    );
+};
 
-const SecondaryNavDataLine: React.FC = () => (
-    <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="SECOND DATA BASE" color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(
-                <Field
-                    value="TODO"
-                    color={lineColors.inop}
-                    size={lineSizes.small}
-                />
-            )}
-        />
-    </LineHolder>
-);
+const SecondaryNavDataLine: React.FC = () => {
+    const [secNavDate] = ['TODO'];
+    return (
+        <LineHolder>
+            <Line side={lineSides.left} value={<LabelField value="SECOND DATA BASE" color={lineColors.white} />} />
+            <Line
+                side={lineSides.left}
+                value={(
+                    <Field
+                        value={calculateSecDate(secNavDate)}
+                        color={lineColors.inop}
+                        size={lineSizes.small}
+                    />
+                )}
+            />
+        </LineHolder>
+    );
+};
 
 const AiracLine: React.FC = () => (
     <LineHolder>
