@@ -1007,17 +1007,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     /**
      * General message handler
-     * @param msg {{text, isAmber, isTypeTwo}} Message Object
-     * @param c {function} Function that checks for validity of error message (typeII only)
-     * @param f {function} Function gets executed when error message has been cleared (typeII only)
+     * @param message {{text, isAmber, isTypeTwo}} Message Object
+     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
+     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    addNewMessage(msg, c = () => {}, f = () => {
+    addNewMessage(message, isResolved = () => {
         return false;
-    }) {
-        if (msg.isTypeTwo) {
-            this._addTypeTwoMessage(msg.text, msg.isAmber, c, f);
+    }, onClear = () => {}) {
+        if (message.isTypeTwo) {
+            if (!isResolved()) {
+                this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
+            }
         } else {
-            this._showTypeOneMessage(msg.text, msg.isAmber);
+            this._showTypeOneMessage(message.text, message.isAmber);
         }
     }
 
@@ -1034,10 +1036,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Add Type II Message
      * @param message {string} Message to be displayed
      * @param isAmber {boolean} Is color amber
-     * @param c {function} Function that checks for validity of error message
-     * @param f {function} Function gets executed when error message has been cleared
+     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
+     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    _addTypeTwoMessage(message, isAmber, c, f) {
+    _addTypeTwoMessage(message, isAmber, isResolved, onClear) {
         if (this.checkForMessage(message)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
@@ -1045,7 +1047,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.messageQueue.splice(i, 1);
                 }
             }
-            this.messageQueue.unshift([message, isAmber, c, f]);
+            this.messageQueue.unshift([message, isAmber, isResolved, onClear]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }

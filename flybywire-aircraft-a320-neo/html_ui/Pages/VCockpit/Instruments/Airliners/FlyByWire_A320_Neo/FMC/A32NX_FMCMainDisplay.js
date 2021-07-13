@@ -1382,11 +1382,9 @@ class FMCMainDisplay extends BaseAirliners {
     /* FMS CHECK ROUTINE */
 
     checkDestData() {
-        if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addNewMessage(NXSystemMessages.enterDestData, () => {
-                return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
-            });
-        }
+        this.addNewMessage(NXSystemMessages.enterDestData, () => {
+            return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
+        });
     }
 
     /* END OF FMS CHECK ROUTINE */
@@ -2137,9 +2135,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     vSpeedDisagreeCheck() {
-        if (!this.vSpeedsValid()) {
-            this.addNewMessage(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
-        }
+        this.addNewMessage(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
     }
 
     //Needs PR Merge #3082
@@ -3509,14 +3505,14 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
                     this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
-                        return this._EfobBelowMinClr === false;
+                        return this._EfobBelowMinClr === true;
                     }, () => {
                         this._EfobBelowMinClr = true;
                     });
                 }, 180000);
             } else {
                 this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
-                    return this._EfobBelowMinClr === false;
+                    return this._EfobBelowMinClr === true;
                 }, () => {
                     this._EfobBelowMinClr = true;
                 });
