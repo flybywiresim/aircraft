@@ -79,11 +79,11 @@ const soundList = {
         length: 0.9
     },
     sink_rate: {
-        name: "aural_sink_rate",
+        name: "aural_sink_rate_new",
         length: 0.9
     },
     dont_sink:{
-        name: "aural_dont_sink",
+        name: "aural_dontsink_new",
         length: 0.9
     },
     too_low_gear:{
