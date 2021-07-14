@@ -80,8 +80,6 @@ export default class NavigraphClient {
         interval: 5,
     }
 
-    private slowDownCount = 0;
-
     public userName: string = '';
 
     public static sufficientEnv() {
@@ -141,7 +139,6 @@ export default class NavigraphClient {
 
                         this.refreshToken = refreshToken;
                         this.accessToken = r.access_token;
-                        this.slowDownCount = 0;
                         this.userInfo();
 
                         NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
@@ -153,14 +150,13 @@ export default class NavigraphClient {
                         const { error } = parsedText;
 
                         if (error === 'slow_down') {
-                            if (this.slowDownCount >= 3 && this.auth.interval !== 20) {
-                                this.auth.interval = 20;
-                            } else if (this.slowDownCount < 3 && this.auth.interval !== 5) {
-                                this.auth.interval = 5;
-                            }
-                            this.slowDownCount += 1;
+                            this.auth.interval += 5;
                         } else if (error === 'authorization_pending') {
                             console.log('Token Authorization Pending');
+                        } else if (error === 'access_denied') {
+                            //
+                        } else if (error === 'expired_token') {
+                            //
                         }
                     });
                 }
@@ -308,6 +304,6 @@ export default class NavigraphClient {
     }
 }
 
-export const NavigraphContext = React.createContext(new NavigraphClient());
+export const NavigraphContext = React.createContext<NavigraphClient>(undefined!);
 
 export const useNavigraph = () => useContext(NavigraphContext);

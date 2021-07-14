@@ -116,7 +116,6 @@ const Efb = () => {
     const history = useHistory();
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
-    const [navigraph] = useState(() => new NavigraphClient());
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
     const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
     const [timeState, setTimeState] = useState<TimeState>({
@@ -228,7 +227,7 @@ const Efb = () => {
     return (
         <Provider store={store}>
             <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
-                <NavigraphContext.Provider value={navigraph}>
+                <NavigraphContext.Provider value={new NavigraphClient()}>
                     <div className="flex flex-col">
                         <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
                         <div className="flex flex-row">
