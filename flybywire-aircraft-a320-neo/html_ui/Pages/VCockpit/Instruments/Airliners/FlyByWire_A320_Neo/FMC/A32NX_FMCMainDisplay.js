@@ -1815,7 +1815,7 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             } else {
-                console.log("APPR undefined");
+                //console.log("APPR undefined");
             }
         } else {
             if (this.ilsTakeoffAutoTuned) {
