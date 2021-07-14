@@ -343,7 +343,16 @@ impl<S> PressureSchedule<S> {
             pressure_schedule: self.pressure_schedule,
         }
     }
+
+    fn reset_timer(self) -> Self {
+        Self {
+            vertical_speed: self.vertical_speed,
+            timer: Duration::from_secs(0),
+            pressure_schedule: self.pressure_schedule,
+        }
+    }
 }
+
 #[derive(Copy, Clone)]
 struct Ground {
     cpc_switch_reset: bool,
@@ -503,7 +512,7 @@ impl PressureSchedule<ClimbInternal> {
                 PressureScheduleManager::ClimbInternal(self.increase_timer(context))
             }
         } else {
-            PressureScheduleManager::ClimbInternal(self)
+            PressureScheduleManager::ClimbInternal(self.reset_timer())
         }
     }
 }
@@ -576,7 +585,7 @@ impl PressureSchedule<Cruise> {
                 PressureScheduleManager::Cruise(self.increase_timer(context))
             }
         } else {
-            PressureScheduleManager::Cruise(self)
+            PressureScheduleManager::Cruise(self.reset_timer())
         }
     }
 }
@@ -608,7 +617,7 @@ impl PressureSchedule<DescentInternal> {
         } else if context.is_on_ground() && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else {
-            PressureScheduleManager::DescentInternal(self)
+            PressureScheduleManager::DescentInternal(self.reset_timer())
         }
     }
 }
@@ -647,7 +656,7 @@ impl PressureSchedule<Abort> {
                 PressureScheduleManager::Abort(self.increase_timer(context))
             }
         } else {
-            PressureScheduleManager::Abort(self)
+            PressureScheduleManager::Abort(self.reset_timer())
         }
     }
 }
@@ -1209,5 +1218,143 @@ mod pressure_schedule_manager_tests {
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_ground()));
+    }
+
+    #[test]
+    fn schedule_timer_resets_after_climb_condition_is_not_met() {
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+
+        test_bed.run();
+        assert!(test_bed.query(|a| a.is_climb()));
+
+        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
+        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_climb()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(200.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
+        test_bed.run_with_delta(Duration::from_secs_f64(25.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_climb()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(200.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_cruise()));
+    }
+
+    #[test]
+    fn schedule_timer_resets_after_cruise_condition_is_not_met() {
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_cruise()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(25.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_cruise()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-10.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(25.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_cruise()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-10.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_descent()));
+    }
+
+    #[test]
+    fn schedule_timer_resets_after_descent_condition_is_not_met() {
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_descent()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(240.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_descent()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(240.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_descent()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(240.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(61.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_climb()));
+    }
+
+    #[test]
+    fn schedule_timer_resets_after_abort_condition_is_not_met() {
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+
+        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_abort()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_abort()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(29.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_abort()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(29.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
+        test_bed.run_with_delta(Duration::from_secs_f64(61.));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_climb()));
     }
 }
