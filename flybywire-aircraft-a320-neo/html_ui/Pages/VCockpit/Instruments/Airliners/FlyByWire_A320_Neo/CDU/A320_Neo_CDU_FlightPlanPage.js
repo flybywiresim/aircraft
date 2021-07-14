@@ -28,16 +28,11 @@ class CDUFlightPlanPage {
         };
         const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
         const isFlying = flightPhase >= 5 && flightPhase <= 7;
-        let runway = null;
         let showFrom = false;
         let showTMPY = false;
         let stats = null;
 
         const fpm = mcdu.flightPlanManager;
-
-        if (fpm.getOrigin()) {
-            runway = fpm.getDepartureRunway();
-        }
 
         // TODO: Move from flightplanpage
         const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
@@ -392,7 +387,7 @@ class CDUFlightPlanPage {
                             }
                         //predict altitude for STAR when constraints are missing
                         } else if (isDepartureWayPoint) {
-                            altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
+                            altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toString();
                             altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                         //waypoint is the first or the last of the actual route
                         } else if ((wpIndex === routeFirstWaypointIndex - 1) || (wpIndex === routeLastWaypointIndex + 1)) {
@@ -543,6 +538,8 @@ class CDUFlightPlanPage {
         mcdu.setArrows(allowScroll, allowScroll, true, true);
 
         const newRows = newCode(mcdu, offset);
+        //const getDest = getDest(mcdu, offset);
+
         mcdu.setTemplate([
             [`{left}{small}{sp}${showFrom ? "FROM" : "{sp}{sp}{sp}{sp}"}{end}{yellow}{sp}${showTMPY ? "TMPY" : ""}{end}{end}{right}{small}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{sp}{sp}{sp}{end}{end}`],
             ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}"],
@@ -573,6 +570,50 @@ class CDUFlightPlanPage {
         */
 
     }
+}
+
+function getDest(mcdu) {
+
+    const fpm = mcdu.flightPlanManager;
+
+    let destCell = "----";
+    let approachRunway = null;
+    if (fpm.getDestination()) {
+        destCell = fpm.getDestination().ident;
+        const ppos = {
+            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+            long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+        };
+        stats = fpm.getCurrentFlightPlan().computeWaypointStatistics(ppos);
+        approachRunway = fpm.getApproachRunway();
+        if (approachRunway) {
+            destCell += Avionics.Utils.formatRunway(approachRunway.designation);
+        }
+    }
+    const rows = [[""], [""], [""], [""], [""], [""], [""], [""], [""], [""], [""], [""],];
+    const rowsCount = 5;
+
+    let destTimeCell = "----";
+    let destDistCell = "---";
+    let destEFOBCell = "---";
+
+    if (fpm.getDestination()) {
+        const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
+        destDistCell = destStats.distanceFromPpos.toFixed(0);
+        destEFOBCell = (mcdu.getDestEFOB(isFlying) * mcdu._conversionWeight).toFixed(1);
+        if (isFlying) {
+            destTimeCell = FMCMainDisplay.secondsToUTC(destStats.etaFromPpos);
+        } else {
+            destTimeCell = FMCMainDisplay.secondsTohhmm(destStats.timeFromPpos);
+        }
+    }
+    if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {
+        destEFOBCell = "---";
+    }
+
+    rows[10] = ["\xa0DEST", "DIST EFOB", isFlying ? "UTC{sp}" : "TIME{sp}{sp}"];
+    rows[11] = [destCell, destDistCell + " " + destEFOBCell, destTimeCell + "{sp}{sp}"];
+
 }
 
 function newCode(mcdu, offset) {
@@ -635,36 +676,37 @@ function newCode(mcdu, offset) {
             }
 
             //console.log(dwI + " | [" + dplyPoints[dwI].fpIndex + "] " + dplyPoints[dwI].wp.ident);
-            dply[rowI] = getFix(mcdu, fpm, wpIf);
+            dply[rowI] = getFix(mcdu, wpIf);
 
-            //if (wpIf.wp !== fpm.getDestination()) {
-            mcdu.leftInputDelay[rowI] = (value) => {
-                if (value === "") {
-                    if (wpIf.wp) {
-                        return mcdu.getDelaySwitchPage();
+            if (wpIf.wp !== fpm.getDestination()) {
+                mcdu.leftInputDelay[rowI] = (value) => {
+                    if (value === "") {
+                        if (wpIf.wp) {
+                            return mcdu.getDelaySwitchPage();
+                        }
                     }
-                }
-                return mcdu.getDelayBasic();
-            };
+                    return mcdu.getDelayBasic();
+                };
 
-            mcdu.onLeftInput[rowI] = (value) => {
-                if (value === "") {
-                    if (wpIf.wp) {
-                        CDULateralRevisionPage.ShowPage(mcdu, wpIf.wp, wpIf.fpIndex);
+                mcdu.onLeftInput[rowI] = (value) => {
+                    if (value === "") {
+                        if (wpIf.wp) {
+                            CDULateralRevisionPage.ShowPage(mcdu, wpIf.wp, wpIf.fpIndex);
+                        }
+                    } else if (value === FMCMainDisplay.clrValue) {
+                        mcdu.removeWaypoint(wpIf.fpIndex, () => {
+                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                        }, true);
+                    } else if (value.length > 0) {
+                        mcdu.insertWaypoint(value, wpIf.fpIndex, () => {
+                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                        }, true);
                     }
-                } else if (value === FMCMainDisplay.clrValue) {
-                    mcdu.removeWaypoint(wpIf.fpIndex, () => {
-                        CDUFlightPlanPage.ShowPage(mcdu, offset);
-                    }, true);
-                } else if (value.length > 0) {
-                    mcdu.insertWaypoint(value, wpIf.fpIndex, () => {
-                        CDUFlightPlanPage.ShowPage(mcdu, offset);
-                    }, true);
-                }
-            };
-            //} else {
-            /*
-                mcdu.leftInputDelay[rowI] = mcdu.getDelaySwitchPage();
+                };
+            } else {
+                mcdu.leftInputDelay[rowI] = () => {
+                    mcdu.getDelaySwitchPage();
+                };
                 mcdu.onLeftInput[rowI] = (value) => {
                     if (value === "") {
                         CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), wpIf.fpIndex);
@@ -676,13 +718,14 @@ function newCode(mcdu, offset) {
                 };
             }
 
-            mcdu.rightInputDelay[rowI] = mcdu.getDelaySwitchPage();
+            mcdu.rightInputDelay[rowI] = () => {
+                mcdu.getDelaySwitchPage();
+            };
             mcdu.onRightInput[rowI] = async (_value) => {
                 if (wpInfo.wp) {
                     CDUVerticalRevisionPage.ShowPage(mcdu, wpIf.wp);
                 }
             };
-            */
 
         } else if (dplyPoints[dwI].marker) {
 
@@ -696,15 +739,17 @@ function newCode(mcdu, offset) {
             mcdu.leftInputDelay[rowI] = 0;
             mcdu.onLeftInput[rowI] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {
+                    console.log("CLR: " + clr);
+                    console.log("FPLN: " + fpIndex);
                     if (clr) {
-                        mcdu.clearDiscontinuity(fpIndex, () => {
+                        mcdu.clearDiscontinuity(fpIndex - first, () => {
                             CDUFlightPlanPage.ShowPage(mcdu, offset);
                         }, true);
                     }
                     return;
                 }
 
-                mcdu.insertWaypoint(value, fpIndex + 1, () => {
+                mcdu.insertWaypoint(value, fpIndex - first + 1, () => {
                     CDUFlightPlanPage.ShowPage(mcdu, offset);
                 }, true);
             };
@@ -764,7 +809,9 @@ function newCode(mcdu, offset) {
     return output;
 }
 
-function getFix(mcdu, fpm, wpInfo) {
+function getFix(mcdu, wpInfo) {
+
+    const fpm = mcdu.flightPlanManager;
 
     const ppos = {
         lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
@@ -866,6 +913,7 @@ function getFix(mcdu, fpm, wpInfo) {
     let altPrefix = "\xa0";
 
     if (wp === fpm.getDestination()) {
+        // Only for destination waypoint, show runway elevation.
         altColor = "white";
         spdColor = "white";
         let approachRunway = null;
@@ -899,7 +947,7 @@ function getFix(mcdu, fpm, wpInfo) {
             }
             // Predict altitude for STAR when constraints are missing
         } else if (departureWp) {
-            altitudeConstraint = Math.floor(wp.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
+            altitudeConstraint = Math.floor(wp.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toString();
             altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
             // Waypoint is the first or the last of the actual route
         } else if ((wpIndex === firstRouteIndex - 1) || (wpIndex === lastRouteIndex + 1)) {
