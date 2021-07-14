@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconAccessPoint, IconBattery4 } from '@tabler/icons';
+import { IconAccessPoint, IconBattery4, IconKeyboard } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
 
@@ -60,16 +60,23 @@ class StatusBar extends React.Component<Props, TimeState> {
                     <IconAccessPoint className="mr-2 animate-pulse" size={30} stroke={1.5} strokeLinejoin="miter" />
                     flyPad
                 </div>
-                <div>{`${formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getUTCMinutes()]))}z`}</div>
-                <div className="flex items-center">
-                    100%
-
-                    {/* TODO find a way to use `setSimVar` here */}
-                    <IconBattery4
-                        onClick={() => {
-                            efbClearState();
-                            SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
-                        }}
+                <p>{`${formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getUTCMinutes()]))}z`}</p>
+                <div className="flex space-x-6 items-center">
+                    <div className="flex items-center">
+                        100%
+                        {/* TODO find a way to use `setSimVar` here */}
+                        <IconBattery4
+                            onClick={() => {
+                                efbClearState();
+                                SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
+                            }}
+                            className="ml-2"
+                            size={30}
+                            stroke={1.5}
+                            strokeLinejoin="miter"
+                        />
+                    </div>
+                    <IconKeyboard
                         className="ml-2"
                         size={30}
                         stroke={1.5}

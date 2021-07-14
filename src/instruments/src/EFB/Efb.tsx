@@ -13,6 +13,7 @@ import Ground from './Ground/Ground';
 import Performance from './Performance/Performance';
 import Navigation from './Navigation/Navigation';
 import Settings from './Settings/Settings';
+import Keyboard from './Keyboard/Keyboard';
 
 import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
 import store from './Store';
@@ -273,7 +274,7 @@ const Efb = () => {
                                         <ATC />
                                     </Route>
                                     <Route path="/settings">
-                                        <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
+                                        <Keyboard />
                                     </Route>
                                 </Switch>
                             </div>
