@@ -74,6 +74,14 @@ impl AirDataInertialReferenceSystemOverheadPanel {
     fn mode_of(&self, number: usize) -> InertialReferenceMode {
         self.mode_selectors[number - 1].mode()
     }
+
+    fn adr_is_on(&self, number: usize) -> bool {
+        self.adr[number - 1].is_on()
+    }
+
+    fn ir_is_on(&self, number: usize) -> bool {
+        self.ir[number - 1].is_on()
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -265,8 +273,10 @@ impl AirDataInertialReferenceSystem {
             .unwrap_or_else(|| Duration::from_secs(0))
     }
 
-    fn any_adiru_aligned(&self) -> bool {
-        self.adirus.iter().any(|adiru| adiru.is_aligned())
+    fn any_adiru_aligned_with_ir_on(&self) -> bool {
+        self.adirus
+            .iter()
+            .any(|adiru| adiru.is_aligned() && adiru.ir_is_on())
     }
 
     fn ir_has_fault(&self, number: usize) -> bool {
@@ -290,7 +300,10 @@ impl SimulationElement for AirDataInertialReferenceSystem {
             Self::REMAINING_ALIGNMENT_TIME_KEY,
             self.remaining_align_duration(),
         );
-        writer.write(Self::USES_GPS_AS_PRIMARY_KEY, self.any_adiru_aligned())
+        writer.write(
+            Self::USES_GPS_AS_PRIMARY_KEY,
+            self.any_adiru_aligned_with_ir_on(),
+        )
     }
 }
 impl Default for AirDataInertialReferenceSystem {
@@ -331,6 +344,10 @@ impl AirDataInertialReferenceUnit {
         self.ir.is_aligned()
     }
 
+    fn ir_is_on(&self) -> bool {
+        self.ir.is_on()
+    }
+
     fn remaining_align_duration(&self) -> Option<Duration> {
         self.ir.remaining_align_duration()
     }
@@ -369,7 +386,7 @@ impl SimulationElement for AirDataInertialReferenceUnit {
 struct OutputData<T> {
     id: String,
     value: T,
-    uninitialised_value: T,
+    no_value: T,
 }
 impl<T: Copy + Default> OutputData<T> {
     fn new_adr(number: usize, name: &str, uninitialised_value: T) -> Self {
@@ -380,11 +397,11 @@ impl<T: Copy + Default> OutputData<T> {
         Self::new(OutputDataType::IR, number, name, uninitialised_value)
     }
 
-    fn new(data_type: OutputDataType, number: usize, name: &str, uninitialised_value: T) -> Self {
+    fn new(data_type: OutputDataType, number: usize, name: &str, no_value: T) -> Self {
         Self {
             id: output_data_id(data_type, number, name),
             value: Default::default(),
-            uninitialised_value,
+            no_value,
         }
     }
 
@@ -396,13 +413,13 @@ impl<T: Copy + Default> OutputData<T> {
         self.value = value;
     }
 
-    fn write_to<U: Write<T>>(&self, writer: &mut U, is_initialised: bool) {
+    fn write_to<U: Write<T>>(&self, writer: &mut U, should_write_value: bool) {
         writer.write(
             &self.id,
-            if is_initialised {
+            if should_write_value {
                 self.value
             } else {
-                self.uninitialised_value
+                self.no_value
             },
         );
     }
@@ -432,6 +449,7 @@ trait TrueAirspeedSource {
 
 struct AirDataReference {
     number: usize,
+    is_on: bool,
     outputs_temperatures: bool,
 
     altitude: OutputData<Length>,
@@ -464,6 +482,7 @@ impl AirDataReference {
     fn new(number: usize, outputs_temperatures: bool) -> Self {
         Self {
             number,
+            is_on: true,
             outputs_temperatures,
 
             altitude: OutputData::new_adr(
@@ -514,6 +533,8 @@ impl AirDataReference {
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         simulator_data: AdirsSimulatorData,
     ) {
+        self.is_on = overhead.adr_is_on(self.number);
+
         // For now some of the data will be read from the context. Later the context will no longer
         // contain this information (and instead all usages will be replaced by requests to the ADIRUs).
         self.altitude.set_value(context.indicated_altitude());
@@ -587,20 +608,22 @@ impl SimulationElement for AirDataReference {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        let is_initialised = self.is_initialised();
+        let should_write_values = self.is_on && self.is_initialised();
 
-        self.altitude.write_to(writer, is_initialised);
-        self.computed_airspeed.write_to(writer, is_initialised);
-        self.mach.write_to(writer, is_initialised);
+        self.altitude.write_to(writer, should_write_values);
+        self.computed_airspeed.write_to(writer, should_write_values);
+        self.mach.write_to(writer, should_write_values);
         self.barometric_vertical_speed
-            .write_to(writer, is_initialised);
-        self.true_airspeed.write_to(writer, is_initialised);
+            .write_to(writer, should_write_values);
+        self.true_airspeed.write_to(writer, should_write_values);
 
         if self.outputs_temperatures {
-            self.static_air_temperature.write_to(writer, is_initialised);
-            self.total_air_temperature.write_to(writer, is_initialised);
+            self.static_air_temperature
+                .write_to(writer, should_write_values);
+            self.total_air_temperature
+                .write_to(writer, should_write_values);
             self.international_standard_atmosphere_delta
-                .write_to(writer, is_initialised);
+                .write_to(writer, should_write_values);
         }
     }
 }
@@ -626,6 +649,7 @@ impl From<f64> for AlignTime {
 
 struct InertialReference {
     number: usize,
+    is_on: bool,
     /// The remaining time to align, where 0 indicates the IR system is aligned.
     /// None indicates the IR system isn't aligning nor aligned.
     remaining_align_duration: Option<Duration>,
@@ -663,6 +687,7 @@ impl InertialReference {
     fn new(number: usize) -> Self {
         Self {
             number,
+            is_on: true,
             // We start in an aligned state to support starting on the
             // runway or in the air.
             remaining_align_duration: Some(Duration::from_secs(0)),
@@ -731,6 +756,8 @@ impl InertialReference {
         configured_align_time: AlignTime,
         simulator_data: AdirsSimulatorData,
     ) {
+        self.is_on = overhead.ir_is_on(self.number);
+
         self.pitch.set_value(simulator_data.pitch);
         self.roll.set_value(simulator_data.roll);
         self.heading.set_value(simulator_data.heading);
@@ -808,6 +835,10 @@ impl InertialReference {
         self.remaining_align_duration == Some(Duration::from_secs(0))
     }
 
+    fn is_on(&self) -> bool {
+        self.is_on
+    }
+
     fn is_aligning(&self) -> bool {
         match self.remaining_align_duration.as_ref() {
             Some(remaining) => *remaining > Duration::from_secs(0),
@@ -829,19 +860,19 @@ impl InertialReference {
 }
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let attitude_is_initialised = self.attitude_is_initialised();
-        self.pitch.write_to(writer, attitude_is_initialised);
-        self.roll.write_to(writer, attitude_is_initialised);
+        let should_write_values = self.is_on && self.attitude_is_initialised();
+        self.pitch.write_to(writer, should_write_values);
+        self.roll.write_to(writer, should_write_values);
 
-        let is_aligned = self.is_aligned();
-        self.heading.write_to(writer, is_aligned);
-        self.track.write_to(writer, is_aligned);
-        self.vertical_speed.write_to(writer, is_aligned);
-        self.ground_speed.write_to(writer, is_aligned);
-        self.wind_direction.write_to(writer, is_aligned);
-        self.wind_velocity.write_to(writer, is_aligned);
-        self.latitude.write_to(writer, is_aligned);
-        self.longitude.write_to(writer, is_aligned);
+        let should_write_values = self.is_on && self.is_aligned();
+        self.heading.write_to(writer, should_write_values);
+        self.track.write_to(writer, should_write_values);
+        self.vertical_speed.write_to(writer, should_write_values);
+        self.ground_speed.write_to(writer, should_write_values);
+        self.wind_direction.write_to(writer, should_write_values);
+        self.wind_velocity.write_to(writer, should_write_values);
+        self.latitude.write_to(writer, should_write_values);
+        self.longitude.write_to(writer, should_write_values);
     }
 }
 
@@ -1023,8 +1054,29 @@ mod tests {
             self
         }
 
+        fn adr_push_button_off(mut self, number: usize) -> Self {
+            self.write(
+                &OnOffFaultPushButton::is_on_id(&format!("ADIRS_ADR_{}", number)),
+                false,
+            );
+
+            self
+        }
+
+        fn ir_push_button_off(mut self, number: usize) -> Self {
+            self.write(
+                &OnOffFaultPushButton::is_on_id(&format!("ADIRS_IR_{}", number)),
+                false,
+            );
+
+            self
+        }
+
         fn ir_fault_light_illuminated(&mut self, number: usize) -> bool {
-            self.read(&format!("OVHD_ADIRS_IR_{}_PB_HAS_FAULT", number))
+            self.read(&OnOffFaultPushButton::has_fault_id(&format!(
+                "ADIRS_IR_{}",
+                number
+            )))
         }
 
         fn is_aligned(&mut self, adiru_number: usize) -> bool {
@@ -1695,6 +1747,17 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
+        fn when_adr_push_button_off_data_is_not_available(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed_with().adr_push_button_off(adiru_number);
+            test_bed.run();
+
+            test_bed.assert_adr_data_available(false, adiru_number);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
         fn altitude_is_supplied_by_adr(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_indicated_altitude(Length::new::<foot>(10000.));
@@ -1930,6 +1993,17 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
+        fn when_ir_push_button_off_data_is_not_available(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed_with().ir_push_button_off(adiru_number);
+            test_bed.run();
+
+            test_bed.assert_ir_data_available(false, adiru_number);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
         fn pitch_is_supplied_by_ir(#[case] adiru_number: usize) {
             let angle = Angle::new::<degree>(5.);
             let mut test_bed = all_adirus_aligned_test_bed_with().pitch_of(angle);
@@ -2090,6 +2164,19 @@ mod tests {
         #[test]
         fn does_not_use_gps_as_primary_when_no_adiru_is_aligned() {
             let mut test_bed = test_bed();
+            test_bed.run();
+
+            assert!(!test_bed.uses_gps_as_primary());
+        }
+
+        #[test]
+        fn does_not_use_gps_as_primary_when_adirus_aligned_with_ir_push_buttons_off() {
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .ir_push_button_off(1)
+                .ir_push_button_off(2)
+                .and()
+                .ir_push_button_off(3);
+
             test_bed.run();
 
             assert!(!test_bed.uses_gps_as_primary());
