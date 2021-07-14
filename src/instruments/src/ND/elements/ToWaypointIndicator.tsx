@@ -13,7 +13,7 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info })
 
     let distanceFixed;
     let distanceIntegralPart;
-    let distanceDecimalPArt;
+    let distanceDecimalPart;
 
     /*
      * distance < 20nm: XX.Y NM
@@ -21,8 +21,7 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info })
      */
     if (info.distanceFromPpos < 20) {
         distanceFixed = info.distanceFromPpos.toFixed(1);
-        distanceIntegralPart = distanceFixed.substring(0, 1);
-        distanceDecimalPArt = distanceFixed.substring(2, 3);
+        [distanceIntegralPart, distanceDecimalPart] = distanceFixed.split('.');
     } else {
         distanceFixed = Math.round(Math.min(9999, info.distanceFromPpos));
     }
@@ -49,7 +48,7 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info })
                 <>
                     <text x={8} y={30} fontSize={24} className="Green" textAnchor="end">{distanceIntegralPart}</text>
                     <text x={8} y={30} fontSize={23} className="Green" textAnchor="start">.</text>
-                    <text x={22} y={30} fontSize={19} className="Green" textAnchor="start">{distanceDecimalPArt}</text>
+                    <text x={22} y={30} fontSize={19} className="Green" textAnchor="start">{distanceDecimalPart}</text>
                 </>
             ) : (
                 <>
