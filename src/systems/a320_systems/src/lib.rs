@@ -14,7 +14,6 @@ use electrical::{
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use power_consumption::A320PowerConsumption;
 use systems::{
-    adirs::{AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel},
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
@@ -23,6 +22,9 @@ use systems::{
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::LandingGear,
+    navigation::adirs::{
+        AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
+    },
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
