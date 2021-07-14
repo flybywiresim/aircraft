@@ -193,6 +193,7 @@ struct AdirsSimulatorData {
     ground_speed: Velocity,
     wind_direction: Angle,
     wind_velocity: Velocity,
+    total_air_temperature: ThermodynamicTemperature,
 }
 impl AdirsSimulatorData {
     const LATITUDE: &'static str = "PLANE LATITUDE";
@@ -207,6 +208,7 @@ impl AdirsSimulatorData {
     const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
     const WIND_DIRECTION: &'static str = "AMBIENT WIND DIRECTION";
     const WIND_VELOCITY: &'static str = "AMBIENT WIND VELOCITY";
+    const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
 }
 impl SimulationElement for AdirsSimulatorData {
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -224,6 +226,7 @@ impl SimulationElement for AdirsSimulatorData {
         self.ground_speed = reader.read(Self::GROUND_SPEED);
         self.wind_direction = reader.read(Self::WIND_DIRECTION);
         self.wind_velocity = reader.read(Self::WIND_VELOCITY);
+        self.total_air_temperature = reader.read(Self::TOTAL_AIR_TEMPERATURE);
     }
 }
 
@@ -467,7 +470,6 @@ impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
     const UNINITIALISED_MACH: MachNumber = MachNumber(-1_000_000.);
     const UNINITIALISED_VALUE: f64 = -1_000_000.;
-    const TOTAL_AIR_TEMPERATURE_KEY: &'static str = "TOTAL AIR TEMPERATURE";
     const ALTITUDE: &'static str = "ALTITUDE";
     const COMPUTED_AIRSPEED: &'static str = "COMPUTED_AIRSPEED";
     const MACH: &'static str = "MACH";
@@ -560,6 +562,9 @@ impl AirDataReference {
         self.mach.set_value(simulator_data.mach);
 
         if self.outputs_temperatures {
+            self.total_air_temperature
+                .set_value(simulator_data.total_air_temperature);
+
             self.static_air_temperature
                 .set_value(context.ambient_temperature());
 
@@ -600,13 +605,6 @@ impl TrueAirspeedSource for AirDataReference {
     }
 }
 impl SimulationElement for AirDataReference {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        if self.outputs_temperatures {
-            self.total_air_temperature
-                .set_value(reader.read(Self::TOTAL_AIR_TEMPERATURE_KEY));
-        }
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         let should_write_values = self.is_on && self.is_initialised();
 
@@ -1000,7 +998,7 @@ mod tests {
         }
 
         fn total_air_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
-            self.write(AirDataReference::TOTAL_AIR_TEMPERATURE_KEY, temperature);
+            self.write(AdirsSimulatorData::TOTAL_AIR_TEMPERATURE, temperature);
             self
         }
 
