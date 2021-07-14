@@ -1,7 +1,7 @@
 import React, { useRef, useContext, useState } from 'react';
 import { IconArrowBigTop } from '@tabler/icons';
 
-const keyboardContext = React.createContext({ isShifted: false, inputValue: '', setInputValue: (value: string) => {} });
+const keyboardContext = React.createContext({ isShifted: false, inputValue: '', setInputValue: (_value: string) => {} });
 
 const Keyboard = () => {
     const [shifted, setShifted] = useState(false);
