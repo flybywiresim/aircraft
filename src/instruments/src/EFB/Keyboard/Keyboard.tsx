@@ -133,7 +133,6 @@ const Key = (props: {char: string, altChar: string, alwaysShowAlt?: boolean}) =>
             type="button"
             ref={keyRef}
             onClick={handleKeyPress}
-            tabIndex={-1}
         >
             {props.alwaysShowAlt
                 ? (
