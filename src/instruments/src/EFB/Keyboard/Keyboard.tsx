@@ -5,7 +5,6 @@ const keyboardContext = React.createContext({ isShifted: false, inputValue: '', 
 
 const Keyboard = () => {
     const [shifted, setShifted] = useState(false);
-    const backspaceRef = useRef<HTMLButtonElement>(null);
     const [fieldValue, setFieldValue] = useState('');
 
     return (
