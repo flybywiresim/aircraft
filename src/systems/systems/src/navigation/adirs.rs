@@ -273,10 +273,10 @@ impl AirDataInertialReferenceSystem {
             .unwrap_or_else(|| Duration::from_secs(0))
     }
 
-    fn any_adiru_aligned_with_ir_on(&self) -> bool {
+    fn any_adiru_fully_aligned_with_ir_on(&self) -> bool {
         self.adirus
             .iter()
-            .any(|adiru| adiru.is_aligned() && adiru.ir_is_on())
+            .any(|adiru| adiru.is_fully_aligned() && adiru.ir_is_on())
     }
 
     fn ir_has_fault(&self, number: usize) -> bool {
@@ -302,7 +302,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
         );
         writer.write(
             Self::USES_GPS_AS_PRIMARY_KEY,
-            self.any_adiru_aligned_with_ir_on(),
+            self.any_adiru_fully_aligned_with_ir_on(),
         )
     }
 }
@@ -340,8 +340,8 @@ impl AirDataInertialReferenceUnit {
             .update(context, &self.adr, overhead, align_time, simulator_data);
     }
 
-    fn is_aligned(&self) -> bool {
-        self.ir.is_aligned()
+    fn is_fully_aligned(&self) -> bool {
+        self.ir.is_fully_aligned()
     }
 
     fn ir_is_on(&self) -> bool {
@@ -353,7 +353,7 @@ impl AirDataInertialReferenceUnit {
     }
 
     fn state(&self) -> AlignState {
-        if self.is_aligned() {
+        if self.is_fully_aligned() {
             AlignState::Aligned
         } else if self.ir.is_aligning() {
             AlignState::Aligning
@@ -799,16 +799,14 @@ impl InertialReference {
         }
 
         self.remaining_align_duration = match selected_mode {
-            InertialReferenceMode::Navigation | InertialReferenceMode::Attitude => {
-                match self.remaining_align_duration {
-                    Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
-                    None => Some(Self::total_alignment_duration(
-                        configured_align_time,
-                        simulator_data.latitude,
-                    )),
-                }
-            }
-            InertialReferenceMode::Off => None,
+            InertialReferenceMode::Navigation => match self.remaining_align_duration {
+                Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
+                None => Some(Self::total_alignment_duration(
+                    configured_align_time,
+                    simulator_data.latitude,
+                )),
+            },
+            InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
         };
 
         self.remaining_attitude_initialisation_duration = remaining_initialisation_duration(
@@ -820,7 +818,8 @@ impl InertialReference {
     }
 
     fn alignment_starting(&self, selected_mode: InertialReferenceMode) -> bool {
-        selected_mode != InertialReferenceMode::Off && self.remaining_align_duration == None
+        selected_mode != InertialReferenceMode::Off
+            && self.remaining_attitude_initialisation_duration == None
     }
 
     fn total_alignment_duration(configured_align_time: AlignTime, latitude: Angle) -> Duration {
@@ -831,7 +830,7 @@ impl InertialReference {
         })
     }
 
-    fn is_aligned(&self) -> bool {
+    fn is_fully_aligned(&self) -> bool {
         self.remaining_align_duration == Some(Duration::from_secs(0))
     }
 
@@ -850,7 +849,7 @@ impl InertialReference {
         self.remaining_align_duration
     }
 
-    fn attitude_is_initialised(&self) -> bool {
+    fn is_attitude_aligned(&self) -> bool {
         self.remaining_attitude_initialisation_duration == Some(Duration::from_secs(0))
     }
 
@@ -860,11 +859,11 @@ impl InertialReference {
 }
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let should_write_values = self.is_on && self.attitude_is_initialised();
+        let should_write_values = self.is_on && self.is_attitude_aligned();
         self.pitch.write_to(writer, should_write_values);
         self.roll.write_to(writer, should_write_values);
 
-        let should_write_values = self.is_on && self.is_aligned();
+        let should_write_values = self.is_on && self.is_fully_aligned();
         self.heading.write_to(writer, should_write_values);
         self.track.write_to(writer, should_write_values);
         self.vertical_speed.write_to(writer, should_write_values);
@@ -1386,7 +1385,7 @@ mod tests {
             }
         }
 
-        fn assert_ir_data_available(&mut self, available: bool, adiru_number: usize) {
+        fn assert_ir_non_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
             assert_eq!(self.heading_is_available(adiru_number), available);
             assert_eq!(self.track_is_available(adiru_number), available);
             assert_eq!(
@@ -1398,6 +1397,16 @@ mod tests {
             assert_eq!(self.wind_velocity_is_available(adiru_number), available);
             assert_eq!(self.latitude_is_available(adiru_number), available);
             assert_eq!(self.longitude_is_available(adiru_number), available);
+        }
+
+        fn assert_ir_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
+            assert_eq!(self.pitch_is_available(adiru_number), available);
+            assert_eq!(self.roll_is_available(adiru_number), available);
+        }
+
+        fn assert_all_ir_data_available(&mut self, available: bool, adiru_number: usize) {
+            self.assert_ir_non_attitude_data_available(available, adiru_number);
+            self.assert_ir_attitude_data_available(available, adiru_number);
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1947,11 +1956,12 @@ mod tests {
                 .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
 
             while test_bed.align_state(adiru_number) != AlignState::Aligned {
-                test_bed.assert_ir_data_available(false, adiru_number);
+                // As the attitude data will become available at some point, we're not checking it here.
+                test_bed.assert_ir_non_attitude_data_available(false, adiru_number);
                 test_bed.run();
             }
 
-            test_bed.assert_ir_data_available(true, adiru_number);
+            test_bed.assert_all_ir_data_available(true, adiru_number);
         }
 
         #[rstest]
@@ -1960,13 +1970,28 @@ mod tests {
         #[case(3)]
         fn data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.assert_ir_data_available(true, adiru_number);
+            test_bed.assert_all_ir_data_available(true, adiru_number);
 
             test_bed = test_bed
                 .then_continue_with()
                 .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
             test_bed.run();
-            test_bed.assert_ir_data_available(false, adiru_number);
+            test_bed.assert_all_ir_data_available(false, adiru_number);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn only_attitude_data_is_available_when_adir_mode_selector_att(
+            #[case] adiru_number: usize,
+        ) {
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Attitude);
+            test_bed.run();
+
+            test_bed.assert_ir_attitude_data_available(true, adiru_number);
+            test_bed.assert_ir_non_attitude_data_available(false, adiru_number);
         }
 
         #[rstest]
@@ -1981,12 +2006,10 @@ mod tests {
             test_bed.run_with_delta(
                 InertialReference::ATTITUDE_INITIALISATION_DURATION - Duration::from_millis(1),
             );
-            assert!(!test_bed.pitch_is_available(adiru_number));
-            assert!(!test_bed.roll_is_available(adiru_number));
+            test_bed.assert_ir_attitude_data_available(false, adiru_number);
 
             test_bed.run_with_delta(Duration::from_millis(1));
-            assert!(test_bed.pitch_is_available(adiru_number));
-            assert!(test_bed.roll_is_available(adiru_number));
+            test_bed.assert_ir_attitude_data_available(true, adiru_number);
         }
 
         #[rstest]
@@ -1997,7 +2020,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().ir_push_button_off(adiru_number);
             test_bed.run();
 
-            test_bed.assert_ir_data_available(false, adiru_number);
+            test_bed.assert_all_ir_data_available(false, adiru_number);
         }
 
         #[rstest]
@@ -2181,21 +2204,5 @@ mod tests {
 
             assert!(!test_bed.uses_gps_as_primary());
         }
-    }
-
-    #[test]
-    fn nav_and_att_mode_alignment_time_are_equal() {
-        // For now we deem them equal.
-
-        let mut test_bed =
-            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
-        test_bed.run_without_delta();
-        let nav_mode_alignment_time = test_bed.remaining_alignment_time();
-
-        let mut test_bed =
-            test_bed_with().ir_mode_selector_set_to(1, InertialReferenceMode::Attitude);
-        test_bed.run_without_delta();
-
-        assert_eq!(nav_mode_alignment_time, test_bed.remaining_alignment_time());
     }
 }
