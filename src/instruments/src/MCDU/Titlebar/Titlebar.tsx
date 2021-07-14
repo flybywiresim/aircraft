@@ -26,7 +26,9 @@ import '../Components/styles.scss';
 type titlebarProps = {
     titlebar: titleBarState
 }
-
+/**
+ * @todo figure out a way to do split colors on the titlebar
+ */
 const Titlebar: React.FC<titlebarProps> = ({ titlebar }) => (
     <div className="title">
         <p />

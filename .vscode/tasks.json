@@ -4,11 +4,9 @@
     {
       "label": "Setup",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/dev-env/run.sh",
-      "args": ["./scripts/setup.sh"],
+      "command": "${workspaceFolder}/scripts/dev-env/run.sh npm i",
       "windows": {
-        "command": "${workspaceFolder}/scripts/dev-env/run.cmd",
-        "args": ["./scripts/setup.sh"]
+        "command": "${workspaceFolder}/scripts/dev-env/run.cmd npm i",
       },
       "options": {
         "cwd": "${workspaceFolder}"
@@ -22,12 +20,23 @@
     {
       "label": "Build",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/dev-env/run.sh",
-      "args": ["./scripts/build.sh"],
+      "command": "${workspaceFolder}/scripts/dev-env/run.sh npx igniter",
       "windows": {
-        "command": "${workspaceFolder}/scripts/dev-env/run.cmd",
-        "args": ["./scripts/build.sh"]
+        "command": "${workspaceFolder}/scripts/dev-env/run.cmd npx igniter",
       },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Watch",
+      "type" : "shell",
+      "command": "rollup -wc ./src/instruments/buildSrc/simulatorBuild.mjs",
       "options": {
         "cwd": "${workspaceFolder}"
       },

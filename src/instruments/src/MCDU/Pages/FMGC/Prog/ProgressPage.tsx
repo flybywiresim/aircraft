@@ -9,6 +9,7 @@ import { Field } from 'instruments/src/MCDU/Components/Fields/NonInteractive/Fie
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { useSimVar } from 'instruments/src/util';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
 const FlightCruise: React.FC = () => (
@@ -25,7 +26,13 @@ type progressPageProps = {
     setTitlebar : (msg: any) => any,
     setTitlebarColor : (color: lineColors) => any,
 }
+/**
+ *
+ * @deprecated
+ * @see TitleBar
+ */
 const ProgressPage: React.FC<progressPageProps> = ({ setTitlebar, setTitlebarColor }) => {
+    const [flightNo, _] = useSimVar('ATC FLIGHT NUMBER', 'string');
     useEffect(() => {
         setTitlebar('TO');
         setTitlebarColor(lineColors.green);
