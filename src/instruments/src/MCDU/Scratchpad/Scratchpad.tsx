@@ -21,7 +21,7 @@ import { connect } from 'react-redux';
 import { useInteractionEvent } from '@instruments/common/hooks';
 
 import { bindActionCreators } from 'redux';
-import { scratchpadState } from '../redux/reducers/scratchpadRedcuer';
+import { scratchpadState } from '../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../redux/actions/scratchpadActionCreators';
 
 import './styles.scss';

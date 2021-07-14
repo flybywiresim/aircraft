@@ -1,5 +1,5 @@
 import { lineArrow } from '../../Components/Lines/Line';
-import { scratchpadMessage } from '../reducers/scratchpadRedcuer';
+import { scratchpadMessage } from '../reducers/scratchpadReducer';
 import * as scratchpadTypes from '../types/scratchpadActionTypes';
 
 /**
@@ -16,17 +16,26 @@ export const clearScratchpadCharacter = () => ({ type: scratchpadTypes.CLEAR_SCR
  * Adds a message to the messaging systems
  * @param msg the message to the messaging systems
  */
-export const addNewMessage = (msg : scratchpadMessage) => ({
+export const addScratchpadMessage = (msg : scratchpadMessage) => ({
     type: scratchpadTypes.ADD_SCRATCHPAD_MESSAGE,
     msg,
 });
 
 /**
- * Adds a message to the scratchpad directly
+ * concatate a message to the scratchpad directly
  * @param msg The string to add to the scratchpad
  */
 export const addToScratchpad = (msg: string) => ({
     type: scratchpadTypes.ADD_TO_SCRATCHPAD,
+    msg,
+});
+
+/**
+ * Set the scratchpad to the msg provided
+ * @param msg the message to set
+ */
+export const setScratchpad = (msg: string) => ({
+    type: scratchpadTypes.SET_SCRATCHPAD,
     msg,
 });
 

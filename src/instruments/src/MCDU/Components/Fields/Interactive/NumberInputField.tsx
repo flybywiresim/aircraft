@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { scratchpadMessage, scratchpadState } from 'instruments/src/MCDU/redux/reducers/scratchpadRedcuer';
+import { scratchpadMessage, scratchpadState } from 'instruments/src/MCDU/redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
 import { useInteractionEvent } from '../../../../Common/hooks';
@@ -77,5 +77,5 @@ const NumberInputField: React.FC<NumberFieldProps> = (
     );
 };
 const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
-const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addNewMessage, dispatch) });
+const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addScratchpadMessage, dispatch) });
 export default connect(mapStateToProps, mapDispatchToProps)(NumberInputField);

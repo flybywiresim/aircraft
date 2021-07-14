@@ -1,4 +1,4 @@
-import { scratchpadMessage } from 'instruments/src/MCDU/redux/reducers/scratchpadRedcuer';
+import { scratchpadMessage } from 'instruments/src/MCDU/redux/reducers/scratchpadReducer';
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -51,5 +51,5 @@ const SplitStringField : React.FC<SplitStringFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : value}</span>
     );
 };
-const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addNewMessage, dispatch) });
+const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addScratchpadMessage, dispatch) });
 export default connect(null, mapDispatchToProps)(SplitStringField);

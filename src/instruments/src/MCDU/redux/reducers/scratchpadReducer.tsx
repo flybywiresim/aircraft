@@ -186,6 +186,23 @@ const clearScratchpad = (state: scratchpadState) => {
     };
 };
 
+/**
+ * Used for set the scratchpad text entirely
+ * @todo add Type II capability
+ * @param state The original state of the scratchpad
+ * @param msg The message to replace the current message
+ * @returns the updated state of the scratchpad
+ */
+const setScratchpad = (state: scratchpadState, msg: string) => {
+    if (state.isDisplayingErrorMessage) {
+        return { ...state };
+    }
+    return {
+        ...state,
+        currentMessage: msg,
+    };
+};
+
 export type scratchpadState = {
     currentMessage: string,
     currentColor: lineColors,
@@ -206,7 +223,7 @@ const initialState : scratchpadState = {
     arrow: lineArrow.none,
 };
 
-export const scratchpadReducer = (state = initialState, { type, msg }) => {
+export const scratchpadReducer = async (state = initialState, { type, msg }) => {
     switch (type) {
     case scratchpadActions.ADD_SCRATCHPAD_MESSAGE:
         return addMessage(state, msg);
@@ -218,6 +235,8 @@ export const scratchpadReducer = (state = initialState, { type, msg }) => {
         return clearScratchpad(state);
     case scratchpadActions.ADD_PLUSMINUS_SCRATCHPAD:
         return addPlusMinus(state);
+    case scratchpadActions.SET_SCRATCHPAD:
+        return setScratchpad(state, msg);
     case scratchpadActions.ADD_ARROW_SCRATCHPAD:
         return addArrow(state, msg);
     default:

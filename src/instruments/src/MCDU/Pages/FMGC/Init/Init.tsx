@@ -19,14 +19,13 @@ import React, { useEffect, useState } from 'react';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { SLEW_KEYS } from 'instruments/src/MCDU/Components/Buttons';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
 import InitAPage from './InitA';
 import InitBPage from './InitB';
 
 import { useInteractionEvent } from '../../../../Common/hooks';
-
-import { SLEW_KEYS } from '../../../Components/Buttons';
 
 type InitPageProps = {
     setTitlebar: Function,
@@ -49,13 +48,8 @@ const InitPage: React.FC<InitPageProps> = ({ setTitlebar }) => {
         setTitlebar('INIT');
     }, []);
 
-    useInteractionEvent(SLEW_KEYS.RARROW, () => {
-        setCurrentPage(determinePage());
-    });
-
-    useInteractionEvent(SLEW_KEYS.LARROW, () => {
-        setCurrentPage(determinePage());
-    });
+    useInteractionEvent(SLEW_KEYS.RARROW, () => setCurrentPage(determinePage()));
+    useInteractionEvent(SLEW_KEYS.LARROW, () => setCurrentPage(determinePage()));
 
     return pages[currentPage];
 };

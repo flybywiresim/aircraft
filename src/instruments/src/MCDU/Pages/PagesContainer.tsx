@@ -24,6 +24,7 @@ import InitPage from './FMGC/Init/Init';
 import MenuPage from './FMGC/Menu/Menu';
 import IdentPage from './FMGC/Ident/Ident';
 import { PAGE_KEYS } from '../Components/Buttons';
+import FuelPred from './FMGC/Fuel/FuelPred';
 
 const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState('MENU');
@@ -31,10 +32,13 @@ const PagesContainer = () => {
         INIT: <InitPage />,
         MENU: <MenuPage setPage={setCurrentPage} />,
         IDENT: <IdentPage />,
+        FUEL: <FuelPred />,
     };
 
     useInteractionEvent(PAGE_KEYS.INIT, () => setCurrentPage('INIT'));
     useInteractionEvent(PAGE_KEYS.MENU, () => setCurrentPage('MENU'));
+    useInteractionEvent(PAGE_KEYS.ATC, () => setCurrentPage('MENU'));
+    useInteractionEvent(PAGE_KEYS.FUEL, () => setCurrentPage('FUEL'));
 
     return pages[currentPage];
 };
