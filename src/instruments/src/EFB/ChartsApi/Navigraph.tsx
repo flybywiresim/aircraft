@@ -64,7 +64,7 @@ export default class NavigraphClient {
 
     private static clientSecret = process.env.CLIENT_SECRET;
 
-    private static pkce = pkce();
+    private pkce;
 
     private deviceCode: string;
 
@@ -90,6 +90,8 @@ export default class NavigraphClient {
 
     constructor() {
         if (NavigraphClient.sufficientEnv()) {
+            this.pkce = pkce();
+
             const token = NXDataStore.get('NAVIGRAPH_REFRESH_TOKEN');
 
             if (token === undefined || token === null || token === '') {
@@ -101,11 +103,14 @@ export default class NavigraphClient {
         }
     }
 
-    private authenticate() {
+    public authenticate() {
+        this.pkce = pkce();
+        this.refreshToken = null;
+
         const secret = {
             client_id: NavigraphClient.clientId,
             client_secret: NavigraphClient.clientSecret,
-            code_challenge: NavigraphClient.pkce.code_challenge,
+            code_challenge: this.pkce.code_challenge,
             code_challenge_method: 'S256',
         };
 
@@ -176,7 +181,7 @@ export default class NavigraphClient {
                 client_id: NavigraphClient.clientId,
                 client_secret: NavigraphClient.clientSecret,
                 scope: 'openid charts offline_access',
-                code_verifier: NavigraphClient.pkce.code_verifier,
+                code_verifier: this.pkce.code_verifier,
             };
 
             const refreshTokenBody = {

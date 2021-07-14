@@ -112,6 +112,8 @@ const emptySimbriefData: SimbriefData = {
     costInd: '--',
 };
 
+const navigraph = new NavigraphClient();
+
 const Efb = () => {
     const history = useHistory();
 
@@ -227,7 +229,7 @@ const Efb = () => {
     return (
         <Provider store={store}>
             <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
-                <NavigraphContext.Provider value={new NavigraphClient()}>
+                <NavigraphContext.Provider value={navigraph}>
                     <div className="flex flex-col">
                         <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
                         <div className="flex flex-row">
