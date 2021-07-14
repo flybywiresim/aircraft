@@ -44,6 +44,7 @@ export type AuthType = {
     link: string,
     qrLink: string,
     interval: number,
+    disabled: boolean,
 }
 
 export const emptyNavigraphCharts = {
@@ -78,6 +79,7 @@ export default class NavigraphClient {
         link: '',
         qrLink: '',
         interval: 5,
+        disabled: false,
     }
 
     public userName: string = '';
@@ -127,7 +129,7 @@ export default class NavigraphClient {
     }
 
     private tokenCall(body) {
-        if (this.deviceCode) {
+        if (this.deviceCode || !this.auth.disabled) {
             fetch('https://identity.api.navigraph.com/connect/token/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
@@ -154,9 +156,9 @@ export default class NavigraphClient {
                         } else if (error === 'authorization_pending') {
                             console.log('Token Authorization Pending');
                         } else if (error === 'access_denied') {
-                            //
+                            this.auth.disabled = true;
                         } else if (error === 'expired_token') {
-                            //
+                            this.authenticate();
                         }
                     });
                 }
