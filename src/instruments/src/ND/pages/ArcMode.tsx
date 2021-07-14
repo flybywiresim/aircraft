@@ -524,7 +524,7 @@ const IlsCourseBug: React.FC<{heading: number, ilsCourse: number}> = ({ heading,
 };
 
 const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ heading, selected }) => {
-    if (heading < 0) {
+    if (selected < 0) {
         return null;
     }
 
