@@ -1182,6 +1182,34 @@ var A320_Neo_UpperECAM;
                         isActive: () => this.isInFlightPhase(1, 2) && (this.getADIRSMins() === 0 || this.getADIRSMins() === 1)
                     },
                     {
+                        message: "IR 1 IN ATT ALIGN",
+                        isActive: () => this.isInAttAlign(1) && !this.isInAttAlign(2) && !this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 2 IN ATT ALIGN",
+                        isActive: () => !this.isInAttAlign(1) && this.isInAttAlign(2) && !this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 3 IN ATT ALIGN",
+                        isActive: () => !this.isInAttAlign(1) && !this.isInAttAlign(2) && this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 1+2 IN ATT ALIGN",
+                        isActive: () => this.isInAttAlign(1) && this.isInAttAlign(2) && !this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 1+3 IN ATT ALIGN",
+                        isActive: () => this.isInAttAlign(1) && !this.isInAttAlign(2) && this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 2+3 IN ATT ALIGN",
+                        isActive: () => !this.isInAttAlign(1) && this.isInAttAlign(2) && this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 1+2+3 IN ATT ALIGN",
+                        isActive: () => this.isInAttAlign(1) && this.isInAttAlign(2) && this.isInAttAlign(3)
+                    },
+                    {
                         message: "GND SPLRS ARMED",
                         isActive: () => this.getCachedSimVar("L:A32NX_SPOILERS_ARMED", "Bool")
                     },
@@ -1840,6 +1868,12 @@ var A320_Neo_UpperECAM;
             return [1, 2, 3].some((number) => {
                 return this.getCachedSimVar(`L:A32NX_ADIRS_ADIRU_${number}_STATE`, "Enum") === 2;
             });
+        }
+
+        isInAttAlign(number) {
+            const knobValue = this.getCachedSimVar(`L:A32NX_OVHD_ADIRS_IR_${number}_MODE_SELECTOR_KNOB`, "Enum");
+            const pitch = ADIRS.parseValue(this.getCachedSimVar(`L:A32NX_ADIRS_IR_${number}_PITCH`, "Degrees"));
+            return knobValue === 2 && Number.isNaN(pitch);
         }
     }
     A320_Neo_UpperECAM.Display = Display;

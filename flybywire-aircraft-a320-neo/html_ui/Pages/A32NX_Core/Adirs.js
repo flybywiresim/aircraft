@@ -11,6 +11,10 @@ class ADIRS {
 
     static getValue(name, type) {
         const value = SimVar.GetSimVarValue(name, type);
+        return ADIRS.parseValue(value);
+    }
+
+    static parseValue(value) {
         const unavailable = -1000000;
         return Math.abs(value - unavailable) < 0.0001 ? NaN : value;
     }
