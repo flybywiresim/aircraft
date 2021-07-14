@@ -140,7 +140,7 @@ impl Aircraft for A320 {
         self.hydraulic_overhead.update(&self.hydraulic);
 
         self.adirs.update(context, &self.adirs_overhead);
-        self.adirs_overhead.update(context);
+        self.adirs_overhead.update(context, &self.adirs);
 
         self.power_consumption.update(context);
     }

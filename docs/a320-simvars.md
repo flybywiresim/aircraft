@@ -1040,17 +1040,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Whether the FAULT light illuminates for IR {number}.
 
-- A32NX_OVHD_ADIRS_IR_{number}_PB_IS_OFF
+- A32NX_OVHD_ADIRS_IR_{number}_PB_IS_ON
     - Bool
-    - Whether the IR push button is in the OFF position.
+    - Whether the IR push button is in the ON position.
 
 - A32NX_OVHD_ADIRS_ADR_{number}_PB_HAS_FAULT
     - Bool
     - Whether the FAULT light illuminates for ADR {number}.
 
-- A32NX_OVHD_ADIRS_ADR_{number}_PB_IS_OFF
+- A32NX_OVHD_ADIRS_ADR_{number}_PB_IS_ON
     - Bool
-    - Whether the ADR push button is in the OFF position.
+    - Whether the ADR push button is in the ON position.
 
 - A32NX_ATT_HDG_SWITCHING_KNOB
     - ATT HDG

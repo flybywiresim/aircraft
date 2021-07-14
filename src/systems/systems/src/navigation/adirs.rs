@@ -1,5 +1,5 @@
 use crate::{
-    overhead::IndicationLight,
+    overhead::{IndicationLight, OnOffFaultPushButton},
     shared::MachNumber,
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -16,7 +16,9 @@ use uom::si::{
 };
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
+    ir: [OnOffFaultPushButton; 3],
     mode_selectors: [InertialReferenceModeSelector; 3],
+    adr: [OnOffFaultPushButton; 3],
     on_bat: IndicationLight,
 }
 impl AirDataInertialReferenceSystemOverheadPanel {
@@ -26,16 +28,26 @@ impl AirDataInertialReferenceSystemOverheadPanel {
 
     pub fn new() -> Self {
         Self {
+            ir: [
+                OnOffFaultPushButton::new_on("ADIRS_IR_1"),
+                OnOffFaultPushButton::new_on("ADIRS_IR_2"),
+                OnOffFaultPushButton::new_on("ADIRS_IR_3"),
+            ],
             mode_selectors: [
                 InertialReferenceModeSelector::new(1),
                 InertialReferenceModeSelector::new(2),
                 InertialReferenceModeSelector::new(3),
             ],
+            adr: [
+                OnOffFaultPushButton::new_on("ADIRS_ADR_1"),
+                OnOffFaultPushButton::new_on("ADIRS_ADR_2"),
+                OnOffFaultPushButton::new_on("ADIRS_ADR_3"),
+            ],
             on_bat: IndicationLight::new(Self::ADIRS_ON_BAT_NAME),
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(&mut self, context: &UpdateContext, adirs: &AirDataInertialReferenceSystem) {
         self.mode_selectors.iter_mut().for_each(|mode_selector| {
             mode_selector.update(context);
         });
@@ -52,6 +64,11 @@ impl AirDataInertialReferenceSystemOverheadPanel {
                         < Self::DURATION_AFTER_WHICH_ON_BAT_ILLUMINATES
                             + Self::ON_BAT_ILLUMINATION_DURATION
             }));
+
+        self.ir
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, ir)| ir.set_fault(adirs.ir_has_fault(index + 1)))
     }
 
     fn mode_of(&self, number: usize) -> InertialReferenceMode {
@@ -60,9 +77,9 @@ impl AirDataInertialReferenceSystemOverheadPanel {
 }
 impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.mode_selectors.iter_mut().for_each(|mode_selector| {
-            mode_selector.accept(visitor);
-        });
+        accept_iterable!(self.ir, visitor);
+        accept_iterable!(self.mode_selectors, visitor);
+        accept_iterable!(self.adr, visitor);
         self.on_bat.accept(visitor);
 
         visitor.visit(self);
@@ -251,12 +268,14 @@ impl AirDataInertialReferenceSystem {
     fn any_adiru_aligned(&self) -> bool {
         self.adirus.iter().any(|adiru| adiru.is_aligned())
     }
+
+    fn ir_has_fault(&self, number: usize) -> bool {
+        self.adirus[number - 1].ir_has_fault()
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.adirus.iter_mut().for_each(|adiru| {
-            adiru.accept(visitor);
-        });
+        accept_iterable!(self.adirus, visitor);
         self.simulator_data.accept(visitor);
 
         visitor.visit(self);
@@ -328,6 +347,10 @@ impl AirDataInertialReferenceUnit {
 
     fn state_id(number: usize) -> String {
         format!("ADIRS_ADIRU_{}_STATE", number)
+    }
+
+    fn ir_has_fault(&self) -> bool {
+        self.ir.has_fault()
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
@@ -602,7 +625,6 @@ impl From<f64> for AlignTime {
 }
 
 struct InertialReference {
-    has_fault_id: String,
     number: usize,
     /// The remaining time to align, where 0 indicates the IR system is aligned.
     /// None indicates the IR system isn't aligning nor aligned.
@@ -640,7 +662,6 @@ impl InertialReference {
 
     fn new(number: usize) -> Self {
         Self {
-            has_fault_id: Self::has_fault_id(number),
             number,
             // We start in an aligned state to support starting on the
             // runway or in the air.
@@ -699,10 +720,6 @@ impl InertialReference {
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
         }
-    }
-
-    fn has_fault_id(number: usize) -> String {
-        format!("OVHD_ADIRS_IR_{}_PB_HAS_FAULT", number)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -805,11 +822,13 @@ impl InertialReference {
     fn attitude_is_initialised(&self) -> bool {
         self.remaining_attitude_initialisation_duration == Some(Duration::from_secs(0))
     }
+
+    fn has_fault(&self) -> bool {
+        self.ir_fault_flash_duration.is_some()
+    }
 }
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.has_fault_id, self.ir_fault_flash_duration.is_some());
-
         let attitude_is_initialised = self.attitude_is_initialised();
         self.pitch.write_to(writer, attitude_is_initialised);
         self.roll.write_to(writer, attitude_is_initialised);
@@ -877,7 +896,7 @@ mod tests {
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.adirs.update(context, &self.overhead);
-            self.overhead.update(context);
+            self.overhead.update(context, &self.adirs);
         }
     }
     impl SimulationElement for TestAircraft {
@@ -1005,7 +1024,7 @@ mod tests {
         }
 
         fn ir_fault_light_illuminated(&mut self, number: usize) -> bool {
-            self.read(&InertialReference::has_fault_id(number))
+            self.read(&format!("OVHD_ADIRS_IR_{}_PB_HAS_FAULT", number))
         }
 
         fn is_aligned(&mut self, adiru_number: usize) -> bool {
