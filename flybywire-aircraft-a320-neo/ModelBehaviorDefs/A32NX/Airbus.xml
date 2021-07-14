@@ -995,45 +995,6 @@
         </Component>
     </Template>
 
-    <Template Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-            <FD_TOGGLE_CONDITION>1</FD_TOGGLE_CONDITION>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_SubTemplate">
-        </UseTemplate>
-    </Template>
-
-    <Template Name="A32NX_AUTOPILOT_Push_FlightDirector_SubTemplate">
-        <DefaultTemplateParameters>
-            <DEFAULT_NAME>FlightDirector</DEFAULT_NAME>
-            <HELPID>HELPID_AUTOPILOT_FLIGHT_DIRECTOR_SWITCH</HELPID>
-            <TOOLTIPID>%((A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FD_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FD_OFF%{end}</TOOLTIPID>
-            <Condition Check="TOGGLEABLE">
-                <True>
-                    <ANIM_CODE>(A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#, Bool) 100 *</ANIM_CODE>
-                </True>
-            </Condition>
-        </DefaultTemplateParameters>
-        <EditableTemplateParameters>
-            <AddParams>
-                <ID></ID>
-                <FD_TOGGLE_CONDITION></FD_TOGGLE_CONDITION>
-            </AddParams>
-            <AddOptions>
-                <TOGGLEABLE/>
-            </AddOptions>
-        </EditableTemplateParameters>
-
-        <UseTemplate Name="FBW_AUTOPILOT_Push_Template">
-            <LEFT_SINGLE_CODE>#FD_TOGGLE_CONDITION# if{ #ID# (&gt;K:TOGGLE_FLIGHT_DIRECTOR) }</LEFT_SINGLE_CODE>
-            <EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#</EMISSIVE_SIMVAR_ACTIVE>
-        </UseTemplate>
-    </Template>
-
     <Template Name="FBW_AUTOPILOT_Push_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
