@@ -45,12 +45,12 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) 
 
     return (
         <>
-            <FlightPlan
+            { mode === Mode.ROSE_NAV && (<FlightPlan
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
                 clipPath="url(#rose-mode-flight-plan-clip)"
                 debug={false}
-            />
+            />)}
 
             <Overlay
                 heading={Number(MathUtils.fastToFixed(magHeading, 1))}
