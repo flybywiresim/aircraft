@@ -45,12 +45,12 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) 
 
     return (
         <>
-            <FlightPlan
+            { mode === Mode.ROSE_NAV && (<FlightPlan
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
                 clipPath="url(#rose-mode-flight-plan-clip)"
                 debug={false}
-            />
+            />)}
 
             <Overlay
                 heading={Number(MathUtils.fastToFixed(magHeading, 1))}
@@ -608,7 +608,7 @@ const IlsCourseBug: React.FC<{heading: number, ilsCourse: number}> = ({ heading,
 };
 
 const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ heading, selected }) => {
-    if (heading < 0) {
+    if (selected < 0) {
         return null;
     }
 
