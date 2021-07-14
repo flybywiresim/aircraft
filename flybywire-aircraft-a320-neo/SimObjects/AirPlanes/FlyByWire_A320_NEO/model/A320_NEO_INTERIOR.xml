@@ -3235,23 +3235,13 @@
             </UseTemplate>
 
             <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
-                <NODE_ID>PUSH_AUTOPILOT_FD_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_FD_L</ANIM_NAME>
-                <ACTIVE_NODE_ID>PUSH_AUTOPILOT_FD_L_SEQ1</ACTIVE_NODE_ID>
-                <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_FD_L_SEQ2</EMISSIVE_NODE_ID>
-                <POTENTIOMETER>84</POTENTIOMETER>
+                <SIDE>L</SIDE>
                 <ID>1</ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
-                <NODE_ID>PUSH_AUTOPILOT_LS_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_LS_L</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
+                <SIDE>L</SIDE>
                 <ID>1</ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
@@ -3318,23 +3308,13 @@
             </UseTemplate>
 
             <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
-                <NODE_ID>PUSH_AUTOPILOT_FD_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_FD_R</ANIM_NAME>
-                <ACTIVE_NODE_ID>PUSH_AUTOPILOT_FD_R_SEQ1</ACTIVE_NODE_ID>
-                <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_FD_R_SEQ2</EMISSIVE_NODE_ID>
-                <POTENTIOMETER>84</POTENTIOMETER>
+                <SIDE>R</SIDE>
                 <ID>2</ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
-                <NODE_ID>PUSH_AUTOPILOT_LS_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_LS_R</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
+                <SIDE>R</SIDE>
                 <ID>2</ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
