@@ -223,7 +223,7 @@ const initialState : scratchpadState = {
     arrow: lineArrow.none,
 };
 
-export const scratchpadReducer = async (state = initialState, { type, msg }) => {
+export const scratchpadReducer = (state = initialState, { type, msg }) => {
     switch (type) {
     case scratchpadActions.ADD_SCRATCHPAD_MESSAGE:
         return addMessage(state, msg);

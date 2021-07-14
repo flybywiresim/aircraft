@@ -19,7 +19,7 @@ import React, { useEffect, useState } from 'react';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { SLEW_KEYS } from 'instruments/src/MCDU/Components/Buttons';
+import { SLEW_KEYS } from '../../../Components/Buttons';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
 import InitAPage from './InitA';

@@ -10,7 +10,6 @@ import configureStore from './redux/configureStore';
 
 const MCDU = () => {
     const store = configureStore();
-
     return (
         <Provider store={store}>
             <div className="mcdu-outer">

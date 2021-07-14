@@ -30,9 +30,9 @@ import { ALPHABET_KEYS, NUMPAD_KEYS } from '../Components/Buttons';
 
 type ScratchpadProps = {
     scratchpad: scratchpadState
-    addToScratchpad: Function,
-    addPlusMinus: Function,
-    clearScratchpadCharacter: Function,
+    addToScratchpad: (msg: string) => any,
+    addPlusMinus: () => any,
+    clearScratchpadCharacter: () => any,
 }
 const Scratchpad: React.FC<ScratchpadProps> = ({ scratchpad, addToScratchpad, addPlusMinus, clearScratchpadCharacter }) => {
     /* START OF SCRATCHPAD INTERACTIONS */
@@ -81,7 +81,7 @@ const Scratchpad: React.FC<ScratchpadProps> = ({ scratchpad, addToScratchpad, ad
     useInteractionEvent(ALPHABET_KEYS.DOT, () => addToScratchpad('.'));
     useInteractionEvent(ALPHABET_KEYS.PLUSMINUS, () => addPlusMinus());
     useInteractionEvent(ALPHABET_KEYS.DIV, () => addToScratchpad('/'));
-    useInteractionEvent(ALPHABET_KEYS.CLR, () => clearScratchpadCharacter('CLR'));
+    useInteractionEvent(ALPHABET_KEYS.CLR, () => clearScratchpadCharacter());
 
     // Disabled
     // useInteractionEvent(ALPHABET_KEYS.OVFY, () => addToScratchpad('OVFY'));

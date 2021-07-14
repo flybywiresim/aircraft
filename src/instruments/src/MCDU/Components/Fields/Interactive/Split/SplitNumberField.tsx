@@ -1,7 +1,7 @@
-import { scratchpadMessage } from 'instruments/src/MCDU/redux/reducers/scratchpadReducer';
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { scratchpadMessage } from '../../../../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../../../../redux/actions/scratchpadActionCreators';
 
 import { lineColors, lineSizes } from '../../../Lines/Line';
@@ -39,6 +39,7 @@ const SplitNumberField : React.FC<SplitNumberFieldProps> = (
 ) => {
     useEffect(() => {
         if (value) {
+            console.log(`splitNumFieldValue: ${value}`);
             if (value === 'CLR') {
                 selectedCallback(undefined);
             } else if (!Number.isNaN(value)) {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { scratchpadMessage, scratchpadState } from 'instruments/src/MCDU/redux/reducers/scratchpadReducer';
 import { bindActionCreators } from 'redux';
+import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
 import { useInteractionEvent } from '../../../../Common/hooks';

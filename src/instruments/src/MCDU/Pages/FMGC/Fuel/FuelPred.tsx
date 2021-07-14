@@ -4,20 +4,20 @@ import { bindActionCreators } from 'redux';
 
 import { useSimVar } from '@instruments/common/simVars';
 
-import { Content } from 'instruments/src/MCDU/Components/Content';
-import { RowHolder } from 'instruments/src/MCDU/Components/RowHolder';
-import { Line, lineColors, lineSides, lineSizes } from 'instruments/src/MCDU/Components/Lines/Line';
-import { LineHolder } from 'instruments/src/MCDU/Components/LineHolder';
-import { LabelField } from 'instruments/src/MCDU/Components/Fields/NonInteractive/LabelField';
-import { Field, fieldSides } from 'instruments/src/MCDU/Components/Fields/NonInteractive/Field';
-import { EmptyLine } from 'instruments/src/MCDU/Components/Lines/EmptyLine';
-import { SplitLine } from 'instruments/src/MCDU/Components/Lines/SplitLine';
-import InteractiveSplitLine from 'instruments/src/MCDU/Components/Lines/InteractiveSplitLine';
-import SplitNumberField from 'instruments/src/MCDU/Components/Fields/Interactive/Split/SplitNumberField';
-import { LINESELECT_KEYS } from 'instruments/src/MCDU/Components/Buttons';
+import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
+import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
+import { LINESELECT_KEYS } from '../../../Components/Buttons';
+import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
+import InteractiveSplitLine from '../../../Components/Lines/InteractiveSplitLine';
+import { RowHolder } from '../../../Components/RowHolder';
+import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
+import { LineHolder } from '../../../Components/LineHolder';
+import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
+import { Field, fieldSides } from '../../../Components/Fields/NonInteractive/Field';
+import { EmptyLine } from '../../../Components/Lines/EmptyLine';
+import { SplitLine } from '../../../Components/Lines/SplitLine';
 
-import { scratchpadMessage } from 'instruments/src/MCDU/redux/reducers/scratchpadReducer';
-import NumberInputField from 'instruments/src/MCDU/Components/Fields/Interactive/NumberInputField';
+import { Content } from '../../../Components/Content';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
@@ -26,7 +26,7 @@ import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreat
  */
 const DestICAOLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="AT" color={lineColors.white} />} />
+        <Line side={lineSides.center} value={<LabelField side={fieldSides.left} value="AT" color={lineColors.white} />} />
         <Line side={lineSides.left} value={<Field value="NONE" color={lineColors.green} size={lineSizes.regular} />} />
     </LineHolder>
 );
@@ -36,8 +36,8 @@ const DestICAOLine: React.FC = () => (
  */
 const DestTimeLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="UTC" color={lineColors.white} />} />
-        <Line side={lineSides.left} value={<Field value="----" color={lineColors.white} size={lineSizes.regular} />} />
+        <Line side={lineSides.center} value={<LabelField value="UTC" color={lineColors.white} />} />
+        <Line side={lineSides.center} value={<Field value="----" color={lineColors.white} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
@@ -46,8 +46,8 @@ const DestTimeLine: React.FC = () => (
  */
 const DestEFOBLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="EFOB" color={lineColors.white} side={fieldSides.right} />} />
-        <Line side={lineSides.left} value={<Field value="---.-" color={lineColors.white} size={lineSizes.regular} />} />
+        <Line side={lineSides.right} value={<LabelField value="EFOB" color={lineColors.white} side={fieldSides.right} />} />
+        <Line side={lineSides.right} value={<Field side={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
@@ -67,7 +67,7 @@ const AltICAOLine: React.FC = () => (
 const AltTimeLine: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line side={lineSides.left} value={<Field value="---" color={lineColors.white} size={lineSizes.regular} />} />
+        <Line side={lineSides.center} value={<Field value="----" color={lineColors.white} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
@@ -77,7 +77,7 @@ const AltTimeLine: React.FC = () => (
 const AltEFOBLine: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line side={lineSides.left} value={<Field value="---.-" color={lineColors.white} size={lineSizes.regular} />} />
+        <Line side={lineSides.center} value={<Field side={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
@@ -107,15 +107,12 @@ type zfwLineProps = {
     clearScratchpad: () => any
 }
 const ZfwLine: React.FC<zfwLineProps> = ({ setScratchpad, zfw, setZFW, zfwCG, setZFWCG, clearScratchpad }) => {
-    const autoCalculateZFWZFWCG = () => {
-        const [fuelQuantity, _] = useSimVar('FUEL TOTAL QUANTITY', 'gallons');
-        const [fuelWeight, __] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
-        const [totalWeight, ___] = useSimVar('TOTAL WEIGHT', 'kilograms');
-        const [calcZFWCG, ____] = useSimVar('CG PERCENT', 'percent');
-        const blockFuel = fuelQuantity * fuelWeight / 1000;
-        const tempZFW = (totalWeight / 1000) - blockFuel;
-        setScratchpad(`${tempZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
-    };
+    const [fuelQuantity, _] = useSimVar('FUEL TOTAL QUANTITY', 'gallons');
+    const [fuelWeight, __] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
+    const [totalWeight, ___] = useSimVar('TOTAL WEIGHT', 'kilograms');
+    const [calcZFWCG, ____] = useSimVar('CG PERCENT', 'percent');
+    const blockFuel = fuelQuantity * fuelWeight / 1000;
+    const tempZFW = (totalWeight / 1000) - blockFuel;
 
     return (
         <LineHolder>
@@ -124,7 +121,7 @@ const ZfwLine: React.FC<zfwLineProps> = ({ setScratchpad, zfw, setZFW, zfwCG, se
                 lsk={LINESELECT_KEYS.R3}
                 slashColor={lineColors.white}
                 autoCalc={() => {
-                    autoCalculateZFWZFWCG();
+                    setScratchpad(`${tempZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
                 }}
                 leftSide={(
                     <SplitNumberField
@@ -224,10 +221,10 @@ const FobLine: React.FC<fobLineProps> = ({ zfw }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value="FOB" color={lineColors.white} side={fieldSides.left} />} />
+            <Line side={lineSides.center} value={<LabelField side={fieldSides.left} value="FOB" color={lineColors.white} />} />
             <SplitLine
                 side={lineSides.right}
-                slashColor={lineColors.cyan}
+                slashColor={color}
                 leftSide={<Field value={fobWeight} color={color} size={lineSizes.small} />}
                 rightSide={<Field value={fobOther} color={color} size={lineSizes.small} />}
             />
@@ -256,7 +253,7 @@ const FinalLine: React.FC<finalLineProps> = ({ clearScratchpad }) => {
                         nullValue="---.-"
                         min={35.0}
                         max={80.0}
-                        color={fuelWeight === undefined ? lineColors.amber : lineColors.cyan}
+                        color={fuelWeight === undefined ? lineColors.white : lineColors.cyan}
                         size={fuelWeight === undefined ? lineSizes.small : lineSizes.regular}
                         selectedCallback={(value) => {
                             if (value === undefined) {
@@ -304,12 +301,12 @@ const GWCGLine: React.FC<gWCGLineProps> = ({ zfw }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value="GW/    CG" color={lineColors.white} />} />
+            <Line side={lineSides.right} value={<LabelField value="GW    CG" color={lineColors.white} />} />
             <SplitLine
                 side={lineSides.right}
                 slashColor={lineColors.white}
                 leftSide={<Field value={gwVal} color={color} size={lineSizes.small} />}
-                rightSide={<Field value={`    ${cgVal}`} color={color} size={lineSizes.small} />}
+                rightSide={<Field value={` ${cgVal}`} color={color} size={lineSizes.small} />}
             />
         </LineHolder>
     );
@@ -331,9 +328,10 @@ const MinDestFobLine: React.FC<minDestFobLineProps> = ({ clearScratchpad }) => {
         <LineHolder>
             <Line side={lineSides.left} value={<LabelField value="MIN DEST FOB" color={lineColors.white} />} />
             <Line
-                side={lineSides.left}
+                side={lineSides.center}
                 value={(
                     <NumberInputField
+                        side={fieldSides.left}
                         lsk={LINESELECT_KEYS.L6}
                         min={0}
                         max={80.0}
@@ -367,7 +365,7 @@ const ExtraLine: React.FC<extraLineProps> = ({ zfw }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value="GW/    CG" color={lineColors.white} />} />
+            <Line side={lineSides.right} value={<LabelField value="EXTRA TIME" color={lineColors.white} />} />
             <SplitLine
                 side={lineSides.right}
                 slashColor={lineColors.white}

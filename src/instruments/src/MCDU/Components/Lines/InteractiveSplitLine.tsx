@@ -28,6 +28,8 @@ const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
         return value;
     });
 
+    const slash = '/';
+
     function splitScratchpadValue() {
         let [leftValue, rightValue] = scratchpad.currentMessage.split('/');
 
@@ -39,7 +41,6 @@ const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
                 rightValue = '';
             }
         }
-
         return [leftValue, rightValue];
     }
 
@@ -57,7 +58,7 @@ const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
         <>
             <p className="line">
                 {React.cloneElement(leftSide, { value: leftValue })}
-                <span className={`${slashColor}`}>/</span>
+                <span className={`${slashColor}`}>{slash}</span>
                 {React.cloneElement(rightSide, { value: rightValue })}
             </p>
         </>
