@@ -1,5 +1,5 @@
-import React, { useRef, useContext, useState } from 'react';
-import { IconArrowBigTop } from '@tabler/icons';
+import React, { useContext, useState } from 'react';
+import { IconArrowBigTop, IconArrowNarrowLeft } from '@tabler/icons';
 
 const keyboardContext = React.createContext({ isShifted: false, inputValue: '', setInputValue: (_value: string) => {} });
 
@@ -47,7 +47,7 @@ const Keyboard = () => {
                             className="w-64 h-24 mr-1 rounded-lg rounded-bl-2xl flex-shrink-0 text-2xl text-white font-bold bg-gray-800 hover:bg-gray-900 duration-200"
                             onClick={() => setFieldValue(fieldValue.substring(0, fieldValue.length - 1))}
                         >
-                            BACKSPACE
+                            <IconArrowNarrowLeft />
                         </button>
                     </div>
                     <div className="flex flex-row space-x-2">
@@ -108,13 +108,10 @@ const Keyboard = () => {
 export default Keyboard;
 
 const Key = (props: {char: string, altChar: string, alwaysShowAlt?: boolean}) => {
-    const keyRef = useRef<HTMLButtonElement>(null);
     const context = useContext(keyboardContext);
 
     const handleKeyPress = () => {
-        if (keyRef.current) {
-            context.setInputValue(`${context.inputValue} ${context.isShifted ? props.altChar : props.char}`);
-        }
+        context.setInputValue(`${context.inputValue} ${context.isShifted ? props.altChar : props.char}`);
     };
 
     let altText: string;
@@ -131,7 +128,6 @@ const Key = (props: {char: string, altChar: string, alwaysShowAlt?: boolean}) =>
         <button
             className="w-full h-24 rounded-lg flex items-center justify-center bg-gray-800 hover:bg-gray-900 duration-200"
             type="button"
-            ref={keyRef}
             onClick={handleKeyPress}
         >
             {props.alwaysShowAlt
