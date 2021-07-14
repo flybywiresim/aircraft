@@ -6,6 +6,7 @@ enum DisplayUnitState {
     On,
     Off,
     Selftest,
+    Standby
 }
 
 type Props = {
@@ -14,19 +15,23 @@ type Props = {
 
 export const ISISDisplayUnit: React.FC<Props> = ({ indicatedAirspeed, children }) => {
     const powerUpTime = 90;
+    const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
 
-    const [state, setState] = useState(DisplayUnitState.On);
+    const [state, setState] = useState(isColdAndDark ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const [timer, setTimer] = useState<number | null>(null);
 
     const [dcEssLive] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool');
     const [dcHotLive] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'bool');
 
-    const electricityState = indicatedAirspeed > 50 && dcHotLive || dcEssLive;
+    const hasElectricity = indicatedAirspeed > 50 && dcHotLive || dcEssLive;
 
     useUpdate((deltaTime) => {
         if (timer !== null) {
             if (timer > 0) {
                 setTimer(timer - (deltaTime / 1000));
+            } else if (state === DisplayUnitState.Standby) {
+                setState(DisplayUnitState.Off);
+                setTimer(null);
             } else if (state === DisplayUnitState.Selftest) {
                 setState(DisplayUnitState.On);
                 setTimer(null);
@@ -35,19 +40,24 @@ export const ISISDisplayUnit: React.FC<Props> = ({ indicatedAirspeed, children }
     });
 
     useEffect(() => {
-        if (electricityState === 0) {
-            setState(DisplayUnitState.Off);
+        if (state === DisplayUnitState.On && !hasElectricity) {
+            setState(DisplayUnitState.Standby);
+            setTimer(10);
+        } else if (state === DisplayUnitState.Standby && hasElectricity) {
+            setState(DisplayUnitState.On);
             setTimer(null);
-        } else if (state === DisplayUnitState.Off) {
+        } else if (state === DisplayUnitState.Off && hasElectricity) {
             setState(DisplayUnitState.Selftest);
             setTimer(powerUpTime);
+        } else if (state === DisplayUnitState.Selftest && !hasElectricity) {
+            setState(DisplayUnitState.Off);
+            setTimer(null);
         }
     });
 
     if (state === DisplayUnitState.Selftest) {
         return (
             <svg id="SelfTest" className="SelfTest" version="1.1" viewBox="0 0 512 512">
-                <rect x="0" y="0" width="100%" height="100%" fill="#1f242d" />
                 <g id="AttFlag">
                     <rect id="AttTest" className="FillYellow" width="84" height="40" x="214" y="174" />
                     <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="256" y="206">ATT</text>
