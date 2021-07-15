@@ -97,5 +97,7 @@ module.exports = {
         Simplane: 'readonly',
         SimVar: 'readonly',
         Utils: 'readonly',
+        JSX: 'readonly',
+        Coherent: 'readonly',
     },
 };

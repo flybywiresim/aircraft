@@ -12,6 +12,10 @@
 
 ## Uncategorized
 
+- A32NX_APPROACH_RUNWAY_ELEVATION
+    - Meters
+    - Elevation of approach runway once this is set in the MCDU
+
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
     - Also is used for knowing when to play the no smoking chime sound
@@ -876,6 +880,30 @@
     - {brake_side}
         - LEFT
         - RIGHT
+
+- A32NX_AUTOBRAKES_ARMED_MODE
+    - Number
+    - Current autobrake mode
+        - 0: Autobrake not armed
+        - 1: Autobrake in LOW
+        - 2: Autobrake in MED
+        - 3: Autobrake in MAX
+
+- A32NX_AUTOBRAKES_DECEL_LIGHT
+    - Bool
+    - Autobrakes are braking and reached the deceleration target
+
+- A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED
+    - Bool
+    - Auto brake panel push button for LOW mode is pressed
+
+- A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED
+    - Bool
+    - Auto brake panel push button for MEDIUM mode is pressed
+
+- A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED
+    - Bool
+    - Auto brake panel push button for MAX mode is pressed
 
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum

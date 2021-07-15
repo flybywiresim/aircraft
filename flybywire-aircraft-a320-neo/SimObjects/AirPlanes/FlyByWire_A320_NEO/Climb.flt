@@ -96,7 +96,6 @@ Pump.9=True
 BatterySwitch=True
 StructuralDeiceSwitch=False
 PropDeiceSwitch=False
-Autobrakes=1
 StandbyVacuum=False
 PropSync=False
 AutoFeatherSwitch=False
@@ -141,7 +140,7 @@ TaxiLights=False
 WingLights=True
 CabinLights=True
 GlareshieldLights=True
-PedestalLights=False
+PedestalLights=True
 Potentiometer.7=0.5
 Potentiometer.10=0
 Potentiometer.11=0
@@ -153,6 +152,7 @@ Potentiometer.18=0.5
 Potentiometer.19=0.5
 Potentiometer.20=0.5
 Potentiometer.21=0.5
+Potentiometer.76=0
 Potentiometer.83=0
 
 [AutoPilot.0]
