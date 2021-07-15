@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { AnyAction, bindActionCreators, Dispatch } from 'redux';
 
 import { useSimVar } from '@instruments/common/simVars';
 
+import InteractiveSplitLineVTwo, { fieldProperties } from '../../../Components/Lines/InteractiveSplitLineTwo';
 import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
@@ -98,69 +99,103 @@ const RteRsvLine: React.FC = () => {
 };
 
 type zfwLineProps = {
-    zfw: number | undefined,
-    setZFW: React.Dispatch<React.SetStateAction<number | undefined>>,
-    zfwCG: number | undefined,
-    setZFWCG: React.Dispatch<React.SetStateAction<number | undefined>>,
+    fmgcZFW: number | undefined,
+    setFMGCZFW: React.Dispatch<React.SetStateAction<number | undefined>>,
+    fmgcZFWCG: number | undefined,
+    setFMGCZFWCG: React.Dispatch<React.SetStateAction<number | undefined>>,
     // Redux
-    setScratchpad: (msg) => any
+    setScratchpad: (msg: any) => any
     clearScratchpad: () => any
+    addMessage: (msg: scratchpadMessage) => any
 }
-const ZfwLine: React.FC<zfwLineProps> = ({ setScratchpad, zfw, setZFW, zfwCG, setZFWCG, clearScratchpad }) => {
+// TODO fix the null value issues and green computed values
+const ZfwLine: React.FC<zfwLineProps> = ({ addMessage, setScratchpad, fmgcZFW, setFMGCZFW, fmgcZFWCG, setFMGCZFWCG, clearScratchpad }) => {
     const [fuelQuantity, _] = useSimVar('FUEL TOTAL QUANTITY', 'gallons');
     const [fuelWeight, __] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
     const [totalWeight, ___] = useSimVar('TOTAL WEIGHT', 'kilograms');
     const [calcZFWCG, ____] = useSimVar('CG PERCENT', 'percent');
     const blockFuel = fuelQuantity * fuelWeight / 1000;
     const tempZFW = (totalWeight / 1000) - blockFuel;
+    const fieldProperties: fieldProperties = {
+        lNullValue: '___._',
+        lSide: fieldSides.right,
+        lColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
+        lSize: lineSizes.regular,
+        rNullValue: '__._',
+        rSide: fieldSides.right,
+        rColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
+        rSize: lineSizes.regular,
+    };
+
+    // TODO make this a util?
+    const isZFWInRange = (zfw: number) => zfw >= 35.0 && zfw <= 80.0;
+    const isZFWCGInRange = (zfwcg: number) => (zfwcg >= 8.0 && zfwcg <= 50.0);
+
+    const validateEntry = (lVal: string, rVal: string) => {
+        const newZFW = parseFloat(lVal);
+        const newZFWCG = parseFloat(rVal);
+
+        // If both sides contain a number (e.g 23.0/24.0)
+        if (Number.isFinite(newZFW) && Number.isFinite(newZFWCG)) {
+            if (isZFWInRange(newZFW) && isZFWCGInRange(newZFWCG)) {
+                return true;
+            }
+            addMessage({
+                text: 'ENTRY OUT OF RANGE',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+
+        // If left side contains a number (e.g 23.0 or 23.0/)
+        if (Number.isFinite(newZFW)) {
+            if (isZFWInRange(newZFW)) {
+                return true;
+            }
+            addMessage({
+                text: 'ENTRY OUT OF RANGE',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+        // If right side contains a number (e.g /23.0)
+        if (Number.isFinite(newZFWCG)) {
+            if (isZFWCGInRange(newZFWCG)) {
+                return true;
+            }
+            addMessage({
+                text: 'ENTRY OUT OF RANGE',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+
+        addMessage({
+            text: 'FORMAT ERROR',
+            isAmber: false,
+            isTypeTwo: false,
+        });
+        return false;
+    };
+
+    const updateFMGC = (lVal: string | number | undefined, rVal: string | number | undefined) => false;
 
     return (
         <LineHolder>
             <Line side={lineSides.right} value={<LabelField value="ZFW/ZFWCG" color={lineColors.white} />} />
-            <InteractiveSplitLine
+            <InteractiveSplitLineVTwo
+                side={lineSides.right}
+                slashColor={fmgcZFW === undefined ? lineColors.amber : lineColors.cyan}
                 lsk={LINESELECT_KEYS.R3}
-                slashColor={lineColors.white}
+                properties={fieldProperties}
+                selectedValidation={(lVal, rVal) => validateEntry(lVal, rVal)}
+                selectedCallback={(lVal, rVal) => updateFMGC(lVal, rVal)}
                 autoCalc={() => {
                     setScratchpad(`${tempZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
                 }}
-                leftSide={(
-                    <SplitNumberField
-                        side={fieldSides.right}
-                        value={zfw?.toString(1)}
-                        nullValue="___._"
-                        min={35.0}
-                        max={80.0}
-                        color={zfw === undefined ? lineColors.amber : lineColors.cyan}
-                        size={lineSizes.regular}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setZFW(undefined);
-                            } else {
-                                setZFW(+value);
-                            }
-                            clearScratchpad();
-                        }}
-                    />
-                )}
-                rightSide={(
-                    <SplitNumberField
-                        side={fieldSides.right}
-                        value={zfwCG?.toFixed(1)}
-                        nullValue="__._"
-                        min={8.0}
-                        max={50.0}
-                        color={zfwCG === undefined ? lineColors.amber : lineColors.cyan}
-                        size={lineSizes.regular}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setZFWCG(undefined);
-                            } else {
-                                setZFWCG(+value);
-                            }
-                            clearScratchpad();
-                        }}
-                    />
-                )}
             />
         </LineHolder>
     );
@@ -385,7 +420,7 @@ type fuelPredProps = {
     setTitlebarColor: (color: lineColors) => any,
     setTitlebarSide: (side: lineSides) => any,
 }
-const FuelPredPage: React.FC<fuelPredProps> = ({ setScratchpad, setTitlebar, setTitlebarColor, setTitlebarSide, clearScratchpad }) => {
+const FuelPredPage: React.FC<fuelPredProps> = ({ addScratchpadMessage, setScratchpad, setTitlebar, setTitlebarColor, setTitlebarSide, clearScratchpad }) => {
     // TODO connect this up with the FMGC when it's avail
     const [zfw, setZFW] = useState<number>();
     const [zfwCG, setZFWCG] = useState<number>();
@@ -409,7 +444,15 @@ const FuelPredPage: React.FC<fuelPredProps> = ({ setScratchpad, setTitlebar, set
             </RowHolder>
             <RowHolder index={3}>
                 <RteRsvLine />
-                <ZfwLine clearScratchpad={clearScratchpad} setScratchpad={setScratchpad} zfw={zfw} setZFW={setZFW} zfwCG={zfwCG} setZFWCG={setZFWCG} />
+                <ZfwLine
+                    addMessage={addScratchpadMessage}
+                    clearScratchpad={clearScratchpad}
+                    setScratchpad={setScratchpad}
+                    fmgcZFW={zfw}
+                    setFMGCZFW={setZFW}
+                    fmgcZFWCG={zfwCG}
+                    setFMGCZFWCG={setZFWCG}
+                />
             </RowHolder>
             <RowHolder index={4}>
                 <AltnLine clearScratchpad={clearScratchpad} />
@@ -426,7 +469,7 @@ const FuelPredPage: React.FC<fuelPredProps> = ({ setScratchpad, setTitlebar, set
         </Content>
     );
 };
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch),
     setTitlebarColor: bindActionCreators(titlebarActions.setTitleBarColor, dispatch),
     setTitlebarSide: bindActionCreators(titlebarActions.setTitleBarSide, dispatch),
