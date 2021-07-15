@@ -3957,8 +3957,10 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Push_Toggle">
+            <UseTemplate Name="FBW_Chrono_Push_Toggle">
                 <NODE_ID>PUSH_CHRONO_RST</NODE_ID>
+                <WWISE_EVENT_1>CHRon</WWISE_EVENT_1>
+                <WWISE_EVENT_2>CHRoff</WWISE_EVENT_2>
                 <TOOLTIPID>Reset Chronometer</TOOLTIPID>
                 <MOMENTARY />
                 <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_RST)</LEFT_SINGLE_CODE>
@@ -3966,8 +3968,10 @@
                 <NO_SEQ2 />
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Push_Toggle">
+            <UseTemplate Name="FBW_Chrono_Push_Toggle">
                 <NODE_ID>PUSH_CHRONO_CHR</NODE_ID>
+                <WWISE_EVENT_1>CHRon</WWISE_EVENT_1>
+                <WWISE_EVENT_2>CHRoff</WWISE_EVENT_2>
                 <TOOLTIPID>Start/Stop Chronometer</TOOLTIPID>
                 <MOMENTARY/>
                 <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_TOGGLE)</LEFT_SINGLE_CODE>
@@ -3977,6 +3981,8 @@
 
             <UseTemplate Name="FBW_Push_Held">
                 <NODE_ID>PUSH_CHRONO_SET</NODE_ID>
+                <WWISE_EVENT_1>SETon</WWISE_EVENT_1>
+                <WWISE_EVENT_2>SEToff</WWISE_EVENT_2>
                 <TOOLTIPID>Toggle clock date/time</TOOLTIPID>
                 <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_DATE)</LEFT_SINGLE_CODE>
             </UseTemplate>
@@ -3990,7 +3996,7 @@
                 <UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
                     <NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
                     <ANIM_NAME>KNOB_CHRONO_RUN</ANIM_NAME>
-                    <WWISE_EVENT>lswitch</WWISE_EVENT>
+                    <WWISE_EVENT>smallknob</WWISE_EVENT>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <ANIM_CODE>(L:A32NX_CHRONO_ET_SWITCH_POS, number) 10 *</ANIM_CODE>

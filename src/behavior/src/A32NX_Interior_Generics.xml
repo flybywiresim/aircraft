@@ -297,6 +297,32 @@
         </UseTemplate>
     </Template>
 
+    <Template Name="FBW_Chrono_Push_Toggle">
+        <DefaultTemplateParameters>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <Condition Check="LEFT_SINGLE_CODE">
+                <True>
+                    <Condition Check="MOMENTARY">
+                        <True>
+                            <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                        </True>
+                        <False>
+                            <LEFT_SINGLE_CODE>
+                                #LEFT_SINGLE_CODE#
+
+                                (L:XMLVAR_Momentary_#NODE_ID#_Pressed) ! (&gt;L:XMLVAR_Momentary_#NODE_ID#_Pressed)
+                            </LEFT_SINGLE_CODE>
+                        </False>
+                    </Condition>
+                </True>
+            </Condition>
+        </UseTemplate>
+    </Template>
 
     <!--
     Template for rigging covered push buttons
