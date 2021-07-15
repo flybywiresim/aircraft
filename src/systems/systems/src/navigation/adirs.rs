@@ -386,12 +386,12 @@ impl SimulationElement for AirDataInertialReferenceUnit {
     }
 }
 
-struct OutputData<T> {
+struct AdirsData<T> {
     id: String,
     value: T,
     no_value: T,
 }
-impl<T: Copy + Default> OutputData<T> {
+impl<T: Copy + Default> AdirsData<T> {
     fn new_adr(number: usize, name: &str, uninitialised_value: T) -> Self {
         Self::new(OutputDataType::ADR, number, name, uninitialised_value)
     }
@@ -403,7 +403,7 @@ impl<T: Copy + Default> OutputData<T> {
     fn new(data_type: OutputDataType, number: usize, name: &str, no_value: T) -> Self {
         Self {
             id: output_data_id(data_type, number, name),
-            value: Default::default(),
+            value: no_value,
             no_value,
         }
     }
@@ -412,19 +412,12 @@ impl<T: Copy + Default> OutputData<T> {
         self.value
     }
 
-    fn set_value(&mut self, value: T) {
-        self.value = value;
+    fn set_value(&mut self, value: T, should_set: bool) {
+        self.value = if should_set { value } else { self.no_value };
     }
 
-    fn write_to<U: Write<T>>(&self, writer: &mut U, should_write_value: bool) {
-        writer.write(
-            &self.id,
-            if should_write_value {
-                self.value
-            } else {
-                self.no_value
-            },
-        );
+    fn write_to<U: Write<T>>(&self, writer: &mut U) {
+        writer.write(&self.id, self.value);
     }
 }
 
@@ -455,14 +448,14 @@ struct AirDataReference {
     is_on: bool,
     outputs_temperatures: bool,
 
-    altitude: OutputData<Length>,
-    computed_airspeed: OutputData<Velocity>,
-    mach: OutputData<MachNumber>,
-    barometric_vertical_speed: OutputData<f64>,
-    true_airspeed: OutputData<Velocity>,
-    static_air_temperature: OutputData<ThermodynamicTemperature>,
-    total_air_temperature: OutputData<ThermodynamicTemperature>,
-    international_standard_atmosphere_delta: OutputData<ThermodynamicTemperature>,
+    altitude: AdirsData<Length>,
+    computed_airspeed: AdirsData<Velocity>,
+    mach: AdirsData<MachNumber>,
+    barometric_vertical_speed: AdirsData<f64>,
+    true_airspeed: AdirsData<Velocity>,
+    static_air_temperature: AdirsData<ThermodynamicTemperature>,
+    total_air_temperature: AdirsData<ThermodynamicTemperature>,
+    international_standard_atmosphere_delta: AdirsData<ThermodynamicTemperature>,
 
     remaining_initialisation_duration: Option<Duration>,
 }
@@ -487,38 +480,38 @@ impl AirDataReference {
             is_on: true,
             outputs_temperatures,
 
-            altitude: OutputData::new_adr(
+            altitude: AdirsData::new_adr(
                 number,
                 Self::ALTITUDE,
                 Length::new::<foot>(Self::UNINITIALISED_VALUE),
             ),
-            computed_airspeed: OutputData::new_adr(
+            computed_airspeed: AdirsData::new_adr(
                 number,
                 Self::COMPUTED_AIRSPEED,
                 Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
             ),
-            mach: OutputData::new_adr(number, Self::MACH, Self::UNINITIALISED_MACH),
-            barometric_vertical_speed: OutputData::new_adr(
+            mach: AdirsData::new_adr(number, Self::MACH, Self::UNINITIALISED_MACH),
+            barometric_vertical_speed: AdirsData::new_adr(
                 number,
                 Self::BAROMETRIC_VERTICAL_SPEED,
                 Self::UNINITIALISED_VALUE,
             ),
-            true_airspeed: OutputData::new_adr(
+            true_airspeed: AdirsData::new_adr(
                 number,
                 Self::TRUE_AIRSPEED,
                 Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
             ),
-            static_air_temperature: OutputData::new_adr(
+            static_air_temperature: AdirsData::new_adr(
                 number,
                 Self::STATIC_AIR_TEMPERATURE,
                 ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
             ),
-            total_air_temperature: OutputData::new_adr(
+            total_air_temperature: AdirsData::new_adr(
                 number,
                 Self::TOTAL_AIR_TEMPERATURE,
                 ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
             ),
-            international_standard_atmosphere_delta: OutputData::new_adr(
+            international_standard_atmosphere_delta: AdirsData::new_adr(
                 number,
                 Self::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
                 ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
@@ -536,15 +529,38 @@ impl AirDataReference {
         simulator_data: AdirsSimulatorData,
     ) {
         self.is_on = overhead.adr_is_on(self.number);
+        self.update_remaining_initialisation_duration(context, overhead);
+        self.update_values(context, simulator_data);
+    }
+
+    fn update_remaining_initialisation_duration(
+        &mut self,
+        context: &UpdateContext,
+        overhead: &AirDataInertialReferenceSystemOverheadPanel,
+    ) {
+        self.remaining_initialisation_duration = remaining_initialisation_duration(
+            context,
+            Self::INITIALISATION_DURATION,
+            overhead.mode_of(self.number),
+            self.remaining_initialisation_duration,
+        );
+    }
+
+    fn update_values(&mut self, context: &UpdateContext, simulator_data: AdirsSimulatorData) {
+        let should_set_values = self.is_on && self.is_initialised();
 
         // For now some of the data will be read from the context. Later the context will no longer
         // contain this information (and instead all usages will be replaced by requests to the ADIRUs).
-        self.altitude.set_value(context.indicated_altitude());
-        self.barometric_vertical_speed
-            .set_value(simulator_data.vertical_speed.get::<foot_per_minute>());
+        self.altitude
+            .set_value(context.indicated_altitude(), should_set_values);
+        self.barometric_vertical_speed.set_value(
+            simulator_data.vertical_speed.get::<foot_per_minute>(),
+            should_set_values,
+        );
 
         let computed_airspeed = context.indicated_airspeed();
-        self.computed_airspeed.set_value(computed_airspeed);
+        self.computed_airspeed
+            .set_value(computed_airspeed, should_set_values);
 
         // If CAS is below 60 kts, label 210 indicates 0 kt with SSM = NCD.
         self.true_airspeed.set_value(
@@ -557,31 +573,26 @@ impl AirDataReference {
             } else {
                 Velocity::new::<knot>(0.)
             },
+            should_set_values,
         );
 
-        self.mach.set_value(simulator_data.mach);
+        self.mach.set_value(simulator_data.mach, should_set_values);
 
         if self.outputs_temperatures {
             self.total_air_temperature
-                .set_value(simulator_data.total_air_temperature);
+                .set_value(simulator_data.total_air_temperature, should_set_values);
 
             self.static_air_temperature
-                .set_value(context.ambient_temperature());
+                .set_value(context.ambient_temperature(), should_set_values);
 
             self.international_standard_atmosphere_delta.set_value(
                 self.international_standard_atmosphere_delta(
                     context.indicated_altitude(),
                     context.ambient_temperature(),
                 ),
+                should_set_values,
             );
         }
-
-        self.remaining_initialisation_duration = remaining_initialisation_duration(
-            context,
-            Self::INITIALISATION_DURATION,
-            overhead.mode_of(self.number),
-            self.remaining_initialisation_duration,
-        );
     }
 
     fn is_initialised(&self) -> bool {
@@ -606,22 +617,17 @@ impl TrueAirspeedSource for AirDataReference {
 }
 impl SimulationElement for AirDataReference {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let should_write_values = self.is_on && self.is_initialised();
-
-        self.altitude.write_to(writer, should_write_values);
-        self.computed_airspeed.write_to(writer, should_write_values);
-        self.mach.write_to(writer, should_write_values);
-        self.barometric_vertical_speed
-            .write_to(writer, should_write_values);
-        self.true_airspeed.write_to(writer, should_write_values);
+        self.altitude.write_to(writer);
+        self.computed_airspeed.write_to(writer);
+        self.mach.write_to(writer);
+        self.barometric_vertical_speed.write_to(writer);
+        self.true_airspeed.write_to(writer);
 
         if self.outputs_temperatures {
-            self.static_air_temperature
-                .write_to(writer, should_write_values);
-            self.total_air_temperature
-                .write_to(writer, should_write_values);
+            self.static_air_temperature.write_to(writer);
+            self.total_air_temperature.write_to(writer);
             self.international_standard_atmosphere_delta
-                .write_to(writer, should_write_values);
+                .write_to(writer);
         }
     }
 }
@@ -654,16 +660,16 @@ struct InertialReference {
     ir_fault_flash_duration: Option<Duration>,
     remaining_attitude_initialisation_duration: Option<Duration>,
 
-    pitch: OutputData<Angle>,
-    roll: OutputData<Angle>,
-    heading: OutputData<Angle>,
-    track: OutputData<Angle>,
-    vertical_speed: OutputData<f64>,
-    ground_speed: OutputData<Velocity>,
-    wind_direction: OutputData<Angle>,
-    wind_velocity: OutputData<Velocity>,
-    latitude: OutputData<Angle>,
-    longitude: OutputData<Angle>,
+    pitch: AdirsData<Angle>,
+    roll: AdirsData<Angle>,
+    heading: AdirsData<Angle>,
+    track: AdirsData<Angle>,
+    vertical_speed: AdirsData<f64>,
+    ground_speed: AdirsData<Velocity>,
+    wind_direction: AdirsData<Angle>,
+    wind_velocity: AdirsData<Velocity>,
+    latitude: AdirsData<Angle>,
+    longitude: AdirsData<Angle>,
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
@@ -692,52 +698,52 @@ impl InertialReference {
             ir_fault_flash_duration: None,
             // Start fully initialised.
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
-            pitch: OutputData::new_ir(
+            pitch: AdirsData::new_ir(
                 number,
                 Self::PITCH,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
-            roll: OutputData::new_ir(
+            roll: AdirsData::new_ir(
                 number,
                 Self::ROLL,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
-            heading: OutputData::new_ir(
+            heading: AdirsData::new_ir(
                 number,
                 Self::HEADING,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
-            track: OutputData::new_ir(
+            track: AdirsData::new_ir(
                 number,
                 Self::TRACK,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
-            vertical_speed: OutputData::new_ir(
+            vertical_speed: AdirsData::new_ir(
                 number,
                 Self::VERTICAL_SPEED,
                 Self::UNINITIALISED_VALUE,
             ),
-            ground_speed: OutputData::new_ir(
+            ground_speed: AdirsData::new_ir(
                 number,
                 Self::GROUND_SPEED,
                 Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
             ),
-            wind_direction: OutputData::new_ir(
+            wind_direction: AdirsData::new_ir(
                 number,
                 Self::WIND_DIRECTION,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
-            wind_velocity: OutputData::new_ir(
+            wind_velocity: AdirsData::new_ir(
                 number,
                 Self::WIND_VELOCITY,
                 Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
             ),
-            latitude: OutputData::new_ir(
+            latitude: AdirsData::new_ir(
                 number,
                 Self::LATITUDE,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
             ),
-            longitude: OutputData::new_ir(
+            longitude: AdirsData::new_ir(
                 number,
                 Self::LONGITUDE,
                 Angle::new::<degree>(Self::UNINITIALISED_VALUE),
@@ -756,36 +762,25 @@ impl InertialReference {
     ) {
         self.is_on = overhead.ir_is_on(self.number);
 
-        self.pitch.set_value(simulator_data.pitch);
-        self.roll.set_value(simulator_data.roll);
-        self.heading.set_value(simulator_data.heading);
-        self.track.set_value(simulator_data.track);
-        self.vertical_speed
-            .set_value(simulator_data.vertical_speed.get::<foot_per_minute>());
-        self.ground_speed.set_value(simulator_data.ground_speed);
+        self.update_fault_flash_duration(context, overhead);
+        self.update_remaining_attitude_align_duration(context, overhead);
+        self.update_remaining_align_duration(
+            context,
+            overhead,
+            configured_align_time,
+            simulator_data,
+        );
 
-        // The IR does not compute the wind if the TAS is less than 100 knots or unavailable.
-        let true_airspeed_above_minimum_threshold = true_airspeed_source.true_airspeed()
-            >= Velocity::new::<knot>(Self::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS);
-        self.wind_direction
-            .set_value(if true_airspeed_above_minimum_threshold {
-                simulator_data.wind_direction
-            } else {
-                Angle::new::<degree>(0.)
-            });
-        self.wind_velocity
-            .set_value(if true_airspeed_above_minimum_threshold {
-                simulator_data.wind_velocity
-            } else {
-                Velocity::new::<knot>(0.)
-            });
+        self.update_attitude_values(simulator_data);
+        self.update_non_attitude_values(true_airspeed_source, simulator_data);
+    }
 
-        self.latitude.set_value(simulator_data.latitude);
-        self.longitude.set_value(simulator_data.longitude);
-
-        let selected_mode = overhead.mode_of(self.number);
-
-        if self.alignment_starting(selected_mode) {
+    fn update_fault_flash_duration(
+        &mut self,
+        context: &UpdateContext,
+        overhead: &AirDataInertialReferenceSystemOverheadPanel,
+    ) {
+        if self.alignment_starting(overhead.mode_of(self.number)) {
             self.ir_fault_flash_duration = Some(Self::IR_FAULT_FLASH_DURATION);
         } else if let Some(flash_duration) = self.ir_fault_flash_duration {
             let remaining = subtract_delta_from_duration(context, flash_duration);
@@ -795,8 +790,29 @@ impl InertialReference {
                 None
             };
         }
+    }
 
-        self.remaining_align_duration = match selected_mode {
+    fn update_remaining_attitude_align_duration(
+        &mut self,
+        context: &UpdateContext,
+        overhead: &AirDataInertialReferenceSystemOverheadPanel,
+    ) {
+        self.remaining_attitude_initialisation_duration = remaining_initialisation_duration(
+            context,
+            Self::ATTITUDE_INITIALISATION_DURATION,
+            overhead.mode_of(self.number),
+            self.remaining_attitude_initialisation_duration,
+        );
+    }
+
+    fn update_remaining_align_duration(
+        &mut self,
+        context: &UpdateContext,
+        overhead: &AirDataInertialReferenceSystemOverheadPanel,
+        configured_align_time: AlignTime,
+        simulator_data: AdirsSimulatorData,
+    ) {
+        self.remaining_align_duration = match overhead.mode_of(self.number) {
             InertialReferenceMode::Navigation => match self.remaining_align_duration {
                 Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
                 None => Some(Self::total_alignment_duration(
@@ -806,13 +822,57 @@ impl InertialReference {
             },
             InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
         };
+    }
 
-        self.remaining_attitude_initialisation_duration = remaining_initialisation_duration(
-            context,
-            Self::ATTITUDE_INITIALISATION_DURATION,
-            overhead.mode_of(self.number),
-            self.remaining_attitude_initialisation_duration,
+    fn update_attitude_values(&mut self, simulator_data: AdirsSimulatorData) {
+        let should_set_values = self.is_on && self.is_attitude_aligned();
+        self.pitch
+            .set_value(simulator_data.pitch, should_set_values);
+        self.roll.set_value(simulator_data.roll, should_set_values);
+    }
+
+    fn update_non_attitude_values(
+        &mut self,
+        true_airspeed_source: &impl TrueAirspeedSource,
+        simulator_data: AdirsSimulatorData,
+    ) {
+        let should_set_values = self.is_on && self.is_fully_aligned();
+
+        self.heading
+            .set_value(simulator_data.heading, should_set_values);
+        self.track
+            .set_value(simulator_data.track, should_set_values);
+        self.vertical_speed.set_value(
+            simulator_data.vertical_speed.get::<foot_per_minute>(),
+            should_set_values,
         );
+        self.ground_speed
+            .set_value(simulator_data.ground_speed, should_set_values);
+
+        // The IR does not compute the wind if the TAS is less than 100 knots or unavailable.
+        let true_airspeed_above_minimum_threshold = true_airspeed_source.true_airspeed()
+            >= Velocity::new::<knot>(Self::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS);
+        self.wind_direction.set_value(
+            if true_airspeed_above_minimum_threshold {
+                simulator_data.wind_direction
+            } else {
+                Angle::new::<degree>(0.)
+            },
+            should_set_values,
+        );
+        self.wind_velocity.set_value(
+            if true_airspeed_above_minimum_threshold {
+                simulator_data.wind_velocity
+            } else {
+                Velocity::new::<knot>(0.)
+            },
+            should_set_values,
+        );
+
+        self.latitude
+            .set_value(simulator_data.latitude, should_set_values);
+        self.longitude
+            .set_value(simulator_data.longitude, should_set_values);
     }
 
     fn alignment_starting(&self, selected_mode: InertialReferenceMode) -> bool {
@@ -857,19 +917,17 @@ impl InertialReference {
 }
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let should_write_values = self.is_on && self.is_attitude_aligned();
-        self.pitch.write_to(writer, should_write_values);
-        self.roll.write_to(writer, should_write_values);
+        self.pitch.write_to(writer);
+        self.roll.write_to(writer);
 
-        let should_write_values = self.is_on && self.is_fully_aligned();
-        self.heading.write_to(writer, should_write_values);
-        self.track.write_to(writer, should_write_values);
-        self.vertical_speed.write_to(writer, should_write_values);
-        self.ground_speed.write_to(writer, should_write_values);
-        self.wind_direction.write_to(writer, should_write_values);
-        self.wind_velocity.write_to(writer, should_write_values);
-        self.latitude.write_to(writer, should_write_values);
-        self.longitude.write_to(writer, should_write_values);
+        self.heading.write_to(writer);
+        self.track.write_to(writer);
+        self.vertical_speed.write_to(writer);
+        self.ground_speed.write_to(writer);
+        self.wind_direction.write_to(writer);
+        self.wind_velocity.write_to(writer);
+        self.latitude.write_to(writer);
+        self.longitude.write_to(writer);
     }
 }
 
@@ -1406,6 +1464,11 @@ mod tests {
             self.assert_ir_non_attitude_data_available(available, adiru_number);
             self.assert_ir_attitude_data_available(available, adiru_number);
         }
+
+        fn assert_wind_direction_and_velocity_zero(&mut self, adiru_number: usize) {
+            assert_about_eq!(self.wind_direction(adiru_number).get::<degree>(), 0.);
+            assert_about_eq!(self.wind_velocity(adiru_number).get::<knot>(), 0.);
+        }
     }
     impl TestBed for AdirsTestBed {
         type Aircraft = TestAircraft;
@@ -1736,11 +1799,8 @@ mod tests {
         #[case(2)]
         #[case(3)]
         fn data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
-            let mut test_bed = test_bed_with()
-                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
-            test_bed.run_without_delta();
-
-            test_bed.run_with_delta(AirDataReference::INITIALISATION_DURATION);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.run();
             test_bed.assert_adr_data_available(true, adiru_number);
 
             test_bed = test_bed
@@ -1968,6 +2028,7 @@ mod tests {
         #[case(3)]
         fn data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.run();
             test_bed.assert_all_ir_data_available(true, adiru_number);
 
             test_bed = test_bed
@@ -2122,23 +2183,34 @@ mod tests {
         #[case(2)]
         #[case(3)]
         fn wind_is_zero_when_true_airspeed_less_than_100_knots(#[case] adiru_number: usize) {
-            let wind_angle = Angle::new::<degree>(150.);
-            let wind_velocity = Velocity::new::<knot>(40.);
             let mut test_bed = all_adirus_aligned_test_bed_with()
-                .wind_of(wind_angle, wind_velocity)
+                .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
                 .and()
                 .true_airspeed_of(Velocity::new::<knot>(
                     InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS - 0.01,
                 ));
             test_bed.run();
 
-            assert_about_eq!(test_bed.wind_direction(adiru_number).get::<degree>(), 0.);
-            assert_about_eq!(test_bed.wind_velocity(adiru_number).get::<knot>(), 0.);
+            test_bed.assert_wind_direction_and_velocity_zero(adiru_number);
         }
 
-        #[test]
-        #[ignore = "Once the IR and ADR are fully separated and can be turned off via the overhead panel this feature can be tested."]
-        fn wind_is_zero_when_true_airspeed_is_unavailable() {}
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn wind_is_zero_when_true_airspeed_is_unavailable(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
+                .true_airspeed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS,
+                ))
+                .and()
+                .adr_push_button_off(adiru_number);
+
+            test_bed.run();
+
+            test_bed.assert_wind_direction_and_velocity_zero(adiru_number);
+        }
 
         #[rstest]
         #[case(1)]
