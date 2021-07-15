@@ -242,10 +242,22 @@ class CDUFlightPlanPage {
                         altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                         // Waypoint is the first or the last of the actual route
                     } else if ((waypointsAndMarkers[winI].fpIndex === firstRouteIndex - 1) || (waypointsAndMarkers[winI].fpIndex === lastRouteIndex + 1)) {
-                        altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
+                        if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
+                            altitudeConstraint = "-----\xa0";
+                            altPrefix = "";
+                        } else {
+                            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
+                        }
+
                         // Waypoint is in between on the route
                     } else if (waypointsAndMarkers[winI].fpIndex <= lastRouteIndex && waypointsAndMarkers[winI].fpIndex >= firstRouteIndex) {
-                        altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0"); ;
+                        console.log(mcdu.cruiseFlightLevel);
+                        if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
+                            altitudeConstraint = "-----\xa0";
+                            altPrefix = "";
+                        } else {
+                            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
+                        }
                     }
                 }
 
@@ -253,7 +265,7 @@ class CDUFlightPlanPage {
                     spdColor = "white";
                 }
 
-                if (altitudeConstraint === "-----") {
+                if (altitudeConstraint === "-----\xa0") {
                     altColor = "white";
                 }
 
