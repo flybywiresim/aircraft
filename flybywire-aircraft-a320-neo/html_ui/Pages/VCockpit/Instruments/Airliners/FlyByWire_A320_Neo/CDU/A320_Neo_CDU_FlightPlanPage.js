@@ -2,8 +2,10 @@ const MAX_FIX_ROW = 5;
 
 const Markers = {
     FPLN_DISCONTINUITY: ["---F-PLN DISCONTINUITY--"],
-    END_OF_FPLN: ["------END OF F-PLN-------"],
-    NO_ALTN_FPLN: ["-----NO ALTN F-PLN-------"],
+    END_OF_FPLN:        ["------END OF F-PLN------"],
+    NO_ALTN_FPLN:       ["-----NO ALTN F-PLN------"],
+    END_OF_ALTN_FPLN:   ["---END OF ALT F-PLN----"],
+    TOO_STEEP_PATH:     ["-----TOO STEEP PATH-----"]
 };
 
 class CDUFlightPlanPage {
@@ -102,8 +104,168 @@ class CDUFlightPlanPage {
                     showFrom = true;
                 }
 
-                // Get WP Fix
-                scrollWindow[rowI] = getFix(mcdu, waypointsAndMarkers[winI], ppos, isFlying);
+                const wpPrev = fpm.getWaypoint(waypointsAndMarkers[winI].fpIndex - 1);
+                const activeIndex = fpm.getActiveWaypointIndex();
+                const wpActive = (waypointsAndMarkers[winI].fpIndex >= activeIndex);
+                let ident = waypointsAndMarkers[winI].wp.ident;
+
+                // Time
+                let time;
+                let timeCell = "----";
+                if (isFlying) {
+                    if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveUTCTo) || isFinite(waypointsAndMarkers[winI].wp.waypointReachedAt)) {
+                        time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || waypointsAndMarkers[winI].wp.ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).etaFromPpos : waypointsAndMarkers[winI].wp.waypointReachedAt;
+                        timeCell = FMCMainDisplay.secondsToUTC(time) + "[s-text]";
+                    }
+                } else {
+                    if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveETATo)) {
+                        time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || waypointsAndMarkers[winI].wp.ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).timeFromPpos : 0;
+                        timeCell = FMCMainDisplay.secondsTohhmm(time) + "[s-text]";
+                    }
+                }
+
+                // Color
+
+                let color = "green";
+                if (fpm.getCurrentFlightPlanIndex() === 1) {
+                    color = "yellow";
+                } else if (waypointsAndMarkers[winI].wp === fpm.getActiveWaypoint() && waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
+                    color = "white";
+                }
+
+                // Airway
+
+                let airwayName = "";
+                if (wpPrev && waypointsAndMarkers[winI].wp) {
+                    let airway = undefined;
+                    if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === waypointsAndMarkers[winI].wp.infos.airwayIn) {
+                        airway = {name: wpPrev.infos.airwayOut };
+                    } else if (waypointsAndMarkers[winI].wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
+                        airway = {name: waypointsAndMarkers[winI].wp.infos.airwayIn };
+                    }
+                    if (airway) {
+                        airwayName = "\xa0" + airway.name;
+                    }
+                }
+
+                // For Fix Header
+
+                let fixAnnotation;
+                if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                    const departure = fpm.getDeparture();
+                    fixAnnotation = departure ? departure.name : undefined;
+                } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                    const arrival = fpm.getArrival();
+                    fixAnnotation = arrival ? arrival.name : undefined;
+                } else {
+                    fixAnnotation = airwayName;
+                }
+
+                // Distance
+                let distance = "";
+
+                // Active waypoint is live distance, others are distances in the flight plan
+                // TODO: actually use the correct prediction
+                if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
+                    if (waypointsAndMarkers[winI].wp === fpm.getActiveWaypoint()) {
+                        distance = stats.get(waypointsAndMarkers[winI].fpIndex).distanceFromPpos.toFixed(0);
+                    } else {
+                        distance = stats.get(waypointsAndMarkers[winI].fpIndex).distanceInFP.toFixed(0);
+                    }
+                    if (distance > 9999) {
+                        distance = 9999;
+                    }
+                    distance = distance.toString();
+                }
+
+                let speedConstraint = "---";
+                if (waypointsAndMarkers[winI].wp.speedConstraint > 10) {
+                    speedConstraint = "{magenta}*{end}" + waypointsAndMarkers[winI].wp.speedConstraint.toFixed(0);
+                }
+
+                let altColor = color;
+                let spdColor = color;
+                let timeColor = color;
+
+                // Altitude
+
+                let altitudeConstraint = "-----";
+                let altPrefix = "\xa0";
+
+                if (waypointsAndMarkers[winI].wp === fpm.getDestination()) {
+                    // Only for destination waypoint, show runway elevation.
+                    altColor = "white";
+                    spdColor = "white";
+                    let approachRunway = null;
+                    approachRunway = fpm.getApproachRunway();
+                    if (approachRunway) {
+                        ident += Avionics.Utils.formatRunway(approachRunway.designation);
+                    }
+                    if (approachRunway) {
+                        altitudeConstraint = (approachRunway.elevation * 3.280).toFixed(0).toString();
+                        altColor = color;
+                    }
+                    altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
+
+                } else {
+
+                    const firstRouteIndex = 1 + fpm.getDepartureWaypointsCount();
+                    const lastRouteIndex = fpm.getLastIndexBeforeApproach();
+                    const departureWp = firstRouteIndex > 1 && fpm.getDepartureWaypoints().indexOf(waypointsAndMarkers[winI].wp) !== -1;
+
+                    if (mcdu.transitionAltitude >= 100 && waypointsAndMarkers[winI].wp.legAltitude1 > mcdu.transitionAltitude) {
+                        altitudeConstraint = (waypointsAndMarkers[winI].wp.legAltitude1 / 100).toFixed(0).toString();
+                        altitudeConstraint = "FL" + altitudeConstraint.padStart(3,"0");
+                    } else {
+                        altitudeConstraint = waypointsAndMarkers[winI].wp.legAltitude1.toFixed(0).toString().padStart(5,"\xa0");
+                    }
+                    if (waypointsAndMarkers[winI].wp.legAltitudeDescription !== 0 && waypointsAndMarkers[winI].wp.ident !== "(DECEL)") {
+                        altPrefix = "{magenta}*{end}";
+                        if (waypointsAndMarkers[winI].wp.legAltitudeDescription === 4) {
+                            altitudeConstraint = ((waypointsAndMarkers[winI].wp.legAltitude1 + waypointsAndMarkers[winI].wp.legAltitude2) * 0.5).toFixed(0).toString();
+                            altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
+                        }
+                        // Predict altitude for STAR when constraints are missing
+                    } else if (departureWp) {
+                        altitudeConstraint = Math.floor(waypointsAndMarkers[winI].wp.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toString();
+                        altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
+                        // Waypoint is the first or the last of the actual route
+                    } else if ((waypointsAndMarkers[winI].fpIndex === firstRouteIndex - 1) || (waypointsAndMarkers[winI].fpIndex === lastRouteIndex + 1)) {
+                        altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
+                        // Waypoint is in between on the route
+                    } else if (waypointsAndMarkers[winI].fpIndex <= lastRouteIndex && waypointsAndMarkers[winI].fpIndex >= firstRouteIndex) {
+                        altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0"); ;
+                    }
+                }
+
+                if (speedConstraint === "---") {
+                    spdColor = "white";
+                }
+
+                if (altitudeConstraint === "-----") {
+                    altColor = "white";
+                }
+
+                if (waypointsAndMarkers[winI].wp === fpm.getDestination()) {
+                    timeColor = color;
+                } else {
+                    timeColor = "white";
+                }
+
+                scrollWindow[rowI] = {
+                    fpIndex: waypointsAndMarkers[winI].fpIndex,
+                    active: wpActive,
+                    ident: ident,
+                    color: color,
+                    distance: distance,
+                    spdColor: spdColor,
+                    speedConstraint: speedConstraint,
+                    altColor: altColor,
+                    altitudeConstraint: { alt: altitudeConstraint, altPrefix: altPrefix },
+                    timeCell: timeCell,
+                    timeColor: timeColor,
+                    fixAnnotation: fixAnnotation
+                };
 
                 if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
                     // Attach Functions to LSK/RSK
@@ -179,16 +341,17 @@ class CDUFlightPlanPage {
         }
 
         // Render scrolling data to text >> add ditto marks
-        let hasNm = false;
+
+        let nmCount = 0;
         const scrollText = [];
         for (let rowI = 0; rowI < scrollWindow.length; rowI++) {
             const currRow = scrollWindow[rowI];
 
             if (rowI > 0 && currRow && !currRow.marker) {
                 let dstnc = currRow.distance;
-                if (!hasNm && currRow.distance) {
+                if (nmCount === 0 && currRow.distance) {
                     dstnc += "NM";
-                    hasNm = true;
+                    nmCount++;
                 } else {
                     dstnc += "\xa0\xa0";
                 }
@@ -197,22 +360,27 @@ class CDUFlightPlanPage {
                 }
                 dstnc = dstnc + "[color]" + currRow.color;
                 currRow.distance = dstnc;
-            } else {
-                hasNm = false;
             }
 
             const prevRow = scrollWindow[rowI - 1];
             if (currRow && !currRow.marker && prevRow) {
                 if (!prevRow.marker) {
                     if (currRow.speedConstraint !== "---" && currRow.speedConstraint === prevRow.speedConstraint) {
-                        currRow.speedConstraint.ditto = true;
+                        currRow.speedConstraint.ditto = "";
                     }
 
                     if (currRow.altitudeConstraint.alt === prevRow.altitudeConstraint.alt && currRow.altitudeConstraint.altPrefix === "\xa0") {
                         currRow.altitudeConstraint.ditto = true;
                     }
-                } else if (prevRow.marker === Markers.FPLN_DISCONTINUITY) {
-                    if (scrollWindow[rowI - 2] && currRow.altitudeConstraint.alt === scrollWindow[rowI - 2].altitudeConstraint.alt && currRow.altitudeConstraint.altPrefix === "\xa0") {
+                } else if (prevRow.marker) {
+                    if (currRow.distance.includes("NM")) {
+                        nmCount--;
+                    };
+                    currRow.distance = "";
+                    currRow.fixAnnotation = "";
+
+                    if (rowI - 2 >= 0 && scrollWindow[rowI - 2] && !scrollWindow[rowI - 2].marker
+                        && currRow.altitudeConstraint.alt === scrollWindow[rowI - 2].altitudeConstraint.alt && currRow.altitudeConstraint.altPrefix === "\xa0") {
                         currRow.altitudeConstraint.ditto = true;
                     }
                 }
@@ -318,189 +486,7 @@ class CDUFlightPlanPage {
     }
 }
 
-function getFix(mcdu, wpInfo, ppos, isFlying) {
-
-    const fpm = mcdu.flightPlanManager;
-
-    const wp = wpInfo.wp;
-    const wpIndex = wpInfo.fpIndex;
-    const wpPrev = fpm.getWaypoint(wpIndex - 1);
-    const wpStats = fpm.getCurrentFlightPlan().computeWaypointStatistics(ppos).get(wpIndex);
-
-    const activeIndex = fpm.getActiveWaypointIndex();
-    const wpActive = (wpIndex >= activeIndex);
-    let ident = wp.ident;
-
-    // Time
-    if (isFlying) {
-        timecell = FMCMainDisplay.secondsToUTC(wpStats.etaFromPpos);
-    } else {
-        timecell = FMCMainDisplay.secondsTohhmm(wpStats.timeFromPpos);
-    }
-
-    // Time
-    let time;
-    if (isFlying) {
-        if (isFinite(wp.liveUTCTo) || isFinite(wp.waypointReachedAt)) {
-            time = (wpActive || wp.ident === "(DECEL)") ? wpStats.etaFromPpos : wp.waypointReachedAt;
-            timeCell = FMCMainDisplay.secondsToUTC(time) + "[s-text]";
-        }
-    } else {
-        if (isFinite(wp.liveETATo)) {
-            time = (wpActive || wp.ident === "(DECEL)") ? wpStats.timeFromPpos : 0;
-            timeCell = FMCMainDisplay.secondsTohhmm(time) + "[s-text]";
-        }
-    }
-
-    // Color
-
-    let color = "green";
-    if (fpm.getCurrentFlightPlanIndex() === 1) {
-        color = "yellow";
-    } else if (wp === fpm.getActiveWaypoint() && wp !== fpm.getDestination()) {
-        color = "white";
-    }
-
-    // Airway
-
-    let airwayName = "";
-    if (wpPrev && wp) {
-        let airway = undefined;
-        if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === wp.infos.airwayIn) {
-            airway = {name: wpPrev.infos.airwayOut };
-        } else if (wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
-            airway = {name: wp.infos.airwayIn };
-        }
-        if (airway) {
-            airwayName = "\xa0" + airway.name;
-        }
-    }
-
-    // For Fix Header
-
-    let fixAnnotation;
-    if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === wp)) {
-        const departure = fpm.getDeparture();
-        fixAnnotation = departure ? departure.name : undefined;
-    } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === wp)) {
-        const arrival = fpm.getArrival();
-        fixAnnotation = arrival ? arrival.name : undefined;
-    } else {
-        fixAnnotation = airwayName;
-    }
-
-    // Distance
-    let distance = "";
-
-    // Active waypoint is live distance, others are distances in the flight plan
-    // TODO: actually use the correct prediction
-    if (wp !== fpm.getDestination()) {
-        if (wp === fpm.getActiveWaypoint()) {
-            distance = wpStats.distanceFromPpos.toFixed(0).toString();
-        } else {
-            distance = wpStats.distanceInFP.toFixed(0).toString();
-        }
-    }
-
-    let speedConstraint = "---";
-    if (wp.speedConstraint > 10) {
-        speedConstraint = "{magenta}*{end}" + wp.speedConstraint.toFixed(0);
-    }
-
-    let altColor = color;
-    let spdColor = color;
-
-    // Altitude
-
-    let altitudeConstraint = "-----";
-    let altPrefix = "\xa0";
-
-    if (wp === fpm.getDestination()) {
-        // Only for destination waypoint, show runway elevation.
-        altColor = "white";
-        spdColor = "white";
-        let approachRunway = null;
-        approachRunway = fpm.getApproachRunway();
-        if (approachRunway) {
-            ident += Avionics.Utils.formatRunway(approachRunway.designation);
-        }
-        if (approachRunway) {
-            altitudeConstraint = (approachRunway.elevation * 3.280).toFixed(0).toString();
-            altColor = color;
-        }
-        altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
-
-    } else {
-
-        const firstRouteIndex = 1 + fpm.getDepartureWaypointsCount();
-        const lastRouteIndex = fpm.getLastIndexBeforeApproach();
-        const departureWp = firstRouteIndex > 1 && fpm.getDepartureWaypoints().indexOf(wp) !== -1;
-
-        if (mcdu.transitionAltitude >= 100 && wp.legAltitude1 > mcdu.transitionAltitude) {
-            altitudeConstraint = (wp.legAltitude1 / 100).toFixed(0).toString();
-            altitudeConstraint = "FL" + altitudeConstraint.padStart(3,"0");
-        } else {
-            altitudeConstraint = wp.legAltitude1.toFixed(0).toString().padStart(5,"\xa0");
-        }
-        if (wp.legAltitudeDescription !== 0 && wp.ident !== "(DECEL)") {
-            altPrefix = "{magenta}*{end}";
-            if (wp.legAltitudeDescription === 4) {
-                altitudeConstraint = ((wp.legAltitude1 + wp.legAltitude2) * 0.5).toFixed(0).toString();
-                altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
-            }
-            // Predict altitude for STAR when constraints are missing
-        } else if (departureWp) {
-            altitudeConstraint = Math.floor(wp.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toString();
-            altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
-            // Waypoint is the first or the last of the actual route
-        } else if ((wpIndex === firstRouteIndex - 1) || (wpIndex === lastRouteIndex + 1)) {
-            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
-            // Waypoint is in between on the route
-        } else if (wpIndex <= lastRouteIndex && wpIndex >= firstRouteIndex) {
-            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0"); ;
-        }
-    }
-
-    if (speedConstraint === "---") {
-        spdColor = "white";
-    }
-
-    if (altitudeConstraint === "-----") {
-        altColor = "white";
-    }
-
-    if (wp === fpm.getDestination()) {
-        timeColor = color;
-    } else {
-        timeColor = "white";
-    }
-
-    const returnFix = {
-        fpIndex: wpIndex,
-        active: wpActive,
-        ident: ident,
-        color: color,
-        distance: distance,
-        spdColor: spdColor,
-        speedConstraint: speedConstraint,
-        altColor: altColor,
-        altitudeConstraint: { alt: altitudeConstraint, altPrefix: altPrefix },
-        timeCell: timeCell,
-        timeColor: timeColor,
-        fixAnnotation: fixAnnotation
-    };
-    return returnFix;
-}
-
 CDUFlightPlanPage._timer = 0;
-
-function renderFixHeader(rowObj) {
-    return [
-        `{sp}${rowObj.fixAnnotation}`,
-        ((rowObj.active) ? rowObj.distance : ""),
-        ""
-    ];
-}
 
 function renderFixTableHeader(isFlying) {
     return [
@@ -510,25 +496,19 @@ function renderFixTableHeader(isFlying) {
     ];
 }
 
+function renderFixHeader(rowObj) {
+    return [
+        `{sp}${!rowObj.fixAnnotation.noRender ? rowObj.fixAnnotation : ""}`,
+        ((rowObj.active && !rowObj.distance.noRender) ? rowObj.distance : ""),
+        ""
+    ];
+}
+
 function renderFixContent(rowObj) {
-
-    let spdText;
-    if (rowObj.speedConstraint.ditto) {
-        spdText = "\xa0\"\xa0";
-    } else {
-        spdText = rowObj.speedConstraint;
-    }
-
-    let altText;
-    if (rowObj.altitudeConstraint.ditto) {
-        altText = "\xa0\xa0\"\xa0\xa0";
-    } else {
-        altText = rowObj.altitudeConstraint.altPrefix + rowObj.altitudeConstraint.alt;
-    }
 
     return [
         `${rowObj.ident}[color]${rowObj.color}`,
-        `{${rowObj.spdColor}}${spdText}{end}{${rowObj.altColor}}/${altText}{end}[s-text]`,
+        `{${rowObj.spdColor}}${rowObj.speedConstraint.ditto ? "\xa0\"\xa0" : rowObj.speedConstraint}{end}{${rowObj.altColor}}/${rowObj.altitudeConstraint.ditto ? "\xa0\xa0\"\xa0\xa0" : rowObj.altitudeConstraint.altPrefix + rowObj.altitudeConstraint.alt}{end}[s-text]`,
         `${rowObj.timeCell}{sp}{sp}[color]${rowObj.timeColor}`
     ];
 }
