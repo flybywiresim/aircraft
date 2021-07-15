@@ -260,6 +260,7 @@ const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
     const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
     const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
     const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+    const [OSKOnInput, setOSKOnInput] = useSimVarSyncedPersistentProperty('L:A32NX_ONSCREEN_KEYBOARD_ON_INPUT', 'Bool', 'ONSCREEN_KEYBOARD_ON_INPUT');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -277,6 +278,10 @@ const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
                         <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
                     </span>
                     <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
+                </div>
+                <div className="mb-4 flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Open Keyboard on Input Click</span>
+                    <Toggle value={!!OSKOnInput} onToggle={(value) => setOSKOnInput(value ? 1 : 0)} />
                 </div>
                 <div className="mb-4 pt-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Exterior Master Volume</span>

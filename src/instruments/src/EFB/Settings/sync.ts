@@ -45,6 +45,10 @@ const settingsToSync: SettingSync[] = [
         simVar: ['L:A32NX_EFB_BRIGHTNESS', 'number'],
         propertyName: 'EFB_BRIGHTNESS',
     },
+    {
+        simVar: ['L:A32NX_ONSCREEN_KEYBOARD_ON_INPUT', 'Bool'],
+        propertyName: 'ONSCREEN_KEYBOARD_ON_INPUT',
+    },
 ];
 
 export function readSettingsFromPersistentStorage() {

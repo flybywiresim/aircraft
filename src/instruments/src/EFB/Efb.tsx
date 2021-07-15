@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useReducer } from 'react';
+import React, { useEffect, useState, useReducer, useRef, MutableRefObject } from 'react';
 
 import { Provider } from 'react-redux';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
+import Keyboard, { KeyboardInputContext } from './Keyboard/Keyboard';
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from './StatusBar/StatusBar';
 import ToolBar from './ToolBar/ToolBar';
@@ -13,7 +14,6 @@ import Ground from './Ground/Ground';
 import Performance from './Performance/Performance';
 import Navigation from './Navigation/Navigation';
 import Settings from './Settings/Settings';
-import Keyboard from './Keyboard/Keyboard';
 
 import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
 import store from './Store';
@@ -226,60 +226,79 @@ const Efb = () => {
         setTimeState({ ...timeState, timeSinceStart });
     };
 
+    const [isKeyboardShown, setIsKeyboardShown] = useState(false);
+    const keyboardCurrentInputRef = useRef<HTMLInputElement>(null) as MutableRefObject<HTMLInputElement>;
+
     return (
         <Provider store={store}>
             <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
                 <NavigraphContext.Provider value={navigraph}>
-                    <div className="flex flex-col">
-                        <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
-                        <div className="flex flex-row">
-                            <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
-                            <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
-                                <Switch>
-                                    <Route path="/dashboard">
-                                        <Dashboard
-                                            simbriefData={simbriefData}
-                                            fetchSimbrief={fetchSimbriefData}
-                                        />
-                                    </Route>
-                                    <Route path="/dispatch">
-                                        <Dispatch
-                                            loadsheet={simbriefData.loadsheet}
-                                            weights={simbriefData.weights}
-                                            fuels={simbriefData.fuels}
-                                            units={simbriefData.units}
-                                            arrivingAirport={simbriefData.arrivingAirport}
-                                            arrivingIata={simbriefData.arrivingIata}
-                                            departingAirport={simbriefData.departingAirport}
-                                            departingIata={simbriefData.departingIata}
-                                            altBurn={simbriefData.altBurn}
-                                            altIcao={simbriefData.altIcao}
-                                            altIata={simbriefData.altIata}
-                                            tripTime={simbriefData.tripTime}
-                                            contFuelTime={simbriefData.contFuelTime}
-                                            resFuelTime={simbriefData.resFuelTime}
-                                            taxiOutTime={simbriefData.taxiOutTime}
-                                        />
-                                    </Route>
-                                    <Route path="/ground">
-                                        <Ground />
-                                    </Route>
-                                    <Route path="/performance">
-                                        <Performance />
-                                    </Route>
-                                    <Route path="/navigation">
-                                        <Navigation />
-                                    </Route>
-                                    <Route path="/atc">
-                                        <ATC />
-                                    </Route>
-                                    <Route path="/settings">
-                                        <Keyboard />
-                                    </Route>
-                                </Switch>
+                    <KeyboardInputContext.Provider value={{
+                        isShown: isKeyboardShown,
+                        setIsShown: setIsKeyboardShown,
+                        inputElement: keyboardCurrentInputRef.current,
+                        // eslint-disable-next-line no-return-assign
+                        setInputElement: (i: HTMLInputElement) => keyboardCurrentInputRef.current = i,
+                    }}
+                    >
+                        <div className="flex flex-col">
+                            <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
+                            <div className="flex flex-row">
+                                <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
+                                <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
+                                    <Switch>
+                                        <Route path="/dashboard">
+                                            <Dashboard
+                                                simbriefData={simbriefData}
+                                                fetchSimbrief={fetchSimbriefData}
+                                            />
+                                            <Keyboard />
+                                        </Route>
+                                        <Route path="/dispatch">
+                                            <Dispatch
+                                                loadsheet={simbriefData.loadsheet}
+                                                weights={simbriefData.weights}
+                                                fuels={simbriefData.fuels}
+                                                units={simbriefData.units}
+                                                arrivingAirport={simbriefData.arrivingAirport}
+                                                arrivingIata={simbriefData.arrivingIata}
+                                                departingAirport={simbriefData.departingAirport}
+                                                departingIata={simbriefData.departingIata}
+                                                altBurn={simbriefData.altBurn}
+                                                altIcao={simbriefData.altIcao}
+                                                altIata={simbriefData.altIata}
+                                                tripTime={simbriefData.tripTime}
+                                                contFuelTime={simbriefData.contFuelTime}
+                                                resFuelTime={simbriefData.resFuelTime}
+                                                taxiOutTime={simbriefData.taxiOutTime}
+                                            />
+                                            <Keyboard />
+                                        </Route>
+                                        <Route path="/ground">
+                                            <Ground />
+                                            <Keyboard />
+                                        </Route>
+                                        <Route path="/performance">
+                                            <Performance />
+                                            <Keyboard />
+                                        </Route>
+                                        <Route path="/navigation">
+                                            <Navigation />
+                                            <Keyboard />
+                                        </Route>
+                                        <Route path="/atc">
+                                            <ATC />
+                                            <Keyboard />
+                                        </Route>
+                                        <Route path="/settings">
+                                            <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
+                                            <Keyboard />
+                                        </Route>
+                                    </Switch>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </KeyboardInputContext.Provider>
                 </NavigraphContext.Provider>
             </PerformanceContext.Provider>
         </Provider>

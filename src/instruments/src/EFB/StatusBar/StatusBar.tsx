@@ -2,6 +2,7 @@ import React from 'react';
 import { IconAccessPoint, IconBattery4, IconKeyboard } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
+import { KeyboardInputContext } from '../Keyboard/Keyboard';
 
 declare const SimVar;
 
@@ -76,12 +77,17 @@ class StatusBar extends React.Component<Props, TimeState> {
                             strokeLinejoin="miter"
                         />
                     </div>
-                    <IconKeyboard
-                        className="ml-2"
-                        size={30}
-                        stroke={1.5}
-                        strokeLinejoin="miter"
-                    />
+                    <KeyboardInputContext.Consumer>
+                        {({ isShown, setIsShown }) => (
+                            <IconKeyboard
+                                className="ml-2"
+                                size={30}
+                                stroke={1.5}
+                                strokeLinejoin="miter"
+                                onClick={() => setIsShown(!isShown)}
+                            />
+                        )}
+                    </KeyboardInputContext.Consumer>
                 </div>
             </div>
         );

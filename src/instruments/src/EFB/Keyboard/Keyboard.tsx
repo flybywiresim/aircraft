@@ -1,20 +1,33 @@
 import React, { useContext, useState } from 'react';
-import { IconArrowBigTop, IconArrowNarrowLeft } from '@tabler/icons';
+import { IconArrowBigTop, IconBackspace, IconArrowNarrowLeft, IconArrowNarrowRight, IconCornerDownLeft } from '@tabler/icons';
 
-const keyboardContext = React.createContext({ isShifted: false, inputValue: '', setInputValue: (_value: string) => {} });
+export interface KeyboardInputContextType {
+    isShown: boolean,
+    setIsShown: (v: boolean) => void,
+    inputElement: HTMLInputElement | null,
+    setInputElement: (i: HTMLInputElement) => void,
+}
+
+export const KeyboardInputContext = React.createContext<KeyboardInputContextType>(undefined as any);
+
+const KeyboardContext = React.createContext({ isShifted: false });
 
 const Keyboard = () => {
     const [shifted, setShifted] = useState(false);
-    const [fieldValue, setFieldValue] = useState('');
+
+    const inputContext = useContext(KeyboardInputContext);
+
+    const handleBackspace = () => {
+        if (inputContext.inputElement) {
+            inputContext.inputElement.focus(); // Reinstate focus on inputElement
+            inputContext.inputElement.value = inputContext.inputElement.value.substring(0, inputContext.inputElement.value.length - 1);
+        }
+    };
 
     return (
-        <keyboardContext.Provider value={{ isShifted: shifted, inputValue: fieldValue, setInputValue: setFieldValue }}>
-            <div className="absolute inset-x-0 bottom-0 bg-gray-600">
-                <input
-                    type="text"
-                    className="w-full h-10 text-xl px-10 bg-white text-black"
-                    value={fieldValue}
-                />
+        <KeyboardContext.Provider value={{ isShifted: shifted }}>
+            <div className="absolute inset-x-0 bottom-0 bg-gray-600" style={{ visibility: inputContext.isShown ? 'visible' : 'hidden' }}>
+                <input type="text" value={inputContext.inputElement?.value} className="w-full h-10 text-3xl" />
                 <div className="w-full flex-col space-y-2 px-2 py-2">
                     <div className="flex flex-row space-x-2">
                         <Key char="`" altChar="~" alwaysShowAlt />
@@ -30,6 +43,15 @@ const Keyboard = () => {
                         <Key char="0" altChar=")" alwaysShowAlt />
                         <Key char="-" altChar="_" alwaysShowAlt />
                         <Key char="=" altChar="+" alwaysShowAlt />
+                        <button
+                            type="button"
+                            className="w-40 h-24 mr-1 rounded-lg flex items-center justify-center
+                            flex-shrink-0 text-2xl text-transparent hover:text-red-600 bg-gray-800
+                            hover:bg-gray-900 duration-200"
+                            onClick={() => handleBackspace()}
+                        >
+                            <IconBackspace size={44} className="fill-current" style={{ stroke: 'white' }} />
+                        </button>
                     </div>
                     <div className="flex flex-row space-x-2">
                         <Key char="q" altChar="Q" />
@@ -42,13 +64,9 @@ const Keyboard = () => {
                         <Key char="i" altChar="I" />
                         <Key char="o" altChar="O" />
                         <Key char="p" altChar="P" />
-                        <button
-                            type="button"
-                            className="w-64 h-24 mr-1 rounded-lg rounded-bl-2xl flex-shrink-0 text-2xl text-white font-bold bg-gray-800 hover:bg-gray-900 duration-200"
-                            onClick={() => setFieldValue(fieldValue.substring(0, fieldValue.length - 1))}
-                        >
-                            <IconArrowNarrowLeft />
-                        </button>
+                        <Key char="[" altChar="{" alwaysShowAlt />
+                        <Key char="]" altChar="}" alwaysShowAlt />
+                        <Key char="\" altChar="|" alwaysShowAlt />
                     </div>
                     <div className="flex flex-row space-x-2">
                         <Key char="a" altChar="A" />
@@ -62,11 +80,20 @@ const Keyboard = () => {
                         <Key char="l" altChar="L" />
                         <Key char=";" altChar=":" alwaysShowAlt />
                         <Key char="'" altChar='"' alwaysShowAlt />
+                        <button
+                            type="button"
+                            className="rounded-lg w-40 h-24 flex items-center justify-center flex-shrink-0 text-2xl text-white bg-blue-500 hover:bg-blue-700 duration-200"
+                            onClick={() => {
+                                inputContext.setIsShown(false);
+                            }}
+                        >
+                            <IconCornerDownLeft size={44} />
+                        </button>
                     </div>
                     <div className="flex flex-row space-x-2">
                         <button
                             type="button"
-                            className="w-48 h-24 text-white bg-gray-800 hover:bg-gray-900 text-2xl flex justify-center items-center flex-shrink-0 font-bold rounded-lg duration-200"
+                            className="w-48 h-24 text-white bg-gray-800 hover:bg-gray-900 text-2xl flex justify-center items-center flex-shrink-0 rounded-lg duration-200"
                             onClick={() => setShifted(!shifted)}
                         >
                             <IconArrowBigTop size={44} fill={`${shifted ? 'white' : 'transparent'}`} />
@@ -81,37 +108,67 @@ const Keyboard = () => {
                         <Key char="," altChar="<" alwaysShowAlt />
                         <Key char="." altChar=">" alwaysShowAlt />
                         <Key char="/" altChar="?" alwaysShowAlt />
-                    </div>
-                    <div className="flex flex-row space-x-2">
                         <button
                             type="button"
-                            className="w-52 h-24 rounded-lg rounded-bl-2xl text-2xl text-white font-bold bg-gray-800 hover:bg-red-600 duration-200"
-                            onClick={() => console.log()}
+                            className="w-32 h-24 text-white bg-gray-800 hover:bg-gray-900 text-2xl flex justify-center items-center flex-shrink-0 rounded-lg duration-200"
+                            onClick={() => setShifted(!shifted)}
                         >
-                            EXIT
+                            <IconArrowBigTop size={44} fill={`${shifted ? 'white' : 'transparent'}`} />
                         </button>
+                    </div>
+                    <div className="flex flex-row space-x-2">
                         <Key char=" " altChar=" " />
                         <button
                             type="button"
-                            className="rounded-lg w-72 h-24 rounded-br-2xl text-2xl text-white font-bold  bg-blue-500 hover:bg-blue-700 duration-200"
-                            onClick={() => console.log()}
+                            className="w-52 h-24 rounded-lg flex items-center justify-center text-2xl text-white bg-gray-800 hover:bg-gray-900 duration-200"
+                            onClick={() => {
+                                if (inputContext.inputElement) {
+                                    inputContext.inputElement.focus();
+                                    inputContext.inputElement.selectionStart!--;
+                                    inputContext.inputElement.selectionEnd!--;
+                                }
+                            }}
                         >
-                            ENTER
+                            <IconArrowNarrowLeft size={44} />
+                        </button>
+                        <button
+                            type="button"
+                            className="w-52 h-24 rounded-lg flex items-center justify-center rounded-br-2xl text-2xl text-white bg-gray-800 hover:bg-gray-900 duration-200"
+                            onClick={() => {
+                                if (inputContext.inputElement) {
+                                    inputContext.inputElement.focus();
+                                    inputContext.inputElement.selectionStart!++;
+                                    inputContext.inputElement.selectionEnd!++;
+                                }
+                            }}
+                        >
+                            <IconArrowNarrowRight size={44} />
                         </button>
                     </div>
                 </div>
             </div>
-        </keyboardContext.Provider>
+        </KeyboardContext.Provider>
     );
 };
 
 export default Keyboard;
 
-const Key = (props: {char: string, altChar: string, alwaysShowAlt?: boolean}) => {
-    const context = useContext(keyboardContext);
+type KeyProps = {
+    char: string,
+    altChar: string,
+    alwaysShowAlt?: boolean
+}
+
+const Key = (props: KeyProps) => {
+    const inputContext = useContext(KeyboardInputContext);
+    const context = useContext(KeyboardContext);
 
     const handleKeyPress = () => {
-        context.setInputValue(`${context.inputValue} ${context.isShifted ? props.altChar : props.char}`);
+        if (inputContext.inputElement) {
+            console.log('this is being called bruhegg');
+            inputContext.inputElement.focus();
+            inputContext.inputElement.value = `${inputContext.inputElement.value}${context.isShifted ? props.altChar : props.char}`;
+        }
     };
 
     let altText: string;
@@ -128,7 +185,7 @@ const Key = (props: {char: string, altChar: string, alwaysShowAlt?: boolean}) =>
         <button
             className="w-full h-24 rounded-lg flex items-center justify-center bg-gray-800 hover:bg-gray-900 duration-200"
             type="button"
-            onClick={handleKeyPress}
+            onClick={() => handleKeyPress()}
         >
             {props.alwaysShowAlt
                 ? (

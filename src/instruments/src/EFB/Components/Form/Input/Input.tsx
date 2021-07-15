@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { isNumber, toNumber } from 'lodash';
+import { KeyboardInputContext } from '../../../Keyboard/Keyboard';
 
 import './Input.scss';
 
@@ -42,6 +43,15 @@ const Input = ({
     const [value, setValue] = useState(propsValue);
     const previousValue = usePrevious(value);
 
+    const keyboardContext = useContext(KeyboardInputContext);
+    const inputElementRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (inputElementRef.current) {
+            keyboardContext.setInputElement(inputElementRef.current);
+        }
+    }, [focusActive]);
+
     const onChange = (value) => {
         if (type === 'number' && value !== '') {
             value = toNumber(value);
@@ -74,6 +84,7 @@ const Input = ({
 
                     <div className="relative flex flex-row">
                         <input
+                            ref={inputElementRef}
                             className="w-full h-full bg-transparent text-white text-2xl flex items-center justify-center focus:outline-none"
                             type={type}
                             value={value}
