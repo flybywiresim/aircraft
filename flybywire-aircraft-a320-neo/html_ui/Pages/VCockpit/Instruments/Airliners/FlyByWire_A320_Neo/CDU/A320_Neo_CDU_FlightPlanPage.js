@@ -65,9 +65,9 @@ class CDUFlightPlanPage {
                 waypointsAndMarkers.push({ marker: Markers.FPLN_DISCONTINUITY, clr: wp.discontinuityCanBeCleared, fpIndex: i});
             }
             if (i === fpm.getWaypointsCount() - 1) {
-                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, clr: false});
+                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, clr: false, fpIndex: i});
                 // TODO: Rewrite once alt fpln exists
-                waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, clr: false});
+                waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, clr: false, fpIndex: i});
             }
         }
         // TODO: Alt F-PLAN
@@ -340,6 +340,15 @@ class CDUFlightPlanPage {
             }
         }
 
+        // Pass current waypoint data to ND
+        if (scrollWindow[0]) {
+            mcdu.currentFlightPlanWaypointIndex = scrollWindow[0].fpIndex;
+            SimVar.SetSimVarValue("L:A32NX_SELECTED_WAYPOINT", "number", scrollWindow[0].fpIndex);
+        } else {
+            mcdu.currentFlightPlanWaypointIndex = first + offset;
+            SimVar.SetSimVarValue("L:A32NX_SELECTED_WAYPOINT", "number", first + offset);
+        }
+
         // Render scrolling data to text >> add ditto marks
 
         let nmCount = 0;
@@ -459,9 +468,6 @@ class CDUFlightPlanPage {
             ...scrollText,
             ...destText
         ]);
-
-        mcdu.currentFlightPlanWaypointIndex = offset + first;
-        SimVar.SetSimVarValue("L:A32NX_SELECTED_WAYPOINT", "number", offset + first);
 
         const allowScroll = waypointsAndMarkers.length > 4;
         if (allowScroll) {//scroll only if there are more than 5 points
