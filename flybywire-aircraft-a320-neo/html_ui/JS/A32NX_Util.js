@@ -278,11 +278,12 @@ class NXNotif {
      * @param {string} params.timeout Time in ms before notification message will disappear
      */
     showNotification(params = {}) {
-        if (params.id) {
-            this.params.id = params.title + "_" + new Date().getTime();
-        }
         if (params.title) {
             this.params.title = params.title;
+            this.params.id = params.title + "_" + new Date().getTime();
+        }
+        if (params.type) {
+            this.params.type = params.type;
         }
         if (params.theme) {
             this.params.theme = params.theme;
@@ -296,6 +297,23 @@ class NXNotif {
         if (params.timeout) {
             this.params.timeout = params.timeout;
         }
-        localStorage.notification = JSON.stringify(this.params);
+
+        const notif = new NotificationData();
+        notif.title = this.params.title;
+        notif.id = this.params.id;
+        notif.type = this.params.type;
+        notif.theme = this.params.theme;
+        notif.image = this.params.image;
+        notif.description = this.params.message;
+        notif.timeout = this.params.timeout;
+
+        if (!this.g_notifListener) {
+            this.g_notifListener = RegisterViewListener("JS_LISTENER_NOTIFICATIONS");
+        } else {
+            this.g_notifListener.triggerToAllSubscribers("SendNewNotification", notif);
+            setTimeout(()=> {
+                this.g_notifListener.triggerToAllSubscribers("HideNotification", notif.type, notif.id);
+            }, notif.timeout);
+        }
     }
 }
