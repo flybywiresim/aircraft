@@ -733,7 +733,7 @@ export class ManagedFlightPlan {
             }
 
             if (runway) {
-                console.error('bruh');
+                // console.error('bruh');
                 // Reference : AMM - 22-71-00 PB001, Page 4
                 if (departureIndex === -1 && transitionIndex === -1) {
                     const TEMPORARY_VERTICAL_SPEED = 500.0;

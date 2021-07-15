@@ -9,8 +9,19 @@ const Markers = {
 };
 
 class CDUFlightPlanPage {
+
     static ShowPage(mcdu, offset = 0) {
+
         // INIT
+        function addLskAt(index, delay, callback) {
+            mcdu.leftInputDelay[index] = (typeof delay === 'function') ? delay : () => delay;
+            mcdu.onLeftInput[index] = callback;
+        }
+
+        function addRskAt(index, delay, callback) {
+            mcdu.rightInputDelay[index] = (typeof delay === 'function') ? delay : () => delay;
+            mcdu.onRightInput[index] = callback;
+        }
 
         //mcdu.flightPlanManager.updateWaypointDistances(false /* approach */);
         //mcdu.flightPlanManager.updateWaypointDistances(true /* approach */);
@@ -268,16 +279,15 @@ class CDUFlightPlanPage {
                 };
 
                 if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
-                    // Attach Functions to LSK/RSK
-                    mcdu.leftInputDelay[rowI] = (value) => {
+                    addLskAt(rowI, (value) => {
                         if (value === "") {
                             if (waypointsAndMarkers[winI].wp) {
                                 return mcdu.getDelaySwitchPage();
                             }
                         }
                         return mcdu.getDelayBasic();
-                    };
-                    mcdu.onLeftInput[rowI] = (value) => {
+                    },
+                    (value) => {
                         if (value === "") {
                             if (waypointsAndMarkers[winI].wp) {
                                 CDULateralRevisionPage.ShowPage(mcdu, waypointsAndMarkers[winI].wp, waypointsAndMarkers[winI].fpIndex);
@@ -291,39 +301,32 @@ class CDUFlightPlanPage {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
                             }, true);
                         }
-                    };
+                    });
                 } else {
-                    // Marker
-                    mcdu.leftInputDelay[rowI] = () => {
-                        mcdu.getDelaySwitchPage();
-                    };
-                    mcdu.onLeftInput[rowI] = (value) => {
-                        if (value === "") {
-                            CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), waypointsAndMarkers[winI].fpIndex);
-                        } else if (value.length > 0) {
-                            mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex, () => {
-                                CDUFlightPlanPage.ShowPage(mcdu, offset);
-                            }, true);
-                        }
-                    };
+                    addLskAt(rowI, () => mcdu.getDelaySwitchPage(),
+                        (value) => {
+                            if (value === "") {
+                                CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), waypointsAndMarkers[winI].fpIndex);
+                            } else if (value.length > 0) {
+                                mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex, () => {
+                                    CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                }, true);
+                            }
+                        });
                 }
 
-                mcdu.rightInputDelay[rowI] = () => {
-                    mcdu.getDelaySwitchPage();
-                };
-                mcdu.onRightInput[rowI] = async (_value) => {
-                    if (waypointsAndMarkers[winI].wp) {
-                        CDUVerticalRevisionPage.ShowPage(mcdu, waypointsAndMarkers[winI].wp);
-                    }
-                };
+                addRskAt(rowI, () => mcdu.getDelaySwitchPage(),
+                    async (_value) => {
+                        if (waypointsAndMarkers[winI].wp) {
+                            CDUVerticalRevisionPage.ShowPage(mcdu, waypointsAndMarkers[winI].wp);
+                        }
+                    });
 
             } else if (waypointsAndMarkers[winI].marker) {
 
                 // Marker
                 scrollWindow[rowI] = waypointsAndMarkers[winI];
-
-                mcdu.leftInputDelay[rowI] = 0;
-                mcdu.onLeftInput[rowI] = (value) => {
+                addLskAt(rowI, 0, (value) => {
                     if (value === FMCMainDisplay.clrValue) {
                         if (waypointsAndMarkers[winI].clr) {
                             mcdu.clearDiscontinuity(waypointsAndMarkers[winI].fpIndex, () => {
@@ -336,7 +339,7 @@ class CDUFlightPlanPage {
                     mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex + 1, () => {
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                     }, true);
-                };
+                });
             }
         }
 
@@ -413,18 +416,16 @@ class CDUFlightPlanPage {
 
             showTMPY = true;
 
-            mcdu.leftInputDelay[5] = 0;
-            mcdu.onLeftInput[5] = async () => {
+            addLskAt(5, 0, async () => {
                 mcdu.eraseTemporaryFlightPlan(() => {
                     CDUFlightPlanPage.ShowPage(mcdu, 0);
                 });
-            };
-            mcdu.rightInputDelay[5] = 0;
-            mcdu.onRightInput[5] = async () => {
+            });
+            addRskAt(5, 0, async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
                     CDUFlightPlanPage.ShowPage(mcdu, 0);
                 });
-            };
+            });
         } else {
             let destCell = "----";
             let approachRunway = null;
@@ -456,10 +457,10 @@ class CDUFlightPlanPage {
             destText[0] = ["\xa0DEST", "DIST EFOB", isFlying ? "UTC{sp}" : "TIME{sp}{sp}"];
             destText[1] = [destCell, destDistCell + " " + destEFOBCell, destTimeCell + "{sp}{sp}"];
 
-            mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
-            mcdu.onLeftInput[5] = () => {
-                CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), fpm.getWaypointsCount() - 1);
-            };
+            addLskAt(5, () => mcdu.getDelaySwitchPage(),
+                () => {
+                    CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), fpm.getWaypointsCount() - 1);
+                });
         }
 
         mcdu.setTemplate([
