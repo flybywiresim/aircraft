@@ -564,6 +564,10 @@
       {
         "gltf": "./sound_nodes/sound_nodes.gltf",
         "bin": "./sound_nodes/sound_nodes.bin"
+      },
+      {
+        "gltf": "./fx_exhaust_apu/fx_exhaust_apu.gltf",
+        "bin": "./fx_exhaust_apu/fx_exhaust_apu.bin"
       }
     ],
     "modifications": [

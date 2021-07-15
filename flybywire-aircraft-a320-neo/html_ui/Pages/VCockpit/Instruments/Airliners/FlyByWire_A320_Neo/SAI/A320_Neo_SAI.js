@@ -1282,15 +1282,15 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
         const interval = 5;
         this.getFrameCounter = A32NX_Util.createFrameCounter(interval);
-        const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+        const coldDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
         this.state = A32NX_Util.createMachine(sai_state_machine);
 
-        if (!cold_dark) {
-            this.selfTestElement.finishTest();
-            this.state.setState("spawn");
-        } else {
+        if (coldDark) {
             this.state.setState("off");
             this.selfTestElement.offDisplay();
+        } else {
+            this.selfTestElement.finishTest();
+            this.state.setState("spawn");
         }
 
         this.updateThrottler = new UpdateThrottler(500);
