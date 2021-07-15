@@ -185,7 +185,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         //TCAS
         this.map.instrument.TCASManager.update(deltaTime);
 
-        const failed = ADIRS.mapHasFailed(this.screenIndex);
+        const failed = ADIRS.mapNotAvailable(this.screenIndex);
 
         const usesGpsAsPrimary = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "bool");
 
@@ -808,7 +808,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             this.ndInfo.update(_deltaTime, airDataReferenceSource, inertialReferenceSource);
         }
 
-        const failed = ADIRS.mapHasFailed(this.screenIndex);
+        const failed = ADIRS.mapNotAvailable(this.screenIndex);
 
         const tasElement = this.ndInfo.querySelector("#TAS_Value");
         const trueAirSpeed = ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TRUE_AIRSPEED`, "Knots");

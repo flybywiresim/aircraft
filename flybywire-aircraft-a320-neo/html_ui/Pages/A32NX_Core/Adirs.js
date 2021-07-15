@@ -39,13 +39,10 @@ class ADIRS {
         return mfdIndex === 1;
     }
 
-    static mapHasFailed(mfdIndex) {
-        // Don't show information if ADIRS is not ready. According to documentation,
-        // the DDRMI (not modelled) stops functioning when the heading signal is invalid.
-        // Therefore, we assume heading to be the key indicator for the ready state.
+    static mapNotAvailable(mfdIndex) {
         const inertialReferenceSource = ADIRS.getMfdInertialReferenceSource(mfdIndex);
-        const heading = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`, 'degree');
-        return Number.isNaN(heading);
+        return Number.isNaN(ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LATITUDE`, 'degree')) ||
+            Number.isNaN(ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LONGITUDE`, 'degree'));
     }
 
     static getLatitude() {

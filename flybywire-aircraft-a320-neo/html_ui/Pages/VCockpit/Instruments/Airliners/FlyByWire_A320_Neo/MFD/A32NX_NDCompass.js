@@ -800,7 +800,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         // Update parent class state
         super.update(_deltaTime, this.mfdIndex);
 
-        const failed = ADIRS.mapHasFailed(this.mfdIndex);
+        const failed = ADIRS.mapNotAvailable(this.mfdIndex);
 
         this.updateNavAid(failed);
 

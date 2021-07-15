@@ -772,6 +772,7 @@ impl InertialReference {
         );
 
         self.update_attitude_values(simulator_data);
+        self.update_heading_value(overhead, simulator_data);
         self.update_non_attitude_values(true_airspeed_source, simulator_data);
     }
 
@@ -831,6 +832,20 @@ impl InertialReference {
         self.roll.set_value(simulator_data.roll, should_set_values);
     }
 
+    fn update_heading_value(
+        &mut self,
+        overhead: &AirDataInertialReferenceSystemOverheadPanel,
+        simulator_data: AdirsSimulatorData,
+    ) {
+        let should_set_value = self.is_on
+            && (self.is_fully_aligned()
+                || (overhead.mode_of(self.number) == InertialReferenceMode::Attitude
+                    && self.is_attitude_aligned()));
+
+        self.heading
+            .set_value(simulator_data.heading, should_set_value);
+    }
+
     fn update_non_attitude_values(
         &mut self,
         true_airspeed_source: &impl TrueAirspeedSource,
@@ -838,8 +853,6 @@ impl InertialReference {
     ) {
         let should_set_values = self.is_on && self.is_fully_aligned();
 
-        self.heading
-            .set_value(simulator_data.heading, should_set_values);
         self.track
             .set_value(simulator_data.track, should_set_values);
         self.vertical_speed.set_value(
@@ -1441,8 +1454,11 @@ mod tests {
             }
         }
 
-        fn assert_ir_non_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
+        fn assert_ir_heading_data_available(&mut self, available: bool, adiru_number: usize) {
             assert_eq!(self.heading_is_available(adiru_number), available);
+        }
+
+        fn assert_ir_non_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
             assert_eq!(self.track_is_available(adiru_number), available);
             assert_eq!(
                 self.inertial_vertical_speed_is_available(adiru_number),
@@ -1461,8 +1477,9 @@ mod tests {
         }
 
         fn assert_all_ir_data_available(&mut self, available: bool, adiru_number: usize) {
-            self.assert_ir_non_attitude_data_available(available, adiru_number);
             self.assert_ir_attitude_data_available(available, adiru_number);
+            self.assert_ir_heading_data_available(available, adiru_number);
+            self.assert_ir_non_attitude_data_available(available, adiru_number);
         }
 
         fn assert_wind_direction_and_velocity_zero(&mut self, adiru_number: usize) {
@@ -2015,6 +2032,7 @@ mod tests {
 
             while test_bed.align_state(adiru_number) != AlignState::Aligned {
                 // As the attitude data will become available at some point, we're not checking it here.
+                test_bed.assert_ir_heading_data_available(false, adiru_number);
                 test_bed.assert_ir_non_attitude_data_available(false, adiru_number);
                 test_bed.run();
             }
@@ -2042,7 +2060,7 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn only_attitude_data_is_available_when_adir_mode_selector_att(
+        fn only_attitude_and_heading_data_is_available_when_adir_mode_selector_att(
             #[case] adiru_number: usize,
         ) {
             let mut test_bed = all_adirus_aligned_test_bed_with()
@@ -2050,6 +2068,7 @@ mod tests {
             test_bed.run();
 
             test_bed.assert_ir_attitude_data_available(true, adiru_number);
+            test_bed.assert_ir_heading_data_available(true, adiru_number);
             test_bed.assert_ir_non_attitude_data_available(false, adiru_number);
         }
 
@@ -2057,7 +2076,9 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn attitude_is_available_28_seconds_after_alignment_began(#[case] adiru_number: usize) {
+        fn in_nav_mode_attitude_is_available_28_seconds_after_alignment_began(
+            #[case] adiru_number: usize,
+        ) {
             let mut test_bed = test_bed_with()
                 .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
             test_bed.run_without_delta();
@@ -2066,9 +2087,35 @@ mod tests {
                 InertialReference::ATTITUDE_INITIALISATION_DURATION - Duration::from_millis(1),
             );
             test_bed.assert_ir_attitude_data_available(false, adiru_number);
+            test_bed.assert_ir_heading_data_available(false, adiru_number);
 
             test_bed.run_with_delta(Duration::from_millis(1));
             test_bed.assert_ir_attitude_data_available(true, adiru_number);
+            test_bed.assert_ir_heading_data_available(false, adiru_number);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn in_att_mode_attitude_and_heading_are_available_28_seconds_after_alignment_began(
+            #[case] adiru_number: usize,
+        ) {
+            // Note that in reality the HDG part needs HDG entry through the MCDU. As we haven't implemented
+            // that feature yet, for now we'll just make it available after 28 seconds in ATT mode.
+            let mut test_bed = test_bed_with()
+                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Attitude);
+            test_bed.run_without_delta();
+
+            test_bed.run_with_delta(
+                InertialReference::ATTITUDE_INITIALISATION_DURATION - Duration::from_millis(1),
+            );
+            test_bed.assert_ir_attitude_data_available(false, adiru_number);
+            test_bed.assert_ir_heading_data_available(false, adiru_number);
+
+            test_bed.run_with_delta(Duration::from_millis(1));
+            test_bed.assert_ir_attitude_data_available(true, adiru_number);
+            test_bed.assert_ir_heading_data_available(true, adiru_number);
         }
 
         #[rstest]
