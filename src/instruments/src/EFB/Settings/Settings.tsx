@@ -279,7 +279,7 @@ const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
                     </span>
                     <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
                 </div>
-                <div className="mb-4 flex flex-row justify-between items-center">
+                <div className="py-4 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Open Keyboard on Input Click</span>
                     <Toggle value={!!OSKOnInput} onToggle={(value) => setOSKOnInput(value ? 1 : 0)} />
                 </div>
