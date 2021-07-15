@@ -1823,7 +1823,7 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             } else {
-                console.log("APPR undefined");
+                //console.log("APPR undefined");
             }
         } else {
             if (this.ilsTakeoffAutoTuned) {
@@ -1842,7 +1842,7 @@ class FMCMainDisplay extends BaseAirliners {
                 // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
                 // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
                 // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
-                if (appr && appr.name) {
+                if (appr && appr.name && appr.wayPoints) {
                     const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCRT]?)([\s\-]*[A-Z0-9])?$/);
                     if (
                         match !== null
