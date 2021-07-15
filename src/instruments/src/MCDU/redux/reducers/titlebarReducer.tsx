@@ -7,25 +7,33 @@ export type titleBarState = {
     orientation: lineSides,
 };
 
+const setText = (state: titleBarState, msg: titleBarState) => {
+    console.log(`new Title ${msg}`);
+    return ({
+        ...state,
+        text: msg,
+    });
+};
+
+const setColor = (state: titleBarState, newColor: lineColors) => ({
+    ...state,
+    color: newColor,
+});
+
+const setSide = (state: titleBarState, newSide: lineSides) => ({
+    ...state,
+    orientation: newSide,
+});
 const initialState : titleBarState = { text: 'FLYBYWIRE', color: lineColors.white, orientation: lineSides.center };
 
 export const titlebarReducer = (state = initialState, action) => {
     switch (action.type) {
     case titlebarActions.SET_TITLEBAR_TEXT:
-        return {
-            ...state,
-            text: action.text,
-        };
+        return setText(state, action.text);
     case titlebarActions.SET_TITLEBAR_COLOUR:
-        return {
-            ...state,
-            color: action.color,
-        };
+        return setColor(state, action.color);
     case titlebarActions.SET_TITLEBAR_ORIENTATION:
-        return {
-            ...state,
-            orientation: action.side,
-        };
+        return setSide(state, action.side);
     default:
         return state;
     }

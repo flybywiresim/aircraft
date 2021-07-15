@@ -55,6 +55,7 @@ const addTypeTwoMessage = (state: scratchpadState, msg: scratchpadMessage) => ({
  * @returns the updated state
  */
 const addMessage = (state: scratchpadState, msg: scratchpadMessage) => {
+    console.log(`New Message: ${msg.text}`);
     if (msg.isTypeTwo) {
         return addTypeTwoMessage(state, msg);
     }
@@ -194,6 +195,9 @@ const clearScratchpad = (state: scratchpadState) => {
  * @returns the updated state of the scratchpad
  */
 const setScratchpad = (state: scratchpadState, msg: string) => {
+    console.log(`state message: ${state.currentMessage}`);
+    console.log(`displayingErrorMessage ${state.isDisplayingErrorMessage}`);
+    console.log(`msg to Set: ${msg}`);
     if (state.isDisplayingErrorMessage) {
         return { ...state };
     }

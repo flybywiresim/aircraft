@@ -15,7 +15,9 @@ type InteractiveSplitLineProps = {
     autoCalc?: () => any,
     scratchpad: scratchpadState
 }
-
+/**
+ * @deprecated A new version has been created
+ */
 const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
     { leftSide, rightSide, lsk, slashColor, scratchpad, autoCalc },
 ) => {

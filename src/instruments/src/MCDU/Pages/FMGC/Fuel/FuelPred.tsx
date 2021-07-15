@@ -5,7 +5,7 @@ import { AnyAction, bindActionCreators, Dispatch } from 'redux';
 import { useSimVar } from '@instruments/common/simVars';
 
 import InteractiveSplitLineVTwo, { fieldProperties } from '../../../Components/Lines/InteractiveSplitLineTwo';
-import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
+import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
@@ -100,30 +100,70 @@ const RteRsvLine: React.FC = () => {
 
 type zfwLineProps = {
     fmgcZFW: number | undefined,
-    setFMGCZFW: React.Dispatch<React.SetStateAction<number | undefined>>,
+    setFMGCZFW: React.Dispatch<React.SetStateAction<number | undefined>>
     fmgcZFWCG: number | undefined,
-    setFMGCZFWCG: React.Dispatch<React.SetStateAction<number | undefined>>,
+    setFMGCZFWCG: React.Dispatch<React.SetStateAction<number | undefined>>
+    zeroFuelWeightZFWCGEntered: Boolean,
+    setZeroFuelWeightZFWCGEntered: React.Dispatch<React.SetStateAction<boolean>>
     // Redux
     setScratchpad: (msg: any) => any
-    clearScratchpad: () => any
     addMessage: (msg: scratchpadMessage) => any
+    scratchpad: scratchpadState
 }
-// TODO fix the null value issues and green computed values
-const ZfwLine: React.FC<zfwLineProps> = ({ addMessage, setScratchpad, fmgcZFW, setFMGCZFW, fmgcZFWCG, setFMGCZFWCG, clearScratchpad }) => {
+const ZfwLine: React.FC<zfwLineProps> = (
+    {
+        zeroFuelWeightZFWCGEntered,
+        setZeroFuelWeightZFWCGEntered,
+        scratchpad,
+        addMessage,
+        setScratchpad,
+        fmgcZFW,
+        setFMGCZFW,
+        fmgcZFWCG,
+        setFMGCZFWCG,
+    },
+) => {
+    // Auto Calculate ZFW/ZFWCG
+    // TODO Move to util?
     const [fuelQuantity, _] = useSimVar('FUEL TOTAL QUANTITY', 'gallons');
     const [fuelWeight, __] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
     const [totalWeight, ___] = useSimVar('TOTAL WEIGHT', 'kilograms');
     const [calcZFWCG, ____] = useSimVar('CG PERCENT', 'percent');
     const blockFuel = fuelQuantity * fuelWeight / 1000;
-    const tempZFW = (totalWeight / 1000) - blockFuel;
+    const calcZFW = (totalWeight / 1000) - blockFuel;
+    const [bothValuesEntered, setBothValuesEntered] = useState(zeroFuelWeightZFWCGEntered);
+    const [zfw, setZFW] = useState(fmgcZFW);
+    const [zfwCG, setZFWCG] = useState(fmgcZFWCG);
+
+    // Because REACT is annoying I have to do this
+    useEffect(() => {
+        console.log(`setting FMGC ZFW ${zfw}`);
+        setFMGCZFW(zfw);
+    }, [zfw]);
+
+    useEffect(() => {
+        console.log(`setting FMGC ZFW ${zfwCG}`);
+        setFMGCZFWCG(zfwCG);
+    }, [zfwCG]);
+
+    // Is there a cleaner way to do this?
+    useEffect(() => {
+        console.log(`value entered: ${bothValuesEntered}`);
+        if (bothValuesEntered) {
+            setZeroFuelWeightZFWCGEntered(true);
+        } else {
+            setZeroFuelWeightZFWCGEntered(false);
+        }
+    }, [bothValuesEntered]);
+
     const fieldProperties: fieldProperties = {
-        lNullValue: '___._',
+        lValue: zfw === undefined ? '___._' : zfw.toFixed(1),
         lSide: fieldSides.right,
-        lColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
+        lColour: zfw === undefined ? lineColors.amber : lineColors.cyan,
         lSize: lineSizes.regular,
-        rNullValue: '__._',
+        rValue: zfwCG === undefined ? '__._' : zfwCG.toFixed(1),
         rSide: fieldSides.right,
-        rColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
+        rColour: zfw === undefined ? lineColors.amber : lineColors.cyan,
         rSize: lineSizes.regular,
     };
 
@@ -148,7 +188,15 @@ const ZfwLine: React.FC<zfwLineProps> = ({ addMessage, setScratchpad, fmgcZFW, s
             return false;
         }
 
-        // If left side contains a number (e.g 23.0 or 23.0/)
+        // If you've reached this point and not entered both zfw/zfwCG then, false
+        if (!bothValuesEntered) {
+            addMessage({
+                text: 'NOT ALLOWED',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
         if (Number.isFinite(newZFW)) {
             if (isZFWInRange(newZFW)) {
                 return true;
@@ -172,7 +220,6 @@ const ZfwLine: React.FC<zfwLineProps> = ({ addMessage, setScratchpad, fmgcZFW, s
             });
             return false;
         }
-
         addMessage({
             text: 'FORMAT ERROR',
             isAmber: false,
@@ -181,7 +228,19 @@ const ZfwLine: React.FC<zfwLineProps> = ({ addMessage, setScratchpad, fmgcZFW, s
         return false;
     };
 
-    const updateFMGC = (lVal: string | number | undefined, rVal: string | number | undefined) => false;
+    const updateFMGC = (lVal: string, rVal: string) => {
+        if (scratchpad.currentMessage === 'CLR') {
+            addMessage({
+                text: 'NOT ALLOWED',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+        } else {
+            setBothValuesEntered(true);
+            setZFW(parseFloat(lVal));
+            setZFWCG(parseFloat(rVal));
+        }
+    };
 
     return (
         <LineHolder>
@@ -194,7 +253,8 @@ const ZfwLine: React.FC<zfwLineProps> = ({ addMessage, setScratchpad, fmgcZFW, s
                 selectedValidation={(lVal, rVal) => validateEntry(lVal, rVal)}
                 selectedCallback={(lVal, rVal) => updateFMGC(lVal, rVal)}
                 autoCalc={() => {
-                    setScratchpad(`${tempZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
+                    console.log(`${calcZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
+                    setScratchpad(`${calcZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
                 }}
             />
         </LineHolder>
@@ -242,17 +302,16 @@ const AltnLine: React.FC<altneLineProps> = ({ clearScratchpad }) => {
 };
 
 type fobLineProps = {
-    zfw: number | undefined,
+    zfwEntered: boolean,
 }
 /**
  * @todo Make this interactive
  */
-const FobLine: React.FC<fobLineProps> = ({ zfw }) => {
-    const zfwEntered = zfw !== undefined;
+const FobLine: React.FC<fobLineProps> = ({ zfwEntered: zfw }) => {
     const [fob, _] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'POUND');
-    const fobWeight = zfwEntered ? ((fob * 0.453592) / 1000).toFixed(1) : '---.-';
-    const fobOther = zfwEntered ? 'FF' : '----';
-    const color = zfwEntered ? lineColors.cyan : lineColors.white;
+    const fobWeight = zfw ? ((fob * 0.453592) / 1000).toFixed(1) : '---.-';
+    const fobOther = zfw ? 'FF' : '----';
+    const color = zfw ? lineColors.cyan : lineColors.white;
 
     return (
         <LineHolder>
@@ -324,15 +383,14 @@ const FinalLine: React.FC<finalLineProps> = ({ clearScratchpad }) => {
     );
 };
 type gWCGLineProps = {
-    zfw: undefined | number,
+    zfwEntered: boolean,
 }
-const GWCGLine: React.FC<gWCGLineProps> = ({ zfw }) => {
+const GWCGLine: React.FC<gWCGLineProps> = ({ zfwEntered: zfw }) => {
     const [gw, _] = useSimVar('', 'Pounds');
     const [cg, __] = useSimVar('', 'Percent over 100');
-    const zfwEntered = zfw !== undefined;
-    const gwVal = zfwEntered ? ((gw * 0.45359237) / 1000).toFixed(1) : '---.-';
-    const cgVal = zfwEntered ? (cg * 100).toFixed(1) : '--.-';
-    const color = zfwEntered ? lineColors.green : lineColors.white;
+    const gwVal = zfw ? ((gw * 0.45359237) / 1000).toFixed(1) : '---.-';
+    const cgVal = zfw ? (cg * 100).toFixed(1) : '--.-';
+    const color = zfw ? lineColors.green : lineColors.white;
 
     return (
         <LineHolder>
@@ -390,10 +448,9 @@ const MinDestFobLine: React.FC<minDestFobLineProps> = ({ clearScratchpad }) => {
 };
 
 type extraLineProps = {
-    zfw: undefined | number,
+    zfwEntered: boolean
 }
-const ExtraLine: React.FC<extraLineProps> = ({ zfw }) => {
-    const zfwEntered = zfw !== undefined;
+const ExtraLine: React.FC<extraLineProps> = ({ zfwEntered }) => {
     const extraFuel = zfwEntered ? '000.0' : '---.-';
     const extraTime = zfwEntered ? '0000' : '---.-';
     const color = zfwEntered ? lineColors.green : lineColors.white;
@@ -412,18 +469,20 @@ const ExtraLine: React.FC<extraLineProps> = ({ zfw }) => {
 };
 
 type fuelPredProps = {
-    setTitlebar: (text: string) => any
-    clearScratchpad: () => any
-    addScratchpadMessage: (msg: scratchpadMessage) => any
-    addToScratchpad: (msg: string) => any,
-    setScratchpad: (msg: string) => any,
-    setTitlebarColor: (color: lineColors) => any,
-    setTitlebarSide: (side: lineSides) => any,
+    setTitlebar
+    clearScratchpad
+    addScratchpadMessage
+    addToScratchpad
+    setScratchpad
+    setTitlebarColor
+    setTitlebarSide
+    scratchpad: scratchpadState
 }
-const FuelPredPage: React.FC<fuelPredProps> = ({ addScratchpadMessage, setScratchpad, setTitlebar, setTitlebarColor, setTitlebarSide, clearScratchpad }) => {
+const FuelPredPage: React.FC<fuelPredProps> = ({ scratchpad, addScratchpadMessage, setScratchpad, setTitlebar, setTitlebarColor, setTitlebarSide, clearScratchpad }) => {
     // TODO connect this up with the FMGC when it's avail
     const [zfw, setZFW] = useState<number>();
     const [zfwCG, setZFWCG] = useState<number>();
+    const [zeroFuelWeightZFWCGEntered, setZeroFuelWeightZFWCGEntered] = useState(false);
 
     useEffect(() => {
         setTitlebar('FUEL PRED');
@@ -431,44 +490,50 @@ const FuelPredPage: React.FC<fuelPredProps> = ({ addScratchpadMessage, setScratc
         setTitlebarSide(lineSides.center);
     }, []);
     return (
-        <Content>
-            <RowHolder index={1}>
-                <DestICAOLine />
-                <DestTimeLine />
-                <DestEFOBLine />
-            </RowHolder>
-            <RowHolder index={2}>
-                <AltICAOLine />
-                <AltTimeLine />
-                <AltEFOBLine />
-            </RowHolder>
-            <RowHolder index={3}>
-                <RteRsvLine />
-                <ZfwLine
-                    addMessage={addScratchpadMessage}
-                    clearScratchpad={clearScratchpad}
-                    setScratchpad={setScratchpad}
-                    fmgcZFW={zfw}
-                    setFMGCZFW={setZFW}
-                    fmgcZFWCG={zfwCG}
-                    setFMGCZFWCG={setZFWCG}
-                />
-            </RowHolder>
-            <RowHolder index={4}>
-                <AltnLine clearScratchpad={clearScratchpad} />
-                <FobLine zfw={zfw} />
-            </RowHolder>
-            <RowHolder index={5}>
-                <FinalLine clearScratchpad={clearScratchpad} />
-                <GWCGLine zfw={zfw} />
-            </RowHolder>
-            <RowHolder index={6}>
-                <MinDestFobLine clearScratchpad={clearScratchpad} />
-                <ExtraLine zfw={zfw} />
-            </RowHolder>
-        </Content>
+        <>
+            <Content>
+                <RowHolder index={1}>
+                    <DestICAOLine />
+                    <DestTimeLine />
+                    <DestEFOBLine />
+                </RowHolder>
+                <RowHolder index={2}>
+                    <AltICAOLine />
+                    <AltTimeLine />
+                    <AltEFOBLine />
+                </RowHolder>
+                <RowHolder index={3}>
+                    <RteRsvLine />
+                    <ZfwLine
+                        addMessage={addScratchpadMessage}
+                        setScratchpad={setScratchpad}
+                        fmgcZFW={zfw}
+                        setFMGCZFW={setZFW}
+                        fmgcZFWCG={zfwCG}
+                        setFMGCZFWCG={setZFWCG}
+                        scratchpad={scratchpad}
+                        zeroFuelWeightZFWCGEntered={zeroFuelWeightZFWCGEntered}
+                        setZeroFuelWeightZFWCGEntered={setZeroFuelWeightZFWCGEntered}
+                    />
+                </RowHolder>
+                <RowHolder index={4}>
+                    <AltnLine clearScratchpad={clearScratchpad} />
+                    <FobLine zfwEntered={zeroFuelWeightZFWCGEntered} />
+                </RowHolder>
+                <RowHolder index={5}>
+                    <FinalLine clearScratchpad={clearScratchpad} />
+                    <GWCGLine zfwEntered={zeroFuelWeightZFWCGEntered} />
+                </RowHolder>
+                <RowHolder index={6}>
+                    <MinDestFobLine clearScratchpad={clearScratchpad} />
+                    <ExtraLine zfwEntered={zeroFuelWeightZFWCGEntered} />
+                </RowHolder>
+            </Content>
+        </>
     );
 };
+
+const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch),
     setTitlebarColor: bindActionCreators(titlebarActions.setTitleBarColor, dispatch),
@@ -478,4 +543,4 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     addScratchpadMessage: bindActionCreators(scratchpadActions.addScratchpadMessage, dispatch),
     addToScratchpad: bindActionCreators(scratchpadActions.addToScratchpad, dispatch),
 });
-export default connect(null, mapDispatchToProps)(FuelPredPage);
+export default connect(mapStateToProps, mapDispatchToProps)(FuelPredPage);
