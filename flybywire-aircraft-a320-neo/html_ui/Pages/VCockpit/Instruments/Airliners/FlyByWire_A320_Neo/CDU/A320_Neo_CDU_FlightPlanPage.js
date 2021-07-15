@@ -299,9 +299,9 @@ class CDUFlightPlanPage {
                     };
                     mcdu.onLeftInput[rowI] = (value) => {
                         if (value === "") {
-                            CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), wpIf.fpIndex);
+                            CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), waypointsAndMarkers[winI].fpIndex);
                         } else if (value.length > 0) {
-                            mcdu.insertWaypoint(value, wpIf.fpIndex, () => {
+                            mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex, () => {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
                             }, true);
                         }
@@ -312,8 +312,8 @@ class CDUFlightPlanPage {
                     mcdu.getDelaySwitchPage();
                 };
                 mcdu.onRightInput[rowI] = async (_value) => {
-                    if (wpInfo.wp) {
-                        CDUVerticalRevisionPage.ShowPage(mcdu, wpIf.wp);
+                    if (waypointsAndMarkers[winI].wp) {
+                        CDUVerticalRevisionPage.ShowPage(mcdu, waypointsAndMarkers[winI].wp);
                     }
                 };
 
