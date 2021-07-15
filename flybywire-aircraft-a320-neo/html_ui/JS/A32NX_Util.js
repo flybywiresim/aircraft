@@ -203,11 +203,12 @@ class PopUpParams {
  */
 class NXPopUp {
     constructor() {
-        this.g_popUplistener;
         this.params = new PopUpParams();
+        this.popupListener;
         //this.params.contentUrl = "/templates/Controls/PopUp_EditPreset/PopUp_EditPreset.html";
         //this.params.contentTemplate = "popup-edit-preset";
         this.params.title = "A32NX POPUP";
+        this.params.time = new Date().getTime();
         this.params.id = this.params.title + "_" + this.params.time;
         this.params.contentData = "Default Message";
         this.params.style = "small";
@@ -223,10 +224,11 @@ class NXPopUp {
      * Show popup with given or already initiated parameters
      * @param {string} params.title Title for popup - will show in menu bar
      * @param {string} params.message Popup message
-     * @param {string} params.style Style/Type of popup. Valid types are small|big|big-help
-     * @param {function} callback Callback function -> YES button is clicked.
+     * @param {string} params.style Style/Type of popup. Valid types are small|normal|big|big-help
+     * @param {function} callbackYes Callback function -> YES button is clicked.
+     * @param {function} callbackNo Callback function -> NO button is clicked.
      */
-    showPopUp(params = {}, callback_yes, callback_no) {
+    showPopUp(params = {}, callbackYes, callbackNo) {
         if (params.title) {
             this.params.title = params.title;
         }
@@ -236,15 +238,15 @@ class NXPopUp {
         if (params.style) {
             this.params.style = params.style;
         }
-        if (callback_yes) {
-            Coherent.on("A32NX_POP_" + this.params.id + "_YES", callback_yes);
+        if (callbackYes) {
+            Coherent.on("A32NX_POP_" + this.params.id + "_YES", callbackYes);
         }
-        if (callback_no) {
-            Coherent.on("A32NX_POP_" + this.params.id + "_NO", callback_no);
+        if (callbackNo) {
+            Coherent.on("A32NX_POP_" + this.params.id + "_NO", callbackNo);
         }
 
-        if (!this.g_popUplistener) {
-            this.g_popUplistener = RegisterViewListener("JS_LISTENER_POPUP", this._showPopUp.bind(null, this.params));
+        if (!this.popupListener) {
+            this.popupListener = RegisterViewListener("JS_LISTENER_POPUP", this._showPopUp.bind(null, this.params));
         } else {
             this._showPopUp();
         }
@@ -256,28 +258,18 @@ class NXPopUp {
  */
 class NXNotif {
     constructor() {
-        this.params = {
-            title: "A32NX ALERT",
-            type: "MESSAGE",
-            theme: "GAMEPLAY",
-            image: "IMAGE_NOTIFICATION",
-            message:  "Default Message",
-            timeout: 10000,
-            time: new Date().getTime(),
-        };
-        this.params.id = this.params.title + "_" + this.params.time;
+        const time = new Date().getTime();
+        this.params = new NotificationData();
+        this.params.title = "A32NX ALERT";
+        this.params.id = this.params.title + "_" + time;
+        this.params.type = "MESSAGE";
+        this.params.theme = "GAMEPLAY";
+        this.params.image = "IMAGE_NOTIFICATION";
+        this.params.description = "Default Message";
+        this.params.timeout = 10000;
     }
 
-    /**
-     * Show notification with given or already initiated parametrs.
-     * @param {string} params.title Title for notification - will show as the message header
-     * @param {string} params.type Type of Notification - Valid types are MESSAGE|SUBTITLES
-     * @param {string} params.theme Theme of Notification. Valid types are TIPS|GAMEPLAY|SYSTEM
-     * @param {string} params.image Notification image. Valid types are IMAGE_NOTIFICATION|IMAGE_SCORE
-     * @param {string} params.message Notification message
-     * @param {string} params.timeout Time in ms before notification message will disappear
-     */
-    showNotification(params = {}) {
+    setData(params = {}) {
         if (params.title) {
             this.params.title = params.title;
             this.params.id = params.title + "_" + new Date().getTime();
@@ -292,28 +284,32 @@ class NXNotif {
             this.params.image = params.image;
         }
         if (params.message) {
-            this.params.message = params.message;
+            this.params.description = params.message;
         }
         if (params.timeout) {
             this.params.timeout = params.timeout;
         }
+    }
 
-        const notif = new NotificationData();
-        notif.title = this.params.title;
-        notif.id = this.params.id;
-        notif.type = this.params.type;
-        notif.theme = this.params.theme;
-        notif.image = this.params.image;
-        notif.description = this.params.message;
-        notif.timeout = this.params.timeout;
+    /**
+     * Show notification with given or already initiated parametrs.
+     * @param {string} params.title Title for notification - will show as the message header
+     * @param {string} params.type Type of Notification - Valid types are MESSAGE|SUBTITLES
+     * @param {string} params.theme Theme of Notification. Valid types are TIPS|GAMEPLAY|SYSTEM
+     * @param {string} params.image Notification image. Valid types are IMAGE_NOTIFICATION|IMAGE_SCORE
+     * @param {string} params.message Notification message
+     * @param {number} params.timeout Time in ms before notification message will disappear
+     */
+    showNotification(params = {}) {
+        this.setData(params);
 
-        if (!this.g_notifListener) {
-            this.g_notifListener = RegisterViewListener("JS_LISTENER_NOTIFICATIONS");
+        if (!g_NotificationsListener) {
+            g_NotificationsListener = RegisterViewListener('JS_LISTENER_NOTIFICATIONS');
         } else {
-            this.g_notifListener.triggerToAllSubscribers("SendNewNotification", notif);
-            setTimeout(()=> {
-                this.g_notifListener.triggerToAllSubscribers("HideNotification", notif.type, notif.id);
-            }, notif.timeout);
+            g_NotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
+            setTimeout(() => {
+                g_NotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, this.params.id);
+            }, this.params.timeout);
         }
     }
 }
