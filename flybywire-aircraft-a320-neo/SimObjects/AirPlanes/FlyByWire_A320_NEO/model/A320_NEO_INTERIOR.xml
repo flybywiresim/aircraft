@@ -3963,8 +3963,8 @@
 
             <UseTemplate Name="FBW_Chrono_Push_Toggle">
                 <NODE_ID>PUSH_CHRONO_RST</NODE_ID>
-                <WWISE_EVENT_1>CHRon</WWISE_EVENT_1>
-                <WWISE_EVENT_2>CHRoff</WWISE_EVENT_2>
+                <WWISE_EVENT_1>RSTon</WWISE_EVENT_1>
+                <WWISE_EVENT_2>RSToff</WWISE_EVENT_2>
                 <TOOLTIPID>Reset Chronometer</TOOLTIPID>
                 <MOMENTARY />
                 <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_RST)</LEFT_SINGLE_CODE>
