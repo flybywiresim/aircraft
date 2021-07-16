@@ -17,23 +17,28 @@
  */
 import React, { useEffect, useState } from 'react';
 
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { SLEW_KEYS } from '../../../Components/Buttons';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
-
+import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 import InitAPage from './InitA';
 import InitBPage from './InitB';
 
 import { useInteractionEvent } from '../../../../Common/hooks';
+import { useMCDUDispatch } from '../../../redux/hooks';
 
-type InitPageProps = {
-    setTitlebar: Function,
-}
-const InitPage: React.FC<InitPageProps> = ({ setTitlebar }) => {
+const InitPage: React.FC = () => {
+    const dispatch = useMCDUDispatch();
+    const setTitlebarText = (msg: string) => {
+        dispatch(titlebarActions.setTitleBarText(msg));
+    };
+
+    const clearScratchpad = () => {
+        dispatch(scratchpadActions.clearScratchpad());
+    };
+
     const pages = {
-        A: <InitAPage />,
-        B: <InitBPage />,
+        A: <InitAPage clearScratchpad={clearScratchpad} setTitlebarText={setTitlebarText} />,
+        B: <InitBPage clearScratchpad={clearScratchpad} setTitlebarText={setTitlebarText} />,
     };
     const [currentPage, setCurrentPage] = useState('A');
 
@@ -45,7 +50,7 @@ const InitPage: React.FC<InitPageProps> = ({ setTitlebar }) => {
     }
 
     useEffect(() => {
-        setTitlebar('INIT');
+        setTitlebarText('INIT');
     }, []);
 
     useInteractionEvent(SLEW_KEYS.RARROW, () => setCurrentPage(determinePage()));
@@ -54,5 +59,4 @@ const InitPage: React.FC<InitPageProps> = ({ setTitlebar }) => {
     return pages[currentPage];
 };
 
-const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
-export default connect(null, mapDispatchToProps)(InitPage);
+export default InitPage;

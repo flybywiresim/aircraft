@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { useMCDUDispatch } from '../../../../redux/hooks';
 import { scratchpadMessage } from '../../../../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../../../../redux/actions/scratchpadActionCreators';
 
@@ -17,9 +16,6 @@ type SplitNumberFieldProps = {
     size: lineSizes,
     selectedCallback: (value?: number | string) => any,
     autoCalc? : () => any,
-
-    // REDUX
-    addMessage : (msg: scratchpadMessage) => any,
 }
 
 const SplitNumberField : React.FC<SplitNumberFieldProps> = (
@@ -32,11 +28,12 @@ const SplitNumberField : React.FC<SplitNumberFieldProps> = (
         color,
         side,
         selectedCallback,
-
-        // REDUX
-        addMessage,
     },
 ) => {
+    const dispatch = useMCDUDispatch();
+    const addMessage = (msg: scratchpadMessage) => {
+        dispatch(scratchpadActions.addScratchpadMessage(msg));
+    };
     useEffect(() => {
         if (value) {
             console.log(`splitNumFieldValue: ${value}`);
@@ -65,5 +62,4 @@ const SplitNumberField : React.FC<SplitNumberFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : value}</span>
     );
 };
-const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addScratchpadMessage, dispatch) });
-export default connect(null, mapDispatchToProps)(SplitNumberField);
+export default SplitNumberField;

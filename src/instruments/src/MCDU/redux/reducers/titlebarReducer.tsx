@@ -7,13 +7,10 @@ export type titleBarState = {
     orientation: lineSides,
 };
 
-const setText = (state: titleBarState, msg: titleBarState) => {
-    console.log(`new Title ${msg}`);
-    return ({
-        ...state,
-        text: msg,
-    });
-};
+const setText = (state: titleBarState, msg: titleBarState) => ({
+    ...state,
+    text: msg,
+});
 
 const setColor = (state: titleBarState, newColor: lineColors) => ({
     ...state,

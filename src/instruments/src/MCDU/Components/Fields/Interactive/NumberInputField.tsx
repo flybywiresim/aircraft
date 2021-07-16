@@ -1,7 +1,5 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
+import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
 import { useInteractionEvent } from '../../../../Common/hooks';
@@ -9,6 +7,7 @@ import { useInteractionEvent } from '../../../../Common/hooks';
 import { lineColors, lineSizes } from '../../Lines/Line';
 import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
+import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 
 type NumberFieldProps = {
     value: number | string | undefined,
@@ -20,10 +19,6 @@ type NumberFieldProps = {
     size: lineSizes,
     selectedCallback: (value?: number) => any,
     lsk: LINESELECT_KEYS,
-
-    // REDUX
-    scratchpad: scratchpadState,
-    addMessage: (msg:scratchpadMessage) => any,
 }
 const NumberInputField: React.FC<NumberFieldProps> = (
     {
@@ -36,10 +31,14 @@ const NumberInputField: React.FC<NumberFieldProps> = (
         size,
         selectedCallback,
         lsk,
-        scratchpad,
-        addMessage,
     },
 ) => {
+    const scratchpad = useMCDUSelector((state) => state.scratchpad);
+    const dispatch = useMCDUDispatch();
+    const addMessage = (msg: scratchpadMessage) => {
+        dispatch(scratchpadActions.addScratchpadMessage(msg));
+    };
+
     let numVal;
     if (typeof value === 'string') {
         numVal = value;
@@ -76,6 +75,4 @@ const NumberInputField: React.FC<NumberFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : numVal}</span>
     );
 };
-const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
-const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addScratchpadMessage, dispatch) });
-export default connect(mapStateToProps, mapDispatchToProps)(NumberInputField);
+export default NumberInputField;

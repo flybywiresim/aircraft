@@ -31,7 +31,7 @@ const addTypeOneMessage = (state: scratchpadState, msg: scratchpadMessage) => {
     return {
         ...state,
         isDisplayingErrorMessage: true,
-        currentMessage: msg.text,
+        currentMessage: msg.text.toUpperCase(),
         currentColor: msg.isAmber ? lineColors.amber : lineColors.white,
     };
 };
@@ -55,7 +55,6 @@ const addTypeTwoMessage = (state: scratchpadState, msg: scratchpadMessage) => ({
  * @returns the updated state
  */
 const addMessage = (state: scratchpadState, msg: scratchpadMessage) => {
-    console.log(`New Message: ${msg.text}`);
     if (msg.isTypeTwo) {
         return addTypeTwoMessage(state, msg);
     }
@@ -91,7 +90,7 @@ const addPlusMinus = (state: scratchpadState) => {
             currentMessage: `${state.currentMessage}-`,
         };
     }
-    return state;
+    return { ...state };
 };
 
 /**
@@ -126,7 +125,7 @@ const editCurrentScratchpad = (state: scratchpadState, msg: string) => {
             currentColor: lineColors.white,
         };
     }
-    return state;
+    return { ...state };
 };
 
 /**
@@ -134,12 +133,24 @@ const editCurrentScratchpad = (state: scratchpadState, msg: string) => {
  * @param state
  * @returns The updated State
  */
-const clearErrorMessage = (state: scratchpadState) => ({
-    ...state,
-    isDisplayingErrorMessage: false,
-    currentMessage: state.lastUserInput,
-    currentColor: lineColors.white,
-});
+const clearErrorMessage = (state: scratchpadState) => {
+    if (state.lastUserInput === 'CLR') {
+        return ({
+            ...state,
+            isDisplayingErrorMessage: false,
+            currentMessage: '',
+            lastUserInput: '',
+            currentColor: lineColors.white,
+        });
+    }
+    return ({
+        ...state,
+        isDisplayingErrorMessage: false,
+        currentMessage: state.lastUserInput,
+        lastUserInput: '',
+        currentColor: lineColors.white,
+    });
+};
 
 /**
  * Removes a character from the scratchpad (e.g pressing the CLR button),
@@ -195,16 +206,13 @@ const clearScratchpad = (state: scratchpadState) => {
  * @returns the updated state of the scratchpad
  */
 const setScratchpad = (state: scratchpadState, msg: string) => {
-    console.log(`state message: ${state.currentMessage}`);
-    console.log(`displayingErrorMessage ${state.isDisplayingErrorMessage}`);
-    console.log(`msg to Set: ${msg}`);
-    if (state.isDisplayingErrorMessage) {
-        return { ...state };
+    if (!state.isDisplayingErrorMessage) {
+        return {
+            ...state,
+            currentMessage: msg.toUpperCase(),
+        };
     }
-    return {
-        ...state,
-        currentMessage: msg,
-    };
+    return { ...state };
 };
 
 export type scratchpadState = {
@@ -212,7 +220,7 @@ export type scratchpadState = {
     currentColor: lineColors,
     isDisplayingErrorMessage: Boolean,
     isDisplayingTypeTwoMessage: Boolean,
-    lastUserInput: String,
+    lastUserInput: string,
     messageQueue: (Array<scratchpadMessage>),
     arrow: lineArrow,
 }
@@ -244,6 +252,6 @@ export const scratchpadReducer = (state = initialState, { type, msg }) => {
     case scratchpadActions.ADD_ARROW_SCRATCHPAD:
         return addArrow(state, msg);
     default:
-        return state;
+        return { ...state };
     }
 };

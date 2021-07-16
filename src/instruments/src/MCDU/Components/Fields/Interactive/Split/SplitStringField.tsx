@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { useMCDUDispatch } from '../../../../redux/hooks';
 import { scratchpadMessage } from '../../../../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../../../../redux/actions/scratchpadActionCreators';
 
@@ -15,9 +14,6 @@ type SplitStringFieldProps = {
     size: lineSizes,
     selectedCallback: (value?: string) => any,
     selectedValidation: (value: string) => boolean,
-
-    // REDUX
-    addMessage : (msg: scratchpadMessage) => any,
 }
 
 const SplitStringField : React.FC<SplitStringFieldProps> = (
@@ -29,9 +25,12 @@ const SplitStringField : React.FC<SplitStringFieldProps> = (
         side,
         selectedCallback,
         selectedValidation,
-        addMessage,
     },
 ) => {
+    const dispatch = useMCDUDispatch();
+    const addMessage = (msg: scratchpadMessage) => {
+        dispatch(scratchpadActions.addScratchpadMessage(msg));
+    };
     useEffect(() => {
         if (value) {
             if (value === 'CLR') {
@@ -51,5 +50,4 @@ const SplitStringField : React.FC<SplitStringFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : value}</span>
     );
 };
-const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addScratchpadMessage, dispatch) });
-export default connect(null, mapDispatchToProps)(SplitStringField);
+export default SplitStringField;

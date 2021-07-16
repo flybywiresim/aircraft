@@ -1,10 +1,4 @@
 import React, { useEffect, useState } from 'react';
-
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
-import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
-
 import { useSimVar } from '../../../../Common/simVars';
 
 import { LineHolder } from '../../../Components/LineHolder';
@@ -98,7 +92,7 @@ const AltDestLine: React.FC<altDestLineProps> = ({ clearScratchpad }) => {
 };
 
 type flightNoLineProps = {
-    clearScratchpad: () => {}
+    clearScratchpad: () => void
 }
 const FlightNoLine: React.FC<flightNoLineProps> = ({ clearScratchpad }) => {
     const [flightNo, setFlightNo] = useSimVar('ATC FLIGHT NUMBER', 'string');
@@ -152,7 +146,7 @@ const WindTempLine: React.FC = () => (
 );
 
 type costIndexLineProps = {
-    clearScratchpad: () => {}
+    clearScratchpad: () => void
 }
 const CostIndexLine: React.FC<costIndexLineProps> = ({ clearScratchpad }) => {
     const [costIndex, setCostIndex] = useState<number>(); // Temp until FMGC in-place
@@ -187,7 +181,7 @@ const CostIndexLine: React.FC<costIndexLineProps> = ({ clearScratchpad }) => {
 
 // TODO Parse the scratchpad input and do validation for split fields or find a way to do it in Line Component
 type cruiseFLTempProps = {
-    clearScratchpad: () => {}
+    clearScratchpad: () => void
 }
 const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ clearScratchpad }) => {
     const [flString, setFL] = useState<string>();
@@ -247,7 +241,7 @@ const AlignOptionLine: React.FC = () => (
 );
 
 type tropoLineProps = {
-    clearScratchpad: () => {}
+    clearScratchpad: () => void
 }
 const TropoLine: React.FC<tropoLineProps> = ({ clearScratchpad }) => {
     const [tropo, setTropo] = useState<number>();
@@ -318,12 +312,12 @@ const RequestLine: React.FC = () => (
 type InitAPageProps = {
 
     // REDUX
-    setTitlebar : (text: any) => any
-    clearScratchpad: () => any
+    setTitlebarText : (text: any) => void
+    clearScratchpad: () => void
 }
-const InitAPage: React.FC<InitAPageProps> = ({ setTitlebar, clearScratchpad }) => {
+const InitAPage: React.FC<InitAPageProps> = ({ setTitlebarText, clearScratchpad }) => {
     useEffect(() => {
-        setTitlebar('INIT');
+        setTitlebarText('INIT');
     }, []);
 
     return (
@@ -355,8 +349,4 @@ const InitAPage: React.FC<InitAPageProps> = ({ setTitlebar, clearScratchpad }) =
     );
 };
 
-const mapDispatchToProps = (dispatch) => ({
-    setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch),
-    clearScratchpad: bindActionCreators(scratchpadActions.clearScratchpad, dispatch),
-});
-export default connect(null, mapDispatchToProps)(InitAPage);
+export default InitAPage;

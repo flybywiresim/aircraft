@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { calculateActiveDate, calculateSecDate } from '@instruments/common/Date';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { useMCDUDispatch } from '../../../redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import '../../../Components/styles.scss';
 
@@ -124,12 +123,15 @@ const SoftwareLine: React.FC = () => (
         />
     </LineHolder>
 );
-type IdentPageProps = {
-    setTitlebar : Function
-}
-const IdentPage: React.FC<IdentPageProps> = ({ setTitlebar }) => {
+
+const IdentPage: React.FC = () => {
+    const dispatch = useMCDUDispatch();
+    const setTitlebarText = (msg: string) => {
+        dispatch(titlebarActions.setTitleBarText(msg));
+    };
+
     useEffect(() => {
-        setTitlebar('A320-200');
+        setTitlebarText('A320-200');
     }, []);
 
     return (
@@ -157,5 +159,4 @@ const IdentPage: React.FC<IdentPageProps> = ({ setTitlebar }) => {
     );
 };
 
-const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
-export default connect(null, mapDispatchToProps)(IdentPage);
+export default IdentPage;

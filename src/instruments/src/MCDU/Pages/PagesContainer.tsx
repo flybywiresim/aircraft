@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
 
 import { useInteractionEvent } from '../../Common/hooks';
 
@@ -43,4 +42,4 @@ const PagesContainer = () => {
     return pages[currentPage];
 };
 
-export default connect()(PagesContainer);
+export default PagesContainer;

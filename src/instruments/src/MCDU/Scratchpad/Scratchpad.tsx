@@ -16,25 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import React from 'react';
-import { connect } from 'react-redux';
 
 import { useInteractionEvent } from '@instruments/common/hooks';
 
-import { bindActionCreators } from 'redux';
-import { scratchpadState } from '../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../redux/actions/scratchpadActionCreators';
 
 import './styles.scss';
 import '../Components/styles.scss';
 import { ALPHABET_KEYS, NUMPAD_KEYS } from '../Components/Buttons';
+import { useMCDUDispatch, useMCDUSelector } from '../redux/hooks';
 
-type ScratchpadProps = {
-    scratchpad: scratchpadState
-    addToScratchpad: (msg: string) => any,
-    addPlusMinus: () => any,
-    clearScratchpadCharacter: () => any,
-}
-const Scratchpad: React.FC<ScratchpadProps> = ({ scratchpad, addToScratchpad, addPlusMinus, clearScratchpadCharacter }) => {
+const Scratchpad: React.FC = () => {
+    const scratchpad = useMCDUSelector((state) => state.scratchpad);
+    const dispatch = useMCDUDispatch();
+    const addToScratchpad = (msg: string) => {
+        dispatch(scratchpadActions.addToScratchpad(msg));
+    };
+    const addPlusMinus = () => {
+        dispatch(scratchpadActions.addPlusMinus());
+    };
+
+    const clearScratchpadCharacter = () => {
+        dispatch(scratchpadActions.clearScratchpadCharacter());
+    };
+
     /* START OF SCRATCHPAD INTERACTIONS */
 
     // ALphabet
@@ -96,10 +101,4 @@ const Scratchpad: React.FC<ScratchpadProps> = ({ scratchpad, addToScratchpad, ad
         </div>
     );
 };
-const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
-const mapDispatchToProps = (dispatch) => ({
-    addToScratchpad: bindActionCreators(scratchpadActions.addToScratchpad, dispatch),
-    addPlusMinus: bindActionCreators(scratchpadActions.addPlusMinus, dispatch),
-    clearScratchpadCharacter: bindActionCreators(scratchpadActions.clearScratchpadCharacter, dispatch),
-});
-export default connect(mapStateToProps, mapDispatchToProps)(Scratchpad);
+export default Scratchpad;

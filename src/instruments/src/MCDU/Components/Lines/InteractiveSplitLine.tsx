@@ -1,11 +1,9 @@
 import React, { ReactElement, useState } from 'react';
-import { connect } from 'react-redux';
-
 import { useInteractionEvent } from '../../../Common/hooks';
 
 import { LINESELECT_KEYS } from '../Buttons';
 import { lineColors } from './Line';
-import { scratchpadState } from '../../redux/reducers/scratchpadReducer';
+import { useMCDUSelector } from '../../redux/hooks';
 
 type InteractiveSplitLineProps = {
     leftSide: ReactElement,
@@ -13,14 +11,14 @@ type InteractiveSplitLineProps = {
     lsk: LINESELECT_KEYS,
     slashColor: lineColors,
     autoCalc?: () => any,
-    scratchpad: scratchpadState
 }
 /**
  * @deprecated A new version has been created
  */
 const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
-    { leftSide, rightSide, lsk, slashColor, scratchpad, autoCalc },
+    { leftSide, rightSide, lsk, slashColor, autoCalc },
 ) => {
+    const scratchpad = useMCDUSelector((state) => state.scratchpad);
     const [leftValue, setLeftValue] = useState(() => {
         const { value } = leftSide.props;
         return value;
@@ -66,5 +64,5 @@ const InteractiveSplitLine: React.FC<InteractiveSplitLineProps> = (
         </>
     );
 };
-const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
-export default connect(mapStateToProps)(InteractiveSplitLine);
+
+export default InteractiveSplitLine;

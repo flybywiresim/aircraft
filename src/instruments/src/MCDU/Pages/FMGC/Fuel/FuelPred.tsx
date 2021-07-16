@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import { AnyAction, bindActionCreators, Dispatch } from 'redux';
 
 import { useSimVar } from '@instruments/common/simVars';
 
+import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 import InteractiveSplitLineVTwo, { fieldProperties } from '../../../Components/Lines/InteractiveSplitLineTwo';
 import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
@@ -28,7 +27,7 @@ import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreat
 const DestICAOLine: React.FC = () => (
     <LineHolder>
         <Line side={lineSides.center} value={<LabelField side={fieldSides.left} value="AT" color={lineColors.white} />} />
-        <Line side={lineSides.left} value={<Field value="NONE" color={lineColors.green} size={lineSizes.regular} />} />
+        <Line side={lineSides.left} value={<Field side={fieldSides.left} value="NONE" color={lineColors.green} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
@@ -84,7 +83,7 @@ const AltEFOBLine: React.FC = () => (
 
 const RteRsvLine: React.FC = () => {
     const rteRsvWeight = '---.-';
-    const rteRsvPercent = '---.-';
+    const rteRsvPercent = '--.-';
     return (
         <LineHolder>
             <Line side={lineSides.left} value={<LabelField value="RTE RSV/ %" color={lineColors.white} />} />
@@ -137,18 +136,15 @@ const ZfwLine: React.FC<zfwLineProps> = (
 
     // Because REACT is annoying I have to do this
     useEffect(() => {
-        console.log(`setting FMGC ZFW ${zfw}`);
         setFMGCZFW(zfw);
     }, [zfw]);
 
     useEffect(() => {
-        console.log(`setting FMGC ZFW ${zfwCG}`);
         setFMGCZFWCG(zfwCG);
     }, [zfwCG]);
 
     // Is there a cleaner way to do this?
     useEffect(() => {
-        console.log(`value entered: ${bothValuesEntered}`);
         if (bothValuesEntered) {
             setZeroFuelWeightZFWCGEntered(true);
         } else {
@@ -158,11 +154,11 @@ const ZfwLine: React.FC<zfwLineProps> = (
 
     const fieldProperties: fieldProperties = {
         lValue: zfw === undefined ? '___._' : zfw.toFixed(1),
-        lSide: fieldSides.right,
+        // lSide: fieldSides.left,
         lColour: zfw === undefined ? lineColors.amber : lineColors.cyan,
         lSize: lineSizes.regular,
         rValue: zfwCG === undefined ? '__._' : zfwCG.toFixed(1),
-        rSide: fieldSides.right,
+        // rSide: fieldSides.right,
         rColour: zfw === undefined ? lineColors.amber : lineColors.cyan,
         rSize: lineSizes.regular,
     };
@@ -236,9 +232,17 @@ const ZfwLine: React.FC<zfwLineProps> = (
                 isTypeTwo: false,
             });
         } else {
-            setBothValuesEntered(true);
-            setZFW(parseFloat(lVal));
-            setZFWCG(parseFloat(rVal));
+            if (lVal !== '' && rVal !== '' && rVal !== undefined) {
+                setBothValuesEntered(true);
+                setZFW(parseFloat(lVal));
+                setZFWCG(parseFloat(rVal));
+            }
+            if (lVal !== '') {
+                setZFW(parseFloat(lVal));
+            }
+            if (rVal !== '' && rVal !== undefined) {
+                setZFWCG(parseFloat(rVal));
+            }
         }
     };
 
@@ -253,7 +257,6 @@ const ZfwLine: React.FC<zfwLineProps> = (
                 selectedValidation={(lVal, rVal) => validateEntry(lVal, rVal)}
                 selectedCallback={(lVal, rVal) => updateFMGC(lVal, rVal)}
                 autoCalc={() => {
-                    console.log(`${calcZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
                     setScratchpad(`${calcZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
                 }}
             />
@@ -468,24 +471,40 @@ const ExtraLine: React.FC<extraLineProps> = ({ zfwEntered }) => {
     );
 };
 
-type fuelPredProps = {
-    setTitlebar
-    clearScratchpad
-    addScratchpadMessage
-    addToScratchpad
-    setScratchpad
-    setTitlebarColor
-    setTitlebarSide
-    scratchpad: scratchpadState
-}
-const FuelPredPage: React.FC<fuelPredProps> = ({ scratchpad, addScratchpadMessage, setScratchpad, setTitlebar, setTitlebarColor, setTitlebarSide, clearScratchpad }) => {
+const FuelPredPage: React.FC = () => {
     // TODO connect this up with the FMGC when it's avail
     const [zfw, setZFW] = useState<number>();
     const [zfwCG, setZFWCG] = useState<number>();
     const [zeroFuelWeightZFWCGEntered, setZeroFuelWeightZFWCGEntered] = useState(false);
+    const dispatch = useMCDUDispatch();
+
+    // REDUX
+    const scratchpad = useMCDUSelector((state) => state.scratchpad);
+    const setScratchpad = (msg: string) => {
+        dispatch(scratchpadActions.setScratchpad(msg));
+    };
+
+    const addScratchpadMessage = (msg: scratchpadMessage) => {
+        dispatch(scratchpadActions.addScratchpadMessage(msg));
+    };
+    const clearScratchpad = () => {
+        dispatch(scratchpadActions.clearScratchpad());
+    };
+
+    const setTitlebarText = (msg: string) => {
+        dispatch(titlebarActions.setTitleBarText(msg));
+    };
+
+    const setTitlebarColor = (color : lineColors) => {
+        dispatch(titlebarActions.setTitleBarColor(color));
+    };
+
+    const setTitlebarSide = (side : lineSides) => {
+        dispatch(titlebarActions.setTitleBarSide(side));
+    };
 
     useEffect(() => {
-        setTitlebar('FUEL PRED');
+        setTitlebarText('FUEL PRED');
         setTitlebarColor(lineColors.white);
         setTitlebarSide(lineSides.center);
     }, []);
@@ -532,15 +551,4 @@ const FuelPredPage: React.FC<fuelPredProps> = ({ scratchpad, addScratchpadMessag
         </>
     );
 };
-
-const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
-const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch),
-    setTitlebarColor: bindActionCreators(titlebarActions.setTitleBarColor, dispatch),
-    setTitlebarSide: bindActionCreators(titlebarActions.setTitleBarSide, dispatch),
-    clearScratchpad: bindActionCreators(scratchpadActions.clearScratchpad, dispatch),
-    setScratchpad: bindActionCreators(scratchpadActions.setScratchpad, dispatch),
-    addScratchpadMessage: bindActionCreators(scratchpadActions.addScratchpadMessage, dispatch),
-    addToScratchpad: bindActionCreators(scratchpadActions.addToScratchpad, dispatch),
-});
-export default connect(mapStateToProps, mapDispatchToProps)(FuelPredPage);
+export default FuelPredPage;

@@ -7,9 +7,8 @@ import { LabelField } from 'instruments/src/MCDU/Components/Fields/NonInteractiv
 import { LineHolder } from 'instruments/src/MCDU/Components/LineHolder';
 import { Field } from 'instruments/src/MCDU/Components/Fields/NonInteractive/Field';
 
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { useSimVar } from 'instruments/src/util';
+import { useMCDUDispatch } from 'instruments/src/MCDU/redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
 const FlightCruise: React.FC = () => (
@@ -22,17 +21,20 @@ const FlightCruise: React.FC = () => (
     </LineHolder>
 );
 
-type progressPageProps = {
-    setTitlebar : (msg: any) => any,
-    setTitlebarColor : (color: lineColors) => any,
-}
 /**
  *
  * @deprecated
  * @see TitleBar
  */
-const ProgressPage: React.FC<progressPageProps> = ({ setTitlebar, setTitlebarColor }) => {
+const ProgressPage: React.FC = () => {
     const [flightNo, _] = useSimVar('ATC FLIGHT NUMBER', 'string');
+    const dispatch = useMCDUDispatch();
+    const setTitlebar = (msg: any) => {
+        dispatch(titlebarActions.setTitleBarText(msg));
+    };
+    const setTitlebarColor = (color: lineColors) => {
+        dispatch(titlebarActions.setTitleBarColor(color));
+    };
     useEffect(() => {
         setTitlebar('TO');
         setTitlebarColor(lineColors.green);
@@ -53,8 +55,4 @@ const ProgressPage: React.FC<progressPageProps> = ({ setTitlebar, setTitlebarCol
     );
 };
 
-const mapDispatchToProps = (dispatch) => ({
-    setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch),
-    setTitlebarColor: bindActionCreators(titlebarActions.setTitleBarColor, dispatch),
-});
-export default connect(null, mapDispatchToProps)(ProgressPage);
+export default ProgressPage;

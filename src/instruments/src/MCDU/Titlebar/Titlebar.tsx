@@ -17,25 +17,23 @@
  */
 
 import React from 'react';
-import { connect } from 'react-redux';
-import { titleBarState } from '../redux/reducers/titlebarReducer';
 
 import './styles.scss';
 import '../Components/styles.scss';
+import { useMCDUSelector } from '../redux/hooks';
 
-type titlebarProps = {
-    titlebar: titleBarState
-}
 /**
  * @todo figure out a way to do split colors on the titlebar
  */
-const Titlebar: React.FC<titlebarProps> = ({ titlebar }) => (
-    <div className="title">
-        <p />
-        <p className={`${titlebar.orientation} ${titlebar.color}`}>{titlebar.text}</p>
-        <p />
-    </div>
-);
+const Titlebar: React.FC = () => {
+    const titlebar = useMCDUSelector((state) => state.titlebar);
+    return (
+        <div className="title">
+            <p />
+            <p className={`${titlebar.orientation} ${titlebar.color}`}>{titlebar.text}</p>
+            <p />
+        </div>
+    );
+};
 
-const mapStateToProps = ({ titlebar }) => ({ titlebar });
-export default connect(mapStateToProps)(Titlebar);
+export default Titlebar;

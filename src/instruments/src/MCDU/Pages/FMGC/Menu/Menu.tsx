@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import '../../../Components/styles.scss';
 
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { useMCDUDispatch } from '../../../redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
 import { LineHolder } from '../../../Components/LineHolder';
@@ -166,14 +165,14 @@ const ReturnText: React.FC = () => (
 
 type MenuProps = {
     setPage: React.Dispatch<React.SetStateAction<string>>
-    setTitlebar: Function
 }
-const MenuPage: React.FC<MenuProps> = ({ setPage, setTitlebar }) => {
+const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
     const [activeSys, setActiveSys] = useState('FMGC'); // Placeholder till FMGS in place
     const [selected, setSelected] = useState('');
+    const dispatch = useMCDUDispatch();
 
     useEffect(() => {
-        setTitlebar('MCDU MENU');
+        dispatch(titlebarActions.setTitleBarText('MCDU MENU'));
     }, []);
 
     return (
@@ -227,5 +226,4 @@ const MenuPage: React.FC<MenuProps> = ({ setPage, setTitlebar }) => {
     );
 };
 
-const mapDispatchToProps = (dispatch) => ({ setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch) });
-export default connect(null, mapDispatchToProps)(MenuPage);
+export default MenuPage;

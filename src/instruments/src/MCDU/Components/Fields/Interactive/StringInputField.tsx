@@ -1,7 +1,6 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
+import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
+import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
 import { useInteractionEvent } from '../../../../Common/hooks';
@@ -19,10 +18,6 @@ type StringFieldProps = {
     selectedCallback: (value?: string) => any,
     selectedValidation: (value: string) => boolean,
     lsk: LINESELECT_KEYS,
-
-    // REDUX
-    scratchpad: scratchpadState,
-    addMessage: (msg:scratchpadMessage) => any,
 }
 const StringInputField: React.FC<StringFieldProps> = (
     {
@@ -34,10 +29,13 @@ const StringInputField: React.FC<StringFieldProps> = (
         selectedCallback,
         selectedValidation,
         lsk,
-        scratchpad,
-        addMessage,
     },
 ) => {
+    const scratchpad = useMCDUSelector((state) => state.scratchpad);
+    const dispatch = useMCDUDispatch();
+    const addMessage = (msg: scratchpadMessage) => {
+        dispatch(scratchpadActions.addScratchpadMessage(msg));
+    };
     useInteractionEvent(lsk, () => {
         if (scratchpad.currentMessage === 'CLR') {
             selectedCallback('');
@@ -60,6 +58,4 @@ const StringInputField: React.FC<StringFieldProps> = (
         <span className={`${color} ${side} ${size}`}>{value === '' || value === undefined ? nullValue : value}</span>
     );
 };
-const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
-const mapDispatchToProps = (dispatch) => ({ addMessage: bindActionCreators(scratchpadActions.addScratchpadMessage, dispatch) });
-export default connect(mapStateToProps, mapDispatchToProps)(StringInputField);
+export default StringInputField;

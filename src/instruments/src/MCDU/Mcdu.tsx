@@ -6,24 +6,21 @@ import './styles.scss';
 import Titlebar from './Titlebar/Titlebar';
 import PagesContainer from './Pages/PagesContainer';
 import Scratchpad from './Scratchpad/Scratchpad';
-import configureStore from './redux/configureStore';
+import { store } from './redux/configureStore';
 
-const MCDU = () => {
-    const store = configureStore();
-    return (
-        <Provider store={store}>
-            <div className="mcdu-outer">
-                <div className="mcdu-inner">
-                    <Titlebar />
-                    <div className="mcdu-content">
-                        <PagesContainer />
-                    </div>
-                    <Scratchpad />
+const MCDU = () => (
+    <Provider store={store}>
+        <div className="mcdu-outer">
+            <div className="mcdu-inner">
+                <Titlebar />
+                <div className="mcdu-content">
+                    <PagesContainer />
                 </div>
+                <Scratchpad />
             </div>
-        </Provider>
+        </div>
+    </Provider>
 
-    );
-};
+);
 
 export default MCDU;

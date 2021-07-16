@@ -1,21 +1,19 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { useInteractionEvent } from '../../../util';
-import { scratchpadState } from '../../redux/reducers/scratchpadReducer';
 import { LINESELECT_KEYS } from '../Buttons';
 import { fieldSides } from '../Fields/NonInteractive/Field';
 import { lineColors, lineSides, lineSizes } from './Line';
 import * as scratchpadActions from '../../redux/actions/scratchpadActionCreators';
 import '../styles.scss';
+import { useMCDUDispatch, useMCDUSelector } from '../../redux/hooks';
 
 export type fieldProperties = {
     lValue: string,
-    lSide: fieldSides,
+    lSide?: fieldSides,
     lColour: lineColors,
     lSize: lineSizes
     rValue: string,
-    rSide: fieldSides,
+    rSide?: fieldSides,
     rColour: lineColors,
     rSize: lineSizes
 
@@ -30,10 +28,6 @@ type interactiveSplitLineTwoProps = {
     autoCalc?: () => any,
     selectedCallback: (lvalue: string, rvalue: string) => any,
     selectedValidation: (lvalue: string, rvalue: string) => Boolean,
-
-    // REDUX
-    scratchpad: scratchpadState
-    clearScratchpad: () => any
 }
 /**
  * Interactive Split line v2.0
@@ -47,12 +41,13 @@ const InteractiveSplitLineVTwo: React.FC<interactiveSplitLineTwoProps> = (
         slashColor,
         properties,
         side,
-
-        // REDUX
-        scratchpad,
-        clearScratchpad,
     },
 ) => {
+    const scratchpad = useMCDUSelector((state) => state.scratchpad);
+    const dispatch = useMCDUDispatch();
+    const clearScratchpad = () => {
+        dispatch(scratchpadActions.clearScratchpad());
+    };
     function splitScratchpadValue() {
         let [leftValue, rightValue] = scratchpad.currentMessage.split('/');
 
@@ -68,20 +63,16 @@ const InteractiveSplitLineVTwo: React.FC<interactiveSplitLineTwoProps> = (
     }
 
     useInteractionEvent(lsk, () => {
-        console.log(scratchpad.currentMessage);
         if (scratchpad.currentMessage === '' && autoCalc) {
-            console.log('Doing Auto Calc');
             autoCalc();
-            clearScratchpad();
         } else if (scratchpad.currentMessage === 'CLR') {
             selectedCallback('', '');
-            clearScratchpad();
         } else {
             const [lVal, rVal] = splitScratchpadValue();
             if (selectedValidation(lVal, rVal)) {
                 selectedCallback(lVal, rVal);
+                clearScratchpad();
             }
-            clearScratchpad();
         }
     });
 
@@ -89,10 +80,8 @@ const InteractiveSplitLineVTwo: React.FC<interactiveSplitLineTwoProps> = (
         <p className={`line ${side}`}>
             <span className={`${properties.lColour} ${properties.lSide} ${properties.lSize}`}>{properties.lValue}</span>
             <span className={`${slashColor}`}>/</span>
-            <span className={`${properties.rColour} ${properties.lSide} ${properties.rSize}`}>{properties.rValue}</span>
+            <span className={`${properties.rColour} ${properties.rSide} ${properties.rSize}`}>{properties.rValue}</span>
         </p>
     );
 };
-const mapStateToProps = ({ scratchpad }) => ({ scratchpad });
-const mapDispatchToProps = (dispatch) => ({ clearScratchpad: bindActionCreators(scratchpadActions.clearScratchpad, dispatch) });
-export default connect(mapStateToProps, mapDispatchToProps)(InteractiveSplitLineVTwo);
+export default InteractiveSplitLineVTwo;

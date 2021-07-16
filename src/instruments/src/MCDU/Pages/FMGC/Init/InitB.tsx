@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
-import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
-
 import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
@@ -25,7 +20,6 @@ const TaxiFuelLine: React.FC<taxiFuelLineProps> = ({ clearScratchpad }) => {
     const DEFAULT_TAXI_VAL = 0.4;
     const [taxiVal, setTaxiVal] = useState<number>(DEFAULT_TAXI_VAL);
     const [entered, setEntered] = useState<boolean>(false);
-
     return (
         <LineHolder>
             <Line side={lineSides.left} value={<LabelField value="TAXI" color={lineColors.white} />} />
@@ -292,12 +286,12 @@ const ExtraWeightLine : React.FC = () => (
     </LineHolder>
 );
 type InitBPageProps = {
-    setTitlebar: Function
+    setTitlebarText: Function
     clearScratchpad: Function
 }
-export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebar, clearScratchpad }) => {
+export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebarText, clearScratchpad }) => {
     useEffect(() => {
-        setTitlebar('INIT');
+        setTitlebarText('INIT');
     }, []);
 
     return (
@@ -329,8 +323,4 @@ export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebar, clearScratchp
     );
 };
 
-const mapDispatchToProps = (dispatch) => ({
-    setTitlebar: bindActionCreators(titlebarActions.setTitleBarText, dispatch),
-    clearScratchpad: bindActionCreators(scratchpadActions.clearScratchpad, dispatch),
-});
-export default connect(null, mapDispatchToProps)(InitBPage);
+export default InitBPage;
