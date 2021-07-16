@@ -63,7 +63,7 @@ const Loading = () => {
     const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
 
     const handleResetRefreshToken = () => {
-        setRefreshToken('');
+        setRefreshToken(null);
         navigraph.authenticate();
     };
 
