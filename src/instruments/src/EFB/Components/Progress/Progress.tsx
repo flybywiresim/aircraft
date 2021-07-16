@@ -1,5 +1,5 @@
-import * as React from 'react';
-import './Progress.scss';
+import React, { useContext } from 'react';
+import { ThrottleContext } from '../../Settings/ThrottleConfig/BaseThrottleConfig';
 
 export type ProgressBarProps = {
     completed: string | number;
@@ -107,39 +107,47 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         alignItems: labelAlignment === 'outside' ? 'center' : 'initial',
     };
 
-    const checkOrientation = () => {
-        if (vertical) {
-            return 'horizontal-progress-bar';
+    const { throttlePos } = useContext(ThrottleContext);
+
+    const getBarStyle = () => {
+        if (completedBarBeginValue && completedBarEnd) {
+            const barBegin = parseFloat(completedBarBeginValue);
+            const barEnd = parseFloat((completedBarEnd !== 0 ? (completedBarEnd / 50 - 1) : 0.00).toFixed(2));
+
+            if (vertical) {
+                if (throttlePos <= barEnd && throttlePos >= barBegin) {
+                    return 'absolute z-10 -mt-2.5 h-1.5 bg-green-500';// horizontal progress bar with green bg
+                }
+                return 'absolute z-10 -mt-2.5 h-1.5 bg-gray-400'; // horizontal progress bar
+            }
+            if (throttlePos <= barEnd && throttlePos >= barBegin) {
+                return 'absolute -mt-2.5 w-1.5 h-8 bg-green-500'; // vertical progress bar with green bg
+            }
         }
-        return 'vertical-progress-bar';
+        return 'absolute -mt-2.5 w-1.5 h-8 bg-gray-400'; // vertical progress bar
     };
 
     return (
-
         <div className="flex flex-row">
-
-            <div>
-                {vertical && (
-                    <div
-                        className="text-xl mr-2 text-white"
-                        style={vertical
-                            ? { marginTop: `${formatBar(completedBarBegin + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
-                    >
-                        {completedBarBeginValue}
-                    </div>
-                )}
-
-            </div>
-            <div className={`progress-bar ${!vertical ? 'mr-2' : ''}`}>
+            {vertical && (
+                <div
+                    className="text-xl mr-2 text-white"
+                    style={vertical
+                        ? { marginTop: `${formatBar(completedBarBegin + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
+                >
+                    {completedBarBeginValue}
+                </div>
+            )}
+            <div className={`mt-2 ${!vertical ? 'mr-2' : ''}`}>
 
                 <div
-                    className={`text-white ${displayBar ? checkOrientation() : 'hidden'}`}
+                    className={`text-white ${displayBar ? getBarStyle() : 'hidden'}`}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarBegin || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
                 />
 
                 <div
-                    className={`text-white ${displayBar ? checkOrientation() : 'hidden'}`}
+                    className={`text-white ${displayBar ? getBarStyle() : 'hidden'}`}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarEnd || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 />

@@ -15,30 +15,34 @@ interface Props {
     setInitialize,
 }
 
+export const ThrottleContext = React.createContext<{throttlePos: number}>({ throttlePos: 0 });
+
 const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 30);
     const [expertMode, setExpertMode] = useState(false);
 
     const currentDetent = (
-        <DetentConfig
-            key={props.activeIndex}
-            index={props.activeIndex}
-            barPosition={props.throttleNumber === 1 ? 'right' : 'left'}
-            throttlePosition={throttlePosition}
-            upperBoundDetentSetter={props.mappingsAxisTwo
-                ? [props.mappingsAxisOne[props.activeIndex].getHiSetter(), props.mappingsAxisTwo[props.activeIndex].getHiSetter()]
-                : [props.mappingsAxisOne[props.activeIndex].getHiSetter()]}
-            lowerBoundDetentSetter={props.mappingsAxisTwo
-                ? [props.mappingsAxisOne[props.activeIndex].getLowSetter(), props.mappingsAxisTwo[props.activeIndex].getLowSetter()]
-                : [props.mappingsAxisOne[props.activeIndex].getLowSetter()]}
-            lowerBoundDetentGetter={props.mappingsAxisOne[props.activeIndex].getLowGetter()}
-            upperBoundDetentGetter={props.mappingsAxisOne[props.activeIndex].getHiGetter()}
-            detentValue={props.mappingsAxisOne[props.activeIndex].getLowGetter()}
-            throttleNumber={props.throttleNumber}
-            expertMode={expertMode}
-            initialize={props.initialize}
-            setInitialize={props.setInitialize}
-        />
+        <ThrottleContext.Provider value={{ throttlePos: throttlePosition }}>
+            <DetentConfig
+                key={props.activeIndex}
+                index={props.activeIndex}
+                barPosition={props.throttleNumber === 1 ? 'right' : 'left'}
+                throttlePosition={throttlePosition}
+                upperBoundDetentSetter={props.mappingsAxisTwo
+                    ? [props.mappingsAxisOne[props.activeIndex].getHiSetter(), props.mappingsAxisTwo[props.activeIndex].getHiSetter()]
+                    : [props.mappingsAxisOne[props.activeIndex].getHiSetter()]}
+                lowerBoundDetentSetter={props.mappingsAxisTwo
+                    ? [props.mappingsAxisOne[props.activeIndex].getLowSetter(), props.mappingsAxisTwo[props.activeIndex].getLowSetter()]
+                    : [props.mappingsAxisOne[props.activeIndex].getLowSetter()]}
+                lowerBoundDetentGetter={props.mappingsAxisOne[props.activeIndex].getLowGetter()}
+                upperBoundDetentGetter={props.mappingsAxisOne[props.activeIndex].getHiGetter()}
+                detentValue={props.mappingsAxisOne[props.activeIndex].getLowGetter()}
+                throttleNumber={props.throttleNumber}
+                expertMode={expertMode}
+                initialize={props.initialize}
+                setInitialize={props.setInitialize}
+            />
+        </ThrottleContext.Provider>
     );
 
     return (
