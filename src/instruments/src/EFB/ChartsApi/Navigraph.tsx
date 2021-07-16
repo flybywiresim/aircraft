@@ -120,7 +120,7 @@ export default class NavigraphClient {
             body: formatFormBody(secret),
         }).then((resp) => {
             if (resp.ok) {
-                return resp.json().then((r) => {
+                resp.json().then((r) => {
                     this.auth.code = r.user_code;
                     this.auth.link = r.verification_uri;
                     this.auth.qrLink = r.verification_uri_complete;
@@ -141,7 +141,7 @@ export default class NavigraphClient {
                 body: formatFormBody(body),
             }).then((resp) => {
                 if (resp.ok) {
-                    return resp.json().then((r) => {
+                    resp.json().then((r) => {
                         const refreshToken = r.refresh_token;
 
                         this.refreshToken = refreshToken;
@@ -151,7 +151,7 @@ export default class NavigraphClient {
                         this.accessToken = r.access_token;
                     });
                 } else {
-                    return resp.text().then((respText) => {
+                    resp.text().then((respText) => {
                         const parsedText = JSON.parse(respText);
 
                         const { error } = parsedText;
