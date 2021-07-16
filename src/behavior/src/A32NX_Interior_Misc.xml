@@ -154,7 +154,7 @@
     <Template Name="FBW_LIGHTING_Switch_Console_Template">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_3States">
-                <INVERT_ANIM />
+                <INVERT_ANIM>True</INVERT_ANIM>
                 <WWISE_EVENT>lswitch</WWISE_EVENT>
                 <ANIMTIP_0>Set Console/Floor light to off</ANIMTIP_0>
                 <ANIMTIP_1>Set Console/Floor light to dim</ANIMTIP_1>
