@@ -141,16 +141,6 @@
 								</Reference>
 							</ReferenceList>
 						</Action>
-						<Action Name="" ID="{5C8DBE62-B7C9-4BC5-8544-BFD682A62C65}" ShortID="37363728">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="1"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="slats" ID="{B2916A05-3EC1-43E5-A147-2FD3F9EC6ACD}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
 					</ChildrenList>
 				</Event>
 				<Event Name="Play_Asobo_A320_NEO_cavcharge" ID="{52E89160-E7DF-4E5C-B5B0-2F8FABBA3978}">
@@ -1941,6 +1931,20 @@
 								</Action>
 							</ChildrenList>
 						</Event>
+						<Event Name="Play_Asobo_A320_NEO_TCAS_sys_test_OK" ID="{E12BD9E0-EB86-4CB8-BE0A-E30067708EDA}">
+							<ChildrenList>
+								<Action Name="" ID="{764C3673-2C38-455E-8774-A8773C40C33B}" ShortID="722948271">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="TCAStestOK" ID="{FAD82C7E-79F7-45D3-9D4D-3F1E9BA8E4B6}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
 					</ChildrenList>
 				</Folder>
 				<Folder Name="ROPS" ID="{D9050871-8DD6-4965-9658-ED3B689E378D}" ShortID="532892831">
@@ -2096,6 +2100,34 @@
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="wiperparkR" ID="{26977F40-E0C1-488F-B70A-88FBE75A3CA0}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_slatsmovement" ID="{65CECEF0-D213-43E3-8742-64EDEC79EAC0}">
+					<ChildrenList>
+						<Action Name="" ID="{4751823B-F0BE-4F05-A631-D9759460FFDA}" ShortID="488132352">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="slats" ID="{B2916A05-3EC1-43E5-A147-2FD3F9EC6ACD}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_aural_dontsink_new" ID="{DDAF179C-A758-40FE-AA5F-236BECEA2CC7}">
+					<ChildrenList>
+						<Action Name="" ID="{A2356752-7B03-4CE4-85C7-2A75BF1A22DC}" ShortID="962261066">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="dontsink" ID="{70E0AC98-6CC7-4507-B246-7E3D48EEFED0}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
