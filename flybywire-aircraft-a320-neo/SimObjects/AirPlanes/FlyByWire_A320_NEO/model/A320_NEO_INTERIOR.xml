@@ -639,7 +639,7 @@
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </DefaultTemplateParameters>
 
-                <!-- F/O PDF SCREEN -->
+                <!-- F/O PFD SCREEN -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
                     <PART_ID>PFD_Brightness_FO</PART_ID>
@@ -1244,7 +1244,7 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_STROBE</NODE_ID>
                     <PART_ID>EXTLT_STROBE</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_STROBE</ANIM_NAME>
-                    <HAS_AUTO>True</HAS_AUTO>
+                    <TYPE>Auto</TYPE>
                     <INVERT_ANIM>True</INVERT_ANIM>
                     <POTENTIOMETER>24</POTENTIOMETER>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_0>
@@ -1356,6 +1356,7 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_BEACON</NODE_ID>
                     <PART_ID>Beacon_Light_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_BEACON</ANIM_NAME>
+                    <SIMVAR_INDEX>0</SIMVAR_INDEX>
 
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
@@ -1371,6 +1372,7 @@
                     <SIMVAR_INDEX_2>3</SIMVAR_INDEX_2>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_ON</ANIMTIP_1>
+                    <TYPE>OnOff_TwoSimvars</TYPE>
 
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
@@ -1386,8 +1388,8 @@
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_ON</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_RETRACT</ANIMTIP_2>
+                    <TYPE>Retractable</TYPE>
 
-                    <RETRACTABLE/>
                 </UseTemplate>
 
                 <!-- LANDING RIGHT -->
@@ -1400,8 +1402,8 @@
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_R_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_R_ON</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_R_RETRACT</ANIMTIP_2>
+                    <TYPE>Retractable</TYPE>
 
-                    <RETRACTABLE/>
                 </UseTemplate>
 
                 <!-- WING -->
@@ -1409,6 +1411,7 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_WING</NODE_ID>
                     <PART_ID>EXTLT_WING</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_WING</ANIM_NAME>
+                    <SIMVAR_INDEX>0</SIMVAR_INDEX>
 
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
@@ -1440,18 +1443,18 @@
                     </UPDATE_CODE>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Double_Template">
+                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_NOSE</NODE_ID>
                     <PART_ID>LIGHTING_Switch_Light_Double</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_NOSE</ANIM_NAME>
-                    <LIGHT_TYPE1>LANDING</LIGHT_TYPE1>
-                    <KEY_ID1>LANDING_LIGHTS_TOGGLE</KEY_ID1>
-                    <LIGHT_TYPE2>TAXI</LIGHT_TYPE2>
-                    <SIMVAR_INDEX1>1</SIMVAR_INDEX1>
-                    <SIMVAR_INDEX2>1</SIMVAR_INDEX2>
+                    <LIGHT_TYPE>LANDING</LIGHT_TYPE>
+                    <LIGHT_TYPE_2>TAXI</LIGHT_TYPE_2>
+                    <SIMVAR_INDEX_1>1</SIMVAR_INDEX_1>
+                    <SIMVAR_INDEX_2>1</SIMVAR_INDEX_2>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.NOSE_LIGHT_SET_TO</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.NOSE_LIGHT_SET_TAXI</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.NOSE_LIGHT_SET_OFF</ANIMTIP_2>
+                    <TYPE>TwoSimvars</TYPE>
 
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
@@ -1488,7 +1491,7 @@
 
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Cabin_Template">
                     <POTENTIOMETER>7</POTENTIOMETER>
-                    <DIMMER/>
+                    <TYPE>Dimmer</TYPE>
                     <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
                     <PART_ID>SWITCH_OVHD_INTLT_DOME</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
