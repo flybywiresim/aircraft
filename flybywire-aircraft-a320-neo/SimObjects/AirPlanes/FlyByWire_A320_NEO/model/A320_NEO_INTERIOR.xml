@@ -2611,8 +2611,8 @@
                         <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                             <NODE_ID>LOCK_OVHD_CARGOSMOKE_2</NODE_ID>
                             <ANIM_NAME>LOCK_OVHD_CARGOSMOKE_2</ANIM_NAME>
-                            <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-                            <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+                            <WWISE_EVENT_1>pb1on</WWISE_EVENT_1>
+                            <WWISE_EVENT_2>pb1off</WWISE_EVENT_2>
                             <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                             <SWITCH_POSITION_VAR>A32NX_CARGOSMOKE_DISCH2LOCK_TOGGLE</SWITCH_POSITION_VAR>
                         </UseTemplate>

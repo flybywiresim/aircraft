@@ -10,6 +10,8 @@
     <Template Name="FBW_Airbus_FIRE_TEST_BUTTON">
         <UseTemplate Name="FBW_Push_Held">
             <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
+            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
         </UseTemplate>
     </Template>
 
