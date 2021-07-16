@@ -239,10 +239,12 @@ class NXPopUp {
             this.params.style = params.style;
         }
         if (callbackYes) {
-            Coherent.on("A32NX_POP_" + this.params.id + "_YES", callbackYes);
+            const yes = (typeof callbackYes === 'function') ? callbackYes : () => callbackYes;
+            Coherent.on("A32NX_POP_" + this.params.id + "_YES", yes);
         }
         if (callbackNo) {
-            Coherent.on("A32NX_POP_" + this.params.id + "_NO", callbackNo);
+            const no = (typeof callbackNo === 'function') ? callbackNo : () => callbackNo;
+            Coherent.on("A32NX_POP_" + this.params.id + "_NO", no);
         }
 
         if (!this.popupListener) {

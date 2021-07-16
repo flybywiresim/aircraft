@@ -56,7 +56,7 @@ export class PopUp {
      * @param {function} callbackYes Callback function -> YES button is clicked.
      * @param {function} callbackNo Callback function -> NO button is clicked.
      */
-    showPopUp(params: any = {}, callbackYes: () => void, callbackNo: () => void): void {
+    showPopUp(params: any = {}, callbackYes: any, callbackNo: any): void {
         if (params.title) {
             this.params.title = params.title;
         }
@@ -67,10 +67,12 @@ export class PopUp {
             this.params.style = params.style;
         }
         if (callbackYes) {
-            Coherent.on(`A32NX_POP_${this.params.id}_YES`, callbackYes);
+            const yes = (typeof callbackYes === 'function') ? callbackYes : () => callbackYes;
+            Coherent.on(`A32NX_POP_${this.params.id}_YES`, yes);
         }
         if (callbackNo) {
-            Coherent.on(`A32NX_POP_${this.params.id}_NO`, callbackNo);
+            const no = (typeof callbackNo === 'function') ? callbackNo : () => callbackNo;
+            Coherent.on(`A32NX_POP_${this.params.id}_NO`, no);
         }
 
         if (!this.popupListener) {
