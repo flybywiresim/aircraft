@@ -43,14 +43,14 @@ class NXEvents {
                     const atPhase = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_MODE_MESSAGE", "Enum");
 
                     if (input >= (clbLow - 0.03) && fwcFlightPhase === 6 && atPhase === 3) {
-                        (!once) ? once = true : notif.showNotification({message: "No throttle calibration detected. Please calibrate your throttles in the flyPad tablet (EFB).", timeout: 60000});
+                        (!once) ? once = true : notif.showNotification({message: "No throttle calibration detected. Please calibrate your throttles in the flyPad tablet (EFB).", timeout: 180000});
                     } else {
                         once = false;
                     }
                 } else {
                     input = Math.round(SimVar.GetSimVarValue("L:A32NX_THROTTLE_MAPPING_INPUT:1", "Number") * 100) / 100;
                 }
-            }, 450000);
+            }, 300000);
         }
     }
 
