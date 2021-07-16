@@ -1,6 +1,8 @@
 import React, { ReactElement } from 'react';
 import { lineColors, lineSides } from './Line';
 
+import '../styles.scss';
+
 type SplitLineProps = {
     leftSide: ReactElement,
     rightSide: ReactElement,

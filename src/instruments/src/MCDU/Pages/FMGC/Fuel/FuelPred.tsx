@@ -132,7 +132,7 @@ const ZfwLine: React.FC<zfwLineProps> = (
     const calcZFW = (totalWeight / 1000) - blockFuel;
 
     const fieldProperties: fieldProperties = {
-        lValue: fmgcZFW === undefined ? '___._' : fmgcZFW.toFixed(1),
+        lValue: fmgcZFW === undefined ? '__._' : fmgcZFW.toFixed(1),
         // lSide: fieldSides.left,
         lColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
         lSize: lineSizes.regular,
@@ -289,15 +289,15 @@ type fobLineProps = {
 /**
  * @todo Make this interactive
  */
-const FobLine: React.FC<fobLineProps> = ({ zfwEntered: zfw }) => {
+const FobLine: React.FC<fobLineProps> = ({ zfwEntered }) => {
     const [fob, _] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'POUND');
-    const fobWeight = zfw ? ((fob * 0.453592) / 1000).toFixed(1) : '---.-';
-    const fobOther = zfw ? 'FF' : '----';
-    const color = zfw ? lineColors.cyan : lineColors.white;
+    const fobWeight = zfwEntered ? ((fob * 0.453592) / 1000).toFixed(1) : '---.-';
+    const fobOther = zfwEntered ? '    FF' : '----';
+    const color = zfwEntered ? lineColors.cyan : lineColors.white;
 
     return (
         <LineHolder>
-            <Line side={lineSides.center} value={<LabelField side={fieldSides.left} value="FOB" color={lineColors.white} />} />
+            <Line side={lineSides.right} value={<LabelField side={fieldSides.right} value="FOB    " color={lineColors.white} />} />
             <SplitLine
                 side={lineSides.right}
                 slashColor={color}
@@ -388,16 +388,18 @@ const GWCGLine: React.FC<gWCGLineProps> = ({ zfwEntered: zfw }) => {
 };
 
 type minDestFobLineProps = {
+    zfwEntered: Boolean
     // Redux
     clearScratchpad: () => any
 }
 /**
  * @todo adjust size when the value is computed or entered (needs FMGC)
  */
-const MinDestFobLine: React.FC<minDestFobLineProps> = ({ clearScratchpad }) => {
-    const [minDestFob, setMinDestFob] = useState<number>();
+const MinDestFobLine: React.FC<minDestFobLineProps> = ({ zfwEntered }) => {
+    const [minDestFob, setMinDestFob] = useState<string>();
+    const [valEntered, setValEntered] = useState(false);
     const color = minDestFob === undefined ? lineColors.white : lineColors.cyan;
-    const size = minDestFob === undefined ? lineSizes.small : lineSizes.regular;
+    const size = valEntered === false ? lineSizes.small : lineSizes.regular;
 
     return (
         <LineHolder>
@@ -414,13 +416,16 @@ const MinDestFobLine: React.FC<minDestFobLineProps> = ({ clearScratchpad }) => {
                         value={minDestFob}
                         color={color}
                         size={size}
+                        prevEntered={zfwEntered}
                         selectedCallback={((value) => {
                             if (value === undefined) {
+                                // TODO when FMGC is coupled retrieve the computed value instead
                                 setMinDestFob(undefined);
+                                setValEntered(false);
                             } else {
                                 setMinDestFob(value);
+                                setValEntered(true);
                             }
-                            clearScratchpad();
                         })}
                     />
                 )}
@@ -433,7 +438,7 @@ type extraLineProps = {
     zfwEntered: boolean
 }
 const ExtraLine: React.FC<extraLineProps> = ({ zfwEntered }) => {
-    const extraFuel = zfwEntered ? '000.0' : '---.-';
+    const extraFuel = zfwEntered ? '    0.0' : '---.-';
     const extraTime = zfwEntered ? '0000' : '---.-';
     const color = zfwEntered ? lineColors.green : lineColors.white;
 
@@ -523,7 +528,7 @@ const FuelPredPage: React.FC = () => {
                     <GWCGLine zfwEntered={zeroFuelWeightZFWCGEntered} />
                 </RowHolder>
                 <RowHolder index={6}>
-                    <MinDestFobLine clearScratchpad={clearScratchpad} />
+                    <MinDestFobLine clearScratchpad={clearScratchpad} zfwEntered={zeroFuelWeightZFWCGEntered} />
                     <ExtraLine zfwEntered={zeroFuelWeightZFWCGEntered} />
                 </RowHolder>
             </Content>

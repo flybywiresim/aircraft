@@ -17,6 +17,7 @@
  */
 import React, { useEffect, useState } from 'react';
 
+import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 import { SLEW_KEYS } from '../../../Components/Buttons';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
@@ -36,9 +37,13 @@ const InitPage: React.FC = () => {
         dispatch(scratchpadActions.clearScratchpad());
     };
 
+    const addMessage = (msg: scratchpadMessage) => {
+        dispatch(scratchpadActions.addScratchpadMessage(msg));
+    };
+
     const pages = {
-        A: <InitAPage clearScratchpad={clearScratchpad} setTitlebarText={setTitlebarText} />,
-        B: <InitBPage clearScratchpad={clearScratchpad} setTitlebarText={setTitlebarText} />,
+        A: <InitAPage clearScratchpad={clearScratchpad} addMessage={addMessage} setTitlebarText={setTitlebarText} />,
+        B: <InitBPage setTitlebarText={setTitlebarText} />,
     };
     const [currentPage, setCurrentPage] = useState('A');
 

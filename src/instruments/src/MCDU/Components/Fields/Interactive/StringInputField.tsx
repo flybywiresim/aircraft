@@ -1,6 +1,5 @@
 import React from 'react';
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
-import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
 import { useInteractionEvent } from '../../../../Common/hooks';
@@ -15,7 +14,7 @@ type StringFieldProps = {
     color: lineColors,
     side?: fieldSides,
     size: lineSizes,
-    selectedCallback: (value?: string) => any,
+    selectedCallback: (value: string | undefined) => any,
     selectedValidation: (value: string) => boolean,
     lsk: LINESELECT_KEYS,
 }
@@ -33,24 +32,16 @@ const StringInputField: React.FC<StringFieldProps> = (
 ) => {
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
     const dispatch = useMCDUDispatch();
-    const addMessage = (msg: scratchpadMessage) => {
-        dispatch(scratchpadActions.addScratchpadMessage(msg));
+    const clearScratchpad = () => {
+        dispatch(scratchpadActions.clearScratchpad());
     };
     useInteractionEvent(lsk, () => {
-        if (scratchpad.currentMessage === 'CLR') {
-            selectedCallback('');
-        } else if (selectedValidation) {
-            if (selectedValidation(scratchpad.currentMessage)) {
-                selectedCallback(scratchpad.currentMessage);
-            } else {
-                addMessage({
-                    text: 'FORMAT ERROR',
-                    isAmber: false,
-                    isTypeTwo: false,
-                });
-            }
-        } else {
-            console.error('No Validation provided');
+        const newVal = scratchpad.currentMessage;
+        if (newVal === 'CLR') {
+            selectedCallback(undefined);
+        } else if (selectedValidation(newVal)) {
+            selectedCallback(newVal);
+            clearScratchpad();
         }
     });
 

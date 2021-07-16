@@ -13,13 +13,19 @@ import { RowHolder } from '../../../Components/RowHolder';
 import { Content } from '../../../Components/Content';
 import StringInputField from '../../../Components/Fields/Interactive/StringInputField';
 
-type taxiFuelLineProps = {
-    clearScratchpad: Function
-}
-const TaxiFuelLine: React.FC<taxiFuelLineProps> = ({ clearScratchpad }) => {
-    const DEFAULT_TAXI_VAL = 0.4;
-    const [taxiVal, setTaxiVal] = useState<number>(DEFAULT_TAXI_VAL);
+const TaxiFuelLine: React.FC = () => {
+    const DEFAULT_TAXI_VAL = (0.4).toFixed(1);
+    const [taxiVal, setTaxiVal] = useState<string>(DEFAULT_TAXI_VAL);
     const [entered, setEntered] = useState<boolean>(false);
+    const setNewVal = (value: string | undefined) => {
+        if (value === undefined) {
+            setTaxiVal(DEFAULT_TAXI_VAL);
+            setEntered(false);
+        } else {
+            setTaxiVal(value);
+            setEntered(true);
+        }
+    };
     return (
         <LineHolder>
             <Line side={lineSides.left} value={<LabelField value="TAXI" color={lineColors.white} />} />
@@ -33,16 +39,7 @@ const TaxiFuelLine: React.FC<taxiFuelLineProps> = ({ clearScratchpad }) => {
                         nullValue="0.0"
                         color={lineColors.cyan}
                         size={entered ? lineSizes.regular : lineSizes.small}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setTaxiVal(DEFAULT_TAXI_VAL);
-                                setEntered(false);
-                            } else {
-                                setTaxiVal(+value);
-                                setEntered(true);
-                            }
-                            clearScratchpad();
-                        }}
+                        selectedCallback={(value) => setNewVal(value)}
                         lsk={LINESELECT_KEYS.L1}
                     />
                 )}
@@ -103,28 +100,37 @@ const TripWeightLine: React.FC = () => (
     </LineHolder>
 );
 
-const BlockWeightLine: React.FC = () => (
-    <LineHolder>
+const BlockWeightLine: React.FC = () => {
+    const setNewVal = (value: string | undefined) => {
+        if (value !== undefined) {
+            console.log(`TODO new block fuel entered: ${value}`);
+        } else {
+            console.log('TODO clearing block fuel');
+        }
+    };
+    return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value="BLOCK" color={lineColors.white} />} />
-            <Line
-                side={lineSides.right}
-                value={(
-                    <NumberInputField
-                        min={0}
-                        max={80}
-                        value={undefined}
-                        nullValue="__._"
-                        color={lineColors.amber}
-                        size={lineSizes.regular}
-                        selectedCallback={() => {}}
-                        lsk={LINESELECT_KEYS.R2}
-                    />
-                )}
-            />
+            <LineHolder>
+                <Line side={lineSides.right} value={<LabelField value="BLOCK" color={lineColors.white} />} />
+                <Line
+                    side={lineSides.right}
+                    value={(
+                        <NumberInputField
+                            min={0}
+                            max={80}
+                            value={undefined}
+                            nullValue="__._"
+                            color={lineColors.amber}
+                            size={lineSizes.regular}
+                            selectedCallback={(value) => setNewVal(value)}
+                            lsk={LINESELECT_KEYS.R2}
+                        />
+                    )}
+                />
+            </LineHolder>
         </LineHolder>
-    </LineHolder>
-);
+    );
+};
 
 /* Need some way to only allow percentage entry before ZFW/ZFWCG has been entered
 Need to find a way to recalculate percentage or weight based on the entry of either or
@@ -253,26 +259,35 @@ const TripWindLine : React.FC = () => (
     </LineHolder>
 );
 
-const MinDestFOBLine : React.FC = () => (
-    <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="MIN DEST FOB" color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(
-                <NumberInputField
-                    value={undefined}
-                    nullValue="---.-"
-                    min={0}
-                    max={80}
-                    color={lineColors.white}
-                    size={lineSizes.regular}
-                    selectedCallback={() => {}}
-                    lsk={LINESELECT_KEYS.L6}
-                />
-            )}
-        />
-    </LineHolder>
-);
+const MinDestFOBLine : React.FC = () => {
+    const setNewVal = (value: string | undefined) => {
+        if (value !== undefined) {
+            console.log(`TODO new min dest FOB entered: ${value}`);
+        } else {
+            console.log('TODO clearing min dest fob');
+        }
+    };
+    return (
+        <LineHolder>
+            <Line side={lineSides.left} value={<LabelField value="MIN DEST FOB" color={lineColors.white} />} />
+            <Line
+                side={lineSides.left}
+                value={(
+                    <NumberInputField
+                        value={undefined}
+                        nullValue="---.-"
+                        min={0}
+                        max={80}
+                        color={lineColors.white}
+                        size={lineSizes.regular}
+                        selectedCallback={(value) => setNewVal(value)}
+                        lsk={LINESELECT_KEYS.L6}
+                    />
+                )}
+            />
+        </LineHolder>
+    );
+};
 
 const ExtraWeightLine : React.FC = () => (
     <LineHolder>
@@ -287,9 +302,8 @@ const ExtraWeightLine : React.FC = () => (
 );
 type InitBPageProps = {
     setTitlebarText: Function
-    clearScratchpad: Function
 }
-export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebarText, clearScratchpad }) => {
+export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebarText }) => {
     useEffect(() => {
         setTitlebarText('INIT');
     }, []);
@@ -297,7 +311,7 @@ export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebarText, clearScra
     return (
         <Content>
             <RowHolder index={1}>
-                <TaxiFuelLine clearScratchpad={clearScratchpad} />
+                <TaxiFuelLine />
                 <ZeroFuelWeightLine />
             </RowHolder>
             <RowHolder index={2}>

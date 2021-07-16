@@ -15,6 +15,7 @@ import { LineSelectField } from '../../../Components/Fields/Interactive/LineSele
 import InteractiveSplitLine from '../../../Components/Lines/InteractiveSplitLine';
 import SplitStringField from '../../../Components/Fields/Interactive/Split/SplitStringField';
 import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
+import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 
 // TODO when FMGS is in place then event and color management to these components
 
@@ -34,35 +35,70 @@ const CoRouteLine: React.FC = () => (
     </LineHolder>
 );
 
-// This is specifically not a split field line because of the operations of FROM/TO
-const FromToLine: React.FC = () => (
-    <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value={'FROM/TO\xa0\xa0'} color={lineColors.white} />} />
-        <Line
-            side={lineSides.right}
-            value={(
-                <StringInputField
-                    value=""
-                    nullValue="____|____"
-                    color={lineColors.amber}
-                    size={lineSizes.regular}
-                    lsk={LINESELECT_KEYS.R1}
-                    selectedCallback={(value) => {
-                        console.log(`Inserting FROM/TO ${value}`);
-                    }}
-                    selectedValidation={() => true} // For now returns true
-                />
-            )}
-        />
-    </LineHolder>
-);
-
-// Should this be split field?
-type altDestLineProps = {
-    clearScratchpad: () => any
+type fromToLineProps = {
+    addMessage: (msg: scratchpadMessage) => void
 }
-const AltDestLine: React.FC<altDestLineProps> = ({ clearScratchpad }) => {
+// This is specifically not a split field line because of the operations of FROM/TO
+const FromToLine: React.FC<fromToLineProps> = ({ addMessage }) => {
+    const setNewValue = (value: string | undefined) => {
+        console.log(`Inserting FROM/TO ${value}`);
+    };
+    const validateEntry = (value: string) => {
+        if (value === '') {
+            addMessage({
+                text: 'FORMAT ERROR',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+        return true;
+    };
+    return (
+        <LineHolder>
+            <Line side={lineSides.right} value={<LabelField value={'FROM/TO\xa0\xa0'} color={lineColors.white} />} />
+            <Line
+                side={lineSides.right}
+                value={(
+                    <StringInputField
+                        value=""
+                        nullValue="____|____"
+                        color={lineColors.amber}
+                        size={lineSizes.regular}
+                        lsk={LINESELECT_KEYS.R1}
+                        selectedCallback={(value) => setNewValue(value)}
+                        selectedValidation={(value) => validateEntry(value)} // For now returns true
+                    />
+                )}
+            />
+        </LineHolder>
+    );
+};
+type altDestLineProps = {
+    addMessage: (msg: scratchpadMessage) => void
+}
+const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
     const [value, setValue] = useState<string>();
+
+    const setNewValue = (value: string | undefined) => {
+        if (value === undefined) {
+            setValue(undefined);
+        } else {
+            setValue(value);
+        }
+    };
+
+    const validateEntry = (value) => {
+        if (value === '') {
+            addMessage({
+                text: 'FORMAT ERROR',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+        return true;
+    };
     return (
         <LineHolder>
             <Line side={lineSides.left} value={<LabelField value="ALTN/CO RTE" color={lineColors.white} />} />
@@ -74,15 +110,8 @@ const AltDestLine: React.FC<altDestLineProps> = ({ clearScratchpad }) => {
                         nullValue="----|----------"
                         color={value !== undefined ? lineColors.cyan : lineColors.amber}
                         lsk={LINESELECT_KEYS.L2}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setValue(undefined);
-                            } else {
-                                setValue(value);
-                            }
-                            clearScratchpad();
-                        }}
-                        selectedValidation={(() => true)}
+                        selectedCallback={(value) => setNewValue(value)}
+                        selectedValidation={((value) => validateEntry(value))}
                         size={lineSizes.regular}
                     />
                 )}
@@ -93,9 +122,38 @@ const AltDestLine: React.FC<altDestLineProps> = ({ clearScratchpad }) => {
 
 type flightNoLineProps = {
     clearScratchpad: () => void
+    addMessage: (msg: scratchpadMessage) => void
 }
-const FlightNoLine: React.FC<flightNoLineProps> = ({ clearScratchpad }) => {
+const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
     const [flightNo, setFlightNo] = useSimVar('ATC FLIGHT NUMBER', 'string');
+
+    const setNewValue = (value: string | undefined) => {
+        if (value === undefined) {
+            setFlightNo(undefined);
+        } else {
+            setFlightNo(value);
+        }
+    };
+
+    const validateEntry = (value) => {
+        if (value === '') {
+            addMessage({
+                text: 'FORMAT ERROR',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+        if (value.length <= 7) {
+            return true;
+        }
+        addMessage({
+            text: 'FORMAT ERROR',
+            isAmber: false,
+            isTypeTwo: false,
+        });
+        return false;
+    };
 
     return (
         <LineHolder>
@@ -108,16 +166,9 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ clearScratchpad }) => {
                         nullValue="________"
                         color={flightNo !== undefined ? lineColors.cyan : lineColors.amber}
                         size={lineSizes.regular}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setFlightNo(undefined);
-                            } else {
-                                setFlightNo(value);
-                            }
-                            clearScratchpad();
-                        }}
+                        selectedCallback={(value) => setNewValue(value)}
                         lsk={LINESELECT_KEYS.L3}
-                        selectedValidation={(value) => value.length <= 7}
+                        selectedValidation={(value) => validateEntry(value)}
                     />
                 )}
             />
@@ -145,11 +196,8 @@ const WindTempLine: React.FC = () => (
     </LineHolder>
 );
 
-type costIndexLineProps = {
-    clearScratchpad: () => void
-}
-const CostIndexLine: React.FC<costIndexLineProps> = ({ clearScratchpad }) => {
-    const [costIndex, setCostIndex] = useState<number>(); // Temp until FMGC in-place
+const CostIndexLine: React.FC = () => {
+    const [costIndex, setCostIndex] = useState<string>(); // Temp until FMGC in-place
     return (
         <LineHolder>
             <Line side={lineSides.left} value={<LabelField value="COST INDEX" color={lineColors.white} />} />
@@ -157,7 +205,7 @@ const CostIndexLine: React.FC<costIndexLineProps> = ({ clearScratchpad }) => {
                 side={lineSides.left}
                 value={(
                     <NumberInputField
-                        value={costIndex?.toFixed(0)}
+                        value={costIndex !== undefined ? parseInt(costIndex).toFixed(0) : ''}
                         nullValue="___"
                         min={100}
                         max={999}
@@ -169,7 +217,6 @@ const CostIndexLine: React.FC<costIndexLineProps> = ({ clearScratchpad }) => {
                             } else {
                                 setCostIndex(value);
                             }
-                            clearScratchpad();
                         }}
                         size={lineSizes.regular}
                     />
@@ -240,11 +287,8 @@ const AlignOptionLine: React.FC = () => (
     </LineHolder>
 );
 
-type tropoLineProps = {
-    clearScratchpad: () => void
-}
-const TropoLine: React.FC<tropoLineProps> = ({ clearScratchpad }) => {
-    const [tropo, setTropo] = useState<number>();
+const TropoLine: React.FC = () => {
+    const [tropo, setTropo] = useState<string>();
     return (
         <LineHolder>
             <Line side={lineSides.right} value={<LabelField value="TROPO" color={lineColors.white} />} />
@@ -265,7 +309,6 @@ const TropoLine: React.FC<tropoLineProps> = ({ clearScratchpad }) => {
                             } else {
                                 setTropo(value);
                             }
-                            clearScratchpad();
                         }}
                     />
                 )}
@@ -314,8 +357,9 @@ type InitAPageProps = {
     // REDUX
     setTitlebarText : (text: any) => void
     clearScratchpad: () => void
+    addMessage: (msg: scratchpadMessage) => void
 }
-const InitAPage: React.FC<InitAPageProps> = ({ setTitlebarText, clearScratchpad }) => {
+const InitAPage: React.FC<InitAPageProps> = ({ setTitlebarText, clearScratchpad, addMessage }) => {
     useEffect(() => {
         setTitlebarText('INIT');
     }, []);
@@ -324,22 +368,22 @@ const InitAPage: React.FC<InitAPageProps> = ({ setTitlebarText, clearScratchpad 
         <Content>
             <RowHolder index={1}>
                 <CoRouteLine />
-                <FromToLine />
+                <FromToLine addMessage={addMessage} />
             </RowHolder>
             <RowHolder index={2}>
-                <AltDestLine clearScratchpad={clearScratchpad} />
+                <AltDestLine addMessage={addMessage} />
                 <RequestLine />
             </RowHolder>
             <RowHolder index={3}>
-                <FlightNoLine clearScratchpad={clearScratchpad} />
+                <FlightNoLine clearScratchpad={clearScratchpad} addMessage={addMessage} />
                 <AlignOptionLine />
             </RowHolder>
             <RowHolder index={4}>
                 <WindTempLine />
             </RowHolder>
             <RowHolder index={5}>
-                <CostIndexLine clearScratchpad={clearScratchpad} />
-                <TropoLine clearScratchpad={clearScratchpad} />
+                <CostIndexLine />
+                <TropoLine />
             </RowHolder>
             <RowHolder index={6}>
                 <CruiseFLTemp clearScratchpad={clearScratchpad} />
