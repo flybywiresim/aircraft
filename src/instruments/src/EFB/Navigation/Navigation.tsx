@@ -449,7 +449,6 @@ const ChartsUi = (props: ChartsUiProps) => {
                             <SimpleInput
                                 placeholder="ICAO"
                                 value={props.icao}
-                                noLabel
                                 maxLength={4}
                                 className="w-full"
                                 onChange={(event) => handleIcaoChange(event)}

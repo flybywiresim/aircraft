@@ -333,7 +333,6 @@ export const FuelPage = () => {
                                     <SimpleInput
                                         className="w-32"
                                         noLeftMargin
-                                        noLabel
                                         placeholder={round(totalFuel()).toString()}
                                         number
                                         min={0}

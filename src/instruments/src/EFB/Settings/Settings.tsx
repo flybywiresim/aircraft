@@ -187,7 +187,6 @@ const PlaneSettings = () => {
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={thrustReductionAlt}
-                            noLabel
                             value={thrustReductionAltSetting}
                             onChange={(event) => handleSetThrustReductionAlt(event)}
                         />
@@ -200,7 +199,6 @@ const PlaneSettings = () => {
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={accelerationAlt}
-                            noLabel
                             value={accelerationAltSetting}
                             onChange={(event) => handleSetAccelerationAlt(event)}
                         />
@@ -213,7 +211,6 @@ const PlaneSettings = () => {
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
                             placeholder={accelerationOutAlt}
-                            noLabel
                             value={accelerationOutAltSetting}
                             onChange={(event) => handleSetAccelerationOutAlt(event)}
                         />
@@ -321,7 +318,6 @@ const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
                         <SimpleInput
                             className="w-30"
                             value={props.simbriefUsername}
-                            noLabel
                             onChange={(event) => props.setSimbriefUsername(event)}
                         />
                     </div>

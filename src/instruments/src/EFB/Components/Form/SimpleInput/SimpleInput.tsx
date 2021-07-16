@@ -1,4 +1,6 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useState, useRef, useContext } from 'react';
+import { KeyboardInputContext } from '../../../Keyboard/Keyboard';
+import { useSimVarSyncedPersistentProperty } from '../../../../Common/persistence';
 
 type SimpleInputProps = {
     label?: string,
@@ -14,12 +16,16 @@ type SimpleInputProps = {
     reverse?: boolean, // Flip label/input order,
     className?: string,
     maxLength?: number,
-    noLabel?: boolean,
 };
 
 const SimpleInput: FC<SimpleInputProps> = (props) => {
     const [displayValue, setDisplayValue] = useState<string>(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
+
+    const keyboardContext = useContext(KeyboardInputContext);
+    const inputElementRef = useRef<HTMLInputElement>(null);
+
+    const [OSKOnInput] = useSimVarSyncedPersistentProperty('L:A32NX_ONSCREEN_KEYBOARD_ON_INPUT', 'Bool', 'ONSCREEN_KEYBOARD_ON_INPUT');
 
     useEffect(() => {
         if (props.value === undefined || props.value === '') {
@@ -30,8 +36,8 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
         setDisplayValue(getConstrainedValue(props.value));
     }, [props.value]);
 
-    const onChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        let originalValue = event.currentTarget.value;
+    const onChange = (initValue: string): void => {
+        let originalValue = initValue;
 
         if (props.number) {
             originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
@@ -43,13 +49,13 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
 
     const onFocus = (): void => {
         setFocused(true);
+        if (OSKOnInput) {
+            keyboardContext.setIsShown(true);
+        }
     };
 
     const onFocusOut = (event: React.FocusEvent<HTMLInputElement>): void => {
-        const { value } = event.currentTarget;
-        const constrainedValue = getConstrainedValue(value);
-
-        setDisplayValue(constrainedValue);
+        setDisplayValue(getConstrainedValue(event.currentTarget.value));
         setFocused(false);
     };
 
@@ -90,43 +96,45 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
         } else {
             Coherent.trigger('UNFOCUS_INPUT_FIELD');
         }
+
+        if (inputElementRef.current) {
+            keyboardContext.setInputElement(inputElementRef.current);
+        }
     }, [focused]);
 
     return (
         <>
-            {props.noLabel
+            {props.label
                 ? (
-                    <>
-                        <input
-                            className={`px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
-                            focus-within:border-teal-light-contrast ${props.className}`}
-                            value={displayValue}
-                            placeholder={props.placeholder ?? ''}
-                            onChange={onChange}
-                            onFocus={onFocus}
-                            onBlur={onFocusOut}
-                            maxLength={props.maxLength}
-                        />
-                    </>
+                    <div className={`flex ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`text-lg flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
+                        <div className="flex items-center">
+                            <input
+                                ref={inputElementRef}
+                                className={`px-5 py-1.5 text-lg text-white rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
+                                    focus-within:border-teal-light-contrast ${props.className}`}
+                                value={displayValue}
+                                placeholder={props.placeholder ?? ''}
+                                onChange={(event) => onChange(event.target.value)}
+                                onFocus={onFocus}
+                                onBlur={onFocusOut}
+                                maxLength={props.maxLength}
+                            />
+                        </div>
+                    </div>
                 )
                 : (
-                    <>
-                        <div className={`flex ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
-                            <div className={`text-lg flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
-                            <div className="flex items-center">
-                                <input
-                                    className={`px-5 py-1.5 text-lg text-white rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
-                                    focus-within:border-teal-light-contrast ${props.className}`}
-                                    value={displayValue}
-                                    placeholder={props.placeholder ?? ''}
-                                    onChange={onChange}
-                                    onFocus={onFocus}
-                                    onBlur={onFocusOut}
-                                    maxLength={props.maxLength}
-                                />
-                            </div>
-                        </div>
-                    </>
+                    <input
+                        ref={inputElementRef}
+                        className={`px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
+                            focus-within:border-teal-light-contrast ${props.className}`}
+                        value={displayValue}
+                        placeholder={props.placeholder ?? ''}
+                        onChange={(event) => onChange(event.target.value)}
+                        onFocus={onFocus}
+                        onBlur={onFocusOut}
+                        maxLength={props.maxLength}
+                    />
                 )}
         </>
     );
