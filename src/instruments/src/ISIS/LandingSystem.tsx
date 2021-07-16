@@ -5,11 +5,11 @@ import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 const DeviationIndicator: React.FC<{ deviation: number, available: boolean }> = ({ deviation, available }) => (
     <>
         <rect x={0} y={0} width={200} height={20} fill="black" />
-        <circle className="StrokeWhite NoFill" strokeWidth={3} cx={10} cy={10} r={7} />
-        <circle className="StrokeWhite NoFill" strokeWidth={3} cx={55} cy={10} r={7} />
+        <circle className="StrokeWhite NoFill" cx={10} cy={10} r={7} />
+        <circle className="StrokeWhite NoFill" cx={55} cy={10} r={7} />
         <line x1={100} x2={100} y1={2} y2={18} strokeWidth={4} stroke="white" />
-        <circle className="StrokeWhite NoFill" strokeWidth={3} cx={145} cy={10} r={7} />
-        <circle className="StrokeWhite NoFill" strokeWidth={3} cx={190} cy={10} r={7} />
+        <circle className="StrokeWhite NoFill" cx={145} cy={10} r={7} />
+        <circle className="StrokeWhite NoFill" cx={190} cy={10} r={7} />
         { available
             && (
                 <g transform={`translate(${(deviation * 50).toFixed(5)} 0)`}>

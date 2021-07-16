@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bug } from './Bug';
 import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';
-import { VerticalTape } from './ISISUtils';
+import { VerticalTape } from './VerticalTape';
 
 type TickProps = { offset: number, altitude: number }
 const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
@@ -10,7 +10,7 @@ const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
 
     return (
         <g transform={`translate(0 ${offset})`}>
-            <path stroke="white" strokeWidth={3} d={`M0,${158} h${tickLength}`} />
+            <path className="StrokeWhite" d={`M0,${158} h${tickLength}`} />
             {shouldShowText && <text x={5} y={158 + 12} className="TextWhite FontMedium">{Math.abs(altitude).toString().padStart(5, '0').slice(0, 3)}</text>}
         </g>
     );
@@ -21,14 +21,14 @@ const BugElement: React.FC<BugProps> = ({ bug, offset }) => {
     if (bug.value % 500 === 0) {
         return (
             <g className="StrokeCyan NoFill" transform={`translate(0 ${offset})`}>
-                <path strokeWidth={3} d={`M3,${152} v-10 h65 v30 h-65 v-6`} />
+                <path d="M3,152 v-10 h65 v30 h-65 v-6" />
             </g>
         );
     }
 
     return (
         <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
-            <path strokeWidth={7} d={`M0,${158} h30`} />
+            <path strokeWidth={7} d="M0,158 h30" />
         </g>
     );
 };
@@ -70,7 +70,7 @@ export const MetricAltitudeIndicator: React.FC<MetricAltitudeIndicatorProps> = (
     const metricAltitude = Math.round(altitude * 0.3048 / 10) * 10;
 
     return (
-        <g id="MetricAltitudeIndicator" strokeWidth={3} fontSize={32}>
+        <g id="MetricAltitudeIndicator" fontSize={32}>
             <rect className="StrokeYellow NoFill" x={276} y={40} width={164} height={40} />
             <text className="TextGreen" x={392} y={72} textAnchor="end">{metricAltitude}</text>
             <text className="TextCyan" x={400} y={72}>M</text>

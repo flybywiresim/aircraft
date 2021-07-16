@@ -7,7 +7,7 @@ type BugSetupDisplayProps = {
 }
 
 export const BugSetupDisplay: React.FC<BugSetupDisplayProps> = ({ selectedIndex, bugs }) => (
-    <g id="BugDisplay" strokeWidth={3} className="TextWhite NoFill FontLarge">
+    <g id="BugDisplay" className="TextWhite NoFill FontLarge">
         <text x={40} y={55} className="TextCyan">EXIT↑</text>
         <text x={256} y={53} textAnchor="middle" className="TextWhite">BUGS</text>
         <text x={150} y={100} textAnchor="middle" className="TextWhite">SPD</text>

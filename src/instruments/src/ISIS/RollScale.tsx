@@ -27,7 +27,7 @@ export const RollScale: React.FC = React.memo(() => {
             <g>
                 {markerAngles.map(createTick)}
             </g>
-            <path strokeWidth={3} className="FillYellow StrokeYellow" d="M 256 116 l 10 -18 h-20z" />
+            <path className="FillYellow StrokeYellow" d="M 256 116 l 10 -18 h-20z" />
         </g>
     );
 });

@@ -140,12 +140,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
 
     return (
         <g>
-            <path
-                d="M 512 238 h -84 v 8 h -84 v 42 h 84 v 8 h 84"
-                className="FillBackground"
-                strokeWidth={3}
-                stroke="none"
-            />
+            <path d="M 512 238 h -84 v 8 h -84 v 42 h 84 v 8 h 84" className="FillBackground" />
             <svg x={340} y={248} color={color} width="100" height="40" viewBox="0 0 100 40">
                 <Drum
                     displayRange={1}
@@ -190,9 +185,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
             </svg>
             <path
                 d="M 512 238 h -84 v 8 h -84 v 42 h 84 v 8 h 84"
-                className={isAltitudeInBugRange ? 'StrokeCyan' : 'StrokeYellow'}
-                fill="none"
-                strokeWidth={3}
+                className={`NoFill ${isAltitudeInBugRange ? 'StrokeCyan' : 'StrokeYellow'}`}
             />
             {isNegative && (
                 <g id="NegativeAltitudeText" className="TextWhite FontLarge">

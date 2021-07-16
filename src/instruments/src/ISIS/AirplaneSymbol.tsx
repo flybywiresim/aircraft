@@ -1,23 +1,9 @@
 import React from 'react';
 
-export const AirplaneSymbol: React.FC = () => {
-    const wingWidth = 52;
-    const spaceBetween = 32;
-    const longHeight = 15;
-    const thickness = 10;
-    const yStart = 269 - thickness / 2;
-
-    return (
-        <g strokeWidth={3}>
-            <path
-                className="StrokeYellow FillBackground"
-                d={`M${256 - wingWidth - spaceBetween} ${yStart}h${wingWidth}v${longHeight}h${-thickness}v${-5}h${-wingWidth + thickness}z`}
-            />
-            <path className="StrokeYellow FillBackground" d={`M${256 - thickness / 2} ${yStart} h${thickness} v${thickness} h${-thickness}z`} />
-            <path
-                className="StrokeYellow FillBackground"
-                d={`M${256 + wingWidth + spaceBetween} ${yStart}h${-wingWidth}v${longHeight}h${thickness}v${-5}h${wingWidth - thickness}z`}
-            />
-        </g>
-    );
-};
+export const AirplaneSymbol: React.FC = () => (
+    <g>
+        <path className="StrokeYellow FillBackground" d="M172 264 h 52 v 15 h -10 v -5 h -42z" />
+        <path className="StrokeYellow FillBackground" d="M250 264 h 12 v 12 h -12z" />
+        <path className="StrokeYellow FillBackground" d="M340 264 h -52 v 15 h 10 v -5 h 42z" />
+    </g>
+);

@@ -23,15 +23,15 @@ export const PitchScale: React.FC<Props> = ({ pitchDegPixels }) => {
         const y = center - d * pitchDegPixels;
         if (d === 0) {
             markers.push(
-                <line x1={-256} x2={768} y1={y} y2={y} strokeWidth={3} stroke="white" />,
+                <line x1={-256} x2={768} y1={y} y2={y} className="StrokeWhite" />,
             );
 
             continue;
         }
         markers.push(
             <g>
-                <text x={220} y={y} fontSize={32} fill="white" textAnchor="end" alignmentBaseline="middle">{Math.abs(d).toFixed(0)}</text>
-                <line x1={232} x2={280} y1={y} y2={y} stroke="white" strokeWidth={3} />
+                <text x={220} y={y} fontSize={32} className="TextWhite" textAnchor="end" alignmentBaseline="middle">{Math.abs(d).toFixed(0)}</text>
+                <line x1={232} x2={280} y1={y} y2={y} className="StrokeWhite" />
             </g>,
         );
     }
@@ -39,21 +39,21 @@ export const PitchScale: React.FC<Props> = ({ pitchDegPixels }) => {
     for (let d = -25; d <= 25; d += 10) {
         const y = center - d * pitchDegPixels;
         markers.push(
-            <line x1={242} x2={270} y1={y} y2={y} stroke="white" strokeWidth={3} />,
+            <line x1={242} x2={270} y1={y} y2={y} className="StrokeWhite" />,
         );
     }
 
     for (let d = -27.5; d <= 22.5; d += 10) {
         const y = center - d * pitchDegPixels;
         markers.push(
-            <line x1={248} x2={264} y1={y} y2={y} stroke="white" strokeWidth={3} />,
+            <line x1={248} x2={264} y1={y} y2={y} className="StrokeWhite" />,
         );
     }
 
     for (let d = -22.5; d <= 27.5; d += 10) {
         const y = center - d * pitchDegPixels;
         markers.push(
-            <line x1={248} x2={264} y1={y} y2={y} stroke="white" strokeWidth={3} />,
+            <line x1={248} x2={264} y1={y} y2={y} className="StrokeWhite" />,
         );
     }
 

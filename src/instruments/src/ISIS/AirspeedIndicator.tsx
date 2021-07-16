@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bug } from './Bug';
-import { VerticalTape } from './ISISUtils';
+import { VerticalTape } from './VerticalTape';
 
 type TickProps = { offset: number, airspeed: number }
 const Tick: React.FC<TickProps> = ({ offset, airspeed }) => {
@@ -12,7 +12,7 @@ const Tick: React.FC<TickProps> = ({ offset, airspeed }) => {
     return (
         <g transform={`translate(0 ${offset})`}>
             {airspeed % 20 === 0 && <text x={95} textAnchor="end" y={158 + 12} className="TextWhite FontMedium">{airspeed}</text>}
-            <path stroke="white" strokeWidth={3} d={`M${108 - tickLength},${158} h${tickLength}`} />
+            <path stroke="white" d={`M${108 - tickLength},${158} h${tickLength}`} />
         </g>
     );
 };
