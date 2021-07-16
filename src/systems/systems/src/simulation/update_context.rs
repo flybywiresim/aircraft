@@ -13,12 +13,16 @@ pub struct UpdateContext {
     ambient_temperature: ThermodynamicTemperature,
     is_on_ground: bool,
     longitudinal_acceleration: Acceleration,
+    lateral_acceleration: Acceleration,
+    vertical_acceleration: Acceleration,
 }
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const INDICATED_ALTITUDE_KEY: &'static str = "INDICATED ALTITUDE";
     pub(crate) const IS_ON_GROUND_KEY: &'static str = "SIM ON GROUND";
+    pub(crate) const ACCEL_BODY_X_KEY: &'static str = "ACCELERATION BODY X";
+    pub(crate) const ACCEL_BODY_Y_KEY: &'static str = "ACCELERATION BODY Y";
     pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION BODY Z";
 
     pub fn new(
@@ -28,6 +32,8 @@ impl UpdateContext {
         ambient_temperature: ThermodynamicTemperature,
         is_on_ground: bool,
         longitudinal_acceleration: Acceleration,
+        lateral_acceleration: Acceleration,
+        vertical_acceleration: Acceleration,
     ) -> UpdateContext {
         UpdateContext {
             delta,
@@ -36,6 +42,8 @@ impl UpdateContext {
             ambient_temperature,
             is_on_ground,
             longitudinal_acceleration,
+            lateral_acceleration,
+            vertical_acceleration,
         }
     }
 
@@ -48,6 +56,8 @@ impl UpdateContext {
             is_on_ground: reader.read(UpdateContext::IS_ON_GROUND_KEY),
             delta: delta_time,
             longitudinal_acceleration: reader.read(UpdateContext::ACCEL_BODY_Z_KEY),
+            lateral_acceleration: reader.read(UpdateContext::ACCEL_BODY_X_KEY),
+            vertical_acceleration: reader.read(UpdateContext::ACCEL_BODY_Y_KEY),
         }
     }
 
@@ -85,6 +95,14 @@ impl UpdateContext {
 
     pub fn long_accel(&self) -> Acceleration {
         self.longitudinal_acceleration
+    }
+
+    pub fn lat_accel(&self) -> Acceleration {
+        self.lateral_acceleration
+    }
+
+    pub fn vert_accel(&self) -> Acceleration {
+        self.vertical_acceleration
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {

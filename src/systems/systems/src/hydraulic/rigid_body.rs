@@ -161,7 +161,7 @@ mod tests {
         let dt = 0.05;
 
         let mut time = 0.;
-        for loop_idx in 0..1000 {
+        for _ in 0..1000 {
             rigid_body.update(&context(Duration::from_secs_f64(dt)));
             time += dt;
             println!("Pos {} t={}", rigid_body.position, time);
@@ -175,6 +175,8 @@ mod tests {
             Length::new::<foot>(5000.),
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
+            Acceleration::new::<meter_per_second_squared>(0.),
+            Acceleration::new::<meter_per_second_squared>(0.),
             Acceleration::new::<meter_per_second_squared>(-9.8),
         )
     }

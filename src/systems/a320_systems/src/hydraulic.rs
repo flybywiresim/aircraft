@@ -437,6 +437,8 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
     ) {
+        println!("ACC ({:.2},{:.2},{:.2})",context.lat_accel().get::<meter_per_second_squared>(),context.vert_accel().get::<meter_per_second_squared>(),context.long_accel().get::<meter_per_second_squared>());
+
         self.brake_computer.send_brake_demands(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,

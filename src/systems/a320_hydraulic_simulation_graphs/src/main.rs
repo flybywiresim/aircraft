@@ -830,5 +830,7 @@ fn context(delta_time: Duration) -> UpdateContext {
         ThermodynamicTemperature::new::<degree_celsius>(25.0),
         true,
         Acceleration::new::<foot_per_second_squared>(0.),
+        Acceleration::new::<foot_per_second_squared>(0.),
+        Acceleration::new::<foot_per_second_squared>(-32.17),
     )
 }
