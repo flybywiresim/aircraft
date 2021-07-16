@@ -1424,7 +1424,7 @@
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_NAVLOGO</ANIM_NAME>
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
                     <SIMVAR_INDEX_2>0</SIMVAR_INDEX_2>
-                    <LIGHT_TYPE2>LOGO</LIGHT_TYPE2>
+                    <LIGHT_TYPE_2>LOGO</LIGHT_TYPE_2>
 
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
