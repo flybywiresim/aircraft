@@ -26,7 +26,7 @@ const Keyboard = () => {
 
     return (
         <KeyboardContext.Provider value={{ isShifted: shifted }}>
-            <div className="absolute inset-x-0 bottom-0 bg-gray-600" style={{ visibility: inputContext.isShown ? 'visible' : 'hidden' }}>
+            <div className="absolute inset-x-0 z-50 bottom-0 bg-gray-600" style={{ visibility: inputContext.isShown ? 'visible' : 'hidden' }}>
                 <input type="text" value={inputContext.inputElement?.value} className="w-full h-10 text-3xl" />
                 <div className="w-full flex-col space-y-2 px-2 py-2">
                     <div className="flex flex-row space-x-2">
