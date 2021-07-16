@@ -130,36 +130,15 @@ const ZfwLine: React.FC<zfwLineProps> = (
     const [calcZFWCG, ____] = useSimVar('CG PERCENT', 'percent');
     const blockFuel = fuelQuantity * fuelWeight / 1000;
     const calcZFW = (totalWeight / 1000) - blockFuel;
-    const [bothValuesEntered, setBothValuesEntered] = useState(zeroFuelWeightZFWCGEntered);
-    const [zfw, setZFW] = useState(fmgcZFW);
-    const [zfwCG, setZFWCG] = useState(fmgcZFWCG);
-
-    // Because REACT is annoying I have to do this
-    useEffect(() => {
-        setFMGCZFW(zfw);
-    }, [zfw]);
-
-    useEffect(() => {
-        setFMGCZFWCG(zfwCG);
-    }, [zfwCG]);
-
-    // Is there a cleaner way to do this?
-    useEffect(() => {
-        if (bothValuesEntered) {
-            setZeroFuelWeightZFWCGEntered(true);
-        } else {
-            setZeroFuelWeightZFWCGEntered(false);
-        }
-    }, [bothValuesEntered]);
 
     const fieldProperties: fieldProperties = {
-        lValue: zfw === undefined ? '___._' : zfw.toFixed(1),
+        lValue: fmgcZFW === undefined ? '___._' : fmgcZFW.toFixed(1),
         // lSide: fieldSides.left,
-        lColour: zfw === undefined ? lineColors.amber : lineColors.cyan,
+        lColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
         lSize: lineSizes.regular,
-        rValue: zfwCG === undefined ? '__._' : zfwCG.toFixed(1),
+        rValue: fmgcZFWCG === undefined ? '__._' : fmgcZFWCG.toFixed(1),
         // rSide: fieldSides.right,
-        rColour: zfw === undefined ? lineColors.amber : lineColors.cyan,
+        rColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
         rSize: lineSizes.regular,
     };
 
@@ -185,7 +164,7 @@ const ZfwLine: React.FC<zfwLineProps> = (
         }
 
         // If you've reached this point and not entered both zfw/zfwCG then, false
-        if (!bothValuesEntered) {
+        if (!zeroFuelWeightZFWCGEntered) {
             addMessage({
                 text: 'NOT ALLOWED',
                 isAmber: false,
@@ -233,15 +212,15 @@ const ZfwLine: React.FC<zfwLineProps> = (
             });
         } else {
             if (lVal !== '' && rVal !== '' && rVal !== undefined) {
-                setBothValuesEntered(true);
-                setZFW(parseFloat(lVal));
-                setZFWCG(parseFloat(rVal));
+                setZeroFuelWeightZFWCGEntered(true);
+                setFMGCZFW(parseFloat(lVal));
+                setFMGCZFWCG(parseFloat(rVal));
             }
             if (lVal !== '') {
-                setZFW(parseFloat(lVal));
+                setFMGCZFW(parseFloat(lVal));
             }
             if (rVal !== '' && rVal !== undefined) {
-                setZFWCG(parseFloat(rVal));
+                setFMGCZFWCG(parseFloat(rVal));
             }
         }
     };
