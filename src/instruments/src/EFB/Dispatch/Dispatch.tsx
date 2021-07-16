@@ -56,7 +56,6 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
         'Overview',
         'OFP',
         'Fuel',
-        'Payload',
     ];
 
     constructor(props: DispatchProps) {
@@ -80,12 +79,6 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
                 <FuelPage />
             );
         case 3:
-            return (
-                <div className="w-full h-full">
-                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                </div>
-            );
-        case 4:
             return (
                 <div className="w-full h-full">
                     <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
@@ -116,6 +109,7 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
     render() {
         return (
             <div className="w-full">
+                <h1 className="text-3xl pt-6 text-white">Dispatch</h1>
                 <Navbar tabs={this.tabs} onSelected={(index) => this.handleClick(index)} />
                 <div>
                     {this.currentPage()}
