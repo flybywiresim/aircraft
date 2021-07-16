@@ -2595,7 +2595,7 @@
                             <TYPE>CARGO</TYPE>
                             <ID></ID>
                         </DefaultTemplateParameters>
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
+                        <UseTemplate Name="FBW_Airbus_CARGOSMOKE_TEST_BUTTON">
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_TEST</NODE_ID>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">

@@ -15,6 +15,14 @@
         </UseTemplate>
     </Template>
 
+    <Template Name="FBW_Airbus_CARGOSMOKE_TEST_BUTTON">
+        <UseTemplate Name="FBW_Push_Held">
+            <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+        </UseTemplate>
+    </Template>
+
     <Template Name="FBW_Airbus_FIRE_AGENT">
         <UseTemplate Name="FBW_Push_Toggle">
             <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) or</SEQ1_CODE>
