@@ -113,14 +113,15 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         if (completedBarBeginValue && completedBarEnd) {
             const barBegin = parseFloat(completedBarBeginValue);
             const barEnd = parseFloat((completedBarEnd !== 0 ? (completedBarEnd / 50 - 1) : 0.00).toFixed(2));
+            const roundedThrottlePos = parseFloat(throttlePos.toPrecision(2));
 
             if (vertical) {
-                if (throttlePos <= barEnd && throttlePos >= barBegin) {
+                if (roundedThrottlePos <= barEnd && roundedThrottlePos >= barBegin) {
                     return 'absolute z-10 -mt-2.5 h-1.5 bg-green-500';// horizontal progress bar with green bg
                 }
                 return 'absolute z-10 -mt-2.5 h-1.5 bg-gray-400'; // horizontal progress bar
             }
-            if (throttlePos <= barEnd && throttlePos >= barBegin) {
+            if (roundedThrottlePos <= barEnd && roundedThrottlePos >= barBegin) {
                 return 'absolute -mt-2.5 w-1.5 h-8 bg-green-500'; // vertical progress bar with green bg
             }
         }
