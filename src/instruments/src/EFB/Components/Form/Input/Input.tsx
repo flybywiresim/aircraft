@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { isNumber, toNumber } from 'lodash';
 import { KeyboardInputContext } from '../../../Keyboard/Keyboard';
+import { useSimVarSyncedPersistentProperty } from '../../../../Common/persistence';
 
 import './Input.scss';
 
@@ -46,9 +47,12 @@ const Input = ({
     const keyboardContext = useContext(KeyboardInputContext);
     const inputElementRef = useRef<HTMLInputElement>(null);
 
+    const [OSKOnInput] = useSimVarSyncedPersistentProperty('L:A32NX_ONSCREEN_KEYBOARD_ON_INPUT', 'Bool', 'ONSCREEN_KEYBOARD_ON_INPUT');
+
     useEffect(() => {
         if (inputElementRef.current) {
             keyboardContext.setInputElement(inputElementRef.current);
+            keyboardContext.changeHandler = onChange;
         }
     }, [focusActive]);
 
@@ -89,7 +93,12 @@ const Input = ({
                             type={type}
                             value={value}
                             onChange={(event) => onChange(event.target.value)}
-                            onFocus={() => setFocusActive(true)}
+                            onFocus={() => {
+                                setFocusActive(true);
+                                if (OSKOnInput) {
+                                    keyboardContext.setIsShown(true);
+                                }
+                            }}
                             onBlur={() => setFocusActive(false)}
                             {...props}
                         />
