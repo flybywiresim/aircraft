@@ -100,6 +100,7 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
         if (inputElementRef.current) {
             keyboardContext.setInputElement(inputElementRef.current);
         }
+        keyboardContext.setChangeHandler(onChange);
     }, [focused]);
 
     return (

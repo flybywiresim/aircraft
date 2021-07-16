@@ -228,6 +228,7 @@ const Efb = () => {
 
     const [isKeyboardShown, setIsKeyboardShown] = useState(false);
     const keyboardCurrentInputRef = useRef<HTMLInputElement>(null) as MutableRefObject<HTMLInputElement>;
+    const changeHandlerRef = useRef((_value: any) => {});
 
     return (
         <Provider store={store}>
@@ -239,6 +240,9 @@ const Efb = () => {
                         inputElement: keyboardCurrentInputRef.current,
                         // eslint-disable-next-line no-return-assign
                         setInputElement: (i: HTMLInputElement) => keyboardCurrentInputRef.current = i,
+                        changeHandler: changeHandlerRef.current,
+                        // eslint-disable-next-line no-return-assign
+                        setChangeHandler: (handler: (value: any) => void) => changeHandlerRef.current = handler,
                     }}
                     >
                         <div className="flex flex-col">

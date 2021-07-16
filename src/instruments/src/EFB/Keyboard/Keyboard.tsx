@@ -6,6 +6,8 @@ export interface KeyboardInputContextType {
     setIsShown: (v: boolean) => void,
     inputElement: HTMLInputElement | null,
     setInputElement: (i: HTMLInputElement) => void,
+    changeHandler: (value: any) => void,
+    setChangeHandler: (handler: (value: any) => void) => void
 }
 
 export const KeyboardInputContext = React.createContext<KeyboardInputContextType>(undefined as any);
@@ -20,7 +22,7 @@ const Keyboard = () => {
     const handleBackspace = () => {
         if (inputContext.inputElement) {
             inputContext.inputElement.focus(); // Reinstate focus on inputElement
-            inputContext.inputElement.value = inputContext.inputElement.value.substring(0, inputContext.inputElement.value.length - 1);
+            inputContext.changeHandler(inputContext.inputElement.value.substring(0, inputContext.inputElement.value.length - 1));
         }
     };
 
@@ -167,7 +169,7 @@ const Key = (props: KeyProps) => {
         if (inputContext.inputElement) {
             console.log('this is being called bruhegg');
             inputContext.inputElement.focus();
-            inputContext.inputElement.value = `${inputContext.inputElement.value}${context.isShifted ? props.altChar : props.char}`;
+            inputContext.changeHandler(`${inputContext.inputElement.value}${context.isShifted ? props.altChar : props.char}`);
         }
     };
 

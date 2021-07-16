@@ -52,7 +52,7 @@ const Input = ({
     useEffect(() => {
         if (inputElementRef.current) {
             keyboardContext.setInputElement(inputElementRef.current);
-            keyboardContext.changeHandler = onChange;
+            keyboardContext.setChangeHandler(onChange);
         }
     }, [focusActive]);
 
