@@ -235,11 +235,14 @@ class CDUFlightPlanPage {
                             altitudeConstraint = ((waypointsAndMarkers[winI].wp.legAltitude1 + waypointsAndMarkers[winI].wp.legAltitude2) * 0.5).toFixed(0).toString();
                             altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                         }
+                        // TODO remove this and replace with proper altitude constraint implementation
                         // Predict altitude for STAR when constraints are missing
+                        /*
                     } else if (departureWp) {
                         altitudeConstraint = Math.floor(waypointsAndMarkers[winI].wp.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toString();
                         altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                         // Waypoint is the first or the last of the actual route
+                        */
                     } else if ((waypointsAndMarkers[winI].fpIndex === firstRouteIndex - 1) || (waypointsAndMarkers[winI].fpIndex === lastRouteIndex + 1)) {
                         if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
                             altitudeConstraint = "-----\xa0";
