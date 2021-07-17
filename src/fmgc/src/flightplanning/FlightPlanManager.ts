@@ -24,6 +24,7 @@
  */
 
 import { NXDataStore } from '@shared/persistence';
+import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
@@ -655,6 +656,14 @@ export class FlightPlanManager {
         callback();
     }
 
+    public setLegAltitudeDescription(waypoint: WayPoint, code: number, callback = () => { }): void {
+        if (waypoint) {
+            waypoint.legAltitudeDescription = code;
+            this._updateFlightPlanVersion();
+        }
+        callback();
+    }
+
     /**
      * Sets the altitude for a waypoint in the current flight plan.
      * @param altitude The altitude to set for the waypoint.
@@ -666,10 +675,21 @@ export class FlightPlanManager {
         const waypoint = currentFlightPlan.getWaypoint(index);
 
         if (waypoint) {
-            waypoint.infos.coordinates.alt = altitude;
+            const altCoord = (altitude < 1000 ? altitude * 100 : altitude) / 3.28084;
+            waypoint.infos.coordinates.alt = altCoord;
+            waypoint.legAltitude1 = altitude;
             this._updateFlightPlanVersion();
         }
 
+        callback();
+    }
+
+    public setWaypointSpeed(speed: number, index: number, callback = () => { }): void {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        const waypoint = currentFlightPlan.getWaypoint(index);
+        if (waypoint) {
+            waypoint.speedConstraint = speed;
+        }
         callback();
     }
 
