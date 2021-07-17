@@ -112,11 +112,12 @@ const emptySimbriefData: SimbriefData = {
     costInd: '--',
 };
 
+const navigraph = new NavigraphClient();
+
 const Efb = () => {
     const history = useHistory();
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
-    const [navigraph] = useState(() => new NavigraphClient());
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
     const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
     const [timeState, setTimeState] = useState<TimeState>({
