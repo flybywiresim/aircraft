@@ -121,15 +121,15 @@ export const OilComponent = () => {
 
 export const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
-    const [landingRunwayElevation] = useSimVar('L:A32NX_APPROACH_RUNWAY_ELEVATION', 'Meters', 1000);
+    const [landingRunwayElevation] = useSimVar('L:A32NX_AUTO_LANDING_ELEVATION', 'feet', 1000);
     const [manMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
     const [landingElev] = useSimVar('L:A32NX_LANDING_ELEVATION', 'feet', 100);
-    const [cabinAlt] = useSimVar('PRESSURIZATION CABIN ALTITUDE', 'feet', 500);
-    const [cabinVs] = useSimVar('PRESSURIZATION CABIN ALTITUDE RATE', 'feet per second', 500);
-    const [deltaPsi] = useSimVar('L:A32NX_DELTA_PSI', 'psi', 1000);
+    const [cabinAlt] = useSimVar('L:A32NX_CABIN_ALTITUDE', 'feet', 500);
+    const [cabinVs] = useSimVar('L:A32NX_CABIN_VS', 'feet per minute', 500);
+    const [deltaPsi] = useSimVar('L:A32NX_CABIN_DELTA_PRESSURE', 'psi', 1000);
 
     const deltaPress = splitDecimals(deltaPsi, '');
 
@@ -137,7 +137,7 @@ export const PressureComponent = () => {
         setLdgElevMode(landingElevDialPosition === 0 ? 'AUTO' : 'MAN');
         if (landingElevDialPosition === 0) {
             // On Auto
-            const nearestfifty = Math.round((landingRunwayElevation * 3.28) / 50) * 50;
+            const nearestfifty = Math.round(landingRunwayElevation / 50) * 50;
             setLdgElevValue(landingRunwayElevation > -5000 ? nearestfifty.toString() : 'XX');
             setCssLdgElevName(landingRunwayElevation > -5000 ? 'Green' : 'Amber');
         } else {
@@ -170,7 +170,7 @@ export const PressureComponent = () => {
             <text className="Standard Cyan" x="320" y="370">PSI</text>
 
             <text className="Standard" x="480" y="380">CAB V/S</text>
-            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{Math.abs(Math.round((cabinVs * 60) / 50) * 50)}</text>
+            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{Math.abs(Math.round(cabinVs / 50) * 50)}</text>
             <text className="Medium Cyan" x="525" y="405">FT/MIN</text>
 
             <text className="Standard" x="480" y="450">CAB ALT</text>
