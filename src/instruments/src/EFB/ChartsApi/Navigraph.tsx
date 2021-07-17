@@ -44,6 +44,7 @@ export type AuthType = {
     link: string,
     qrLink: string,
     interval: number,
+    disabled: boolean,
 }
 
 export const emptyNavigraphCharts = {
@@ -63,7 +64,7 @@ export default class NavigraphClient {
 
     private static clientSecret = process.env.CLIENT_SECRET;
 
-    private static pkce = pkce();
+    private pkce;
 
     private deviceCode: string;
 
@@ -78,7 +79,10 @@ export default class NavigraphClient {
         link: '',
         qrLink: '',
         interval: 5,
+        disabled: false,
     }
+
+    public userName: string = '';
 
     public static sufficientEnv() {
         return !(NavigraphClient.clientSecret === undefined || NavigraphClient.clientId === undefined);
@@ -86,6 +90,8 @@ export default class NavigraphClient {
 
     constructor() {
         if (NavigraphClient.sufficientEnv()) {
+            this.pkce = pkce();
+
             const token = NXDataStore.get('NAVIGRAPH_REFRESH_TOKEN');
 
             if (token === undefined || token === null || token === '') {
@@ -97,11 +103,14 @@ export default class NavigraphClient {
         }
     }
 
-    private authenticate() {
+    public authenticate() {
+        this.pkce = pkce();
+        this.refreshToken = null;
+
         const secret = {
             client_id: NavigraphClient.clientId,
             client_secret: NavigraphClient.clientSecret,
-            code_challenge: NavigraphClient.pkce.code_challenge,
+            code_challenge: this.pkce.code_challenge,
             code_challenge_method: 'S256',
         };
 
@@ -125,24 +134,43 @@ export default class NavigraphClient {
     }
 
     private tokenCall(body) {
-        fetch('https://identity.api.navigraph.com/connect/token/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-            body: formatFormBody(body),
-        }).then((resp) => {
-            if (resp.ok) {
-                resp.json().then((r) => {
-                    const refreshToken = r.refresh_token;
+        if (this.deviceCode || !this.auth.disabled) {
+            fetch('https://identity.api.navigraph.com/connect/token/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                body: formatFormBody(body),
+            }).then((resp) => {
+                if (resp.ok) {
+                    resp.json().then((r) => {
+                        const refreshToken = r.refresh_token;
 
-                    this.refreshToken = refreshToken;
-                    this.accessToken = r.access_token;
+                        this.refreshToken = refreshToken;
+                        NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
+                        this.userInfo();
 
-                    NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
-                });
-            }
-        }).catch(() => {
-            console.log('Token Authentication Failed. #NV102');
-        });
+                        this.accessToken = r.access_token;
+                    });
+                } else {
+                    resp.text().then((respText) => {
+                        const parsedText = JSON.parse(respText);
+
+                        const { error } = parsedText;
+
+                        if (error === 'slow_down') {
+                            this.auth.interval += 5;
+                        } else if (error === 'authorization_pending') {
+                            console.log('Token Authorization Pending');
+                        } else if (error === 'access_denied') {
+                            this.auth.disabled = true;
+                        } else if (error === 'expired_token') {
+                            this.authenticate();
+                        }
+                    });
+                }
+            }).catch(() => {
+                console.log('Token Authentication Failed. #NV102');
+            });
+        }
     }
 
     public getToken() {
@@ -153,7 +181,7 @@ export default class NavigraphClient {
                 client_id: NavigraphClient.clientId,
                 client_secret: NavigraphClient.clientSecret,
                 scope: 'openid charts offline_access',
-                code_verifier: NavigraphClient.pkce.code_verifier,
+                code_verifier: this.pkce.code_verifier,
             };
 
             const refreshTokenBody = {
@@ -259,7 +287,7 @@ export default class NavigraphClient {
             if (userInfoResp.ok) {
                 const userInfoJson = await userInfoResp.json();
 
-                return userInfoJson.preferred_username;
+                this.userName = userInfoJson.preferred_username;
             }
         }
 
@@ -283,6 +311,6 @@ export default class NavigraphClient {
     }
 }
 
-export const NavigraphContext = React.createContext(new NavigraphClient());
+export const NavigraphContext = React.createContext<NavigraphClient>(undefined!);
 
 export const useNavigraph = () => useContext(NavigraphContext);
