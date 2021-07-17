@@ -22,12 +22,12 @@ impl PressureValve {
 
     pub fn update<T: PressureValveActuator>(&mut self, context: &UpdateContext, actuator: &T) {
         self.target_open = actuator.target_valve_position();
-        if actuator.should_open_pressure_valve() && self.open_amount < self.target_open {
+        if self.open_amount < self.target_open {
             self.open_amount += Ratio::new::<percent>(
                 self.get_valve_change_for_delta(context)
                     .min(self.target_open.get::<percent>() - self.open_amount.get::<percent>()),
             );
-        } else if actuator.should_close_pressure_valve() && self.open_amount > self.target_open {
+        } else if self.open_amount > self.target_open {
             self.open_amount -= Ratio::new::<percent>(
                 self.get_valve_change_for_delta(context)
                     .min(self.open_amount.get::<percent>() - self.target_open.get::<percent>()),
@@ -112,12 +112,6 @@ mod pressure_valve_tests {
         }
     }
     impl PressureValveActuator for TestValveActuator {
-        fn should_open_pressure_valve(&self) -> bool {
-            self.should_open
-        }
-        fn should_close_pressure_valve(&self) -> bool {
-            self.should_close
-        }
         fn target_valve_position(&self) -> Ratio {
             self.target_valve_position
         }

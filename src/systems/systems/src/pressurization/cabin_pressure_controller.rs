@@ -6,7 +6,7 @@ use std::time::Duration;
 use uom::si::{
     f64::*,
     length::{foot, meter},
-    pressure::{hectopascal, inch_of_mercury, psi},
+    pressure::{hectopascal, inch_of_mercury, pascal, psi},
     ratio::{percent, ratio},
     velocity::{foot_per_minute, foot_per_second, knot, meter_per_second},
 };
@@ -254,27 +254,60 @@ impl CabinPressureController {
 }
 
 impl PressureValveActuator for CabinPressureController {
-    fn should_open_pressure_valve(&self) -> bool {
-        self.cabin_vs < Velocity::new::<meter_per_second>(0.) || self.is_ground()
-    }
-
-    fn should_close_pressure_valve(&self) -> bool {
-        self.cabin_vs > Velocity::new::<meter_per_second>(0.)
-    }
-
     fn target_valve_position(&self) -> Ratio {
-        // Placeholder formula to simulate OFV behaviour based on empirical data
-        let pressure_ratio: f64 = self.exterior_pressure.get::<hectopascal>()
-            / (self.cabin_pressure().get::<hectopascal>() * 2.);
-        let vs_ratio: f64 = self.cabin_target_vs.get::<foot_per_minute>() / 2000. * pressure_ratio;
-        if (pressure_ratio + vs_ratio) > 1.
+        // Calculation extracted from:
+        // F. Y. Kurokawa, C. Regina de Andrade and E. L. Zaparoli
+        // DETERMINATION OF THE OUTFLOW VALVE OPENING AREA OF THE AIRCRAFT CABIN PRESSURIZATION SYSTEM
+        // 18th International Congress of Mechanical Engineering
+        // November 6-11, 2005, Ouro Preto, MG
+
+        let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
+
+        // Atmospheric constants
+        const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
+        const GAMMA: f64 = 1.4; // Rate of specific heats for air
+        const G: f64 = 9.80665; // Gravity - m/s2
+
+        // Aircraft constants
+        const RHO: f64 = 1.225; // Cabin air density - Kg/m3
+        const T_0: f64 = 288.; // Cabin temperature - K TODO: Replace with real interior temperature
+        const W_I: f64 = 0.9; // Inflow of air from packs, equivalent to 5 liters / minute / pax
+        const AREA_LEAKAGE: f64 = 0.0003; // m2
+        const CABIN_VOLUME: f64 = 400.; // m3
+        const OFV_SIZE: f64 = 0.06; // m2
+        const C: f64 = 1.; // Flow coefficient
+
+        let margin = 0.05;
+        let z = if (0.53..1.).contains(&pressure_ratio) {
+            pressure_ratio.powf(2. / GAMMA) - pressure_ratio.powf((GAMMA + 1.) / GAMMA)
+        } else if (pressure_ratio - 1.).abs() < margin {
+            0.001
+        } else {
+            0.256
+        };
+
+        // Fuselage leakage flow
+        let w_leakage = C
+            * AREA_LEAKAGE
+            * (2. * (GAMMA / (GAMMA - 1.)) * RHO * self.cabin_pressure.get::<pascal>() * z).sqrt();
+
+        // Ouflow valve target open area
+        let ofv_area = (W_I - w_leakage
+            + ((RHO * G * CABIN_VOLUME) / (R * T_0)
+                * self.cabin_target_vs.get::<meter_per_second>()))
+            / (C * (2. * (GAMMA / (GAMMA - 1.)) * RHO * self.cabin_pressure.get::<pascal>() * z)
+                .sqrt());
+
+        let ofv_open_ratio = Ratio::new::<ratio>(ofv_area / OFV_SIZE);
+
+        if ofv_open_ratio >= Ratio::new::<percent>(100.)
             || (self.is_ground() && self.pressure_schedule_manager.should_open_outflow_valve())
         {
             Ratio::new::<percent>(100.)
-        } else if (pressure_ratio + vs_ratio) < 0. {
+        } else if ofv_open_ratio <= Ratio::new::<percent>(0.) {
             Ratio::new::<percent>(0.)
         } else {
-            Ratio::new::<percent>((pressure_ratio + vs_ratio) * 100.)
+            ofv_open_ratio
         }
     }
 }
@@ -359,7 +392,7 @@ impl PressureSchedule<Ground> {
     fn new() -> Self {
         Self {
             vertical_speed: Velocity::new::<foot_per_minute>(0.),
-            timer: Duration::from_secs(0),
+            timer: Duration::from_secs(55),
             pressure_schedule: Ground {
                 cpc_switch_reset: false,
             },

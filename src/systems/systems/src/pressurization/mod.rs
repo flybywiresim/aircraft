@@ -9,8 +9,6 @@ mod cabin_pressure_controller;
 mod pressure_valve;
 
 trait PressureValveActuator {
-    fn should_open_pressure_valve(&self) -> bool;
-    fn should_close_pressure_valve(&self) -> bool;
     fn target_valve_position(&self) -> Ratio;
 }
 
@@ -236,5 +234,56 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(10.));
         test_bed.run();
         assert!(test_bed.query(|a| a.pressurization.active_system == 2));
+    }
+
+    #[test]
+    fn fifty_five_seconds_after_landing_outflow_valve_opens() {
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                > Ratio::new::<percent>(0.)
+        );
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                < Ratio::new::<percent>(99.)
+        );
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        // Descent
+
+        test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
+        test_bed.set_on_ground(true);
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
+        test_bed.run();
+
+        // Ground
+
+        test_bed.run_with_delta(Duration::from_secs_f64(53.));
+        test_bed.run();
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                < Ratio::new::<percent>(99.)
+        );
+
+        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+        test_bed.run();
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                > Ratio::new::<percent>(99.)
+        );
+
+        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run();
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                > Ratio::new::<percent>(99.)
+        );
     }
 }
