@@ -933,7 +933,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
                 if (e.altKey || (e.ctrlKey && keycode === KeyCode.KEY_Z)) {
                     this.clearFocus();
+                } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
+                    for (let i = this.inOut.length; i > 0; i--) {
+                        this.onClr();
+                    }
+                } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
+                    for (let i = this.inOut.length; i > 0; i--) {
+                        if (this.inOut.slice(-1) === ' ') {
+                            this.onClr();
+                            break;
+                        } else if (!(this.inOut.slice(-1) === ' ')) {
+                            this.onClr();
+                        }
+                    }
                 } else if (e.shiftKey && keycode === KeyCode.KEY_BACK_SPACE) {
+                    console.log('bruh');
                     if (!this.check_clr) {
                         this.onClr();
                         this.check_clr = setTimeout(() => {
