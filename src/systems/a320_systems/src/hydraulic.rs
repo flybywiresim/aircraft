@@ -1,8 +1,13 @@
+extern crate nalgebra as na;
+use na::{Vector2, Vector3};
+
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
+    angle::degree,
     angular_velocity::revolution_per_minute,
     f64::*,
+    mass::kilogram,
     pressure::pascal,
     pressure::psi,
     ratio::{percent, ratio},
@@ -15,6 +20,8 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
+        linear_actuator::LinearActuator,
+        rigid_body::RigidBodyOnHingeAxis,
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
@@ -75,11 +82,13 @@ pub(super) struct A320Hydraulic {
 
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
+
+    cargo_physics: RigidBodyOnHingeAxis,
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: usize = 5;
     // Same id for aft door as a place holder until it gets animated
-    const AFT_CARGO_DOOR_ID: usize = 5;
+    const AFT_CARGO_DOOR_ID: usize = 2;
 
     const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
@@ -233,6 +242,17 @@ impl A320Hydraulic {
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
+
+            cargo_physics: RigidBodyOnHingeAxis::new(
+                Mass::new::<kilogram>(130.),
+                Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.),
+                Vector2::new(0., -1855. / 2000.),
+                Vector2::new(-0.1597, -0.1614),
+                Vector2::new(-0.759, -0.086),
+                Angle::new::<degree>(-23.),
+                Angle::new::<degree>(136.),
+                100.,
+            ),
         }
     }
 
@@ -399,12 +419,17 @@ impl A320Hydraulic {
 
         self.braking_force
             .update_forces(&self.braking_circuit_norm, &self.braking_circuit_altn);
+
+        self.forward_cargo_door
+            .update_position(self.cargo_physics.position_normalized());
     }
 
     // All the higher frequency updates like physics
     fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
         self.ram_air_turbine
             .update_physics(&delta_time_physics, &context.indicated_airspeed());
+
+        self.cargo_physics.update(context);
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -437,8 +462,6 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
     ) {
-        println!("ACC ({:.2},{:.2},{:.2})",context.lat_accel().get::<meter_per_second_squared>(),context.vert_accel().get::<meter_per_second_squared>(),context.long_accel().get::<meter_per_second_squared>());
-
         self.brake_computer.send_brake_demands(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
@@ -1348,11 +1371,30 @@ impl Door {
     fn has_moved(&self) -> bool {
         (self.position - self.previous_position).abs() > f64::EPSILON
     }
+
+    fn update_position(&mut self, position: f64) {
+        //println!("cargo pos updated {:.2}", position);
+        self.previous_position = self.position;
+        self.position = position;
+    }
 }
 impl SimulationElement for Door {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.previous_position = self.position;
-        self.position = state.read(&self.exit_id);
+        // self.previous_position = self.position;
+        // self.position = state.read(&self.exit_id);
+        let read_position: f64 = state.read(&self.exit_id);
+        // println!(
+        //     "cargo pos read from sim {:.2} id {}",
+        //     read_position, &self.exit_id
+        // );
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.exit_id, self.position);
+        // println!(
+        //     "cargo pos written {:.2} id {}",
+        //     self.position, &self.exit_id
+        // );
     }
 }
 
@@ -1741,7 +1783,7 @@ mod tests {
         use systems::simulation::test::TestBed;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
-            acceleration::meter_per_second_squared, length::foot, ratio::percent,
+            acceleration::meter_per_second_squared, angle::radian, length::foot, ratio::percent,
             thermodynamic_temperature::degree_celsius, velocity::knot,
         };
 
@@ -5272,6 +5314,10 @@ mod tests {
                 ThermodynamicTemperature::new::<degree_celsius>(25.0),
                 true,
                 Acceleration::new::<meter_per_second_squared>(0.),
+                Acceleration::new::<meter_per_second_squared>(0.),
+                Acceleration::new::<meter_per_second_squared>(0.),
+                Angle::new::<radian>(0.),
+                Angle::new::<radian>(0.),
             )
         }
 

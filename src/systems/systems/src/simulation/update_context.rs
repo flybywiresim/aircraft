@@ -1,5 +1,5 @@
 use std::time::Duration;
-use uom::si::{f64::*, time::second};
+use uom::si::{angle::radian, f64::*, time::second};
 
 use super::{Read, SimulatorReader};
 
@@ -15,6 +15,8 @@ pub struct UpdateContext {
     longitudinal_acceleration: Acceleration,
     lateral_acceleration: Acceleration,
     vertical_acceleration: Acceleration,
+    pitch: Angle,
+    bank: Angle,
 }
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
@@ -24,6 +26,8 @@ impl UpdateContext {
     pub(crate) const ACCEL_BODY_X_KEY: &'static str = "ACCELERATION BODY X";
     pub(crate) const ACCEL_BODY_Y_KEY: &'static str = "ACCELERATION BODY Y";
     pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION BODY Z";
+    pub(crate) const PLANE_PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
+    pub(crate) const PLANE_BANK_KEY: &'static str = "PLANE BANK DEGREES";
 
     pub fn new(
         delta: Duration,
@@ -34,6 +38,8 @@ impl UpdateContext {
         longitudinal_acceleration: Acceleration,
         lateral_acceleration: Acceleration,
         vertical_acceleration: Acceleration,
+        pitch: Angle,
+        bank: Angle,
     ) -> UpdateContext {
         UpdateContext {
             delta,
@@ -44,6 +50,8 @@ impl UpdateContext {
             longitudinal_acceleration,
             lateral_acceleration,
             vertical_acceleration,
+            pitch,
+            bank,
         }
     }
 
@@ -58,6 +66,8 @@ impl UpdateContext {
             longitudinal_acceleration: reader.read(UpdateContext::ACCEL_BODY_Z_KEY),
             lateral_acceleration: reader.read(UpdateContext::ACCEL_BODY_X_KEY),
             vertical_acceleration: reader.read(UpdateContext::ACCEL_BODY_Y_KEY),
+            pitch: reader.read(UpdateContext::PLANE_PITCH_KEY),
+            bank: reader.read(UpdateContext::PLANE_BANK_KEY),
         }
     }
 
@@ -105,6 +115,13 @@ impl UpdateContext {
         self.vertical_acceleration
     }
 
+    pub fn pitch(&self) -> Angle {
+        self.pitch
+    }
+
+    pub fn bank(&self) -> Angle {
+        self.bank
+    }
     pub fn with_delta(&self, delta: Duration) -> Self {
         let mut copy: UpdateContext = *self;
         copy.delta = delta;

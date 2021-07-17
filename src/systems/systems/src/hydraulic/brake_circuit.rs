@@ -511,6 +511,7 @@ mod tests {
     use std::time::Duration;
     use uom::si::{
         acceleration::foot_per_second_squared,
+        angle::radian,
         length::foot,
         pressure::{pascal, psi},
         thermodynamic_temperature::degree_celsius,
@@ -836,6 +837,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 }

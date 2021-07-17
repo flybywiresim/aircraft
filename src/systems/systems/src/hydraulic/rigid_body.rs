@@ -1,9 +1,9 @@
 extern crate nalgebra as na;
-use na::{Rotation2, Vector2, Vector3};
+use na::{Rotation2, Rotation3, Unit, Vector2, Vector3};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::radian,
+    angle::{degree, radian},
     angular_acceleration::radian_per_second_squared,
     angular_velocity::{degree_per_second, radian_per_second},
     f64::*,
@@ -12,7 +12,7 @@ use uom::si::{
 
 use crate::simulation::UpdateContext;
 
-struct RigidBodyOnHingeAxis {
+pub struct RigidBodyOnHingeAxis {
     throw: f64,
     min_angle: f64,
     max_angle: f64,
@@ -76,6 +76,28 @@ impl RigidBodyOnHingeAxis {
         }
     }
 
+    pub fn linear_extension_to_anchor(&self) -> f64 {
+        (self.anchor_point - self.control_arm_actual).norm()
+    }
+
+    pub fn min_linear_distance_to_anchor(&self) -> f64 {
+        let rotation_min = Rotation2::new(self.min_angle);
+        let control_arm_min = rotation_min * self.control_arm;
+
+        (self.anchor_point - control_arm_min).norm()
+    }
+
+    pub fn max_linear_distance_to_anchor(&self) -> f64 {
+        let rotation_max = Rotation2::new(self.max_angle);
+        let control_arm_max = rotation_max * self.control_arm;
+
+        (self.anchor_point - control_arm_max).norm()
+    }
+
+    pub fn position_normalized(&self) -> f64 {
+        (self.position - self.min_angle) / self.throw
+    }
+
     fn update_all_rotations(&mut self) {
         let rotation_transform = Rotation2::new(self.position);
         self.control_arm_actual = rotation_transform * self.control_arm;
@@ -83,12 +105,39 @@ impl RigidBodyOnHingeAxis {
     }
 
     fn gravity_force(&self, context: &UpdateContext) -> f64 {
-        let mg = context.long_accel().get::<meter_per_second_squared>()* self.mass.get::<kilogram>();
-        let gravity_force = Vector3::new(
-            0.,
-            mg,
-            0.,
+        let local_plane_acceleration = Vector3::new(
+            context.lat_accel().get::<meter_per_second_squared>(),
+            context.vert_accel().get::<meter_per_second_squared>(),
+            context.long_accel().get::<meter_per_second_squared>(),
         );
+        // println!(
+        //     "Local acc {:.1} {:.1} {:.1}",
+        //     local_plane_acceleration[0], local_plane_acceleration[1], local_plane_acceleration[2]
+        // );
+
+        // println!(
+        //     "Pitch {:.1} Bank{:.1} ",
+        //     context.pitch().get::<degree>(),
+        //     context.bank().get::<degree>()
+        // );
+
+        let pitch_rotation =
+            Rotation3::from_axis_angle(&Vector3::x_axis(), context.pitch().get::<radian>());
+
+        let bank_rotation =
+            Rotation3::from_axis_angle(&Vector3::z_axis(), -context.bank().get::<radian>());
+
+        //let mg = -9.8 * self.mass.get::<kilogram>();
+        let gravity_acceleration_world_frame = Vector3::new(0., -9.8, 0.);
+
+        let acceleration_plane_frame =
+            pitch_rotation * bank_rotation * gravity_acceleration_world_frame
+                - local_plane_acceleration;
+
+        // println!(
+        //     "{:.1} {:.1} {:.1}",
+        //     acceleration_plane_frame[0], acceleration_plane_frame[1], acceleration_plane_frame[2]
+        // );
 
         let center_of_gravity_3d = Vector3::new(
             self.center_of_gravity_actual[0],
@@ -96,7 +145,16 @@ impl RigidBodyOnHingeAxis {
             0.,
         );
 
-        let gravity_moment_vector = center_of_gravity_3d.cross(&gravity_force);
+        let resultant_force_plane_frame = acceleration_plane_frame * self.mass.get::<kilogram>();
+
+        // println!(
+        //     "{:.1} {:.1} {:.1}",
+        //     resultant_force_plane_frame[0],
+        //     resultant_force_plane_frame[1],
+        //     resultant_force_plane_frame[2]
+        // );
+
+        let gravity_moment_vector = center_of_gravity_3d.cross(&resultant_force_plane_frame);
 
         gravity_moment_vector[2]
     }
@@ -161,14 +219,18 @@ mod tests {
         let dt = 0.05;
 
         let mut time = 0.;
-        for _ in 0..1000 {
-            rigid_body.update(&context(Duration::from_secs_f64(dt)));
+        for _ in 0..100 {
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(45.),
+            ));
             time += dt;
             println!("Pos {} t={}", rigid_body.position, time);
         }
     }
 
-    fn context(delta_time: Duration) -> UpdateContext {
+    fn context(delta_time: Duration, pitch: Angle, bank: Angle) -> UpdateContext {
         UpdateContext::new(
             delta_time,
             Velocity::new::<knot>(250.),
@@ -177,7 +239,9 @@ mod tests {
             true,
             Acceleration::new::<meter_per_second_squared>(0.),
             Acceleration::new::<meter_per_second_squared>(0.),
-            Acceleration::new::<meter_per_second_squared>(-9.8),
+            Acceleration::new::<meter_per_second_squared>(0.),
+            pitch,
+            bank,
         )
     }
 }

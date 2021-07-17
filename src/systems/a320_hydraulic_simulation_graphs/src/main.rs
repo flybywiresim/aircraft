@@ -7,6 +7,7 @@ pub use systems::hydraulic::*;
 use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
     acceleration::foot_per_second_squared,
+    angle::radian,
     f64::*,
     length::foot,
     pressure::{pascal, psi},
@@ -831,6 +832,8 @@ fn context(delta_time: Duration) -> UpdateContext {
         true,
         Acceleration::new::<foot_per_second_squared>(0.),
         Acceleration::new::<foot_per_second_squared>(0.),
-        Acceleration::new::<foot_per_second_squared>(-32.17),
+        Acceleration::new::<foot_per_second_squared>(0.),
+        Angle::new::<radian>(0.),
+        Angle::new::<radian>(0.),
     )
 }

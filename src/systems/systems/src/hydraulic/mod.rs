@@ -15,6 +15,7 @@ use uom::si::{
 };
 
 pub mod brake_circuit;
+pub mod linear_actuator;
 pub mod rigid_body;
 
 pub trait PressureSource {
@@ -1088,6 +1089,7 @@ mod tests {
     use crate::simulation::UpdateContext;
     use uom::si::{
         acceleration::foot_per_second_squared,
+        angle::radian,
         f64::*,
         length::foot,
         pressure::{pascal, psi},
@@ -1285,6 +1287,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 

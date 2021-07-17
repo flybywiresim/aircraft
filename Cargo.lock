@@ -19,6 +19,7 @@ dependencies = [
 name = "a320_systems"
 version = "0.1.0"
 dependencies = [
+ "nalgebra",
  "rand",
  "rstest",
  "systems",
