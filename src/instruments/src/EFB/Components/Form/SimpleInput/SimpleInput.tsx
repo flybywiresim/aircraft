@@ -28,6 +28,12 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
     const [OSKOnInput] = useSimVarSyncedPersistentProperty('L:A32NX_ONSCREEN_KEYBOARD_ON_INPUT', 'Bool', 'ONSCREEN_KEYBOARD_ON_INPUT');
 
     useEffect(() => {
+        if (!keyboardContext.isShown && inputElementRef.current) {
+            setDisplayValue(getConstrainedValue(inputElementRef.current.value));
+        }
+    }, [keyboardContext.isShown]);
+
+    useEffect(() => {
         if (props.value === undefined || props.value === '') {
             setDisplayValue('');
             return;
@@ -55,7 +61,9 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
     };
 
     const onFocusOut = (event: React.FocusEvent<HTMLInputElement>): void => {
-        setDisplayValue(getConstrainedValue(event.currentTarget.value));
+        if (!keyboardContext.isShown) {
+            setDisplayValue(getConstrainedValue(event.currentTarget.value));
+        }
         setFocused(false);
     };
 
