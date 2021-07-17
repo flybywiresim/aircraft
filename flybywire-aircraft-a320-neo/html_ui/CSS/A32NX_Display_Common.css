@@ -46,6 +46,8 @@ text {
   fill: none;
 }
 
+
+
 /* LCD pixel effect for screens */
 #panel:after {
   content: "";
@@ -57,11 +59,12 @@ text {
   /*background-image:
     linear-gradient(#000000 1px, transparent 1px),
     linear-gradient(to right, #000000 1px, #ffffff10 1px);*/
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY2RgYPgPxGAAZDAwAAATEQIAg5PWpwAAAABJRU5ErkJggg==);
+    /*background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY2RgYPgPxGAAZDAwAAATEQIAg5PWpwAAAABJRU5ErkJggg==);*/
   background-size: 2px 2px;
   background-color:rgba(0,0,255,0.2);
   opacity:0.85;
 }
+
 
 /* change from PageTitle */
 .PageTitle {
