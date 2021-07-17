@@ -52,7 +52,7 @@ Face=1, 1, 1
 [ParticleAttributes.0]
 Blend Mode=2
 Bounce=0.00
-Color Start=0, 0, 0, 0
+Color Start=255, 140, 100, 0
 Color End=255, 140, 100, 0
 Jitter Distance=0.00
 Jitter Time=0.00
@@ -69,7 +69,7 @@ Extrude Heading Max=0.00
 Type=omni
 Size=0.1
 Range=1.7
-Intensity=0.025
+Intensity=0.075
 Softness=2
 SpotInner=30.0
 SpotOuter=50.0
