@@ -250,7 +250,6 @@ class CDUFlightPlanPage {
 
                         // Waypoint is in between on the route
                     } else if (waypointsAndMarkers[winI].fpIndex <= lastRouteIndex && waypointsAndMarkers[winI].fpIndex >= firstRouteIndex) {
-                        console.log(mcdu.cruiseFlightLevel);
                         if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
                             altitudeConstraint = "-----\xa0";
                             altPrefix = "";

@@ -72,10 +72,11 @@ export class FlightPlanManager {
                 plan.setParentInstrument(_parentInstrument);
                 this._flightPlans = [];
                 this._flightPlans.push(plan);
-                if (NXDataStore.get('WT_CJ4_FPSYNC', 0) !== 0) {
-                    this.pauseSync();
-                    await FlightPlanAsoboSync.LoadFromGame(this);
-                }
+                // TODO Reenable this check once we set A32NX_FPSYNC in options - will always sync with AsoboFP on init
+                // if (NXDataStore.get('WT_CJ4_FPSYNC', 0) !== 0) {
+                this.pauseSync();
+                await FlightPlanAsoboSync.LoadFromGame(this);
+                // }
                 this.resumeSync();
 
                 // ctd magic sauce?
