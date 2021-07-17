@@ -310,12 +310,9 @@ impl PressureScheduleManager {
         timer > Duration::from_secs_f64(55.)
     }
 
-    fn reset_cpc_switch(&self) -> Self {
-        match self {
-            PressureScheduleManager::Ground(val) => {
-                PressureScheduleManager::Ground(val.reset_cpc_switch())
-            }
-            _ => *self,
+    fn reset_cpc_switch(&mut self) {
+        if let PressureScheduleManager::Ground(val) = self {
+            val.reset_cpc_switch();
         }
     }
 
@@ -398,14 +395,8 @@ impl PressureSchedule<Ground> {
         self.timer > Duration::from_secs_f64(70.) && self.pressure_schedule.cpc_switch_reset
     }
 
-    fn reset_cpc_switch(self: PressureSchedule<Ground>) -> Self {
-        Self {
-            vertical_speed: self.vertical_speed,
-            timer: self.timer,
-            pressure_schedule: Ground {
-                cpc_switch_reset: false,
-            },
-        }
+    fn reset_cpc_switch(&mut self) {
+        self.pressure_schedule.cpc_switch_reset = false;
     }
 }
 
