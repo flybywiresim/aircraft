@@ -407,6 +407,18 @@
       },
       {
         "accessors": [
+          "x0_PUSH_DOORPANEL_OPEN_SEQ1_vertices#0_TEXCOORD_0",
+          "x0_PUSH_DOORPANEL_OPEN_SEQ1_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.865664, 0.744064],
+          [0.922304, 0.774338],
+          [0.865664, 0.774338],
+          [0.922304, 0.744064]
+        ]
+      },
+      {
+        "accessors": [
           "x0_PUSH_DOORPANEL_OPEN_SEQ2_vertices#0_TEXCOORD_0",
           "x0_PUSH_DOORPANEL_OPEN_SEQ2_vertices#0_TEXCOORD_1"
         ],
@@ -552,6 +564,10 @@
       {
         "gltf": "./sound_nodes/sound_nodes.gltf",
         "bin": "./sound_nodes/sound_nodes.bin"
+      },
+      {
+        "gltf": "./fx_exhaust_apu/fx_exhaust_apu.gltf",
+        "bin": "./fx_exhaust_apu/fx_exhaust_apu.bin"
       }
     ],
     "modifications": [

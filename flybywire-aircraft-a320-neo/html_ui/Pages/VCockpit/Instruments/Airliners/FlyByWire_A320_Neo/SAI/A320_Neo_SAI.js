@@ -1125,35 +1125,79 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         this.maximum = 0.99;
         this.minimum = 0.15;
         this.bright_gran = 0.05;
+        this.dayBrightness = 0.85;
+        this.nightBrightness = 0.50;
+        this.isDaytime = this.getIsDaytime();
+        this.targetBrightness = this.isDaytime ? this.dayBrightness : this.nightBrightness;
+        this.setBrightness(this.targetBrightness);
+        this.transitionSpeedModifier = 0.01;
+        this.updateThrottler = new UpdateThrottler(10000);
+        this.transitionThrottler = new UpdateThrottler(150);
     }
+
     onEnter() {
     }
+
     isReady() {
         return true;
     }
+
     onUpdate(_deltaTime) {
+        const inTransition = this.targetBrightness !== this.currentBrightness;
+        const deltaTime = inTransition ? this.transitionThrottler.canUpdate(_deltaTime) : this.updateThrottler.canUpdate(_deltaTime);
+
+        if (deltaTime === -1) {
+            return;
+        }
+
+        const isDaytime = this.getIsDaytime();
+
+        if (this.isDaytime !== isDaytime) {
+            this.isDaytime = isDaytime;
+            /** Respecting the night->day (isDaytime) and day->night (!isDaytime) transitions */
+            const newTargetBrightness = this.targetBrightness - (this.nightBrightness - this.dayBrightness) * (isDaytime ? 1 : -1);
+            this.targetBrightness = Utils.Clamp(newTargetBrightness, this.minimum, this.maximum);
+        }
+
+        /** We need to exit here to get a transition delta time */
+        if (!inTransition) {
+            return;
+        }
+
+        this.setBrightness(this.targetBrightness > this.currentBrightness ?
+            Math.min(this.currentBrightness + this.transitionSpeedModifier, this.targetBrightness) :
+            Math.max(this.currentBrightness - this.transitionSpeedModifier, this.targetBrightness)
+        );
     }
+
     onExit() {
     }
-    getBrightness() {
-        return SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
-    }
+
     setBrightness(b) {
+        this.currentBrightness = b;
         SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", b);
         this.brightnessElement.updateBrightness(b); //TODO: Remove line on model update
     }
+
     brightnessUp() {
-        const brightness = this.getBrightness();
-        if (this.bugsElement.getDisplay() === "none" && brightness < this.maximum) {
-            this.setBrightness(brightness + this.bright_gran);
+        if (this.bugsElement.getDisplay() === "none" && this.currentBrightness < this.maximum) {
+            this.targetBrightness = Math.min(this.maximum, this.currentBrightness + this.bright_gran);
+            this.setBrightness(this.targetBrightness);
         }
     }
+
     brightnessDown() {
-        const brightness = this.getBrightness();
-        if (this.bugsElement.getDisplay() === "none" && brightness > this.minimum) {
-            this.setBrightness(brightness - this.bright_gran);
+        if (this.bugsElement.getDisplay() === "none" && this.currentBrightness > this.minimum) {
+            this.targetBrightness = Math.max(this.minimum, this.currentBrightness - this.bright_gran);
+            this.setBrightness(this.targetBrightness);
         }
     }
+
+    getIsDaytime() {
+        const timeOfDay = SimVar.GetSimVarValue("E:TIME OF DAY", "Enum");
+        return timeOfDay === 0 || timeOfDay === 1;
+    }
+
     onEvent(_event) {
         switch (_event) {
             case "BTN_BARO_PLUS":
@@ -1181,7 +1225,6 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
                         }
                     }, 150);
                 }
-
                 break;
         }
     }
@@ -1239,15 +1282,15 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
         const interval = 5;
         this.getFrameCounter = A32NX_Util.createFrameCounter(interval);
-        const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+        const coldDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
         this.state = A32NX_Util.createMachine(sai_state_machine);
 
-        if (!cold_dark) {
-            this.selfTestElement.finishTest();
-            this.state.setState("spawn");
-        } else {
+        if (coldDark) {
             this.state.setState("off");
             this.selfTestElement.offDisplay();
+        } else {
+            this.selfTestElement.finishTest();
+            this.state.setState("spawn");
         }
 
         this.updateThrottler = new UpdateThrottler(500);
