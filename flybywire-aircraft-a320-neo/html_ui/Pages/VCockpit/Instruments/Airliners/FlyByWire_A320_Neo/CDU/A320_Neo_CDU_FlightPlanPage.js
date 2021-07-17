@@ -388,7 +388,7 @@ class CDUFlightPlanPage {
             if (currRow && !currRow.marker && prevRow) {
                 if (!prevRow.marker) {
                     if (currRow.speedConstraint !== "---" && currRow.speedConstraint === prevRow.speedConstraint) {
-                        currRow.speedConstraint.ditto = "";
+                        currRow.speedConstraint.ditto = true;
                     }
 
                     if (currRow.altitudeConstraint.alt === prevRow.altitudeConstraint.alt && currRow.altitudeConstraint.altPrefix === "\xa0") {
