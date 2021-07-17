@@ -385,7 +385,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                         </div>
                     </>
                 )}
-            { showThrottleSettings && <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />}
+            {showThrottleSettings && <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />}
         </div>
     );
 };
