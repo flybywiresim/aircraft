@@ -127,6 +127,7 @@ impl CabinPressureController {
     }
 
     fn calculate_cabin_vs(&mut self, context: &UpdateContext) -> Velocity {
+        const MAX_DESCENT_RATE: f64 = -750.;
         match self.pressure_schedule_manager {
             PressureScheduleManager::Ground(_) => Velocity::new::<foot_per_minute>(0.),
             PressureScheduleManager::TakeOff(_) => {
@@ -159,8 +160,8 @@ impl CabinPressureController {
                         * context.vertical_speed().get::<foot_per_minute>()
                         / self.get_ext_diff_with_ldg_elev(context).get::<foot>(),
                 );
-                if target_vs <= Velocity::new::<foot_per_minute>(-750.) {
-                    Velocity::new::<foot_per_minute>(-750.)
+                if target_vs <= Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE) {
+                    Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE)
                 } else if target_vs >= Velocity::new::<foot_per_minute>(500.) {
                     Velocity::new::<foot_per_minute>(500.)
                 } else {
