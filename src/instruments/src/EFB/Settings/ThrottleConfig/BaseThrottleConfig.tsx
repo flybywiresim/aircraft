@@ -49,7 +49,7 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                 {props.throttleCount === 1 ? props.throttleNumber : '1 & 2'}
                 {' '}
             </h1>
-            <div className="bg-gray-800 px-4 pt-5 mt-4 rounded-lg">
+            <div className="bg-navy-lighter px-4 pt-5 mt-4 rounded-2xl">
                 <div className="flex flew-row justify-center">
                     <h1 className="text-white mb-8 text-xl ">
                         Current Value:

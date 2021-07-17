@@ -190,6 +190,7 @@ class A32NX_FlightPhase_TakeOff {
     }
 
     init(_fmc) {
+        SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", false);
         this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
         this.accelerationAltitudeMsl = (_fmc.accelerationAltitude || _fmc.thrustReductionAltitude);
         this.accelerationAltitudeMslEo = _fmc.engineOutAccelerationAltitude;
@@ -368,6 +369,7 @@ class A32NX_FlightPhase_Done {
         _fmc.initVariables();
         _fmc.initMcduVariables();
         _fmc.forceClearScratchpad();
+        SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", true);
         CDUIdentPage.ShowPage(_fmc);
     }
 
