@@ -781,7 +781,7 @@
                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 <TOOLTIPID>Auto brake MAX</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Switch_AntiSkid_Template">
+            <UseTemplate Name="FBW_HANDLING_Switch_AntiSkid_Template">
                 <NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>
                 <PART_ID>Antiskid_Switch</PART_ID>
                 <ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>

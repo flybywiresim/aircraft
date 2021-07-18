@@ -623,4 +623,22 @@
             </UseTemplate>
     </Template>
 
+    <Template Name="FBW_HANDLING_Switch_AntiSkid_Template">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_Code">
+                <LEFT_SINGLE_CODE>
+                    (&gt;K:ANTISKID_BRAKES_TOGGLE)
+                    (A:ANTISKID BRAKES ACTIVE, Bool) ! if{
+                        0 (&gt;L:XMLVAR_Autobrakes_Level)
+                    }
+                </LEFT_SINGLE_CODE>
+                <ANIM_CODE>(A:ANTISKID BRAKES ACTIVE, Bool) 100 *</ANIM_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
 </ModelBehaviors>
