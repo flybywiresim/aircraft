@@ -8,6 +8,7 @@ use uom::si::{
     angular_velocity::{degree_per_second, radian_per_second},
     f64::*,
     mass::kilogram,
+    pressure::pascal,
     volume::{cubic_meter, gallon},
     volume_rate::{cubic_meter_per_second, gallon_per_second},
 };
@@ -26,6 +27,7 @@ pub struct LinearActuator {
 
     position: f64,
     speed: f64,
+    force: f64,
 
     max_position: f64,
     min_position: f64,
@@ -42,22 +44,27 @@ pub struct LinearActuator {
 
     volume_extension_ratio: f64,
     signed_flow: VolumeRate,
+    flow_error_prev: VolumeRate,
 
     max_flow: VolumeRate,
     min_flow: VolumeRate,
 
     delta_displacement: f64,
-    volume_to_actuator: f64,
-    volume_to_reservoir: f64,
 
     volume_to_actuator_accumulator: Volume,
     volume_to_res_accumulator: Volume,
 
     is_control_valves_closed: bool,
+    closed_valves_reference_position: f64,
+    opened_valves_target_position: f64,
+
     fluid_compression_spring_constant: f64,
     fluid_compression_damping_constant: f64,
 }
 impl LinearActuator {
+    const DEFAULT_I_GAIN: f64 = 0.2;
+    const DEFAULT_P_GAIN: f64 = 0.05;
+
     pub fn new(
         connected_body: &RigidBodyOnHingeAxis,
         number_of_actuators: u8,
@@ -84,6 +91,7 @@ impl LinearActuator {
 
             position: 0.,
             speed: 0.,
+            force: 0.,
 
             max_position: max_pos,
             min_position: min_pos,
@@ -100,18 +108,20 @@ impl LinearActuator {
 
             volume_extension_ratio: volume_extension_ratio,
             signed_flow: VolumeRate::new::<gallon_per_second>(0.),
+            flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
 
             max_flow,
             min_flow: max_flow / volume_extension_ratio,
 
             delta_displacement: 0.,
-            volume_to_actuator: 0.,
-            volume_to_reservoir: 0.,
 
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
 
             is_control_valves_closed: true,
+            closed_valves_reference_position: 0.,
+            opened_valves_target_position: 0.,
+
             fluid_compression_spring_constant: spring,
             fluid_compression_damping_constant: damping,
         }
@@ -143,24 +153,79 @@ impl LinearActuator {
     }
 
     fn update_fluid_displacements(&mut self, context: &UpdateContext) {
+        let mut volume_to_actuator = 0.;
+        let mut volume_to_reservoir = 0.;
+
         if self.delta_displacement > 0. {
-            self.volume_to_actuator = self.delta_displacement * self.bore_side_volume;
-            self.volume_to_reservoir = self.volume_to_actuator / self.volume_extension_ratio;
+            volume_to_actuator = self.delta_displacement * self.bore_side_volume;
+            volume_to_reservoir = volume_to_actuator / self.volume_extension_ratio;
         } else if self.delta_displacement < 0. {
-            self.volume_to_actuator = -self.delta_displacement * self.rod_side_volume;
-            self.volume_to_reservoir = self.volume_to_actuator * self.volume_extension_ratio;
-        } else {
-            self.volume_to_actuator = 0.;
-            self.volume_to_reservoir = 0.;
+            volume_to_actuator = -self.delta_displacement * self.rod_side_volume;
+            volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
         }
 
         self.signed_flow = VolumeRate::new::<cubic_meter_per_second>(
-            self.volume_to_actuator * self.delta_displacement.signum()
-                / context.delta_as_secs_f64(),
+            volume_to_actuator * self.delta_displacement.signum() / context.delta_as_secs_f64(),
         );
 
-        self.volume_to_actuator_accumulator += Volume::new::<cubic_meter>(self.volume_to_actuator);
-        self.volume_to_res_accumulator += Volume::new::<cubic_meter>(self.volume_to_reservoir);
+        self.volume_to_actuator_accumulator += Volume::new::<cubic_meter>(volume_to_actuator);
+        self.volume_to_res_accumulator += Volume::new::<cubic_meter>(volume_to_reservoir);
+    }
+
+    fn update_force(&mut self, hydraulic_pressure: Pressure) {
+        if self.is_control_valves_closed {
+            let position_error = self.closed_valves_reference_position - self.position;
+            self.force = position_error * self.fluid_compression_spring_constant
+                - self.speed * self.fluid_compression_damping_constant;
+        } else {
+            self.compute_control_force(hydraulic_pressure);
+        }
+    }
+
+    fn close_control_valves(&mut self) {
+        if !self.is_control_valves_closed {
+            self.closed_valves_reference_position = self.position;
+            self.is_control_valves_closed = true;
+        }
+    }
+
+    fn open_control_valves_start_position_control(&mut self, target_position: f64) {
+        self.is_control_valves_closed = false;
+        self.opened_valves_target_position = target_position;
+    }
+
+    fn compute_control_force(&mut self, hydraulic_pressure: Pressure) {
+        let position_error = self.opened_valves_target_position - self.position;
+
+        let mut open_loop_flow_target = 0.;
+        if position_error >= 0.001 {
+            open_loop_flow_target = self.max_flow.get::<cubic_meter_per_second>();
+        } else if position_error <= 0.001 {
+            open_loop_flow_target = self.min_flow.get::<cubic_meter_per_second>();
+        }
+
+        let flow_error = open_loop_flow_target - self.signed_flow.get::<cubic_meter_per_second>();
+
+        let delta_error = flow_error - self.flow_error_prev.get::<cubic_meter_per_second>();
+        self.flow_error_prev = VolumeRate::new::<cubic_meter_per_second>(flow_error);
+
+        let p_term = Self::DEFAULT_P_GAIN * delta_error;
+        let i_term = Self::DEFAULT_I_GAIN * flow_error;
+
+        let force_gain = 200000.;
+        self.force += (p_term + i_term) * force_gain;
+
+        if self.force > 0. {
+            if position_error > 0. {
+                let max_force = hydraulic_pressure.get::<pascal>() * self.bore_side_area;
+                self.force = self.force.min(max_force);
+            }
+        } else {
+            if position_error < 0. {
+                let max_force = -1. * hydraulic_pressure.get::<pascal>() * self.rod_side_area;
+                self.force = self.force.max(max_force);
+            }
+        }
     }
 }
 
@@ -224,6 +289,8 @@ mod tests {
 
         let mut time = 0.;
         for _ in 0..100 {
+            //actuator.close_control_valves();
+            //actuator.update_force(Pressure::new::<psi>(1500.));
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
@@ -246,8 +313,8 @@ mod tests {
             println!(
                 "Delta_displacement{:.3}, To act {} To res {}",
                 actuator.delta_displacement,
-                actuator.volume_to_actuator,
-                actuator.volume_to_reservoir
+                actuator.volume_to_actuator_accumulator.get::<gallon>(),
+                actuator.volume_to_res_accumulator.get::<gallon>()
             );
 
             time += dt;

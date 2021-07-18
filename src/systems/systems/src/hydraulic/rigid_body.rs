@@ -30,6 +30,7 @@ pub struct RigidBodyOnHingeAxis {
     position: f64,
     speed: f64,
     acceleration: f64,
+    sum_of_torques: f64,
 
     mass: Mass,
     inertia_at_hinge: f64,
@@ -69,11 +70,33 @@ impl RigidBodyOnHingeAxis {
             position: min_angle.get::<radian>(),
             speed: 0.,
             acceleration: 0.,
+            sum_of_torques: 0.,
             mass,
             inertia_at_hinge,
             natural_damping,
             max_speed: 4.0,
         }
+    }
+
+    pub fn apply_control_arm_force(&mut self, force: f64) {
+        let force_support_vector_2d = self.anchor_point - self.control_arm_actual;
+        let force_support_vector_2d_normalized =
+            force_support_vector_2d / force_support_vector_2d.norm();
+
+        let force_support_vector_3d_normalized = Vector3::new(
+            force_support_vector_2d_normalized[0],
+            force_support_vector_2d_normalized[1],
+            0.,
+        );
+
+        let control_arm_3d =
+            Vector3::new(self.control_arm_actual[0], self.control_arm_actual[1], 0.);
+
+        let torque = (force * force_support_vector_3d_normalized).cross(&control_arm_3d);
+
+        let torque_value = torque[2];
+
+        self.sum_of_torques += torque_value;
     }
 
     pub fn linear_extension_to_anchor(&self) -> f64 {
@@ -164,8 +187,8 @@ impl RigidBodyOnHingeAxis {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        let total_force = self.natural_damping() + self.gravity_force(context);
-        self.acceleration = total_force / self.inertia_at_hinge;
+        self.sum_of_torques += self.natural_damping() + self.gravity_force(context);
+        self.acceleration = self.sum_of_torques / self.inertia_at_hinge;
 
         self.speed += self.acceleration * context.delta_as_secs_f64();
 
@@ -180,6 +203,8 @@ impl RigidBodyOnHingeAxis {
         }
 
         self.update_all_rotations();
+
+        self.sum_of_torques = 0.;
     }
 }
 
@@ -223,7 +248,7 @@ mod tests {
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
-                Angle::new::<degree>(45.),
+                Angle::new::<degree>(0.),
             ));
             time += dt;
             println!("Pos {} t={}", rigid_body.position, time);
