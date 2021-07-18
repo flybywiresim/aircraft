@@ -128,13 +128,14 @@
             <ANIM_NAME>AIRBUS_Push_Transfer</ANIM_NAME>
             <PART_ID>AIRBUS_Push_Transfer</PART_ID>
             <ID>1</ID>
-            <WWISE_EVENT_1>transfer_push_button_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>transfer_push_button_on</WWISE_EVENT_2>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
                 <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE><!-- TODO -->
+                <TOOLTIPID>Inoperant</TOOLTIPID>
             </UseTemplate>
         </Component>
     </Template>
@@ -712,21 +713,20 @@
         </UseTemplate>
     </Template>
 
-    <Template Name="FBW_AIRBUS_WeatherRadar_Template">
+<Template Name="FBW_AIRBUS_WeatherRadar_Template">
         <DefaultTemplateParameters>
             <NODE_ID_MODE_KNOB>AIRBUS_Knob_WeatherRader_Mode</NODE_ID_MODE_KNOB>
             <ANIM_NAME_MODE_KNOB>AIRBUS_Knob_WeatherRader_Mode</ANIM_NAME_MODE_KNOB>
             <NODE_ID_ONOFF_SWITCH>AIRBUS_Switch_WeatherRader_OnOff</NODE_ID_ONOFF_SWITCH>
             <ANIM_NAME_ONOFF_SWITCH>AIRBUS_Switch_WeatherRader_OnOff</ANIM_NAME_ONOFF_SWITCH>
-            <WWISE_EVENT>radar_mode_knob</WWISE_EVENT>
-            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <WWISE_EVENT>smallknob</WWISE_EVENT>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID_ONOFF_SWITCH#" Node="#NODE_ID_ONOFF_SWITCH#">
             <UseTemplate Name="ASOBO_GT_Switch_XStates">
                 <ANIM_NAME>#ANIM_NAME_ONOFF_SWITCH#</ANIM_NAME>
                 <NUM_STATES>3</NUM_STATES>
+                <WWISE_EVENT>lswitch</WWISE_EVENT>
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                 <SWITCH_POSITION_VAR>XMLVAR_A320_WeatherRadar_Sys</SWITCH_POSITION_VAR>
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
