@@ -1,4 +1,4 @@
-use self::brake_circuit::Actuator;
+use self::linear_actuator::Actuator;
 
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{

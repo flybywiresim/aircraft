@@ -8,6 +8,7 @@ use uom::si::{
     angular_velocity::{degree_per_second, radian_per_second},
     f64::*,
     mass::kilogram,
+    volume::{cubic_meter, gallon},
     volume_rate::{cubic_meter_per_second, gallon_per_second},
 };
 
@@ -15,6 +16,10 @@ use super::rigid_body::RigidBodyOnHingeAxis;
 
 use crate::simulation::UpdateContext;
 
+pub trait Actuator {
+    fn used_volume(&self) -> Volume;
+    fn reservoir_return(&self) -> Volume;
+}
 pub struct LinearActuator {
     number_of_actuators: u8,
 
@@ -43,6 +48,9 @@ pub struct LinearActuator {
     delta_displacement: f64,
     volume_to_actuator: f64,
     volume_to_reservoir: f64,
+
+    volume_to_actuator_accumulator: Volume,
+    volume_to_res_accumulator: Volume,
 
     is_control_valves_closed: bool,
     fluid_compression_spring_constant: f64,
@@ -99,6 +107,9 @@ impl LinearActuator {
             volume_to_actuator: 0.,
             volume_to_reservoir: 0.,
 
+            volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
+            volume_to_res_accumulator: Volume::new::<gallon>(0.),
+
             is_control_valves_closed: true,
             fluid_compression_spring_constant: spring,
             fluid_compression_damping_constant: damping,
@@ -122,9 +133,12 @@ impl LinearActuator {
     ) {
         let last_position = self.position;
         let absolute_linear_extension = connected_body.linear_extension_to_anchor();
+
         self.position = (absolute_linear_extension - self.min_position) / self.total_throw;
-        self.speed = (last_position - self.position) / context.delta_as_secs_f64();
+
         self.delta_displacement = self.position - last_position;
+
+        self.speed = self.delta_displacement / context.delta_as_secs_f64();
     }
 
     fn update_fluid_displacements(&mut self, context: &UpdateContext) {
@@ -143,6 +157,18 @@ impl LinearActuator {
             self.volume_to_actuator * self.delta_displacement.signum()
                 / context.delta_as_secs_f64(),
         );
+
+        self.volume_to_actuator_accumulator += Volume::new::<cubic_meter>(self.volume_to_actuator);
+        self.volume_to_res_accumulator += Volume::new::<cubic_meter>(self.volume_to_reservoir);
+    }
+}
+
+impl Actuator for LinearActuator {
+    fn used_volume(&self) -> Volume {
+        self.volume_to_actuator_accumulator
+    }
+    fn reservoir_return(&self) -> Volume {
+        self.volume_to_res_accumulator
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::{
-    hydraulic::HydraulicLoop,
+    hydraulic::{linear_actuator::Actuator, HydraulicLoop},
     overhead::PressSingleSignalButton,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -15,11 +15,6 @@ use uom::si::{
 };
 
 use super::Accumulator;
-
-pub trait Actuator {
-    fn used_volume(&self) -> Volume;
-    fn reservoir_return(&self) -> Volume;
-}
 
 struct BrakeActuator {
     total_displacement: Volume,
