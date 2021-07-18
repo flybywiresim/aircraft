@@ -122,7 +122,7 @@ const AircraftConfigurationPage = () => {
     ];
 
     const weightUnitButtons: ButtonType[] = [
-        { name: 'Kg', setting: '1' },
+        { name: 'kg', setting: '1' },
         { name: 'lbs', setting: '0' },
     ];
 
