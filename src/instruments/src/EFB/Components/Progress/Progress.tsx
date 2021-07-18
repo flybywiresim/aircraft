@@ -1,11 +1,11 @@
-import React, { useContext } from 'react';
-import { ThrottleContext } from '../../Settings/ThrottleConfig/BaseThrottleConfig';
+import React from 'react';
 
 export type ProgressBarProps = {
     completed: string | number;
     displayBar?: boolean;
     completedBarBegin?: number;
     completedBarBeginValue?: string;
+    rawThrottlePosition?: number
 
     completedBarEnd?: number;
     completedBarEndValue?: string;
@@ -31,6 +31,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     completedBarEnd,
     completedBarBegin,
     completedBarBeginValue,
+    rawThrottlePosition,
     baseBgColor,
     height,
     width,
@@ -107,13 +108,11 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         alignItems: labelAlignment === 'outside' ? 'center' : 'initial',
     };
 
-    const { throttlePos } = useContext(ThrottleContext);
-
     const getBarStyle = () => {
-        if (completedBarBeginValue && completedBarEnd) {
+        if (completedBarBeginValue && completedBarEnd && rawThrottlePosition) {
             const barBegin = parseFloat(completedBarBeginValue);
             const barEnd = parseFloat((completedBarEnd !== 0 ? (completedBarEnd / 50 - 1) : 0.00).toFixed(2));
-            const roundedThrottlePos = parseFloat(throttlePos.toPrecision(2));
+            const roundedThrottlePos = parseFloat(rawThrottlePosition.toPrecision(2));
 
             if (vertical) {
                 if (roundedThrottlePos <= barEnd && roundedThrottlePos >= barBegin) {
