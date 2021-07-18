@@ -70,7 +70,7 @@ class CDUFlightPlanPage {
             let destEFOBCell = "---";
             if (mcdu.flightPlanManager.getDestination()) {
                 destDistCell = mcdu.flightPlanManager.getDestination().liveDistanceTo.toFixed(0);
-                destEFOBCell = (mcdu.getDestEFOB(isFlying) * mcdu._conversionWeight).toFixed(1);
+                destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(isFlying))).toFixed(1);
                 if (isFlying) {
                     destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().liveUTCTo);
                 } else {
