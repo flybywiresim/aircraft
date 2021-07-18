@@ -10,9 +10,9 @@
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ausgewählten Steuerkurs nach rechts anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)",
       "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU verfügbar",
       "A32NX.LOADING.TIPS.A320NEO_001": "Der FlyByWire A32NX ist das Ergebnis der Zusammenarbeit von Hunderten von individuellen Mitwirkenden.",
-      "A32NX.LOADING.TIPS.A320NEO_002": "Wussten Sie schon? Der A320 kann bei Seitenwinden bis zu 38 Knoten und Rückenwinden bis zu 15 Knoten landen!",
+      "A32NX.LOADING.TIPS.A320NEO_002": "Wussten Sie schon? Der A320 kann bei Seitenwinden bis zu 38 Knoten und Rückenwinden von bis zu 15 Knoten landen!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire ist nach der Fly-by-Wire-Steuerung benannt, die im Airbus A320 erstmals eingeführt wurde.",
-      "A32NX.LOADING.TIPS.A320NEO_004": "Es sind 9873 Flugzeuge der A320-Familie gebaut worden! Das ist fast so viel wie die Bevölkerung von Tuvalu!",
+      "A32NX.LOADING.TIPS.A320NEO_004": "Es wurden bislang über 9900 Flugzeuge der A320-Familie gebaut! Das sind fast so viele wie die Bevölkerung von Tuvalu!",
       "A32NX.LOADING.TIPS.A320NEO_005": "Airbus A320neo Flugzeuge haben eine Reichweite von 3500 NM oder 6500 KM. Das ist genug, um von New York nach Paris zu fliegen!",
       "A32NX.LOADING.TIPS.A320NEO_006": "Wussten Sie schon? Die A320-Familie hat 4 Varianten! Den A318, A319, A320 und A321."
     }
