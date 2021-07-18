@@ -116,7 +116,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
             if (vertical) {
                 if (roundedThrottlePos <= barEnd && roundedThrottlePos >= barBegin) {
-                    return 'absolute z-10 -mt-2.5 h-1.5 bg-green-500';// horizontal progress bar with green bg
+                    return 'absolute z-10 -mt-2.5 h-1.5 bg-green-500'; // horizontal progress bar with green bg
                 }
                 return 'absolute z-10 -mt-2.5 h-1.5 bg-gray-400'; // horizontal progress bar
             }
