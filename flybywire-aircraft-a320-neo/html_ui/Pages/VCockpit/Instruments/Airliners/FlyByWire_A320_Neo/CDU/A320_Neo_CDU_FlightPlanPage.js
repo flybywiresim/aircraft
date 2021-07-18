@@ -518,8 +518,8 @@ function renderFixTableHeader(isFlying) {
 
 function renderFixHeader(rowObj) {
     return [
-        `{sp}${!rowObj.fixAnnotation.noRender ? rowObj.fixAnnotation : ""}`,
-        ((rowObj.active && !rowObj.distance.noRender) ? rowObj.distance : ""),
+        `{sp}${(rowObj.fixAnnotation) ? rowObj.fixAnnotation : ""}`,
+        (rowObj.active ? rowObj.distance : ""),
         ""
     ];
 }
