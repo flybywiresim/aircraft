@@ -37,6 +37,7 @@ class CDUAocOfpData {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCOfpData;
+        mcdu.pageRedrawCallback = () => CDUAocOfpData.ShowPage(mcdu);
         mcdu.activeSystem = 'ATSU';
 
         function updateView() {

@@ -2,6 +2,7 @@ class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageA;
+        mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu);
         mcdu.activeSystem = 'FMGC';
 
         let fromTo = "____|____[color]amber";
@@ -266,6 +267,7 @@ class CDUInitPage {
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageB;
+        mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu);
 
         let initBTitle = "INIT";
 

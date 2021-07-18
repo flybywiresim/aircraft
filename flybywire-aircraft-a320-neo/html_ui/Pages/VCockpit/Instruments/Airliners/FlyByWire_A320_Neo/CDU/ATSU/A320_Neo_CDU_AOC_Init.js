@@ -10,6 +10,7 @@ class CDUAocInit {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCInit;
+        mcdu.pageRedrawCallback = () => CDUAocInit.ShowPage(mcdu);
         mcdu.activeSystem = 'ATSU';
 
         let fltNbr = '_______[color]amber';
