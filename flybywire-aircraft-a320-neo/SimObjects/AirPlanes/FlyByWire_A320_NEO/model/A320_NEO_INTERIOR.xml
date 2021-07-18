@@ -1425,23 +1425,21 @@
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
                     <SIMVAR_INDEX_2>0</SIMVAR_INDEX_2>
                     <LIGHT_TYPE_2>LOGO</LIGHT_TYPE_2>
+                    <TYPE>OnOff_TwoSimvars</TYPE>
 
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
                 <!-- turn off the connection to the logo lights when the plane is not on ground and the flaps are retracted -->
-                <UseTemplate Name="ASOBO_GT_Update">
-                    <FREQUENCY>5</FREQUENCY>
-                    <UPDATE_CODE>
+                <Update Frequency="5">
                     (A:SIM ON GROUND, BOOL) 0 != (A:FLAPS HANDLE PERCENT, percent) 0 &gt; or (&gt;O:_ShouldBeConnectedToPowerGrid)
                     (O:_ShouldBeConnectedToPowerGrid) sp0
                     2 (&gt;A:BUS LOOKUP INDEX, Number)
                     (A:CIRCUIT CONNECTION ON:29, Bool) l0 != if{ 29 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                     3 (&gt;A:BUS LOOKUP INDEX, Number)
                     (A:CIRCUIT CONNECTION ON:30, Bool) l0 != if{ 30 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
-                    </UPDATE_CODE>
-                </UseTemplate>
+                </Update>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_NOSE</NODE_ID>
