@@ -71,11 +71,6 @@ impl BrakeActuator {
         }
     }
 
-    fn reset_accumulators(&mut self) {
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-    }
-
     fn update_position(&mut self, context: &UpdateContext, loop_pressure: Pressure) -> f64 {
         // Final required position for actuator is the required one unless we can't reach it due to pressure
         let final_required_position = self
@@ -104,6 +99,10 @@ impl Actuator for BrakeActuator {
     }
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
+    }
+    fn reset_accumulators(&mut self) {
+        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -292,11 +291,6 @@ impl BrakeCircuit {
     pub fn accumulator_fluid_volume(&self) -> Volume {
         self.accumulator.fluid_volume()
     }
-
-    pub fn reset_accumulators(&mut self) {
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
-    }
 }
 impl Actuator for BrakeCircuit {
     fn used_volume(&self) -> Volume {
@@ -304,6 +298,10 @@ impl Actuator for BrakeCircuit {
     }
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
+    }
+    fn reset_accumulators(&mut self) {
+        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 impl SimulationElement for BrakeCircuit {

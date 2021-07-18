@@ -19,6 +19,7 @@ use crate::simulation::UpdateContext;
 pub trait Actuator {
     fn used_volume(&self) -> Volume;
     fn reservoir_return(&self) -> Volume;
+    fn reset_accumulators(&mut self);
 }
 pub struct LinearActuator {
     number_of_actuators: u8,
@@ -169,6 +170,10 @@ impl Actuator for LinearActuator {
     }
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
+    }
+    fn reset_accumulators(&mut self) {
+        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 
