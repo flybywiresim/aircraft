@@ -26,7 +26,7 @@ pub(super) struct CabinPressureController {
 impl CabinPressureController {
     pub fn new() -> Self {
         Self {
-            pressure_schedule_manager: PressureScheduleManager::Ground(PressureSchedule::new()),
+            pressure_schedule_manager: PressureScheduleManager::new(),
             exterior_pressure: Pressure::new::<inch_of_mercury>(29.92),
             cabin_pressure: Pressure::new::<inch_of_mercury>(29.92),
             cabin_alt: Length::new::<meter>(0.),
@@ -324,6 +324,10 @@ enum PressureScheduleManager {
 }
 
 impl PressureScheduleManager {
+    fn new() -> Self {
+        PressureScheduleManager::Ground(PressureSchedule::with_open_outflow_valve())
+    }
+
     fn update(mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) -> Self {
         self = match self {
             PressureScheduleManager::Ground(val) => val.step(context, engines),
@@ -358,6 +362,28 @@ impl PressureScheduleManager {
     }
 }
 
+impl Default for PressureScheduleManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+macro_rules! transition {
+    ($from: ty, $to: tt) => {
+        transition_with_ctor!($from, $to, || $to);
+    };
+}
+
+macro_rules! transition_with_ctor {
+    ($from: ty, $to: tt, $ctor: expr) => {
+        impl From<PressureSchedule<$from>> for PressureSchedule<$to> {
+            fn from(val: PressureSchedule<$from>) -> PressureSchedule<$to> {
+                PressureSchedule::new(val, $ctor)
+            }
+        }
+    };
+}
+
 #[derive(Copy, Clone)]
 struct PressureSchedule<S> {
     vertical_speed: Velocity, // Placeholder
@@ -382,6 +408,14 @@ impl<S> PressureSchedule<S> {
             pressure_schedule: self.pressure_schedule,
         }
     }
+
+    fn new<T, U: Fn() -> S>(from: PressureSchedule<T>, ctor_fn: U) -> Self {
+        Self {
+            vertical_speed: from.vertical_speed,
+            timer: Duration::from_secs(0),
+            pressure_schedule: (ctor_fn)(),
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -389,8 +423,16 @@ struct Ground {
     cpc_switch_reset: bool,
 }
 
+impl Ground {
+    fn reset() -> Self {
+        Ground {
+            cpc_switch_reset: true,
+        }
+    }
+}
+
 impl PressureSchedule<Ground> {
-    fn new() -> Self {
+    fn with_open_outflow_valve() -> Self {
         Self {
             vertical_speed: Velocity::new::<foot_per_minute>(0.),
             timer: Duration::from_secs(55),
@@ -434,41 +476,9 @@ impl PressureSchedule<Ground> {
     }
 }
 
-impl From<PressureSchedule<TakeOff>> for PressureSchedule<Ground> {
-    fn from(val: PressureSchedule<TakeOff>) -> PressureSchedule<Ground> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: Ground {
-                cpc_switch_reset: true,
-            },
-        }
-    }
-}
-
-impl From<PressureSchedule<DescentInternal>> for PressureSchedule<Ground> {
-    fn from(val: PressureSchedule<DescentInternal>) -> PressureSchedule<Ground> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: Ground {
-                cpc_switch_reset: true,
-            },
-        }
-    }
-}
-
-impl From<PressureSchedule<Abort>> for PressureSchedule<Ground> {
-    fn from(val: PressureSchedule<Abort>) -> PressureSchedule<Ground> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: Ground {
-                cpc_switch_reset: true,
-            },
-        }
-    }
-}
+transition_with_ctor!(TakeOff, Ground, Ground::reset);
+transition_with_ctor!(DescentInternal, Ground, Ground::reset);
+transition_with_ctor!(Abort, Ground, Ground::reset);
 
 #[derive(Copy, Clone)]
 struct TakeOff;
@@ -496,15 +506,7 @@ impl PressureSchedule<TakeOff> {
     }
 }
 
-impl From<PressureSchedule<Ground>> for PressureSchedule<TakeOff> {
-    fn from(val: PressureSchedule<Ground>) -> PressureSchedule<TakeOff> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: TakeOff,
-        }
-    }
-}
+transition!(Ground, TakeOff);
 
 #[derive(Copy, Clone)]
 struct ClimbInternal;
@@ -542,55 +544,11 @@ impl PressureSchedule<ClimbInternal> {
     }
 }
 
-impl From<PressureSchedule<Ground>> for PressureSchedule<ClimbInternal> {
-    fn from(val: PressureSchedule<Ground>) -> PressureSchedule<ClimbInternal> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: ClimbInternal,
-        }
-    }
-}
-
-impl From<PressureSchedule<TakeOff>> for PressureSchedule<ClimbInternal> {
-    fn from(val: PressureSchedule<TakeOff>) -> PressureSchedule<ClimbInternal> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: ClimbInternal,
-        }
-    }
-}
-
-impl From<PressureSchedule<Cruise>> for PressureSchedule<ClimbInternal> {
-    fn from(val: PressureSchedule<Cruise>) -> PressureSchedule<ClimbInternal> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: ClimbInternal,
-        }
-    }
-}
-
-impl From<PressureSchedule<DescentInternal>> for PressureSchedule<ClimbInternal> {
-    fn from(val: PressureSchedule<DescentInternal>) -> PressureSchedule<ClimbInternal> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: ClimbInternal,
-        }
-    }
-}
-
-impl From<PressureSchedule<Abort>> for PressureSchedule<ClimbInternal> {
-    fn from(val: PressureSchedule<Abort>) -> PressureSchedule<ClimbInternal> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: ClimbInternal,
-        }
-    }
-}
+transition!(Ground, ClimbInternal);
+transition!(TakeOff, ClimbInternal);
+transition!(Cruise, ClimbInternal);
+transition!(DescentInternal, ClimbInternal);
+transition!(Abort, ClimbInternal);
 
 #[derive(Copy, Clone)]
 struct Cruise;
@@ -615,15 +573,7 @@ impl PressureSchedule<Cruise> {
     }
 }
 
-impl From<PressureSchedule<ClimbInternal>> for PressureSchedule<Cruise> {
-    fn from(val: PressureSchedule<ClimbInternal>) -> PressureSchedule<Cruise> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: Cruise,
-        }
-    }
-}
+transition!(ClimbInternal, Cruise);
 
 #[derive(Copy, Clone)]
 struct DescentInternal;
@@ -647,25 +597,8 @@ impl PressureSchedule<DescentInternal> {
     }
 }
 
-impl From<PressureSchedule<ClimbInternal>> for PressureSchedule<DescentInternal> {
-    fn from(val: PressureSchedule<ClimbInternal>) -> PressureSchedule<DescentInternal> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: DescentInternal,
-        }
-    }
-}
-
-impl From<PressureSchedule<Cruise>> for PressureSchedule<DescentInternal> {
-    fn from(val: PressureSchedule<Cruise>) -> PressureSchedule<DescentInternal> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: DescentInternal,
-        }
-    }
-}
+transition!(ClimbInternal, DescentInternal);
+transition!(Cruise, DescentInternal);
 
 #[derive(Copy, Clone)]
 struct Abort;
@@ -686,15 +619,7 @@ impl PressureSchedule<Abort> {
     }
 }
 
-impl From<PressureSchedule<ClimbInternal>> for PressureSchedule<Abort> {
-    fn from(val: PressureSchedule<ClimbInternal>) -> PressureSchedule<Abort> {
-        PressureSchedule {
-            vertical_speed: val.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: Abort,
-        }
-    }
-}
+transition!(ClimbInternal, Abort);
 
 #[cfg(test)]
 mod pressure_schedule_manager_tests {
