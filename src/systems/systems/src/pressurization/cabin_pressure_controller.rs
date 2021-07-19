@@ -341,22 +341,21 @@ impl PressureScheduleManager {
     }
 
     fn should_open_outflow_valve(&self) -> bool {
-        let timer = match self {
-            PressureScheduleManager::Ground(val) => val.timer(),
-            _ => Duration::from_secs(0),
-        };
-        timer > Duration::from_secs_f64(55.)
+        match self {
+            PressureScheduleManager::Ground(schedule) => schedule.should_open_outflow_valve(),
+            _ => false,
+        }
     }
 
     fn reset_cpc_switch(&mut self) {
-        if let PressureScheduleManager::Ground(val) = self {
-            val.reset_cpc_switch();
+        if let PressureScheduleManager::Ground(schedule) = self {
+            schedule.reset_cpc_switch();
         }
     }
 
     fn should_switch_cpc(&self) -> bool {
         match self {
-            PressureScheduleManager::Ground(val) => val.should_switch_cpc(),
+            PressureScheduleManager::Ground(schedule) => schedule.should_switch_cpc(),
             _ => false,
         }
     }
@@ -432,10 +431,12 @@ impl Ground {
 }
 
 impl PressureSchedule<Ground> {
+    const OUTFLOW_VALVE_OPENS_AFTER_SECS: u64 = 55;
+
     fn with_open_outflow_valve() -> Self {
         Self {
             vertical_speed: Velocity::new::<foot_per_minute>(0.),
-            timer: Duration::from_secs(55),
+            timer: Duration::from_secs(Self::OUTFLOW_VALVE_OPENS_AFTER_SECS),
             pressure_schedule: Ground {
                 cpc_switch_reset: false,
             },
@@ -463,8 +464,8 @@ impl PressureSchedule<Ground> {
         }
     }
 
-    fn timer(self: PressureSchedule<Ground>) -> Duration {
-        self.timer
+    fn should_open_outflow_valve(&self) -> bool {
+        self.timer >= Duration::from_secs(Self::OUTFLOW_VALVE_OPENS_AFTER_SECS)
     }
 
     fn should_switch_cpc(self: PressureSchedule<Ground>) -> bool {
