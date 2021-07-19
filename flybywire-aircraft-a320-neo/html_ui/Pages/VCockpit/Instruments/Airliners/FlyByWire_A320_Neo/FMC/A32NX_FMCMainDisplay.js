@@ -1760,7 +1760,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async tuneIlsFromApproach(appr) {
-        const finalLeg = appr.wayPoints[appr.wayPoints.length - 1];
+        const finalLeg = appr.finalLegs[appr.finalLegs.length - 1];
         const ilsIcao = finalLeg.originIcao.trim();
         if (ilsIcao.length > 0) {
             try {
@@ -1769,7 +1769,7 @@ class FMCMainDisplay extends BaseAirliners {
                     console.log('Auto-tuning ILS', ils);
                     this.connectIlsFrequency(ils.infos.frequencyMHz);
                     this.ilsAutoIdent = ils.infos.ident;
-                    this.ilsAutoCourse = finalLeg.bearingInFP;
+                    this.ilsAutoCourse = finalLeg.course;
                     this.ilsAutoTuned = true;
                     if (this.currentFlightPhase > FmgcFlightPhases.TAKEOFF) {
                         this.ilsApproachAutoTuned = true;
@@ -1826,8 +1826,6 @@ class FMCMainDisplay extends BaseAirliners {
                         return;
                     }
                 }
-            } else {
-                //console.log("APPR undefined");
             }
         } else {
             if (this.ilsTakeoffAutoTuned) {
@@ -1846,12 +1844,12 @@ class FMCMainDisplay extends BaseAirliners {
                 // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
                 // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
                 // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
-                if (appr && appr.name && appr.wayPoints) {
+                if (appr && appr.name && appr.finalLegs) {
                     const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCRT]?)([\s\-]*[A-Z0-9])?$/);
                     if (
                         match !== null
                         && Avionics.Utils.formatRunway(match[3]) === Avionics.Utils.formatRunway(runway.designation)
-                        && appr.wayPoints.length > 0
+                        && appr.finalLegs.length > 0
                     ) {
                         await this.tuneIlsFromApproach(appr);
                     }
