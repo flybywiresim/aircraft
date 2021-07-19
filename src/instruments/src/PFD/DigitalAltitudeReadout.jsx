@@ -55,23 +55,23 @@ export const DigitalAltitudeReadout = ({ altitude, MDA }) => {
 
     const color = (MDA !== 0 && altitude < MDA) ? 'Amber' : 'Green';
 
-    const absAlt = Math.abs(Math.max(Math.min(altitude, 50000), -1500)); // 1990
-    const tensDigits = absAlt % 100; // 90
+    const absAlt = Math.abs(Math.max(Math.min(altitude, 50000), -1500));
+    const tensDigits = absAlt % 100;
 
-    const HundredsValue = Math.floor((absAlt / 100) % 10); // 9
-    let HundredsPosition = 0; // 0.5
+    const HundredsValue = Math.floor((absAlt / 100) % 10);
+    let HundredsPosition = 0;
     if (tensDigits > 80) {
         HundredsPosition = tensDigits / 20 - 4;
     }
 
-    const ThousandsValue = Math.floor((absAlt / 1000) % 10); // 1
-    let ThousandsPosition = 0; // 0.5
+    const ThousandsValue = Math.floor((absAlt / 1000) % 10);
+    let ThousandsPosition = 0;
     if (HundredsValue >= 9) {
         ThousandsPosition = HundredsPosition;
     }
 
-    const TenThousandsValue = Math.floor((absAlt / 10000) % 10); // 0
-    let TenThousandsPosition = 0; // 0
+    const TenThousandsValue = Math.floor((absAlt / 10000) % 10);
+    let TenThousandsPosition = 0;
     if (ThousandsValue >= 9) {
         TenThousandsPosition = ThousandsPosition;
     }
@@ -107,15 +107,13 @@ export const DigitalAltitudeReadout = ({ altitude, MDA }) => {
 };
 
 const Drum = ({ displayRange, valueSpacing, distanceSpacing, position, value, color, elementFunction, showZero = true }) => {
-    const numTicks = Math.round(displayRange * 2 / valueSpacing); // How many numbers to draw (at most)
+    const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
-    // Where to draw topmost number
     let highestPosition = Math.round((position + displayRange) / valueSpacing) * valueSpacing;
     if (highestPosition > position + displayRange) {
         highestPosition -= valueSpacing;
     }
 
-    // Value of topmost number
     let highestValue = Math.round((value + displayRange) / valueSpacing) * valueSpacing;
     if (highestValue > value + displayRange) {
         highestValue -= valueSpacing;
