@@ -12,11 +12,7 @@ if [ "${GITHUB_ACTIONS}" == "true" ]; then
 fi
 
 # run build
-if [ "$1" = "--no-tty"  ]; then
-    npx igniter --no-tty
-else
-    npx igniter
-fi
+npx igniter "$@"
 
 # restore ownership (when run as github action)
 if [ "${GITHUB_ACTIONS}" == "true" ]; then
