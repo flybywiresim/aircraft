@@ -32,11 +32,18 @@ pub struct RigidBodyOnHingeAxis {
     acceleration: f64,
     sum_of_torques: f64,
 
+    position_normalized: f64,
+    position_normalized_prev: f64,
+
     mass: Mass,
     inertia_at_hinge: f64,
 
     natural_damping: f64,
     max_speed: f64,
+
+    lock_position_request: f64,
+    is_lock_requested: bool,
+    is_locked: bool,
 }
 impl RigidBodyOnHingeAxis {
     #[allow(clippy::too_many_arguments)]
@@ -49,6 +56,7 @@ impl RigidBodyOnHingeAxis {
         min_angle: Angle,
         throw: Angle,
         natural_damping: f64,
+        locked: bool,
     ) -> Self {
         let inertia_at_cog =
             (1. / 12.) * mass.get::<kilogram>() * size[0] * size[0] + size[1] * size[1];
@@ -71,10 +79,15 @@ impl RigidBodyOnHingeAxis {
             speed: 0.,
             acceleration: 0.,
             sum_of_torques: 0.,
+            position_normalized: 0.,
+            position_normalized_prev: 0.,
             mass,
             inertia_at_hinge,
             natural_damping,
             max_speed: 4.0,
+            lock_position_request: min_angle.get::<radian>(),
+            is_lock_requested: locked,
+            is_locked: locked,
         }
     }
 
@@ -117,8 +130,18 @@ impl RigidBodyOnHingeAxis {
         (self.anchor_point - control_arm_max).norm()
     }
 
+    fn lock_requested_position_in_absolute_reference(&self) -> f64 {
+        self.lock_position_request * self.throw + self.min_angle
+    }
+
     pub fn position_normalized(&self) -> f64 {
-        (self.position - self.min_angle) / self.throw
+        self.position_normalized
+    }
+
+    fn update_position_normalized(&mut self) {
+        self.position_normalized_prev = self.position_normalized;
+
+        self.position_normalized = (self.position - self.min_angle) / self.throw;
     }
 
     fn update_all_rotations(&mut self) {
@@ -157,15 +180,15 @@ impl RigidBodyOnHingeAxis {
             * (bank_rotation * gravity_acceleration_world_frame))
             - local_plane_acceleration;
 
-        println!(
-            "local gravity acc {:.1} {:.1} {:.1}",
-            acceleration_plane_frame[0], acceleration_plane_frame[1], acceleration_plane_frame[2]
-        );
+        // println!(
+        //     "local gravity acc {:.1} {:.1} {:.1}",
+        //     acceleration_plane_frame[0], acceleration_plane_frame[1], acceleration_plane_frame[2]
+        // );
 
-        println!(
-            "final plane acc{:.1} {:.1} {:.1}",
-            acceleration_plane_frame[0], acceleration_plane_frame[1], acceleration_plane_frame[2]
-        );
+        // println!(
+        //     "final plane acc{:.1} {:.1} {:.1}",
+        //     acceleration_plane_frame[0], acceleration_plane_frame[1], acceleration_plane_frame[2]
+        // );
 
         let center_of_gravity_3d = Vector3::new(
             self.center_of_gravity_actual[0],
@@ -185,24 +208,46 @@ impl RigidBodyOnHingeAxis {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.sum_of_torques += self.natural_damping() + self.gravity_force(context);
-        self.acceleration = self.sum_of_torques / self.inertia_at_hinge;
+        if !self.is_locked {
+            self.sum_of_torques += self.natural_damping() + self.gravity_force(context);
+            self.acceleration = self.sum_of_torques / self.inertia_at_hinge;
 
-        self.speed += self.acceleration * context.delta_as_secs_f64();
+            self.speed += self.acceleration * context.delta_as_secs_f64();
 
-        self.position += self.speed * context.delta_as_secs_f64();
+            self.position += self.speed * context.delta_as_secs_f64();
 
-        if self.position >= self.max_angle {
-            self.position = self.max_angle;
-            self.speed = -self.speed * 0.3;
-        } else if self.position <= self.min_angle {
-            self.position = self.min_angle;
-            self.speed = -self.speed * 0.3;
+            if self.is_lock_requested {
+                if self.position_normalized >= self.lock_position_request
+                    && self.position_normalized_prev <= self.lock_position_request
+                    || self.position_normalized <= self.lock_position_request
+                        && self.position_normalized_prev >= self.lock_position_request
+                {
+                    self.is_locked = true;
+                    self.position = self.lock_requested_position_in_absolute_reference();
+                    self.speed = 0.;
+                }
+            } else if self.position >= self.max_angle {
+                self.position = self.max_angle;
+                self.speed = -self.speed * 0.3;
+            } else if self.position <= self.min_angle {
+                self.position = self.min_angle;
+                self.speed = -self.speed * 0.3;
+            }
+            self.update_position_normalized();
+            self.update_all_rotations();
         }
 
-        self.update_all_rotations();
-
         self.sum_of_torques = 0.;
+    }
+
+    fn unlock(&mut self) {
+        self.is_locked = false;
+        self.is_lock_requested = false;
+    }
+
+    fn lock_at_position_normalized(&mut self, position_normalized: f64) {
+        self.is_lock_requested = true;
+        self.lock_position_request = position_normalized;
     }
 }
 
@@ -222,22 +267,7 @@ mod tests {
 
     #[test]
     fn body_gravity_movement() {
-        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector2::new(0., -size[1] / 2.);
-
-        let control_arm = Vector2::new(-0.1597, -0.1614);
-        let anchor = Vector2::new(-0.759, -0.086);
-
-        let mut rigid_body = RigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
-            size,
-            cg_offset,
-            control_arm,
-            anchor,
-            Angle::new::<degree>(-23.),
-            Angle::new::<degree>(136.),
-            100.,
-        );
+        let mut rigid_body = cargo_door_body(false);
 
         let dt = 0.05;
 
@@ -253,6 +283,112 @@ mod tests {
         }
     }
 
+    #[test]
+    fn not_locked_at_init_will_move() {
+        let mut rigid_body = cargo_door_body(false);
+        let init_pos = rigid_body.position;
+
+        let dt = 0.05;
+
+        let mut time = 0.;
+        for _ in 0..100 {
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(-45.),
+            ));
+            time += dt;
+            println!("Pos {} t={}", rigid_body.position, time);
+            assert!(rigid_body.position != init_pos);
+        }
+    }
+
+    #[test]
+    fn locked_at_init_wont_move() {
+        let mut rigid_body = cargo_door_body(true);
+
+        let dt = 0.05;
+
+        let init_pos = rigid_body.position;
+
+        let mut time = 0.;
+        for _ in 0..100 {
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(-45.),
+            ));
+            time += dt;
+            println!("Pos {} t={}", rigid_body.position, time);
+            assert!(rigid_body.position == init_pos);
+        }
+    }
+
+    #[test]
+    fn start_moving_once_unlocked() {
+        let mut rigid_body = cargo_door_body(true);
+
+        let dt = 0.05;
+
+        let init_pos = rigid_body.position;
+
+        let mut time = 0.;
+        for _ in 0..100 {
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(-45.),
+            ));
+            time += dt;
+
+            if time < 1. {
+                assert!(rigid_body.position == init_pos);
+            }
+
+            if time >= 1. && time < 1. + dt {
+                rigid_body.unlock();
+                println!("UNLOCK t={}", time);
+            }
+
+            if time > 1. + dt {
+                assert!(rigid_body.position != init_pos);
+            }
+
+            println!("Pos {} t={}", rigid_body.position_normalized(), time);
+        }
+    }
+
+    #[test]
+    fn locks_at_required_position() {
+        let mut rigid_body = cargo_door_body(false);
+
+        let dt = 0.05;
+
+        let init_pos = rigid_body.position;
+
+        let mut time = 0.;
+
+        rigid_body.lock_at_position_normalized(0.5);
+
+        assert!(rigid_body.is_lock_requested);
+
+        assert!(!rigid_body.is_locked);
+
+        for _ in 0..100 {
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(-45.),
+            ));
+            time += dt;
+
+            println!("Pos {} t={}", rigid_body.position_normalized(), time);
+        }
+
+        assert!(rigid_body.is_locked);
+        assert!(rigid_body.position_normalized() == 0.5);
+    }
+
     fn context(delta_time: Duration, pitch: Angle, bank: Angle) -> UpdateContext {
         UpdateContext::new(
             delta_time,
@@ -265,6 +401,26 @@ mod tests {
             Acceleration::new::<meter_per_second_squared>(0.),
             pitch,
             bank,
+        )
+    }
+
+    fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
+        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
+        let cg_offset = Vector2::new(0., -size[1] / 2.);
+
+        let control_arm = Vector2::new(-0.1597, -0.1614);
+        let anchor = Vector2::new(-0.759, -0.086);
+
+        RigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(130.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-23.),
+            Angle::new::<degree>(136.),
+            100.,
+            is_locked,
         )
     }
 }

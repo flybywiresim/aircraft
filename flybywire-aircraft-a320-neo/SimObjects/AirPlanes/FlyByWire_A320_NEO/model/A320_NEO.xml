@@ -187,7 +187,7 @@
         <Component ID="INTERACTIVE_POINTS">
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>door_cargo</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_DOOR_CARGO_POSITION)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
             <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">

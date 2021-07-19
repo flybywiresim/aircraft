@@ -273,6 +273,7 @@ mod tests {
             Angle::new::<degree>(-23.),
             Angle::new::<degree>(136.),
             100.,
+            false,
         );
 
         let mut actuator = LinearActuator::new(

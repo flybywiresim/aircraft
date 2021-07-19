@@ -548,7 +548,7 @@ impl CargoDoors {
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
-            forward_cargo_door_position: NamedVariable::from("A32NX_DOOR_CARGO_POSITION"),
+            forward_cargo_door_position: NamedVariable::from("A32NX_FWD_DOOR_CARGO_POSITION"),
             forward_cargo_door_sim_position_request: AircraftVariable::from(
                 "INTERACTIVE POINT OPEN",
                 "Position",
@@ -576,7 +576,7 @@ impl CargoDoors {
 impl SimulatorAspect for CargoDoors {
     fn write(&mut self, name: &str, value: f64) -> bool {
         match name {
-            "EXIT OPEN:5" => {
+            "FWD_DOOR_CARGO_POSITION" => {
                 self.set_forward_door_postition(value);
                 //println!("simaspect write {}", value);
                 true
@@ -588,7 +588,7 @@ impl SimulatorAspect for CargoDoors {
     fn read(&mut self, name: &str) -> Option<f64> {
         match name {
             "FWD_DOOR_CARGO_OPEN_REQ" => Some(self.forward_cargo_door_open_req),
-            "DOOR_CARGO_POSITION" => Some(self.fwd_position),
+            "FWD_DOOR_CARGO_POSITION" => Some(self.fwd_position),
             _ => None,
         }
     }

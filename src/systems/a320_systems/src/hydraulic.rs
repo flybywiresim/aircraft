@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 use na::{Vector2, Vector3};
 
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
@@ -86,9 +86,9 @@ pub(super) struct A320Hydraulic {
     cargo_physics: RigidBodyOnHingeAxis,
 }
 impl A320Hydraulic {
-    const FORWARD_CARGO_DOOR_ID: usize = 5;
+    const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     // Same id for aft door as a place holder until it gets animated
-    const AFT_CARGO_DOOR_ID: usize = 2;
+    const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
     const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
@@ -252,6 +252,7 @@ impl A320Hydraulic {
                 Angle::new::<degree>(-23.),
                 Angle::new::<degree>(136.),
                 100.,
+                false,
             ),
         }
     }
@@ -1355,14 +1356,16 @@ impl SimulationElement for A320BrakingForce {
 }
 
 struct Door {
-    exit_id: String,
+    position_id: String,
+    requested_position_id: String,
     position: f64,
     previous_position: f64,
 }
 impl Door {
-    fn new(id: usize) -> Self {
+    fn new(id: &str) -> Self {
         Self {
-            exit_id: format!("EXIT OPEN:{}", id),
+            position_id: format!("{}_DOOR_CARGO_POSITION", id),
+            requested_position_id: format!("{}_DOOR_CARGO_OPEN_REQ", id),
             position: 0.,
             previous_position: 0.,
         }
@@ -1383,8 +1386,8 @@ impl SimulationElement for Door {
         // self.previous_position = self.position;
         // self.position = state.read(&self.exit_id);
 
-        let read_position: f64 = state.read("DOOR_CARGO_POSITION");
-        let read_request: f64 = state.read("FWD_DOOR_CARGO_OPEN_REQ");
+        let read_position: f64 = state.read(&self.position_id);
+        let read_request: f64 = state.read(&self.requested_position_id);
         println!(
             "cargo pos read from system {:.2} requested: {:.2} ",
             read_position, read_request
@@ -1392,7 +1395,7 @@ impl SimulationElement for Door {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.exit_id, self.position);
+        writer.write(&self.position_id, self.position);
         // println!(
         //     "cargo pos written {:.2} id {}",
         //     self.position, &self.exit_id
@@ -4819,8 +4822,8 @@ mod tests {
 
         #[test]
         fn controller_yellow_epump_overhead_button_logic() {
-            let fwd_door = Door::new(1);
-            let aft_door = Door::new(2);
+            let fwd_door = Door::new("FWD");
+            let aft_door = Door::new("AFT");
             let context = context(Duration::from_millis(100));
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
@@ -4847,8 +4850,8 @@ mod tests {
 
         #[test]
         fn controller_yellow_epump_unpowered_cant_command_pump() {
-            let fwd_door = Door::new(1);
-            let aft_door = Door::new(2);
+            let fwd_door = Door::new("FWD");
+            let aft_door = Door::new("AFT");
             let context = context(Duration::from_millis(100));
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
@@ -4883,19 +4886,19 @@ mod tests {
             overhead_panel.yellow_epump_push_button.push_auto();
             assert!(!yellow_epump_controller.should_pressurise());
 
-            let aft_door = non_moving_door(2);
-            let fwd_door = moving_door(1);
+            let aft_door = non_moving_door("AFT");
+            let fwd_door = moving_door("FWD");
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
             assert!(yellow_epump_controller.should_pressurise());
-            let fwd_door = non_moving_door(1);
+            let fwd_door = non_moving_door("FWD");
 
             yellow_epump_controller.update(&context.with_delta(Duration::from_secs(1) + A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION), &overhead_panel,&fwd_door,&aft_door, true);
             assert!(!yellow_epump_controller.should_pressurise());
 
-            let aft_door = moving_door(2);
+            let aft_door = moving_door("AFT");
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
             assert!(yellow_epump_controller.should_pressurise());
-            let aft_door = non_moving_door(2);
+            let aft_door = non_moving_door("AFT");
 
             yellow_epump_controller.update(&context.with_delta(Duration::from_secs(1) + A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION), &overhead_panel,&fwd_door,&aft_door, true);
             assert!(!yellow_epump_controller.should_pressurise());
@@ -4919,8 +4922,8 @@ mod tests {
             overhead_panel.yellow_epump_push_button.push_auto();
             assert!(!yellow_epump_controller.should_pressurise());
 
-            let aft_door = non_moving_door(2);
-            let fwd_door = moving_door(1);
+            let aft_door = non_moving_door("AFT");
+            let fwd_door = moving_door("FWD");
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
 
             // Need to run again the receive power state as now cargo door is operated
@@ -5127,8 +5130,8 @@ mod tests {
             ptu_controller.update(
                 &context,
                 &overhead_panel,
-                &non_moving_door(1),
-                &non_moving_door(2),
+                &non_moving_door("FWD"),
+                &non_moving_door("AFT"),
                 &tug,
             );
             assert!(ptu_controller.should_enable());
@@ -5138,8 +5141,8 @@ mod tests {
             ptu_controller.update(
                 &context,
                 &overhead_panel,
-                &non_moving_door(1),
-                &non_moving_door(2),
+                &non_moving_door("FWD"),
+                &non_moving_door("AFT"),
                 &tug,
             );
             assert!(!ptu_controller.should_enable());
@@ -5149,20 +5152,20 @@ mod tests {
             ptu_controller.update(
                 &context,
                 &overhead_panel,
-                &moving_door(1),
-                &non_moving_door(2),
+                &moving_door("FWD"),
+                &non_moving_door("AFT"),
                 &tug,
             );
             assert!(!ptu_controller.should_enable());
 
-            ptu_controller.update(&context.with_delta(Duration::from_secs(1) + A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION), &overhead_panel, &non_moving_door(1), &non_moving_door(2), &tug);
+            ptu_controller.update(&context.with_delta(Duration::from_secs(1) + A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION), &overhead_panel, &non_moving_door("FWD"), &non_moving_door("AFT"), &tug);
             assert!(ptu_controller.should_enable());
         }
 
         #[test]
         fn controller_ptu_tug() {
-            let fwd_door = Door::new(1);
-            let aft_door = Door::new(2);
+            let fwd_door = Door::new("FWD");
+            let aft_door = Door::new("AFT");
             let mut tug = PushbackTug::new();
             let context = context(Duration::from_millis(100));
 
@@ -5323,14 +5326,14 @@ mod tests {
             )
         }
 
-        fn moving_door(id: usize) -> Door {
-            let mut door = Door::new(id);
+        fn moving_door(id: &str) -> Door {
+            let mut door = Door::new("FWD");
             door.position += 0.01;
             door
         }
 
-        fn non_moving_door(id: usize) -> Door {
-            let mut door = Door::new(id);
+        fn non_moving_door(id: &str) -> Door {
+            let mut door = Door::new("FWD");
             door.previous_position = door.position;
             door
         }
