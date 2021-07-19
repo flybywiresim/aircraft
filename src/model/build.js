@@ -196,6 +196,30 @@ function combineGltf(pathA, pathB, outputPath) {
     fs.writeFileSync(outputPath, data);
 }
 
+function replaceAccessorData(buffer, gltf, accessor, data) {
+    const accessorByteOffset = accessor.byteOffset || 0;
+    const bufferView = gltf.bufferViews[accessor.bufferView];
+    const bufferViewByteOffset = bufferView.byteOffset || 0;
+    let { byteStride } = bufferView;
+    if (byteStride === undefined) {
+        byteStride = AccessorType[accessor.type] * ComponentTypeSize[accessor.componentType];
+    }
+    const byteOffset = accessorByteOffset + bufferViewByteOffset;
+    for (let i = 0; i < data.length; i += 1) {
+        const item = data[i];
+        for (let j = 0; j < AccessorType[accessor.type]; j += 1) {
+            // eslint-disable-next-line max-len
+            const index = byteOffset + (j * ComponentTypeSize[accessor.componentType]) + (i * byteStride);
+            byteData.packTo(item[j], {
+                bits: (ComponentTypeSize[accessor.componentType] * 8),
+                signed: ComponentTypeSigned[accessor.componentType],
+                fp: ComponentTypeFloat[accessor.componentType],
+            }, buffer, index);
+        }
+    }
+    return buffer;
+}
+
 function applyModifications(buffer, gltfPath, modifications) {
     const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
     for (const mod of modifications) {
@@ -205,23 +229,7 @@ function applyModifications(buffer, gltfPath, modifications) {
         for (const accessorName of mod.accessors) {
             for (const accessor of gltf.accessors) {
                 if (accessor.name === accessorName) {
-                    const accessorByteOffset = accessor.byteOffset || 0;
-                    const bufferView = gltf.bufferViews[accessor.bufferView];
-                    const bufferViewByteOffset = bufferView.byteOffset || 0;
-                    const { byteStride } = bufferView;
-                    const byteOffset = accessorByteOffset + bufferViewByteOffset;
-                    for (let i = 0; i < mod.data.length; i += 1) {
-                        const item = mod.data[i];
-                        for (let j = 0; j < AccessorType[accessor.type]; j += 1) {
-                            // eslint-disable-next-line max-len
-                            const index = byteOffset + (j * ComponentTypeSize[accessor.componentType]) + (i * byteStride);
-                            byteData.packTo(item[j], {
-                                bits: (ComponentTypeSize[accessor.componentType] * 8),
-                                signed: ComponentTypeSigned[accessor.componentType],
-                                fp: ComponentTypeFloat[accessor.componentType],
-                            }, buffer, index);
-                        }
-                    }
+                    buffer = replaceAccessorData(buffer, gltf, accessor, mod.data);
                 }
             }
         }
@@ -232,7 +240,7 @@ function applyModifications(buffer, gltfPath, modifications) {
 function applyNodeModifications(gltfPath, outputPath, modifications) {
     const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
     for (const mod of modifications) {
-        if (!mod.node) {
+        if (!mod.node || !mod.mods) {
             continue;
         }
         for (let i = 0; i < gltf.nodes.length; i++) {
@@ -248,6 +256,44 @@ function applyNodeModifications(gltfPath, outputPath, modifications) {
     fs.writeFileSync(outputPath, data);
 }
 
+function findSamplersForNode(gltf, nodeIndex) {
+    const samplers = [];
+    for (let i = 0; i < gltf.animations.length; i++) {
+        for (let j = 0; j < gltf.animations[i].channels.length; j++) {
+            const channel = gltf.animations[i].channels[j];
+            if (channel.target.node === nodeIndex) {
+                samplers.push(gltf.animations[i].samplers[channel.sampler]);
+            }
+        }
+    }
+    return samplers;
+}
+
+function applyOutputSamplerModifications(buffer, gltfPath, modifications) {
+    const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
+    for (const mod of modifications) {
+        if (!mod.node || !mod.outputSamplers) {
+            continue;
+        }
+        for (let i = 0; i < gltf.nodes.length; i++) {
+            if (mod.node === gltf.nodes[i].name) {
+                const samplers = findSamplersForNode(gltf, i);
+                if (samplers.length === mod.outputSamplers.length) {
+                    for (let j = 0; j < samplers.length; j++) {
+                        buffer = replaceAccessorData(
+                            buffer,
+                            gltf,
+                            gltf.accessors[samplers[j].output],
+                            mod.outputSamplers[j],
+                        );
+                    }
+                }
+            }
+        }
+    }
+    return buffer;
+}
+
 const models = JSON.parse(fs.readFileSync(path.join(__dirname, 'models.json'), 'utf8'));
 const p = (n) => path.resolve(__dirname, n);
 for (const model of models) {
@@ -255,8 +301,13 @@ for (const model of models) {
         fs.copyFileSync(p(model.gltf[i]), p(model.output.gltf[i]));
         if (model.modifications) {
             applyNodeModifications(p(model.output.gltf[i]), p(model.output.gltf[i]), model.modifications);
-            const modifiedBin = applyModifications(
+            let modifiedBin = applyModifications(
                 fs.readFileSync(p(model.bin[i])),
+                p(model.gltf[i]),
+                model.modifications,
+            );
+            modifiedBin = applyOutputSamplerModifications(
+                modifiedBin,
                 p(model.gltf[i]),
                 model.modifications,
             );
