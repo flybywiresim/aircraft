@@ -391,21 +391,14 @@ struct PressureSchedule<S> {
 }
 
 impl<S> PressureSchedule<S> {
-    fn increase_timer(self, context: &UpdateContext) -> Self {
-        let timer = self.timer + context.delta();
-        Self {
-            vertical_speed: self.vertical_speed,
-            timer,
-            pressure_schedule: self.pressure_schedule,
-        }
+    fn increase_timer(mut self, context: &UpdateContext) -> Self {
+        self.timer += context.delta();
+        self
     }
 
-    fn reset_timer(self) -> Self {
-        Self {
-            vertical_speed: self.vertical_speed,
-            timer: Duration::from_secs(0),
-            pressure_schedule: self.pressure_schedule,
-        }
+    fn reset_timer(mut self) -> Self {
+        self.timer = Duration::from_secs(0);
+        self
     }
 
     fn new<T, U: Fn() -> S>(from: PressureSchedule<T>, ctor_fn: U) -> Self {
