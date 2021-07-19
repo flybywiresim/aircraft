@@ -178,7 +178,7 @@ const VLsBar = ({ VAlphaProt, VLs, airspeed }) => {
     );
 };
 
-export const AirspeedIndicatorOfftape = ({ airspeed, mach, airspeedAcc, targetSpeed, speedIsManaged }) => {
+export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged }) => {
     if (Number.isNaN(airspeed)) {
         return (
             <>
@@ -197,7 +197,6 @@ export const AirspeedIndicatorOfftape = ({ airspeed, mach, airspeedAcc, targetSp
             <SpeedTarget airspeed={clampedSpeed} targetSpeed={clampedTargetSpeed} isManaged={speedIsManaged} />
             <path className="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
             <path className="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
-            <MachNumber mach={mach} airspeedAcc={airspeedAcc} />
         </g>
     );
 };
@@ -229,8 +228,14 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
     );
 };
 
-const MachNumber = ({ mach, airspeedAcc }) => {
-    if (Number.isNaN(mach) || (airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
+export const MachNumber = ({ mach, airspeedAcc }) => {
+    if (Number.isNaN(mach)) {
+        return (
+            <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
+        );
+    }
+
+    if ((airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
         return null;
     }
 

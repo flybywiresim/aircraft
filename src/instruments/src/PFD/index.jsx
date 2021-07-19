@@ -5,7 +5,7 @@ import { LandingSystem } from './LandingSystemIndicator.jsx';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator.jsx';
 import { HeadingOfftape, HeadingTape } from './HeadingIndicator.jsx';
 import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator.jsx';
-import { AirspeedIndicatorOfftape, AirspeedIndicator } from './SpeedIndicator.jsx';
+import { AirspeedIndicatorOfftape, AirspeedIndicator, MachNumber } from './SpeedIndicator.jsx';
 import { FMA } from './FMA.jsx';
 import { getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator } from '../util.js';
 import { SmoothSin, LagFilter, RateLimiter } from './PFDUtils.jsx';
@@ -204,6 +204,7 @@ class PFD extends Component {
                     <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                     <AltitudeIndicatorOfftape altitude={altitude} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
                     <AirspeedIndicatorOfftape airspeed={clampedAirspeed} mach={mach} airspeedAcc={filteredAirspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
+                    <MachNumber mach={mach} airspeedAcc={filteredAirspeedAcc} />
                     <FMA isAttExcessive={this.isAttExcessive} />
                 </svg>
             </DisplayUnit>
