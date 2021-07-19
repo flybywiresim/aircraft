@@ -630,12 +630,7 @@
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_Code">
-                <LEFT_SINGLE_CODE>
-                    (&gt;K:ANTISKID_BRAKES_TOGGLE)
-                    (A:ANTISKID BRAKES ACTIVE, Bool) ! if{
-                        0 (&gt;L:XMLVAR_Autobrakes_Level)
-                    }
-                </LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>(&gt;K:ANTISKID_BRAKES_TOGGLE)</LEFT_SINGLE_CODE>
                 <ANIM_CODE>(A:ANTISKID BRAKES ACTIVE, Bool) 100 *</ANIM_CODE>
             </UseTemplate>
         </Component>
