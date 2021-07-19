@@ -6,7 +6,7 @@
     font-size: 24px;
     text-decoration: underline;
     fill: $display-white;
-    text-anchor: middle !important;
+    text-anchor: start !important;
   }
 
   .FuelUsed {
@@ -19,8 +19,16 @@
   .EngineNumber {
     font-size: 30px;
     text-anchor: middle;
+  }
+
+  .EngineNumberOn {
     stroke: $display-white;
     fill: $display-white;
+  }
+
+  .EngineNumberOff {
+    stroke: $display-amber;
+    fill: $display-amber;
   }
 
   .EngineLine {
@@ -36,7 +44,7 @@
   }
 
   .ThickShape {
-    stroke: $display-white;
+    stroke: $display-light-grey;
     stroke-width: 2.5;
   }
 

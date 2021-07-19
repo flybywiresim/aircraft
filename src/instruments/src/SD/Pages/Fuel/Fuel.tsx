@@ -4,11 +4,15 @@ import ReactDOM from 'react-dom';
 import React from 'react';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
+import { usePersistentProperty } from '../../../Common/persistence';
 
 setIsEcamPage('fuel_page');
 
 export const FuelPage = () => {
     const [crossFeedPosition] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'number', 150);
+
+    const [Eng1N2] = useSimVar('TURB ENG N2:1', 'Percent', 1000);
+    const [Eng2N2] = useSimVar('TURB ENG N2:2', 'Percent', 1000);
 
     const [pumpLeftInner1] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'boolean', 200);
     const [pumpLeftInner2] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'boolean', 200);
@@ -23,38 +27,52 @@ export const FuelPage = () => {
     const [tankRightInner] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'gallons', 150);
     const [tankRightOuter] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'gallons', 200);
 
-    const [leftFuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:1', 'kg', 200);
-    const [rightFuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:2', 'kg', 200);
+    // const [leftFuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:1', 'kg', 200);
+    // const [rightFuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:2', 'kg', 200);
+
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT');
+
+    const fuelConsumptionForDisplay = (fuelConsumption, unitsC) => {
+        const roundValue = unitsC === 1 ? 10 : 20;
+        return parseInt(((fuelConsumption * unitsC) - (fuelConsumption % roundValue)).toFixed(0));
+    };
+
+    const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000); // Note these values are in KG
+    const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
+
+    const leftFuelUsed = fuelConsumptionForDisplay(leftConsumption, unit);
+    const rightFuelUsed = fuelConsumptionForDisplay(rightConsumption, unit);
 
     const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 250);
 
     const [fuelWeightPerGallon] = useSimVar('FUEL WEIGHT PER GALLON', 'kilogram', 60_000);
 
-    const [leftFuelFlow] = useSimVar('ENG FUEL FLOW GPH:1', 'gallons per hour', 150);
-    const [rightFuelFlow] = useSimVar('ENG FUEL FLOW GPH:2', 'gallons per hour', 150);
+    const [leftFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:1', 'number', 500); // KG/HR
+    const [rightFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:2', 'number', 500);
+
+    console.log(`left fuel flow is ${leftFuelFlow}`);
 
     return (
         // This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM
         <svg id="sd-fuel-page" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-            <text className="PageTitle" x={9} y={31}>FUEL</text>
-            <line x1={10} y1={33} x2={71} y2={33} className="ThickShape" />
+            <text className="PageTitle" x={14} y={16} alignmentBaseline="central">FUEL</text>
 
             {/* Engines */}
             <>
                 <text className="FuelUsed" x={300} y={28}>F.USED</text>
                 <text className="FuelUsed" x={300} y={47}>1+2</text>
-                <text className="UsedQuantity" x={301} y={74}>{Math.round((leftFuelUsed + rightFuelUsed) - ((leftFuelUsed + rightFuelUsed) % 100))}</text>
-                <text className="Unit" textAnchor="middle" x={301} y={98}>KG</text>
+                <text className="UsedQuantity" x={301} y={74}>{leftFuelUsed + rightFuelUsed}</text>
+                <text className="Unit" textAnchor="middle" x={301} y={98}>{unit === '1' ? 'KG' : 'LBS'}</text>
 
                 {/* Left engine */}
-                <text className="EngineNumber" x={160} y={41}>1</text>
+                <text className={Eng1N2 > 15 ? 'EngineNumber EngineNumberOn' : 'EngineNumber EngineNumberOff'} x={160} y={41}>1</text>
                 <line className="EngineLine" x1="200" y1="31" x2="250" y2="21" />
-                <text className="UsedQuantity" x={160} y={68}>{Math.round(leftFuelUsed - (leftFuelUsed % 100))}</text>
+                <text className="UsedQuantity" x={160} y={68}>{leftFuelUsed}</text>
 
                 {/* Right engine */}
-                <text className="EngineNumber" x={440} y={41}>2</text>
+                <text className={Eng2N2 > 15 ? 'EngineNumber EngineNumberOn' : 'EngineNumber EngineNumberOff'} x={440} y={41}>2</text>
                 <line className="EngineLine" x1="400" y1="31" x2="350" y2="21" />
-                <text className="UsedQuantity" x={440} y={68}>{Math.round(rightFuelUsed - (rightFuelUsed % 100))}</text>
+                <text className="UsedQuantity" x={440} y={68}>{rightFuelUsed}</text>
             </>
 
             {/* Wings */}
@@ -95,7 +113,7 @@ export const FuelPage = () => {
 
                 {/* Ducts to left inner pumps */}
                 <line className="FlowShape" x1={160} y1={215} x2={160} y2={116} />
-                <line className="FlowShape" x1={160} y1={190} x2={195} y2={190} />
+                <line className="FlowShape" x1={160} y1={190} x2={196} y2={190} />
                 <line className="FlowShape" x1={195} y1={190} x2={195} y2={215} />
 
                 {/* Pumps */}
@@ -110,8 +128,8 @@ export const FuelPage = () => {
             {/* Center */}
             <>
                 {/* Side lines */}
-                <line className="FlowShape" x1="160" y1="150" x2="270" y2="150" />
-                <line className="FlowShape" x1="330" y1="150" x2="440" y2="150" />
+                <line className="FlowShape" x1="160" y1="150" x2="275" y2="150" />
+                <line className="FlowShape" x1="325" y1="150" x2="440" y2="150" />
 
                 {/* Center valve lines */}
                 {(crossFeedPosition === 100) && (
@@ -146,8 +164,8 @@ export const FuelPage = () => {
 
                 {/* Ducts to right inner pumps */}
                 <line className="FlowShape" x1={440} y1={215} x2={440} y2={116} />
-                <line className="FlowShape" x1={440} y1={190} x2={405} y2={190} />
-                <line className="FlowShape" x1={405} y1={190} x2={405} y2={240} />
+                <line className="FlowShape" x1={440} y1={190} x2={404} y2={190} />
+                <line className="FlowShape" x1={405} y1={190} x2={405} y2={215} />
 
                 {/* Pumps */}
                 <Pump x={390} y={215} active={!!pumpRightInner1} />
@@ -165,9 +183,12 @@ export const FuelPage = () => {
 
                 <text id="FuelFlowColon" x={83} y={461}>:</text>
 
-                <text id="FuelFlowValue" x={200} y={452}>{Math.round(fuelWeightPerGallon * (leftFuelFlow / 60 + rightFuelFlow / 60))}</text>
+                <text id="FuelFlowValue" x={200} y={452}>{Math.round(leftFuelFlow + rightFuelFlow)}</text>
 
-                <text id="FuelFlowUnit" x={215} y={452}>KG/MIN</text>
+                <text id="FuelFlowUnit" x={215} y={452}>
+                    {unit === '1' ? 'KG' : 'LBS'}
+                    /MIN
+                </text>
             </>
 
             {/* FOB */}
@@ -179,7 +200,7 @@ export const FuelPage = () => {
 
                 <text id="FobValue" x={200} y={481}>{((q) => Math.round(q - (q % 10)))(fob)}</text>
 
-                <text id="FobUnit" x={215} y={483}>KG</text>
+                <text id="FobUnit" x={215} y={483}>{unit === '1' ? 'KG' : 'LBS'}</text>
             </>
         </svg>
     );
