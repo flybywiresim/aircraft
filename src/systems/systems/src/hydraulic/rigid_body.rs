@@ -128,11 +128,11 @@ impl RigidBodyOnHingeAxis {
     }
 
     fn gravity_force(&self, context: &UpdateContext) -> f64 {
-        println!(
-            "Pitch {:.1} Bank{:.1} ",
-            context.pitch().get::<degree>(),
-            context.bank().get::<degree>()
-        );
+        // println!(
+        //     "Pitch {:.1} Bank{:.1} ",
+        //     context.pitch().get::<degree>(),
+        //     context.bank().get::<degree>()
+        // );
 
         let local_plane_acceleration = Vector3::new(
             context.lat_accel().get::<meter_per_second_squared>(),
@@ -140,10 +140,10 @@ impl RigidBodyOnHingeAxis {
             context.long_accel().get::<meter_per_second_squared>(),
         );
 
-        println!(
-            "Local acc {:.1} {:.1} {:.1}",
-            local_plane_acceleration[0], local_plane_acceleration[1], local_plane_acceleration[2]
-        );
+        // println!(
+        //     "Local acc {:.1} {:.1} {:.1}",
+        //     local_plane_acceleration[0], local_plane_acceleration[1], local_plane_acceleration[2]
+        // );
 
         let pitch_rotation =
             Rotation3::from_axis_angle(&Vector3::x_axis(), context.pitch().get::<radian>());
@@ -151,33 +151,16 @@ impl RigidBodyOnHingeAxis {
         let bank_rotation =
             Rotation3::from_axis_angle(&Vector3::z_axis(), -context.bank().get::<radian>());
 
-        // let bank_rotation_local_correct =
-        //     Rotation3::from_axis_angle(&Vector3::z_axis(), context.bank().get::<radian>());
-
-        //let mg = -9.8 * self.mass.get::<kilogram>();
         let gravity_acceleration_world_frame = Vector3::new(0., -9.8, 0.);
 
-        // let acceleration_plane_frame = (pitch_rotation
-        //     * ( bank_rotation * gravity_acceleration_world_frame))
-        //     - local_plane_acceleration;
-
-        // let corrected_local_plane_acceleration =
-        //     bank_rotation_local_correct * local_plane_acceleration;
-        // println!(
-        //     "Local acc corrected {:.1} {:.1} {:.1}",
-        //     corrected_local_plane_acceleration[0],
-        //     corrected_local_plane_acceleration[1],
-        //     corrected_local_plane_acceleration[2]
-        // );
-
-        let mut acceleration_plane_frame = bank_rotation * gravity_acceleration_world_frame;
+        let acceleration_plane_frame = (pitch_rotation
+            * (bank_rotation * gravity_acceleration_world_frame))
+            - local_plane_acceleration;
 
         println!(
             "local gravity acc {:.1} {:.1} {:.1}",
             acceleration_plane_frame[0], acceleration_plane_frame[1], acceleration_plane_frame[2]
         );
-
-        acceleration_plane_frame = acceleration_plane_frame - local_plane_acceleration;
 
         println!(
             "final plane acc{:.1} {:.1} {:.1}",
@@ -191,13 +174,6 @@ impl RigidBodyOnHingeAxis {
         );
 
         let resultant_force_plane_frame = acceleration_plane_frame * self.mass.get::<kilogram>();
-
-        // println!(
-        //     "{:.1} {:.1} {:.1}",
-        //     resultant_force_plane_frame[0],
-        //     resultant_force_plane_frame[1],
-        //     resultant_force_plane_frame[2]
-        // );
 
         let gravity_moment_vector = center_of_gravity_3d.cross(&resultant_force_plane_frame);
 

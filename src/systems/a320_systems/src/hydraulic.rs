@@ -1382,11 +1382,13 @@ impl SimulationElement for Door {
     fn read(&mut self, state: &mut SimulatorReader) {
         // self.previous_position = self.position;
         // self.position = state.read(&self.exit_id);
-        let read_position: f64 = state.read(&self.exit_id);
-        // println!(
-        //     "cargo pos read from sim {:.2} id {}",
-        //     read_position, &self.exit_id
-        // );
+
+        let read_position: f64 = state.read("DOOR_CARGO_POSITION");
+        let read_request: f64 = state.read("FWD_DOOR_CARGO_OPEN_REQ");
+        println!(
+            "cargo pos read from system {:.2} requested: {:.2} ",
+            read_position, read_request
+        );
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {

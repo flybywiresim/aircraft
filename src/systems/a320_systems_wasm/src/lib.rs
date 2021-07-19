@@ -1,7 +1,11 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
-use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
+use msfs::{
+    legacy::{AircraftVariable, NamedVariable},
+    sim_connect::SimConnect,
+    sys,
+};
 use std::{
     pin::Pin,
     time::{Duration, Instant},
@@ -68,7 +72,7 @@ fn create_aircraft_variable_reader(
     reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
     reader.add("ACCELERATION BODY X", "feet per second squared", 0)?;
     reader.add("ACCELERATION BODY Y", "feet per second squared", 0)?;
-    reader.add("INTERACTIVE POINT OPEN", "Percent over 100", 5)?;
+    //reader.add("INTERACTIVE POINT OPEN", "Percent over 100", 5)?;
 
     reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
     reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
@@ -529,29 +533,44 @@ impl SimulatorAspect for Brakes {
 }
 
 struct CargoDoors {
-    cargo_pos_masked_input: NamedVariable,
-
+    forward_cargo_door_position: NamedVariable,
+    forward_cargo_door_sim_position_request: AircraftVariable,
     // id_cargo_toggle: sys::DWORD,
     // id_cargo_pos: sys::DWORD,
     fwd_position: f64,
+    forward_cargo_door_open_req: f64,
 }
 impl CargoDoors {
     fn set_forward_door_postition(&mut self, value: f64) {
         self.fwd_position = value;
-        //println!("set_forward_door_postition {}", value);
+        println!("set_forward_door_postition {}", value);
     }
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
-            cargo_pos_masked_input: NamedVariable::from("A32NX_DOOR_CARGO_POSITION"),
-            //cargo_pos_masked_input: NamedVariable::from("INTERACTIVE POINT OPEN:5"),
+            forward_cargo_door_position: NamedVariable::from("A32NX_DOOR_CARGO_POSITION"),
+            forward_cargo_door_sim_position_request: AircraftVariable::from(
+                "INTERACTIVE POINT OPEN",
+                "Position",
+                5,
+            )?,
+            //forward_cargo_door_position: AircraftVariable::from("INTERACTIVE POINT OPEN", "Position", 5),
             // SimConnect inputs masking
             // id_cargo_toggle: sim_connect
             //    .map_client_event_to_sim_event("TOGGLE_AIRCRAFT_EXIT:5", false)?,
             // id_cargo_pos: sim_connect
             //     .map_client_event_to_sim_event("INTERACTIVE POINT OPEN:5", false)?,
             fwd_position: 0.,
+            forward_cargo_door_open_req: 0.,
         })
+    }
+
+    fn set_in_sim_position_request(&mut self, position_requested: f64) {
+        if position_requested > 0. {
+            self.forward_cargo_door_open_req = 100.;
+        } else {
+            self.forward_cargo_door_open_req = 0.;
+        }
     }
 }
 impl SimulatorAspect for CargoDoors {
@@ -563,6 +582,14 @@ impl SimulatorAspect for CargoDoors {
                 true
             }
             _ => false,
+        }
+    }
+
+    fn read(&mut self, name: &str) -> Option<f64> {
+        match name {
+            "FWD_DOOR_CARGO_OPEN_REQ" => Some(self.forward_cargo_door_open_req),
+            "DOOR_CARGO_POSITION" => Some(self.fwd_position),
+            _ => None,
         }
     }
 
@@ -586,14 +613,18 @@ impl SimulatorAspect for CargoDoors {
         false
     }
 
-    fn pre_tick(&mut self, delta: Duration) {}
+    fn pre_tick(&mut self, delta: Duration) {
+        let read_val = self.forward_cargo_door_sim_position_request.get();
+        println!("Read interactive point: {}", read_val);
+        self.set_in_sim_position_request(read_val);
+    }
 
     fn post_tick(
         &mut self,
         sim_connect: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        //println!("Sending final position {}", self.fwd_position * 100.);
-        self.cargo_pos_masked_input
+        println!("Sending final position {}", self.fwd_position * 100.);
+        self.forward_cargo_door_position
             .set_value(self.fwd_position * 100.);
 
         Ok(())
