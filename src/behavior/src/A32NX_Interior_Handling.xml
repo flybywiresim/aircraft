@@ -417,11 +417,11 @@
                 <Condition Check="NO_RESET_PUSH">
                     <False>
                         <Component ID="#RESET_PUSH_NODE_ID#" Node="#RESET_PUSH_NODE_ID#">
-                            <UseTemplate Name = "ASOBO_GT_Push_Button">
+                            <UseTemplate Name = "ASOBO_GT_Push_Button_Held">
                                 <ANIM_NAME>#RESET_PUSH_ANIM_NAME#</ANIM_NAME>
                                 <LEFT_SINGLE_CODE>(&gt;K:RUDDER_TRIM_RESET)</LEFT_SINGLE_CODE>
-                                <WWISE_EVENT_1>rudder_trim_rest_push_button_on</WWISE_EVENT_1>
-                                <WWISE_EVENT_2>rudder_trim_rest_push_button_on</WWISE_EVENT_2>
+                                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.RUDDER_TRIM_RESET</TOOLTIPID>
                             </UseTemplate>
                         </Component>

@@ -694,9 +694,7 @@ class EngineControl {
     simOnGround = simVars->getSimOnGround();
     Imbalance = simVars->getEngineImbalance();
 
-    if (simOnGround == 1) {
-      generateIdleParameters(pressAltitude, ambientTemp);
-    }
+    generateIdleParameters(pressAltitude, ambientTemp);
 
     // Timer timer;
     for (engine = 1; engine <= 2; engine++) {
