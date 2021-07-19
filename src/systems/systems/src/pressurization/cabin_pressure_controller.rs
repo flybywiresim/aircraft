@@ -462,7 +462,7 @@ impl PressureSchedule<Ground> {
     }
 
     fn should_switch_cpc(self: PressureSchedule<Ground>) -> bool {
-        self.timer > Duration::from_secs_f64(70.) && self.pressure_schedule.cpc_switch_reset
+        self.timer > Duration::from_secs(70) && self.pressure_schedule.cpc_switch_reset
     }
 
     fn reset_cpc_switch(&mut self) {
@@ -513,7 +513,7 @@ impl PressureSchedule<ClimbInternal> {
         if context.indicated_altitude() < Length::new::<foot>(8000.)
             && context.vertical_speed() < Velocity::new::<foot_per_minute>(-200.)
         {
-            if self.timer > Duration::from_secs_f64(30.) {
+            if self.timer > Duration::from_secs(30) {
                 PressureScheduleManager::Abort(self.into())
             } else {
                 PressureScheduleManager::ClimbInternal(self.increase_timer(context))
@@ -521,13 +521,13 @@ impl PressureSchedule<ClimbInternal> {
         } else if context.vertical_speed() < Velocity::new::<foot_per_minute>(100.)
             && context.vertical_speed() > Velocity::new::<foot_per_minute>(-100.)
         {
-            if self.timer > Duration::from_secs_f64(30.) {
+            if self.timer > Duration::from_secs(30) {
                 PressureScheduleManager::Cruise(self.into())
             } else {
                 PressureScheduleManager::ClimbInternal(self.increase_timer(context))
             }
         } else if context.vertical_speed() < Velocity::new::<foot_per_minute>(-250.) {
-            if self.timer > Duration::from_secs_f64(60.) {
+            if self.timer > Duration::from_secs(60) {
                 PressureScheduleManager::DescentInternal(self.into())
             } else {
                 PressureScheduleManager::ClimbInternal(self.increase_timer(context))
@@ -550,13 +550,13 @@ struct Cruise;
 impl PressureSchedule<Cruise> {
     fn step(self: PressureSchedule<Cruise>, context: &UpdateContext) -> PressureScheduleManager {
         if context.vertical_speed() > Velocity::new::<foot_per_minute>(250.) {
-            if self.timer > Duration::from_secs_f64(60.) {
+            if self.timer > Duration::from_secs(60) {
                 PressureScheduleManager::ClimbInternal(self.into())
             } else {
                 PressureScheduleManager::Cruise(self.increase_timer(context))
             }
         } else if context.vertical_speed() < Velocity::new::<foot_per_minute>(-250.) {
-            if self.timer > Duration::from_secs_f64(30.) {
+            if self.timer > Duration::from_secs(30) {
                 PressureScheduleManager::DescentInternal(self.into())
             } else {
                 PressureScheduleManager::Cruise(self.increase_timer(context))
@@ -578,7 +578,7 @@ impl PressureSchedule<DescentInternal> {
         context: &UpdateContext,
     ) -> PressureScheduleManager {
         if context.vertical_speed() > Velocity::new::<foot_per_minute>(250.) {
-            if self.timer > Duration::from_secs_f64(60.) {
+            if self.timer > Duration::from_secs(60) {
                 PressureScheduleManager::ClimbInternal(self.into())
             } else {
                 PressureScheduleManager::DescentInternal(self.increase_timer(context))
@@ -602,7 +602,7 @@ impl PressureSchedule<Abort> {
         if context.is_on_ground() && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else if context.vertical_speed() > Velocity::new::<foot_per_minute>(30.) {
-            if self.timer > Duration::from_secs_f64(60.) {
+            if self.timer > Duration::from_secs(60) {
                 PressureScheduleManager::ClimbInternal(self.into())
             } else {
                 PressureScheduleManager::Abort(self.increase_timer(context))
@@ -785,7 +785,7 @@ mod pressure_schedule_manager_tests {
         test_bed.set_on_ground(true);
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1005.));
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.cpc.cabin_delta_p()) > Pressure::new::<psi>(0.1));
         assert_eq!(
@@ -816,7 +816,7 @@ mod pressure_schedule_manager_tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.cpc.cabin_vs()) > Velocity::new::<foot_per_minute>(0.));
     }
@@ -824,19 +824,19 @@ mod pressure_schedule_manager_tests {
     #[test]
     fn cabin_vs_increases_with_altitude() {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(2000.));
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs(10));
         let first_vs = test_bed.query(|a| a.cpc.cabin_vs());
 
         test_bed.set_indicated_altitude(Length::new::<foot>(20000.));
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         test_bed.set_indicated_altitude(Length::new::<foot>(30000.));
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs(10));
         test_bed.set_indicated_altitude(Length::new::<foot>(39000.));
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.cpc.cabin_vs()) > first_vs);
     }
@@ -906,7 +906,7 @@ mod pressure_schedule_manager_tests {
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
-        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+        test_bed.run_with_delta(Duration::from_secs(1));
 
         assert!(test_bed.query(|a| a.is_climb()));
     }
@@ -952,7 +952,7 @@ mod pressure_schedule_manager_tests {
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_cruise()));
@@ -968,7 +968,7 @@ mod pressure_schedule_manager_tests {
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_cruise()));
@@ -983,8 +983,8 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
-        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+        test_bed.run_with_delta(Duration::from_secs(31));
+        test_bed.run_with_delta(Duration::from_secs(1));
 
         assert!(test_bed.query(|a| a.is_cruise()));
 
@@ -1004,13 +1004,13 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_cruise()));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(61.));
+        test_bed.run_with_delta(Duration::from_secs(61));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
@@ -1021,13 +1021,13 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_cruise()));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
@@ -1051,7 +1051,7 @@ mod pressure_schedule_manager_tests {
         test_bed.run_with_delta(Duration::from_secs(60));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
@@ -1065,17 +1065,17 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(61.));
+        test_bed.run_with_delta(Duration::from_secs(61));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
@@ -1086,11 +1086,11 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
@@ -1107,11 +1107,11 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
@@ -1133,13 +1133,13 @@ mod pressure_schedule_manager_tests {
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_abort()));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
-        test_bed.run_with_delta(Duration::from_secs_f64(61.));
+        test_bed.run_with_delta(Duration::from_secs(61));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
@@ -1152,7 +1152,7 @@ mod pressure_schedule_manager_tests {
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_abort()));
@@ -1173,7 +1173,7 @@ mod pressure_schedule_manager_tests {
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs(10));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
@@ -1181,7 +1181,7 @@ mod pressure_schedule_manager_tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(200.));
         test_bed.run();
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-        test_bed.run_with_delta(Duration::from_secs_f64(25.));
+        test_bed.run_with_delta(Duration::from_secs(25));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
@@ -1189,7 +1189,7 @@ mod pressure_schedule_manager_tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(200.));
         test_bed.run();
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_cruise()));
@@ -1200,21 +1200,13 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_cruise()));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(25.));
-        test_bed.run();
-
-        assert!(test_bed.query(|a| a.is_cruise()));
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-10.));
-        test_bed.run();
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(25.));
+        test_bed.run_with_delta(Duration::from_secs(25));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_cruise()));
@@ -1222,7 +1214,15 @@ mod pressure_schedule_manager_tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-10.));
         test_bed.run();
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(25));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_cruise()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-10.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
@@ -1233,11 +1233,11 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
@@ -1245,7 +1245,7 @@ mod pressure_schedule_manager_tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(240.));
         test_bed.run();
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
@@ -1253,7 +1253,7 @@ mod pressure_schedule_manager_tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(240.));
         test_bed.run();
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_descent()));
@@ -1261,7 +1261,7 @@ mod pressure_schedule_manager_tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(240.));
         test_bed.run();
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(260.));
-        test_bed.run_with_delta(Duration::from_secs_f64(61.));
+        test_bed.run_with_delta(Duration::from_secs(61));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
@@ -1274,21 +1274,13 @@ mod pressure_schedule_manager_tests {
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
         test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_abort()));
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
-        test_bed.run();
-
-        assert!(test_bed.query(|a| a.is_abort()));
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(29.));
-        test_bed.run();
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
-        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run_with_delta(Duration::from_secs(31));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_abort()));
@@ -1296,7 +1288,15 @@ mod pressure_schedule_manager_tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(29.));
         test_bed.run();
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
-        test_bed.run_with_delta(Duration::from_secs_f64(61.));
+        test_bed.run_with_delta(Duration::from_secs(31));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.is_abort()));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(29.));
+        test_bed.run();
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(31.));
+        test_bed.run_with_delta(Duration::from_secs(61));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
