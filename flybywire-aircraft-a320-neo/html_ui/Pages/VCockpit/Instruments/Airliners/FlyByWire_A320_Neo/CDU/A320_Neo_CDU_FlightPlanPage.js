@@ -371,6 +371,8 @@ class CDUFlightPlanPage {
         const scrollText = [];
         for (let rowI = 0; rowI < scrollWindow.length; rowI++) {
             const currRow = scrollWindow[rowI];
+            let spdRepeat = false;
+            let altRepeat = false;
 
             if (rowI > 0 && currRow && !currRow.marker) {
                 let dstnc = currRow.distance;
@@ -391,11 +393,11 @@ class CDUFlightPlanPage {
             if (currRow && !currRow.marker && prevRow) {
                 if (!prevRow.marker) {
                     if (currRow.speedConstraint !== "---" && currRow.speedConstraint === prevRow.speedConstraint) {
-                        currRow.speedConstraint.ditto = true;
+                        spdRepeat = true;
                     }
 
                     if (currRow.altitudeConstraint.alt === prevRow.altitudeConstraint.alt && currRow.altitudeConstraint.altPrefix === "\xa0") {
-                        currRow.altitudeConstraint.ditto = true;
+                        altRepeat = true;
                     }
                 } else if (prevRow.marker) {
                     if (currRow.distance.includes("NM")) {
@@ -406,14 +408,14 @@ class CDUFlightPlanPage {
 
                     if (rowI - 2 >= 0 && scrollWindow[rowI - 2] && !scrollWindow[rowI - 2].marker
                         && currRow.altitudeConstraint.alt === scrollWindow[rowI - 2].altitudeConstraint.alt && currRow.altitudeConstraint.altPrefix === "\xa0") {
-                        currRow.altitudeConstraint.ditto = true;
+                        altRepeat = true;
                     }
                 }
             }
 
             if (!currRow.marker) {
                 scrollText[(rowI * 2) - 1] = renderFixHeader(currRow);
-                scrollText[(rowI * 2)] = renderFixContent(currRow);
+                scrollText[(rowI * 2)] = renderFixContent(currRow, spdRepeat, altRepeat);
             } else {
                 scrollText[(rowI * 2) - 1] = [];
                 scrollText[(rowI * 2)] = currRow.marker;
@@ -524,11 +526,11 @@ function renderFixHeader(rowObj) {
     ];
 }
 
-function renderFixContent(rowObj) {
+function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
 
     return [
         `${rowObj.ident}[color]${rowObj.color}`,
-        `{${rowObj.spdColor}}${rowObj.speedConstraint.ditto ? "\xa0\"\xa0" : rowObj.speedConstraint}{end}{${rowObj.altColor}}/${rowObj.altitudeConstraint.ditto ? "\xa0\xa0\"\xa0\xa0" : rowObj.altitudeConstraint.altPrefix + rowObj.altitudeConstraint.alt}{end}[s-text]`,
+        `{${rowObj.spdColor}}${spdRepeat ? "\xa0\"\xa0" : rowObj.speedConstraint}{end}{${rowObj.altColor}}/${altRepeat ? "\xa0\xa0\"\xa0\xa0" : rowObj.altitudeConstraint.altPrefix + rowObj.altitudeConstraint.alt}{end}[s-text]`,
         `${rowObj.timeCell}{sp}{sp}[color]${rowObj.timeColor}`
     ];
 }
