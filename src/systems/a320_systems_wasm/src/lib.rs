@@ -70,8 +70,8 @@ fn create_aircraft_variable_reader(
     reader.add("ACCELERATION BODY Y", "feet per second squared", 0)?;
     reader.add("INTERACTIVE POINT OPEN", "Percent over 100", 5)?;
 
-    reader.add("PLANE PITCH DEGREES", "Radian", 0)?;
-    reader.add("PLANE BANK DEGREES", "Radian", 0)?;
+    reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
+    reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
 
     reader.add_with_additional_names(
         "APU GENERATOR SWITCH",
@@ -531,24 +531,25 @@ impl SimulatorAspect for Brakes {
 struct CargoDoors {
     cargo_pos_masked_input: NamedVariable,
 
-    id_cargo_toggle: sys::DWORD,
-    id_cargo_pos: sys::DWORD,
+    // id_cargo_toggle: sys::DWORD,
+    // id_cargo_pos: sys::DWORD,
     fwd_position: f64,
 }
 impl CargoDoors {
     fn set_forward_door_postition(&mut self, value: f64) {
         self.fwd_position = value;
-        // println!("set_forward_door_postition {}", value);
+        //println!("set_forward_door_postition {}", value);
     }
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
-            cargo_pos_masked_input: NamedVariable::from("INTERACTIVE POINT OPEN:5"),
+            cargo_pos_masked_input: NamedVariable::from("A32NX_DOOR_CARGO_POSITION"),
+            //cargo_pos_masked_input: NamedVariable::from("INTERACTIVE POINT OPEN:5"),
             // SimConnect inputs masking
-            id_cargo_toggle: sim_connect
-                .map_client_event_to_sim_event("TOGGLE_AIRCRAFT_EXIT:5", false)?,
-            id_cargo_pos: sim_connect
-                .map_client_event_to_sim_event("INTERACTIVE POINT OPEN:5", false)?,
+            // id_cargo_toggle: sim_connect
+            //    .map_client_event_to_sim_event("TOGGLE_AIRCRAFT_EXIT:5", false)?,
+            // id_cargo_pos: sim_connect
+            //     .map_client_event_to_sim_event("INTERACTIVE POINT OPEN:5", false)?,
             fwd_position: 0.,
         })
     }
@@ -558,7 +559,7 @@ impl SimulatorAspect for CargoDoors {
         match name {
             "EXIT OPEN:5" => {
                 self.set_forward_door_postition(value);
-                println!("simaspect write {}", value);
+                //println!("simaspect write {}", value);
                 true
             }
             _ => false,
@@ -566,20 +567,23 @@ impl SimulatorAspect for CargoDoors {
     }
 
     fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
-        match message {
-            SimConnectRecv::Event(e) => {
-                if e.id() == self.id_cargo_toggle {
-                    println!("id_cargo_toggle {}", e.data());
-                    true
-                } else if e.id() == self.id_cargo_pos {
-                    println!("id_cargo_pos {}", e.data());
-                    true
-                } else {
-                    false
-                }
-            }
-            _ => false,
-        }
+        // match message {
+        //     SimConnectRecv::Event(e) => {
+        //         // if e.id() == self.id_cargo_toggle {
+        //         //     println!("id_cargo_toggle {}", e.data());
+        //         //     true
+        //         // }
+        //         // // else if e.id() == self.id_cargo_pos {
+        //         // //     println!("id_cargo_pos {}", e.data());
+        //         // //     true
+        //         // // }
+        //         // else {
+        //         //     false
+        //         // }
+        //     }
+        //     _ => false,
+        // }
+        false
     }
 
     fn pre_tick(&mut self, delta: Duration) {}
@@ -588,8 +592,9 @@ impl SimulatorAspect for CargoDoors {
         &mut self,
         sim_connect: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Sending final position {}", self.fwd_position);
-        self.cargo_pos_masked_input.set_value(self.fwd_position);
+        //println!("Sending final position {}", self.fwd_position * 100.);
+        self.cargo_pos_masked_input
+            .set_value(self.fwd_position * 100.);
 
         Ok(())
     }

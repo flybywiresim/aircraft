@@ -422,6 +422,8 @@ impl A320Hydraulic {
 
         self.forward_cargo_door
             .update_position(self.cargo_physics.position_normalized());
+
+        self.cargo_physics.update(context);
     }
 
     // All the higher frequency updates like physics
@@ -429,7 +431,7 @@ impl A320Hydraulic {
         self.ram_air_turbine
             .update_physics(&delta_time_physics, &context.indicated_airspeed());
 
-        self.cargo_physics.update(context);
+        // self.cargo_physics.update(context);
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
