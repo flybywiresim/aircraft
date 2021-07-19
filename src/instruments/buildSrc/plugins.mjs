@@ -8,9 +8,12 @@ import { typescriptPaths } from 'rollup-plugin-typescript-paths';
 import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from 'tailwindcss';
+import dotenv from 'dotenv';
 import { Directories } from './directories.mjs';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
+
+dotenv.config();
 
 function babel() {
     return babelPlugin({
@@ -61,7 +64,14 @@ export function baseCompile(instrumentName, instrumentFolder) {
             tsConfigPath: join(Directories.src, 'tsconfig.json'),
             preserveExtensions: true,
         }),
-        replace({ 'process.env.NODE_ENV': '"production"' }),
+        replace({
+            'preventAssignment': true,
+            'process.env.NODE_ENV': JSON.stringify('production'),
+            'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
+            'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
+            'process.env.CHARTFOX_SECRET': JSON.stringify(process.env.CHARTFOX_SECRET),
+            'process.env.SIMVAR_DISABLE': 'false',
+        }),
         postCss(instrumentName, instrumentFolder),
     ];
 }
