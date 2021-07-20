@@ -254,7 +254,7 @@ void ThrottleAxisMapping::decreaseThrottleBy(double value) {
 }
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration() {
-   return {
+  return {
       false,  // use reverse on axis
       -1.00,  // reverse low
       -0.90,  // reverse high
