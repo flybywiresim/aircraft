@@ -21,36 +21,14 @@
   font-weight: 900;
 }
 
-// COLUMNS
-.column-holder {
-  flex: 1 1 auto;
-  display:flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-
-  margin: 0 20px 0 20px;
-}
-
-.row-holder {
-  flex: 1 1 auto;
-  display:flex;
-  flex-direction: row;
-  align-items: stretch;
-  justify-content: center;
-}
-
 //LINES
 .line-holder {
-  max-height: 126px;
-  min-height: 126px;
-
-  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(2, 54px);
 }
 
 .line {
-  max-height: 63px;
-  min-height: 63px;
   white-space: pre;
 }
 

@@ -3,14 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
-import InteractiveSplitLineVTwo, { fieldProperties } from '../../../Components/Lines/InteractiveSplitLineTwo';
+import InteractiveSplitLineVTwo, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
 import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
 import InteractiveSplitLine from '../../../Components/Lines/InteractiveSplitLine';
 import { RowHolder } from '../../../Components/RowHolder';
-import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
+import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LineHolder } from '../../../Components/LineHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { Field, fieldSides } from '../../../Components/Fields/NonInteractive/Field';
@@ -26,8 +26,8 @@ import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreat
  */
 const DestICAOLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.center} value={<LabelField side={fieldSides.left} value="AT" color={lineColors.white} />} />
-        <Line side={lineSides.left} value={<Field side={fieldSides.left} value="NONE" color={lineColors.green} size={lineSizes.regular} />} />
+        <LabelField lineSide={lineSides.left} value="AT" color={lineColors.white} />
+        <Field lineSide={lineSides.left} textSide={fieldSides.left} value="NONE" color={lineColors.green} size={lineSizes.regular} />
     </LineHolder>
 );
 
@@ -36,8 +36,8 @@ const DestICAOLine: React.FC = () => (
  */
 const DestTimeLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.center} value={<LabelField value="UTC" color={lineColors.white} />} />
-        <Line side={lineSides.center} value={<Field value="----" color={lineColors.white} size={lineSizes.regular} />} />
+        <LabelField lineSide={lineSides.center} value="UTC" color={lineColors.white} />
+        <Field lineSide={lineSides.center} value="----" color={lineColors.white} size={lineSizes.regular} />
     </LineHolder>
 );
 
@@ -46,8 +46,8 @@ const DestTimeLine: React.FC = () => (
  */
 const DestEFOBLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value="EFOB" color={lineColors.white} side={fieldSides.right} />} />
-        <Line side={lineSides.right} value={<Field side={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />} />
+        <LabelField lineSide={lineSides.right} value="EFOB" color={lineColors.white} />
+        <Field lineSide={lineSides.right} textSide={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />
     </LineHolder>
 );
 
@@ -57,7 +57,7 @@ const DestEFOBLine: React.FC = () => (
 const AltICAOLine: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line side={lineSides.left} value={<Field value="NONE" color={lineColors.green} size={lineSizes.regular} />} />
+        <Field lineSide={lineSides.left} value="NONE" color={lineColors.green} size={lineSizes.regular} />
     </LineHolder>
 );
 
@@ -67,7 +67,7 @@ const AltICAOLine: React.FC = () => (
 const AltTimeLine: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line side={lineSides.center} value={<Field value="----" color={lineColors.white} size={lineSizes.regular} />} />
+        <Field lineSide={lineSides.center} value="----" color={lineColors.white} size={lineSizes.regular} />
     </LineHolder>
 );
 
@@ -77,7 +77,7 @@ const AltTimeLine: React.FC = () => (
 const AltEFOBLine: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line side={lineSides.center} value={<Field side={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />} />
+        <Field lineSide={lineSides.center} textSide={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />
     </LineHolder>
 );
 
@@ -86,12 +86,12 @@ const RteRsvLine: React.FC = () => {
     const rteRsvPercent = '--.-';
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="RTE RSV/ %" color={lineColors.white} />} />
+            <LabelField lineSide={lineSides.left} value="RTE RSV/ %" color={lineColors.white} />
             <SplitLine
                 side={lineSides.left}
                 slashColor={lineColors.white}
-                leftSide={<Field value={rteRsvWeight} color={lineColors.white} size={lineSizes.small} />}
-                rightSide={<Field value={rteRsvPercent} color={lineColors.white} size={lineSizes.small} />}
+                leftSide={<Field lineSide={lineSides.left} value={rteRsvWeight} color={lineColors.white} size={lineSizes.small} />}
+                rightSide={<Field lineSide={lineSides.left} value={rteRsvPercent} color={lineColors.white} size={lineSizes.small} />}
             />
         </LineHolder>
     );
@@ -227,7 +227,7 @@ const ZfwLine: React.FC<zfwLineProps> = (
 
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value="ZFW/ZFWCG" color={lineColors.white} />} />
+            <LabelField lineSide={lineSides.right} value="ZFW/ZFWCG" color={lineColors.white} />
             <InteractiveSplitLineVTwo
                 side={lineSides.right}
                 slashColor={fmgcZFW === undefined ? lineColors.amber : lineColors.cyan}
@@ -255,7 +255,7 @@ const AltnLine: React.FC<altneLineProps> = ({ clearScratchpad }) => {
     const altnTime = altnWeight === undefined ? '----' : '0000';
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="ALTN /TIME" color={lineColors.white} />} />
+            <LabelField lineSide={lineSides.right} value="ALTN /TIME" color={lineColors.white} />
             <InteractiveSplitLine
                 lsk={LINESELECT_KEYS.L4}
                 slashColor={lineColors.white}
@@ -277,7 +277,7 @@ const AltnLine: React.FC<altneLineProps> = ({ clearScratchpad }) => {
                         }}
                     />
                 )}
-                rightSide={<Field value={altnTime} color={altnWeight === undefined ? lineColors.white : lineColors.green} size={lineSizes.small} />}
+                rightSide={<Field lineSide={lineSides.right} value={altnTime} color={altnWeight === undefined ? lineColors.white : lineColors.green} size={lineSizes.small} />}
             />
         </LineHolder>
     );
@@ -297,12 +297,12 @@ const FobLine: React.FC<fobLineProps> = ({ zfwEntered }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField side={fieldSides.right} value="FOB    " color={lineColors.white} />} />
+            <LabelField lineSide={lineSides.right} value="FOB    " color={lineColors.white} />
             <SplitLine
                 side={lineSides.right}
                 slashColor={color}
-                leftSide={<Field value={fobWeight} color={color} size={lineSizes.small} />}
-                rightSide={<Field value={fobOther} color={color} size={lineSizes.small} />}
+                leftSide={<Field lineSide={lineSides.right} value={fobWeight} color={color} size={lineSizes.small} />}
+                rightSide={<Field lineSide={lineSides.right} value={fobOther} color={color} size={lineSizes.small} />}
             />
         </LineHolder>
     );
@@ -318,7 +318,7 @@ const FinalLine: React.FC<finalLineProps> = ({ clearScratchpad }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="FINAL/TIME" color={lineColors.white} />} />
+            <LabelField lineSide={lineSides.right} value="FINAL/TIME" color={lineColors.white} />
             <InteractiveSplitLine
                 lsk={LINESELECT_KEYS.L5}
                 slashColor={lineColors.white}
@@ -376,12 +376,12 @@ const GWCGLine: React.FC<gWCGLineProps> = ({ zfwEntered: zfw }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value="GW    CG" color={lineColors.white} />} />
+            <LabelField lineSide={lineSides.right} value="GW    CG" color={lineColors.white} />
             <SplitLine
                 side={lineSides.right}
                 slashColor={lineColors.white}
-                leftSide={<Field value={gwVal} color={color} size={lineSizes.small} />}
-                rightSide={<Field value={` ${cgVal}`} color={color} size={lineSizes.small} />}
+                leftSide={<Field lineSide={lineSides.right} value={gwVal} color={color} size={lineSizes.small} />}
+                rightSide={<Field lineSide={lineSides.right} value={` ${cgVal}`} color={color} size={lineSizes.small} />}
             />
         </LineHolder>
     );
@@ -403,32 +403,28 @@ const MinDestFobLine: React.FC<minDestFobLineProps> = ({ zfwEntered }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="MIN DEST FOB" color={lineColors.white} />} />
-            <Line
-                side={lineSides.center}
-                value={(
-                    <NumberInputField
-                        side={fieldSides.left}
-                        lsk={LINESELECT_KEYS.L6}
-                        min={0}
-                        max={80.0}
-                        nullValue="---.-"
-                        value={minDestFob}
-                        color={color}
-                        size={size}
-                        prevEntered={zfwEntered}
-                        selectedCallback={((value) => {
-                            if (value === undefined) {
-                                // TODO when FMGC is coupled retrieve the computed value instead
-                                setMinDestFob(undefined);
-                                setValEntered(false);
-                            } else {
-                                setMinDestFob(value);
-                                setValEntered(true);
-                            }
-                        })}
-                    />
-                )}
+            <LabelField lineSide={lineSides.left} value="MIN DEST FOB" color={lineColors.white} />
+            <NumberInputField
+                lineSide={lineSides.right}
+                fieldSide={fieldSides.left}
+                lsk={LINESELECT_KEYS.L6}
+                min={0}
+                max={80.0}
+                nullValue="---.-"
+                value={minDestFob}
+                color={color}
+                size={size}
+                prevEntered={zfwEntered}
+                selectedCallback={((value) => {
+                    if (value === undefined) {
+                        // TODO when FMGC is coupled retrieve the computed value instead
+                        setMinDestFob(undefined);
+                        setValEntered(false);
+                    } else {
+                        setMinDestFob(value);
+                        setValEntered(true);
+                    }
+                })}
             />
         </LineHolder>
     );
@@ -444,12 +440,12 @@ const ExtraLine: React.FC<extraLineProps> = ({ zfwEntered }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value="EXTRA TIME" color={lineColors.white} />} />
+            <LabelField lineSide={lineSides.right} value="EXTRA TIME" color={lineColors.white} />
             <SplitLine
                 side={lineSides.right}
                 slashColor={lineColors.white}
-                leftSide={<Field value={extraFuel} color={color} size={lineSizes.small} />}
-                rightSide={<Field value={extraTime} color={color} size={lineSizes.small} />}
+                leftSide={<Field lineSide={lineSides.right} value={extraFuel} color={color} size={lineSizes.small} />}
+                rightSide={<Field lineSide={lineSides.right} value={extraTime} color={color} size={lineSizes.small} />}
             />
         </LineHolder>
     );

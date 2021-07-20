@@ -3,7 +3,7 @@ import { useMCDUDispatch } from '../../../../redux/hooks';
 import { scratchpadMessage } from '../../../../redux/reducers/scratchpadReducer';
 import * as scratchpadActions from '../../../../redux/actions/scratchpadActionCreators';
 
-import { lineColors, lineSizes } from '../../../Lines/Line';
+import { lineColors, lineSizes } from '../../../Lines/LineProps';
 import { fieldSides } from '../../NonInteractive/Field';
 
 type SplitStringFieldProps = {

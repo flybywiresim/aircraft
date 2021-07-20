@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
 
 import '../../../Components/styles.scss';
+import './styles.scss';
 
 import { useMCDUDispatch } from '../../../redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
-import { LineHolder } from '../../../Components/LineHolder';
-import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
-import { RowHolder } from '../../../Components/RowHolder';
+import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
-import { Content } from '../../../Components/Content';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
 
@@ -44,29 +42,25 @@ const FMGCText: React.FC<FMGCTextProps> = ({ activeSys, setActiveSys, setPage, s
     }
 
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <EmptyLine />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <LineSelectField
-                        value={determineText()}
-                        color={determineColor()}
-                        lsk={LINESELECT_KEYS.L1}
-                        selectedCallback={(() => {
-                            setActiveSys('FMGC'); // Placeholder until we can retrieve activeSys from FMGC
-                            setSelected('FMGC');
-                            setTimeout(() => {
-                                if (setPage) {
-                                    setPage('IDENT');
-                                }
-                            }, Math.floor(Math.random() * 400) + 400);
-                        })}
-                        size={lineSizes.regular}
-                    />
-                )}
+            <LineSelectField
+                lineSide={lineSides.left}
+                value={determineText()}
+                color={determineColor()}
+                lsk={LINESELECT_KEYS.L1}
+                selectedCallback={(() => {
+                    setActiveSys('FMGC'); // Placeholder until we can retrieve activeSys from FMGC
+                    setSelected('FMGC');
+                    setTimeout(() => {
+                        if (setPage) {
+                            setPage('IDENT');
+                        }
+                    }, Math.floor(Math.random() * 400) + 400);
+                })}
+                size={lineSizes.regular}
             />
-        </LineHolder>
+        </div>
     );
 };
 
@@ -101,66 +95,59 @@ const MenuLineText: React.FC<TextProps> = ({ lsk, side, system, activeSys, setAc
             }
             return side === lineSides.left ? `<${system}` : `${system}>`;
         }
+        console.error('Side not provided for Menu Line Component');
         return 'INSERT A SIDE';
     }
 
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <EmptyLine />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <LineSelectField
-                        size={lineSizes.regular}
-                        value={determineText()}
-                        color={determineColor()}
-                        lsk={lsk}
-                        selectedCallback={(() => {
-                            if (system) {
-                                setActiveSys(system);
-                                setSelected(system);
-                            }
-                        })}
-                    />
-                )}
+            <LineSelectField
+                lineSide={lineSides.left}
+                size={lineSizes.regular}
+                value={determineText()}
+                color={determineColor()}
+                lsk={lsk}
+                selectedCallback={(() => {
+                    if (system) {
+                        setActiveSys(system);
+                        setSelected(system);
+                    }
+                })}
             />
-        </LineHolder>
+        </div>
     );
 };
 
 const NAVBText: React.FC = () => (
-    <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value={'SELECT\xa0'} color={lineColors.white} />} />
-        <Line side={lineSides.right} value={<Field value="NAV B/UP" color={lineColors.white} size={lineSizes.regular} />} />
-    </LineHolder>
+    <div className="line-holder-two">
+        <LabelField lineSide={lineSides.right} value={'SELECT\xa0'} color={lineColors.white} />
+        <Field lineSide={lineSides.right} value="NAV B/UP" color={lineColors.white} size={lineSizes.regular} />
+    </div>
 );
 
 const OptionsText: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <EmptyLine />
-        <Line
-            side={lineSides.right}
-            value={(
-                <Field value="OPTIONS>" size={lineSizes.regular} color={lineColors.inop} />
-            )}
+        <Field
+            lineSide={lineSides.right}
+            value="OPTIONS>"
+            size={lineSizes.regular}
+            color={lineColors.inop}
         />
-    </LineHolder>
+    </div>
 );
 
 const ReturnText: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <EmptyLine />
-        <Line
-            side={lineSides.right}
-            value={(
-                <Field
-                    color={lineColors.inop}
-                    size={lineSizes.regular}
-                    value="RETURN>"
-                />
-            )}
+        <Field
+            lineSide={lineSides.right}
+            color={lineColors.inop}
+            size={lineSizes.regular}
+            value="RETURN>"
         />
-    </LineHolder>
+    </div>
 );
 
 type MenuProps = {
@@ -170,58 +157,59 @@ const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
     const [activeSys, setActiveSys] = useState('FMGC'); // Placeholder till FMGS in place
     const [selected, setSelected] = useState('');
     const dispatch = useMCDUDispatch();
+    const setTitlebar = ((msg: string) => {
+        dispatch(titlebarActions.setTitleBarText(msg));
+    });
 
     useEffect(() => {
-        dispatch(titlebarActions.setTitleBarText('MCDU MENU'));
+        setTitlebar('MCDU MENU');
     }, []);
 
     return (
         <>
-            <Content>
-                <RowHolder index={1}>
-                    <FMGCText activeSys={activeSys} setActiveSys={setActiveSys} setPage={setPage} selected={selected} setSelected={setSelected} />
-                    <NAVBText />
-                </RowHolder>
-                <RowHolder index={2}>
-                    <MenuLineText
-                        lsk={LINESELECT_KEYS.L2}
-                        system="ATSU"
-                        side={lineSides.left}
-                        activeSys={activeSys}
-                        setActiveSys={setActiveSys}
-                        selected={selected}
-                        setSelected={setSelected}
-                    />
-                </RowHolder>
-                <RowHolder index={3}>
-                    <MenuLineText
-                        lsk={LINESELECT_KEYS.L3}
-                        system="AIDS"
-                        side={lineSides.left}
-                        activeSys={activeSys}
-                        setActiveSys={setActiveSys}
-                        selected={selected}
-                        setSelected={setSelected}
-                    />
-                </RowHolder>
-                <RowHolder index={4}>
-                    <MenuLineText
-                        lsk={LINESELECT_KEYS.L4}
-                        system="CFDS"
-                        side={lineSides.left}
-                        activeSys={activeSys}
-                        setActiveSys={setActiveSys}
-                        selected={selected}
-                        setSelected={setSelected}
-                    />
-                </RowHolder>
-                <RowHolder index={5}>
-                    <OptionsText />
-                </RowHolder>
-                <RowHolder index={6}>
-                    <ReturnText />
-                </RowHolder>
-            </Content>
+            <div className="row-holder">
+                <FMGCText activeSys={activeSys} setActiveSys={setActiveSys} setPage={setPage} selected={selected} setSelected={setSelected} />
+                <NAVBText />
+            </div>
+            <div className="row-holder">
+                <MenuLineText
+                    lsk={LINESELECT_KEYS.L2}
+                    system="ATSU"
+                    side={lineSides.left}
+                    activeSys={activeSys}
+                    setActiveSys={setActiveSys}
+                    selected={selected}
+                    setSelected={setSelected}
+                />
+            </div>
+            <div className="row-holder">
+                <MenuLineText
+                    lsk={LINESELECT_KEYS.L3}
+                    system="AIDS"
+                    side={lineSides.left}
+                    activeSys={activeSys}
+                    setActiveSys={setActiveSys}
+                    selected={selected}
+                    setSelected={setSelected}
+                />
+            </div>
+            <div className="row-holder">
+                <MenuLineText
+                    lsk={LINESELECT_KEYS.L4}
+                    system="CFDS"
+                    side={lineSides.left}
+                    activeSys={activeSys}
+                    setActiveSys={setActiveSys}
+                    selected={selected}
+                    setSelected={setSelected}
+                />
+            </div>
+            <div className="row-holder">
+                <OptionsText />
+            </div>
+            <div className="row-holder">
+                <ReturnText />
+            </div>
         </>
     );
 };

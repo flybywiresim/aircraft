@@ -58,23 +58,26 @@
 
 .mcdu-inner {
   //margin-left: -10px;
-  margin-top: 15px;
-  margin-left: 10px;
-  margin-right: 20px;
-  max-height: 980px;
-  min-height: 980px;
+  margin: 45px 10px 0px 20px;
   max-width: 945px;
   min-width: 945px;
 
-  display: flex;
-  flex-direction: column;
+  display:grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 54px 1fr 54px;
+  justify-content: stretch;
 }
 
 .mcdu-content {
-  display:flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: stretch;
+  display: grid;
+  grid-template-rows: repeat(6, 108px);
+  grid-gap: 32px;
 
-  flex-grow: 1;
+  margin: 20px 20px 10px 20px;
+
+  justify-content: stretch;
+
+  align-items: center;
+  align-content: space-between;
+
 }

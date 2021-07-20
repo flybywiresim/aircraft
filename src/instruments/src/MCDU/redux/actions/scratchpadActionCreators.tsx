@@ -1,4 +1,4 @@
-import { lineArrow } from '../../Components/Lines/Line';
+import { lineArrow } from '../../Components/Lines/LineProps';
 import { scratchpadMessage } from '../reducers/scratchpadReducer';
 import * as scratchpadTypes from '../types/scratchpadActionTypes';
 

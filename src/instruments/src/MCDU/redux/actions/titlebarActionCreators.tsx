@@ -1,4 +1,4 @@
-import { lineColors, lineSides } from '../../Components/Lines/Line';
+import { lineColors, lineSides } from '../../Components/Lines/LineProps';
 import * as titlebarTypes from '../types/TitlebarActionTypes';
 
 export const setTitleBarText = (text : string) => ({

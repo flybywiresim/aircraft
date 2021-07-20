@@ -4,7 +4,7 @@ import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreat
 
 import { useInteractionEvent } from '../../../../Common/hooks';
 
-import { lineColors, lineSizes } from '../../Lines/Line';
+import { lineColors, lineSides, lineSizes } from '../../Lines/LineProps';
 import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
 import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
@@ -15,7 +15,8 @@ type NumberFieldProps = {
     min: number,
     max: number,
     color: lineColors,
-    side?: fieldSides,
+    fieldSide?: fieldSides,
+    lineSide: lineSides
     size: lineSizes,
     selectedCallback: (value?: string) => any,
     lsk: LINESELECT_KEYS,
@@ -28,11 +29,12 @@ const NumberInputField: React.FC<NumberFieldProps> = (
         min,
         max,
         color,
-        side,
+        fieldSide,
         size,
         selectedCallback,
         lsk,
         prevEntered,
+        lineSide,
     },
 ) => {
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
@@ -86,7 +88,9 @@ const NumberInputField: React.FC<NumberFieldProps> = (
     });
 
     return (
-        <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : value}</span>
+        <p className={lineSide}>
+            <span className={`${color} ${fieldSide} ${size}`}>{value === undefined ? nullValue : value}</span>
+        </p>
     );
 };
 export default NumberInputField;

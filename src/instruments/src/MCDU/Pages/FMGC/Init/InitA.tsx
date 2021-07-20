@@ -3,10 +3,9 @@ import { useSimVar } from '../../../../Common/simVars';
 
 import { LineHolder } from '../../../Components/LineHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
-import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
+import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
-import { Content } from '../../../Components/Content';
 import { RowHolder } from '../../../Components/RowHolder';
 import StringInputField from '../../../Components/Fields/Interactive/StringInputField';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
@@ -21,16 +20,12 @@ import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 
 const CoRouteLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="CO RTE" color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(
-                <Field
-                    value="__________"
-                    color={lineColors.amber}
-                    size={lineSizes.regular}
-                />
-            )}
+        <LabelField lineSide={lineSides.left} value="CO RTE" color={lineColors.white} />
+        <Field
+            lineSide={lineSides.left}
+            value="__________"
+            color={lineColors.amber}
+            size={lineSizes.regular}
         />
     </LineHolder>
 );
@@ -56,20 +51,16 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage }) => {
     };
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value={'FROM/TO\xa0\xa0'} color={lineColors.white} />} />
-            <Line
-                side={lineSides.right}
-                value={(
-                    <StringInputField
-                        value=""
-                        nullValue="____|____"
-                        color={lineColors.amber}
-                        size={lineSizes.regular}
-                        lsk={LINESELECT_KEYS.R1}
-                        selectedCallback={(value) => setNewValue(value)}
-                        selectedValidation={(value) => validateEntry(value)} // For now returns true
-                    />
-                )}
+            <LabelField lineSide={lineSides.right} value={'FROM/TO\xa0\xa0'} color={lineColors.white} />
+            <StringInputField
+                value=""
+                lineSide={lineSides.right}
+                nullValue="____|____"
+                color={lineColors.amber}
+                size={lineSizes.regular}
+                lsk={LINESELECT_KEYS.R1}
+                selectedCallback={(value) => setNewValue(value)}
+                selectedValidation={(value) => validateEntry(value)} // For now returns true
             />
         </LineHolder>
     );
@@ -101,20 +92,16 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
     };
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="ALTN/CO RTE" color={lineColors.white} />} />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <StringInputField
-                        value={value}
-                        nullValue="----|----------"
-                        color={value !== undefined ? lineColors.cyan : lineColors.amber}
-                        lsk={LINESELECT_KEYS.L2}
-                        selectedCallback={(value) => setNewValue(value)}
-                        selectedValidation={((value) => validateEntry(value))}
-                        size={lineSizes.regular}
-                    />
-                )}
+            <LabelField lineSide={lineSides.left} value="ALTN/CO RTE" color={lineColors.white} />
+            <StringInputField
+                lineSide={lineSides.left}
+                value={value}
+                nullValue="----|----------"
+                color={value !== undefined ? lineColors.cyan : lineColors.amber}
+                lsk={LINESELECT_KEYS.L2}
+                selectedCallback={(value) => setNewValue(value)}
+                selectedValidation={((value) => validateEntry(value))}
+                size={lineSizes.regular}
             />
         </LineHolder>
     );
@@ -157,20 +144,16 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
 
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="FLT NBR" color={lineColors.white} />} />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <StringInputField
-                        value={flightNo}
-                        nullValue="________"
-                        color={flightNo !== undefined ? lineColors.cyan : lineColors.amber}
-                        size={lineSizes.regular}
-                        selectedCallback={(value) => setNewValue(value)}
-                        lsk={LINESELECT_KEYS.L3}
-                        selectedValidation={(value) => validateEntry(value)}
-                    />
-                )}
+            <LabelField lineSide={lineSides.left} value="FLT NBR" color={lineColors.white} />
+            <StringInputField
+                lineSide={lineSides.left}
+                value={flightNo}
+                nullValue="________"
+                color={flightNo !== undefined ? lineColors.cyan : lineColors.amber}
+                size={lineSizes.regular}
+                selectedCallback={(value) => setNewValue(value)}
+                lsk={LINESELECT_KEYS.L3}
+                selectedValidation={(value) => validateEntry(value)}
             />
         </LineHolder>
     );
@@ -179,19 +162,15 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
 const WindTempLine: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line
-            side={lineSides.right}
-            value={(
-                <LineSelectField
-                    value="WIND/TEMP>"
-                    size={lineSizes.regular}
-                    selectedCallback={() => {
-                        console.log('WIND/TEMP Page called');
-                    }}
-                    lsk={LINESELECT_KEYS.R4}
-                    color={lineColors.white}
-                />
-            )}
+        <LineSelectField
+            lineSide={lineSides.right}
+            value="WIND/TEMP>"
+            size={lineSizes.regular}
+            selectedCallback={() => {
+                console.log('WIND/TEMP Page called');
+            }}
+            lsk={LINESELECT_KEYS.R4}
+            color={lineColors.white}
         />
     </LineHolder>
 );
@@ -200,27 +179,23 @@ const CostIndexLine: React.FC = () => {
     const [costIndex, setCostIndex] = useState<string>(); // Temp until FMGC in-place
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="COST INDEX" color={lineColors.white} />} />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <NumberInputField
-                        value={costIndex !== undefined ? parseInt(costIndex).toFixed(0) : ''}
-                        nullValue="___"
-                        min={100}
-                        max={999}
-                        color={costIndex !== undefined ? lineColors.cyan : lineColors.amber}
-                        lsk={LINESELECT_KEYS.L5}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setCostIndex(undefined);
-                            } else {
-                                setCostIndex(value);
-                            }
-                        }}
-                        size={lineSizes.regular}
-                    />
-                )}
+            <LabelField lineSide={lineSides.left} value="COST INDEX" color={lineColors.white} />
+            <NumberInputField
+                lineSide={lineSides.left}
+                value={costIndex !== undefined ? parseInt(costIndex).toFixed(0) : ''}
+                nullValue="___"
+                min={100}
+                max={999}
+                color={costIndex !== undefined ? lineColors.cyan : lineColors.amber}
+                lsk={LINESELECT_KEYS.L5}
+                selectedCallback={(value) => {
+                    if (value === undefined) {
+                        setCostIndex(undefined);
+                    } else {
+                        setCostIndex(value);
+                    }
+                }}
+                size={lineSizes.regular}
             />
         </LineHolder>
     );
@@ -235,7 +210,7 @@ const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ clearScratchpad }) => {
     const [temp, setTemp] = useState<number>();
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="CRZ FL/TEMP" color={lineColors.white} />} />
+            <LabelField lineSide={lineSides.left} value="CRZ FL/TEMP" color={lineColors.white} />
             <InteractiveSplitLine
                 slashColor={flString !== undefined ? lineColors.cyan : lineColors.amber}
                 lsk={LINESELECT_KEYS.L6}
@@ -291,27 +266,23 @@ const TropoLine: React.FC = () => {
     const [tropo, setTropo] = useState<string>();
     return (
         <LineHolder>
-            <Line side={lineSides.right} value={<LabelField value="TROPO" color={lineColors.white} />} />
-            <Line
-                side={lineSides.right}
-                value={(
-                    <NumberInputField
-                        value={tropo}
-                        nullValue="36090"
-                        max={60000}
-                        min={0}
-                        color={lineColors.cyan}
-                        size={lineSizes.regular}
-                        lsk={LINESELECT_KEYS.R5}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setTropo(undefined);
-                            } else {
-                                setTropo(value);
-                            }
-                        }}
-                    />
-                )}
+            <LabelField lineSide={lineSides.right} value="TROPO" color={lineColors.white} />
+            <NumberInputField
+                lineSide={lineSides.right}
+                value={tropo}
+                nullValue="36090"
+                max={60000}
+                min={0}
+                color={lineColors.cyan}
+                size={lineSizes.regular}
+                lsk={LINESELECT_KEYS.R5}
+                selectedCallback={(value) => {
+                    if (value === undefined) {
+                        setTropo(undefined);
+                    } else {
+                        setTropo(value);
+                    }
+                }}
             />
         </LineHolder>
     );
@@ -319,36 +290,28 @@ const TropoLine: React.FC = () => {
 
 const GndTempLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value="GND TEMP" color={lineColors.white} />} />
-        <Line
-            side={lineSides.right}
-            value={(
-                <Field
-                    value="---°"
-                    color={lineColors.inop}
-                    size={lineSizes.regular}
-                />
-            )}
+        <LabelField lineSide={lineSides.right} value="GND TEMP" color={lineColors.white} />
+        <Field
+            lineSide={lineSides.right}
+            value="---°"
+            color={lineColors.inop}
+            size={lineSizes.regular}
         />
     </LineHolder>
 );
 
 const RequestLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<Field value="REQUEST*" color={lineColors.amber} size={lineSizes.regular} />} />
-        <Line
-            side={lineSides.right}
-            value={(
-                <LineSelectField
-                    value="INIT "
-                    color={lineColors.amber}
-                    size={lineSizes.regular}
-                    lsk={LINESELECT_KEYS.R2}
-                    selectedCallback={() => {
-                        console.log('Pretending to retrieve simbrief data');
-                    }}
-                />
-            )}
+        <Field lineSide={lineSides.right} value="REQUEST*" color={lineColors.amber} size={lineSizes.regular} />
+        <LineSelectField
+            lineSide={lineSides.right}
+            value="INIT "
+            color={lineColors.amber}
+            size={lineSizes.regular}
+            lsk={LINESELECT_KEYS.R2}
+            selectedCallback={() => {
+                console.log('Pretending to retrieve simbrief data');
+            }}
         />
     </LineHolder>
 );
@@ -365,7 +328,7 @@ const InitAPage: React.FC<InitAPageProps> = ({ setTitlebarText, clearScratchpad,
     }, []);
 
     return (
-        <Content>
+        <>
             <RowHolder index={1}>
                 <CoRouteLine />
                 <FromToLine addMessage={addMessage} />
@@ -389,7 +352,7 @@ const InitAPage: React.FC<InitAPageProps> = ({ setTitlebarText, clearScratchpad,
                 <CruiseFLTemp clearScratchpad={clearScratchpad} />
                 <GndTempLine />
             </RowHolder>
-        </Content>
+        </>
     );
 };
 

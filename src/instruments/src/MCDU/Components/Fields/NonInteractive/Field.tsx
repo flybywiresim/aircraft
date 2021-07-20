@@ -1,5 +1,5 @@
 import React from 'react';
-import { lineColors, lineSizes } from '../../Lines/Line';
+import { lineColors, lineSides, lineSizes } from '../../Lines/LineProps';
 
 export enum fieldSides {
     left= 'field-left',
@@ -7,11 +7,15 @@ export enum fieldSides {
 }
 
 type FieldProps = {
-    side?: fieldSides,
+    textSide?: fieldSides,
+    lineSide: lineSides
     value: string,
     color: lineColors,
     size: lineSizes
 }
-export const Field: React.FC<FieldProps> = ({ size, side, value, color }) => (
-    <span className={`${color} ${side} ${size}`}>{value}</span>
+export const Field: React.FC<FieldProps> = ({ size, textSide: side, value, color, lineSide }) => (
+    <p className={`line ${lineSide}`}>
+        <span className={`${color} ${side} ${size}`}>{value}</span>
+    </p>
+
 );

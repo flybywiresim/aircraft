@@ -1,11 +1,11 @@
 import React from 'react';
-import { useInteractionEvent } from '../../../util';
-import { LINESELECT_KEYS } from '../Buttons';
-import { fieldSides } from '../Fields/NonInteractive/Field';
-import { lineColors, lineSides, lineSizes } from './Line';
-import * as scratchpadActions from '../../redux/actions/scratchpadActionCreators';
+import { useInteractionEvent } from '../../../../util';
+import { LINESELECT_KEYS } from '../../Buttons';
+import { fieldSides } from '../NonInteractive/Field';
+import { lineColors, lineSides, lineSizes } from '../../Lines/LineProps';
+import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 import '../styles.scss';
-import { useMCDUDispatch, useMCDUSelector } from '../../redux/hooks';
+import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 
 export type fieldProperties = {
     lValue: string,

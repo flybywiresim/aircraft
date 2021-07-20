@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { lineColors, lineSides } from './Line';
+import { lineColors, lineSides } from './LineProps';
 
 import '../styles.scss';
 

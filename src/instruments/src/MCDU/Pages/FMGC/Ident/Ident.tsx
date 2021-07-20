@@ -6,7 +6,7 @@ import '../../../Components/styles.scss';
 
 import { Content } from '../../../Components/Content';
 import { LineHolder } from '../../../Components/LineHolder';
-import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
+import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { RowHolder } from '../../../Components/RowHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
@@ -14,11 +14,9 @@ import { Field } from '../../../Components/Fields/NonInteractive/Field';
 
 const EngineLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value={'\xa0ENG'} color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(<Field value="LEAP-1A26" color={lineColors.green} size={lineSizes.regular} />)}
-        />
+        <LabelField lineSide={lineSides.left} value={'\xa0ENG'} color={lineColors.white} />
+        <Field lineSide={lineSides.left} value="LEAP-1A26" color={lineColors.green} size={lineSizes.regular} />
+
     </LineHolder>
 );
 
@@ -26,16 +24,12 @@ const ActiveNavDataLine: React.FC = () => {
     const [activeNavDate] = ['TODO'];
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="ACTIVE DATA BASE" color={lineColors.white} />} />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <Field
-                        value={calculateActiveDate(activeNavDate)}
-                        color={lineColors.cyan}
-                        size={lineSizes.regular}
-                    />
-                )}
+            <LabelField lineSide={lineSides.left} value="ACTIVE DATA BASE" color={lineColors.white} />
+            <Field
+                lineSide={lineSides.left}
+                value={calculateActiveDate(activeNavDate)}
+                color={lineColors.cyan}
+                size={lineSizes.regular}
             />
         </LineHolder>
     );
@@ -45,16 +39,12 @@ const SecondaryNavDataLine: React.FC = () => {
     const [secNavDate] = ['TODO'];
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="SECOND DATA BASE" color={lineColors.white} />} />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <Field
-                        value={calculateSecDate(secNavDate)}
-                        color={lineColors.inop}
-                        size={lineSizes.small}
-                    />
-                )}
+            <LabelField lineSide={lineSides.left} value="SECOND DATA BASE" color={lineColors.white} />
+            <Field
+                lineSide={lineSides.left}
+                value={calculateSecDate(secNavDate)}
+                color={lineColors.inop}
+                size={lineSizes.small}
             />
         </LineHolder>
     );
@@ -63,63 +53,47 @@ const SecondaryNavDataLine: React.FC = () => {
 const AiracLine: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line
-            side={lineSides.right}
-            value={(
-                <Field
-                    value="AIRAC"
-                    color={lineColors.green}
-                    size={lineSizes.regular}
-                />
-            )}
+        <Field
+            lineSide={lineSides.right}
+            value="AIRAC"
+            color={lineColors.green}
+            size={lineSizes.regular}
         />
     </LineHolder>
 );
 
 const ChgCodeLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="CHG CODE" color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(
-                <Field
-                    value="[  ]"
-                    color={lineColors.inop}
-                    size={lineSizes.small}
-                />
-            )}
+        <LabelField lineSide={lineSides.left} value="CHG CODE" color={lineColors.white} />
+        <Field
+            lineSide={lineSides.left}
+            value="[  ]"
+            color={lineColors.inop}
+            size={lineSizes.small}
         />
     </LineHolder>
 );
 
 const TodoNameLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="IDLE/PERF" color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(
-                <Field
-                    value="+0.0/+0.0"
-                    color={lineColors.green}
-                    size={lineSizes.regular}
-                />
-            )}
+        <LabelField lineSide={lineSides.left} value="IDLE/PERF" color={lineColors.white} />
+        <Field
+            lineSide={lineSides.left}
+            value="+0.0/+0.0"
+            color={lineColors.green}
+            size={lineSizes.regular}
         />
     </LineHolder>
 );
 
 const SoftwareLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value="SOFTWARE" color={lineColors.white} />} />
-        <Line
-            side={lineSides.right}
-            value={(
-                <Field
-                    value="STATUS/XLOAD"
-                    color={lineColors.inop}
-                    size={lineSizes.regular}
-                />
-            )}
+        <LabelField lineSide={lineSides.right} value="SOFTWARE" color={lineColors.white} />
+        <Field
+            lineSide={lineSides.right}
+            value="STATUS/XLOAD"
+            color={lineColors.inop}
+            size={lineSizes.regular}
         />
     </LineHolder>
 );

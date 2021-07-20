@@ -2,7 +2,7 @@ import React, { ReactElement, useState } from 'react';
 import { useInteractionEvent } from '../../../Common/hooks';
 
 import { LINESELECT_KEYS } from '../Buttons';
-import { lineColors } from './Line';
+import { lineColors } from './LineProps';
 import { useMCDUSelector } from '../../redux/hooks';
 
 type InteractiveSplitLineProps = {

@@ -1,0 +1,21 @@
+.row-holder {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
+}
+
+.line-holder {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 54px);
+}
+
+.line-holder-two {
+    @extend .line-holder;
+    grid-column-start: 2;
+}
+
+.line-holder-one {
+    @extend .line-holder;
+    grid-column-start: 1;
+}

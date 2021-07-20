@@ -1,4 +1,4 @@
-import { lineColors, lineSides } from '../../Components/Lines/Line';
+import { lineColors, lineSides } from '../../Components/Lines/LineProps';
 import * as titlebarActions from '../types/TitlebarActionTypes';
 
 export type titleBarState = {

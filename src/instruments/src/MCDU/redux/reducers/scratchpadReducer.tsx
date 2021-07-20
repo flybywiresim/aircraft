@@ -1,4 +1,4 @@
-import { lineArrow, lineColors } from '../../Components/Lines/Line';
+import { lineArrow, lineColors } from '../../Components/Lines/LineProps';
 import * as scratchpadActions from '../types/scratchpadActionTypes';
 
 export type scratchpadMessage = {

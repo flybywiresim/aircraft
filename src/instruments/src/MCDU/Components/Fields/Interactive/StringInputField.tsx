@@ -4,7 +4,7 @@ import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreat
 
 import { useInteractionEvent } from '../../../../Common/hooks';
 
-import { lineColors, lineSizes } from '../../Lines/Line';
+import { lineColors, lineSides, lineSizes } from '../../Lines/LineProps';
 import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
 
@@ -12,7 +12,8 @@ type StringFieldProps = {
     value: string | undefined,
     nullValue: string,
     color: lineColors,
-    side?: fieldSides,
+    fieldSide?: fieldSides,
+    lineSide: lineSides,
     size: lineSizes,
     selectedCallback: (value: string | undefined) => any,
     selectedValidation: (value: string) => boolean,
@@ -23,7 +24,8 @@ const StringInputField: React.FC<StringFieldProps> = (
         value,
         nullValue,
         color,
-        side,
+        fieldSide,
+        lineSide,
         size,
         selectedCallback,
         selectedValidation,
@@ -46,7 +48,9 @@ const StringInputField: React.FC<StringFieldProps> = (
     });
 
     return (
-        <span className={`${color} ${side} ${size}`}>{value === '' || value === undefined ? nullValue : value}</span>
+        <p className={lineSide}>
+            <span className={`${color} ${fieldSide} ${size}`}>{value === '' || value === undefined ? nullValue : value}</span>
+        </p>
     );
 };
 export default StringInputField;

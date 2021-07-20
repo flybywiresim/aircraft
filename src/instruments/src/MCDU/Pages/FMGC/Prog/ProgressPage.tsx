@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 import { Content } from 'instruments/src/MCDU/Components/Content';
 import { RowHolder } from 'instruments/src/MCDU/Components/RowHolder';
-import { Line, lineColors, lineSides, lineSizes } from 'instruments/src/MCDU/Components/Lines/Line';
+import { Line, lineColors, lineSides, lineSizes } from 'instruments/src/MCDU/Components/Lines/LineProps';
 import { LabelField } from 'instruments/src/MCDU/Components/Fields/NonInteractive/LabelField';
 import { LineHolder } from 'instruments/src/MCDU/Components/LineHolder';
 import { Field } from 'instruments/src/MCDU/Components/Fields/NonInteractive/Field';
@@ -13,11 +13,8 @@ import * as titlebarActions from '../../../redux/actions/titlebarActionCreators'
 
 const FlightCruise: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value={'\xa0CRZ\xa0'} color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(<Field value="-----" color={lineColors.white} size={lineSizes.regular} />)}
-        />
+        <LabelField lineSide={lineSides.left} value={'\xa0CRZ\xa0'} color={lineColors.white} />
+        <Field lineSide={lineSides.left} value="-----" color={lineColors.white} size={lineSizes.regular} />
     </LineHolder>
 );
 

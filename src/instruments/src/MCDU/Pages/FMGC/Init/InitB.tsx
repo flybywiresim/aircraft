@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { LineHolder } from '../../../Components/LineHolder';
-import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
+import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
@@ -28,21 +28,18 @@ const TaxiFuelLine: React.FC = () => {
     };
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="TAXI" color={lineColors.white} />} />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <NumberInputField
-                        min={0}
-                        max={9.9}
-                        value={taxiVal}
-                        nullValue="0.0"
-                        color={lineColors.cyan}
-                        size={entered ? lineSizes.regular : lineSizes.small}
-                        selectedCallback={(value) => setNewVal(value)}
-                        lsk={LINESELECT_KEYS.L1}
-                    />
-                )}
+            <LabelField lineSide={lineSides.left} value="TAXI" color={lineColors.white} />
+
+            <NumberInputField
+                lineSide={lineSides.left}
+                min={0}
+                max={9.9}
+                value={taxiVal}
+                nullValue="0.0"
+                color={lineColors.cyan}
+                size={entered ? lineSizes.regular : lineSizes.small}
+                selectedCallback={(value) => setNewVal(value)}
+                lsk={LINESELECT_KEYS.L1}
             />
         </LineHolder>
     );
@@ -52,37 +49,32 @@ also need to prevent clearing the entry once entered. Also need to compute auto-
  */
 const ZeroFuelWeightLine : React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value="ZFW/ZFWCG" color={lineColors.white} />} />
-        <Line
-            side={lineSides.right}
-            value={(
-                <InteractiveSplitLine
-                    slashColor={lineColors.amber}
-                    leftSide={(
-                        <SplitNumberField
-                            value={undefined}
-                            nullValue="___._"
-                            min={35}
-                            max={80} // placeholder value, what can this be...?
-                            color={lineColors.amber}
-                            size={lineSizes.regular}
-                            selectedCallback={() => {}}
-                        />
-                    )}
-                    rightSide={(
-                        <SplitNumberField
-                            value={undefined}
-                            nullValue="__._"
-                            min={8}
-                            max={50}
-                            color={lineColors.amber}
-                            size={lineSizes.regular}
-                            selectedCallback={() => {}}
-                        />
-                    )}
-                    lsk={LINESELECT_KEYS.R1}
+        <LabelField lineSide={lineSides.right} value="ZFW/ZFWCG" color={lineColors.white} />
+        <InteractiveSplitLine
+            slashColor={lineColors.amber}
+            leftSide={(
+                <SplitNumberField
+                    value={undefined}
+                    nullValue="___._"
+                    min={35}
+                    max={80} // placeholder value, what can this be...?
+                    color={lineColors.amber}
+                    size={lineSizes.regular}
+                    selectedCallback={() => {}}
                 />
             )}
+            rightSide={(
+                <SplitNumberField
+                    value={undefined}
+                    nullValue="__._"
+                    min={8}
+                    max={50}
+                    color={lineColors.amber}
+                    size={lineSizes.regular}
+                    selectedCallback={() => {}}
+                />
+            )}
+            lsk={LINESELECT_KEYS.R1}
         />
     </LineHolder>
 );
@@ -90,12 +82,12 @@ const ZeroFuelWeightLine : React.FC = () => (
 // When we can retrieve trip info then it'll populate and dynamically change colors
 const TripWeightLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value={'TRIP\xa0/TIME'} color={lineColors.white} />} />
+        <LabelField lineSide={lineSides.left} value={'TRIP\xa0/TIME'} color={lineColors.white} />
         <SplitLine
             side={lineSides.left}
             slashColor={lineColors.white}
-            leftSide={<Field value="---.-" color={lineColors.white} size={lineSizes.regular} />}
-            rightSide={(<Field value="----" size={lineSizes.regular} color={lineColors.white} />)}
+            leftSide={<Field lineSide={lineSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />}
+            rightSide={(<Field lineSide={lineSides.right} value="----" size={lineSizes.regular} color={lineColors.white} />)}
         />
     </LineHolder>
 );
@@ -111,21 +103,17 @@ const BlockWeightLine: React.FC = () => {
     return (
         <LineHolder>
             <LineHolder>
-                <Line side={lineSides.right} value={<LabelField value="BLOCK" color={lineColors.white} />} />
-                <Line
-                    side={lineSides.right}
-                    value={(
-                        <NumberInputField
-                            min={0}
-                            max={80}
-                            value={undefined}
-                            nullValue="__._"
-                            color={lineColors.amber}
-                            size={lineSizes.regular}
-                            selectedCallback={(value) => setNewVal(value)}
-                            lsk={LINESELECT_KEYS.R2}
-                        />
-                    )}
+                <LabelField lineSide={lineSides.right} value="BLOCK" color={lineColors.white} />
+                <NumberInputField
+                    lineSide={lineSides.right}
+                    min={0}
+                    max={80}
+                    value={undefined}
+                    nullValue="__._"
+                    color={lineColors.amber}
+                    size={lineSizes.regular}
+                    selectedCallback={(value) => setNewVal(value)}
+                    lsk={LINESELECT_KEYS.R2}
                 />
             </LineHolder>
         </LineHolder>
@@ -137,7 +125,7 @@ Need to find a way to recalculate percentage or weight based on the entry of eit
 Need to find a way to only allow the entry of one or the other but not both. */
 const ReserveWeightLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="RTE RSV/%" color={lineColors.white} />} />
+        <LabelField lineSide={lineSides.left} value="RTE RSV/%" color={lineColors.white} />
         <InteractiveSplitLine
             slashColor={lineColors.white}
             leftSide={(
@@ -169,7 +157,7 @@ const ReserveWeightLine: React.FC = () => (
 
 const AlternateWeightLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value={'ALTN\xa0/TIME'} color={lineColors.white} />} />
+        <LabelField lineSide={lineSides.right} value={'ALTN\xa0/TIME'} color={lineColors.white} />
         <InteractiveSplitLine
             slashColor={lineColors.white}
             leftSide={(
@@ -183,7 +171,7 @@ const AlternateWeightLine: React.FC = () => (
                     selectedCallback={() => {}}
                 />
             )}
-            rightSide={<Field value="----" color={lineColors.white} size={lineSizes.regular} />}
+            rightSide={<Field lineSide={lineSides.left} value="----" color={lineColors.white} size={lineSizes.regular} />}
             lsk={LINESELECT_KEYS.L4}
         />
     </LineHolder>
@@ -191,11 +179,11 @@ const AlternateWeightLine: React.FC = () => (
 
 const LwTwLine : React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value={'TOW/\xa0\xa0\xa0LW'} color={lineColors.white} />} />
+        <LabelField lineSide={lineSides.right} value={'TOW/\xa0\xa0\xa0LW'} color={lineColors.white} />
         <SplitLine
             slashColor={lineColors.white}
-            leftSide={(<Field value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
-            rightSide={(<Field value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
+            leftSide={(<Field lineSide={lineSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
+            rightSide={(<Field lineSide={lineSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
             side={lineSides.right}
         />
     </LineHolder>
@@ -204,57 +192,49 @@ const LwTwLine : React.FC = () => (
 /* Need to find a way to only allow entering one or the other but not both */
 const FinalWeightCell : React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value="FINAL/TIME" color={lineColors.white} />} />
-        <Line
-            side={lineSides.left}
-            value={(
-                <InteractiveSplitLine
-                    slashColor={lineColors.white}
-                    leftSide={(
-                        <SplitNumberField
-                            value={undefined}
-                            nullValue="---.-"
-                            min={0.0}
-                            max={100} // placeholder value, what can this be...?
-                            color={lineColors.white}
-                            size={lineSizes.regular}
-                            selectedCallback={() => {}}
-                        />
-                    )}
-                    rightSide={(
-                        <SplitNumberField
-                            value={undefined}
-                            nullValue="----"
-                            min={0}
-                            max={15.0} // Need a way to dash results upon going beyond the maximum value, maybe in the callback?
-                            color={lineColors.white}
-                            size={lineSizes.regular}
-                            selectedCallback={() => {}}
-                        />
-                    )}
-                    lsk={LINESELECT_KEYS.L5}
+        <LabelField lineSide={lineSides.left} value="FINAL/TIME" color={lineColors.white} />
+
+        <InteractiveSplitLine
+            slashColor={lineColors.white}
+            leftSide={(
+                <SplitNumberField
+                    value={undefined}
+                    nullValue="---.-"
+                    min={0.0}
+                    max={100} // placeholder value, what can this be...?
+                    color={lineColors.white}
+                    size={lineSizes.regular}
+                    selectedCallback={() => {}}
                 />
             )}
+            rightSide={(
+                <SplitNumberField
+                    value={undefined}
+                    nullValue="----"
+                    min={0}
+                    max={15.0} // Need a way to dash results upon going beyond the maximum value, maybe in the callback?
+                    color={lineColors.white}
+                    size={lineSizes.regular}
+                    selectedCallback={() => {}}
+                />
+            )}
+            lsk={LINESELECT_KEYS.L5}
         />
     </LineHolder>
 );
 
 const TripWindLine : React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value="TRIP WIND" color={lineColors.white} />} />
-        <Line
-            side={lineSides.right}
-            value={(
-                <StringInputField
-                    value={undefined}
-                    nullValue="HD000"
-                    color={lineColors.cyan}
-                    size={lineSizes.regular}
-                    selectedCallback={() => {}}
-                    lsk={LINESELECT_KEYS.R5}
-                    selectedValidation={() => true}
-                />
-            )}
+        <LabelField lineSide={lineSides.right} value="TRIP WIND" color={lineColors.white} />
+        <StringInputField
+            lineSide={lineSides.right}
+            value={undefined}
+            nullValue="HD000"
+            color={lineColors.cyan}
+            size={lineSizes.regular}
+            selectedCallback={() => {}}
+            lsk={LINESELECT_KEYS.R5}
+            selectedValidation={() => true}
         />
     </LineHolder>
 );
@@ -269,21 +249,17 @@ const MinDestFOBLine : React.FC = () => {
     };
     return (
         <LineHolder>
-            <Line side={lineSides.left} value={<LabelField value="MIN DEST FOB" color={lineColors.white} />} />
-            <Line
-                side={lineSides.left}
-                value={(
-                    <NumberInputField
-                        value={undefined}
-                        nullValue="---.-"
-                        min={0}
-                        max={80}
-                        color={lineColors.white}
-                        size={lineSizes.regular}
-                        selectedCallback={(value) => setNewVal(value)}
-                        lsk={LINESELECT_KEYS.L6}
-                    />
-                )}
+            <LabelField lineSide={lineSides.left} value="MIN DEST FOB" color={lineColors.white} />
+            <NumberInputField
+                lineSide={lineSides.left}
+                value={undefined}
+                nullValue="---.-"
+                min={0}
+                max={80}
+                color={lineColors.white}
+                size={lineSizes.regular}
+                selectedCallback={(value) => setNewVal(value)}
+                lsk={LINESELECT_KEYS.L6}
             />
         </LineHolder>
     );
@@ -291,12 +267,12 @@ const MinDestFOBLine : React.FC = () => {
 
 const ExtraWeightLine : React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value="EXTRA/TIME" color={lineColors.white} />} />
+        <LabelField lineSide={lineSides.right} value="EXTRA/TIME" color={lineColors.white} />
         <SplitLine
             slashColor={lineColors.white}
             side={lineSides.right}
-            leftSide={(<Field value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
-            rightSide={(<Field value="----" color={lineColors.white} size={lineSizes.regular} />)}
+            leftSide={(<Field lineSide={lineSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
+            rightSide={(<Field lineSide={lineSides.right} value="----" color={lineColors.white} size={lineSizes.regular} />)}
         />
     </LineHolder>
 );
