@@ -30,6 +30,7 @@ jobs:
       - name: test-rust.sh
         run: |
           ./scripts/dev-env/run.sh scripts/test-rust.sh
+          ./scripts/dev-env/run.sh scripts/test-js.sh
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false

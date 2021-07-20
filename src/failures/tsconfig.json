@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "noEmit": true,
+  },
+  "include": [
+    "src/**/*",
+    "../../typings/**/*.d.ts"
+  ]
+}
