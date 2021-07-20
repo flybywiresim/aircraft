@@ -601,6 +601,8 @@
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>89</POTENTIOMETER>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_BOOST>20</EMISSIVE_BOOST>
                 </UseTemplate>
 
                 <!-- CPT WX SCREEN -->
