@@ -1,7 +1,5 @@
 class CDULateralRevisionPage {
     static ShowPage(mcdu, waypoint, waypointIndexFP) {
-        console.log("CDULateralRevisionPage.ShowPage");
-        console.log(waypoint);
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.LateralRevisionPage;
 
