@@ -213,7 +213,12 @@ var A320_Neo_LowerECAM_PRESS;
 
             const leftPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool"));
             const rightPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
-            const landingElev = (SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet") !== -2000) ? SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet") : SimVar.GetSimVarValue("L:A32NX_AUTO_LANDING_ELEVATION", "feet");
+            let landingElev;
+            if (SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet") !== -2000) {
+                landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
+            } else {
+                landingElev = SimVar.GetSimVarValue("L:A32NX_AUTO_LANDING_ELEVATION", "feet");
+            }
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "int");
             const manMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "Bool");
             const landingElevMode = SimVar.GetSimVarValue("L:LANDING_ELEV_MODE", "Bool");
@@ -294,7 +299,11 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevValue.setAttribute("visibility", "visible");
                 this.htmlLdgElevTitle.setAttribute("visibility", "visible");
                 this.htmlLdgElevValueUnit.setAttribute("visibility", "visible");
-                activeSystem === 1 ? this.htmlSYS1text.setAttribute("visibility", "visible") : this.htmlSYS2text.setAttribute("visibility", "visible");
+                if (activeSystem === 1) {
+                    this.htmlSYS1text.setAttribute("visibility", "visible");
+                } else {
+                    this.htmlSYS2text.setAttribute("visibility", "visible");
+                }
                 this.manModeTime = 0;
                 this.oldManModValue = 0;
             }

@@ -1616,7 +1616,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (approach) {
                     const runway = this.flightPlanManager.getApproachRunway();
                     if (runway) {
-                        SimVar.SetSimVarValue("L:A32NX_AUTO_LANDING_ELEVATION", "feet", runway.elevation * 3.28084);
+                        SimVar.SetSimVarValue("L:A32NX_AUTO_LANDING_ELEVATION", "feet", A32NX_Util.meterToFeet(runway.elevation));
                     }
                 }
                 this.clearAutotunedIls();
