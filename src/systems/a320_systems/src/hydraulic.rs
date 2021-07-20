@@ -7,6 +7,7 @@ use uom::si::{
     pressure::psi,
     ratio::{percent, ratio},
     volume::gallon,
+    volume_rate::gallon_per_second,
 };
 
 use systems::{
@@ -320,6 +321,54 @@ impl A320Hydraulic {
         }
     }
 
+    // Placeholder function to give an estimation of blue pump flow for sound purpose
+    // Todo remove when hydraulics gives directly correct values of flow and displacement
+    fn blue_electric_pump_estimated_flow(&self) -> VolumeRate {
+        // If RAT pump has some RPM then we consider epump provides only a fraction of the loop total flow
+        let rat_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
+
+        let estimated_blue_epump_flow: VolumeRate;
+        if self.blue_electric_pump_controller.should_pressurise() {
+            if rat_produces_flow {
+                estimated_blue_epump_flow = self.blue_loop.current_flow() * 0.4;
+            } else {
+                estimated_blue_epump_flow = self.blue_loop.current_flow();
+            }
+        } else {
+            estimated_blue_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+
+        estimated_blue_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
+    }
+
+    // Placeholder function to give an estimation of yellow pump flow for sound purpose
+    // Todo remove when hydraulics gives directly correct values of flow and displacement
+    fn yellow_electric_pump_estimated_flow(&self) -> VolumeRate {
+        // If EDP started pumping and has some RPM then we consider epump provides a fraction of the loop total flow
+        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
+            && self.engine_driven_pump_2_controller.should_pressurise();
+
+        let mut estimated_yellow_epump_flow: VolumeRate;
+        if self.yellow_electric_pump_controller.should_pressurise() {
+            if yellow_edp_outputs_some_flow {
+                // If electric pump is not the only pump to work we only consider it gives a 0.2 fraction of the loop total flow
+                estimated_yellow_epump_flow = self.yellow_loop.current_flow() * 0.2;
+            } else {
+                estimated_yellow_epump_flow = self.yellow_loop.current_flow();
+            }
+
+            if self.power_transfer_unit.is_active_right_to_left() {
+                estimated_yellow_epump_flow += self.power_transfer_unit.flow();
+            } else if self.power_transfer_unit.is_active_left_to_right() {
+                estimated_yellow_epump_flow -= self.power_transfer_unit.flow();
+            }
+        } else {
+            estimated_yellow_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+
+        estimated_yellow_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
+    }
+
     fn green_edp_has_low_press_fault(&self) -> bool {
         self.engine_driven_pump_1_controller
             .has_pressure_low_fault()
@@ -597,6 +646,20 @@ impl SimulationElement for A320Hydraulic {
         self.braking_force.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            "HYD_YELLOW_EPUMP_FLOW",
+            self.yellow_electric_pump_estimated_flow()
+                .get::<gallon_per_second>(),
+        );
+
+        writer.write(
+            "HYD_BLUE_EPUMP_FLOW",
+            self.blue_electric_pump_estimated_flow()
+                .get::<gallon_per_second>(),
+        );
     }
 }
 
@@ -1421,6 +1484,8 @@ pub struct A320AutobrakeController {
 
     should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
     should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate,
+
+    external_disarm_event: bool,
 }
 impl A320AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
@@ -1454,6 +1519,7 @@ impl A320AutobrakeController {
             should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
             ),
+            external_disarm_event: false,
         }
     }
 
@@ -1541,6 +1607,7 @@ impl A320AutobrakeController {
             || !self.arming_is_allowed_by_bcu
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
+            || self.external_disarm_event
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -1613,6 +1680,7 @@ impl SimulationElement for A320AutobrakeController {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
         self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
+        self.external_disarm_event = state.read("AUTOBRAKE_DISARM");
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         self.mode = state.read_f64("AUTOBRAKES_ARMED_MODE").into();

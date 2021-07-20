@@ -1,0 +1,166 @@
+{
+    "accessors": [
+        {
+            "bufferView": 1,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_FX_EXHAUST_APU_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_FX_EXHAUST_APU_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 24,
+            "min": [
+                -0.05000000074505806,
+                -0.05000000074505806,
+                -0.05000000074505806
+            ],
+            "max": [
+                0.05000000074505806,
+                0.05000000074505806,
+                0.05000000074505806
+            ],
+            "type": "VEC3",
+            "name": "x0_FX_EXHAUST_APU_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_FX_EXHAUST_APU_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 24,
+            "type": "VEC2",
+            "name": "x0_FX_EXHAUST_APU_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 24,
+            "type": "VEC2",
+            "name": "x0_FX_EXHAUST_APU_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "componentType": 5123,
+            "count": 36,
+            "type": "SCALAR",
+            "name": "x0_FX_EXHAUST_APU_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.7.5",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            },
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.05000000074505806,
+                    0.05000000074505806,
+                    0.05000000074505806
+                ],
+                "BoundingBoxMin": [
+                    -0.05000000074505806,
+                    -0.05000000074505806,
+                    -0.05000000074505806
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 72,
+            "byteOffset": 0,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 864,
+            "byteStride": 36,
+            "byteOffset": 72,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_asset_optimized",
+        "ASOBO_normal_map_convention",
+        "ASOBO_material_invisible"
+    ],
+    "materials": [
+        {
+            "name": "FX_EXHAUST_APU_INVISIBLE",
+            "extensions": { "ASOBO_material_invisible": {} }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 0,
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4,
+                        "TEXCOORD_1": 5
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 12,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_FX_EXHAUST_APU"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [0, 2.6, -21.5],
+            "mesh": 0,
+            "name": "FX_EXHAUST_APU"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [0]
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 936,
+            "uri": "fx_exhaust_apu.bin"
+        }
+    ]
+}
