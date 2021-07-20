@@ -1976,5 +1976,26 @@ pub mod tests {
 
             assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
         }
+
+        #[test]
+        fn during_start_once_apu_output_normal_remains_normal() {
+            // Test for a bug where the frequency dipped above and then below the minimum normal range
+            // very briefly during the startup sequence, thus sometimes (depending on the frame rate and sheer luck)
+            // triggering the powering and unpowering of buses. This then triggered sounds to play again.
+
+            let mut test_bed = test_bed_with().starting_apu();
+
+            while test_bed.n().get::<percent>() < Aps3200ApuGenerator::APU_GEN_POWERED_N {
+                test_bed.run_with_delta(Duration::from_millis(50));
+            }
+
+            let mut powered: bool = test_bed.apu_generator_output_within_normal_parameters();
+            while test_bed.n().get::<percent>() < 100. {
+                let still_powered: bool = test_bed.apu_generator_output_within_normal_parameters();
+                assert!(!powered || (powered && still_powered));
+                powered = still_powered;
+                test_bed.run_with_delta(Duration::from_millis(1));
+            }
+        }
     }
 }
