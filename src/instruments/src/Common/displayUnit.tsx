@@ -26,8 +26,6 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
 
     useUpdate((deltaTime) => {
-        console.log(`Updated ${deltaTime} ${new Date().getTime()}`);
-        console.log(state);
         if (timer !== null) {
             if (timer > 0) {
                 setTimer(timer - (deltaTime / 1000));
