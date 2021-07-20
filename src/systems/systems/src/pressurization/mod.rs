@@ -72,29 +72,29 @@ impl Pressurization {
 
 impl SimulationElement for Pressurization {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("ACTIVE_CPC_SYS", self.active_system);
+        writer.write("PRESS_ACTIVE_CPC_SYS", self.active_system);
         writer.write(
-            "CABIN_ALTITUDE",
+            "PRESS_CABIN_ALTITUDE",
             self.cpc[self.active_system - 1].cabin_altitude(),
         );
         writer.write(
-            "CABIN_VS",
+            "PRESS_CABIN_VS",
             self.cpc[self.active_system - 1]
                 .cabin_vs()
                 .get::<foot_per_minute>(),
         );
         writer.write(
-            "CABIN_DELTA_PRESSURE",
+            "PRESS_CABIN_DELTA_PRESSURE",
             self.cpc[self.active_system - 1].cabin_delta_p(),
         );
         writer.write(
-            "OUTFLOW_VALVE_OPEN_PERCENTAGE",
+            "PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE",
             self.outflow_valve.open_amount(),
         );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.landing_elevation = reader.read("AUTO_LANDING_ELEVATION");
+        self.landing_elevation = reader.read("PRESS_AUTO_LANDING_ELEVATION");
         self.sea_level_pressure = Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE"));
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH"));
     }

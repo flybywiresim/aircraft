@@ -203,13 +203,13 @@ var A320_Neo_LowerECAM_PRESS;
             const inletValvePosition = SimVar.GetSimVarValue("L:VENT_INLET_VALVE", "Percent");
             const outletValvePosition = SimVar.GetSimVarValue("L:VENT_OUTLET_VALVE", "Percent");
             const safetyValvePosition = (SimVar.GetSimVarValue("L:SAFETY_VALVE_1", "Bool") || SimVar.GetSimVarValue("L:SAFETY_VALVE_2", "Bool"));
-            const activeSystem = SimVar.GetSimVarValue("L:A32NX_ACTIVE_CPC_SYS", "Number");
+            const activeSystem = SimVar.GetSimVarValue("L:A32NX_PRESS_ACTIVE_CPC_SYS", "Number");
 
-            const cabinVSValue = fastToFixed(SimVar.GetSimVarValue("L:A32NX_CABIN_VS", "Feet per minute"), 0);
-            const pressureDelta = SimVar.GetSimVarValue("L:A32NX_CABIN_DELTA_PRESSURE", "PSI");
-            const cabinAltitude = fastToFixed(SimVar.GetSimVarValue("L:A32NX_CABIN_ALTITUDE", "feet"), 0);
+            const cabinVSValue = fastToFixed(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_VS", "Feet per minute"), 0);
+            const pressureDelta = SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI");
+            const cabinAltitude = fastToFixed(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_ALTITUDE", "feet"), 0);
             const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2);
-            const outletValveOpenPercent = SimVar.GetSimVarValue("L:A32NX_OUTFLOW_VALVE_OPEN_PERCENTAGE", "Percent");
+            const outletValveOpenPercent = SimVar.GetSimVarValue("L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE", "Percent");
 
             const leftPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool"));
             const rightPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
@@ -217,7 +217,7 @@ var A320_Neo_LowerECAM_PRESS;
             if (SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet") !== -2000) {
                 landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
             } else {
-                landingElev = SimVar.GetSimVarValue("L:A32NX_AUTO_LANDING_ELEVATION", "feet");
+                landingElev = SimVar.GetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet");
             }
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "int");
             const manMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "Bool");
