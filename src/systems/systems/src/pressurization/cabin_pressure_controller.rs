@@ -127,7 +127,11 @@ impl CabinPressureController {
     }
 
     fn calculate_cabin_vs(&mut self, context: &UpdateContext) -> Velocity {
+        const MAX_CLIMB_RATE: f64 = 750.;
+        const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.;
         const MAX_DESCENT_RATE: f64 = -750.;
+        const MAX_ABORT_DESCENT_RATE: f64 = -500.;
+
         match self.pressure_schedule_manager {
             PressureScheduleManager::Ground(_) => Velocity::new::<foot_per_minute>(0.),
             PressureScheduleManager::TakeOff(_) => {
@@ -142,7 +146,7 @@ impl CabinPressureController {
                 const CABIN_ALTITUDE_LIMIT: f64 = 8050.; // Feet
 
                 if self.cabin_delta_p() >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT) {
-                    Velocity::new::<foot_per_minute>(750.)
+                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE)
                 } else if self.cabin_altitude() >= Length::new::<foot>(CABIN_ALTITUDE_LIMIT) {
                     Velocity::new::<foot_per_minute>(0.)
                 } else {
@@ -162,8 +166,8 @@ impl CabinPressureController {
                 );
                 if target_vs <= Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE) {
                     Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE)
-                } else if target_vs >= Velocity::new::<foot_per_minute>(500.) {
-                    Velocity::new::<foot_per_minute>(500.)
+                } else if target_vs >= Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT) {
+                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT)
                 } else {
                     target_vs
                 }
@@ -175,11 +179,11 @@ impl CabinPressureController {
                 if self.cabin_altitude()
                     < self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
-                    Velocity::new::<foot_per_minute>(500.)
+                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT)
                 } else if self.cabin_altitude()
                     > self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
-                    Velocity::new::<foot_per_minute>(-500.)
+                    Velocity::new::<foot_per_minute>(MAX_ABORT_DESCENT_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
@@ -510,10 +514,14 @@ impl PressureSchedule<ClimbInternal> {
         self: PressureSchedule<ClimbInternal>,
         context: &UpdateContext,
     ) -> PressureScheduleManager {
+        const DURATION_UNTIL_ABORT: u64 = 30;
+        const DURATION_UNTIL_CRUISE: u64 = 30;
+        const DURATION_UNTIL_DESCENT: u64 = 60;
+
         if context.indicated_altitude() < Length::new::<foot>(8000.)
             && context.vertical_speed() < Velocity::new::<foot_per_minute>(-200.)
         {
-            if self.timer > Duration::from_secs(30) {
+            if self.timer > Duration::from_secs(DURATION_UNTIL_ABORT) {
                 PressureScheduleManager::Abort(self.into())
             } else {
                 PressureScheduleManager::ClimbInternal(self.increase_timer(context))
@@ -521,13 +529,13 @@ impl PressureSchedule<ClimbInternal> {
         } else if context.vertical_speed() < Velocity::new::<foot_per_minute>(100.)
             && context.vertical_speed() > Velocity::new::<foot_per_minute>(-100.)
         {
-            if self.timer > Duration::from_secs(30) {
+            if self.timer > Duration::from_secs(DURATION_UNTIL_CRUISE) {
                 PressureScheduleManager::Cruise(self.into())
             } else {
                 PressureScheduleManager::ClimbInternal(self.increase_timer(context))
             }
         } else if context.vertical_speed() < Velocity::new::<foot_per_minute>(-250.) {
-            if self.timer > Duration::from_secs(60) {
+            if self.timer > Duration::from_secs(DURATION_UNTIL_DESCENT) {
                 PressureScheduleManager::DescentInternal(self.into())
             } else {
                 PressureScheduleManager::ClimbInternal(self.increase_timer(context))
@@ -549,14 +557,17 @@ struct Cruise;
 
 impl PressureSchedule<Cruise> {
     fn step(self: PressureSchedule<Cruise>, context: &UpdateContext) -> PressureScheduleManager {
+        const DURATION_UNTIL_CLIMB: u64 = 60;
+        const DURATION_UNTIL_DESCENT: u64 = 30;
+
         if context.vertical_speed() > Velocity::new::<foot_per_minute>(250.) {
-            if self.timer > Duration::from_secs(60) {
+            if self.timer > Duration::from_secs(DURATION_UNTIL_CLIMB) {
                 PressureScheduleManager::ClimbInternal(self.into())
             } else {
                 PressureScheduleManager::Cruise(self.increase_timer(context))
             }
         } else if context.vertical_speed() < Velocity::new::<foot_per_minute>(-250.) {
-            if self.timer > Duration::from_secs(30) {
+            if self.timer > Duration::from_secs(DURATION_UNTIL_DESCENT) {
                 PressureScheduleManager::DescentInternal(self.into())
             } else {
                 PressureScheduleManager::Cruise(self.increase_timer(context))
@@ -577,8 +588,10 @@ impl PressureSchedule<DescentInternal> {
         self: PressureSchedule<DescentInternal>,
         context: &UpdateContext,
     ) -> PressureScheduleManager {
+        const DURATION_UNTIL_CLIMB: u64 = 60;
+
         if context.vertical_speed() > Velocity::new::<foot_per_minute>(250.) {
-            if self.timer > Duration::from_secs(60) {
+            if self.timer > Duration::from_secs(DURATION_UNTIL_CLIMB) {
                 PressureScheduleManager::ClimbInternal(self.into())
             } else {
                 PressureScheduleManager::DescentInternal(self.increase_timer(context))
@@ -599,10 +612,12 @@ struct Abort;
 
 impl PressureSchedule<Abort> {
     fn step(self: PressureSchedule<Abort>, context: &UpdateContext) -> PressureScheduleManager {
+        const DURATION_UNTIL_CLIMB: u64 = 60;
+
         if context.is_on_ground() && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else if context.vertical_speed() > Velocity::new::<foot_per_minute>(30.) {
-            if self.timer > Duration::from_secs(60) {
+            if self.timer > Duration::from_secs(DURATION_UNTIL_CLIMB) {
                 PressureScheduleManager::ClimbInternal(self.into())
             } else {
                 PressureScheduleManager::Abort(self.increase_timer(context))
