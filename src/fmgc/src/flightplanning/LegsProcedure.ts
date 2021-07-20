@@ -379,6 +379,10 @@ export class LegsProcedure {
       waypoint.isVectors = true;
       waypoint.endsInDiscontinuity = true;
       waypoint.discontinuityCanBeCleared = false;
+      if (!waypoint.additionalData) {
+          waypoint.additionalData = {};
+      }
+      waypoint.additionalData.vectorsCourse = leg.course;
 
       return waypoint;
   }
