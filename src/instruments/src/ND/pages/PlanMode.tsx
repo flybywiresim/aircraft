@@ -24,23 +24,25 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos }) => {
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(selectedWaypoint?.infos.coordinates ?? ppos, rangeSetting * 2, 768, 0);
+        params.compute(selectedWaypoint?.infos.coordinates ?? ppos, rangeSetting / 2, 250, 0);
 
         return params;
     });
 
     useEffect(() => {
         if (selectedWaypoint) {
-            mapParams.compute(selectedWaypoint.infos.coordinates, rangeSetting * 2, 768, 0);
+            mapParams.compute(selectedWaypoint.infos.coordinates, rangeSetting / 2, 250, 0);
         }
     }, [selectedWaypoint?.infos.coordinates.lat, selectedWaypoint?.infos.coordinates.long, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     return (
         <>
             <FlightPlan
+                x={384}
+                y={384}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
-                clipPath="url(#arc-mode-flight-plan-clip)"
+                clipPath="url(#plan-mode-flight-plan-clip)"
                 debug={false}
             />
 
@@ -56,24 +58,29 @@ interface OverlayProps {
 }
 
 const Overlay: FC<OverlayProps> = ({ rangeSetting }) => (
-    <g className="White" strokeWidth={3}>
-        <circle cx={384} cy={384} r={250} />
+    <>
+        <clipPath id="plan-mode-flight-plan-clip">
+            <circle cx={0} cy={0} r={248.5} />
+        </clipPath>
+        <g className="White" strokeWidth={3}>
+            <circle cx={384} cy={384} r={250} />
 
-        <path d="M259,384a125,125 0 1,0 250,0a125,125 0 1,0 -250,0" strokeDasharray="14 13" />
+            <path d="M259,384a125,125 0 1,0 250,0a125,125 0 1,0 -250,0" strokeDasharray="14 13" />
 
-        <text x={310} y={474} className="Cyan" fontSize={22}>{rangeSetting}</text>
-        <text x={212} y={556} className="Cyan" fontSize={22}>{rangeSetting / 2}</text>
+            <text x={310} y={474} className="Cyan" fontSize={22}>{rangeSetting}</text>
+            <text x={212} y={556} className="Cyan" fontSize={22}>{rangeSetting / 2}</text>
 
-        <text x={384} y={170} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">N</text>
-        <path d="M384,141.5 L390,151 L378,151 L384,141.5" fill="white" stroke="none" />
+            <text x={384} y={170} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">N</text>
+            <path d="M384,141.5 L390,151 L378,151 L384,141.5" fill="white" stroke="none" />
 
-        <text x={598} y={384} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">E</text>
-        <path d="M626.2,384 L617,390 L617,378 L626.5,384" fill="white" stroke="none" />
+            <text x={598} y={384} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">E</text>
+            <path d="M626.2,384 L617,390 L617,378 L626.5,384" fill="white" stroke="none" />
 
-        <text x={384} y={598} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">S</text>
-        <path d="M384,626.5 L390,617 L378,617 L384,626.5" fill="white" stroke="none" />
+            <text x={384} y={598} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">S</text>
+            <path d="M384,626.5 L390,617 L378,617 L384,626.5" fill="white" stroke="none" />
 
-        <text x={170} y={384} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">W</text>
-        <path d="M141.5,384 L151,390 L151,378 L141.5,384" fill="white" stroke="none" />
-    </g>
+            <text x={170} y={384} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">W</text>
+            <path d="M141.5,384 L151,390 L151,378 L141.5,384" fill="white" stroke="none" />
+        </g>
+    </>
 );
