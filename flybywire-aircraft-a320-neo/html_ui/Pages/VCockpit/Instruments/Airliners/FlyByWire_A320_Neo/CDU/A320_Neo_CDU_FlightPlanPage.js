@@ -112,6 +112,7 @@ class CDUFlightPlanPage {
         }
 
         // Only examine first 5 (or less) waypoints/markers
+        // TODO: Proper sequencing implementation AMM 22-72-00:59-61 > FROM field (when offset is 0)
         const scrollWindow = [];
         for (let rowI = 0, winI = offset; rowI < rowsCount; rowI++, winI++) {
             winI = winI % (waypointsAndMarkers.length);
@@ -208,7 +209,7 @@ class CDUFlightPlanPage {
 
                 // Altitude
 
-                let altitudeConstraint = "-----";
+                let altitudeConstraint = "-----\xa0";
                 let altPrefix = "\xa0";
 
                 if (waypointsAndMarkers[winI].wp === fpm.getDestination()) {
