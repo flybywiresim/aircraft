@@ -35,6 +35,10 @@ const ecamPages = [
         name: 'crz-page',
         path: 'SD/Pages/Crz',
     },
+    {
+        name: 'bleed-page',
+        path: 'SD/Pages/Bleed',
+    },
 ];
 
 function getInputs() {
