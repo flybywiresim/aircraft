@@ -1487,25 +1487,26 @@
                     <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Cabin_Template">
-                    <POTENTIOMETER>7</POTENTIOMETER>
-                    <TYPE>Dimmer</TYPE>
-                    <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
-                    <PART_ID>SWITCH_OVHD_INTLT_DOME</PART_ID>
-                    <ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
-                    <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-                    <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-                    <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.DOME_LIGHT_SET_BRT</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.DOME_LIGHT_SET_DIM</ANIMTIP_1>
-                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.DOME_LIGHT_SET_OFF</ANIMTIP_2>
-                    <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
-                    <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
-                    <WWISE_EVENT>lswitch</WWISE_EVENT>
-                </UseTemplate>
+                <Component ID="SWITCH_OVHD_INTLT_DOME" Node="SWITCH_OVHD_INTLT_DOME">
+                    <UseTemplate Name="ASOBO_GT_Switch_3States">
+                        <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
+                        <PART_ID>SWITCH_OVHD_INTLT_DOME</PART_ID>
+                        <ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
+                        <WWISE_EVENT>lswitch</WWISE_EVENT>
+                        <DIMMER_POS_0_VALUE>100</DIMMER_POS_0_VALUE>
+				        <DIMMER_POS_1_VALUE>50</DIMMER_POS_1_VALUE>
+				        <DIMMER_POS_2_VALUE>0</DIMMER_POS_2_VALUE>
+					    <CODE_POS_0>1 (&gt;K:2:CABIN_LIGHTS_SET) 100 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_0>
+					    <CODE_POS_1>0.5 (&gt;K:2:CABIN_LIGHTS_SET) 50 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_1>
+					    <CODE_POS_2>0 (&gt;K:2:CABIN_LIGHTS_SET) 0 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_2>
+					    <STATE0_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 100 == and</STATE0_TEST>
+					    <STATE1_TEST>(A:LIGHT CABIN:1, Bool) 0.5  == (A:LIGHT POTENTIOMETER:7, Percent) 50 == and</STATE1_TEST>
+					    <STATE2_TEST>(A:LIGHT CABIN:1, Bool) 0 == (A:LIGHT POTENTIOMETER:7, Percent) 0 == and </STATE2_TEST>
+                    </UseTemplate>
+                </Component>
 
                 <!-- Hide the original (non-separated) dome lights. -->
-                <Component ID="LIGHTS_Overhead" Node="LIGHTS_Overhead">
+                <Component ID="Overhead_Lights" Node="LIGHTS_Overhead">
                     <UseTemplate Name="ASOBO_GT_Visibility_Code">
                         <VISIBILITY_CODE>0</VISIBILITY_CODE>
                     </UseTemplate>
@@ -1515,6 +1516,8 @@
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
                     <NODE_ID>LIGHTS_Overhead_L</NODE_ID>
                     <POTENTIOMETER>7</POTENTIOMETER>
+                    <FAILURE>1</FAILURE>
+                    <SIMVAR_INDEX>1</SIMVAR_INDEX>
                     <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
@@ -1522,6 +1525,9 @@
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
                     <NODE_ID>LIGHTS_Overhead_R</NODE_ID>
                     <POTENTIOMETER>7</POTENTIOMETER>
+                    <FAILURE>1</FAILURE>
+                    <SIMVAR_INDEX>2</SIMVAR_INDEX>
+                    <NO_SIMVAR_LIGHT/>
                     <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
