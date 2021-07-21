@@ -2,7 +2,6 @@ import React, { FC, useEffect, useState } from 'react';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { useSimVar } from '@instruments/common/simVars';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
