@@ -55,7 +55,7 @@ const Waypoint: FC<{ waypoint: WayPoint, mapParams: MapParameters }> = ({ waypoi
 
     return (
         <Layer x={x} y={y}>
-            <rect x={-6} y={0} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform="rotate(45 4 4)" />
+            <rect x={-4} y={-4} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform="rotate(45 0 0)" />
 
             <text x={15} y={10} fontSize={20} fill="#00ff00">{waypoint.ident}</text>
         </Layer>
@@ -142,7 +142,7 @@ function makePathFromGeometry(geometry: Geometry, mapParams: MapParameters): str
         path.push(`M ${x} ${y}`);
 
         // draw first transition
-        const r = MathUtils.fastToFixed(transition.radius * mapParams.nmToPixels(1), 0);
+        const r = MathUtils.fastToFixed(transition.radius * mapParams.nmToPx, 0);
         const [outbndX, outbndY] = mapParams.coordinatesToXYy(outbound);
 
         x = MathUtils.fastToFixed(outbndX, 1);
@@ -196,7 +196,7 @@ function makePathFromGeometry(geometry: Geometry, mapParams: MapParameters): str
                 path.push(`${path.length ? 'L' : 'M'} ${x} ${y}`);
 
                 // draw transition itself to end of transition
-                const r = MathUtils.fastToFixed(transition.radius * mapParams.nmToPixels(1), 0);
+                const r = MathUtils.fastToFixed(transition.radius * mapParams.nmToPx, 0);
                 const [outbndX, outbndY] = mapParams.coordinatesToXYy(outbound);
 
                 x = MathUtils.fastToFixed(outbndX, 1);
