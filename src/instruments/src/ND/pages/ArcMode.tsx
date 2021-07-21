@@ -32,19 +32,20 @@ export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) =>
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting * 2, 768, trueHeading);
+        params.compute(ppos, rangeSetting, 492, trueHeading);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting, 768, trueHeading);
+        mapParams.compute(ppos, rangeSetting, 492, trueHeading);
     }, [ppos.lat, ppos.long, magHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     return (
         <>
             <FlightPlan
-                y={236}
+                x={384}
+                y={620}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
                 clipPath="url(#arc-mode-flight-plan-clip)"
@@ -83,7 +84,7 @@ interface OverlayProps {
 const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
         <clipPath id="arc-mode-flight-plan-clip">
-            <circle cx={384} cy={620} r={724} />
+            <circle cx={0} cy={0} r={490.5} />
         </clipPath>
         <clipPath id="arc-mode-overlay-clip-4">
             <path d="m 6 0 h 756 v 768 h -756 z" />
