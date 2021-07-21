@@ -23,7 +23,7 @@
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-react": "^7.12.1",
     "@babel/preset-typescript": "~7.12.7",
-    "@flybywiresim/eslint-config": "^0.2.1",
+    "@flybywiresim/eslint-config": "^0.2.2",
     "@flybywiresim/fragmenter": "^0.5.1",
     "@flybywiresim/igniter": "^1.2.0",
     "@flybywiresim/rnp": "^2.1.0",
