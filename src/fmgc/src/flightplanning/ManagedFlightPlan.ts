@@ -813,7 +813,7 @@ export class ManagedFlightPlan {
                 const waypoint = await procedure.getNext();
 
                 if (waypoint) {
-                    this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment.type);
+                    this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
             }
         }
@@ -865,7 +865,7 @@ export class ManagedFlightPlan {
                 const waypoint = await procedure.getNext();
 
                 if (waypoint !== undefined) {
-                    this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment.type);
+                    this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
             }
 
@@ -1037,7 +1037,7 @@ export class ManagedFlightPlan {
         return plan;
     }
 
-    private addWaypointAvoidingDuplicates(waypoint, waypointIndex, segment): void {
+    private addWaypointAvoidingDuplicates(waypoint: Waypoint, waypointIndex: number, segment: FlightPlanSegment): void {
         const index = this.waypoints.findIndex((wp) => wp.ident === waypoint.ident);
 
         if (index !== -1 && (index === waypointIndex - 1 || index === waypointIndex + 1)) {
