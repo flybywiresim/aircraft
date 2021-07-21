@@ -4,26 +4,23 @@ import { useMCDUDispatch } from '../../../redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import '../../../Components/styles.scss';
 
-import { Content } from '../../../Components/Content';
-import { LineHolder } from '../../../Components/LineHolder';
+import './styles.scss';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
-import { RowHolder } from '../../../Components/RowHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 
 const EngineLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-left">
         <LabelField lineSide={lineSides.left} value={'\xa0ENG'} color={lineColors.white} />
         <Field lineSide={lineSides.left} value="LEAP-1A26" color={lineColors.green} size={lineSizes.regular} />
-
-    </LineHolder>
+    </div>
 );
 
 const ActiveNavDataLine: React.FC = () => {
     const [activeNavDate] = ['TODO'];
     return (
-        <LineHolder>
+        <div className="line-holder-left">
             <LabelField lineSide={lineSides.left} value="ACTIVE DATA BASE" color={lineColors.white} />
             <Field
                 lineSide={lineSides.left}
@@ -31,14 +28,14 @@ const ActiveNavDataLine: React.FC = () => {
                 color={lineColors.cyan}
                 size={lineSizes.regular}
             />
-        </LineHolder>
+        </div>
     );
 };
 
 const SecondaryNavDataLine: React.FC = () => {
     const [secNavDate] = ['TODO'];
     return (
-        <LineHolder>
+        <div className="line-holder-left">
             <LabelField lineSide={lineSides.left} value="SECOND DATA BASE" color={lineColors.white} />
             <Field
                 lineSide={lineSides.left}
@@ -46,12 +43,12 @@ const SecondaryNavDataLine: React.FC = () => {
                 color={lineColors.inop}
                 size={lineSizes.small}
             />
-        </LineHolder>
+        </div>
     );
 };
 
 const AiracLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <EmptyLine />
         <Field
             lineSide={lineSides.right}
@@ -59,11 +56,11 @@ const AiracLine: React.FC = () => (
             color={lineColors.green}
             size={lineSizes.regular}
         />
-    </LineHolder>
+    </div>
 );
 
 const ChgCodeLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-one">
         <LabelField lineSide={lineSides.left} value="CHG CODE" color={lineColors.white} />
         <Field
             lineSide={lineSides.left}
@@ -71,11 +68,11 @@ const ChgCodeLine: React.FC = () => (
             color={lineColors.inop}
             size={lineSizes.small}
         />
-    </LineHolder>
+    </div>
 );
 
 const TodoNameLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-one">
         <LabelField lineSide={lineSides.left} value="IDLE/PERF" color={lineColors.white} />
         <Field
             lineSide={lineSides.left}
@@ -83,11 +80,11 @@ const TodoNameLine: React.FC = () => (
             color={lineColors.green}
             size={lineSizes.regular}
         />
-    </LineHolder>
+    </div>
 );
 
 const SoftwareLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <LabelField lineSide={lineSides.right} value="SOFTWARE" color={lineColors.white} />
         <Field
             lineSide={lineSides.right}
@@ -95,7 +92,7 @@ const SoftwareLine: React.FC = () => (
             color={lineColors.inop}
             size={lineSizes.regular}
         />
-    </LineHolder>
+    </div>
 );
 
 const IdentPage: React.FC = () => {
@@ -110,25 +107,23 @@ const IdentPage: React.FC = () => {
 
     return (
         <>
-            <Content>
-                <RowHolder index={1}>
-                    <EngineLine />
-                </RowHolder>
-                <RowHolder index={2}>
-                    <ActiveNavDataLine />
-                    <AiracLine />
-                </RowHolder>
-                <RowHolder index={3}>
-                    <SecondaryNavDataLine />
-                </RowHolder>
-                <RowHolder index={5}>
-                    <ChgCodeLine />
-                </RowHolder>
-                <RowHolder index={6}>
-                    <TodoNameLine />
-                    <SoftwareLine />
-                </RowHolder>
-            </Content>
+            <div className="row-holder">
+                <EngineLine />
+            </div>
+            <div className="row-holder">
+                <ActiveNavDataLine />
+                <AiracLine />
+            </div>
+            <div className="row-holder">
+                <SecondaryNavDataLine />
+            </div>
+            <div className="row-holder">
+                <ChgCodeLine />
+            </div>
+            <div className="row-holder">
+                <TodoNameLine />
+                <SoftwareLine />
+            </div>
         </>
     );
 };

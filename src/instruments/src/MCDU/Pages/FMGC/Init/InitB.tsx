@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { LineHolder } from '../../../Components/LineHolder';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
@@ -9,8 +8,6 @@ import { SplitLine } from '../../../Components/Lines/SplitLine';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import InteractiveSplitLine from '../../../Components/Lines/InteractiveSplitLine';
 import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
-import { RowHolder } from '../../../Components/RowHolder';
-import { Content } from '../../../Components/Content';
 import StringInputField from '../../../Components/Fields/Interactive/StringInputField';
 
 const TaxiFuelLine: React.FC = () => {
@@ -27,9 +24,8 @@ const TaxiFuelLine: React.FC = () => {
         }
     };
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.left} value="TAXI" color={lineColors.white} />
-
             <NumberInputField
                 lineSide={lineSides.left}
                 min={0}
@@ -41,15 +37,16 @@ const TaxiFuelLine: React.FC = () => {
                 selectedCallback={(value) => setNewVal(value)}
                 lsk={LINESELECT_KEYS.L1}
             />
-        </LineHolder>
+        </div>
     );
 };
 /* Find a way to allow dual entry initially then only one or the other afterwards
 also need to prevent clearing the entry once entered. Also need to compute auto-calc
  */
 const ZeroFuelWeightLine : React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <LabelField lineSide={lineSides.right} value="ZFW/ZFWCG" color={lineColors.white} />
+
         <InteractiveSplitLine
             slashColor={lineColors.amber}
             leftSide={(
@@ -76,12 +73,12 @@ const ZeroFuelWeightLine : React.FC = () => (
             )}
             lsk={LINESELECT_KEYS.R1}
         />
-    </LineHolder>
+    </div>
 );
 
 // When we can retrieve trip info then it'll populate and dynamically change colors
 const TripWeightLine: React.FC = () => (
-    <LineHolder>
+    <div>
         <LabelField lineSide={lineSides.left} value={'TRIP\xa0/TIME'} color={lineColors.white} />
         <SplitLine
             side={lineSides.left}
@@ -89,7 +86,7 @@ const TripWeightLine: React.FC = () => (
             leftSide={<Field lineSide={lineSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />}
             rightSide={(<Field lineSide={lineSides.right} value="----" size={lineSizes.regular} color={lineColors.white} />)}
         />
-    </LineHolder>
+    </div>
 );
 
 const BlockWeightLine: React.FC = () => {
@@ -101,8 +98,8 @@ const BlockWeightLine: React.FC = () => {
         }
     };
     return (
-        <LineHolder>
-            <LineHolder>
+        <div>
+            <div>
                 <LabelField lineSide={lineSides.right} value="BLOCK" color={lineColors.white} />
                 <NumberInputField
                     lineSide={lineSides.right}
@@ -115,8 +112,8 @@ const BlockWeightLine: React.FC = () => {
                     selectedCallback={(value) => setNewVal(value)}
                     lsk={LINESELECT_KEYS.R2}
                 />
-            </LineHolder>
-        </LineHolder>
+            </div>
+        </div>
     );
 };
 
@@ -124,7 +121,7 @@ const BlockWeightLine: React.FC = () => {
 Need to find a way to recalculate percentage or weight based on the entry of either or
 Need to find a way to only allow the entry of one or the other but not both. */
 const ReserveWeightLine: React.FC = () => (
-    <LineHolder>
+    <div>
         <LabelField lineSide={lineSides.left} value="RTE RSV/%" color={lineColors.white} />
         <InteractiveSplitLine
             slashColor={lineColors.white}
@@ -152,11 +149,11 @@ const ReserveWeightLine: React.FC = () => (
             )}
             lsk={LINESELECT_KEYS.L3}
         />
-    </LineHolder>
+    </div>
 );
 
 const AlternateWeightLine: React.FC = () => (
-    <LineHolder>
+    <div>
         <LabelField lineSide={lineSides.right} value={'ALTN\xa0/TIME'} color={lineColors.white} />
         <InteractiveSplitLine
             slashColor={lineColors.white}
@@ -174,11 +171,11 @@ const AlternateWeightLine: React.FC = () => (
             rightSide={<Field lineSide={lineSides.left} value="----" color={lineColors.white} size={lineSizes.regular} />}
             lsk={LINESELECT_KEYS.L4}
         />
-    </LineHolder>
+    </div>
 );
 
 const LwTwLine : React.FC = () => (
-    <LineHolder>
+    <div>
         <LabelField lineSide={lineSides.right} value={'TOW/\xa0\xa0\xa0LW'} color={lineColors.white} />
         <SplitLine
             slashColor={lineColors.white}
@@ -186,12 +183,12 @@ const LwTwLine : React.FC = () => (
             rightSide={(<Field lineSide={lineSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
             side={lineSides.right}
         />
-    </LineHolder>
+    </div>
 );
 
 /* Need to find a way to only allow entering one or the other but not both */
 const FinalWeightCell : React.FC = () => (
-    <LineHolder>
+    <div>
         <LabelField lineSide={lineSides.left} value="FINAL/TIME" color={lineColors.white} />
 
         <InteractiveSplitLine
@@ -220,11 +217,11 @@ const FinalWeightCell : React.FC = () => (
             )}
             lsk={LINESELECT_KEYS.L5}
         />
-    </LineHolder>
+    </div>
 );
 
 const TripWindLine : React.FC = () => (
-    <LineHolder>
+    <div>
         <LabelField lineSide={lineSides.right} value="TRIP WIND" color={lineColors.white} />
         <StringInputField
             lineSide={lineSides.right}
@@ -236,7 +233,7 @@ const TripWindLine : React.FC = () => (
             lsk={LINESELECT_KEYS.R5}
             selectedValidation={() => true}
         />
-    </LineHolder>
+    </div>
 );
 
 const MinDestFOBLine : React.FC = () => {
@@ -248,7 +245,7 @@ const MinDestFOBLine : React.FC = () => {
         }
     };
     return (
-        <LineHolder>
+        <div>
             <LabelField lineSide={lineSides.left} value="MIN DEST FOB" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.left}
@@ -261,12 +258,12 @@ const MinDestFOBLine : React.FC = () => {
                 selectedCallback={(value) => setNewVal(value)}
                 lsk={LINESELECT_KEYS.L6}
             />
-        </LineHolder>
+        </div>
     );
 };
 
 const ExtraWeightLine : React.FC = () => (
-    <LineHolder>
+    <div>
         <LabelField lineSide={lineSides.right} value="EXTRA/TIME" color={lineColors.white} />
         <SplitLine
             slashColor={lineColors.white}
@@ -274,7 +271,7 @@ const ExtraWeightLine : React.FC = () => (
             leftSide={(<Field lineSide={lineSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
             rightSide={(<Field lineSide={lineSides.right} value="----" color={lineColors.white} size={lineSizes.regular} />)}
         />
-    </LineHolder>
+    </div>
 );
 type InitBPageProps = {
     setTitlebarText: Function
@@ -285,31 +282,31 @@ export const InitBPage: React.FC<InitBPageProps> = ({ setTitlebarText }) => {
     }, []);
 
     return (
-        <Content>
-            <RowHolder index={1}>
+        <>
+            <div className="row-holder">
                 <TaxiFuelLine />
                 <ZeroFuelWeightLine />
-            </RowHolder>
-            <RowHolder index={2}>
+            </div>
+            <div className="row-holder">
                 <TripWeightLine />
                 <BlockWeightLine />
-            </RowHolder>
-            <RowHolder index={3}>
+            </div>
+            <div className="row-holder">
                 <ReserveWeightLine />
-            </RowHolder>
-            <RowHolder index={4}>
+            </div>
+            <div className="row-holder">
                 <AlternateWeightLine />
                 <LwTwLine />
-            </RowHolder>
-            <RowHolder index={5}>
+            </div>
+            <div className="row-holder">
                 <FinalWeightCell />
                 <TripWindLine />
-            </RowHolder>
-            <RowHolder index={6}>
+            </div>
+            <div className="row-holder">
                 <MinDestFOBLine />
                 <ExtraWeightLine />
-            </RowHolder>
-        </Content>
+            </div>
+        </>
     );
 };
 

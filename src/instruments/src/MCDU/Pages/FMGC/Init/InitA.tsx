@@ -1,25 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '../../../../Common/simVars';
-
-import { LineHolder } from '../../../Components/LineHolder';
+import './styles.scss';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
-import { RowHolder } from '../../../Components/RowHolder';
 import StringInputField from '../../../Components/Fields/Interactive/StringInputField';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
-import InteractiveSplitLine from '../../../Components/Lines/InteractiveSplitLine';
-import SplitStringField from '../../../Components/Fields/Interactive/Split/SplitStringField';
-import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
-import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
+import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
+import InteractiveSplitField, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
 
 // TODO when FMGS is in place then event and color management to these components
 
 const CoRouteLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-one">
         <LabelField lineSide={lineSides.left} value="CO RTE" color={lineColors.white} />
         <Field
             lineSide={lineSides.left}
@@ -27,7 +23,7 @@ const CoRouteLine: React.FC = () => (
             color={lineColors.amber}
             size={lineSizes.regular}
         />
-    </LineHolder>
+    </div>
 );
 
 type fromToLineProps = {
@@ -50,7 +46,7 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage }) => {
         return true;
     };
     return (
-        <LineHolder>
+        <div className="line-holder-two">
             <LabelField lineSide={lineSides.right} value={'FROM/TO\xa0\xa0'} color={lineColors.white} />
             <StringInputField
                 value=""
@@ -62,7 +58,7 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage }) => {
                 selectedCallback={(value) => setNewValue(value)}
                 selectedValidation={(value) => validateEntry(value)} // For now returns true
             />
-        </LineHolder>
+        </div>
     );
 };
 type altDestLineProps = {
@@ -91,7 +87,7 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
         return true;
     };
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.left} value="ALTN/CO RTE" color={lineColors.white} />
             <StringInputField
                 lineSide={lineSides.left}
@@ -103,7 +99,7 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
                 selectedValidation={((value) => validateEntry(value))}
                 size={lineSizes.regular}
             />
-        </LineHolder>
+        </div>
     );
 };
 
@@ -143,7 +139,7 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
     };
 
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.left} value="FLT NBR" color={lineColors.white} />
             <StringInputField
                 lineSide={lineSides.left}
@@ -155,12 +151,12 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
                 lsk={LINESELECT_KEYS.L3}
                 selectedValidation={(value) => validateEntry(value)}
             />
-        </LineHolder>
+        </div>
     );
 };
 
 const WindTempLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <EmptyLine />
         <LineSelectField
             lineSide={lineSides.right}
@@ -172,13 +168,13 @@ const WindTempLine: React.FC = () => (
             lsk={LINESELECT_KEYS.R4}
             color={lineColors.white}
         />
-    </LineHolder>
+    </div>
 );
 
 const CostIndexLine: React.FC = () => {
     const [costIndex, setCostIndex] = useState<string>(); // Temp until FMGC in-place
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.left} value="COST INDEX" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.left}
@@ -197,75 +193,137 @@ const CostIndexLine: React.FC = () => {
                 }}
                 size={lineSizes.regular}
             />
-        </LineHolder>
+        </div>
     );
 };
 
-// TODO Parse the scratchpad input and do validation for split fields or find a way to do it in Line Component
 type cruiseFLTempProps = {
-    clearScratchpad: () => void
+    scratchpad: scratchpadState
+    addMessage: (msg: scratchpadMessage) => any
 }
-const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ clearScratchpad }) => {
+const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ scratchpad, addMessage }) => {
+    const maxCruiseFL = 390;
     const [flString, setFL] = useState<string>();
-    const [temp, setTemp] = useState<number>();
+    const [temp, setTemp] = useState<string>();
+    const [cruiseEntered, setCruiseEntered] = useState(false);
+    const properties: fieldProperties = {
+        lValue: flString === undefined ? '__._' : `FL${flString}`,
+        lColour: flString !== undefined ? lineColors.cyan : lineColors.amber,
+        lSize: lineSizes.regular,
+        rValue: temp !== undefined ? temp : '__._',
+        rColour: lineColors.inop,
+        rSize: lineSizes.regular,
+    };
+    const validateCruiseFL = (fl: number) => {
+        if (!Number.isFinite(fl)) {
+            addMessage({
+                text: 'FORMAT ERROR',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+        if (fl >= 1000) {
+            fl = Math.floor(fl / 100);
+        }
+        if (fl <= 0 || fl > maxCruiseFL) {
+            addMessage({
+                text: 'ENTRY OUT OF RANGE',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+        setCruiseEntered(true); // This is only done here so both values can be entered at once
+        return true;
+    };
+    const validateTemp = (temp: number) => {
+        if (cruiseEntered) {
+            if (Number.isFinite(temp)) {
+                if (temp > 270 && temp < 100) {
+                    return true;
+                }
+                addMessage({
+                    text: 'ENTRY OUT OF RANGE',
+                    isAmber: false,
+                    isTypeTwo: false,
+                });
+                return false;
+            }
+            addMessage({
+                text: 'FORMAT ERROR',
+                isAmber: false,
+                isTypeTwo: false,
+            });
+            return false;
+        }
+        addMessage({
+            text: 'NOT ALLOWED',
+            isAmber: false,
+            isTypeTwo: false,
+        });
+        return false;
+    };
+    const validateEntry = (lVal: string, rVal: string) => {
+        const newFL = lVal.replace('FL', '');
+        const newTemp = rVal !== undefined ? rVal.replace('M', '-') : '';
+
+        if (newFL !== '' && newTemp !== '') {
+            return validateCruiseFL(parseInt(newFL)) && validateTemp(parseInt(newTemp));
+        }
+
+        if (newFL !== '') {
+            return validateCruiseFL(parseInt(newFL));
+        }
+        if (newTemp !== '') {
+            const temp = parseInt(newTemp);
+            return validateTemp(temp);
+        }
+        return false;
+    };
+    const updateFMGC = (lVal: string, rVal: string) => {
+        if (scratchpad.currentMessage === 'CLR') {
+            setFL(undefined);
+            setTemp(undefined);
+            setCruiseEntered(false);
+        }
+        // TODO import autocalc for temperature when only temp provided
+        const newFL = lVal.replace('FL', '');
+        const newTemp = rVal !== undefined ? rVal.replace('M', '-') : '';
+        if (newFL !== '') {
+            setFL(newFL);
+        }
+        if (newTemp !== '') {
+            setTemp(rVal);
+        }
+    };
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.left} value="CRZ FL/TEMP" color={lineColors.white} />
-            <InteractiveSplitLine
-                slashColor={flString !== undefined ? lineColors.cyan : lineColors.amber}
+            <InteractiveSplitField
+                side={lineSides.left}
                 lsk={LINESELECT_KEYS.L6}
-                leftSide={(
-                    <SplitStringField
-                        value={flString}
-                        nullValue="-----"
-                        color={flString !== undefined ? lineColors.cyan : lineColors.amber}
-                        size={lineSizes.regular}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setFL(undefined);
-                            } else {
-                                setFL(value);
-                            }
-                            clearScratchpad();
-                        }}
-                        selectedValidation={() => true}
-                    />
-                )}
-                rightSide={(
-                    <SplitNumberField
-                        value={temp}
-                        nullValue="___°"
-                        min={-270}
-                        max={100}
-                        size={lineSizes.regular}
-                        color={lineColors.inop}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setTemp(undefined);
-                            } else {
-                                setTemp(+value);
-                            }
-                            clearScratchpad();
-                        }}
-                    />
-                )}
+                slashColor={flString !== undefined ? lineColors.cyan : lineColors.amber}
+                properties={properties}
+                selectedValidation={(lVal, rVal) => validateEntry(lVal, rVal)}
+                selectedCallback={(lVal, rVal) => updateFMGC(lVal, rVal)}
             />
-        </LineHolder>
+        </div>
     );
 };
 
 // TODO finish this
 const AlignOptionLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <EmptyLine />
         <EmptyLine />
-    </LineHolder>
+    </div>
 );
 
 const TropoLine: React.FC = () => {
     const [tropo, setTropo] = useState<string>();
     return (
-        <LineHolder>
+        <div className="line-holder-two">
             <LabelField lineSide={lineSides.right} value="TROPO" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.right}
@@ -284,12 +342,12 @@ const TropoLine: React.FC = () => {
                     }
                 }}
             />
-        </LineHolder>
+        </div>
     );
 };
 
 const GndTempLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <LabelField lineSide={lineSides.right} value="GND TEMP" color={lineColors.white} />
         <Field
             lineSide={lineSides.right}
@@ -297,11 +355,11 @@ const GndTempLine: React.FC = () => (
             color={lineColors.inop}
             size={lineSizes.regular}
         />
-    </LineHolder>
+    </div>
 );
 
 const RequestLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <Field lineSide={lineSides.right} value="REQUEST*" color={lineColors.amber} size={lineSizes.regular} />
         <LineSelectField
             lineSide={lineSides.right}
@@ -313,7 +371,7 @@ const RequestLine: React.FC = () => (
                 console.log('Pretending to retrieve simbrief data');
             }}
         />
-    </LineHolder>
+    </div>
 );
 type InitAPageProps = {
 
@@ -321,37 +379,38 @@ type InitAPageProps = {
     setTitlebarText : (text: any) => void
     clearScratchpad: () => void
     addMessage: (msg: scratchpadMessage) => void
+    scratchpad: scratchpadState
 }
-const InitAPage: React.FC<InitAPageProps> = ({ setTitlebarText, clearScratchpad, addMessage }) => {
+const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, clearScratchpad, addMessage }) => {
     useEffect(() => {
         setTitlebarText('INIT');
     }, []);
 
     return (
         <>
-            <RowHolder index={1}>
+            <div className="row-holder">
                 <CoRouteLine />
                 <FromToLine addMessage={addMessage} />
-            </RowHolder>
-            <RowHolder index={2}>
+            </div>
+            <div className="row-holder">
                 <AltDestLine addMessage={addMessage} />
                 <RequestLine />
-            </RowHolder>
-            <RowHolder index={3}>
+            </div>
+            <div className="row-holder">
                 <FlightNoLine clearScratchpad={clearScratchpad} addMessage={addMessage} />
                 <AlignOptionLine />
-            </RowHolder>
-            <RowHolder index={4}>
+            </div>
+            <div className="row-holder">
                 <WindTempLine />
-            </RowHolder>
-            <RowHolder index={5}>
+            </div>
+            <div className="row-holder">
                 <CostIndexLine />
                 <TropoLine />
-            </RowHolder>
-            <RowHolder index={6}>
-                <CruiseFLTemp clearScratchpad={clearScratchpad} />
+            </div>
+            <div className="row-holder">
+                <CruiseFLTemp scratchpad={scratchpad} addMessage={addMessage} />
                 <GndTempLine />
-            </RowHolder>
+            </div>
         </>
     );
 };

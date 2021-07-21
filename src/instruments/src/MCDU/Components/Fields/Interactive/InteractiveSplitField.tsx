@@ -4,7 +4,7 @@ import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
 import { lineColors, lineSides, lineSizes } from '../../Lines/LineProps';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
-import '../styles.scss';
+import '../../styles.scss';
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 
 export type fieldProperties = {
@@ -32,7 +32,7 @@ type interactiveSplitLineTwoProps = {
 /**
  * Interactive Split line v2.0
  */
-const InteractiveSplitLineVTwo: React.FC<interactiveSplitLineTwoProps> = (
+const InteractiveSplitField: React.FC<interactiveSplitLineTwoProps> = (
     {
         selectedCallback,
         selectedValidation,
@@ -84,4 +84,4 @@ const InteractiveSplitLineVTwo: React.FC<interactiveSplitLineTwoProps> = (
         </p>
     );
 };
-export default InteractiveSplitLineVTwo;
+export default InteractiveSplitField;

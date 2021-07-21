@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
-import InteractiveSplitLineVTwo, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
+import InteractiveSplitField, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
 import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
@@ -20,6 +20,7 @@ import { SplitLine } from '../../../Components/Lines/SplitLine';
 import { Content } from '../../../Components/Content';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
+import * as mcduActions from '../../../redux/actions/mcduActionCreators';
 
 /**
  * @todo retrieve Dest ICAO when CFPM ready
@@ -122,7 +123,6 @@ const ZfwLine: React.FC<zfwLineProps> = (
         setFMGCZFWCG,
     },
 ) => {
-    // Auto Calculate ZFW/ZFWCG
     // TODO Move to util?
     const [fuelQuantity, _] = useSimVar('FUEL TOTAL QUANTITY', 'gallons');
     const [fuelWeight, __] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
@@ -131,7 +131,7 @@ const ZfwLine: React.FC<zfwLineProps> = (
     const blockFuel = fuelQuantity * fuelWeight / 1000;
     const calcZFW = (totalWeight / 1000) - blockFuel;
 
-    const fieldProperties: fieldProperties = {
+    const properties: fieldProperties = {
         lValue: fmgcZFW === undefined ? '__._' : fmgcZFW.toFixed(1),
         // lSide: fieldSides.left,
         lColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
@@ -228,11 +228,11 @@ const ZfwLine: React.FC<zfwLineProps> = (
     return (
         <LineHolder>
             <LabelField lineSide={lineSides.right} value="ZFW/ZFWCG" color={lineColors.white} />
-            <InteractiveSplitLineVTwo
+            <InteractiveSplitField
                 side={lineSides.right}
                 slashColor={fmgcZFW === undefined ? lineColors.amber : lineColors.cyan}
                 lsk={LINESELECT_KEYS.R3}
-                properties={fieldProperties}
+                properties={properties}
                 selectedValidation={(lVal, rVal) => validateEntry(lVal, rVal)}
                 selectedCallback={(lVal, rVal) => updateFMGC(lVal, rVal)}
                 autoCalc={() => {
@@ -453,12 +453,20 @@ const ExtraLine: React.FC<extraLineProps> = ({ zfwEntered }) => {
 
 const FuelPredPage: React.FC = () => {
     // TODO connect this up with the FMGC when it's avail
-    const [zfw, setZFW] = useState<number>();
-    const [zfwCG, setZFWCG] = useState<number>();
-    const [zeroFuelWeightZFWCGEntered, setZeroFuelWeightZFWCGEntered] = useState(false);
     const dispatch = useMCDUDispatch();
 
     // REDUX
+    const mcduData = useMCDUSelector((state) => state.mcduData);
+    const setZFW = (msg: number | undefined) => {
+        dispatch(mcduActions.setZFW(msg));
+    };
+    const setZFWCG = (msg: number | undefined) => {
+        dispatch(mcduActions.setZFWCG(msg));
+    };
+    const setZFWCGEntered = (entered: boolean) => {
+        dispatch(mcduActions.setZFWCGEntered(entered));
+    };
+
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
     const setScratchpad = (msg: string) => {
         dispatch(scratchpadActions.setScratchpad(msg));
@@ -506,26 +514,26 @@ const FuelPredPage: React.FC = () => {
                     <ZfwLine
                         addMessage={addScratchpadMessage}
                         setScratchpad={setScratchpad}
-                        fmgcZFW={zfw}
+                        fmgcZFW={mcduData.zfw}
                         setFMGCZFW={setZFW}
-                        fmgcZFWCG={zfwCG}
+                        fmgcZFWCG={mcduData.zfwCG}
                         setFMGCZFWCG={setZFWCG}
                         scratchpad={scratchpad}
-                        zeroFuelWeightZFWCGEntered={zeroFuelWeightZFWCGEntered}
-                        setZeroFuelWeightZFWCGEntered={setZeroFuelWeightZFWCGEntered}
+                        zeroFuelWeightZFWCGEntered={mcduData.zfwCGEntered}
+                        setZeroFuelWeightZFWCGEntered={setZFWCGEntered}
                     />
                 </RowHolder>
                 <RowHolder index={4}>
                     <AltnLine clearScratchpad={clearScratchpad} />
-                    <FobLine zfwEntered={zeroFuelWeightZFWCGEntered} />
+                    <FobLine zfwEntered={mcduData.zfwCGEntered} />
                 </RowHolder>
                 <RowHolder index={5}>
                     <FinalLine clearScratchpad={clearScratchpad} />
-                    <GWCGLine zfwEntered={zeroFuelWeightZFWCGEntered} />
+                    <GWCGLine zfwEntered={mcduData.zfwCGEntered} />
                 </RowHolder>
                 <RowHolder index={6}>
-                    <MinDestFobLine clearScratchpad={clearScratchpad} zfwEntered={zeroFuelWeightZFWCGEntered} />
-                    <ExtraLine zfwEntered={zeroFuelWeightZFWCGEntered} />
+                    <MinDestFobLine clearScratchpad={clearScratchpad} zfwEntered={mcduData.zfwCGEntered} />
+                    <ExtraLine zfwEntered={mcduData.zfwCGEntered} />
                 </RowHolder>
             </Content>
         </>
