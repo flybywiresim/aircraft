@@ -23,8 +23,6 @@
  * SOFTWARE.
  */
 
-import { NXDataStore } from '@shared/persistence';
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
