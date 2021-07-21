@@ -277,7 +277,6 @@ class CDUFlightPlanPage {
                     } else if (!waypointsAndMarkers[winI].wp.legAltitude1 && !waypointsAndMarkers[winI].wp.legAltitudeDescription) {
                         altitudeConstraint = "-----\xa0";
                         altPrefix = "";
-                        altColor = "white";
                     }
                 }
 
@@ -415,7 +414,9 @@ class CDUFlightPlanPage {
                         spdRepeat = true;
                     }
 
-                    if (currRow.altitudeConstraint.alt === prevRow.altitudeConstraint.alt && currRow.altitudeConstraint.altPrefix === prevRow.altitudeConstraint.altPrefix) {
+                    if (currRow.altitudeConstraint.alt !== "-----\xa0" &&
+                        currRow.altitudeConstraint.alt === prevRow.altitudeConstraint.alt &&
+                        currRow.altitudeConstraint.altPrefix === prevRow.altitudeConstraint.altPrefix) {
                         altRepeat = true;
                     }
                 } else if (prevRow.marker) {
