@@ -34,18 +34,20 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) 
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting * 2, 768, trueHeading);
+        params.compute(ppos, rangeSetting / 2, 250, trueHeading);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting * 2, 768, trueHeading);
+        mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading);
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     return (
         <>
             { mode === Mode.ROSE_NAV && (<FlightPlan
+                x={384}
+                y={384}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
                 clipPath="url(#rose-mode-flight-plan-clip)"
@@ -92,7 +94,7 @@ interface OverlayProps {
 const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMode, displayMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
         <clipPath id="rose-mode-flight-plan-clip">
-            <circle cx={384} cy={384} r={248.5} />
+            <circle cx={0} cy={0} r={248.5} />
         </clipPath>
 
         {/* C = 384,384 */}
