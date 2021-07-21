@@ -31,12 +31,14 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     if (geometry) {
         return (
             <Layer x={x} y={y}>
-                {flightPlan.visibleWaypoints.map((waypoint) => {
-                    if (!waypoint.isVectors) {
-                        return <Waypoint key={waypoint.ident} waypoint={waypoint} mapParams={mapParams} />;
-                    }
-                    return null;
-                })}
+                <g clipPath={clipPath}>
+                    {flightPlan.visibleWaypoints.map((waypoint) => {
+                        if (!waypoint.isVectors) {
+                            return <Waypoint key={waypoint.ident} waypoint={waypoint} mapParams={mapParams} />;
+                        }
+                        return null;
+                    })}
+                </g>
                 <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" clipPath={clipPath} />
                 {debug && (
                     Array.from(geometry.legs.values()).map((leg) => (
