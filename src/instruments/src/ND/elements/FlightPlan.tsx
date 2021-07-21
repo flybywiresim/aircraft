@@ -7,7 +7,6 @@ import { Layer } from '@instruments/common/utils';
 import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 import { useSimVar } from '@instruments/common/simVars';
 import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { MapParameters } from '../utils/MapParameters';
 
 export type FlightPathProps = {
