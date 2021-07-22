@@ -23,14 +23,6 @@ export class GuidanceManager {
     }
 
     private static tfBetween(from: WayPoint, to: WayPoint) {
-        if (!from || !to) {
-            return null;
-        }
-
-        if (from.endsInDiscontinuity) {
-            return null;
-        }
-
         return new TFLeg(from, to);
     }
 
@@ -44,8 +36,16 @@ export class GuidanceManager {
         const from = this.flightPlanManager.getWaypoint(activeIndex - 1);
         const to = this.flightPlanManager.getWaypoint(activeIndex);
 
-        if (from.isVectors) {
-            return GuidanceManager.vmWithHeading(from.additionalData.vectorsCourse);
+        if (!from || !to) {
+            return null;
+        }
+
+        if (from.endsInDiscontinuity) {
+            return null;
+        }
+
+        if (to.isVectors) {
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsCourse);
         }
 
         return GuidanceManager.tfBetween(from, to);
@@ -57,8 +57,16 @@ export class GuidanceManager {
         const from = this.flightPlanManager.getWaypoint(activeIndex);
         const to = this.flightPlanManager.getWaypoint(activeIndex + 1);
 
-        if (from.isVectors) {
-            return GuidanceManager.vmWithHeading(from.additionalData.vectorsCourse);
+        if (!from || !to) {
+            return null;
+        }
+
+        if (from.endsInDiscontinuity) {
+            return null;
+        }
+
+        if (to.isVectors) {
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsCourse);
         }
 
         return GuidanceManager.tfBetween(from, to);
