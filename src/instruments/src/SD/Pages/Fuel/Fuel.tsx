@@ -9,48 +9,55 @@ import { usePersistentProperty } from '../../../Common/persistence';
 setIsEcamPage('fuel_page');
 
 export const FuelPage = () => {
-    const [crossFeedPosition] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'number', 150);
+    const [crossFeedPosition] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'number', 500);
 
     const [Eng1N2] = useSimVar('TURB ENG N2:1', 'Percent', 1000);
     const [Eng2N2] = useSimVar('TURB ENG N2:2', 'Percent', 1000);
 
-    const [pumpLeftInner1] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'boolean', 200);
-    const [pumpLeftInner2] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'boolean', 200);
-    const [pumpCenter1] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'boolean', 200);
-    const [pumpCenter2] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'boolean', 200);
-    const [pumpRightInner1] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'boolean', 200);
-    const [pumpRightInner2] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'boolean', 200);
+    const [pumpLeftInner1] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'boolean', 500);
+    const [pumpLeftInner2] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'boolean', 500);
+    const [pumpCenter1] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'boolean', 500);
+    const [pumpCenter2] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'boolean', 500);
+    const [pumpRightInner1] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'boolean', 500);
+    const [pumpRightInner2] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'boolean', 500);
 
-    const [tankLeftOuter] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'gallons', 200);
-    const [tankLeftInner] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'gallons', 150);
-    const [tankCenter] = useSimVar('FUEL TANK CENTER QUANTITY', 'gallons', 200);
-    const [tankRightInner] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'gallons', 150);
-    const [tankRightOuter] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'gallons', 200);
+    const [tankLeftOuter] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'gallons', 500);
+    const [tankLeftInner] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'gallons', 500);
+    const [tankCenter] = useSimVar('FUEL TANK CENTER QUANTITY', 'gallons', 500);
+    const [tankRightInner] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'gallons', 500);
+    const [tankRightOuter] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'gallons', 500);
 
     // const [leftFuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:1', 'kg', 200);
     // const [rightFuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:2', 'kg', 200);
 
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT');
+    console.log(`unit is ${unit}`);
 
-    const fuelConsumptionForDisplay = (fuelConsumption, unitsC) => {
-        const roundValue = unitsC === 1 ? 10 : 20;
-        return parseInt(((fuelConsumption * unitsC) - (fuelConsumption % roundValue)).toFixed(0));
+    const fuelForDisplay = (fuelValue, unitsC, timeUnit = 1, fobMultiplier = 1) => {
+        const fuelWeight = unitsC === '1' ? fuelValue / timeUnit : fuelValue / timeUnit * 2.20462;
+        const roundValue = unitsC === '1' ? 10 * fobMultiplier : 20 * fobMultiplier;
+        return Math.round(fuelWeight / roundValue) * roundValue;
     };
 
     const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000); // Note these values are in KG
     const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
 
-    const leftFuelUsed = fuelConsumptionForDisplay(leftConsumption, unit);
-    const rightFuelUsed = fuelConsumptionForDisplay(rightConsumption, unit);
+    const leftFuelUsed = fuelForDisplay(leftConsumption, unit);
+    const rightFuelUsed = fuelForDisplay(rightConsumption, unit);
 
-    const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 250);
+    const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 1000);
 
     const [fuelWeightPerGallon] = useSimVar('FUEL WEIGHT PER GALLON', 'kilogram', 60_000);
 
-    const [leftFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:1', 'number', 500); // KG/HR
-    const [rightFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:2', 'number', 500);
+    const fuelInTanksForDisplay = (fuelValue, unitsC, gallon2Kg) => {
+        const weightInKg = fuelValue * gallon2Kg;
+        const fuelWeight = unitsC === '1' ? weightInKg : weightInKg * 2.20462;
+        const roundValue = unitsC === '1' ? 10 : 20;
+        return Math.round(fuelWeight / roundValue) * roundValue;
+    };
 
-    console.log(`left fuel flow is ${leftFuelFlow}`);
+    const [leftFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:1', 'number', 1000); // KG/HR
+    const [rightFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:2', 'number', 1000);
 
     return (
         // This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM
@@ -121,8 +128,8 @@ export const FuelPage = () => {
                 <Pump x={180} y={215} onBus="DC_2" active={!!pumpLeftInner2} />
 
                 {/* Quantities */}
-                <text className="TankQuantity" x={74} y={285}>{Math.round(tankLeftOuter)}</text>
-                <text className="TankQuantity" x={190} y={285}>{Math.round(tankLeftInner)}</text>
+                <text className="TankQuantity" x={74} y={285}>{fuelInTanksForDisplay(tankLeftOuter, unit, fuelWeightPerGallon)}</text>
+                <text className="TankQuantity" x={190} y={285}>{fuelInTanksForDisplay(tankLeftInner, unit, fuelWeightPerGallon)}</text>
             </>
 
             {/* Center */}
@@ -151,7 +158,7 @@ export const FuelPage = () => {
                 <Pump x={311} y={205} active={!!pumpCenter2} />
 
                 {/* Quantities */}
-                <text className="TankQuantity" x={335} y={275}>{Math.round(tankCenter)}</text>
+                <text className="TankQuantity" x={335} y={275}>{fuelInTanksForDisplay(tankCenter, unit, fuelWeightPerGallon)}</text>
             </>
 
             {/* Right */}
@@ -172,8 +179,8 @@ export const FuelPage = () => {
                 <Pump x={425} y={215} onBus="DC_2" active={!!pumpRightInner2} />
 
                 {/* Quantities */}
-                <text className="TankQuantity" x={472} y={285}>{Math.round(tankRightInner)}</text>
-                <text className="TankQuantity" x={579} y={285}>{Math.round(tankRightOuter)}</text>
+                <text className="TankQuantity" x={472} y={285}>{fuelInTanksForDisplay(tankRightInner, unit, fuelWeightPerGallon)}</text>
+                <text className="TankQuantity" x={579} y={285}>{fuelInTanksForDisplay(tankRightOuter, unit, fuelWeightPerGallon)}</text>
             </>
 
             {/* F. FLOW */}
@@ -183,7 +190,7 @@ export const FuelPage = () => {
 
                 <text id="FuelFlowColon" x={83} y={461}>:</text>
 
-                <text id="FuelFlowValue" x={200} y={452}>{Math.round(leftFuelFlow + rightFuelFlow)}</text>
+                <text id="FuelFlowValue" x={200} y={452}>{fuelForDisplay(leftFuelFlow + rightFuelFlow, unit, 60)}</text>
 
                 <text id="FuelFlowUnit" x={215} y={452}>
                     {unit === '1' ? 'KG' : 'LBS'}
@@ -198,7 +205,7 @@ export const FuelPage = () => {
                 <text id="FobLabel" x={18} y={491}>FOB</text>
                 <text id="FobColon" x={83} y={490}>:</text>
 
-                <text id="FobValue" x={200} y={481}>{((q) => Math.round(q - (q % 10)))(fob)}</text>
+                <text id="FobValue" x={200} y={481}>{fuelForDisplay(fob, unit, 1, 2)}</text>
 
                 <text id="FobUnit" x={215} y={483}>{unit === '1' ? 'KG' : 'LBS'}</text>
             </>
