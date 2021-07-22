@@ -1,5 +1,5 @@
 import { LateralMode, VerticalMode } from '@shared/autopilot';
-import { TFLeg } from '@fmgc/guidance/lnav/legs/Tf';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { MathUtils } from '@shared/MathUtils';
 import { GuidanceComponent } from '../GuidanceComponent';

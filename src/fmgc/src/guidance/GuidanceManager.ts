@@ -1,4 +1,4 @@
-import { TFLeg } from '@fmgc/guidance/lnav/legs/Tf';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { Degrees } from '@typings/types';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';

@@ -1,6 +1,6 @@
 import { Degrees, NauticalMiles } from '@typings/types';
 import { MathUtils } from '@shared/MathUtils';
-import { TFLeg } from '@fmgc/guidance/lnav/legs/Tf';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { Leg } from '@fmgc/guidance/lnav/legs';
