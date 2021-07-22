@@ -89,7 +89,28 @@ class A32NX_LocalVarUpdater {
                 type: "psi",
                 selector: this._deltaPSI.bind(this),
                 refreshInterval: 1000,
+            },
+            {
+                varName: "L:A32NX_XBLEED_VALVE",
+                type: "Bool",
+                selector: this._xBleedValve.bind(this),
+                refreshInterval: 500,
+            },
+            {
+                varName: "L:A32NX_AIRCOND_PACK1_FAULT",
+                type: "Bool",
+                selector: this._packFault.bind(this),
+                refreshInterval: 500,
+                identifier: "1"
+            },
+            {
+                varName: "L:A32NX_AIRCOND_PACK2_FAULT",
+                type: "Bool",
+                selector: this._packFault.bind(this),
+                refreshInterval: 500,
+                identifier: "2"
             }
+
             // New updaters go here...
         ];
 
@@ -236,6 +257,27 @@ class A32NX_LocalVarUpdater {
         pressureDiff = (pressureDiff > -0.05) && (pressureDiff < 0.0) ? 0.0 : pressureDiff;
         pressureDiff = pressureDiff > 8.6 ? 8.6 : pressureDiff; // DeltaPSI will not go above 8.6psi normally
         return (pressureDiff);
+    }
+
+    _xBleedValve() {
+        const ovhdXBleedPosition = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Number");
+        const isApuBleedAirValveOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
+
+        if (ovhdXBleedPosition === 2) {
+            return true;
+        } else if (ovhdXBleedPosition === 1 && isApuBleedAirValveOpen) {
+            return true;
+        }
+        return false;
+    }
+
+    _packFault(_deltaTime, _identifier) {
+        const pack = SimVar.GetSimVarValue(`L:A32NX_AIRCOND_PACK${pack}_TOGGLE`, "Number");
+
+        if (!pack) {
+            return true;
+        }
+        return false;
     }
 
     // New selectors go here...

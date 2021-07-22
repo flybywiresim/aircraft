@@ -978,6 +978,14 @@
       0 | inactive
       1 | active
 
+- A32NX_XBLEED_VALVE
+    - Bool
+    - Indicates if X Bleed valve is open
+    Value | Meaning
+    --- | ---
+    0 | closed
+    0 | opened
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
