@@ -155,6 +155,9 @@ class CDUAvailableDeparturesPage {
                 } else {
                     maxPage = airportInfo.departures.length - 3;
                 }
+                if (selectedDeparture) {
+                    maxPage = Math.max(maxPage, selectedDeparture.enRouteTransitions.length - 4);
+                }
             } else {
                 maxPage = airportInfo.oneWayRunways.length - 4;
             }
