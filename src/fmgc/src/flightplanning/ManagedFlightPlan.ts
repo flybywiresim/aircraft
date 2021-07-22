@@ -776,6 +776,7 @@ export class ManagedFlightPlan {
         const destination = this.destinationAirfield;
 
         const { arrivalIndex } = this.procedureDetails;
+        const { approachTransitionIndex } = this.procedureDetails;
         const { arrivalRunwayIndex } = this.procedureDetails;
         const { arrivalTransitionIndex } = this.procedureDetails;
 
@@ -792,7 +793,7 @@ export class ManagedFlightPlan {
             legs.push(...destinationInfo.arrivals[arrivalIndex].commonLegs);
         }
 
-        if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1) {
+        if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1 && approachTransitionIndex === -1) {
             const runwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
             legs.push(...runwayTransition.legs);
         }
@@ -812,7 +813,7 @@ export class ManagedFlightPlan {
                 // eslint-disable-next-line no-await-in-loop
                 const waypoint = await procedure.getNext();
 
-                if (waypoint) {
+                if (waypoint !== undefined) {
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
             }
@@ -834,8 +835,8 @@ export class ManagedFlightPlan {
         const destinationInfo = destination.infos as AirportInfo;
 
         if (approachIndex !== -1 && approachTransitionIndex !== -1) {
-            const transition = destinationInfo.approaches[approachIndex].transitions[approachTransitionIndex].legs;
-            legs.push(...transition);
+            const transition = destinationInfo.approaches[approachIndex].transitions[approachTransitionIndex];
+            legs.push(...transition.legs);
         }
 
         if (approachIndex !== -1) {
