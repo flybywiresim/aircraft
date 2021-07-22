@@ -145,16 +145,20 @@ impl CabinPressureController {
                 const DELTA_PRESSURE_LIMIT: f64 = 8.06; // PSI
                 const CABIN_ALTITUDE_LIMIT: f64 = 8050.; // Feet
 
+                // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
+                let target_vs = Velocity::new::<foot_per_minute>(
+                    context.vertical_speed().get::<foot_per_minute>()
+                        * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
+                );
+
                 if self.cabin_delta_p() >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT) {
                     Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE)
                 } else if self.cabin_altitude() >= Length::new::<foot>(CABIN_ALTITUDE_LIMIT) {
                     Velocity::new::<foot_per_minute>(0.)
+                } else if target_vs <= Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE) {
+                    Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE)
                 } else {
-                    // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
-                    Velocity::new::<foot_per_minute>(
-                        context.vertical_speed().get::<foot_per_minute>()
-                            * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
-                    )
+                    target_vs
                 }
             }
             PressureScheduleManager::Cruise(_) => Velocity::new::<foot_per_minute>(0.),
