@@ -141,6 +141,8 @@
 1. [MISC] Improved logic for chronometer operations - @sidnov (Sid)
 1. [DISPLAYS] Fix Self-Test no longer triggers when spawning from an in-flight state i.e. cruise/landing/takeoff on runway - @2hwk (2Cas#1022)
 1. [SOUND] Improved engine startup, idle sounds, and cabin wind - @hotshotp (Boris)
+1. [MODEL] Swap EFIS WPT and VOR D buttons - @tracernz (Mike)
+1. [MODEL] Fix no-smoking/no-PED switch animation - @tracernz (Mike)
 1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022)
 
 ## 0.6.0
