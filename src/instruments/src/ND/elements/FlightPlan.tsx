@@ -7,7 +7,7 @@ import { Layer } from '@instruments/common/utils';
 import { useSimVar } from '@instruments/common/simVars';
 import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
-import { TFLeg } from '@fmgc/guidance/lnav/legs/Tf';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
@@ -35,12 +35,14 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     if (geometry) {
         return (
             <Layer x={x} y={y}>
-                {flightPlan.visibleWaypoints.map((waypoint, index) => {
-                    if (!waypoint.isVectors) {
-                        return <Waypoint key={waypoint.ident} waypoint={waypoint} index={index} mapParams={mapParams} debug={debug} />;
-                    }
-                    return null;
-                })}
+                <g clipPath={clipPath}>
+                    {flightPlan.visibleWaypoints.map((waypoint, index) => {
+                        if (!waypoint.isVectors) {
+                            return <Waypoint key={waypoint.ident} waypoint={waypoint} index={index} mapParams={mapParams} debug={debug} />;
+                        }
+                        return null;
+                    })}
+                </g>
                 <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" clipPath={clipPath} />
                 {debug && (
                     <>
@@ -69,7 +71,7 @@ const Waypoint: FC<{ waypoint: WayPoint, index: number, mapParams: MapParameters
 
     return (
         <Layer x={x} y={y}>
-            <rect x={-6} y={0} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform="rotate(45 4 4)" />
+            <rect x={-4} y={-4} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform="rotate(45 0 0)" />
 
             <text x={15} y={10} fontSize={20} fill="#00ff00">
                 {waypoint.ident}
