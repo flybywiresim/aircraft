@@ -122,8 +122,12 @@ export class LnavDriver implements GuidanceComponent {
 
             if (geometry.shouldSequenceLeg(this.ppos)) {
                 const currentLeg = geometry.legs.get(1);
+                const nextLeg = geometry.legs.get(2);
 
-                if (currentLeg instanceof TFLeg && currentLeg.to.endsInDiscontinuity) {
+                // FIXME we should stop relying on discos in the wpt objects, but for now it's fiiiiiine
+                // Hard-coded check for TF leg after the disco for now - only case where we don't wanna
+                // sequence this way is VM
+                if (currentLeg instanceof TFLeg && currentLeg.to.endsInDiscontinuity && nextLeg instanceof TFLeg) {
                     this.sequenceDiscontinuity(currentLeg);
                 } else {
                     this.sequenceLeg(currentLeg);
