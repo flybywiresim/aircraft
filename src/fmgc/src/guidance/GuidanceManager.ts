@@ -134,7 +134,7 @@ export class GuidanceManager {
 
             // If TO is a MANUAL leg, make a VM(FROM -> TO)
             if (to.isVectors) {
-                const currentLeg = GuidanceManager.vmWithHeading(46);
+                const currentLeg = GuidanceManager.vmWithHeading(to.additionalData.vectorsCourse);
                 legs.set(i, currentLeg);
 
                 continue;

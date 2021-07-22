@@ -571,6 +571,7 @@ export class ManagedFlightPlan {
             distanceInFP: waypoint.distanceInFP,
             cumulativeDistanceInFP: waypoint.cumulativeDistanceInFP,
             isRunway: waypoint.isRunway,
+            additionalData: waypoint.additionalData,
             infos: {
                 icao: waypoint.infos.icao,
                 ident: waypoint.infos.ident,
