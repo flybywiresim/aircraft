@@ -5,6 +5,7 @@ import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { MathUtils } from '@shared/MathUtils';
 import { Layer } from '@instruments/common/utils';
 import { useSimVar } from '@instruments/common/simVars';
+import useInterval from '@instruments/common/useInterval';
 import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
@@ -28,9 +29,9 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
 
     const [geometry, setGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
 
-    useEffect(() => {
+    useInterval(() => {
         setGeometry(guidanceManager.getMultipleLegGeometry());
-    }, [flightPlan]);
+    }, 2_000);
 
     if (geometry) {
         return (
