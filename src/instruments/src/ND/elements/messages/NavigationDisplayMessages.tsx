@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
-import { Mode, RangeSetting } from '../index';
+import { Mode, RangeSetting } from '../../index';
 
 export interface NavigationDisplayMessagesProps {
     adirsAlign: boolean,
