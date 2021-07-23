@@ -65,7 +65,7 @@ impl RigidBodyOnHingeAxis {
         let inertia_at_hinge =
             inertia_at_cog + mass.get::<kilogram>() * center_of_gravity_offset.norm_squared();
 
-        Self {
+        let mut new_body = RigidBodyOnHingeAxis {
             throw: throw.get::<radian>(),
             min_angle: min_angle.get::<radian>(),
             max_angle: min_angle.get::<radian>() + throw.get::<radian>(),
@@ -88,7 +88,11 @@ impl RigidBodyOnHingeAxis {
             lock_position_request: min_angle.get::<radian>(),
             is_lock_requested: locked,
             is_locked: locked,
-        }
+        };
+
+        new_body.update_all_rotations();
+        new_body.update_position_normalized();
+        new_body
     }
 
     pub fn apply_control_arm_force(&mut self, force: f64) {

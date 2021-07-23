@@ -118,13 +118,18 @@ impl LinearActuator {
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
 
-            is_control_valves_closed: true,
+            is_control_valves_closed: false,
             closed_valves_reference_position: 0.,
             opened_valves_target_position: 0.,
 
             fluid_compression_spring_constant: spring,
             fluid_compression_damping_constant: damping,
         }
+    }
+
+    fn update(&mut self, connected_body: &mut RigidBodyOnHingeAxis, available_pressure: Pressure) {
+        self.update_force(available_pressure);
+        connected_body.apply_control_arm_force(self.force);
     }
 
     fn update_after_rigid_body(
@@ -258,23 +263,7 @@ mod tests {
 
     #[test]
     fn linear_actuator_extension() {
-        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector2::new(0., -size[1] / 2.);
-
-        let control_arm = Vector2::new(-0.1597, -0.1614);
-        let anchor = Vector2::new(-0.759, -0.086);
-
-        let mut rigid_body = RigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
-            size,
-            cg_offset,
-            control_arm,
-            anchor,
-            Angle::new::<degree>(-23.),
-            Angle::new::<degree>(136.),
-            100.,
-            false,
-        );
+        let mut rigid_body = cargo_door_body(true);
 
         let mut actuator = LinearActuator::new(
             &rigid_body,
@@ -289,9 +278,11 @@ mod tests {
         let dt = 0.05;
 
         let mut time = 0.;
+
+        actuator.close_control_valves();
+
         for _ in 0..100 {
-            //actuator.close_control_valves();
-            //actuator.update_force(Pressure::new::<psi>(1500.));
+            actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
@@ -307,15 +298,10 @@ mod tests {
             );
 
             println!(
-                "Body pos {:.3}, Actuator pos {:.3}",
-                rigid_body.linear_extension_to_anchor(),
-                actuator.position
-            );
-            println!(
-                "Delta_displacement{:.3}, To act {} To res {}",
-                actuator.delta_displacement,
-                actuator.volume_to_actuator_accumulator.get::<gallon>(),
-                actuator.volume_to_res_accumulator.get::<gallon>()
+                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}",
+                rigid_body.position_normalized(),
+                actuator.position,
+                actuator.force
             );
 
             time += dt;
@@ -334,6 +320,26 @@ mod tests {
             Acceleration::new::<meter_per_second_squared>(0.),
             pitch,
             bank,
+        )
+    }
+
+    fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
+        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
+        let cg_offset = Vector2::new(0., -size[1] / 2.);
+
+        let control_arm = Vector2::new(-0.1597, -0.1614);
+        let anchor = Vector2::new(-0.759, -0.086);
+
+        RigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(130.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-23.),
+            Angle::new::<degree>(136.),
+            100.,
+            is_locked,
         )
     }
 }
