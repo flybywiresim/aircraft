@@ -4,6 +4,7 @@ import { GuidanceManager } from './guidance/GuidanceManager';
 import { ManagedFlightPlan } from './flightplanning/ManagedFlightPlan';
 import { GuidanceController } from './guidance/GuidanceController';
 import { NavRadioManager } from './radionav/NavRadioManager';
+import { initFmgcLoop, updateFmgcLoop } from './loop';
 
 export {
     FlightPlanManager,
@@ -12,4 +13,6 @@ export {
     GuidanceManager,
     GuidanceController,
     NavRadioManager,
+    initFmgcLoop,
+    updateFmgcLoop,
 };

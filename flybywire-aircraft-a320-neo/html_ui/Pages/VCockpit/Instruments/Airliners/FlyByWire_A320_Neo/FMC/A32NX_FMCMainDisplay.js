@@ -191,6 +191,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager);
         this.navRadioManager = new Fmgc.NavRadioManager(this);
 
+        Fmgc.initFmgcLoop();
+
         this.guidanceController.init();
 
         this.tempCurve = new Avionics.Curve();
@@ -509,6 +511,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+
+        Fmgc.updateFmgcLoop(_deltaTime);
 
         if (this._debug++ > 180) {
             this._debug = 0;
@@ -1048,20 +1052,6 @@ class FMCMainDisplay extends BaseAirliners {
         } else {
             this.gpsPrimaryMessageAcknowledged = false;
         }
-
-        this.addNewMessage(NXSystemMessages.gpsPrimary, () => {
-            return this.gpsPrimaryMessageAcknowledged ||
-                !SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
-        }, () => {
-            this.gpsPrimaryMessageAcknowledged = true;
-        });
-
-        this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {
-            return this.gpsPrimaryLostMessageAcknowledged ||
-                SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
-        }, () => {
-            this.gpsPrimaryLostMessageAcknowledged = true;
-        });
 
         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", this.gpsPrimaryMessageAcknowledged);
     }

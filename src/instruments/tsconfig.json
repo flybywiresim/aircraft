@@ -1,12 +1,16 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "downlevelIteration": true,
     "module": "esnext",
     "esModuleInterop": true,
     "jsx": "react",
     "moduleResolution": "node",
     "skipLibCheck": true,
     "strictNullChecks": true,
-    "downlevelIteration": true,
-  }
+  },
+  "include": [
+    "src/**/*",
+    "../../typings/**/*.d.ts"
+  ]
 }
