@@ -198,18 +198,6 @@
             </UseTemplate>
         </Component>
 
-        <!-- G1000 ###################################### -->
-
-        <Component ID="Screen_emissive" Node="DYN_SCREEN">
-            <Material>
-                <EmissiveFactor>
-                    <Parameter>
-                        <Code>0.5</Code>
-                    </Parameter>
-                </EmissiveFactor>
-            </Material>
-        </Component>
-
         <Component ID="Pedestal_Fwd">
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_1</NODE_ID>
@@ -513,6 +501,15 @@
                     <POTENTIOMETER>88</POTENTIOMETER>
                 </UseTemplate>
 
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>SCREEN_PFD_L</NODE_ID>
+                    <POTENTIOMETER>88</POTENTIOMETER>
+                    <PART_ID>SCREEN_PFD1</PART_ID>
+                    <CAMERA_TITLE>PFD</CAMERA_TITLE>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                </UseTemplate>
+
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
                     <NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
                     <ANIM_NAME>PUSH_EFIS_CS_GPWS</ANIM_NAME>
@@ -587,13 +584,6 @@
                     <NODE_ID>PRINT_TORN</NODE_ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                    <NODE_ID>SCREEN_PFD_L</NODE_ID>
-                    <POTENTIOMETER>88</POTENTIOMETER>
-                    <PART_ID>SCREEN_PFD1</PART_ID>
-                    <CAMERA_TITLE>PFD</CAMERA_TITLE>
-                </UseTemplate>
-
                 <!-- CPT ND SCREEN -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
@@ -617,14 +607,17 @@
                     <POTENTIOMETER>89</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_L</NODE_ID>
+                    <!-- Pixelated screens needs more light -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
-                            (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100)
+                            2 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -639,7 +632,7 @@
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </DefaultTemplateParameters>
 
-                <!-- F/O PDF SCREEN -->
+                <!-- F/O PFD SCREEN -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
                     <PART_ID>PFD_Brightness_FO</PART_ID>
@@ -658,6 +651,8 @@
                     <NODE_ID>SCREEN_PFD_R</NODE_ID>
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND SCREEN -->
@@ -669,6 +664,14 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                 </UseTemplate>
 
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>SCREEN_MFD_R</NODE_ID>
+                    <POTENTIOMETER>91</POTENTIOMETER>
+                    <PART_ID>SCREEN_MFD2</PART_ID>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                </UseTemplate>
+
                 <!-- F/O WX SCREEN -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_ND</NODE_ID>
@@ -678,18 +681,13 @@
                     <POTENTIOMETER>95</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                    <NODE_ID>SCREEN_MFD_R</NODE_ID>
-                    <POTENTIOMETER>91</POTENTIOMETER>
-                    <PART_ID>SCREEN_MFD2</PART_ID>
-                </UseTemplate>
-
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_R</NODE_ID>
+                    <!-- Pixelated screens needs more light -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
-                            (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100)
+                            2 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -792,12 +790,13 @@
             </UseTemplate>
 
             <Component ID="Standby_Indicator">
-                <!-- TODO: Model change required to not affect brake/clock - Uncomment when this is done -->
-                <!--
+                <!-- TODO: SAI/ISIS/CLOCK/BAT/ATC/RUD TRIM is sharing the same emissive/mesh. Model change needed to split these. So we control the individual emissives with css opacity. -->
+                <!-- SAI/ISIS & CLOCK SCREENS -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
-                    <EMISSIVE_CODE>(L:A32NX_BARO_BRIGHTNESS, Percent over 100)</EMISSIVE_CODE>
-                </UseTemplate> -->
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
                     <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
@@ -882,6 +881,8 @@
                     <POTENTIOMETER>92</POTENTIOMETER>
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
@@ -897,6 +898,8 @@
                     <POTENTIOMETER>93</POTENTIOMETER>
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
