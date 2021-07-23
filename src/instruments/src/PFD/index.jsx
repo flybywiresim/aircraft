@@ -170,7 +170,7 @@ class PFD extends Component {
                     <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                     <AltitudeIndicatorOfftape altitude={baroAlt} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
                     <AirspeedIndicatorOfftape airspeed={clampedAirspeed} mach={mach} airspeedAcc={filteredAirspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
-                    <FMA isAttExcessive={this.isAttExcessive} />
+                    <FMA isAttExcessive={this.isAttExcessive} isOnGround={isOnGround} />
                 </svg>
             </DisplayUnit>
         );

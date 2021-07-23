@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
 
-export const FMA = ({ isAttExcessive }) => {
+export const FMA = ({ isAttExcessive, isOnGround }) => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34;
     const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
@@ -32,7 +32,7 @@ export const FMA = ({ isAttExcessive }) => {
             <path d="m102.52 0.33732v20.864" />
             <path d="m133.72 0.33732v20.864" />
             <Row1 isAttExcessive={isAttExcessive} />
-            <Row2 isAttExcessive={isAttExcessive} />
+            <Row2 isAttExcessive={isAttExcessive} isOnGround={isOnGround} />
             <Row3 isAttExcessive={isAttExcessive} />
         </g>
     );
@@ -53,7 +53,7 @@ const Row1 = ({ isAttExcessive }) => (
     </g>
 );
 
-const Row2 = ({ isAttExcessive }) => (
+const Row2 = ({ isAttExcessive, isOnGround }) => (
     <g>
         {!isAttExcessive && (
             <>
@@ -61,7 +61,7 @@ const Row2 = ({ isAttExcessive }) => (
                 <C2Cell />
             </>
         )}
-        <E2Cell />
+        <E2Cell isOnGround={isOnGround} />
     </g>
 );
 
@@ -634,11 +634,12 @@ const E1Cell = () => {
     );
 };
 
-const E2Cell = () => {
+const E2Cell = (isOnGround) => {
     const FD1Active = getSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'bool');
     const FD2Active = getSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'bool');
+    const numAdirsAligned = getSimVar('L:A32NX_ADIRS_NUM_ALIGNED', 'number');
 
-    if (!FD1Active && !FD2Active && !getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool') && !getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool')) {
+    if (!FD1Active && !FD2Active && !getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool') && !getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool') || isOnGround && numAdirsAligned < 2) {
         return null;
     }
 
