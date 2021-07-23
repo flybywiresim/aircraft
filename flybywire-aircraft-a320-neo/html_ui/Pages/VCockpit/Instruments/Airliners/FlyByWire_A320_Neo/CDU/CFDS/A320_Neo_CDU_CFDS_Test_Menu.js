@@ -1,6 +1,8 @@
 class CDUCfdsTestMenu {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsTestMenu.ShowPage(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST   }"],
             [""],
@@ -21,74 +23,76 @@ class CDUCfdsTestMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUCfdsTestAircond.ShowPage(mcdu);
+            CDUCfdsTestAircond.ShowPage(fmc, mcdu);
         };
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[2] = () => {
-            CDUCfdsTestCom.ShowPage(mcdu);
+            CDUCfdsTestCom.ShowPage(fmc, mcdu);
         };
         mcdu.leftInputDelay[3] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = () => {
-            CDUCfdsTestElec.ShowPage(mcdu);
+            CDUCfdsTestElec.ShowPage(fmc, mcdu);
         };
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUCfdsTestFire.ShowPage(mcdu);
+            CDUCfdsTestFire.ShowPage(fmc, mcdu);
         };
         mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = () => {
-            CDUCfdsTestFctl.ShowPage(mcdu);
+            CDUCfdsTestFctl.ShowPage(fmc, mcdu);
         };
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[2] = () => {
-            CDUCfdsTestIce.ShowPage(mcdu);
+            CDUCfdsTestIce.ShowPage(fmc, mcdu);
         };
         mcdu.rightInputDelay[3] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[3] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
+            CDUCfdsTestInst.ShowPage(fmc, mcdu);
         };
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            CDUCfdsTestLG.ShowPage(mcdu);
+            CDUCfdsTestLG.ShowPage(fmc, mcdu);
         };
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            CDUCfdsTestNav.ShowPage(mcdu);
+            CDUCfdsTestNav.ShowPage(fmc, mcdu);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsMainMenu.ShowPage(mcdu);
+            CDUCfdsMainMenu.ShowPage(fmc, mcdu);
         };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsTestMenu.ShowPage2(mcdu);
+            CDUCfdsTestMenu.ShowPage2(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsTestMenu.ShowPage2(mcdu);
+            CDUCfdsTestMenu.ShowPage2(fmc, mcdu);
         };
     }
 
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage2(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsTestMenu.ShowPage2(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST   }"],
             [""],
@@ -109,27 +113,27 @@ class CDUCfdsTestMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUCfdsTestPneu.ShowPage(mcdu);
+            CDUCfdsTestPneu.ShowPage(fmc, mcdu);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsMainMenu.ShowPage(mcdu);
+            CDUCfdsMainMenu.ShowPage(fmc, mcdu);
         };
         mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = () => {
-            CDUCfdsTestEng.ShowPage(mcdu);
+            CDUCfdsTestEng.ShowPage(fmc, mcdu);
         };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsTestMenu.ShowPage(mcdu);
+            CDUCfdsTestMenu.ShowPage(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsTestMenu.ShowPage(mcdu);
+            CDUCfdsTestMenu.ShowPage(fmc, mcdu);
         };
     }
 }

@@ -1,7 +1,9 @@
 class CDUIRSMonitor {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.IRSMonitor;
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUIRSMonitor.ShowPage(fmc, mcdu);
+        });
+
         mcdu.setTemplate([
             ["IRS MONITOR"],
             [""],
@@ -16,19 +18,19 @@ class CDUIRSMonitor {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUIRSStatus.ShowPage(mcdu, 1);
+            CDUIRSStatus.ShowPage(fmc, mcdu, 1);
         };
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            CDUIRSStatus.ShowPage(mcdu, 2);
+            CDUIRSStatus.ShowPage(fmc, mcdu, 2);
         };
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[2] = () => {
-            CDUIRSStatus.ShowPage(mcdu, 3);
+            CDUIRSStatus.ShowPage(fmc, mcdu, 3);
         };
     }
 

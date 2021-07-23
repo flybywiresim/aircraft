@@ -1,7 +1,7 @@
 class CDU_AIDS_MainMenu {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.activeSystem = 'AIDS';
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(null, 'AIDS');
+
         mcdu.setTemplate([
             ["AIDS"],
             ["CALL-UP[color]inop"],

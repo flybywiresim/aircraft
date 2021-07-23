@@ -1,7 +1,6 @@
 class CDUPilotsWaypoint {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.PilotsWaypoint;
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(); // note: no refresh
         mcdu.setTemplate([
             ["PILOTS WAYPOINT", "1", "1"],
             ["\xa0IDENT"],
@@ -22,7 +21,7 @@ class CDUPilotsWaypoint {
         };
 
         mcdu.onRightInput[4] = () => {
-            CDUNewWaypoint.ShowPage(mcdu);
+            CDUNewWaypoint.ShowPage(fmc, mcdu);
         };
     }
 }

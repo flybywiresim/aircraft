@@ -1,9 +1,9 @@
 class CDUAtcPositionReport {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.refreshPageCallback = () => {
-            CDUAtcPositionReport.ShowPage(mcdu);
-        };
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUAtcPositionReport.ShowPage(fmc, mcdu);
+        });
+
         const currUTCCell = FMCMainDisplay.secondsTohhmm(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
@@ -19,16 +19,16 @@ class CDUAtcPositionReport {
         const lonStr = currPosSplit[1];
         currPos = latStr + sep + lonStr;
         let ovhdWaypoint;
-        if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            ovhdWaypoint = mcdu.flightPlanManager.getOrigin();
+        if (fmc.routeIndex === fmc.flightPlanManager.getWaypointsCount() - 1) {
+            ovhdWaypoint = fmc.flightPlanManager.getOrigin();
         } else {
-            ovhdWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex - 1);
+            ovhdWaypoint = fmc.flightPlanManager.getWaypoint(fmc.routeIndex - 1);
         }
         let toWaypoint;
-        if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            toWaypoint = mcdu.flightPlanManager.getDestination();
+        if (fmc.routeIndex === fmc.flightPlanManager.getWaypointsCount() - 1) {
+            toWaypoint = fmc.flightPlanManager.getDestination();
         } else {
-            toWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex);
+            toWaypoint = fmc.flightPlanManager.getWaypoint(fmc.routeIndex);
         }
         let ovhdWaypointCell = "\xa0\xa0\xa0";
         let ovhdWaypointUTCCell = "\xa0\xa0";
@@ -48,10 +48,10 @@ class CDUAtcPositionReport {
             toWaypointCell = toWaypoint.ident;
             toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
-            if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
-                nextWaypoint = mcdu.flightPlanManager.getDestination();
+            if (fmc.routeIndex + 1 === fmc.flightPlanManager.getWaypointsCount()) {
+                nextWaypoint = fmc.flightPlanManager.getDestination();
             } else {
-                nextWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex + 1);
+                nextWaypoint = fmc.flightPlanManager.getWaypoint(fmc.routeIndex + 1);
             }
             if (nextWaypoint) {
                 nextWaypointCell = nextWaypoint.ident;
@@ -84,7 +84,7 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcReports.ShowPage(mcdu);
+            CDUAtcReports.ShowPage(fmc, mcdu);
         };
     }
 }

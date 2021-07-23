@@ -5,6 +5,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
         this.ilsUpdateThrottler = new UpdateThrottler(5000);
+        this.telexUpdateThrottler = new UpdateThrottler(NXApi.updateRate);
         this.currentFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number") || FmgcFlightPhases.PREFLIGHT;
         this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
         this._apCooldown = 500;
@@ -14,6 +15,9 @@ class FMCMainDisplay extends BaseAirliners {
         this._rcl1Frequency = 0;
         this._pre2Frequency = 0;
         this._atc1Frequency = 0;
+        this.timeSinceFirstEngineStart = 0;
+        this.messages = [];
+        this.sentMessages = [];
 
         /** Declaration of every variable used (NOT initialization) */
         this.currentFlightPlanWaypointIndex = undefined;
@@ -529,11 +533,23 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.ilsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.updateIls();
         }
+
+        this.checkAocTimes();
+
+        if (this.telexUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            this.updateTelex();
+        }
+
+        if (this.isAnEngineOn()) {
+            this.timeSinceFirstEngineStart += _deltaTime;
+        } else {
+            this.timeSinceFirstEngineStart = 0;
+        }
     }
 
     /**
      * This method is called by the FlightPhaseManager after a flight phase change
-     * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
+     * This method initializes AP States, refeshes the MCDU displays, and sets other required states
      * @param _lastFlightPhase {FmgcFlightPhases} Previous FmgcFlightPhase
      * @param _curFlightPhase {FmgcFlightPhases} New FmgcFlightPhase
      */
@@ -547,12 +563,6 @@ class FMCMainDisplay extends BaseAirliners {
             case FmgcFlightPhases.TAKEOFF: {
                 this._destDataChecked = false;
 
-                if (this.page.Current === this.page.PerformancePageTakeoff) {
-                    CDUPerformancePage.ShowTAKEOFFPage(this);
-                } else if (this.page.Current === this.page.ProgressPage) {
-                    CDUProgressPage.ShowPage(this);
-                }
-
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedClbSpeed);
 
@@ -562,12 +572,6 @@ class FMCMainDisplay extends BaseAirliners {
             case FmgcFlightPhases.CLIMB: {
 
                 this._destDataChecked = false;
-
-                if (this.page.Current === this.page.ProgressPage) {
-                    CDUProgressPage.ShowPage(this);
-                } else {
-                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
-                }
 
                 /** Activate pre selected speed/mach */
                 if (_lastFlightPhase === FmgcFlightPhases.TAKEOFF) {
@@ -581,12 +585,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.CRUISE: {
-                if (this.page.Current === this.page.ProgressPage) {
-                    CDUProgressPage.ShowPage(this);
-                } else {
-                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
-                }
-
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
 
@@ -602,12 +600,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.DESCENT: {
-                if (this.page.Current === this.page.ProgressPage) {
-                    CDUProgressPage.ShowPage(this);
-                } else {
-                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
-                }
-
                 this.checkDestData();
 
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
@@ -624,12 +616,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.APPROACH: {
-                if (this.page.Current === this.page.ProgressPage) {
-                    CDUProgressPage.ShowPage(this);
-                } else {
-                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
-                }
-
                 this.connectIls();
                 this.flightPlanManager.activateApproach();
 
@@ -666,15 +652,11 @@ class FMCMainDisplay extends BaseAirliners {
                 const currentHeading = Simplane.getHeadingMagnetic();
                 Coherent.call("HEADING_BUG_SET", 1, currentHeading);
 
-                if (this.page.Current === this.page.ProgressPage) {
-                    CDUProgressPage.ShowPage(this);
-                } else {
-                    this.tryUpdatePerfPage(_lastFlightPhase, _curFlightPhase);
-                }
-
                 break;
             }
         }
+        // update both MCDUs
+        this.requestUpdate();
     }
 
     getManagedTargets(v, m) {
@@ -868,9 +850,8 @@ class FMCMainDisplay extends BaseAirliners {
                 if (!radioNavOn) {
                     this.initRadioNav(false);
                 }
-                if (this.refreshPageCallback) {
-                    this.refreshPageCallback();
-                }
+                // update both MCDUs
+                this.requestUpdate();
             }
             let apNavIndex = 1;
             let gpsDriven = true;
@@ -1157,9 +1138,8 @@ class FMCMainDisplay extends BaseAirliners {
                         this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(fcuFl * 100));
                         this.cruiseFlightLevel = fcuFl;
                         this._cruiseFlightLevel = fcuFl;
-                        if (this.page.Current === this.page.ProgressPage) {
-                            CDUProgressPage.ShowPage(this);
-                        }
+                        // update both MCDUs
+                        this.requestUpdate();
                     }
                 }, 3000);
             }
@@ -1766,7 +1746,7 @@ class FMCMainDisplay extends BaseAirliners {
         return this._routeTripFuelWeight;
     }
 
-    _getOrSelectWaypoints(getter, ident, callback) {
+    _getOrSelectWaypoints(mcdu, getter, ident, callback) {
         getter(ident).then((waypoints) => {
             if (waypoints.length === 0) {
                 return callback(undefined);
@@ -1774,24 +1754,24 @@ class FMCMainDisplay extends BaseAirliners {
             if (waypoints.length === 1) {
                 return callback(waypoints[0]);
             }
-            A320_Neo_CDU_SelectWptPage.ShowPage(this, waypoints, callback);
+            A320_Neo_CDU_SelectWptPage.ShowPage(this, mcdu, waypoints, callback);
         });
     }
 
-    getOrSelectVORsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
+    getOrSelectVORsByIdent(mcdu, ident, callback) {
+        this._getOrSelectWaypoints(mcdu, this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
     }
-    getOrSelectNDBsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetNDBsByIdent.bind(this.dataManager), ident, callback);
-    }
-
-    getOrSelectWaypointByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetWaypointsByIdent.bind(this.dataManager), ident, callback);
+    getOrSelectNDBsByIdent(mcdu, ident, callback) {
+        this._getOrSelectWaypoints(mcdu, this.dataManager.GetNDBsByIdent.bind(this.dataManager), ident, callback);
     }
 
-    insertWaypoint(newWaypointTo, index, callback = EmptyCallback.Boolean) {
+    getOrSelectWaypointByIdent(mcdu, ident, callback) {
+        this._getOrSelectWaypoints(mcdu, this.dataManager.GetWaypointsByIdent.bind(this.dataManager), ident, callback);
+    }
+
+    insertWaypoint(mcdu, newWaypointTo, index, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(async () => {
-            this.getOrSelectWaypointByIdent(newWaypointTo, (waypoint) => {
+            this.getOrSelectWaypointByIdent(mcdu, newWaypointTo, (waypoint) => {
                 if (!waypoint) {
                     this.addNewMessage(NXSystemMessages.notInDatabase);
                     return callback(false);
@@ -3372,42 +3352,11 @@ class FMCMainDisplay extends BaseAirliners {
                 if (this._v1Checked && this._vRChecked && this._v2Checked && this._toFlexChecked) {
                     return;
                 }
-                this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
-                    return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked;
+                this.addNewMessage(NXSystemMessages.checkToData, (fmc) => {
+                    return fmc._v1Checked && fmc._vRChecked && fmc._v2Checked && fmc._toFlexChecked;
                 });
             }
             this.toRunway = toRunway;
-        }
-    }
-
-    /**
-     * Switches to the next/new perf page (if new flight phase is in order) or reloads the current page
-     * @param _old {FmgcFlightPhases}
-     * @param _new {FmgcFlightPhases}
-     */
-    tryUpdatePerfPage(_old, _new) {
-        // Ensure we have a performance page selected...
-        if (this.page.Current < this.page.PerformancePageTakeoff || this.page.Current > this.page.PerformancePageGoAround) {
-            return;
-        }
-
-        const curPerfPagePhase = (() => {
-            switch (this.page.Current) {
-                case this.page.PerformancePageTakeoff : return FmgcFlightPhases.TAKEOFF;
-                case this.page.PerformancePageClb : return FmgcFlightPhases.CLIMB;
-                case this.page.PerformancePageCrz : return FmgcFlightPhases.CRUISE;
-                case this.page.PerformancePageDes : return FmgcFlightPhases.DESCENT;
-                case this.page.PerformancePageAppr : return FmgcFlightPhases.APPROACH;
-                case this.page.PerformancePageGoAround : return FmgcFlightPhases.GOAROUND;
-            }
-        })();
-
-        if (_new > _old) {
-            if (_new >= curPerfPagePhase) {
-                CDUPerformancePage.ShowPage(this, _new);
-            }
-        } else if (_old === curPerfPagePhase) {
-            CDUPerformancePage.ShowPage(this, _old);
         }
     }
 
@@ -3525,15 +3474,16 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Parse a place string into a position
+     * @param {A320_Neo_CDU_Display} mcdu The MCDU calling
      * @param {string} place
      * @param {LatLongAltCallback} onSuccess location
      * @param {McduMessageCallback} onError suggested error message
      */
-    parsePlace(place, onSuccess, onError) {
+    parsePlace(mcdu, place, onSuccess, onError) {
         if (this.isRunwayFormat(place)) {
             this.parseRunway(place, onSuccess, onError);
         } else {
-            this.getOrSelectWaypointByIdent(place, (waypoint) => {
+            this.getOrSelectWaypointByIdent(mcdu, place, (waypoint) => {
                 if (waypoint) {
                     return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation || Facilities.getMagVar(waypoint.infos.coordinates));
                 } else {
@@ -3555,11 +3505,12 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Parse a p-b/p-b string into a position
+     * @param {A320_Neo_CDU_Display} mcdu The MCDU calling
      * @param {string} s place-bearing/place-bearing
      * @param {LatLongAltCallback} onSuccess location
      * @param {McduMessageCallback} onError suggested error message
      */
-    parsePbPb(s, onSuccess, onError) {
+    parsePbPb(mcdu, s, onSuccess, onError) {
         const pbpb = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
         if (pbpb === null) {
             return onError(NXSystemMessages.formatError);
@@ -3569,8 +3520,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (brg1 > 360 || brg2 > 360) {
             return onError(NXSystemMessages.entryOutOfRange);
         }
-        this.parsePlace(pbpb[1], (loc1, magVar1) => {
-            this.parsePlace(pbpb[3], (loc2, magVar2) => {
+        this.parsePlace(mcdu, pbpb[1], (loc1, magVar1) => {
+            this.parsePlace(mcdu, pbpb[3], (loc2, magVar2) => {
                 onSuccess(A32NX_Util.greatCircleIntersection(loc1, A32NX_Util.magneticToTrue(brg1, magVar1), loc2, A32NX_Util.magneticToTrue(brg2, magVar2)));
             }, (err2) => {
                 onError(err2);
@@ -3628,10 +3579,11 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Try to set the progress page bearing/dist waypoint/location
+     * @param {A320_Neo_CDU_Display} mcdu The MCDU calling
      * @param {String} s scratchpad entry
      * @param {Function} callback callback taking boolean arg for success/failure
      */
-    trySetProgWaypoint(s, callback = EmptyCallback.Boolean) {
+    trySetProgWaypoint(mcdu, s, callback = EmptyCallback.Boolean) {
         if (s === FMCMainDisplay.clrValue) {
             this._progBrgDist = undefined;
             return callback(true);
@@ -3665,7 +3617,7 @@ class FMCMainDisplay extends BaseAirliners {
                 place = s;
             }
             if (this.isPlaceFormat(place)) {
-                this.parsePlace(place, (loc, magVar) => {
+                this.parsePlace(mcdu, place, (loc, magVar) => {
                     this._setProgLocation(place, loc, brg ? A32NX_Util.magneticToTrue(brg, magVar) : undefined, dist);
                     return callback(true);
                 }, (err) => {
@@ -3699,6 +3651,7 @@ class FMCMainDisplay extends BaseAirliners {
         const planeLl = new LatLong(latitude, longitude);
         this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLl, this._progBrgDist.coordinates);
         this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLl, this._progBrgDist.coordinates));
+        this.requestUpdate();
     }
 
     get progBearing() {
@@ -3714,6 +3667,208 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /* END OF MCDU GET/SET METHODS */
+
+    /* AOC/ATSU */
+
+    checkAocTimes() {
+        if (!this.aocTimes.off) {
+            const isAirborne = !Simplane.getIsGrounded(); //TODO replace with proper flight mode in future
+            if (this.currentFlightPhase === FmgcFlightPhases.TAKEOFF && isAirborne) {
+                // Wheels off
+                // Off: remains blank until Take off time
+                this.aocTimes.off = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+            }
+        }
+
+        if (!this.aocTimes.out) {
+            const currentPKGBrakeState = SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool");
+            if (this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT && !currentPKGBrakeState) {
+                // Out: is when you set the brakes to off
+                this.aocTimes.out = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+            }
+        }
+
+        if (!this.aocTimes.on) {
+            const isAirborne = !Simplane.getIsGrounded(); //TODO replace with proper flight mode in future
+            if (this.aocTimes.off && !isAirborne) {
+                // On: remains blank until Landing time
+                this.aocTimes.on = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+            }
+        }
+
+        if (!this.aocTimes.in) {
+            const currentPKGBrakeState = SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool");
+            const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+            if (this.aocTimes.on && currentPKGBrakeState && cabinDoorPctOpen > 20) {
+                // In: remains blank until brakes set to park AND the first door opens
+                this.aocTimes.in = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+            }
+        }
+
+        if (this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT) {
+            const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+            if (!this.aocTimes.doors && cabinDoorPctOpen < 20) {
+                this.aocTimes.doors = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+            } else {
+                if (cabinDoorPctOpen > 20) {
+                    this.aocTimes.doors = "";
+                }
+            }
+        }
+    }
+
+    // INCOMING AOC MESSAGES
+    getMessages() {
+        return this.messages;
+    }
+
+    getMessage(id, type) {
+        const messages = this.messages;
+        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
+        if (type === 'previous') {
+            if (messages[currentMessageIndex - 1]) {
+                return messages[currentMessageIndex - 1];
+            }
+            return null;
+        } else if (type === 'next') {
+            if (messages[currentMessageIndex + 1]) {
+                return messages[currentMessageIndex + 1];
+            }
+            return null;
+        }
+        return messages[currentMessageIndex];
+    }
+
+    getMessageIndex(id) {
+        return this.messages.findIndex(m => m["id"].toString() === id.toString());
+    }
+
+    addMessage(message) {
+        this.messages.unshift(message);
+        const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+        SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1);
+        if (this.refreshPageCallback) {
+            this.refreshPageCallback();
+        }
+    }
+
+    deleteMessage(id) {
+        if (!this.messages[id]["opened"]) {
+            const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
+        }
+        this.messages.splice(id, 1);
+    }
+
+    // OUTGOING/SENT AOC MESSAGES
+    getSentMessages() {
+        return this.sentMessages;
+    }
+
+    getSentMessage(id, type) {
+        const messages = this.sentMessages;
+        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
+        if (type === 'previous') {
+            if (messages[currentMessageIndex - 1]) {
+                return messages[currentMessageIndex - 1];
+            }
+            return null;
+        } else if (type === 'next') {
+            if (messages[currentMessageIndex + 1]) {
+                return messages[currentMessageIndex + 1];
+            }
+            return null;
+        }
+        return messages[currentMessageIndex];
+    }
+
+    getSentMessageIndex(id) {
+        return this.sentMessages.findIndex(m => m["id"].toString() === id.toString());
+    }
+
+    addSentMessage(message) {
+        this.sentMessages.unshift(message);
+    }
+
+    deleteSentMessage(id) {
+        this.sentMessages.splice(id, 1);
+    }
+
+    printPage(lines) {
+        if (this.printing) {
+            return;
+        }
+        this.printing = true;
+        for (let i = 0; i < lines.length; i++) {
+            let value = lines[i];
+            value = value.replace(/\[color]cyan/g, "<br/>");
+            value = value.replace(/(\[color][a-z]*)/g, "");
+            value = value.replace(/-{3,}/g, "<br/><br/>");
+            for (let j = 0; j < value.length; j++) {
+                SimVar.SetSimVarValue(`L:A32NX_PRINT_${i}_${j}`, "number", value.charCodeAt(j));
+            }
+            SimVar.SetSimVarValue(`L:A32NX_PRINT_LINE_LENGTH_${i}`, "number", value.length);
+        }
+        if (SimVar.GetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool") === 1) {
+            SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number") + 1);
+            SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
+        }
+        SimVar.SetSimVarValue("L:A32NX_PRINT_LINES", "number", lines.length);
+        SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") + 1);
+        SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0);
+        setTimeout(() => {
+            SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
+            this.printing = false;
+        }, 2500);
+    }
+
+    // Start the TELEX Ping. API functions check the connection status themself
+    updateTelex() {
+        const toDelete = [];
+
+        // Update connection
+        NXApi.updateTelex()
+            .catch((err) => {
+                if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
+                    console.log("TELEX PING FAILED");
+                }
+            });
+
+        // Fetch new messages
+        NXApi.getTelexMessages()
+            .then((data) => {
+                for (const msg of data) {
+                    const sender = msg["from"]["flight"];
+
+                    const lines = [];
+                    lines.push("FROM " + sender + "[color]cyan");
+                    const incLines = msg["message"].split(";");
+                    incLines.forEach(l => lines.push(l.concat("[color]green")));
+                    lines.push('---------------------------[color]white');
+
+                    const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + sender + ")", "time": '00:00', "opened": null, "content": lines, };
+                    let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                    if (timeValue) {
+                        const seconds = Number.parseInt(timeValue);
+                        const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
+                        timeValue = displayTime.toString();
+                    }
+                    newMessage["time"] = timeValue.substring(0, 5);
+                    this.messages.unshift(newMessage);
+                    toDelete.push(msg["id"]);
+                }
+
+                const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+                SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length).then();
+            })
+            .catch(err => {
+                if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
+                    return;
+                }
+                console.log("TELEX MSG FETCH FAILED");
+            });
+    }
+
     /* UNSORTED CODE BELOW */
 
     //TODO: can this be util?

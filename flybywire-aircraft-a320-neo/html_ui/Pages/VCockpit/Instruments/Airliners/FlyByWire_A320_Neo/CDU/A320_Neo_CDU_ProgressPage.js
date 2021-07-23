@@ -1,41 +1,41 @@
 class CDUProgressPage {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ProgressPage;
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUProgressPage.ShowPage(fmc, mcdu);
+        }), 'FMGC';
         mcdu.returnPageCallback = () => {
-            CDUProgressPage.ShowPage(mcdu);
+            CDUProgressPage.ShowPage(fmc, mcdu);
         };
-        mcdu.activeSystem = 'FMGC';
-        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        const flMax = mcdu.getMaxFlCorrected();
-        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "{green}FL" + (Math.floor(flMax / 5) * 5).toString() + "{end}" : "-----";
+        const flightNo = fmc.flightNumber || "";
+        const flMax = fmc.getMaxFlCorrected();
+        const flOpt = (fmc._zeroFuelWeightZFWCGEntered && fmc._blockFuelEntered && (fmc.isAllEngineOn() || Simplane.getIsGrounded())) ? "{green}FL" + (Math.floor(flMax / 5) * 5).toString() + "{end}" : "-----";
         const gpsPrimaryStatus = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool") ? "{green}GPS PRIMARY{end}" : "";
         let flCrz = "-----";
-        switch (mcdu.currentFlightPhase) {
+        switch (fmc.currentFlightPhase) {
             case FmgcFlightPhases.PREFLIGHT:
             case FmgcFlightPhases.TAKEOFF: {
-                if (mcdu._cruiseEntered) {
-                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                if (fmc._cruiseEntered) {
+                    flCrz = "FL" + fmc.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
             case FmgcFlightPhases.CLIMB: {
                 const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
-                const altCtn = Math.round(mcdu.constraintAlt / 100);
-                if (!mcdu._cruiseEntered && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
+                const altCtn = Math.round(fmc.constraintAlt / 100);
+                if (!fmc._cruiseEntered && !fmc._activeCruiseFlightLevelDefaulToFcu) {
                     flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]cyan";
                 } else {
-                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                    flCrz = "FL" + fmc.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
             case FmgcFlightPhases.CRUISE: {
-                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                flCrz = "FL" + fmc.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 break;
             }
         }
         let flightPhase;
-        switch (mcdu.currentFlightPhase) {
+        switch (fmc.currentFlightPhase) {
             case FmgcFlightPhases.PREFLIGHT:
             case FmgcFlightPhases.TAKEOFF:
                 flightPhase = "TO";
@@ -61,35 +61,35 @@ class CDUProgressPage {
         }
 
         mcdu.onLeftInput[0] = (value) => {
-            if (mcdu.trySetCruiseFlCheckInput(value)) {
-                CDUProgressPage.ShowPage(mcdu);
+            if (fmc.trySetCruiseFlCheckInput(value)) {
+                mcdu.requestUpdate();
             }
         };
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            CDUProgressPage.ShowReportPage(mcdu);
+            CDUProgressPage.ShowReportPage(fmc, mcdu);
         };
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUProgressPage.ShowPredictiveGPSPage(mcdu);
+            CDUProgressPage.ShowPredictiveGPSPage(fmc, mcdu);
         };
 
         let progBearingDist = "{small}\xa0---°\xa0/----.-{end}";
         let progWaypoint = "[\xa0\xa0\xa0\xa0\xa0]";
-        if (mcdu.progWaypointIdent !== undefined) {
-            progWaypoint = mcdu.progWaypointIdent.padEnd("7", "\xa0");
-            if (mcdu.progBearing > 0 && mcdu.progDistance > 0) {
-                const distDigits = mcdu.progDistance > 9999 ? 0 : 1;
-                progBearingDist = `{small}{green}\xa0${mcdu.progBearing.toFixed(0).padStart(3, "0")}°\xa0/${mcdu.progDistance.toFixed(distDigits).padStart(3)}{end}{end}`;
+        if (fmc.progWaypointIdent !== undefined) {
+            progWaypoint = fmc.progWaypointIdent.padEnd("7", "\xa0");
+            if (fmc.progBearing > 0 && fmc.progDistance > 0) {
+                const distDigits = fmc.progDistance > 9999 ? 0 : 1;
+                progBearingDist = `{small}{green}\xa0${fmc.progBearing.toFixed(0).padStart(3, "0")}°\xa0/${fmc.progDistance.toFixed(distDigits).padStart(3)}{end}{end}`;
             }
         }
         mcdu.onRightInput[3] = (input) => {
-            mcdu.trySetProgWaypoint(input, () => {
-                CDUProgressPage.ShowPage(mcdu);
+            fmc.trySetProgWaypoint(mcdu, input, () => {
+                mcdu.requestUpdate();
             });
         };
         mcdu.setTemplate([
@@ -107,29 +107,26 @@ class CDUProgressPage {
             ["REQUIRED", "ESTIMATED", "ACCUR{sp}"],
             ["{small}3.4NM{end}[color]cyan", "{small}0.07NM{end}[color]green", "HIGH[color]green"]
         ]);
-        mcdu.page.SelfPtr = setTimeout(() => {
-            if (mcdu.page.Current === mcdu.page.ProgressPage) {
-                CDUProgressPage.ShowPage(mcdu);
-            }
-        }, mcdu.PageTimeout.Prog);
     }
-    static ShowReportPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ProgressPageReport;
+    static ShowReportPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUProgressPage.ShowReportPage(fmc, mcdu);
+        });
+
         let altCell = "---";
-        if (isFinite(mcdu.cruiseFlightLevel)) {
-            altCell = mcdu.cruiseFlightLevel.toFixed(0);
+        if (isFinite(fmc.cruiseFlightLevel)) {
+            altCell = fmc.cruiseFlightLevel.toFixed(0);
         }
         mcdu.onRightInput[0] = (value) => {
-            if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
-                CDUProgressPage.ShowReportPage(mcdu);
+            if (fmc.setCruiseFlightLevelAndTemperature(value)) {
+                mcdu.requestUpdate();
             }
         };
         let toWaypoint;
-        if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            toWaypoint = mcdu.flightPlanManager.getDestination();
+        if (fmc.routeIndex === fmc.flightPlanManager.getWaypointsCount() - 1) {
+            toWaypoint = fmc.flightPlanManager.getDestination();
         } else {
-            toWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex);
+            toWaypoint = fmc.flightPlanManager.getWaypoint(fmc.routeIndex);
         }
         let toWaypointCell = "";
         let toWaypointUTCCell = "---";
@@ -141,10 +138,10 @@ class CDUProgressPage {
             toWaypointCell = toWaypoint.ident;
             toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
-            if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
-                nextWaypoint = mcdu.flightPlanManager.getDestination();
+            if (fmc.routeIndex + 1 === fmc.flightPlanManager.getWaypointsCount()) {
+                nextWaypoint = fmc.flightPlanManager.getDestination();
             } else {
-                nextWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex + 1);
+                nextWaypoint = fmc.flightPlanManager.getWaypoint(fmc.routeIndex + 1);
             }
             if (nextWaypoint) {
                 nextWaypointCell = nextWaypoint.ident;
@@ -154,18 +151,18 @@ class CDUProgressPage {
         let destCell = "";
         let destUTCCell = "---";
         let destDistCell = "----";
-        if (mcdu.flightPlanManager.getDestination()) {
-            console.log(mcdu.flightPlanManager.getDestination());
-            destCell = mcdu.flightPlanManager.getDestination().ident;
-            const destInfos = mcdu.flightPlanManager.getDestination().infos;
+        if (fmc.flightPlanManager.getDestination()) {
+            console.log(fmc.flightPlanManager.getDestination());
+            destCell = fmc.flightPlanManager.getDestination().ident;
+            const destInfos = fmc.flightPlanManager.getDestination().infos;
             if (destInfos instanceof AirportInfo) {
-                const destApproach = destInfos.approaches[mcdu.flightPlanManager.getApproachIndex()];
+                const destApproach = destInfos.approaches[fmc.flightPlanManager.getApproachIndex()];
                 if (destApproach) {
                     destCell += destApproach.runway;
                 }
             }
-            destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
-            destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0);
+            destUTCCell = FMCMainDisplay.secondsTohhmm(fmc.flightPlanManager.getDestination().infos.etaInFP);
+            destDistCell = fmc.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0);
         }
         mcdu.setTemplate([
             ["REPORT"],
@@ -183,20 +180,22 @@ class CDUProgressPage {
             [destCell, "", destUTCCell + " " + destDistCell]
         ]);
     }
-    static ShowPredictiveGPSPage(mcdu, overrideDestETA = "") {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ProgressPagePredictiveGPS;
+    static ShowPredictiveGPSPage(fmc, mcdu, overrideDestETA = "") {
+        mcdu.setCurrentPage(() => {
+            CDUProgressPage.ShowPredictiveGPSPage(fmc, mcdu, overrideDestETA);
+        });
+
         let destIdentCell = "";
         let destETACell = "";
-        if (mcdu.flightPlanManager.getDestination()) {
-            destIdentCell = mcdu.flightPlanManager.getDestination().ident + "[color]green";
+        if (fmc.flightPlanManager.getDestination()) {
+            destIdentCell = fmc.flightPlanManager.getDestination().ident + "[color]green";
             if (overrideDestETA) {
                 destETACell = overrideDestETA;
             } else {
-                destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
+                destETACell = FMCMainDisplay.secondsTohhmm(fmc.flightPlanManager.getDestination().infos.etaInFP);
             }
             mcdu.onRightInput[0] = (value) => {
-                CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);
+                CDUProgressPage.ShowPredictiveGPSPage(fmc, mcdu, value);
             };
         }
         mcdu.setTemplate([

@@ -1,5 +1,5 @@
 class CDUIRSStatus {
-    static ShowPage(mcdu, index, prev_wind_dir) {
+    static ShowPage(fmc, mcdu, index, prev_wind_dir) {
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {
@@ -30,11 +30,9 @@ class CDUIRSStatus {
         } else if (delta < -180) {
             endAngle += 360;
         }
-        const smoothedAngle = Utils.SmoothSin(startAngle, endAngle, 0.25, mcdu._deltaTime / 1000);
+        const smoothedAngle = Utils.SmoothSin(startAngle, endAngle, 0.25, fmc._deltaTime / 1000);
         wind_dir = smoothedAngle % 360;
 
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.IRSStatus;
         mcdu.setTemplate([
             [`IRS${index}`],
             ["POSITION"],
@@ -52,7 +50,7 @@ class CDUIRSStatus {
         ]);
 
         mcdu.onLeftInput[5] = () => {
-            CDUIRSStatusFrozen.ShowPage(mcdu, index, wind_dir);
+            CDUIRSStatusFrozen.ShowPage(fmc, mcdu, index, wind_dir);
         };
 
         mcdu.rightInputDelay[5] = () => {
@@ -61,15 +59,14 @@ class CDUIRSStatus {
 
         mcdu.onRightInput[5] = () => {
             if (index > 2) {
-                CDUIRSMonitor.ShowPage(mcdu);
+                CDUIRSMonitor.ShowPage(fmc, mcdu);
             } else {
-                this.ShowPage(mcdu, index + 1);
+                this.ShowPage(fmc, mcdu, index + 1);
             }
         };
 
-        mcdu.refreshPageCallback = () => {
-            CDUIRSStatus.ShowPage(mcdu, index, wind_dir);
-        };
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+        mcdu.setCurrentPage(() => {
+            CDUGPSMonitor.ShowPage(fmc, mcdu, index, wind_dir);
+        });
     }
 }

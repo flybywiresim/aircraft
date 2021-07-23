@@ -1,15 +1,14 @@
 class CDUAocMessagesReceived {
-    static ShowPage(mcdu, messages = null, page = 0) {
+    static ShowPage(fmc, mcdu, messages = null, page = 0) {
+        mcdu.setCurrentPage(() => {
+            this.ShowPage(fmc, mcdu, null, page);
+        }, "ATSU");
+
         if (!messages) {
-            messages = mcdu.getMessages();
+            messages = fmc.getMessages();
         }
-        mcdu.clearDisplay();
 
-        page = Math.min(Math.floor((messages.length - 1) / 5), page);
-
-        mcdu.refreshPageCallback = () => {
-            this.ShowPage(mcdu, null, page);
-        };
+        page = Math.min(Math.floor((Math.max(0, messages.length - 1)) / 5), page);
 
         const offset = 5 + page * 5;
 
@@ -47,13 +46,13 @@ class CDUAocMessagesReceived {
         let left = false, right = false;
         if (messages.length > ((page + 1) * 5)) {
             mcdu.onNextPage = () => {
-                CDUAocMessagesReceived.ShowPage(mcdu, messages, page + 1);
+                CDUAocMessagesReceived.ShowPage(fmc, mcdu, messages, page + 1);
             };
             right = true;
         }
         if (page > 0) {
             mcdu.onPrevPage = () => {
-                CDUAocMessagesReceived.ShowPage(mcdu, messages, page - 1);
+                CDUAocMessagesReceived.ShowPage(fmc, mcdu, messages, page - 1);
             };
             left = true;
         }
@@ -67,10 +66,10 @@ class CDUAocMessagesReceived {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset - 5 + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.deleteMessage(offset - 5 + i);
-                        CDUAocMessagesReceived.ShowPage(mcdu, messages, page);
+                        fmc.deleteMessage(offset - 5 + i);
+                        mcdu.requestUpdate();
                     } else {
-                        CDUAocRequestsMessage.ShowPage(mcdu, messages[offset - 5 + i]);
+                        CDUAocRequestsMessage.ShowPage(fmc, mcdu, messages[offset - 5 + i]);
                     }
                 }
             };
@@ -81,7 +80,7 @@ class CDUAocMessagesReceived {
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUAocMenu.ShowPage(mcdu);
+            CDUAocMenu.ShowPage(fmc, mcdu);
         };
     }
 }

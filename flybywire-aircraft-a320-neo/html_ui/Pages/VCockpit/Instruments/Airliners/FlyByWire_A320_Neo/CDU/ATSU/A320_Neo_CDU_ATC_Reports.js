@@ -1,6 +1,8 @@
 class CDUAtcReports {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUAtcReports.ShowPage(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["ATC REPORTS"],
             [""],
@@ -21,14 +23,14 @@ class CDUAtcReports {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            CDUAtcPositionReport.ShowPage(mcdu);
+            CDUAtcPositionReport.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage1(fmc, mcdu);
         };
     }
 }

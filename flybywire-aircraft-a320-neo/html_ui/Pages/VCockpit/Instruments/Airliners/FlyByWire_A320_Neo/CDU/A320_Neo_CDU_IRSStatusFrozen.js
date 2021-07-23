@@ -1,7 +1,6 @@
 class CDUIRSStatusFrozen {
-    static ShowPage(mcdu, index, wind_dir) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.IRSStatusFrozen;
+    static ShowPage(fmc, mcdu, index, wind_dir) {
+        mcdu.setCurrentPage(); // note: no refresh!
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {
@@ -41,14 +40,14 @@ class CDUIRSStatusFrozen {
         ]);
 
         mcdu.onLeftInput[5] = () => {
-            CDUIRSStatus.ShowPage(mcdu, index);
+            CDUIRSStatus.ShowPage(fmc, mcdu, index);
         };
 
         mcdu.onRightInput[5] = () => {
             if (index > 2) {
-                CDUIRSMonitor.ShowPage(mcdu);
+                CDUIRSMonitor.ShowPage(fmc, mcdu);
             } else {
-                CDUIRSStatus.ShowPage(mcdu, index + 1);
+                CDUIRSStatus.ShowPage(fmc, mcdu, index + 1);
             }
         };
     }

@@ -1,6 +1,8 @@
 class CDUCfdsTestCom {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsTestCom.ShowPage(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST   }"],
             ["", "", "COM"],
@@ -21,20 +23,22 @@ class CDUCfdsTestCom {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestMenu.ShowPage(mcdu);
+            CDUCfdsTestMenu.ShowPage(fmc, mcdu);
         };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsTestCom.ShowPage2(mcdu);
+            CDUCfdsTestCom.ShowPage2(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsTestCom.ShowPage2(mcdu);
+            CDUCfdsTestCom.ShowPage2(fmc, mcdu);
         };
     }
 
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage2(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsTestCom.ShowPage2(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST   }"],
             ["", "", "COM"],
@@ -55,15 +59,15 @@ class CDUCfdsTestCom {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestMenu.ShowPage(mcdu);
+            CDUCfdsTestMenu.ShowPage(fmc, mcdu);
         };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsTestCom.ShowPage(mcdu);
+            CDUCfdsTestCom.ShowPage(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsTestCom.ShowPage(mcdu);
+            CDUCfdsTestCom.ShowPage(fmc, mcdu);
         };
     }
 }

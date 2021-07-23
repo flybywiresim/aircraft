@@ -1,7 +1,8 @@
 class CDUSecFplnMain {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.activeSystem = 'MAINT';
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUSecFplnMain.ShowPage(fmc, mcdu);
+        }, 'MAINT');
 
         mcdu.setTemplate([
             ["SEC INDEX"],

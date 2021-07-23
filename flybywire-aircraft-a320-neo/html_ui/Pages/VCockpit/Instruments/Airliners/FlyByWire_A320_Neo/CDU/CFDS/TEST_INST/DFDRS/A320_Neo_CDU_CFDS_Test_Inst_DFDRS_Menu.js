@@ -1,6 +1,8 @@
 class CDU_CFDS_Test_Inst_DFDRS_Menu {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDU_CFDS_Test_Inst_DFDRS_Menu.ShowPage(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["DFDRS"],
             ["LAST LEG[color]inop", "CLASS 3[color]inop"],
@@ -21,7 +23,7 @@ class CDU_CFDS_Test_Inst_DFDRS_Menu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
+            CDUCfdsTestInst.ShowPage(fmc, mcdu);
         };
 
     }

@@ -1,7 +1,8 @@
 class CDUSelectedNavaids {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.SelectedNavaids;
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUSelectedNavaids.ShowPage(fmc, mcdu);
+        });
 
         mcdu.setTemplate([
             ["\xa0SELECTED NAVAIDS"],
@@ -24,7 +25,7 @@ class CDUSelectedNavaids {
         };
 
         mcdu.onRightInput[5] = () => {
-            CDUDataIndexPage.ShowPage1(mcdu);
+            CDUDataIndexPage.ShowPage1(fmc, mcdu);
         };
     }
 }

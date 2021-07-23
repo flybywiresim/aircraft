@@ -1,11 +1,9 @@
 class CDUPositionMonitorPage {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.PositionMonitorPage;
-        mcdu.refreshPageCallback = () => {
-            CDUPositionMonitorPage.ShowPage(mcdu);
-        };
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUPositionMonitorPage.ShowPage(fmc, mcdu);
+        });
+
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {
@@ -40,11 +38,11 @@ class CDUPositionMonitorPage {
         };
 
         mcdu.onRightInput[5] = () => {
-            CDUSelectedNavaids.ShowPage(mcdu);
+            CDUSelectedNavaids.ShowPage(fmc, mcdu);
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUPosFrozen.ShowPage(mcdu, currPos);
+            CDUPosFrozen.ShowPage(fmc, mcdu, currPos);
         };
     }
 }

@@ -1,6 +1,8 @@
 class CDU_OPTIONS_AOC {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDU_OPTIONS_AOC.ShowPage(fmc, mcdu);
+        });
 
         const telexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED") === "ENABLED" ? "DISABLE>" : "ENABLE>";
 
@@ -21,10 +23,10 @@ class CDU_OPTIONS_AOC {
         ]);
 
         mcdu.onLeftInput[4] = () => {
-            CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
+            CDU_OPTIONS_SIMBRIEF.ShowPage(fmc, mcdu);
         };
         mcdu.onRightInput[0] = () => {
-            CDU_OPTIONS_TELEX.ShowPage(mcdu);
+            CDU_OPTIONS_TELEX.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[4] = () => {
@@ -38,7 +40,7 @@ class CDU_OPTIONS_AOC {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            CDU_OPTIONS_MainMenu.ShowPage(fmc, mcdu);
         };
     }
 }

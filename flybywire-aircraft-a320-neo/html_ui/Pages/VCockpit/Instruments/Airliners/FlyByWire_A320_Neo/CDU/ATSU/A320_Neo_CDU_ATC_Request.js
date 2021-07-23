@@ -1,6 +1,8 @@
 class CDUAtcRequest {
-    static ShowPage(mcdu, store = {"dirTo": "", "flAlt": "", "spdMach": "", "dueTo": 0}) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, store = {"dirTo": "", "flAlt": "", "spdMach": "", "dueTo": 0}) {
+        mcdu.setCurrentPage(() => {
+            CDUAtcRequest.ShowPage(fmc, mcdu, store);
+        });
 
         if (store["dirTo"] == "") {
             store["dirTo"] = "[\xa0\xa0\xa0][color]cyan";
@@ -35,7 +37,7 @@ class CDUAtcRequest {
             if (value != "") {
                 store["dirTo"] = "[" + value + "][color]cyan";
             }
-            CDUAtcRequest.ShowPage(mcdu, store);
+            CDUAtcRequest.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -45,14 +47,14 @@ class CDUAtcRequest {
             if (value != "") {
                 store["flAlt"] = "[" + value + "][color]cyan";
             }
-            CDUAtcRequest.ShowPage(mcdu, store);
+            CDUAtcRequest.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.onRightInput[1] = (value) => {
             if (value != "") {
                 store["spdMach"] = "[" + value + "][color]cyan";
             }
-            CDUAtcRequest.ShowPage(mcdu, store);
+            CDUAtcRequest.ShowPage(fmc, mcdu, store);
         };
         mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
@@ -62,7 +64,7 @@ class CDUAtcRequest {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage1(fmc, mcdu);
         };
     }
 }

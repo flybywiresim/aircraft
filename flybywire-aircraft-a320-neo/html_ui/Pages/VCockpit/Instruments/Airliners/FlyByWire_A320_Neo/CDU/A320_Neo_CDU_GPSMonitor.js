@@ -1,5 +1,5 @@
 class CDUGPSMonitor {
-    static ShowPage(mcdu, merit1, merit2, sat1, sat2) {
+    static ShowPage(fmc, mcdu, merit1, merit2, sat1, sat2) {
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {
@@ -30,13 +30,9 @@ class CDUGPSMonitor {
             sat2 = Math.floor(Math.random() * 5) + 8;
         }
 
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.GPSMonitor;
-        // ideally, this would update with the same frequency (is it known?) as the A320 GPS
-        mcdu.refreshPageCallback = () => {
-            CDUGPSMonitor.ShowPage(mcdu, merit1, merit2, sat1, sat2);
-        };
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+        mcdu.setCurrentPage(() => {
+            CDUGPSMonitor.ShowPage(fmc, mcdu, merit1, merit2, sat1, sat2);
+        });
 
         mcdu.setTemplate([
             ["GPS MONITOR"],

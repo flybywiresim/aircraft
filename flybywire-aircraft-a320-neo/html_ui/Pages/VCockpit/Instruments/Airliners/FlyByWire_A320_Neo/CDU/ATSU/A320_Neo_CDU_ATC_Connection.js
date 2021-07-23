@@ -1,6 +1,6 @@
 class CDUAtcConnection {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(null);
         mcdu.setTemplate([
             ["CONNECTION"],
             [""],
@@ -21,21 +21,21 @@ class CDUAtcConnection {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUAtcConnectionNotification.ShowPage(mcdu);
+            CDUAtcConnectionNotification.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[2] = () => {
-            CDUAtcConnectionStatus.ShowPage(mcdu);
+            CDUAtcConnectionStatus.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage1(fmc, mcdu);
         };
     }
 }

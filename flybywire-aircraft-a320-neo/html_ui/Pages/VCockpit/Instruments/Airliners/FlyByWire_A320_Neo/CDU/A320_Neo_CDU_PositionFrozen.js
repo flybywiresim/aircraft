@@ -1,7 +1,7 @@
 class CDUPosFrozen {
-    static ShowPage(mcdu, currPos) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.PosFrozen;
+    static ShowPage(fmc, mcdu, currPos) {
+        mcdu.setCurrentPage(); // note: no refresh
+
         const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         const hours = Math.floor(UTC_SECONDS / 3600) || 0;
         const minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0;
@@ -23,11 +23,11 @@ class CDUPosFrozen {
         ]);
 
         mcdu.onLeftInput[5] = () => {
-            CDUPositionMonitorPage.ShowPage(mcdu);
+            CDUPositionMonitorPage.ShowPage(fmc, mcdu);
         };
 
         mcdu.onRightInput[5] = () => {
-            CDUSelectedNavaids.ShowPage(mcdu);
+            CDUSelectedNavaids.ShowPage(fmc, mcdu);
         };
     }
 }

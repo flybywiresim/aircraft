@@ -1,17 +1,19 @@
 class CDUAtcConnectionNotification {
-    static ShowPage(mcdu, store = {"atcCenter": ""}) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, store = {"atcCenter": ""}) {
+        mcdu.setCurrentPage(() => {
+            CDUAtcConnectionNotification.ShowPage(fmc, mcdu, store);
+        });
         const canNotify = "";
         let flightNo = "______[color]green";
         let fromTo = "____|____[color]amber";
         if (store["atcCenter"] == "") {
             store["atcCenter"] = "____[color]amber";
         }
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-            flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+        if (fmc.flightNumber) {
+            flightNo = fmc.flightNumber + "[color]green";
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
+        if (fmc.flightPlanManager.getDestination() && fmc.flightPlanManager.getDestination().ident) {
+            fromTo = fmc.flightPlanManager.getOrigin().ident + "/" + fmc.flightPlanManager.getDestination().ident + "[color]cyan";
         }
 
         mcdu.setTemplate([
@@ -37,21 +39,21 @@ class CDUAtcConnectionNotification {
             if (value != "") {
                 store["atcCenter"] = value + "[color]green";
             }
-            CDUAtcConnectionNotification.ShowPage(mcdu, store);
+            CDUAtcConnectionNotification.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage1(fmc, mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            CDUAtcConnectionStatus.ShowPage(mcdu);
+            CDUAtcConnectionStatus.ShowPage(fmc, mcdu);
         };
     }
 }

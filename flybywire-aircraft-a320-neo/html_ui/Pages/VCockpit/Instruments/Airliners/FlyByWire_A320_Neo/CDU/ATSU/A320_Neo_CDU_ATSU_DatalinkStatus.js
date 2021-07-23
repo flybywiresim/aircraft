@@ -1,6 +1,8 @@
 class CDUDatalinkStatus {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUDatalinkStatus.ShowPage(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["DATALINK STATUS"],
             [""],
@@ -21,7 +23,7 @@ class CDUDatalinkStatus {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtsuMenu.ShowPage(mcdu);
+            CDUAtsuMenu.ShowPage(fmc, mcdu);
         };
     }
 }

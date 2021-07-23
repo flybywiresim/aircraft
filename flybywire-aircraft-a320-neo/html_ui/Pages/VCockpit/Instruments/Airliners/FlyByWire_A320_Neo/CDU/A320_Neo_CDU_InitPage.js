@@ -1,25 +1,22 @@
 class CDUInitPage {
-    static ShowPage1(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.InitPageA;
-        mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu);
-        mcdu.activeSystem = 'FMGC';
+    static ShowPage1(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUInitPage.ShowPage1(fmc, mcdu);
+        }, 'FMGC');
 
         let fromTo = "____|____[color]amber";
         let coRoute = "__________[color]amber";
         const flightNo = new CDU_SingleValueField(mcdu,
             "string",
-            mcdu.flightNumber,
+            fmc.flightNumber,
             {
                 emptyValue: "________[color]amber",
                 suffix: "[color]cyan",
                 maxLength: 7
             },
             (value) => {
-                mcdu.updateFlightNo(value, (result) => {
-                    if (result) {
-                        CDUInitPage.ShowPage1(mcdu);
-                    }
+                fmc.updateFlightNo(value, () => {
+                    mcdu.requestUpdate();
                 });
             }
         );
@@ -34,22 +31,22 @@ class CDUInitPage {
         let requestButtonLabel = "INIT [color]amber";
         let requestEnable = true;
 
-        if (mcdu.simbrief.sendStatus === "REQUESTING") {
+        if (fmc.simbrief.sendStatus === "REQUESTING") {
             requestEnable = false;
             requestButton = "REQUEST [color]amber";
         }
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-            if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
+        if (fmc.flightPlanManager.getOrigin() && fmc.flightPlanManager.getOrigin().ident) {
+            if (fmc.flightPlanManager.getDestination() && fmc.flightPlanManager.getDestination().ident) {
+                fromTo = fmc.flightPlanManager.getOrigin().ident + "/" + fmc.flightPlanManager.getDestination().ident + "[color]cyan";
                 if (coRoute.includes("__________[color]amber")) {
                     coRoute = "";
                 }
 
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
-                if (mcdu.simbrief.sendStatus != "DONE" ||
-                    (mcdu.simbrief["originIcao"] === mcdu.flightPlanManager.getOrigin().ident && mcdu.simbrief["destinationIcao"] === mcdu.flightPlanManager.getDestination().ident)) {
+                if (fmc.simbrief.sendStatus != "DONE" ||
+                    (fmc.simbrief["originIcao"] === fmc.flightPlanManager.getOrigin().ident && fmc.simbrief["destinationIcao"] === fmc.flightPlanManager.getDestination().ident)) {
                     requestEnable = false;
                     requestButtonLabel = "";
                     requestButton = "";
@@ -58,7 +55,7 @@ class CDUInitPage {
                 // Cost index
                 costIndex = new CDU_SingleValueField(mcdu,
                     "int",
-                    mcdu.costIndexSet ? mcdu.costIndex : null,
+                    fmc.costIndexSet ? fmc.costIndex : null,
                     {
                         clearable: true,
                         emptyValue: "___[color]amber",
@@ -68,40 +65,40 @@ class CDUInitPage {
                     },
                     (value) => {
                         if (value != null) {
-                            mcdu.costIndex = value;
-                            mcdu.costIndexSet = true;
+                            fmc.costIndex = value;
+                            fmc.costIndexSet = true;
                         } else {
-                            mcdu.costIndexSet = false;
-                            mcdu.costIndex = 0;
+                            fmc.costIndexSet = false;
+                            fmc.costIndex = 0;
                         }
-                        CDUInitPage.ShowPage1(mcdu);
+                        mcdu.requestUpdate();
                     }
                 );
 
                 cruiseFlTemp = "_____\xa0|___°[color]amber";
                 //This is done so pilot enters a FL first, rather than using the computed one
-                if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel) {
+                if (fmc._cruiseEntered && fmc._cruiseFlightLevel) {
                     cruiseFlTemp =
-                        "{cyan}FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0") + "\xa0" +
-                        (mcdu.cruiseTemperature ? "/" + mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}/" + mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°{end}") +
+                        "{cyan}FL" + fmc._cruiseFlightLevel.toFixed(0).padStart(3, "0") + "\xa0" +
+                        (fmc.cruiseTemperature ? "/" + fmc.cruiseTemperature.toFixed(0) + "°" : "{small}/" + fmc.tempCurve.evaluate(fmc._cruiseFlightLevel).toFixed(0) + "°{end}") +
                         "{end}";
                 }
 
                 // CRZ FL / FLX TEMP
                 mcdu.onLeftInput[5] = (value) => {
-                    if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
-                        CDUInitPage.ShowPage1(mcdu);
+                    if (fmc.setCruiseFlightLevelAndTemperature(value)) {
+                        mcdu.requestUpdate();
                     }
                 };
 
-                if (mcdu.flightPlanManager.getOrigin()) {
+                if (fmc.flightPlanManager.getOrigin()) {
                     alignOption = "IRS INIT>";
                 }
 
                 // Since CoRte isn't implemented, AltDest defaults to None Ref: Ares's documents
                 altDest = "NONE[color]cyan";
-                if (mcdu.altDestination) {
-                    altDest = mcdu.altDestination.ident + "[color]cyan";
+                if (fmc.altDestination) {
+                    altDest = fmc.altDestination.ident + "[color]cyan";
                 } else {
                     altDest = "NONE" + "[color]cyan";
                 }
@@ -109,19 +106,19 @@ class CDUInitPage {
                     switch (altDest) {
                         case "NONE":
                             if (value === "") {
-                                CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                                CDUAvailableFlightPlanPage.ShowPage(fmc, mcdu);
                             } else {
-                                if (await mcdu.tryUpdateAltDestination(value)) {
-                                    CDUInitPage.ShowPage1(mcdu);
+                                if (await fmc.tryUpdateAltDestination(value)) {
+                                    mcdu.requestUpdate();
                                 }
                             }
                             break;
                         default:
                             if (value === "") {
-                                CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                                CDUAvailableFlightPlanPage.ShowPage(fmc, mcdu);
                             } else {
-                                if (await mcdu.tryUpdateAltDestination(value)) {
-                                    CDUInitPage.ShowPage1(mcdu);
+                                if (await fmc.tryUpdateAltDestination(value)) {
+                                    mcdu.requestUpdate();
                                 }
                             }
                             break;
@@ -130,23 +127,23 @@ class CDUInitPage {
             }
         }
 
-        if (mcdu.coRoute) {
-            coRoute = mcdu.coRoute + "[color]cyan";
+        if (fmc.coRoute) {
+            coRoute = fmc.coRoute + "[color]cyan";
         }
         mcdu.onLeftInput[0] = (value) => {
-            mcdu.updateCoRoute(value, (result) => {
+            fmc.updateCoRoute(value, (result) => {
                 if (result) {
-                    CDUInitPage.ShowPage1(mcdu);
+                    mcdu.requestUpdate();
                 }
             });
         };
 
-        if (mcdu.tropo) {
-            tropo = mcdu.tropo + "[color]cyan";
+        if (fmc.tropo) {
+            tropo = fmc.tropo + "[color]cyan";
         }
         mcdu.onRightInput[4] = (value) => {
-            if (mcdu.tryUpdateTropo(value)) {
-                CDUInitPage.ShowPage1(mcdu);
+            if (fmc.tryUpdateTropo(value)) {
+                mcdu.requestUpdate();
             }
         };
 
@@ -157,29 +154,28 @@ class CDUInitPage {
          */
         mcdu.onRightInput[0] = (value) => {
             if (value !== "") {
-                mcdu.tryUpdateFromTo(value, (result) => {
+                fmc.tryUpdateFromTo(value, (result) => {
                     if (result) {
-                        CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-                        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
-                        CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
-                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                        // TODO look into why this is calling another page
+                        CDUPerformancePage.UpdateThrRedAccFromOrigin(fmc);
+                        CDUPerformancePage.UpdateEngOutAccFromOrigin(fmc);
+                        CDUPerformancePage.UpdateThrRedAccFromDestination(fmc);
+                        CDUAvailableFlightPlanPage.ShowPage(fmc, mcdu);
                     }
                 });
-            } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-                if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
+            } else if (fmc.flightPlanManager.getOrigin() && fmc.flightPlanManager.getOrigin().ident) {
+                if (fmc.flightPlanManager.getDestination() && fmc.flightPlanManager.getDestination().ident) {
+                    CDUAvailableFlightPlanPage.ShowPage(fmc, mcdu);
                 }
             }
         };
         mcdu.onRightInput[1] = () => {
             if (requestEnable) {
-                getSimBriefOfp(mcdu, () => {
-                    if (mcdu.page.Current === mcdu.page.InitPageA) {
-                        CDUInitPage.ShowPage1(mcdu);
-                    }
+                getSimBriefOfp(fmc, mcdu, () => {
+                    mcdu.requestUpdate();
                 })
                     .then(() => {
-                        insertUplink(mcdu);
+                        insertUplink(fmc, mcdu);
                     });
             }
         };
@@ -188,7 +184,7 @@ class CDUInitPage {
         };
         mcdu.onRightInput[2] = () => {
             if (alignOption) {
-                CDUIRSInit.ShowPage(mcdu);
+                CDUIRSInit.ShowPage(fmc, mcdu);
             }
         };
 
@@ -211,25 +207,25 @@ class CDUInitPage {
         mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
-            if (mcdu.isAnEngineOn()) {
-                CDUFuelPredPage.ShowPage(mcdu);
+            if (fmc.isAnEngineOn()) {
+                CDUFuelPredPage.ShowPage(fmc, mcdu);
             } else {
-                CDUInitPage.ShowPage2(mcdu);
+                CDUInitPage.ShowPage2(fmc, mcdu);
             }
         };
         mcdu.onNextPage = () => {
-            if (mcdu.isAnEngineOn()) {
-                CDUFuelPredPage.ShowPage(mcdu);
+            if (fmc.isAnEngineOn()) {
+                CDUFuelPredPage.ShowPage(fmc, mcdu);
             } else {
-                CDUInitPage.ShowPage2(mcdu);
+                CDUInitPage.ShowPage2(fmc, mcdu);
             }
         };
 
         mcdu.onRightInput[3] = () => {
-            CDUWindPage.Return = () => {
-                CDUInitPage.ShowPage1(mcdu);
+            mcdu.returnPageCallback = () => {
+                CDUInitPage.ShowPage1(fmc, mcdu);
             };
-            CDUWindPage.ShowPage(mcdu);
+            CDUWindPage.ShowPage(fmc, mcdu);
         };
 
         mcdu.onUp = () => {};
@@ -238,87 +234,91 @@ class CDUInitPage {
         Coherent.trigger("AP_HDG_VAL_SET", 180);
     }
     // Does not refresh page so that other things can be performed first as necessary
-    static updateTowIfNeeded(mcdu) {
-        if (isFinite(mcdu.taxiFuelWeight) && isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.blockFuel)) {
-            mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
+    static updateTowIfNeeded(fmc) {
+        if (isFinite(fmc.taxiFuelWeight) && isFinite(fmc.zeroFuelWeight) && isFinite(fmc.blockFuel)) {
+            fmc.takeOffWeight = fmc.zeroFuelWeight + fmc.blockFuel - fmc.taxiFuelWeight;
         }
     }
-    static fuelPredConditionsMet(mcdu) {
-        return isFinite(mcdu.blockFuel) &&
-            isFinite(mcdu.zeroFuelWeightMassCenter) &&
-            isFinite(mcdu.zeroFuelWeight) &&
-            mcdu.cruiseFlightLevel &&
-            mcdu.flightPlanManager.getWaypointsCount() > 0 &&
-            mcdu._zeroFuelWeightZFWCGEntered &&
-            mcdu._blockFuelEntered;
+    // TODO fix from here down
+    static fuelPredConditionsMet(fmc) {
+        return isFinite(fmc.blockFuel) &&
+            isFinite(fmc.zeroFuelWeightMassCenter) &&
+            isFinite(fmc.zeroFuelWeight) &&
+            fmc.cruiseFlightLevel &&
+            fmc.flightPlanManager.getWaypointsCount() > 0 &&
+            fmc._zeroFuelWeightZFWCGEntered &&
+            fmc._blockFuelEntered;
     }
-    static trySetFuelPred(mcdu) {
-        if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
+    static trySetFuelPred(fmc) {
+        if (CDUInitPage.fuelPredConditionsMet(fmc) && !fmc._fuelPredDone) {
             setTimeout(() => {
-                if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) { //Double check as user can clear block fuel during timeout
-                    mcdu._fuelPredDone = true;
-                    if (mcdu.page.Current === mcdu.page.InitPageB) {
-                        CDUInitPage.ShowPage2(mcdu);
-                    }
+                if (CDUInitPage.fuelPredConditionsMet(fmc) && !fmc._fuelPredDone) { //Double check as user can clear block fuel during timeout
+                    fmc._fuelPredDone = true;
+                    fmc.requestUpdate();
                 }
             }, mcdu.getDelayFuelPred());
         }
     }
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.InitPageB;
-        mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu);
+
+    static ShowPage2(fmc, mcdu) {
+        if (this.fmc.timeSinceFirstEngineStart >= 15) {
+            CDUFuelPredPage.ShowPage(fmc, mcdu);
+            return;
+        }
+        mcdu.setCurrentPage(() => {
+            CDUInitPage.ShowPage2(fmc, mcdu);
+        });
 
         let initBTitle = "INIT";
 
         let zfwColor = "[color]amber";
         let zfwCell = "___._";
         let zfwCgCell = "__._";
-        if (mcdu._zeroFuelWeightZFWCGEntered) {
-            if (isFinite(mcdu.zeroFuelWeight)) {
-                zfwCell = (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1);
+        if (fmc._zeroFuelWeightZFWCGEntered) {
+            if (isFinite(fmc.zeroFuelWeight)) {
+                zfwCell = (NXUnits.kgToUser(fmc.zeroFuelWeight)).toFixed(1);
                 zfwColor = "[color]cyan";
             }
-            if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
-                zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
+            if (isFinite(fmc.zeroFuelWeightMassCenter)) {
+                zfwCgCell = fmc.zeroFuelWeightMassCenter.toFixed(1);
             }
-            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
+            if (isFinite(fmc.zeroFuelWeight) && isFinite(fmc.zeroFuelWeightMassCenter)) {
                 zfwColor = "[color]cyan";
             }
         }
         mcdu.onRightInput[0] = async (value) => {
             if (value === "") {
-                mcdu.updateZfwVars();
+                fmc.updateZfwVars();
                 mcdu.sendDataToScratchpad(
-                    (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
+                    (isFinite(fmc.zeroFuelWeight) ? (NXUnits.kgToUser(fmc.zeroFuelWeight)).toFixed(1) : "") +
                     "/" +
-                    (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
-            } else if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
-                CDUInitPage.updateTowIfNeeded(mcdu);
-                CDUInitPage.ShowPage2(mcdu);
-                CDUInitPage.trySetFuelPred(mcdu);
+                    (isFinite(fmc.zeroFuelWeightMassCenter) ? fmc.zeroFuelWeightMassCenter.toFixed(1) : ""));
+            } else if (fmc.trySetZeroFuelWeightZFWCG(value)) {
+                CDUInitPage.updateTowIfNeeded(fmc);
+                mcdu.requestUpdate();
+                CDUInitPage.trySetFuelPred(fmc);
             }
         };
 
         let blockFuel = "__._";
         let blockFuelColor = "[color]amber";
-        if (mcdu._blockFuelEntered || mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
-            if (isFinite(mcdu.blockFuel)) {
-                blockFuel = (NXUnits.kgToUser(mcdu.blockFuel)).toFixed(1);
+        if (fmc._blockFuelEntered || fmc._fuelPlanningPhase === fmc._fuelPlanningPhases.IN_PROGRESS) {
+            if (isFinite(fmc.blockFuel)) {
+                blockFuel = (NXUnits.kgToUser(fmc.blockFuel)).toFixed(1);
                 blockFuelColor = "[color]cyan";
             }
         }
         mcdu.onRightInput[1] = async (value) => {
-            if (mcdu._zeroFuelWeightZFWCGEntered && value !== mcdu.clrValue) { //Simulate delay if calculating trip data
-                if (await mcdu.trySetBlockFuel(value)) {
-                    CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
-                    CDUInitPage.trySetFuelPred(mcdu);
+            if (fmc._zeroFuelWeightZFWCGEntered && value !== FMCMainDisplay.clrValue) { //Simulate delay if calculating trip data
+                if (await fmc.trySetBlockFuel(value)) {
+                    CDUInitPage.updateTowIfNeeded(fmc);
+                    mcdu.requestUpdate();
+                    CDUInitPage.trySetFuelPred(fmc);
                 }
             } else {
-                if (await mcdu.trySetBlockFuel(value)) {
-                    CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
+                if (await fmc.trySetBlockFuel(value)) {
+                    CDUInitPage.updateTowIfNeeded(fmc);
+                    mcdu.requestUpdate();
                 }
             }
 
@@ -327,26 +327,26 @@ class CDUInitPage {
         let fuelPlanTopTitle = "";
         let fuelPlanBottomTitle = "";
         let fuelPlanColor = "[color]amber";
-        if (mcdu._zeroFuelWeightZFWCGEntered && !mcdu._blockFuelEntered) {
+        if (fmc._zeroFuelWeightZFWCGEntered && !fmc._blockFuelEntered) {
             fuelPlanTopTitle = "FUEL ";
             fuelPlanBottomTitle = "PLANNING }";
             mcdu.onRightInput[2] = async () => {
-                if (await mcdu.tryFuelPlanning()) {
-                    CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
+                if (await fmc.tryFuelPlanning()) {
+                    CDUInitPage.updateTowIfNeeded(fmc);
+                    mcdu.requestUpdate();
                 }
             };
         }
-        if (mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
+        if (fmc._fuelPlanningPhase === fmc._fuelPlanningPhases.IN_PROGRESS) {
             initBTitle = "INIT FUEL PLANNING";
             fuelPlanTopTitle = "BLOCK ";
             fuelPlanBottomTitle = "CONFIRM";
             fuelPlanColor = "[color]green";
             mcdu.onRightInput[2] = async () => {
-                if (await mcdu.tryFuelPlanning()) {
-                    CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
-                    CDUInitPage.trySetFuelPred(mcdu);
+                if (await fmc.tryFuelPlanning()) {
+                    CDUInitPage.updateTowIfNeeded(fmc);
+                    mcdu.requestUpdate();
+                    CDUInitPage.trySetFuelPred(fmc);
                 }
             };
         }
@@ -356,27 +356,25 @@ class CDUInitPage {
         let towLwColor = "[color]white";
 
         let taxiFuelCell = "{small}0.4{end}";
-        if (isFinite(mcdu.taxiFuelWeight)) {
-            if (mcdu._taxiEntered) {
-                taxiFuelCell = (NXUnits.kgToUser(mcdu.taxiFuelWeight)).toFixed(1);
+        if (isFinite(fmc.taxiFuelWeight)) {
+            if (fmc._taxiEntered) {
+                taxiFuelCell = (NXUnits.kgToUser(fmc.taxiFuelWeight)).toFixed(1);
             } else {
-                taxiFuelCell = "{small}" + (NXUnits.kgToUser(mcdu.taxiFuelWeight)).toFixed(1) + "{end}";
+                taxiFuelCell = "{small}" + (NXUnits.kgToUser(fmc.taxiFuelWeight)).toFixed(1) + "{end}";
             }
         }
         mcdu.onLeftInput[0] = async (value) => {
-            if (mcdu._fuelPredDone) {
+            if (fmc._fuelPredDone) {
                 setTimeout(async () => {
-                    if (mcdu.trySetTaxiFuelWeight(value)) {
-                        CDUInitPage.updateTowIfNeeded(mcdu);
-                        if (mcdu.page.Current === mcdu.page.InitPageB) {
-                            CDUInitPage.ShowPage2(mcdu);
-                        }
+                    if (fmc.trySetTaxiFuelWeight(value)) {
+                        CDUInitPage.updateTowIfNeeded(fmc);
+                        mcdu.requestUpdate();
                     }
                 }, mcdu.getDelayHigh());
             } else {
-                if (mcdu.trySetTaxiFuelWeight(value)) {
-                    CDUInitPage.updateTowIfNeeded(mcdu);
-                    CDUInitPage.ShowPage2(mcdu);
+                if (fmc.trySetTaxiFuelWeight(value)) {
+                    CDUInitPage.updateTowIfNeeded(fmc);
+                    mcdu.requestUpdate();
                 }
             }
         };
@@ -389,13 +387,13 @@ class CDUInitPage {
         let rteRsvPercentCell = "5.0";
         let rteRsvColor = "[color]white";
         let rteRsvPctColor = "{cyan}";
-        if (isFinite(mcdu.getRouteReservedPercent())) {
-            rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
+        if (isFinite(fmc.getRouteReservedPercent())) {
+            rteRsvPercentCell = fmc.getRouteReservedPercent().toFixed(1);
             rteRsvPctColor = "{cyan}";
         }
         mcdu.onLeftInput[2] = async (value) => {
-            if (await mcdu.trySetRouteReservedPercent(value)) {
-                CDUInitPage.ShowPage2(mcdu);
+            if (await fmc.trySetRouteReservedPercent(value)) {
+                mcdu.requestUpdate();
             }
         };
 
@@ -407,12 +405,12 @@ class CDUInitPage {
         let finalWeightCell = "---.-";
         let finalTimeCell = "----";
         let finalColor = "[color]white";
-        if (mcdu.getRouteFinalFuelTime() > 0) {
-            finalTimeCell = "{cyan}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + "{end}";
+        if (fmc.getRouteFinalFuelTime() > 0) {
+            finalTimeCell = "{cyan}" + FMCMainDisplay.minutesTohhmm(fmc.getRouteFinalFuelTime()) + "{end}";
         }
         mcdu.onLeftInput[4] = async (value) => {
-            if (await mcdu.trySetRouteFinalTime(value)) {
-                CDUInitPage.ShowPage2(mcdu);
+            if (await fmc.trySetRouteFinalTime(value)) {
+                mcdu.requestUpdate();
             }
         };
 
@@ -425,64 +423,62 @@ class CDUInitPage {
         let minDestFobColor = "[color]white";
 
         let tripWindColor = "[color]cyan";
-        let tripWindCell = "{small}" + mcdu._windDir + mcdu.averageWind.toFixed(0).padStart(3, "0") + "{end}";
+        let tripWindCell = "{small}" + fmc._windDir + fmc.averageWind.toFixed(0).padStart(3, "0") + "{end}";
         mcdu.onRightInput[4] = async (value) => {
-            if (await mcdu.trySetAverageWind(value)) {
-                CDUInitPage.ShowPage2(mcdu);
+            if (await fmc.trySetAverageWind(value)) {
+                mcdu.requestUpdate();
             }
         };
 
-        if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
+        if (CDUInitPage.fuelPredConditionsMet(fmc)) {
             initBTitle = "INIT FUEL PREDICTION{sp}";
             fuelPlanTopTitle = "";
             fuelPlanBottomTitle = "";
 
-            mcdu.tryUpdateTOW();
-            if (isFinite(mcdu.takeOffWeight)) {
-                towCell = "{small}" + (NXUnits.kgToUser(mcdu.takeOffWeight)).toFixed(1);
+            fmc.tryUpdateTOW();
+            if (isFinite(fmc.takeOffWeight)) {
+                towCell = "{small}" + (NXUnits.kgToUser(fmc.takeOffWeight)).toFixed(1);
                 towLwColor = "[color]green";
             }
 
-            if (mcdu._fuelPredDone) {
-                if (!mcdu.routeFinalEntered()) {
-                    mcdu.tryUpdateRouteFinalFuel();
+            if (fmc._fuelPredDone) {
+                if (!fmc.routeFinalEntered()) {
+                    fmc.tryUpdateRouteFinalFuel();
                 }
-                if (isFinite(mcdu.getRouteFinalFuelWeight()) && isFinite(mcdu.getRouteFinalFuelTime())) {
-                    if (mcdu._rteFinalWeightEntered) {
-                        finalWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight())).toFixed(1);
+                if (isFinite(fmc.getRouteFinalFuelWeight()) && isFinite(fmc.getRouteFinalFuelTime())) {
+                    if (fmc._rteFinalWeightEntered) {
+                        finalWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(fmc.getRouteFinalFuelWeight())).toFixed(1);
                     } else {
-                        finalWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight())).toFixed(1) + "{end}";
+                        finalWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(fmc.getRouteFinalFuelWeight())).toFixed(1) + "{end}";
                     }
-                    if (mcdu._rteFinalTimeEntered || !mcdu.routeFinalEntered()) {
-                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                    if (fmc._rteFinalTimeEntered || !fmc.routeFinalEntered()) {
+                        finalTimeCell = FMCMainDisplay.minutesTohhmm(fmc.getRouteFinalFuelTime());
                     } else {
-                        finalTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + "{end}";
+                        finalTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(fmc.getRouteFinalFuelTime()) + "{end}";
                     }
                     finalColor = "[color]cyan";
                 }
                 mcdu.onLeftInput[4] = async (value) => {
                     setTimeout(async () => {
-                        if (await mcdu.trySetRouteFinalFuel(value)) {
-                            if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
-                            }
+                        if (await fmc.trySetRouteFinalFuel(value)) {
+                            mcdu.requestUpdate();
                         }
                     }, mcdu.getDelayHigh());
                 };
 
-                if (mcdu.altDestination) {
-                    if (mcdu._routeAltFuelEntered) {
-                        if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altnWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
-                            altnTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
+                if (fmc.altDestination) {
+                    if (fmc._routeAltFuelEntered) {
+                        if (isFinite(fmc.getRouteAltFuelWeight())) {
+                            altnWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(fmc.getRouteAltFuelWeight())).toFixed(1);
+                            altnTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(fmc.getRouteAltFuelTime()) + "{end}";
                             altnTimeColor = "{green}";
                             altnColor = "[color]cyan";
                         }
                     } else {
-                        mcdu.tryUpdateRouteAlternate();
-                        if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altnWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
-                            altnTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
+                        fmc.tryUpdateRouteAlternate();
+                        if (isFinite(fmc.getRouteAltFuelWeight())) {
+                            altnWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(fmc.getRouteAltFuelWeight())).toFixed(1);
+                            altnTimeCell = FMCMainDisplay.minutesTohhmm(fmc.getRouteAltFuelTime()) + "{end}";
                             altnTimeColor = "{green}";
                             altnColor = "[color]cyan";
                         }
@@ -496,38 +492,36 @@ class CDUInitPage {
 
                 mcdu.onLeftInput[3] = async (value) => {
                     setTimeout(async () => {
-                        if (await mcdu.trySetRouteAlternateFuel(value)) {
-                            if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
-                            }
+                        if (await fmc.trySetRouteAlternateFuel(value)) {
+                            mcdu.requestUpdate();
                         }
                     }, mcdu.getDelayHigh());
                 };
 
-                mcdu.tryUpdateRouteTrip();
-                if (isFinite(mcdu.getTotalTripFuelCons()) && isFinite(mcdu.getTotalTripTime())) {
-                    tripWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getTotalTripFuelCons())).toFixed(1);
-                    tripTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
+                fmc.tryUpdateRouteTrip();
+                if (isFinite(fmc.getTotalTripFuelCons()) && isFinite(fmc.getTotalTripTime())) {
+                    tripWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(fmc.getTotalTripFuelCons())).toFixed(1);
+                    tripTimeCell = FMCMainDisplay.minutesTohhmm(fmc._routeTripTime);
                     tripColor = "[color]green";
                 }
 
-                if (isFinite(mcdu.getRouteReservedWeight())) {
-                    if (mcdu._rteReservedWeightEntered) {
-                        rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1);
+                if (isFinite(fmc.getRouteReservedWeight())) {
+                    if (fmc._rteReservedWeightEntered) {
+                        rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(fmc.getRouteReservedWeight())).toFixed(1);
                     } else {
-                        rteRsvWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1) + "{end}";
+                        rteRsvWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(fmc.getRouteReservedWeight())).toFixed(1) + "{end}";
                     }
                     rteRsvColor = "[color]cyan";
                 }
 
-                if (mcdu._rteRsvPercentOOR) {
+                if (fmc._rteRsvPercentOOR) {
                     rteRsvPercentCell = "--.-";
                     rteRsvPctColor = "{white}";
-                } else if (isFinite(mcdu.getRouteReservedPercent())) {
-                    if (mcdu._rteReservedPctEntered || !mcdu.routeReservedEntered()) {
-                        rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
+                } else if (isFinite(fmc.getRouteReservedPercent())) {
+                    if (fmc._rteReservedPctEntered || !fmc.routeReservedEntered()) {
+                        rteRsvPercentCell = fmc.getRouteReservedPercent().toFixed(1);
                     } else {
-                        rteRsvPercentCell = "{small}" + mcdu.getRouteReservedPercent().toFixed(1) + "{end}";
+                        rteRsvPercentCell = "{small}" + fmc.getRouteReservedPercent().toFixed(1) + "{end}";
                     }
                     rteRsvColor = "[color]cyan";
                     rteRsvPctColor = "{cyan}";
@@ -535,58 +529,52 @@ class CDUInitPage {
 
                 mcdu.onLeftInput[2] = async (value) => {
                     setTimeout(async () => {
-                        if (await mcdu.trySetRouteReservedFuel(value)) {
-                            if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
-                            }
+                        if (await fmc.trySetRouteReservedFuel(value)) {
+                            mcdu.requestUpdate();
                         }
                     }, mcdu.getDelayMedium());
                 };
 
-                mcdu.tryUpdateLW();
-                lwCell = (NXUnits.kgToUser(mcdu.landingWeight)).toFixed(1);
+                fmc.tryUpdateLW();
+                lwCell = (NXUnits.kgToUser(fmc.landingWeight)).toFixed(1);
                 lwCell = lwCell.length <= 4 ? "{sp}" + lwCell : lwCell;
 
-                tripWindCell = "{small}" + mcdu._windDir + "000" + "{end}";
+                tripWindCell = "{small}" + fmc._windDir + "000" + "{end}";
                 tripWindColor = "[color]cyan";
-                if (isFinite(mcdu.averageWind)) {
-                    tripWindCell = "{small}" + mcdu._windDir + mcdu.averageWind.toFixed(0).padStart(3, "0") + "{end}";
+                if (isFinite(fmc.averageWind)) {
+                    tripWindCell = "{small}" + fmc._windDir + fmc.averageWind.toFixed(0).padStart(3, "0") + "{end}";
                 }
                 mcdu.onRightInput[4] = async (value) => {
                     setTimeout(async () => {
-                        if (await mcdu.trySetAverageWind(value)) {
-                            if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
-                            }
+                        if (await fmc.trySetAverageWind(value)) {
+                            mcdu.requestUpdate();
                         }
                     }, mcdu.getDelayWindLoad());
                 };
 
-                if (mcdu._minDestFobEntered) {
-                    minDestFob = "{sp}{sp}" + (NXUnits.kgToUser(mcdu._minDestFob)).toFixed(1);
+                if (fmc._minDestFobEntered) {
+                    minDestFob = "{sp}{sp}" + (NXUnits.kgToUser(fmc._minDestFob)).toFixed(1);
                     minDestFobColor = "[color]cyan";
                 } else {
-                    mcdu.tryUpdateMinDestFob();
-                    minDestFob = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu._minDestFob)).toFixed(1) + "{end}";
+                    fmc.tryUpdateMinDestFob();
+                    minDestFob = "{sp}{sp}{small}" + (NXUnits.kgToUser(fmc._minDestFob)).toFixed(1) + "{end}";
                     minDestFobColor = "[color]cyan";
                 }
                 mcdu.onLeftInput[5] = async (value) => {
                     setTimeout(async () => {
-                        if (await mcdu.trySetMinDestFob(value)) {
-                            if (mcdu.page.Current === mcdu.page.InitPageB) {
-                                CDUInitPage.ShowPage2(mcdu);
-                            }
+                        if (await fmc.trySetMinDestFob(value)) {
+                            mcdu.requestUpdate();
                         }
                     }, mcdu.getDelayHigh());
                 };
-                mcdu.checkEFOBBelowMin();
+                fmc.checkEFOBBelowMin();
 
-                extraWeightCell = "{small}" + (NXUnits.kgToUser(mcdu.tryGetExtraFuel())).toFixed(1);
-                if (mcdu.tryGetExtraFuel() < 0) {
+                extraWeightCell = "{small}" + (NXUnits.kgToUser(fmc.tryGetExtraFuel())).toFixed(1);
+                if (fmc.tryGetExtraFuel() < 0) {
                     extraTimeCell = "----{end}";
                     extraTimeColor = "{white}";
                 } else {
-                    extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
+                    extraTimeCell = FMCMainDisplay.minutesTohhmm(fmc.tryGetExtraTime()) + "{end}";
                     extraTimeColor = "{green}";
                 }
                 extraColor = "[color]green";
@@ -612,10 +600,10 @@ class CDUInitPage {
         mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
-            CDUInitPage.ShowPage1(mcdu);
+            CDUInitPage.ShowPage1(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUInitPage.ShowPage1(mcdu);
+            CDUInitPage.ShowPage1(fmc, mcdu);
         };
     }
 

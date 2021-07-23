@@ -1,14 +1,12 @@
 class CDUWindPage {
-
-    static Return() {}
-
-    static ShowPage(mcdu) {
-        CDUWindPage.ShowCLBPage(mcdu);
+    static ShowPage(fmc, mcdu) {
+        CDUWindPage.ShowCLBPage(fmc, mcdu);
     }
 
-    static ShowCLBPage(mcdu, offset = 0) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ClimbWind;
+    static ShowCLBPage(fmc, mcdu, offset = 0) {
+        mcdu.setCurrentPage(() => {
+            CDUWindPage.ShowCLBPage(fmc, mcdu, offset);
+        });
 
         const template = ([
             ["CLIMB WIND"],
@@ -26,23 +24,23 @@ class CDUWindPage {
             ["<RETURN", ""],
         ]);
 
-        mcdu.setTemplate(CDUWindPage.ShowWinds(template, mcdu, CDUWindPage.ShowCLBPage, mcdu.winds.climb, offset, 5));
+        mcdu.setTemplate(CDUWindPage.ShowWinds(template, fmc, mcdu, CDUWindPage.ShowCLBPage, fmc.winds.climb, offset, 5));
 
         mcdu.onRightInput[4] = () => {
-            CDUWindPage.ShowCRZPage(mcdu);
+            CDUWindPage.ShowCRZPage(fmc, mcdu);
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUWindPage.Return();
+            mcdu.returnPageCallback();
         };
     }
 
-    static ShowCRZPage(mcdu, offset = 0) {
-
+    static ShowCRZPage(fmc, mcdu, offset = 0) {
         //TODO: allow wind to be set for each waypoint
 
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.CruiseWind;
+        mcdu.setCurrentPage(() => {
+            CDUWindPage.ShowCRZPage(fmc, mcdu, offset);
+        });
 
         const template = ([
             //["CRZ WIND {small}AT{end} {green}WAYPOINT{end}"],
@@ -61,28 +59,29 @@ class CDUWindPage {
             ["<RETURN", ""],
         ]);
 
-        mcdu.setTemplate(CDUWindPage.ShowWinds(template, mcdu, CDUWindPage.ShowCRZPage, mcdu.winds.cruise, offset, 4));
+        mcdu.setTemplate(CDUWindPage.ShowWinds(template, fmc, mcdu, CDUWindPage.ShowCRZPage, fmc.winds.cruise, offset, 4));
 
         mcdu.onRightInput[3] = () => {
-            CDUWindPage.ShowCLBPage(mcdu);
+            CDUWindPage.ShowCLBPage(fmc, mcdu);
         };
         mcdu.onRightInput[4] = () => {
-            CDUWindPage.ShowDESPage(mcdu);
+            CDUWindPage.ShowDESPage(fmc, mcdu);
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUWindPage.Return();
+            mcdu.returnPageCallback();
         };
     }
 
-    static ShowDESPage(mcdu, offset = 0) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.DescentWind;
+    static ShowDESPage(fmc, mcdu, offset = 0) {
+        mcdu.setCurrentPage(() => {
+            CDUWindPage.ShowDESPage(fmc, mcdu, offset);
+        });
 
         let alternateCell = "[ ]°/[ ][color]cyan";
 
-        if (mcdu.winds.alternate != null) {
-            alternateCell = `${CDUWindPage.FormatNumber(mcdu.winds.alternate.direction)}°/${CDUWindPage.FormatNumber(mcdu.winds.alternate.speed)}[color]cyan`;
+        if (fmc.winds.alternate != null) {
+            alternateCell = `${CDUWindPage.FormatNumber(fmc.winds.alternate.direction)}°/${CDUWindPage.FormatNumber(fmc.winds.alternate.speed)}[color]cyan`;
         }
 
         const template = [
@@ -101,29 +100,29 @@ class CDUWindPage {
             ["<RETURN", ""],
         ];
 
-        mcdu.setTemplate(CDUWindPage.ShowWinds(template, mcdu, CDUWindPage.ShowDESPage, mcdu.winds.des, offset, 5));
+        mcdu.setTemplate(CDUWindPage.ShowWinds(template, fmc, mcdu, CDUWindPage.ShowDESPage, fmc.winds.des, offset, 5));
 
         mcdu.onRightInput[0] = (value) => {
             if (value == FMCMainDisplay.clrValue) {
-                mcdu.winds.alternate = null;
-                CDUWindPage.ShowDESPage(mcdu, offset);
+                fmc.winds.alternate = null;
+                mcdu.requestUpdate();
                 return;
             }
             const wind = CDUWindPage.ParseWind(value);
             if (wind == null) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
             } else {
-                mcdu.winds.alternate = wind;
-                CDUWindPage.ShowDESPage(mcdu, offset);
+                fmc.winds.alternate = wind;
+                mcdu.requestUpdate();
             }
         };
 
         mcdu.onRightInput[3] = () => {
-            CDUWindPage.ShowCRZPage(mcdu);
+            CDUWindPage.ShowCRZPage(fmc, mcdu);
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUWindPage.Return();
+            mcdu.returnPageCallback();
         };
     }
 
@@ -137,7 +136,7 @@ class CDUWindPage {
         return output;
     }
 
-    static ShowWinds(rows, mcdu, _showPage, _winds, _offset, _max = 3) {
+    static ShowWinds(rows, fmc, mcdu, _showPage, _winds, _offset, _max = 3) {
         let entries = 0;
         for (let i = 0; i < (_winds.length - _offset); i++) {
             if (i < _max) {
@@ -147,7 +146,7 @@ class CDUWindPage {
                 mcdu.onLeftInput[i] = (value) => {
                     if (value == FMCMainDisplay.clrValue) {
                         _winds.splice(i + _offset, 1);
-                        _showPage(mcdu, _offset);
+                        mcdu.requestUpdate();
                     }
                 };
             }
@@ -156,7 +155,7 @@ class CDUWindPage {
             rows[(entries * 2) + 2][0] = "{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}";
             mcdu.onLeftInput[entries] = (value) => {
                 CDUWindPage.TryAddWind(mcdu, _winds, value, () => {
-                    _showPage(mcdu, _offset);
+                    mcdu.requestUpdate();
                 });
             };
         }
@@ -166,14 +165,14 @@ class CDUWindPage {
 
         if (_winds.length > (_max - 1) && _offset > 0) {
             mcdu.onDown = () => {
-                _showPage(mcdu, _offset - 1);
+                _showPage(fmc, mcdu, _offset - 1);
             };
             down = true;
         }
 
         if (_offset < (_winds.length - (_max - 1))) {
             mcdu.onUp = () => {
-                _showPage(mcdu, _offset + 1);
+                _showPage(fmc, mcdu, _offset + 1);
             };
             up = true;
         }

@@ -1,6 +1,8 @@
 class CDUAtcDepartReq {
-    static ShowPage(mcdu, store = {"gate": "", "atis": "", "freeText": ""}) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, store = {"gate": "", "atis": "", "freeText": ""}) {
+        mcdu.setCurrentPage(() => {
+            CDUAtcDepartReq.ShowPage(fmc, mcdu, store);
+        });
 
         let flightNo = "______[color]amber";
         let fromTo = "____|____[color]amber";
@@ -13,11 +15,11 @@ class CDUAtcDepartReq {
         if (store["freeText"] == "") {
             store["freeText"] = "[\xa0\xa0\xa0][color]cyan";
         }
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-            flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+        if (fmc.flightNumber) {
+            flightNo = fmc.flightNumber + "[color]green";
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
+        if (fmc.flightPlanManager.getDestination() && fmc.flightPlanManager.getDestination().ident) {
+            fromTo = fmc.flightPlanManager.getOrigin().ident + "/" + fmc.flightPlanManager.getDestination().ident + "[color]cyan";
         }
 
         mcdu.setTemplate([
@@ -43,7 +45,7 @@ class CDUAtcDepartReq {
             if (value != "") {
                 store["gate"] = value + "[color]cyan";
             }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
+            CDUAtcDepartReq.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.rightInputDelay[2] = () => {
@@ -53,7 +55,7 @@ class CDUAtcDepartReq {
             if (value != "") {
                 store["atis"] = value + "[color]cyan";
             }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
+            CDUAtcDepartReq.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -63,14 +65,14 @@ class CDUAtcDepartReq {
             if (value != "") {
                 store["freeText"] = "[" + value + "][color]cyan";
             }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
+            CDUAtcDepartReq.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
+            CDUAtcMenu.ShowPage2(fmc, mcdu);
         };
     }
 }

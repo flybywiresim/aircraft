@@ -1,6 +1,10 @@
+// FIXME don't store status that should be shared between the MCDUs in params
 class CDUAocRequestsAtis {
-    static ShowPage(mcdu, store = {"reqID": 0, "formatID": 1, "arrIcao": "", "arpt1": "", "sendStatus": ""}) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, store = {"reqID": 0, "formatID": 1, "arrIcao": "", "arpt1": "", "sendStatus": ""}) {
+        mcdu.setCurrentPage(() => {
+            CDUAocRequestsAtis.ShowPage(fmc, mcdu, store);
+        }, 'ATSU');
+
         let labelTimeout;
         let formatString;
 
@@ -14,8 +18,8 @@ class CDUAocRequestsAtis {
         let departureText = "{DEPARTURE[color]cyan";
         let enrouteText = "ENROUTE}[color]cyan";
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
-            store['arrIcao'] = mcdu.flightPlanManager.getDestination().ident;
+        if (fmc.flightPlanManager.getOrigin() && fmc.flightPlanManager.getDestination()) {
+            store['arrIcao'] = fmc.flightPlanManager.getDestination().ident;
         }
 
         if (store.reqID === 0) {
@@ -34,6 +38,7 @@ class CDUAocRequestsAtis {
         } else {
             arrText = "[ ]";
         }
+
         const updateView = () => {
             mcdu.setTemplate([
                 ["AOC ATIS REQUEST"],
@@ -62,7 +67,7 @@ class CDUAocRequestsAtis {
             } else {
                 store["arpt1"] = value;
             }
-            CDUAocRequestsAtis.ShowPage(mcdu, store);
+            CDUAocRequestsAtis.ShowPage(fmc, mcdu, store);
         };
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
@@ -71,7 +76,7 @@ class CDUAocRequestsAtis {
             if (store.reqID !== 0) {
                 store["reqID"] = 0;
             }
-            CDUAocRequestsAtis.ShowPage(mcdu, store);
+            CDUAocRequestsAtis.ShowPage(fmc, mcdu, store);
         };
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
@@ -80,14 +85,14 @@ class CDUAocRequestsAtis {
             if (store.reqID !== 1) {
                 store["reqID"] = 1;
             }
-            CDUAocRequestsAtis.ShowPage(mcdu, store);
+            CDUAocRequestsAtis.ShowPage(fmc, mcdu, store);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);
-            CDUAocMenu.ShowPage(mcdu);
+            CDUAocMenu.ShowPage(fmc, mcdu);
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -95,7 +100,7 @@ class CDUAocRequestsAtis {
         };
         mcdu.onRightInput[0] = () => {
             store["formatID"] = (store.formatID + 1) % 2;
-            CDUAocRequestsAtis.ShowPage(mcdu, store);
+            CDUAocRequestsAtis.ShowPage(fmc, mcdu, store);
         };
         mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
@@ -104,7 +109,7 @@ class CDUAocRequestsAtis {
             if (store.reqID !== 2) {
                 store["reqID"] = 2;
             }
-            CDUAocRequestsAtis.ShowPage(mcdu, store);
+            CDUAocRequestsAtis.ShowPage(fmc, mcdu, store);
         };
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
@@ -130,23 +135,22 @@ class CDUAocRequestsAtis {
                     // Messages go straight to the printer if FORMAT FOR PRINTER is selected.
                     if (store.formatID === 0) {
                         newMessage["opened"] = time;
-                        mcdu.addMessage(newMessage);
-                        mcdu.printPage([lines.join(' ')]);
+                        fmc.addMessage(newMessage);
+                        fmc.printPage([lines.join(' ')]);
                         setTimeout(() => {
                             const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
                             SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
                         }, 20000);
                     } else {
-                        mcdu.addMessage(newMessage);
+                        fmc.addMessage(newMessage);
                     }
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {
                     store["sendStatus"] = "";
                     store["arpt1"] = "";
-                    CDUAocRequestsAtis.ShowPage(mcdu, store);
+                    CDUAocRequestsAtis.ShowPage(fmc, mcdu, store);
                 }, 3000);
             });
         };
-
     }
 }

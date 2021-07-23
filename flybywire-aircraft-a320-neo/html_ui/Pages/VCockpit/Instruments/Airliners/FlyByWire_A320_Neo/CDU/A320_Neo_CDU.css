@@ -67,11 +67,8 @@ span:empty:before {
 }
 
 a320-neo-cdu-main-display {
-  position: absolute;
-  width: 100%;
-  height: 100%;
   font-family: "HoneywellMCDU" !important;
-  font-size: 5.3vw !important;
+  font-size: 2.65vw !important;
   color: var(--displayWhite);
 }
 
@@ -81,6 +78,20 @@ a320-neo-cdu-main-display div {
 
 a320-neo-cdu-main-display text {
   font-family: "HoneywellMCDU" !important;
+}
+
+a320-neo-cdu-main-display #mcdu-l {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  left: 0%;
+}
+
+a320-neo-cdu-main-display #mcdu-r {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  left: 50%;
 }
 
 .white {

@@ -4,19 +4,18 @@
 */
 
 class CDUNavaidPage {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.NavaidPage;
+    static ShowPage(fmc, mcdu, waypoint = undefined) {
+        mcdu.setCurrentPage(); // note: no refresh
         mcdu.returnPageCallback = () => {
-            CDUNavaidPage.ShowPage(mcdu);
+            CDUNavaidPage.ShowPage(fmc, mcdu, waypoint);
         };
 
         mcdu.setTemplate([
             ["NAVAID"],
             ["\xa0IDENT"],
-            ["_______[color]amber"],
-            [""],
-            [""],
+            [waypoint ? waypoint.ident : "_______[color]amber"],
+            [waypoint ? "\xa0LAT/LONG" : ""],
+            [waypoint ? `${new LatLong(res.infos.coordinates.lat, res.infos.coordinates.long).toShortDegreeString()}[color]green` : ""],
             [""],
             [""],
             [""],
@@ -28,25 +27,10 @@ class CDUNavaidPage {
         ]);
 
         mcdu.onLeftInput[0] = (value) => {
-            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(value, res => {
+            fmc.getOrSelectWaypointByIdent(mcdu, value, res => {
                 if (res) {
-                    mcdu.clearDisplay();
-                    mcdu.setTemplate([
-                        ["NAVAID"],
-                        ["\xa0IDENT"],
-                        [`${value}`],
-                        ["\xa0LAT/LONG"],
-                        [`${new LatLong(res.infos.coordinates.lat, res.infos.coordinates.long).toShortDegreeString()}[color]green`],
-                        [""],
-                        [""],
-                        [""],
-                        [""],
-                        [""],
-                        [""],
-                        [""],
-                        [""]
-                    ]);
-                    mcdu.inOut = Object.keys(res);
+                    mcdu.inOut = Object.keys(res); // TODO ??
+                    CDUNavaidPage.ShowPage(fmc, mcdu, waypoint);
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.notAllowed);
                 }

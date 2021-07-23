@@ -1,6 +1,8 @@
 class CDUCfdsTestEng {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsTestEng.ShowPage(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST"],
             ["", "", "ENG"],
@@ -21,7 +23,7 @@ class CDUCfdsTestEng {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestMenu.ShowPage2(mcdu);
+            CDUCfdsTestMenu.ShowPage2(fmc, mcdu);
         };
     }
 }

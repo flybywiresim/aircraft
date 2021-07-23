@@ -1,10 +1,15 @@
 class CDUAirportsMonitor {
-    static ShowPage(mcdu, reset = false) {
+    static ShowPage(fmc, mcdu, reset = false) {
+        mcdu.setCurrentPage(() => {
+            if (!this.frozen || !this.icao1) {
+                CDUAirportsMonitor.ShowPage(fmc, mcdu);
+            }
+        });
 
         // one delta t unit is about 1.5 ms it seems
         const update_ival_ms = 1000;
 
-        this.total_delta_t += mcdu._deltaTime;
+        this.total_delta_t += fmc._deltaTime; // TODO wut
 
         if (reset) {
             this.user_ap = undefined;
@@ -16,6 +21,8 @@ class CDUAirportsMonitor {
         // we want the closest 4 APs with unlimited distance
         const max_num_ap = 4;
         const max_dist_miles = 100000;
+
+        // TODO factor all this code out of the CDU and into FMC
 
         if (this.total_delta_t >= update_ival_ms || !this.icao1) {
             const ap_line_batch = new SimVar.SimVarBatch("C:fs9gps:NearestAirportItemsNumber", "C:fs9gps:NearestAirportCurrentLine");
@@ -143,8 +150,6 @@ class CDUAirportsMonitor {
 
         // display data on MCDU
         if (this.icao1) {
-            mcdu.clearDisplay();
-            mcdu.page.Current = mcdu.page.AirportsMonitor;
             if (this.page2) {
                 mcdu.setTemplate([
                     ["CLOSEST AIRPORTS"],
@@ -197,17 +202,9 @@ class CDUAirportsMonitor {
                 // force spaces to emulate 4 columns
                 mcdu._labelElements[0][2].innerHTML = "&nbsp;&nbsp;&nbsp;";
                 for (let i = 0; i < (this.user_ap ? 5 : 4); i++) {
-                    mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, "&nbsp;");
+                    mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, "&nbsp;"); // TODO wtf
                 }
             }
-        }
-
-        // page refresh
-        if (!this.frozen || !this.icao1) {
-            mcdu.refreshPageCallback = () => {
-                this.ShowPage(mcdu);
-            };
-            SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
         }
 
         // user-selected 5th airport (only possible to set on page 1)
@@ -218,18 +215,18 @@ class CDUAirportsMonitor {
                         this.user_ap = undefined;
                         // trigger data update next frame
                         this.total_delta_t = update_ival_ms;
-                        this.ShowPage(mcdu);
+                        mcdu.requestUpdate();
                     }
                 } else if (value !== '' && value !== FMCMainDisplay.clrValue) {
                     // GetAirportByIdent returns a Waypoint in the callback,
                     // which interally uses FacilityLoader (and further down calls Coherence)
-                    mcdu.dataManager.GetAirportByIdent(value).then((ap_data) => {
+                    fmc.dataManager.GetAirportByIdent(value).then((ap_data) => {
                         if (ap_data) {
                             this.user_ap = ap_data;
                             // trigger data update next frame
                             this.total_delta_t = update_ival_ms;
                             this.frozen = false;
-                            this.ShowPage(mcdu);
+                            mcdu.requestUpdate();
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
@@ -244,7 +241,7 @@ class CDUAirportsMonitor {
             this.page2 = false;
             // trigger data update next frame
             this.total_delta_t = update_ival_ms;
-            this.ShowPage(mcdu);
+            fmc.requestUpdate();
         };
 
         mcdu.rightInputDelay[5] = () => {
@@ -258,7 +255,7 @@ class CDUAirportsMonitor {
                 this.frozen = true;
                 // trigger data update next frame
                 this.total_delta_t = update_ival_ms;
-                this.ShowPage(mcdu);
+                this.ShowPage(fmc, mcdu);
             };
         }
     }

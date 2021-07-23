@@ -1,7 +1,9 @@
 class CDUCfdsMainMenu {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.activeSystem = 'CFDS';
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsMainMenu.ShowPage(fmc, mcdu);
+        }, 'CFDS');
+
         mcdu.setTemplate([
             ["CFDS", "1", "2"],
             [""],
@@ -22,27 +24,29 @@ class CDUCfdsMainMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = () => {
-            CDUCfdsAvionicsMenu.ShowPage(mcdu);
+            CDUCfdsAvionicsMenu.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUCfdsTestMenu.ShowPage(mcdu);
+            CDUCfdsTestMenu.ShowPage(fmc, mcdu);
         };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsMainMenu.ShowPage2(mcdu);
+            CDUCfdsMainMenu.ShowPage2(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsMainMenu.ShowPage2(mcdu);
+            CDUCfdsMainMenu.ShowPage2(fmc, mcdu);
         };
     }
 
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage2(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsMainMenu.ShowPage2(fmc, mcdu);
+        }, 'CFDS');
 
         mcdu.setTemplate([
             ["CFDS", "2", "2"],
@@ -62,10 +66,10 @@ class CDUCfdsMainMenu {
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsMainMenu.ShowPage(mcdu);
+            CDUCfdsMainMenu.ShowPage(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsMainMenu.ShowPage(mcdu);
+            CDUCfdsMainMenu.ShowPage(fmc, mcdu);
         };
     }
 }

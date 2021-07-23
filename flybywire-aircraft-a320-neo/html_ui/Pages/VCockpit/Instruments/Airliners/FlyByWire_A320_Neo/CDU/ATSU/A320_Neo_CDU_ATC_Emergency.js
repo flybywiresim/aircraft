@@ -1,6 +1,8 @@
 class CDUAtcEmergency {
-    static ShowPage(mcdu, store = {"emergType": 0, "emergAds": 0, "des": "", "div": "", "freq": ""}) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, store = {"emergType": 0, "emergAds": 0, "des": "", "div": "", "freq": ""}) {
+        mcdu.setCurrentPage(() => {
+            CDUAtcEmergency.ShowPage(fmc, mcdu, store);
+        });
         let mayday = "<MAYDAY";
         let panpan = "<PANPAN";
         let ads = "EMERG ADS:\xa0";
@@ -49,7 +51,7 @@ class CDUAtcEmergency {
         };
         mcdu.onLeftInput[0] = () => {
             store["emergType"] = 0;
-            CDUAtcEmergency.ShowPage(mcdu, store);
+            CDUAtcEmergency.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -57,7 +59,7 @@ class CDUAtcEmergency {
         };
         mcdu.onLeftInput[1] = () => {
             store["emergType"] = 1;
-            CDUAtcEmergency.ShowPage(mcdu, store);
+            CDUAtcEmergency.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.leftInputDelay[4] = () => {
@@ -67,14 +69,14 @@ class CDUAtcEmergency {
             store["des"] = "";
             store["div"] = "";
             store["freq"] = "";
-            CDUAtcEmergency.ShowPage(mcdu, store);
+            CDUAtcEmergency.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage1(fmc, mcdu);
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -86,7 +88,7 @@ class CDUAtcEmergency {
             } else {
                 store["emergAds"] = 0;
             }
-            CDUAtcEmergency.ShowPage(mcdu, store);
+            CDUAtcEmergency.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.rightInputDelay[1] = () => {
@@ -96,7 +98,7 @@ class CDUAtcEmergency {
             if (value != "") {
                 store["des"] = value + "[color]cyan";
             }
-            CDUAtcEmergency.ShowPage(mcdu, store);
+            CDUAtcEmergency.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.rightInputDelay[2] = () => {
@@ -106,7 +108,7 @@ class CDUAtcEmergency {
             if (value != "") {
                 store["div"] = value + "[color]cyan";
             }
-            CDUAtcEmergency.ShowPage(mcdu, store);
+            CDUAtcEmergency.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.rightInputDelay[3] = () => {
@@ -116,7 +118,7 @@ class CDUAtcEmergency {
             if (value != "") {
                 store["freq"] = "[" + value + "][color]cyan";
             }
-            CDUAtcEmergency.ShowPage(mcdu, store);
+            CDUAtcEmergency.ShowPage(fmc, mcdu, store);
         };
     }
 }

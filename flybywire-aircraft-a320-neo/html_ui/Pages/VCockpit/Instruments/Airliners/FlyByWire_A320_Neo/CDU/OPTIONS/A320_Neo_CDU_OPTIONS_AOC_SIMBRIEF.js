@@ -1,6 +1,8 @@
 class CDU_OPTIONS_SIMBRIEF {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDU_OPTIONS_SIMBRIEF.ShowPage(fmc, mcdu);
+        });
 
         const simbriefUser = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
@@ -28,21 +30,19 @@ class CDU_OPTIONS_SIMBRIEF {
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERID", "");
+                mcdu.requestUpdate();
             } else if (value === "") {
                 mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
-                getSimBriefUser(value, mcdu, () => {
-                    CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
-                });
+                getSimBriefUser(value, mcdu, () => mcdu.requestUpdate());
             }
-            CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_AOC.ShowPage(mcdu);
+            CDU_OPTIONS_AOC.ShowPage(fmc, mcdu);
         };
     }
 }

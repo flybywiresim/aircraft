@@ -1,6 +1,6 @@
 class CDUAocFreeText {
-    static ShowPage(mcdu, store = { "msg_to": "", "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, store = { "msg_to": "", "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
+        mcdu.setCurrentPage(); // note: no refresh
 
         const updateView = () => {
             mcdu.setTemplate([
@@ -27,7 +27,7 @@ class CDUAocFreeText {
             } else {
                 store["msg_to"] = value;
             }
-            CDUAocFreeText.ShowPage(mcdu, store);
+            CDUAocFreeText.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.onLeftInput[1] = (value) => {
@@ -36,7 +36,7 @@ class CDUAocFreeText {
             } else {
                 store["msg_line1"] = value;
             }
-            CDUAocFreeText.ShowPage(mcdu, store);
+            CDUAocFreeText.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.onLeftInput[2] = (value) => {
@@ -45,7 +45,7 @@ class CDUAocFreeText {
             } else {
                 store["msg_line2"] = value;
             }
-            CDUAocFreeText.ShowPage(mcdu, store);
+            CDUAocFreeText.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.onLeftInput[3] = (value) => {
@@ -54,7 +54,7 @@ class CDUAocFreeText {
             } else {
                 store["msg_line3"] = value;
             }
-            CDUAocFreeText.ShowPage(mcdu, store);
+            CDUAocFreeText.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.onLeftInput[4] = (value) => {
@@ -63,7 +63,7 @@ class CDUAocFreeText {
             } else {
                 store["msg_line4"] = value;
             }
-            CDUAocFreeText.ShowPage(mcdu, store);
+            CDUAocFreeText.ShowPage(fmc, mcdu, store);
         };
 
         mcdu.rightInputDelay[5] = () => {
@@ -126,7 +126,7 @@ class CDUAocFreeText {
 
                         const sentMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "content": fMsgLines, };
                         sentMessage["time"] = fetchTimeValue();
-                        mcdu.addSentMessage(sentMessage);
+                        fmc.addSentMessage(sentMessage);
                         store["sendStatus"] = "";
                         updateView();
                     }, 1000);
@@ -141,7 +141,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUAocMenu.ShowPage(mcdu);
+            CDUAocMenu.ShowPage(fmc, mcdu);
         };
     }
 }

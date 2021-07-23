@@ -1,6 +1,8 @@
 class CDUCfdsAvionicsMenu {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsAvionicsMenu.ShowPage(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["AVIONICS STATUS", "1", "2"],
             [""],
@@ -22,20 +24,22 @@ class CDUCfdsAvionicsMenu {
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsMainMenu.ShowPage(mcdu);
+            CDUCfdsMainMenu.ShowPage(fmc, mcdu);
         };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsAvionicsMenu.ShowPage2(mcdu);
+            CDUCfdsAvionicsMenu.ShowPage2(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsAvionicsMenu.ShowPage2(mcdu);
+            CDUCfdsAvionicsMenu.ShowPage2(fmc, mcdu);
         };
     }
 
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage2(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCfdsAvionicsMenu.ShowPage2(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["AVIONICS STATUS", "2", "2"],
             [""],
@@ -57,15 +61,15 @@ class CDUCfdsAvionicsMenu {
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsMainMenu.ShowPage(mcdu);
+            CDUCfdsMainMenu.ShowPage(fmc, mcdu);
         };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsAvionicsMenu.ShowPage(mcdu);
+            CDUCfdsAvionicsMenu.ShowPage(fmc, mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsAvionicsMenu.ShowPage(mcdu);
+            CDUCfdsAvionicsMenu.ShowPage(fmc, mcdu);
         };
     }
 }

@@ -1,9 +1,12 @@
 class CDUAocMessagesSent {
-    static ShowPage(mcdu, messages = null, offset = 5) {
+    static ShowPage(fmc, mcdu, messages = null, offset = 5) {
+        mcdu.setCurrentPage(() => {
+            CDUAocMessagesSent.ShowPage(fmc, mcdu, null, offset);
+        }, "ATSU");
+
         if (!messages) {
-            messages = mcdu.getSentMessages();
+            messages = fmc.getSentMessages();
         }
-        mcdu.clearDisplay();
 
         const msgTimeHeaders = [];
         msgTimeHeaders.length = 6;
@@ -36,13 +39,13 @@ class CDUAocMessagesSent {
                 if (messages[offset - 1]) {
                     offset *= 2;
                 }
-                CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
+                CDUAocMessagesSent.ShowPage(fmc, mcdu, messages, offset);
             };
             mcdu.onPrevPage = () => {
                 if (messages[offset - 1]) {
                     offset /= 2;
                 }
-                CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
+                CDUAocMessagesSent.ShowPage(fmc, mcdu, messages, offset);
             };
         }
 
@@ -53,10 +56,10 @@ class CDUAocMessagesSent {
         mcdu.onLeftInput[0] = (value) => {
             if (messages[offset - 5]) {
                 if (value === FMCMainDisplay.clrValue) {
-                    mcdu.deleteSentMessage(offset - 5);
-                    CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
+                    fmc.deleteSentMessage(offset - 5);
+                    mcdu.requestUpdate();
                 } else {
-                    CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 5]);
+                    CDUAocMessageSentDetail.ShowPage(fmc, mcdu, messages[offset - 5]);
                 }
             }
         };
@@ -68,10 +71,10 @@ class CDUAocMessagesSent {
         mcdu.onLeftInput[1] = (value) => {
             if (messages[offset - 4]) {
                 if (value === FMCMainDisplay.clrValue) {
-                    mcdu.deleteSentMessage(offset - 4);
-                    CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
+                    fmc.deleteSentMessage(offset - 4);
+                    mcdu.requestUpdate();
                 } else {
-                    CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 4]);
+                    CDUAocMessageSentDetail.ShowPage(fmc, mcdu, messages[offset - 4]);
                 }
             }
         };
@@ -83,10 +86,10 @@ class CDUAocMessagesSent {
         mcdu.onLeftInput[2] = (value) => {
             if (messages[offset - 3]) {
                 if (value === FMCMainDisplay.clrValue) {
-                    mcdu.deleteSentMessage(offset - 3);
-                    CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
+                    fmc.deleteSentMessage(offset - 3);
+                    mcdu.requestUpdate();
                 } else {
-                    CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 3]);
+                    CDUAocMessageSentDetail.ShowPage(fmc, mcdu, messages[offset - 3]);
                 }
             }
         };
@@ -98,10 +101,10 @@ class CDUAocMessagesSent {
         mcdu.onLeftInput[3] = (value) => {
             if (messages[offset - 2]) {
                 if (value === FMCMainDisplay.clrValue) {
-                    mcdu.deleteSentMessage(offset - 2);
-                    CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
+                    fmc.deleteSentMessage(offset - 2);
+                    mcdu.requestUpdate();
                 } else {
-                    CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 2]);
+                    CDUAocMessageSentDetail.ShowPage(fmc, mcdu, messages[offset - 2]);
                 }
             }
         };
@@ -113,10 +116,10 @@ class CDUAocMessagesSent {
         mcdu.onLeftInput[4] = (value) => {
             if (messages[offset - 1]) {
                 if (value === FMCMainDisplay.clrValue) {
-                    mcdu.deleteSentMessage(offset - 1);
-                    CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
+                    fmc.deleteSentMessage(offset - 1);
+                    mcdu.requestUpdate();
                 } else {
-                    CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 1]);
+                    CDUAocMessageSentDetail.ShowPage(fmc, mcdu, messages[offset - 1]);
                 }
             }
         };
@@ -126,7 +129,7 @@ class CDUAocMessagesSent {
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUAocMenu.ShowPage(mcdu);
+            CDUAocMenu.ShowPage(fmc, mcdu);
         };
     }
 }

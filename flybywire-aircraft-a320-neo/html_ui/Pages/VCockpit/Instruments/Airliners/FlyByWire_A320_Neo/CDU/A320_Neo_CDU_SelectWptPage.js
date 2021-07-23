@@ -1,7 +1,7 @@
 class A320_Neo_CDU_SelectWptPage {
-    static ShowPage(mcdu, waypoints, callback, page = 0) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.SelectWptPage;
+    static ShowPage(fmc, mcdu, waypoints, callback, page = 0) {
+        mcdu.setCurrentPage(); // note: no refresh
+
         const rows = [
             ["", 'FREQ', 'LAT/LONG'],
             [""],
@@ -56,7 +56,7 @@ class A320_Neo_CDU_SelectWptPage {
                     if (mcdu.returnPageCallback) {
                         mcdu.returnPageCallback();
                     } else {
-                        console.error("A return page callback was expected but not declared. Add a returnPageCallback to page: " + mcdu.page.Current);
+                        console.error("A return page callback was expected but not declared.");
                     }
                 };
             }
@@ -68,12 +68,12 @@ class A320_Neo_CDU_SelectWptPage {
         ]);
         mcdu.onPrevPage = () => {
             if (page > 0) {
-                A320_Neo_CDU_SelectWptPage.ShowPage(mcdu, orderedWaypoints, callback, page - 1);
+                A320_Neo_CDU_SelectWptPage.ShowPage(fmc, mcdu, orderedWaypoints, callback, page - 1);
             }
         };
         mcdu.onNextPage = () => {
             if (page < Math.floor(waypoints.length / 5)) {
-                A320_Neo_CDU_SelectWptPage.ShowPage(mcdu, orderedWaypoints, callback, page + 1);
+                A320_Neo_CDU_SelectWptPage.ShowPage(fmc, mcdu, orderedWaypoints, callback, page + 1);
             }
         };
     }

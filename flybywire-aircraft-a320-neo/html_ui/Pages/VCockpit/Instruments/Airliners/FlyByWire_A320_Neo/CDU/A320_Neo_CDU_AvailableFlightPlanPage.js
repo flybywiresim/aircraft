@@ -1,11 +1,13 @@
 class CDUAvailableFlightPlanPage {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.AvailableFlightPlanPage;
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUAvailableFlightPlanPage.ShowPage(fmc, mcdu);
+        });
+
         let fromTo = "NO ORIGIN/DEST";
-        if (mcdu.flightPlanManager.getOrigin()) {
-            if (mcdu.flightPlanManager.getDestination()) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident;
+        if (fmc.flightPlanManager.getOrigin()) {
+            if (fmc.flightPlanManager.getDestination()) {
+                fromTo = fmc.flightPlanManager.getOrigin().ident + "/" + fmc.flightPlanManager.getDestination().ident;
             }
         }
         mcdu.setTemplate([
@@ -24,7 +26,7 @@ class CDUAvailableFlightPlanPage {
             ["<RETURN"]
         ]);
         mcdu.onLeftInput[5] = () => {
-            CDUInitPage.ShowPage1(mcdu);
+            CDUInitPage.ShowPage1(fmc, mcdu);
         };
     }
 }

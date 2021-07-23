@@ -1,16 +1,16 @@
 class CDUDirectToPage {
-    static ShowPage(mcdu, directWaypoint, wptsListIndex = 0) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.DirectToPage;
+    static ShowPage(fmc, mcdu, directWaypoint, wptsListIndex = 0) {
+        mcdu.setCurrentPage(() => {
+            CDUDirectToPage.ShowPage(fmc, mcdu, directWaypoint, wptsListIndex);
+        }, 'FMGC');
         mcdu.returnPageCallback = () => {
-            CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
+            CDUDirectToPage.ShowPage(fmc, mcdu, directWaypoint, wptsListIndex);
         };
-        mcdu.activeSystem = 'FMGC';
         let directWaypointCell = "";
         if (directWaypoint) {
             directWaypointCell = directWaypoint.ident;
-        } else if (mcdu.flightPlanManager.getDirectToTarget()) {
-            directWaypointCell = mcdu.flightPlanManager.getDirectToTarget().ident;
+        } else if (fmc.flightPlanManager.getDirectToTarget()) {
+            directWaypointCell = fmc.flightPlanManager.getDirectToTarget().ident;
         }
         const waypointsCell = ["", "", "", "", ""];
         let iMax = 5;
@@ -21,26 +21,28 @@ class CDUDirectToPage {
             waypointsCell[4] = "{ERASE[color]amber";
             mcdu.onLeftInput[5] = () => {
                 SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
-                CDUDirectToPage.ShowPage(mcdu);
+                CDUDirectToPage.ShowPage(fmc, mcdu);
+                mcdu.requestOffsideUpdate();
             };
         }
         mcdu.onLeftInput[0] = (value) => {
-            mcdu.getOrSelectWaypointByIdent(value, (w) => {
+            fmc.getOrSelectWaypointByIdent(mcdu, value, (w) => {
                 if (w) {
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_0", "number", SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"));
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_0", "number", SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_1", "number", w.infos.coordinates.lat);
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_1", "number", w.infos.coordinates.long);
-                    CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
+                    CDUDirectToPage.ShowPage(fmc, mcdu, w, wptsListIndex);
+                    mcdu.requestOffsideUpdate();
                 }
             });
         };
         let i = 0;
-        wptsListIndex = Math.max(wptsListIndex, mcdu.flightPlanManager.getActiveWaypointIndex());
-        const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypointsCount();
+        wptsListIndex = Math.max(wptsListIndex, fmc.flightPlanManager.getActiveWaypointIndex());
+        const totalWaypointsCount = fmc.flightPlanManager.getWaypointsCount() + fmc.flightPlanManager.getArrivalWaypointsCount() + fmc.flightPlanManager.getApproachWaypointsCount();
         while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && i < iMax) {
-            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
+            const waypoint = fmc.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
             if (waypoint) {
                 waypointsCell[i] = "{" + waypoint.ident + "[color]cyan";
                 if (waypointsCell[i]) {
@@ -50,7 +52,8 @@ class CDUDirectToPage {
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_0", "number", SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_1", "number", waypoint.infos.coordinates.lat);
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_1", "number", waypoint.infos.coordinates.long);
-                        CDUDirectToPage.ShowPage(mcdu, waypoint, wptsListIndex);
+                        CDUDirectToPage.ShowPage(fmc, mcdu, waypoint, wptsListIndex);
+                        mcdu.requestOffsideUpdate();
                     };
                 }
             } else {
@@ -67,9 +70,10 @@ class CDUDirectToPage {
             insertLabel = "\xa0TMPY[color]amber";
             insertLine = "DIRECT*[color]amber";
             mcdu.onRightInput[5] = () => {
-                mcdu.activateDirectToWaypoint(directWaypoint, () => {
+                fmc.activateDirectToWaypoint(directWaypoint, () => {
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
-                    CDUFlightPlanPage.ShowPage(mcdu);
+                    CDUFlightPlanPage.ShowPage(fmc, mcdu);
+                    mcdu.requestOffsideUpdate();
                 });
             };
         }
@@ -93,14 +97,14 @@ class CDUDirectToPage {
         if (wptsListIndex < totalWaypointsCount - 5) {
             mcdu.onUp = () => {
                 wptsListIndex++;
-                CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
+                CDUDirectToPage.ShowPage(fmc, mcdu, directWaypoint, wptsListIndex);
             };
             up = true;
         }
         if (wptsListIndex > 0) {
             mcdu.onDown = () => {
                 wptsListIndex--;
-                CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
+                CDUDirectToPage.ShowPage(fmc, mcdu, directWaypoint, wptsListIndex);
             };
             down = true;
         }

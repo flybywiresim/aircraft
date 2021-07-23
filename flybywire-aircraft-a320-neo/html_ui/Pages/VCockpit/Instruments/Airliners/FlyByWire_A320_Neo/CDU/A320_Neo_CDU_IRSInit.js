@@ -1,7 +1,5 @@
 class CDUIRSInit {
-    static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF}[color]cyan") {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.IRSInit;
+    static ShowPage(fmc, mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF}[color]cyan") {
         mcdu.setTitle('IRS INIT');
 
         const adiru1State = SimVar.GetSimVarValue("L:A32NX_ADIRS_ADIRU_1_STATE", "Enum");
@@ -27,7 +25,7 @@ class CDUIRSInit {
         let alignType = "---";
         // Ref coordinates are taken based on origin airport
         if (!originAirportLat && !originAirportLon) {
-            const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
+            const airportCoordinates = fmc.flightPlanManager.getOrigin().infos.coordinates;
             originAirportLat = CDUInitPage.ConvertDDToDMS(airportCoordinates['lat'], false);
             originAirportLon = CDUInitPage.ConvertDDToDMS(airportCoordinates['long'], true);
             originAirportLat['sec'] = Math.ceil(Number(originAirportLat['sec'] / 100));
@@ -35,11 +33,11 @@ class CDUIRSInit {
             // Must be string for consistency since leading 0's are not allowed in Number
             originAirportLat['min'] = originAirportLat['min'].toString();
             originAirportLon['min'] = originAirportLon['min'].toString();
-            referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
+            referenceName = fmc.flightPlanManager.getOrigin().ident + " [color]green";
             originAirportCoordinates = JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon);
         }
         if (originAirportCoordinates === JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon)) {
-            referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
+            referenceName = fmc.flightPlanManager.getOrigin().ident + " [color]green";
         }
         const currentGPSLat = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), false);
         const currentGPSLon = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), true);
@@ -138,7 +136,7 @@ class CDUIRSInit {
         };
 
         mcdu.onLeftInput[5] = () => {
-            CDUInitPage.ShowPage1(mcdu);
+            CDUInitPage.ShowPage1(fmc, mcdu);
         };
 
         mcdu.onRightInput[5] = () => {
@@ -197,18 +195,8 @@ class CDUIRSInit {
             }
         };
 
-        // This page auto-refreshes based on source material. Function will stop auto-refreshing when page has been changed.
-        autoRefresh();
-        function autoRefresh() {
-            setTimeout(() => {
-                if (mcdu.getTitle() === 'IRS INIT') {
-                    CDUIRSInit.ShowPage(mcdu, lon = lon,
-                        originAirportLat = originAirportLat, originAirportLon = originAirportLon,
-                        referenceName = referenceName, originAirportCoordinates = originAirportCoordinates,
-                        alignMsg = alignMsg);
-                }
-            }, 1000);
-        }
-
+        mcdu.setCurrentPage(() => {
+            CDUIRSInit.ShowPage(fmc, mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg);
+        });
     }
 }

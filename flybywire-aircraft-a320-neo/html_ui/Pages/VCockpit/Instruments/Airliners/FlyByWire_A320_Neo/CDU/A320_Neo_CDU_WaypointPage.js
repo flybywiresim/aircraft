@@ -4,11 +4,10 @@
 */
 
 class CDUWaypointPage {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.WaypointPage;
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(); // note: no refresh
         mcdu.returnPageCallback = () => {
-            CDUWaypointPage.ShowPage(mcdu);
+            CDUWaypointPage.ShowPage(fmc, mcdu);
         };
 
         mcdu.setTemplate([
@@ -28,9 +27,9 @@ class CDUWaypointPage {
         ]);
 
         mcdu.onLeftInput[0] = (value) => {
-            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(value, res => {
+            fmc.getOrSelectWaypointByIdent(mcdu, value, res => {
                 if (res) {
-                    mcdu.clearDisplay();
+                    mcdu.setCurrentPage(); // note: no refresh
                     mcdu.setTemplate([
                         ["WAYPOINT"],
                         ["\xa0IDENT"],

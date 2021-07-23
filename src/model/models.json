@@ -743,6 +743,30 @@
           [0.587402, 0.958984],
           [0.621582, 0.973633]
         ]
+      },
+      {
+        "accessors": [
+          "x0_SCREEN_MCDUL_vertices#0_TEXCOORD_0",
+          "x0_SCREEN_MCDUL_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.5, 0],
+          [0, 0.5],
+          [0, 0],
+          [0.5, 0.5]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_SCREEN_MCDUR_vertices#0_TEXCOORD_0",
+          "x0_SCREEN_MCDUR_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [1, 0],
+          [0.5, 0.5],
+          [0.5, 0],
+          [1, 0.5]
+        ]
       }
     ]
   },

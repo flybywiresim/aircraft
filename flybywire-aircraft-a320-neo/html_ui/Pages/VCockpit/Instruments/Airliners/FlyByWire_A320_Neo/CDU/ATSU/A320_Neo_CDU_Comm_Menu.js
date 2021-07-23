@@ -1,6 +1,9 @@
 class CDUCommMenu {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUCommMenu.ShowPage(fmc, mcdu);
+        }, 'ATSU');
+
         mcdu.setTemplate([
             ["COMM MENU"],
             ["\xa0VHF3[color]inop", "COMM\xa0[color]inop"],
@@ -21,7 +24,7 @@ class CDUCommMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtsuMenu.ShowPage(mcdu);
+            CDUAtsuMenu.ShowPage(fmc, mcdu);
         };
     }
 }

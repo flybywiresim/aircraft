@@ -1,6 +1,8 @@
 class CDU_CFDS_Test_Inst_ECAM_Menu {
-    static ShowPage(mcdu, ecamIndex) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, ecamIndex) {
+        mcdu.setCurrentPage(() => {
+            CDU_CFDS_Test_Inst_ECAM_Menu.ShowPage(fmc, mcdu, ecamIndex);
+        });
         const title = "ECAM-" + ecamIndex;
         mcdu.setTemplate([
             [title],
@@ -22,7 +24,7 @@ class CDU_CFDS_Test_Inst_ECAM_Menu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
+            CDUCfdsTestInst.ShowPage(fmc, mcdu);
         };
     }
 }

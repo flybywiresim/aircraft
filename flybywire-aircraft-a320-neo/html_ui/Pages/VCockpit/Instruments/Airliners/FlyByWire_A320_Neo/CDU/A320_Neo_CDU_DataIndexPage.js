@@ -1,8 +1,9 @@
 class CDUDataIndexPage {
-    static ShowPage1(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.DataIndexPage1;
-        mcdu.activeSystem = 'FMGC';
+    static ShowPage1(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUDataIndexPage.ShowPage1(fmc, mcdu);
+        }, 'FMGC');
+
         mcdu.setTemplate([
             ["DATA INDEX", "1", "2"],
             ["\xa0POSITION"],
@@ -24,7 +25,7 @@ class CDUDataIndexPage {
         };
 
         mcdu.onLeftInput[0] = () => {
-            CDUPositionMonitorPage.ShowPage(mcdu);
+            CDUPositionMonitorPage.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -32,7 +33,7 @@ class CDUDataIndexPage {
         };
 
         mcdu.onLeftInput[1] = () => {
-            CDUIRSMonitor.ShowPage(mcdu);
+            CDUIRSMonitor.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[2] = () => {
@@ -40,7 +41,7 @@ class CDUDataIndexPage {
         };
 
         mcdu.onLeftInput[2] = () => {
-            CDUGPSMonitor.ShowPage(mcdu);
+            CDUGPSMonitor.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -48,7 +49,7 @@ class CDUDataIndexPage {
         };
 
         mcdu.onLeftInput[3] = () => {
-            CDUIdentPage.ShowPage(mcdu);
+            CDUIdentPage.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[4] = () => {
@@ -56,19 +57,21 @@ class CDUDataIndexPage {
         };
 
         mcdu.onLeftInput[4] = () => {
-            CDUAirportsMonitor.ShowPage(mcdu, true);
+            CDUAirportsMonitor.ShowPage(fmc, mcdu, true);
         };
 
         mcdu.onNextPage = () => {
-            this.ShowPage2(mcdu);
+            this.ShowPage2(fmc, mcdu);
         };
         mcdu.onPrevPage = () => {
-            this.ShowPage2(mcdu);
+            this.ShowPage2(fmc, mcdu);
         };
     }
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.DataIndexPage2;
+    static ShowPage2(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUDataIndexPage.ShowPage2(fmc, mcdu);
+        });
+
         mcdu.setTemplate([
             ["DATA INDEX", "2", "2"],
             ["", "STORED\xa0"],
@@ -87,7 +90,7 @@ class CDUDataIndexPage {
         ]);
 
         mcdu.onLeftInput[0] = () => {
-            CDUWaypointPage.ShowPage(mcdu);
+            CDUWaypointPage.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[0] = () => {
@@ -95,7 +98,7 @@ class CDUDataIndexPage {
         };
 
         mcdu.onRightInput[0] = () => {
-            CDUPilotsWaypoint.ShowPage(mcdu);
+            CDUPilotsWaypoint.ShowPage(fmc, mcdu);
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -103,7 +106,7 @@ class CDUDataIndexPage {
         };
 
         mcdu.onLeftInput[1] = () => {
-            CDUNavaidPage.ShowPage(mcdu);
+            CDUNavaidPage.ShowPage(fmc, mcdu);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -111,10 +114,10 @@ class CDUDataIndexPage {
         };
 
         mcdu.onNextPage = () => {
-            this.ShowPage1(mcdu);
+            this.ShowPage1(fmc, mcdu);
         };
         mcdu.onPrevPage = () => {
-            this.ShowPage1(mcdu);
+            this.ShowPage1(fmc, mcdu);
         };
     }
 }

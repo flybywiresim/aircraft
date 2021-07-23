@@ -1,6 +1,8 @@
 class CDUAtcMessagesRecord {
-    static ShowPage(mcdu, messages = null, offset = 5) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUAtcMessagesRecord.ShowPage(fmc, mcdu);
+        });
 
         mcdu.setTemplate([
             ["MSG RECORD"],
@@ -22,7 +24,7 @@ class CDUAtcMessagesRecord {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage1(fmc, mcdu);
         };
     }
 }

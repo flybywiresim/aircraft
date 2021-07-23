@@ -1,6 +1,7 @@
 class CDUAocRequestsMessage {
-    static ShowPage(mcdu, message, offset = 0) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, message, offset = 0) {
+        mcdu.setCurrentPage(); // no refresh
+
         const lines = [];
         message["content"].forEach(element => lines.push(element.replace(/,/g, "")));
         if (!message["opened"]) {
@@ -15,13 +16,13 @@ class CDUAocRequestsMessage {
             SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
         }
 
-        const currentMesssageIndex = mcdu.getMessageIndex(message["id"]);
+        const currentMesssageIndex = fmc.getMessageIndex(message["id"]);
         const currentMesssageCount = currentMesssageIndex + 1;
-        const msgArrows = mcdu.messages.length > 1 ? " {}" : "";
+        const msgArrows = fmc.messages.length > 1 ? " {}" : "";
 
         mcdu.setTemplate([
             ["AOC MSG DISPLAY"],
-            [`[b-text]${message["opened"]} VIEWED[color]green`, `${currentMesssageCount}/${mcdu.messages.length}${msgArrows}`],
+            [`[b-text]${message["opened"]} VIEWED[color]green`, `${currentMesssageCount}/${fmc.messages.length}${msgArrows}`],
             [`[s-text]${lines[offset] ? lines[offset] : ""}`],
             [`[b-text]${lines[offset + 1] ? lines[offset + 1] : ""}`],
             [`[s-text]${lines[offset + 2] ? lines[offset + 2] : ""}`],
@@ -41,14 +42,14 @@ class CDUAocRequestsMessage {
             if (lines[offset + 1]) {
                 mcdu.onUp = () => {
                     offset += 1;
-                    CDUAocRequestsMessage.ShowPage(mcdu, message, offset);
+                    CDUAocRequestsMessage.ShowPage(fmc, mcdu, message, offset);
                 };
                 up = true;
             }
             if (lines[offset - 1]) {
                 mcdu.onDown = () => {
                     offset -= 1;
-                    CDUAocRequestsMessage.ShowPage(mcdu, message, offset);
+                    CDUAocRequestsMessage.ShowPage(fmc, mcdu, message, offset);
                 };
                 down = true;
             }
@@ -56,16 +57,16 @@ class CDUAocRequestsMessage {
         }
 
         mcdu.onNextPage = () => {
-            const nextMessage = mcdu.getMessage(message["id"], 'next');
+            const nextMessage = fmc.getMessage(message["id"], 'next');
             if (nextMessage) {
-                CDUAocRequestsMessage.ShowPage(mcdu, nextMessage);
+                CDUAocRequestsMessage.ShowPage(fmc, mcdu, nextMessage);
             }
         };
 
         mcdu.onPrevPage = () => {
-            const previousMessage = mcdu.getMessage(message["id"], 'previous');
+            const previousMessage = fmc.getMessage(message["id"], 'previous');
             if (previousMessage) {
-                CDUAocRequestsMessage.ShowPage(mcdu, previousMessage);
+                CDUAocRequestsMessage.ShowPage(fmc, mcdu, previousMessage);
             }
         };
 
@@ -73,11 +74,11 @@ class CDUAocRequestsMessage {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAocMessagesReceived.ShowPage(mcdu);
+            CDUAocMessagesReceived.ShowPage(fmc, mcdu);
         };
 
         mcdu.onRightInput[5] = () => {
-            mcdu.printPage([lines.join(' ')]);
+            fmc.printPage([lines.join(' ')]);
         };
 
     }

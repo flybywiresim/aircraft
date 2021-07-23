@@ -1,6 +1,8 @@
 class CDU_CFDS_Test_Inst_EIS_Tests_Display {
-    static ShowPage(mcdu, eisIndex) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, eisIndex) {
+        mcdu.setCurrentPage(() => {
+            CDU_CFDS_Test_Inst_EIS_Tests_Display.ShowPage(fmc, mcdu, eisIndex);
+        });
         SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 2);
         const title = "EIS ( DMC " + eisIndex + " )";
         mcdu.setTemplate([
@@ -23,45 +25,46 @@ class CDU_CFDS_Test_Inst_EIS_Tests_Display {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_CFDS_Test_Inst_EIS_Tests.ShowPage(mcdu, eisIndex);
+            CDU_CFDS_Test_Inst_EIS_Tests.ShowPage(fmc, mcdu, eisIndex);
         };
 
+        // FIXME pages should not override these
         // Button key overrides
         mcdu.onDir = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUDirectToPage.ShowPage(mcdu);
+            CDUDirectToPage.ShowPage(fmc, mcdu);
         };
         mcdu.onProg = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUProgressPage.ShowPage(mcdu);
+            CDUProgressPage.ShowPage(fmc, mcdu);
         };
         mcdu.onPerf = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUPerformancePage.ShowPage(mcdu);
+            CDUPerformancePage.ShowPage(fmc, mcdu);
         };
         mcdu.onInit = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUInitPage.ShowPage1(mcdu);
+            CDUInitPage.ShowPage1(fmc, mcdu);
         };
         mcdu.onData = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUDataIndexPage.ShowPage1(mcdu);
+            CDUDataIndexPage.ShowPage1(fmc, mcdu);
         };
         mcdu.onFpln = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUFlightPlanPage.ShowPage(mcdu);
+            CDUFlightPlanPage.ShowPage(fmc, mcdu);
         };
         mcdu.onRad = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUNavRadioPage.ShowPage(mcdu);
+            CDUNavRadioPage.ShowPage(fmc, mcdu);
         };
         mcdu.onFuel = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUFuelPredPage.ShowPage(mcdu);
+            CDUFuelPredPage.ShowPage(fmc, mcdu);
         };
         mcdu.onMenu = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUMenuPage.ShowPage(mcdu);
+            CDUMenuPage.ShowPage(fmc, mcdu);
         };
     }
 }

@@ -1,5 +1,8 @@
 class CDUHoldAtPage {
-    static ShowPage(mcdu, waypoint, waypointIndexFP) {
+    static ShowPage(fmc, mcdu, waypoint, waypointIndexFP) {
+        mcdu.setCurrentPage(() => {
+            CDUHoldAtPage.ShowPage(fmc, mcdu, waypoint, waypointIndexFP);
+        });
         try {
             const SpeedConstraints = {
                 14000: 230,
@@ -7,9 +10,6 @@ class CDUHoldAtPage {
                 34000: 265,
                 34001: 0.83,
             };
-
-            mcdu.clearDisplay();
-            mcdu.page.Current = mcdu.page.HoldAtPage;
 
             let speedConstraint = waypoint.speedConstraint;
             let holdTime = 1.5;
@@ -35,19 +35,19 @@ class CDUHoldAtPage {
             // need to adjust for wind component?
             let holdDistance = estimatedTAS * holdTime;
 
-            const rteRsvWeight = mcdu.getRouteReservedWeight();
+            const rteRsvWeight = fmc.getRouteReservedWeight();
             let resFuel = "0.0";
             if (!isNaN(rteRsvWeight)) {
                 resFuel = rteRsvWeight;
             }
 
-            const exitTime = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
+            const exitTime = FMCMainDisplay.secondsTohhmm(fmc.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
 
-            if (mcdu.manualHoldData) {
-                holdTime = parseFloat(mcdu.manualHoldData.time);
-                holdCourse = parseFloat(mcdu.manualHoldData.course);
-                holdDistance = parseFloat(mcdu.manualHoldData.distance);
-                holdTurn = mcdu.manualHoldData.turn;
+            if (fmc.manualHoldData) {
+                holdTime = parseFloat(fmc.manualHoldData.time);
+                holdCourse = parseFloat(fmc.manualHoldData.course);
+                holdDistance = parseFloat(fmc.manualHoldData.distance);
+                holdTurn = fmc.manualHoldData.turn;
                 computed = false;
             }
 
@@ -75,13 +75,13 @@ class CDUHoldAtPage {
                     mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                     return;
                 }
-                mcdu.manualHoldData = {
+                fmc.manualHoldData = { // TODO this seems bogus
                     time: holdTime,
                     course: parseFloat(value),
                     distance: holdDistance,
                     turn: holdTurn
                 };
-                CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
+                mcdu.requestRefresh();
             };
 
             mcdu.onLeftInput[1] = (value) => {
@@ -89,13 +89,13 @@ class CDUHoldAtPage {
                     mcdu.addNewMessage(NXSystemMessages.formatError);
                     return;
                 }
-                mcdu.manualHoldData = {
+                fmc.manualHoldData = {
                     time: holdTime,
                     course: holdCourse,
                     distance: holdDistance,
                     turn: value
                 };
-                CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
+                mcdu.requestRefresh();
             };
 
             mcdu.onLeftInput[2] = (value) => {
@@ -105,13 +105,13 @@ class CDUHoldAtPage {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
                         return;
                     }
-                    mcdu.manualHoldData = {
+                    fmc.manualHoldData = {
                         time: parseFloat(distComp) / estimatedTAS,
                         course: holdCourse,
                         distance: distComp,
                         turn: holdTurn
                     };
-                    CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
+                    mcdu.requestRefresh();
 
                     return;
                 }
@@ -123,30 +123,30 @@ class CDUHoldAtPage {
 
                 holdDistance = estimatedTAS * parseFloat(value);
 
-                mcdu.manualHoldData = {
+                fmc.manualHoldData = {
                     time: value,
                     course: holdCourse,
                     distance: holdDistance,
                     turn: holdTurn
                 };
-                CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
+                mcdu.requestRefresh();
             };
 
             if (!computed) {
                 mcdu.onRightInput[1] = () => {
-                    mcdu.manualHoldData = null;
-                    CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
+                    fmc.manualHoldData = null;
+                    mcdu.requestRefresh();
                 };
             }
 
             mcdu.onLeftInput[5] = () => {
-                mcdu.manualHoldData = null;
-                CDULateralRevisionPage.ShowPage(mcdu, waypoint, waypointIndexFP);
+                fmc.manualHoldData = null;
+                CDULateralRevisionPage.ShowPage(fmc, mcdu, waypoint, waypointIndexFP);
             };
 
             mcdu.onRightInput[5] = () => {
-                mcdu.activeHold = new Map();
-                mcdu.activeHold.set(
+                fmc.activeHold = new Map();
+                fmc.activeHold.set(
                     waypoint.ident, {
                         fpIndex: waypointIndexFP,
                         course: parseFloat(holdCourse),
@@ -156,8 +156,8 @@ class CDUHoldAtPage {
                         speed: parseFloat(speedConstraint)
                     }
                 );
-                mcdu.manualHoldData = null;
-                CDUFlightPlanPage.ShowPage(mcdu);
+                fmc.manualHoldData = null;
+                CDUFlightPlanPage.ShowPage(fmc, mcdu);
             };
         } catch (err) {
             console.log(err);

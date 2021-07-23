@@ -1,9 +1,11 @@
 class CDUVerticalRevisionPage {
-    static ShowPage(mcdu, waypoint) {
+    static ShowPage(fmc, mcdu, waypoint) {
         const waypointInfo = waypoint.infos;
         if (waypointInfo instanceof WayPointInfo) {
-            mcdu.clearDisplay();
-            mcdu.page.Current = mcdu.page.VerticalRevisionPage;
+            mcdu.setCurrentPage(() => {
+                CDUVerticalRevisionPage.ShowPage(fmc, mcdu, waypoint);
+            });
+
             let waypointIdent = "---";
             if (waypoint) {
                 waypointIdent = waypoint.ident;
@@ -23,24 +25,24 @@ class CDUVerticalRevisionPage {
             let altitudeConstraint = "";
             switch (waypoint.legAltitudeDescription) {
                 case 1: {
-                    altitudeConstraint = this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude);
+                    altitudeConstraint = this.formatFl(Math.round(waypoint.legAltitude1), fmc.transitionAltitude);
                     break;
                 }
                 case 2: {
-                    altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude);
+                    altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude1), fmc.transitionAltitude);
                     break;
                 }
                 case 3: {
-                    altitudeConstraint = "-" + this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude);
+                    altitudeConstraint = "-" + this.formatFl(Math.round(waypoint.legAltitude1), fmc.transitionAltitude);
                     break;
                 }
                 case 4: {
                     if (waypoint.legAltitude1 < waypoint.legAltitude2) {
-                        altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude)
-                            + "/-" + this.formatFl(Math.round(waypoint.legAltitude2), mcdu.transitionAltitude);
+                        altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude1), fmc.transitionAltitude)
+                            + "/-" + this.formatFl(Math.round(waypoint.legAltitude2), fmc.transitionAltitude);
                     } else {
-                        altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude2), mcdu.transitionAltitude)
-                            + "/-" + this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude);
+                        altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude2), fmc.transitionAltitude)
+                            + "/-" + this.formatFl(Math.round(waypoint.legAltitude1), fmc.transitionAltitude);
                     }
                     break;
                 }
@@ -74,9 +76,9 @@ class CDUVerticalRevisionPage {
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {
-                    mcdu.removeWaypoint(fpIndex, () => {
-                        mcdu.updateConstraints();
-                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                    fmc.removeWaypoint(fpIndex, () => { // TODO fpIndex comes from???
+                        fmc.updateConstraints();
+                        CDUFlightPlanPage.ShowPage(fmc, mcdu, offset); // TODO offset comes from???
                     });
                 }
 
@@ -99,10 +101,10 @@ class CDUVerticalRevisionPage {
                 altitude = parseInt(altitude);
                 if (isFinite(altitude)) {
                     if (altitude >= 0) {
-                        mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
-                        mcdu.flightPlanManager.setWaypointAltitude((altitude < 1000 ? altitude * 100 : altitude) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
-                            mcdu.updateConstraints();
-                            this.ShowPage(mcdu, waypoint);
+                        fmc.flightPlanManager.setLegAltitudeDescription(waypoint, code);
+                        fmc.flightPlanManager.setWaypointAltitude((altitude < 1000 ? altitude * 100 : altitude) / 3.28084, fmc.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                            fmc.updateConstraints();
+                            mcdu.requestUpdate();
                         });
                     }
                 } else {
@@ -111,14 +113,14 @@ class CDUVerticalRevisionPage {
             }; // ALT CSTR
             mcdu.onLeftInput[4] = () => {
                 //TODO: show appropriate wind page based on waypoint
-                CDUWindPage.Return = () => {
-                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
+                mcdu.returnPageCallback = () => {
+                    CDUVerticalRevisionPage.ShowPage(fmc, mcdu, waypoint);
                 };
-                CDUWindPage.ShowPage(mcdu);
+                CDUWindPage.ShowPage(fmc, mcdu);
             }; // WIND
             mcdu.onRightInput[4] = () => {}; // STEP ALTS
             mcdu.onLeftInput[5] = () => {
-                CDUFlightPlanPage.ShowPage(mcdu);
+                CDUFlightPlanPage.ShowPage(fmc, mcdu);
             };
         }
     }

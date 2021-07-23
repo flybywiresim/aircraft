@@ -1,6 +1,8 @@
 class CDU_CFDS_Test_Inst_CFDIU_Menu {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDU_CFDS_Test_Inst_CFDIU_Menu.ShowPage(fmc, mcdu);
+        });
         mcdu.setTemplate([
             ["CFDIU"],
             [""],
@@ -21,7 +23,7 @@ class CDU_CFDS_Test_Inst_CFDIU_Menu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
+            CDUCfdsTestInst.ShowPage(fmc, mcdu);
         };
 
     }

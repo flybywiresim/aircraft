@@ -1,8 +1,12 @@
 class CDUAocRequestsWeather {
-    static ShowPage(mcdu, reqID = 0, _sendStatus = "") {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, reqID = 0, _sendStatus = "") {
         let labelTimeout;
         let sendStatus = _sendStatus;
+
+        mcdu.setCurrentPage(() => {
+            CDUAocRequestsWeather.ShowPage(fmc, mcdu, reqID, sendStatus);
+        }, 'ATSU');
+
         const reqTypes = [
             'METAR',
             'TAF'
@@ -12,13 +16,13 @@ class CDUAocRequestsWeather {
             mcdu.setTemplate([
                 ["AOC WEATHER REQUEST"],
                 [`WX TYPE`, "AIRPORTS"],
-                [`↓${reqTypes[reqID]}[color]cyan`, mcdu.aocAirportList.rows[0].output],
+                [`↓${reqTypes[reqID]}[color]cyan`, fmc.aocAirportList.rows[0].output],
                 [""],
-                ["", mcdu.aocAirportList.rows[1].output],
+                ["", fmc.aocAirportList.rows[1].output],
                 [""],
-                ["", mcdu.aocAirportList.rows[2].output],
+                ["", fmc.aocAirportList.rows[2].output],
                 [""],
-                ["", mcdu.aocAirportList.rows[3].output],
+                ["", fmc.aocAirportList.rows[3].output],
                 [""],
                 [""],
                 ["RETURN TO", `${sendStatus}`],
@@ -29,8 +33,8 @@ class CDUAocRequestsWeather {
 
         for (let i = 0; i < 4; i++) {
             mcdu.onRightInput[i] = (value) => {
-                mcdu.aocAirportList.set(i, value);
-                CDUAocRequestsWeather.ShowPage(mcdu, reqID, sendStatus);
+                fmc.aocAirportList.set(i, value);
+                CDUAocRequestsWeather.ShowPage(fmc, mcdu, reqID, sendStatus);
             };
         }
 
@@ -39,7 +43,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[5] = async () => {
-            const icaos = mcdu.aocAirportList.icaos;
+            const icaos = fmc.aocAirportList.icaos;
             if (icaos.length === 0) {
                 mcdu.addNewMessage(NXFictionalMessages.noAirportSpecified);
                 return;
@@ -62,7 +66,7 @@ class CDUAocRequestsWeather {
                 sendStatus = "SENT";
                 setTimeout(() => {
                     newMessage["time"] = fetchTimeValue();
-                    mcdu.addMessage(newMessage);
+                    fmc.addMessage(newMessage);
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {
                     sendStatus = "";
@@ -75,14 +79,14 @@ class CDUAocRequestsWeather {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUAocRequestsWeather.ShowPage(mcdu, (reqID + 1) % 2, sendStatus);
+            CDUAocRequestsWeather.ShowPage(fmc, mcdu, (reqID + 1) % 2, sendStatus);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);
-            CDUAocMenu.ShowPage(mcdu);
+            CDUAocMenu.ShowPage(fmc, mcdu);
         };
     }
 }

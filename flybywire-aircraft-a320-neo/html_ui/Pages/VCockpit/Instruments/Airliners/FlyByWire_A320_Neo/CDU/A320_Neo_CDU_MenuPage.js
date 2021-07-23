@@ -1,7 +1,8 @@
 class CDUMenuPage {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.MenuPage;
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(); // no refresh
+        mcdu.forceClearScratchpad();
+
         const activeSystem = mcdu.activeSystem;
         let textATSU;
         let textFMGC;
@@ -80,7 +81,7 @@ class CDUMenuPage {
             updateView();
             setTimeout(() => {
                 mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
-                CDUIdentPage.ShowPage(mcdu);
+                CDUIdentPage.ShowPage(fmc, mcdu);
             }, Math.floor(Math.random() * 400) + 100);
         };
 
@@ -90,7 +91,7 @@ class CDUMenuPage {
             updateView();
             setTimeout(() => {
                 mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
-                CDUAtsuMenu.ShowPage(mcdu);
+                CDUAtsuMenu.ShowPage(fmc, mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };
 
@@ -100,7 +101,7 @@ class CDUMenuPage {
             updateView();
             setTimeout(() => {
                 mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
-                CDU_AIDS_MainMenu.ShowPage(mcdu);
+                CDU_AIDS_MainMenu.ShowPage(fmc, mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
 
@@ -110,7 +111,7 @@ class CDUMenuPage {
             updateView();
             setTimeout(() => {
                 mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
-                CDUCfdsMainMenu.ShowPage(mcdu);
+                CDUCfdsMainMenu.ShowPage(fmc, mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
 
@@ -120,87 +121,8 @@ class CDUMenuPage {
             updateView();
             setTimeout(() => {
                 mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
-                CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+                CDU_OPTIONS_MainMenu.ShowPage(fmc, mcdu);
             }, Math.floor(Math.random() * 400) + 200);
-        };
-
-        mcdu.onDir = () => {
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUDirectToPage.ShowPage(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
-        };
-        mcdu.onProg = () => {
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUProgressPage.ShowPage(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
-        };
-        mcdu.onPerf = () => {
-            if (mcdu.currentFlightPhase === FmgcFlightPhases.DONE) {
-                mcdu.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.PREFLIGHT);
-            }
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUPerformancePage.ShowPage(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
-        };
-        mcdu.onInit = () => {
-            if (mcdu.currentFlightPhase === FmgcFlightPhases.DONE) {
-                mcdu.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.PREFLIGHT);
-            }
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUInitPage.ShowPage1(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
-        };
-        mcdu.onData = () => {
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUDataIndexPage.ShowPage1(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
-        };
-        mcdu.onFpln = () => {
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUFlightPlanPage.ShowPage(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
-        };
-        mcdu.onSec = () => {
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUSecFplnMain.ShowPage(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
-        };
-        mcdu.onRad = () => {
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUNavRadioPage.ShowPage(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
-        };
-        mcdu.onFuel = () => {
-            const cur = mcdu.page.Current;
-            setTimeout(() => {
-                if (mcdu.page.Current === cur) {
-                    CDUFuelPredPage.ShowPage(mcdu);
-                }
-            }, mcdu.getDelaySwitchPage());
         };
     }
 }

@@ -1,10 +1,12 @@
 class CDUAtcConnectionStatus {
-    static ShowPage(mcdu, store = {"atcCenter": "", "nextAtc": ""}) {
-        mcdu.clearDisplay();
+    static ShowPage(fmc, mcdu, store = {"atcCenter": "", "nextAtc": ""}) {
+        mcdu.setCurrentPage(() => {
+            CDUAtcConnectionStatus.ShowPage(fmc, mcdu, store);
+        });
         let flightNo = "______[color]green";
 
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-            flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+        if (fmc.flightNumber) {
+            flightNo = fmc.flightNumber + "[color]green";
         }
 
         mcdu.setTemplate([
@@ -27,14 +29,14 @@ class CDUAtcConnectionStatus {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage1(fmc, mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            CDUAtcConnectionNotification.ShowPage(mcdu);
+            CDUAtcConnectionNotification.ShowPage(fmc, mcdu);
         };
     }
 }

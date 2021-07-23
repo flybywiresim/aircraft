@@ -1,7 +1,9 @@
 class CDUAtsuMenu {
-    static ShowPage(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.activeSystem = 'ATSU';
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUAtsuMenu.ShowPage(fmc, mcdu);
+        }, 'ATSU');
+
         const display = [
             ["ATSU DATALINK"],
             [""],
@@ -23,28 +25,28 @@ class CDUAtsuMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage1(fmc, mcdu);
         };
 
         mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = () => {
-            CDUAocMenu.ShowPage(mcdu);
+            CDUAocMenu.ShowPage(fmc, mcdu);
         };
 
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            CDUDatalinkStatus.ShowPage(mcdu);
+            CDUDatalinkStatus.ShowPage(fmc, mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            CDUCommMenu.ShowPage(mcdu);
+            CDUCommMenu.ShowPage(fmc, mcdu);
         };
     }
 }

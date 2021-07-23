@@ -66,11 +66,12 @@ function calculateSecDate(date) {
 }
 
 class CDUIdentPage {
-    static ShowPage(mcdu) {
-        const date = mcdu.getNavDataDateRange();
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.IdentPage;
-        mcdu.activeSystem = 'FMGC';
+    static ShowPage(fmc, mcdu) {
+        mcdu.setCurrentPage(() => {
+            CDUIdentPage.ShowPage(fmc, mcdu);
+        }, 'FMGC');
+
+        const date = fmc.getNavDataDateRange();
         mcdu.setTemplate([
             ["A320-200"],//This aircraft code is correct and does not include the engine type.
             ["\xa0ENG"],
