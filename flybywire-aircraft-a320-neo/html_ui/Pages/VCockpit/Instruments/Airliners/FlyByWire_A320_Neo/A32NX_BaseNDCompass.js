@@ -182,16 +182,16 @@ class Jet_NDCompass extends HTMLElement {
         this.courseTOLine = null;
         this.courseFROMLine = null;
     }
-    update(_deltaTime, mfdIndex) {
-        this.updateCompass(_deltaTime, mfdIndex);
+    update(_deltaTime, displayIndex) {
+        this.updateCompass(_deltaTime, displayIndex);
         this.updateNavigationInfo();
         this.updateMapRange();
 
         // Moved to A32NX_NDCompass.update()
         // if (this.updateFail) this.updateFail();
     }
-    updateCompass(_deltaTime, mfdIndex) {
-        const inertialReferenceSource = ADIRS.getMfdInertialReferenceSource(mfdIndex);
+    updateCompass(_deltaTime, displayIndex) {
+        const inertialReferenceSource = ADIRS.getNdInertialReferenceSource(displayIndex);
 
         const heading = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`, "degree");
         const isTRKMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");

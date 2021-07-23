@@ -1,19 +1,29 @@
 class ADIRS {
-    static getMfdSupplier(mfdIndex, knobValue) {
+    static getNdSupplier(displayIndex, knobValue) {
         const adirs3ToCaptain = 0;
         const adirs3ToFO = 2;
 
-        if (this.isCaptainSide(mfdIndex)) {
+        if (this.isCaptainSide(displayIndex)) {
             return knobValue === adirs3ToCaptain ? 3 : 1;
         }
         return knobValue === adirs3ToFO ? 3 : 2;
     }
 
+    /**
+     * Retrieves an ADIRS value of the given name and type.
+     *
+     * @returns {(number|NaN)} Returns the value when available.
+     * Returns NaN when the value is not available, for example due to the ADR being off.
+     */
     static getValue(name, type) {
         const value = SimVar.GetSimVarValue(name, type);
         return ADIRS.parseValue(value);
     }
 
+    /**
+     * Parses the given ADIRS value. When the value indicates
+     * "unavailable", it is converted into NaN.
+     */
     static parseValue(value) {
         const unavailable = -1000000;
         return Math.abs(value - unavailable) < 0.0001 ? NaN : value;
@@ -27,20 +37,20 @@ class ADIRS {
             : ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_BAROMETRIC_VERTICAL_SPEED`, 'feet per minute');
     }
 
-    static getMfdInertialReferenceSource(mfdIndex) {
-        return ADIRS.getMfdSupplier(mfdIndex, SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Enum'));
+    static getNdInertialReferenceSource(displayIndex) {
+        return ADIRS.getNdSupplier(displayIndex, SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Enum'));
     }
 
-    static getMfdAirDataReferenceSource(mfdIndex) {
-        return ADIRS.getMfdSupplier(mfdIndex, SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum'));
+    static getNdAirDataReferenceSource(displayIndex) {
+        return ADIRS.getNdSupplier(displayIndex, SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum'));
     }
 
-    static isCaptainSide(mfdIndex) {
-        return mfdIndex === 1;
+    static isCaptainSide(displayIndex) {
+        return displayIndex === 1;
     }
 
-    static mapNotAvailable(mfdIndex) {
-        const inertialReferenceSource = ADIRS.getMfdInertialReferenceSource(mfdIndex);
+    static mapNotAvailable(displayIndex) {
+        const inertialReferenceSource = ADIRS.getNdInertialReferenceSource(displayIndex);
         return Number.isNaN(ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LATITUDE`, 'degree')) ||
             Number.isNaN(ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LONGITUDE`, 'degree'));
     }
