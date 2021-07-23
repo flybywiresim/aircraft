@@ -748,6 +748,7 @@ export class ManagedFlightPlan {
                     const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, runway.endCoordinates);
 
                     const faLeg = procedure.buildWaypoint(`${Math.round(altitudeFeet)}`, coordinates);
+                    // TODO should this check for unclr discont? (probs not)
                     faLeg.endsInDiscontinuity = true;
                     faLeg.discontinuityCanBeCleared = true;
 
@@ -854,8 +855,10 @@ export class ManagedFlightPlan {
                 const prevWaypointIndex = segment.offset - 1;
                 if (prevWaypointIndex > 0) {
                     const prevWaypoint = this.getWaypoint(segment.offset - 1);
-                    prevWaypoint.endsInDiscontinuity = true;
-                    prevWaypoint.discontinuityCanBeCleared = true;
+                    if (!prevWaypoint.endsInDiscontinuity) {
+                        prevWaypoint.endsInDiscontinuity = true;
+                        prevWaypoint.discontinuityCanBeCleared = true;
+                    }
                 }
             }
 
