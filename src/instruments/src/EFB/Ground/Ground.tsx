@@ -34,6 +34,7 @@ export const Ground = ({
 
     const [, setPushBackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 1000);
+    const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
 
     const [tugDirection, setTugDirection] = useState(0);
     const [tugActive, setTugActive] = useState(false);
@@ -59,6 +60,11 @@ export const Ground = ({
                     setPushBackWait(1);
                 }, 100);
                 setPushBackWaitTimerHandle(timer);
+            }
+            if (rudderPosition >= -0.05 && rudderPosition <= 0.05) {
+                computeAndSetTugHeading(0);
+            } else {
+                computeAndSetTugHeading(rudderPosition <= 0 ? Math.abs(rudderPosition) / 0.0111 : 90 + rudderPosition / 0.0111);
             }
         } else if (pushBackWaitTimerHandle !== -1) {
             clearInterval(pushBackWaitTimerHandle);
