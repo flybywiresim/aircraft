@@ -39,15 +39,6 @@
                     <SET_CODE>#POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)</SET_CODE>
                 </True>
             </Condition>
-            <!--
-            <Condition Valid="EMISSIVE_BOOST">
-                <True>
-                    <SET_CODE>
-                        #EMISSIVE_BOOST# * #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
-                    </SET_CODE>
-                </True>
-            </Condition>
-            -->
         </OverrideTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Anim_Code">
