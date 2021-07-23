@@ -82,4 +82,8 @@
         fill: none;
         stroke: var(--displayAmber);
       }
+
+      .mirrored {
+        transform: scaleX(-1);
+      }
 }
