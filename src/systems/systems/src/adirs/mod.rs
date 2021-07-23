@@ -165,6 +165,7 @@ impl AirDataInertialReferenceSystem {
     const ADR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_FIRST";
     const IR_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
     const IR_ALIGNED_KEY: &'static str = "ADIRS_PFD_ALIGNED_ATT";
+    const NUMBER_ALIGNED_KEY: &'static str = "ADIRS_NUM_ALIGNED";
 
     pub fn new() -> Self {
         Self {
@@ -245,6 +246,12 @@ impl AirDataInertialReferenceSystem {
             })
             .unwrap_or_else(|| Duration::from_secs(0))
     }
+
+    fn number_aligned(&self) -> f64 {
+        self.adirus
+            .iter()
+            .fold(0, |n, adiru| n + adiru.is_aligned() as i32) as f64
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -271,6 +278,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
             Self::IR_ALIGNED_KEY,
             self.remaining_ir_initialisation_duration == Some(Duration::from_secs(0)),
         );
+        writer.write(Self::NUMBER_ALIGNED_KEY, self.number_aligned());
     }
 }
 impl Default for AirDataInertialReferenceSystem {
