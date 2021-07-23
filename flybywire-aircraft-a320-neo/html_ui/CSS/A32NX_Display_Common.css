@@ -58,7 +58,7 @@ text {
   background-size: 2px;
   opacity: 0.75;
   /* subtle tint and edge bleed */
-  background-color:rgba(0, 0, 255, 0.025);
+  background-color: rgba(0, 0, 255, 0.025);
   box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
   border-radius: 30px;
   /*
