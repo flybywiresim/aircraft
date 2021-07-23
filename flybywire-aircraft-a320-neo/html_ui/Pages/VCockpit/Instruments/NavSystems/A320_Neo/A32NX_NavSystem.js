@@ -400,7 +400,9 @@ class NavSystem extends BaseInstrument {
                 this.currentContextualMenu.Update(this, this.menuMaxElems);
                 break;
         }
-        this.onUpdate(this.accumulatedDeltaTime);
+        try {
+            this.onUpdate(this.accumulatedDeltaTime);
+        } catch (e) {}
         const t = performance.now() - t0;
         NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
         NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);
