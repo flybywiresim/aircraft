@@ -3852,14 +3852,15 @@
         </Template>
 
         <Component ID="SAFETY">
-            <UseTemplate Name="ASOBO_SAFETY_Push_Template">
-                <LEFT_SINGLE_CODE>
+            <UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
+              <TYPE>AIRLINER</TYPE>
+                <PUSH_EVENT>
                     0 (&gt;L:A32NX_MASTER_WARNING)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
-                </LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>
+                </PUSH_EVENT>
+                <RELEASE_EVENT>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
-                </LEFT_LEAVE_CODE>
+                </RELEASE_EVENT>
                 <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
@@ -3871,18 +3872,19 @@
                 <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-                <AIRBUS_TYPE/>
                 <NO_SEQ2/>
+                <PUSH_ID>Warning</PUSH_ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_SAFETY_Push_Template">
+            <UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
                 <ID>Caution</ID>
-                <LEFT_SINGLE_CODE>
+                <TYPE>AIRLINER</TYPE>
+                <PUSH_EVENT>
                     0 (&gt;L:A32NX_MASTER_CAUTION)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
-                </LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>
+                </PUSH_EVENT>
+                <RELEASE_EVENT>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
-                </LEFT_LEAVE_CODE>
+                </RELEASE_EVENT>
                 <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
@@ -3894,17 +3896,18 @@
                 <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-                <AIRBUS_TYPE/>
                 <NO_SEQ2/>
+                <PUSH_ID>Caution</PUSH_ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_SAFETY_Push_Template">
-                <LEFT_SINGLE_CODE>
+            <UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
+                <TYPE>AIRLINER</TYPE>
+                <PUSH_EVENT>
                     0 (&gt;L:A32NX_MASTER_WARNING)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
-                </LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>
+                </PUSH_EVENT>
+                <RELEASE_EVENT>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
-                </LEFT_LEAVE_CODE>
+                </RELEASE_EVENT>
                 <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
@@ -3916,18 +3919,20 @@
                 <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-                <AIRBUS_TYPE/>
                 <NO_SEQ2/>
+                <PUSH_ID>Warning</PUSH_ID>
+                <ID>2</ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_SAFETY_Push_Template">
+            <UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
                 <ID>Caution</ID>
-                <LEFT_SINGLE_CODE>
+                <TYPE>AIRLINER</TYPE>
+                <PUSH_EVENT>
                     0 (&gt;L:A32NX_MASTER_CAUTION)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
-                </LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>
+                </PUSH_EVENT>
+                <RELEASE_EVENT>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
-                </LEFT_LEAVE_CODE>
+                </RELEASE_EVENT>
                 <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
@@ -3939,8 +3944,8 @@
                 <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-                <AIRBUS_TYPE/>
                 <NO_SEQ2/>
+                <ID>2</ID>
             </UseTemplate>
         </Component>
 
