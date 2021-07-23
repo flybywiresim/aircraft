@@ -10,11 +10,12 @@ import { WindIndicator } from './elements/WindIndicator';
 import { SpeedIndicator } from './elements/SpeedIndicator';
 import { RadioNavInfo } from './elements/RadioNavInfo';
 import { Chrono } from './elements/Chrono';
-import { NavigationDisplayMessages } from './elements/NavigationDisplayMessages';
-
-import './styles.scss';
+import { NavigationDisplayMessages } from './elements/messages/NavigationDisplayMessages';
+import { FMMessages } from './elements/messages/FMMessages';
 import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
+
+import './styles.scss';
 
 export type RangeSetting = 10 | 20 | 40 | 80 | 160 | 320;
 
@@ -70,10 +71,16 @@ const NavigationDisplay: React.FC = () => {
                     <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
                     <WindIndicator irs={inertialReferenceSource} />
 
-                    {modeIndex === Mode.PLAN && <PlanMode rangeSetting={rangeSettings[rangeIndex]} ppos={ppos} efisOption={efisOption} />}
-                    {modeIndex === Mode.ARC && <ArcMode adirsAlign={adirsAlign} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} efisOption={efisOption} />}
+                    {modeIndex === Mode.PLAN && (
+                        <PlanMode rangeSetting={rangeSettings[rangeIndex]} ppos={ppos} efisOption={efisOption} />
+                    )}
+                    {modeIndex === Mode.ARC && (
+                        <ArcMode adirsAlign={adirsAlign} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} efisOption={efisOption} />
+                    )}
                     {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV)
-                    && <RoseMode adirsAlign={adirsAlign} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} efisOption={efisOption} />}
+                    && (
+                        <RoseMode adirsAlign={adirsAlign} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} efisOption={efisOption} />
+                    )}
 
                     <Chrono side={side} />
 
@@ -84,6 +91,8 @@ const NavigationDisplay: React.FC = () => {
                             <RadioNavInfo index={2} side={side} />
                         </>
                     )}
+                    <FMMessages />
+
                 </svg>
             </FlightPlanProvider>
         </DisplayUnit>
