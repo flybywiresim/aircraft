@@ -25,7 +25,6 @@ class A32NX_PACK {
         this.xBleedValve();
         this.packState();
         this.engTemp();
-        this.apuTemp();
         this.engPackTemp();
         this.packFault(1);
         this.packFault(2);
@@ -55,13 +54,6 @@ class A32NX_PACK {
         this.eng2Tmp = eng2TmpComputed;
         SimVar.SetSimVarValue("L:A32NX_ENG1_TEMP", "Celsius", eng1TmpComputed);
         SimVar.SetSimVarValue("L:A32NX_ENG2_TEMP", "Celsius", eng2TmpComputed);
-    }
-
-    apuTemp() {
-        const currentApuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
-        const apuTMPcomputed = parseInt(currentApuN ? 100 * 2.5 : 0);
-
-        SimVar.SetSimVarValue("L:A32NX_APU_TEMP", "Celsius", apuTMPcomputed);
     }
 
     engPackTemp() {

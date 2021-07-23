@@ -464,7 +464,7 @@ const TempBox = ({ x, y }) => {
 
     const eng1TmpComputed = useSimVar('L:A32NX_ENG1_TEMP', 'Celsius', 500);
     const eng2TmpComputed = useSimVar('L:A32NX_ENG2_TEMP', 'Celsius', 500);
-    const apuTMPcomputed = useSimVar('L:A32NX_APU_TEMP', 'Celsius', 500);
+    const apuTMPcomputed = useSimVar('L:A32NX_APU_EGT', 'Celsius', 500);
 
     let eng1Tmp;
     let eng1Psi;
