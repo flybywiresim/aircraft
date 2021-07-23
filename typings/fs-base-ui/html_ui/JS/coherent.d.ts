@@ -1,3 +1,5 @@
+import { FMMessage } from "../../../../src/shared/src/FmMessages";
+
 declare global {
     // The functions of Coherent are found in coherent.js.
     // The namespace is assigned in fs-base-ui/html_ui/JS/common.js by CoherentSetup.

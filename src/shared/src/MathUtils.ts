@@ -33,4 +33,36 @@ export class MathUtils {
    public static mod(x: number, n: number): number {
        return x - Math.floor(x / n) * n;
    }
+
+   public static highestPower2(n: number): number {
+       let res = 0;
+       for (let i = n; i >= 1; i--) {
+           if ((i & (i - 1)) === 0) {
+               res = i;
+               break;
+           }
+       }
+       return res;
+   }
+
+   public static unpackPowers(n: number): number[] {
+       const res: number[] = [];
+
+       let x = n;
+       while (x > 0) {
+           const pow = MathUtils.highestPower2(x);
+           res.push(pow);
+           x -= pow;
+       }
+
+       return res;
+   }
+
+   public static packPowers(ns: number[]): number {
+       if (ns.some((it) => it === 0 || (it & it - 1) !== 0)) {
+           throw new Error('Cannot pack number which is not a power of 2 or is equal to zero.');
+       }
+
+       return ns.reduce((acc, v) => acc + v);
+   }
 }
