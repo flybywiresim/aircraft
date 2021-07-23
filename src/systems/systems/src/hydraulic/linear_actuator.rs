@@ -86,6 +86,8 @@ impl LinearActuator {
 
         let volume_extension_ratio = bore_side_volume / rod_side_volume;
 
+        let actual_max_flow = number_of_actuators as f64 * max_flow;
+
         Self {
             number_of_actuators,
 
@@ -110,8 +112,8 @@ impl LinearActuator {
             signed_flow: VolumeRate::new::<gallon_per_second>(0.),
             flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
 
-            max_flow,
-            min_flow: max_flow / volume_extension_ratio,
+            max_flow: actual_max_flow,
+            min_flow: -max_flow / volume_extension_ratio,
 
             delta_displacement: 0.,
 
@@ -204,15 +206,15 @@ impl LinearActuator {
 
         let mut open_loop_flow_target = 0.;
         if position_error >= 0.001 {
-            open_loop_flow_target = self.max_flow.get::<cubic_meter_per_second>();
-        } else if position_error <= 0.001 {
-            open_loop_flow_target = self.min_flow.get::<cubic_meter_per_second>();
+            open_loop_flow_target = self.max_flow.get::<gallon_per_second>();
+        } else if position_error <= -0.001 {
+            open_loop_flow_target = self.min_flow.get::<gallon_per_second>();
         }
 
-        let flow_error = open_loop_flow_target - self.signed_flow.get::<cubic_meter_per_second>();
+        let flow_error = open_loop_flow_target - self.signed_flow.get::<gallon_per_second>();
 
-        let delta_error = flow_error - self.flow_error_prev.get::<cubic_meter_per_second>();
-        self.flow_error_prev = VolumeRate::new::<cubic_meter_per_second>(flow_error);
+        let delta_error = flow_error - self.flow_error_prev.get::<gallon_per_second>();
+        self.flow_error_prev = VolumeRate::new::<gallon_per_second>(flow_error);
 
         let p_term = Self::DEFAULT_P_GAIN * delta_error;
         let i_term = Self::DEFAULT_I_GAIN * flow_error;
@@ -221,16 +223,24 @@ impl LinearActuator {
         self.force += (p_term + i_term) * force_gain;
 
         if self.force > 0. {
-            if position_error > 0. {
+            if position_error > 0. && self.speed <= 0. {
                 let max_force = hydraulic_pressure.get::<pascal>() * self.bore_side_area;
                 self.force = self.force.min(max_force);
             }
         } else {
-            if position_error < 0. {
+            if position_error < 0. && self.speed >= 0. {
                 let max_force = -1. * hydraulic_pressure.get::<pascal>() * self.rod_side_area;
                 self.force = self.force.max(max_force);
             }
         }
+
+        // println!(
+        //     "Flow target {:.3}, Curren Flow {:.3}, Flow error {:.1}, ActuatorForce{:.2}",
+        //     open_loop_flow_target,
+        //     self.signed_flow.get::<gallon_per_second>(),
+        //     flow_error,
+        //     self.force,
+        // );
     }
 }
 
@@ -262,26 +272,18 @@ mod tests {
     };
 
     #[test]
-    fn linear_actuator_extension() {
+    fn linear_actuator_not_moving_on_locked_rigid_body() {
         let mut rigid_body = cargo_door_body(true);
 
-        let mut actuator = LinearActuator::new(
-            &rigid_body,
-            1,
-            0.04422,
-            0.03366,
-            VolumeRate::new::<cubic_meter_per_second>(0.008),
-            200000.,
-            8000.,
-        );
+        let mut actuator = cargo_door_actuator(&rigid_body);
 
         let dt = 0.05;
 
         let mut time = 0.;
 
-        actuator.close_control_valves();
+        let actuator_position_init = actuator.position;
 
-        for _ in 0..100 {
+        for _ in 0..5 {
             actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
@@ -297,11 +299,170 @@ mod tests {
                 ),
             );
 
+            assert!(actuator.position == actuator_position_init);
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}",
                 rigid_body.position_normalized(),
                 actuator.position,
                 actuator.force
+            );
+
+            time += dt;
+        }
+    }
+
+    #[test]
+    fn linear_actuator_moving_on_unlocked_rigid_body() {
+        let mut rigid_body = cargo_door_body(true);
+
+        let mut actuator = cargo_door_actuator(&rigid_body);
+
+        let dt = 0.05;
+
+        let mut time = 0.;
+
+        let actuator_position_init = actuator.position;
+
+        actuator.close_control_valves();
+        for _ in 0..10 {
+            actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(0.),
+            ));
+            actuator.update_after_rigid_body(
+                &rigid_body,
+                &context(
+                    Duration::from_secs_f64(dt),
+                    Angle::new::<degree>(0.),
+                    Angle::new::<degree>(0.),
+                ),
+            );
+
+            if time <= 0.1 {
+                assert!(actuator.position == actuator_position_init);
+            }
+
+            if time > 0.1 {
+                rigid_body.unlock();
+            }
+
+            if time > 0.2 {
+                assert!(actuator.position > actuator_position_init);
+            }
+
+            println!(
+                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
+                rigid_body.position_normalized(),
+                actuator.position,
+                actuator.force,
+                time
+            );
+
+            time += dt;
+        }
+    }
+
+    #[test]
+    fn linear_actuator_can_move_rigid_body_up() {
+        let mut rigid_body = cargo_door_body(true);
+
+        let mut actuator = cargo_door_actuator(&rigid_body);
+
+        let dt = 0.05;
+
+        let mut time = 0.;
+
+        let actuator_position_init = actuator.position;
+
+        rigid_body.unlock();
+        actuator.open_control_valves_start_position_control(1.0);
+        for _ in 0..700 {
+            actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(0.),
+            ));
+            actuator.update_after_rigid_body(
+                &rigid_body,
+                &context(
+                    Duration::from_secs_f64(dt),
+                    Angle::new::<degree>(0.),
+                    Angle::new::<degree>(0.),
+                ),
+            );
+
+            if time > 0.2 {
+                assert!(actuator.position > actuator_position_init);
+            }
+
+            if time > 25. {
+                assert!(actuator.position > 0.9);
+            }
+
+            println!(
+                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
+                rigid_body.position_normalized(),
+                actuator.position,
+                actuator.force,
+                time
+            );
+
+            time += dt;
+        }
+    }
+
+    #[test]
+    fn linear_actuator_resists_body_drop_when_valves_closed() {
+        let mut rigid_body = cargo_door_body(true);
+
+        let mut actuator = cargo_door_actuator(&rigid_body);
+
+        let dt = 0.05;
+
+        let mut time = 0.;
+
+        let actuator_position_init = actuator.position;
+
+        rigid_body.unlock();
+        actuator.open_control_valves_start_position_control(1.0);
+        for _ in 0..700 {
+            actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(0.),
+            ));
+            actuator.update_after_rigid_body(
+                &rigid_body,
+                &context(
+                    Duration::from_secs_f64(dt),
+                    Angle::new::<degree>(0.),
+                    Angle::new::<degree>(0.),
+                ),
+            );
+
+            if time > 0.2 {
+                assert!(actuator.position > actuator_position_init);
+            }
+
+            if time > 25. && time < 25. + dt {
+                assert!(actuator.position > 0.9);
+                actuator.close_control_valves();
+            }
+
+            if time > 26. {
+                assert!(actuator.position > 0.7);
+            }
+
+            println!(
+                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
+                rigid_body.position_normalized(),
+                actuator.position,
+                actuator.force,
+                time
             );
 
             time += dt;
@@ -328,7 +489,7 @@ mod tests {
         let cg_offset = Vector2::new(0., -size[1] / 2.);
 
         let control_arm = Vector2::new(-0.1597, -0.1614);
-        let anchor = Vector2::new(-0.759, -0.086);
+        let anchor = Vector2::new(-0.7596, -0.086);
 
         RigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
@@ -340,6 +501,18 @@ mod tests {
             Angle::new::<degree>(136.),
             100.,
             is_locked,
+        )
+    }
+
+    fn cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
+        LinearActuator::new(
+            &rigid_body,
+            2,
+            0.04422,
+            0.03366,
+            VolumeRate::new::<gallon_per_second>(0.008),
+            800000.,
+            15000.,
         )
     }
 }

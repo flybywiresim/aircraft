@@ -244,12 +244,12 @@ impl RigidBodyOnHingeAxis {
         self.sum_of_torques = 0.;
     }
 
-    fn unlock(&mut self) {
+    pub fn unlock(&mut self) {
         self.is_locked = false;
         self.is_lock_requested = false;
     }
 
-    fn lock_at_position_normalized(&mut self, position_normalized: f64) {
+    pub fn lock_at_position_normalized(&mut self, position_normalized: f64) {
         self.is_lock_requested = true;
         self.lock_position_request = position_normalized;
     }
