@@ -6,9 +6,16 @@ global.beforeEach(() => {
 });
 
 global.SimVar = {};
-global.SimVar.GetSimVarValue = jest.fn((name, unit, dataSource) => {
-    return values[name];
+global.SimVar.GetSimVarValue = jest.fn((name, _, __) => {
+    if (values.hasOwnProperty(name)) {
+        return values[name];
+    } else {
+        return 0;
+    }
 });
-global.SimVar.SetSimVarValue = jest.fn((name, unit, value, dataSource) => {
-    values[name] = value;
+global.SimVar.SetSimVarValue = jest.fn((name, _, value, __) => {
+    return new Promise((resolve, _) => {
+        values[name] = value;
+        resolve();
+    });
 });
