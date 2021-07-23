@@ -3853,7 +3853,7 @@
 
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
-              <TYPE>AIRLINER</TYPE>
+                <TYPE>AIRLINER</TYPE>
                 <PUSH_EVENT>
                     0 (&gt;L:A32NX_MASTER_WARNING)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
@@ -3873,10 +3873,9 @@
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                 <NO_SEQ2/>
-                <PUSH_ID>Warning</PUSH_ID>
+                <ID>1</ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
-                <ID>Caution</ID>
                 <TYPE>AIRLINER</TYPE>
                 <PUSH_EVENT>
                     0 (&gt;L:A32NX_MASTER_CAUTION)
@@ -3897,7 +3896,7 @@
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                 <NO_SEQ2/>
-                <PUSH_ID>Caution</PUSH_ID>
+                <ID>1</ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
                 <TYPE>AIRLINER</TYPE>
@@ -3924,7 +3923,6 @@
                 <ID>2</ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
-                <ID>Caution</ID>
                 <TYPE>AIRLINER</TYPE>
                 <PUSH_EVENT>
                     0 (&gt;L:A32NX_MASTER_CAUTION)
