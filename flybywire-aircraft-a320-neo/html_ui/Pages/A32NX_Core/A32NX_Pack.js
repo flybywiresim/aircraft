@@ -20,17 +20,16 @@ class A32NX_PACK {
         this.packOutMultiplier1 = 0.055;
         this.packOutMultiplier2 = 0.055;
         this.packOutMultiplierApu = 0.1;
-
-        this.eng1Tmp = 0;
-        this.eng2Tmp = 0;
     }
     update(_deltaTime) {
         this.xBleedValve();
         this.packState();
         this.engTemp();
         this.apuTemp();
+        this.engPackTemp();
         this.packFault(1);
         this.packFault(2);
+        this.packFlow();
     }
 
     engTemp() {
@@ -41,9 +40,9 @@ class A32NX_PACK {
         let eng2TmpComputed;
 
         if (eng1TmpValue < 860) {
-            eng1TmpComputed = Math.round((this.engTempMultiplier1 * (this.eng1TmpValue + this.engTempOffsetH)) + (this.engTempMultiplier2 * (this.eng1TmpValue + this.engTempOffsetH) ** 3) + this.engTempOffsetV);
+            eng1TmpComputed = Math.round((this.engTempMultiplier1 * (eng1TmpValue + this.engTempOffsetH)) + (this.engTempMultiplier2 * (eng1TmpValue + this.engTempOffsetH) ** 3) + this.engTempOffsetV);
         } else {
-            eng1TmpComputed = Math.round(this.engTempMultiplier3 * (this.eng1TmpValue + this.engTempOffsetH2) + this.engTempOffsetV2);
+            eng1TmpComputed = Math.round(this.engTempMultiplier3 * (eng1TmpValue + this.engTempOffsetH2) + this.engTempOffsetV2);
         }
 
         if (eng2TmpValue < 860) {
@@ -84,13 +83,18 @@ class A32NX_PACK {
 
         const apuTMPcomputed = SimVar.GetSimVarValue("L:A32NX_APU_TEMP", "Celsius");
 
-        const eng1PackInTmp = this.eng1Tmp * this.packInMultiplier;
-        const eng2PackInTmp = this.eng2Tmp * this.packInMultiplier;
-        const apuPackInTmp = apuTMPcomputed * this.packInMultiplierApu;
+        const eng1Tmp = SimVar.GetSimVarValue("L:A32NX_ENG1_TEMP", "Celsius");
+        const eng2Tmp = SimVar.GetSimVarValue("L:A32NX_ENG2_TEMP", "Celsius");
 
-        const eng1PackOutTmp = this.eng1Tmp * this.packOutMultiplier1;
-        const eng2PackOutTmp = this.eng2Tmp * this.packOutMultiplier2;
-        const apuPackOutTmp = apuTMPcomputed * this.packOutMultiplierApu;
+        const currentPackFlow = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACKFLOW_MODE", "Number");
+
+        const eng1PackInTmp = Math.round(eng1Tmp * this.packInMultiplier);
+        const eng2PackInTmp = Math.round(eng2Tmp * this.packInMultiplier);
+        const apuPackInTmp = Math.round(apuTMPcomputed * this.packInMultiplierApu);
+
+        const eng1PackOutTmp = Math.round(eng1Tmp * this.packOutMultiplier1);
+        const eng2PackOutTmp = Math.round(eng2Tmp * this.packOutMultiplier2);
+        const apuPackOutTmp = Math.round(apuTMPcomputed * this.packOutMultiplierApu);
 
         let packTemperatureVariation1 = 0;
         let packTemperatureVariation2 = 0;
@@ -134,8 +138,10 @@ class A32NX_PACK {
 
         if (ovhdXBleedPosition === 2) {
             SimVar.SetSimVarValue("L:A32NX_XBLEED_VALVE", "Bool", true);
+            return;
         } else if (ovhdXBleedPosition === 1 && isApuBleedAirValveOpen) {
             SimVar.SetSimVarValue("L:A32NX_XBLEED_VALVE", "Bool", true);
+            return;
         }
         SimVar.SetSimVarValue("L:A32NX_XBLEED_VALVE", "Bool", false);
     }
@@ -150,10 +156,13 @@ class A32NX_PACK {
         if ((eng1State === 2 || eng2State === 2) && isXBleedValveOpen) {
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK1_OPEN", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK2_OPEN", "Bool", false);
+            return;
         } else if (eng2State === 2 && !isXBleedValveOpen) {
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK2_OPEN", "Bool", false);
+            return;
         } else if (eng1State === 2 && !isXBleedValveOpen) {
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK1_OPEN", "Bool", false);
+            return;
         } else {
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK1_OPEN", "Bool", pack1Button);
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK2_OPEN", "Bool", pack2Button);
@@ -167,6 +176,11 @@ class A32NX_PACK {
         const isEngProvideBleed = SimVar.GetSimVarValue("BLEED AIR ENGINE:" + pack, "Bool");
         const engState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:" + pack, "Number");
         if (packValve && isEngProvideBleed && engState !== 0) {
+            return;
+        }
+
+        const isApuBleedValueOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
+        if (packValve && isApuBleedValueOpen && xBleedValve) {
             return;
         }
 
@@ -189,10 +203,28 @@ class A32NX_PACK {
             return;
         }
 
-        const isApuBleedValueOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
-        if (packValve && isApuBleedValueOpen && xBleedValve) {
-            return;
-        }
+        console.log("this is pack " + pack);
+
         SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK" + pack + "_FAULT", "bool", true);
+    }
+
+    packFlow() {
+        const packFlowKnob = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Number");
+        const isApuBleedValueOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
+
+        const isLeftPackOpen = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_OPEN", "Bool");
+        const isRightPackOpen = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_OPEN", "Bool");
+        const isAircraftOnSinglePack = !!(!(isLeftPackOpen && isRightPackOpen) && (isLeftPackOpen || isRightPackOpen));
+
+        const eng1TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "Number");
+        const eng2TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "Number");
+        const isAircraftOnToga = eng1TLA > 42 && eng2TLA > 42;
+
+        const isEng1ProvideBleed = SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
+        const isEng2ProvideBleed = SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
+
+        const packFlowPosition = (isAircraftOnToga || isAircraftOnSinglePack || (isApuBleedValueOpen && !isEng1ProvideBleed && !isEng2ProvideBleed)) ? 2 : packFlowKnob;
+
+        SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACKFLOW_MODE", "Number", packFlowPosition);
     }
 }
