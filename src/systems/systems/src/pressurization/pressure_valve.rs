@@ -1,6 +1,6 @@
 use crate::simulation::UpdateContext;
 
-use super::PressureValveActuator;
+use super::{PressureValveActuator, PressurizationOverheadPanel};
 
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
@@ -20,8 +20,13 @@ impl PressureValve {
         }
     }
 
-    pub fn update<T: PressureValveActuator>(&mut self, context: &UpdateContext, actuator: &T) {
-        self.target_open = actuator.target_valve_position();
+    pub fn update<T: PressureValveActuator>(
+        &mut self,
+        context: &UpdateContext,
+        actuator: &T,
+        press_overhead: &PressurizationOverheadPanel,
+    ) {
+        self.target_open = actuator.target_valve_position(press_overhead);
         if self.open_amount < self.target_open {
             self.open_amount += Ratio::new::<percent>(
                 self.get_valve_change_for_delta(context)
@@ -53,12 +58,14 @@ mod pressure_valve_tests {
     struct TestAircraft {
         valve: PressureValve,
         actuator: TestValveActuator,
+        pressurization_overhead: PressurizationOverheadPanel,
     }
     impl TestAircraft {
         fn new() -> Self {
             Self {
                 valve: PressureValve::new(),
                 actuator: TestValveActuator::new(),
+                pressurization_overhead: PressurizationOverheadPanel::new(),
             }
         }
 
@@ -80,7 +87,8 @@ mod pressure_valve_tests {
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.valve.update(context, &self.actuator);
+            self.valve
+                .update(context, &self.actuator, &self.pressurization_overhead);
         }
     }
     impl SimulationElement for TestAircraft {}
@@ -112,7 +120,7 @@ mod pressure_valve_tests {
         }
     }
     impl PressureValveActuator for TestValveActuator {
-        fn target_valve_position(&self) -> Ratio {
+        fn target_valve_position(&self, _press_overhead: &PressurizationOverheadPanel) -> Ratio {
             self.target_valve_position
         }
     }

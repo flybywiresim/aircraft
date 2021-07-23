@@ -1,6 +1,6 @@
 use crate::{shared::EngineCorrectedN1, simulation::UpdateContext};
 
-use super::PressureValveActuator;
+use super::{PressureValveActuator, PressurizationOverheadPanel};
 
 use std::time::Duration;
 use uom::si::{
@@ -263,7 +263,7 @@ impl CabinPressureController {
 }
 
 impl PressureValveActuator for CabinPressureController {
-    fn target_valve_position(&self) -> Ratio {
+    fn target_valve_position(&self, press_overhead: &PressurizationOverheadPanel) -> Ratio {
         // Calculation extracted from:
         // F. Y. Kurokawa, C. Regina de Andrade and E. L. Zaparoli
         // DETERMINATION OF THE OUTFLOW VALVE OPENING AREA OF THE AIRCRAFT CABIN PRESSURIZATION SYSTEM
@@ -309,12 +309,12 @@ impl PressureValveActuator for CabinPressureController {
 
         let ofv_open_ratio = Ratio::new::<ratio>(ofv_area / OFV_SIZE);
 
-        if ofv_open_ratio >= Ratio::new::<percent>(100.)
+        if (ofv_open_ratio <= Ratio::new::<percent>(0.)) || press_overhead.ditching.is_on() {
+            Ratio::new::<percent>(0.)
+        } else if ofv_open_ratio >= Ratio::new::<percent>(100.)
             || (self.is_ground() && self.pressure_schedule_manager.should_open_outflow_valve())
         {
             Ratio::new::<percent>(100.)
-        } else if ofv_open_ratio <= Ratio::new::<percent>(0.) {
-            Ratio::new::<percent>(0.)
         } else {
             ofv_open_ratio
         }
