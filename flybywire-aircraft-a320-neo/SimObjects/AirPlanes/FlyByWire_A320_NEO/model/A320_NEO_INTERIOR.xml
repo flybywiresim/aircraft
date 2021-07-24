@@ -712,6 +712,7 @@
             <UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
+                <WWISE_EVENT>gearleverclick</WWISE_EVENT>
                 <NO_GEARUP_ON_GROUND/>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
