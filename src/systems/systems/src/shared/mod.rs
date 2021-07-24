@@ -4,7 +4,7 @@ use crate::{
 };
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
-use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
+use uom::si::{f64::*, thermodynamic_temperature::degree_celsius, ratio::{percent}};
 
 mod random;
 pub use random::*;
@@ -169,9 +169,25 @@ pub trait ControllerSignal<S> {
     fn signal(&self) -> Option<S>;
 }
 
-pub enum PneumaticValveSignal {
-    Open,
-    Close,
+pub struct PneumaticValveSignal {
+    target_open_amount: Ratio
+}
+impl PneumaticValveSignal {
+	fn new(target_open_amount: Ratio) -> Self {
+		Self { target_open_amount }
+	}
+
+	pub fn target_open_amount(&self) -> Ratio {
+		self.target_open_amount
+	}
+
+	pub fn open() -> Self {
+		PneumaticValveSignal::new(Ratio::new::<percent>(100.))
+	}
+
+	pub fn close() -> Self {
+		PneumaticValveSignal::new(Ratio::new::<percent>(0.))
+	}
 }
 
 pub trait PneumaticValve {

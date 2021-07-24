@@ -307,9 +307,9 @@ impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
             && self.n.get::<percent>() > 95.
             && self.bleed_is_on
         {
-            Some(PneumaticValveSignal::Open)
+            Some(PneumaticValveSignal::open())
         } else {
-            Some(PneumaticValveSignal::Close)
+            Some(PneumaticValveSignal::close())
         }
     }
 }
