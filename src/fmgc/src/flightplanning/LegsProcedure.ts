@@ -372,7 +372,9 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapVectors(leg: ProcedureLeg, prevLeg: WayPoint) {
-      const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, Facilities.getMagVar(prevLeg.infos.coordinates));
+      const magVar = Facilities.getMagVar(prevLeg.infos.coordinates);
+      const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
+      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 381, prevLeg.infos.coordinates);
 
       const waypoint = this.buildWaypoint(FixNamingScheme.vector(), coordinates);
@@ -383,6 +385,7 @@ export class LegsProcedure {
           waypoint.additionalData = {};
       }
       waypoint.additionalData.vectorsCourse = course;
+      waypoint.additionalData.vectorsHeading = heading;
 
       return waypoint;
   }

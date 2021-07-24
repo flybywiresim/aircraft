@@ -26,8 +26,8 @@ export class GuidanceManager {
         return new TFLeg(from, to);
     }
 
-    private static vmWithHeading(heading: Degrees) {
-        return new VMLeg(heading);
+    private static vmWithHeading(heading: Degrees, initialCourse: Degrees) {
+        return new VMLeg(heading, initialCourse);
     }
 
     getActiveLeg(): TFLeg | VMLeg | null {
@@ -45,7 +45,7 @@ export class GuidanceManager {
         }
 
         if (to.isVectors) {
-            return GuidanceManager.vmWithHeading(to.additionalData.vectorsCourse);
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse);
         }
 
         return GuidanceManager.tfBetween(from, to);
@@ -66,7 +66,7 @@ export class GuidanceManager {
         }
 
         if (to.isVectors) {
-            return GuidanceManager.vmWithHeading(to.additionalData.vectorsCourse);
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse);
         }
 
         return GuidanceManager.tfBetween(from, to);
@@ -142,7 +142,7 @@ export class GuidanceManager {
 
             // If TO is a MANUAL leg, make a VM(FROM -> TO)
             if (to.isVectors) {
-                const currentLeg = GuidanceManager.vmWithHeading(to.additionalData.vectorsCourse);
+                const currentLeg = GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse);
                 legs.set(i, currentLeg);
 
                 continue;

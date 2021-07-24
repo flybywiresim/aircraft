@@ -3,15 +3,18 @@ import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 
+// TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
 export class VMLeg implements Leg {
     public heading: Degrees;
+    public initialCourse: Degrees;
 
-    constructor(heading: Degrees) {
+    constructor(heading: Degrees, initialCourse: Degrees) {
         this.heading = heading;
+        this.initialCourse = initialCourse;
     }
 
     get bearing(): Degrees {
-        return this.heading;
+        return this.initialCourse;
     }
 
     getGuidanceParameters(_ppos: LatLongData, _trueTrack): GuidanceParameters | null {
