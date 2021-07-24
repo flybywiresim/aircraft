@@ -11,11 +11,11 @@ const ExcessivePitchAttitudeArrows: React.FC = () => (
     </g>
 );
 
-type Props = {
-    pitchDegPixels: number;
+type PitchScaleProps = {
+    pitchDegPixels: number
 }
 
-export const PitchScale: React.FC<Props> = ({ pitchDegPixels }) => {
+export const PitchScale: React.FC<PitchScaleProps> = ({ pitchDegPixels }) => {
     const markers: React.ReactElement[] = [];
     const center = 270;
 

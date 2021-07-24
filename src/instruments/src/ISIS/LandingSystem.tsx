@@ -2,7 +2,12 @@ import React from 'react';
 
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
 
-const DeviationIndicator: React.FC<{ deviation: number, available: boolean }> = ({ deviation, available }) => (
+type DeviationIndicatorProps = {
+    deviation: number,
+    available: boolean
+}
+
+const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, available }) => (
     <>
         <rect x={0} y={0} width={200} height={20} fill="black" />
         <circle className="StrokeWhite NoFill" cx={10} cy={10} r={7} />
@@ -27,8 +32,8 @@ export const LandingSystem: React.FC = () => {
 
     const [lsActive] = useInteractionSimVar('L:A32NX_ISIS_LS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_LS_PRESSED');
 
-    return (lsActive
-        && (
+    return (
+        lsActive && (
             <g id="LandingSystem">
                 <g transform="translate(156 380)">
                     <DeviationIndicator deviation={lsDeviation} available={lsAvailable} />

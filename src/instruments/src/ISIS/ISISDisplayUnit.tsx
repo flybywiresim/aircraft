@@ -9,11 +9,11 @@ enum DisplayUnitState {
     Standby
 }
 
-type Props = {
-    indicatedAirspeed: number;
+type ISISDisplayUnitProps = {
+    indicatedAirspeed: number
 }
 
-export const ISISDisplayUnit: React.FC<Props> = ({ indicatedAirspeed, children }) => {
+export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirspeed, children }) => {
     const powerUpTime = 90;
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
 

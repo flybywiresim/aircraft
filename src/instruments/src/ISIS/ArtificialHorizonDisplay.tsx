@@ -10,12 +10,12 @@ import { AirspeedIndicator } from './AirspeedIndicator';
 import { AirplaneSymbol } from './AirplaneSymbol';
 import { Bug, BugType } from './Bug';
 
-type Props = {
-    indicatedAirspeed: number;
-    bugs: Bug[];
+type ArtificialHorizonDisplayProps = {
+    indicatedAirspeed: number,
+    bugs: Bug[]
 }
 
-export const ArtificialHorizonDisplay: React.FC<Props> = ({ indicatedAirspeed, bugs }) => {
+export const ArtificialHorizonDisplay: React.FC<ArtificialHorizonDisplayProps> = ({ indicatedAirspeed, bugs }) => {
     const [alt] = useSimVar('INDICATED ALTITUDE:2', 'feet');
     const [mda] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 

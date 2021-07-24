@@ -1,15 +1,17 @@
 import { useSimVar } from '@instruments/common/simVars';
 
 type StaticBugProperties = {
-    type: BugType;
-    min: number;
-    max: number;
-    increment: number;
+    type: BugType,
+    min: number,
+    max: number,
+    increment: number
 }
+
 export type Bug = StaticBugProperties & {
-    value: number;
-    isActive: boolean;
+    value: number,
+    isActive: boolean
 }
+
 type BugSetter = (bug: Bug) => void;
 
 export enum BugType {

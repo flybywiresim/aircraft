@@ -2,8 +2,8 @@ import React from 'react';
 import { Bug } from './Bug';
 
 type BugSetupDisplayProps = {
-    selectedIndex: number
-    bugs: Bug[];
+    selectedIndex: number,
+    bugs: Bug[]
 }
 
 export const BugSetupDisplay: React.FC<BugSetupDisplayProps> = ({ selectedIndex, bugs }) => (
@@ -44,11 +44,11 @@ export const BugSetupDisplay: React.FC<BugSetupDisplayProps> = ({ selectedIndex,
 );
 
 type BugBoxProps = {
-    x: number;
-    y: number;
-    value: number;
-    numDigits: number;
-    isSelected?: boolean;
+    x: number,
+    y: number,
+    value: number,
+    numDigits: number,
+    isSelected?: boolean
 }
 
 export const BugBox: React.FC<BugBoxProps> = ({ x, y, value, numDigits, isSelected = false }) => {

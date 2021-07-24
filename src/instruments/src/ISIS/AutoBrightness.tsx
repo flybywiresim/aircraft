@@ -6,6 +6,7 @@ import { useInterval } from '@flybywiresim/react-components';
 type AutoBrightnessProps = {
     bugsActive: boolean
 }
+
 export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, children }) => {
     const minBrightness = 0.15;
     const maxBrightness = 0.99;

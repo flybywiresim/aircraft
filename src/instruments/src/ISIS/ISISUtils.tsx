@@ -1,17 +1,17 @@
 export class LagFilter {
-    private PreviousInput: number = 0;
+    private previousInput: number = 0;
 
-    private PreviousOutput: number = 0;
+    private previousOutput: number = 0;
 
-    private TimeConstant: number;
+    private timeConstant: number;
 
     constructor(timeConstant: number) {
-        this.TimeConstant = timeConstant;
+        this.timeConstant = timeConstant;
     }
 
     reset(): void {
-        this.PreviousInput = 0;
-        this.PreviousOutput = 0;
+        this.previousInput = 0;
+        this.previousOutput = 0;
     }
 
     /**
@@ -21,17 +21,19 @@ export class LagFilter {
      * @returns {number} Filtered output
      */
     step(input: number, deltaTime: number): number {
-        const scaledDeltaTime = deltaTime * this.TimeConstant;
+        const scaledDeltaTime = deltaTime * this.timeConstant;
         const sum0 = scaledDeltaTime + 2;
 
-        const output = (input + this.PreviousInput) * scaledDeltaTime / sum0
-            + (2 - scaledDeltaTime) / sum0 * this.PreviousOutput;
+        const output = (input + this.previousInput) * scaledDeltaTime / sum0
+            + (2 - scaledDeltaTime) / sum0 * this.previousOutput;
 
-        this.PreviousInput = input;
+        this.previousInput = input;
         if (Number.isFinite(output)) {
-            this.PreviousOutput = output;
+            this.previousOutput = output;
+
             return output;
         }
+
         return 0;
     }
 }

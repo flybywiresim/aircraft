@@ -1,19 +1,19 @@
 import React from 'react';
 import { Bug } from './Bug';
 
-type Props = {
-    displayRange: number;
-    valueSpacing: number;
-    distanceSpacing: number;
-    graduationElementFunction: (elementValue: number, offset: number) => React.ReactElement;
-    bugElementFunction: (bug: Bug, offset: number) => React.ReactElement;
-    bugs: Bug[];
-    tapeValue: number;
-    lowerLimit: number;
+type VerticalTapeProps = {
+    displayRange: number,
+    valueSpacing: number,
+    distanceSpacing: number,
+    graduationElementFunction: (elementValue: number, offset: number) => React.ReactElement,
+    bugElementFunction: (bug: Bug, offset: number) => React.ReactElement,
+    bugs: Bug[],
+    tapeValue: number,
+    lowerLimit: number,
     upperLimit: number
 }
 
-export const VerticalTape: React.FC<Props> = ({
+export const VerticalTape: React.FC<VerticalTapeProps> = ({
     displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, bugElementFunction, tapeValue,
     lowerLimit = -Infinity, upperLimit = Infinity,
 }) => {

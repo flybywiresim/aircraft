@@ -32,6 +32,7 @@ const HundredsDigit: ElementFunction = (value, offset, color) => {
         <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="62" y="32">{text}</text>
     );
 };
+
 const ThousandsDigit: ElementFunction = (value, offset, color) => {
     let text: string;
     if (!Number.isNaN(value)) {
@@ -39,10 +40,12 @@ const ThousandsDigit: ElementFunction = (value, offset, color) => {
     } else {
         text = '';
     }
+
     return (
         <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="40" y="32">{text}</text>
     );
 };
+
 const TenThousandsDigit: ElementFunction = (value, offset, color) => {
     let text: string;
     if (!Number.isNaN(value)) {
@@ -50,20 +53,21 @@ const TenThousandsDigit: ElementFunction = (value, offset, color) => {
     } else {
         text = '';
     }
+
     return (
         <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="18" y="32">{text}</text>
     );
 };
 
 type DrumProps = {
-    displayRange: number;
-    valueSpacing: number;
-    distanceSpacing: number;
-    positionOffset: number;
-    value: number;
-    color: string;
-    elementFunction: (value: number, offset: number, color: string) => React.ReactElement;
-    showZero?: boolean;
+    displayRange: number,
+    valueSpacing: number,
+    distanceSpacing: number,
+    positionOffset: number,
+    value: number,
+    color: string,
+    elementFunction: (value: number, offset: number, color: string) => React.ReactElement,
+    showZero?: boolean
 }
 
 const Drum: React.FC<DrumProps> = ({ displayRange, valueSpacing, distanceSpacing, positionOffset, value, color, elementFunction, showZero = true }) => {
@@ -103,9 +107,9 @@ const Drum: React.FC<DrumProps> = ({ displayRange, valueSpacing, distanceSpacing
 };
 
 type DigitalAltitudeIndicatorProps = {
-    altitude: number;
-    mda: number;
-    bugs: Bug[];
+    altitude: number,
+    mda: number,
+    bugs: Bug[]
 }
 
 export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> = ({ altitude, mda, bugs }) => {

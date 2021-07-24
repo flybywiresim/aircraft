@@ -4,6 +4,7 @@ import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';
 import { VerticalTape } from './VerticalTape';
 
 type TickProps = { offset: number, altitude: number }
+
 const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
     const shouldShowText = altitude % 500 === 0;
     const tickLength = shouldShowText ? 5 : 20;
@@ -17,6 +18,7 @@ const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
 };
 
 type BugProps = { bug: Bug, offset: number }
+
 const BugElement: React.FC<BugProps> = ({ bug, offset }) => {
     if (bug.value % 500 === 0) {
         return (
@@ -34,10 +36,11 @@ const BugElement: React.FC<BugProps> = ({ bug, offset }) => {
 };
 
 type AltitudeIndicatorProps = {
-    altitude: number;
-    mda: number
+    altitude: number,
+    mda: number,
     bugs: Bug[]
 }
+
 export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, mda, bugs }) => {
     const createTick = (altitude: number, offset: number) => <Tick altitude={altitude} offset={offset} />;
     const createBug = (bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />;
@@ -64,8 +67,9 @@ export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, 
 };
 
 type MetricAltitudeIndicatorProps = {
-    altitude: number;
+    altitude: number
 }
+
 export const MetricAltitudeIndicator: React.FC<MetricAltitudeIndicatorProps> = ({ altitude }) => {
     const metricAltitude = Math.round(altitude * 0.3048 / 10) * 10;
 

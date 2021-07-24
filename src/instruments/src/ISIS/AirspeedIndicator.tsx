@@ -3,12 +3,14 @@ import { Bug } from './Bug';
 import { VerticalTape } from './VerticalTape';
 
 type TickProps = { offset: number, airspeed: number }
+
 const Tick: React.FC<TickProps> = ({ offset, airspeed }) => {
     if (airspeed > 250 && airspeed % 10 === 5) {
         return null;
     }
 
     const tickLength = airspeed % 20 === 10 ? 20 : 10;
+
     return (
         <g transform={`translate(0 ${offset})`}>
             {airspeed % 20 === 0 && <text x={95} textAnchor="end" y={158 + 12} className="TextWhite FontMedium">{airspeed}</text>}
@@ -24,7 +26,8 @@ const SpeedtapeArrow: React.FC = () => (
     </g>
 );
 
-type BugProps = { bug: Bug, offset: number, }
+type BugProps = { bug: Bug, offset: number }
+
 const BugElement: React.FC<BugProps> = ({ offset }) => (
     <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
         <path strokeWidth={7} d="M78,158 h30" />
@@ -32,9 +35,10 @@ const BugElement: React.FC<BugProps> = ({ offset }) => (
 );
 
 type AirspeedIndicatorProps = {
-    indicatedAirspeed: number;
+    indicatedAirspeed: number,
     bugs: Bug[]
 }
+
 export const AirspeedIndicator: React.FC<AirspeedIndicatorProps> = ({ indicatedAirspeed, bugs }) => {
     const createTick = (elementValue: number, offset: number) => <Tick offset={offset} airspeed={elementValue} />;
     const createBug = (bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />;
