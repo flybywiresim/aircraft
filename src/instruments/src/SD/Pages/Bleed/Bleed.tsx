@@ -19,6 +19,18 @@ export const BleedPage = () => {
     const isXBleedValveOpen = calculatedValues[4];
     const leftPackFault = calculatedValues[5];
     const rightPackFault = calculatedValues[6];
+    const leftAntiIceFault = calculatedValues[7];
+    const rightAntiIceFault = calculatedValues[8];
+
+    const calculatedTemperature = FakeBleedTemperature();
+    const eng1TMPcomputed = calculatedTemperature[0];
+    const eng2TMPcomputed = calculatedTemperature[1];
+    const eng1PackInTmp = calculatedTemperature[2];
+    const eng2PackInTmp = calculatedTemperature[3];
+    const apuPackInTmp = calculatedTemperature[4];
+    const eng1PackOutTmp = calculatedTemperature[5];
+    const eng2PackOutTmp = calculatedTemperature[6];
+    const apuPackOutTmp = calculatedTemperature[7];
 
     return (
         <EcamPage name="main-bleed">
@@ -34,15 +46,28 @@ export const BleedPage = () => {
 
             <Xbleed x={121} y={260} xBleedValveState={isXBleedValveOpen} />
             <Apu x={121} y={276} />
-
             <Ground />
-            <Pack isLeftPackOpen={isLeftPackValveOpen} isRightPackOpen={isRightPackValveOpen} isxBleedValueOpen={isXBleedValveOpen} pack1Fault={leftPackFault} pack2Fault={rightPackFault} />
+
+            <Pack
+                isLeftPackOpen={isLeftPackValveOpen}
+                isRightPackOpen={isRightPackValveOpen}
+                isxBleedValueOpen={isXBleedValveOpen}
+                pack1Fault={leftPackFault}
+                pack2Fault={rightPackFault}
+                eng1PackInTmp={eng1PackInTmp}
+                eng2PackInTmp={eng2PackInTmp}
+                apuPackInTmp={apuPackInTmp}
+                eng1PackOutTmp={eng1PackOutTmp}
+                eng2PackOutTmp={eng2PackOutTmp}
+                apuPackOutTmp={apuPackOutTmp}
+            />
+
             <RamAir isRamAirValveOpen={isRamAirValveOpen} />
-            <WingAntiIce />
+            <WingAntiIce leftAntiIceFault={leftAntiIceFault} rightAntIceFault={rightAntiIceFault} />
             <PackFlowIndicator x={87} y={134} packFlowPosition={packFlowLevel} />
             <PackFlowIndicator x={445} y={134} packFlowPosition={packFlowLevel} />
             <IsEngineRunning />
-            <TempBox x={100} y={317} />
+            <TempBox x={100} y={317} eng1TmpComputed={eng1TMPcomputed} eng2TmpComputed={eng2TMPcomputed} />
         </EcamPage>
     );
 };
@@ -60,7 +85,7 @@ function FakeBleedSystem() {
     const [isRightPackButtonPressed] = useSimVar('L:A32NX_AIRCOND_PACK2_TOGGLE', 'Bool', 500);
     const [isApuBleedValueOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 500);
     const [isRamAirButtonPressed] = useSimVar('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'Bool', 500);
-    const [xBleedValveState] = useSimVar('L:x_bleed_valve', 'Bool', 500);
+    const [xBleedValveState] = useSimVar('L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position', 'Bool', 500);
     const [packFlowKnob] = useSimVar('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'Number', 500);
 
     const [isAircraftOnGround] = useSimVar('SIM ON GROUND', 'Bool', 500);
@@ -112,6 +137,7 @@ function FakeBleedSystem() {
         packFlowLevel = 2;
     }
 
+    let leftAntiIceFault = false;
     let leftPackFault;
     if (isLeftPackValveOpen && isEng1ProvideBleed && eng1State !== 0) {
         leftPackFault = false;
@@ -119,10 +145,14 @@ function FakeBleedSystem() {
         leftPackFault = false;
     } else if (isLeftPackValveOpen && isApuBleedValueOpen) {
         leftPackFault = false;
-    } else if (isLeftPackValveOpen) {
-        leftPackFault = true;
+    } else {
+        if (isLeftPackValveOpen) {
+            leftPackFault = true;
+        }
+        leftAntiIceFault = true;
     }
 
+    let rightAntiIceFault = false;
     let rightPackFault;
     if (isRightPackValveOpen && isEng2ProvideBleed && eng2State !== 0) {
         rightPackFault = false;
@@ -130,11 +160,59 @@ function FakeBleedSystem() {
         rightPackFault = false;
     } else if (isRightPackValveOpen && isApuBleedValueOpen) {
         rightPackFault = false;
-    } else if (isRightPackValveOpen) {
-        rightPackFault = true;
+    } else {
+        if (isRightPackValveOpen) {
+            rightPackFault = true;
+        }
+        rightAntiIceFault = true;
     }
 
-    return [isRamAirValveOpen, isLeftPackValveOpen, isRightPackValveOpen, packFlowLevel, isXBleedValveOpen, leftPackFault, rightPackFault];
+    return [isRamAirValveOpen, isLeftPackValveOpen, isRightPackValveOpen, packFlowLevel, isXBleedValveOpen, leftPackFault, rightPackFault, leftAntiIceFault, rightAntiIceFault];
+}
+
+function FakeBleedTemperature() {
+    const [eng1Tmp] = useSimVar('ENG EXHAUST GAS TEMPERATURE:1', 'Celsius', 500);
+    const [eng2Tmp] = useSimVar('ENG EXHAUST GAS TEMPERATURE:2', 'Celsius', 500);
+    const [apuTmp] = useSimVar('L:A32NX_APU_EGT', 'Celsius', 500);
+
+    const engTempMultiplier1 = 0.08;
+    const engTempMultiplier2 = 0.0000009;
+    const engTempMultiplier3 = 0.31;
+    const engTempOffsetH = -510;
+    const engTempOffsetV = 200;
+    const engTempOffsetH2 = -860;
+    const engTempOffsetV2 = 276.4;
+
+    const packInMultiplier = 0.9;
+    const packOutMultiplier1 = 0.055;
+    const packOutMultiplier2 = 0.055;
+    const packInMultiplierApu = 0.8;
+    const packOutMultiplierApu = 0.1;
+
+    let eng1TMPcomputed;
+    let eng2TMPcomputed;
+
+    if (eng1Tmp < 860) {
+        eng1TMPcomputed = Math.round((engTempMultiplier1 * (eng1Tmp + engTempOffsetH)) + (engTempMultiplier2 * ((eng1Tmp + engTempOffsetH) ** 3)) + engTempOffsetV);
+    } else {
+        eng1TMPcomputed = Math.round(engTempMultiplier3 * (eng1Tmp + engTempOffsetH2) + engTempOffsetV2);
+    }
+
+    if (eng2Tmp < 860) {
+        eng2TMPcomputed = Math.round((engTempMultiplier1 * (eng2Tmp + engTempOffsetH)) + (engTempMultiplier2 * ((eng2Tmp + engTempOffsetH) ** 3)) + engTempOffsetV);
+    } else {
+        eng2TMPcomputed = Math.round(engTempMultiplier3 * (eng2Tmp + engTempOffsetH2) + engTempOffsetV2);
+    }
+
+    const eng1PackInTmp = Math.round((eng1TMPcomputed * packInMultiplier));
+    const eng2PackInTmp = Math.round((eng2TMPcomputed * packInMultiplier));
+    const apuPackInTmp = Math.round((apuTmp * packInMultiplierApu));
+
+    const eng1PackOutTmp = Math.round((eng1TMPcomputed * packOutMultiplier1));
+    const eng2PackOutTmp = Math.round((eng2TMPcomputed * packOutMultiplier2));
+    const apuPackOutTmp = Math.round((apuTmp * packOutMultiplierApu));
+
+    return [eng1TMPcomputed, eng2TMPcomputed, eng1PackInTmp, eng2PackInTmp, apuPackInTmp, eng1PackOutTmp, eng2PackOutTmp, apuPackOutTmp];
 }
 
 const BleedFiexdElement = () => (
@@ -174,7 +252,7 @@ const TopTriangles = ({ leftPack, rightPack }) => (
 
     // in amber when pack flow control valves 1 and 2 are fully closed
     // in amber when the emergency ram air valve is fully closed
-    <g className={leftPack && rightPack ? 'st5' : 'warning st5'}>
+    <g className={leftPack && rightPack ? 'st5' : 'warning_trg st5'}>
         <polyline points="121,68 121,49 479,49 479,68" />
         <polygon points="163,43 177,43 170,30 163,43" />
         <polygon points="293,43 307,43 300,30 293,43" />
@@ -201,11 +279,11 @@ const IpAndHpValves = ({ x, y, eng, mirrored }) => {
 
                 {/* eng ip valve */}
                 <g className={isEngProvideBleed ? '' : 'hide'}>
-                    <line className="st5" x1={21} y1={24} x2={21} y2={56} />
                     <line id="under-left" className="st5" x1={21} y1={24} x2={21} y2={0} />
+                    <line className="st5" x1={21} y1={24} x2={21} y2={56} />
                 </g>
                 <g className={isEngProvideBleed ? 'hide' : ''}>
-                    <line className="st5" x1={4} y1={40} x2="136" y2={40} />
+                    <line className="st5" x1={4} y1={40} x2={36} y2={40} />
                 </g>
 
                 {/* eng hp valve */}
@@ -223,15 +301,16 @@ const IpAndHpValves = ({ x, y, eng, mirrored }) => {
 
 const Xbleed = ({ x, y, xBleedValveState }) => (
     <SvgGroup x={x} y={y}>
-        {/* X Bleed valve closed */}
-        <circle className="st5" cx="358" cy="276" r="16" />
+        {/* X Bleed valve */}
+        <circle className="st5" cx={237} cy={16} r="16" />
         <g className={xBleedValveState ? '' : 'hide'}>
             {/* X Bleed valve open */}
             <line id="center-line-2" className="st5" x1={0} y1={16} x2={222} y2={16} />
-            <line id="center-line-3" className="st5" x1={253} y1={16} x2={219} y2={16} />
+            <line id="center-line-3" className="st5" x1={253} y1={16} x2={358} y2={16} />
             <line className="st5" x1={221} y1={16} x2={253} y2={16} />
         </g>
         <g className={xBleedValveState ? 'hide' : ''}>
+            {/* X Bleed valve closed */}
             <line className="st5" x1={237} y1={0} x2={237} y2={32} />
         </g>
     </SvgGroup>
@@ -290,32 +369,13 @@ const Ground = () => {
     return null;
 };
 
-const Pack = ({ isLeftPackOpen, isRightPackOpen, isxBleedValueOpen, pack1Fault, pack2Fault }) => {
+const Pack = ({ isLeftPackOpen, isRightPackOpen, isxBleedValueOpen, pack1Fault, pack2Fault, eng1PackInTmp, eng2PackInTmp, apuPackInTmp, eng1PackOutTmp, eng2PackOutTmp, apuPackOutTmp }) => {
     const [isApuBleedValueOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 500);
 
     const [isEng1Running] = useSimVar('L:A32NX_ENGINE_STATE:1', 'Number', 500);
     const [isEng2Running] = useSimVar('L:A32NX_ENGINE_STATE:2', 'Number', 500);
     const [isEng1ProvideBleed] = useSimVar('BLEED AIR ENGINE:1', 'Bool', 500);
     const [isEng2ProvideBleed] = useSimVar('BLEED AIR ENGINE:1', 'Bool', 500);
-
-    const [eng1Tmp] = useSimVar('ENG EXHAUST GAS TEMPERATURE:1', 'Celsius', 500);
-    const [eng2Tmp] = useSimVar('ENG EXHAUST GAS TEMPERATURE:2', 'Celsius', 500);
-    const [apuTmp] = useSimVar('L:A32NX_APU_EGT', 'Celsius', 500);
-
-    const engTempOffsetH = -510;
-    const packInMultiplier = 0.9;
-    const packOutMultiplier = 0.055;
-    const packInMultiplierApu = 0.8;
-    const packOutMultiplierApu = 0.1;
-
-    const eng1PackInTmp = Math.random() * (eng1Tmp + engTempOffsetH) * packInMultiplier;
-    const eng1PackOutTmp = Math.random() * (eng1Tmp + engTempOffsetH) * packOutMultiplier;
-
-    const eng2PackInTmp = Math.random() * (eng2Tmp + engTempOffsetH) * packInMultiplier;
-    const eng2PackOutTmp = Math.random() * (eng2Tmp + engTempOffsetH) * packOutMultiplier;
-
-    const apuPackInTmp = Math.random() * apuTmp * packInMultiplierApu;
-    const apuPackOutTmp = Math.random() * apuTmp * packOutMultiplierApu;
 
     let leftPackInTmp;
     let leftPackOutTmp;
@@ -403,7 +463,7 @@ const Pack = ({ isLeftPackOpen, isRightPackOpen, isxBleedValueOpen, pack1Fault, 
             <text
                 id="left-pack-in"
                 fontSize="22px"
-                x={111}
+                x={103}
                 y={170}
                 className={pack1Fault ? 'warning st2 st6' : 'st7 st2 st6'}
             >
@@ -412,7 +472,7 @@ const Pack = ({ isLeftPackOpen, isRightPackOpen, isxBleedValueOpen, pack1Fault, 
             <text
                 id="left-pack-out"
                 fontSize="22px"
-                x={111}
+                x={109}
                 y={100}
                 className={pack1Fault ? 'warning st2 st6' : 'st7 st2 st6'}
             >
@@ -421,7 +481,7 @@ const Pack = ({ isLeftPackOpen, isRightPackOpen, isxBleedValueOpen, pack1Fault, 
             <text
                 id="right-pack-in"
                 fontSize="22px"
-                x={475}
+                x={461}
                 y={170}
                 className={pack2Fault ? 'warning st2 st6' : 'st7 st2 st6'}
             >
@@ -430,7 +490,7 @@ const Pack = ({ isLeftPackOpen, isRightPackOpen, isxBleedValueOpen, pack1Fault, 
             <text
                 id="right-pack-out"
                 fontSize="22px"
-                x={475}
+                x={467}
                 y={100}
                 className={pack2Fault ? 'warning st2 st6' : 'st7 st2 st6'}
             >
@@ -447,19 +507,20 @@ const RamAir = ({ isRamAirValveOpen }) => (
         { isRamAirValveOpen
             ? (
                 <g>
-                    <line className="st5" x1="284" y1="87" x2="316" y2="87" />
+                    <line className="st5" x1="300" y1="71" x2="300" y2="103" />
                     <line id="ram-air-connection-line" className="st5" x1="300" y1="48" x2="300" y2="71" />
                 </g>
             ) : (
-                <line className="st5" x1="300" y1="71" x2="300" y2="103" />
+                <g>
+                    <line className="st5" x1="284" y1="87" x2="316" y2="87" />
+
+                </g>
             )}
     </g>
 );
 
-const WingAntiIce = () => {
+const WingAntiIce = ({ leftAntiIceFault, rightAntIceFault }) => {
     const [isAntiIceOn] = useSimVar('STRUCTURAL DEICE SWITCH', 'Bool', 500);
-    const [pack1Fault] = useSimVar('L:A32NX_AIRCOND_PACK1_FAULT', 'Bool', 500);
-    const [pack2Fault] = useSimVar('L:A32NX_AIRCOND_PACK1_FAULT', 'Bool', 500);
 
     return (
         <g>
@@ -467,15 +528,15 @@ const WingAntiIce = () => {
                 && (
                     <g>
                         {/* anti ice indicator */}
-                        <polygon className={pack1Fault ? 'warning_trg st5' : 'st5'} points="116,268 116,284 102,276 116,268" />
-                        <polygon className={pack2Fault ? 'warning_trg st5' : 'st5'} points="484,268 484,284 498,276 484,268" />
+                        <polygon className={leftAntiIceFault ? 'warning_trg st5' : 'st5'} points="116,268 116,284 102,276 116,268" />
+                        <polygon className={rightAntIceFault ? 'warning_trg st5' : 'st5'} points="484,268 484,284 498,276 484,268" />
 
                         {/* anti ice text */}
-                        <text x={65} y={268} fontSize="18px" className="st1 st2">ANTI</text>
-                        <text x={58} y={285} fontSize="18px" className="st1 st2">ICE</text>
+                        <text x={45} y={268} fontSize="18px" className="st1 st2">ANTI</text>
+                        <text x={43} y={285} fontSize="18px" className="st1 st2">ICE</text>
 
-                        <text x={535} y={268} fontSize="18px" className="st1 st2">ANTI</text>
-                        <text x={540} y={285} fontSize="18px" className="st1 st2">ICE</text>
+                        <text x={513} y={268} fontSize="18px" className="st1 st2">ANTI</text>
+                        <text x={524} y={285} fontSize="18px" className="st1 st2">ICE</text>
                     </g>
                 )}
         </g>
@@ -530,13 +591,15 @@ const PackFlowIndicator = ({ x, y, packFlowPosition }) => {
     );
 };
 
-const TempBox = ({ x, y }) => {
+const TempBox = ({ x, y, eng1TmpComputed, eng2TmpComputed }) => {
     const [isEng1ProvideBleed] = useSimVar('BLEED AIR ENGINE:1', 'Bool', 500);
     const [isEng2ProvideBleed] = useSimVar('BLEED AIR ENGINE:2', 'Bool', 500);
     const [isEng1Running] = useSimVar('L:A32NX_ENGINE_STATE:1', 'Number', 500);
     const [isEng2Running] = useSimVar('L:A32NX_ENGINE_STATE:2', 'Number', 500);
     const [eng1PsiValue] = useSimVar('TURB ENG BLEED AIR:1', 'Ratio (0-16384)', 500);
     const [eng2PsiValue] = useSimVar('TURB ENG BLEED AIR:1', 'Ratio (0-16384)', 500);
+    const [apuPSI] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 500);
+    const [apuTmp] = useSimVar('L:A32NX_APU_EGT', 'Celsius', 500);
 
     const [isxBleedValueOpen] = useSimVar('L:A32NX_XBLEED_VALVE', 'Bool');
 
@@ -547,16 +610,8 @@ const TempBox = ({ x, y }) => {
 
     const eng1PsiValueCalculated = Math.round(eng1PsiValue / 2.9);
     const eng2PsiValueCalculated = Math.round(eng2PsiValue / 2.9);
-    const apuPSI = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 500);
-
-    const [eng1TmpValue] = useSimVar('ENG EXHAUST GAS TEMPERATURE:1', 'Celsius', 500);
-    const [eng2TmpValue] = useSimVar('ENG EXHAUST GAS TEMPERATURE:2', 'Celsius', 500);
-    const [apuTmp] = useSimVar('L:A32NX_APU_EGT', 'Celsius', 500);
-
-    const engTempOffsetH = -510;
-    const eng1TmpComputed = Math.random() * (eng1TmpValue + engTempOffsetH);
-    const eng2TmpComputed = Math.random() * (eng2TmpValue + engTempOffsetH);
-    const apuTMPcomputed = Math.random() * apuTmp;
+    const apuTMPcomputed = Math.round(apuTmp);
+    const apuPsiValueCalculated = Math.round(apuPSI);
 
     let eng1Tmp;
     let eng1Psi;
@@ -570,7 +625,7 @@ const TempBox = ({ x, y }) => {
         eng2Psi = eng2PsiValueCalculated;
     } else if (isEng2ProvideBleed && !isEng1ProvideBleed && isApuBleedValueOpen && isEng2Running === 1 && !isxBleedValueOpen) {
         eng1Tmp = apuTMPcomputed;
-        eng1Psi = apuPSI;
+        eng1Psi = apuPsiValueCalculated;
         eng2Tmp = eng2TmpComputed;
         eng2Psi = eng2PsiValueCalculated;
     } else if (isEng2ProvideBleed && !isEng1ProvideBleed && isEng2Running === 1 && isxBleedValueOpen) {
@@ -580,9 +635,9 @@ const TempBox = ({ x, y }) => {
         eng2Psi = eng2PsiValueCalculated;
     } else if (isxBleedValueOpen && isApuBleedValueOpen && !isEng1ProvideBleed && !isEng2ProvideBleed && apuStatus) {
         eng1Tmp = apuTMPcomputed;
-        eng1Psi = apuPSI;
+        eng1Psi = apuPsiValueCalculated;
         eng2Tmp = apuTMPcomputed;
-        eng2Psi = apuPSI;
+        eng2Psi = apuPsiValueCalculated;
     } else if (isEng1ProvideBleed && isEng2ProvideBleed && isxBleedValueOpen && isEng1Running === 1 && isEng2Running === 1) {
         eng1Tmp = eng1TmpComputed;
         eng1Psi = eng1PsiValueCalculated;
@@ -605,7 +660,7 @@ const TempBox = ({ x, y }) => {
         eng2Psi = eng2PsiValueCalculated;
     } else if (!isEng1ProvideBleed && !isEng2ProvideBleed && !isxBleedValueOpen && isApuBleedValueOpen) {
         eng1Tmp = apuTMPcomputed;
-        eng1Psi = apuPSI;
+        eng1Psi = apuPsiValueCalculated;
         eng2Tmp = 'XXX';
         eng2Psi = 'xx';
     } else if (isEng1ProvideBleed && isEng1Running === 1 && !isxBleedValueOpen) {
@@ -615,9 +670,9 @@ const TempBox = ({ x, y }) => {
         eng2Psi = 'xx';
     } else if (isEng1ProvideBleed && isEng2ProvideBleed && isEng1Running !== 1 && isEng2Running !== 1 && isxBleedValueOpen) {
         eng1Tmp = apuTMPcomputed;
-        eng1Psi = apuPSI;
+        eng1Psi = apuPsiValueCalculated;
         eng2Tmp = apuTMPcomputed;
-        eng2Psi = apuPSI;
+        eng2Psi = apuPsiValueCalculated;
     } else {
         eng1Tmp = 'XXX';
         eng1Psi = 'xx';
@@ -671,7 +726,7 @@ const IsEngineRunning = () => {
     }
 
     return (
-        <>
+        <g>
             {/* eng1 */}
             <text id="eng-numb-1" x={66} y={400} className={eng1N2BelowIdle && fadecStatusEng1 ? 'warning st1 st2 st6' : 'st1 st2 st6'} fontSize="22px">1</text>
             <line id="left-engine-connection-obj1" className={isEng1Running ? 'st5' : 'warning st5'} x1="121" y1="468" x2="121" y2="423" />
@@ -683,7 +738,7 @@ const IsEngineRunning = () => {
             <line id="right-engine-connection-obj1" className={isEng2Running ? 'st5' : 'warning st5'} x1="390" y1="452" x2="418" y2="452" />
             <line id="right-engine-connection-obj2" className={isEng2Running ? 'st5' : 'warning st5'} x1="391" y1="468" x2="391" y2="452" />
             <line id="right-engine-connection-obj3" className={isEng2Running ? 'st5' : 'warning st5'} x1="479" y1="468" x2="479" y2="424" />
-        </>
+        </g>
     );
 };
 
