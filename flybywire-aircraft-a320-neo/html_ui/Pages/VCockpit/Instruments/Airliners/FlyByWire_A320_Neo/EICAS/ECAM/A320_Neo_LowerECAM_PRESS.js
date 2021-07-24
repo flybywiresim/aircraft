@@ -78,11 +78,11 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlSYS1text.setAttribute("visibility", "visible");
             this.htmlSYS2text.setAttribute("visibility", "hidden");
             this.htmlMANtext.setAttribute("visibility", "hidden");
-            this.htmlTextSafety.setAttribute("visibility", "hidden");
-            this.htmlCabinAltValue.setAttribute("visibility", "hidden");
-            this.htmlCabinVSValue.setAttribute("visibility", "hidden");
-            this.htmlPsiDecimal.setAttribute("visibility", "hidden");
-            this.htmlPsiInt.setAttribute("visibility", "hidden");
+            this.htmlTextSafety.setAttribute("visibility", "visible");
+            this.htmlCabinAltValue.setAttribute("visibility", "visible");
+            this.htmlCabinVSValue.setAttribute("visibility", "visible");
+            this.htmlPsiDecimal.setAttribute("visibility", "visible");
+            this.htmlPsiInt.setAttribute("visibility", "visible");
 
             this.updateThrottler = new UpdateThrottler(200);
         }
@@ -319,7 +319,7 @@ var A320_Neo_LowerECAM_PRESS;
             } else if (parseInt(this.htmlCabinVSValue.textContent) <= 1600 && this.blinkingObjs.indexOf(this.htmlCabinVSValue) != -1) {
                 this.removeHtmlObjFromBlinker(this.htmlCabinVSValue);
             }
-            if (flightPhase == 5 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.htmlPsiDecimal) == -1) {
+            if (flightPhase == 7 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.htmlPsiDecimal) == -1) {
                 this.addHtmlObjToBlinker(this.htmlPsiDecimal);
                 this.addHtmlObjToBlinker(this.htmlPsiInt);
             } else if (pressureDelta < 1 && this.blinkingObjs.indexOf(this.htmlPsiDecimal) != -1) {
