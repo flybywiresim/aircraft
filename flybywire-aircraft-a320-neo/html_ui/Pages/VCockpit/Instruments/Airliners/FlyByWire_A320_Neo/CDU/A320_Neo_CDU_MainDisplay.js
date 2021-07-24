@@ -22,6 +22,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inFocus = false;
         this.lastInput = 0;
         this.clrStop = false;
+        this.allSelected = false;
         this.aocAirportList = new CDUAocAirportList;
         this.initB = false;
         this.PageTimeout = {
@@ -881,6 +882,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     clearFocus() {
         this.inFocus = false;
+        this.allSelected = false;
         Coherent.trigger('UNFOCUS_INPUT_FIELD');
         this._inOutElement.style = null;
         this.getChildById("header").style = null;
@@ -901,7 +903,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (mcduInput === "ENABLED") {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
-
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
                     this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
                     Coherent.trigger('FOCUS_INPUT_FIELD');
@@ -933,6 +934,30 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
                 if (e.altKey || (e.ctrlKey && keycode === KeyCode.KEY_Z)) {
                     this.clearFocus();
+                } else if (e.ctrlKey && keycode === KeyCode.KEY_A) {
+                    this.allSelected = !this.allSelected;
+                    this._inOutElement.style = `display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`;
+                } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
+                    this.forceClearScratchpad();
+                } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
+                    let wordFlag = this.inOut.includes(' ') ? false : true;
+                    for (let i = this.inOut.length; i > 0; i--) {
+                        if (this.inOut.slice(-1) === ' ') {
+                            if (!wordFlag) {
+                                this.onClr();
+                            } else {
+                                wordFlag = true;
+                                break;
+                            }
+                        }
+                        if (this.inOut.slice(-1) !== ' ') {
+                            if (!wordFlag) {
+                                wordFlag = true;
+                            } else {
+                                this.onClr();
+                            }
+                        }
+                    }
                 } else if (e.shiftKey && keycode === KeyCode.KEY_BACK_SPACE) {
                     if (!this.check_clr) {
                         this.onClr();
@@ -956,7 +981,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SLASH", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SLASH", "Number", 1);
                 } else if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
-                    if (!this.clrStop) {
+                    if (this.allSelected) {
+                        this.forceClearScratchpad();
+                    } else if (!this.clrStop) {
                         this.onClr();
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
