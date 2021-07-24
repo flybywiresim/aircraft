@@ -149,6 +149,7 @@ export class ManagedFlightPlan {
             distanceFromPpos,
             timeFromPpos,
             etaFromPpos,
+            magneticVariation: GeoMath.getMagvar(this.activeWaypoint.infos.coordinates.lat, this.activeWaypoint.infos.coordinates.long),
         };
     }
 
