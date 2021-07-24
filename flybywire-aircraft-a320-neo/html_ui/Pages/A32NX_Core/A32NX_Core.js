@@ -58,11 +58,6 @@ class A32NX_Core {
                 module: new A32NX_Speeds(),
                 updateInterval: 500,
             },
-            {
-                name: 'Pack',
-                module: new A32NX_PACK(),
-                updateInterval: 500,
-            },
         ];
 
         this.moduleThrottlers = {};

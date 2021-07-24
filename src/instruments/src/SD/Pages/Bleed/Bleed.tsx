@@ -9,35 +9,136 @@ import { SvgGroup } from '../../Common/SvgGroup';
 
 setIsEcamPage('bleed_page');
 
-export const BleedPage = () => (
-    <EcamPage name="main-bleed">
-        <PageTitle x={8} y={22} text="BLEED" />
+export const BleedPage = () => {
+    const calculatedValues = FakeBleedSystem();
 
-        <BleedFiexdElement />
-        <Valves />
-        <IpAndHpValves x={100} y={367} eng={1} mirrored={false} />
-        <IpAndHpValves x={499.6} y={367} eng={2} mirrored />
-        <Xbleed x={121} y={260} />
-        <Apu x={121} y={276} />
-        <Ground />
-        <Pack />
-        <RamAir />
-        <WingAntiIce />
-        <PackFlowIndicator x={87} y={134} />
-        <PackFlowIndicator x={445} y={134} />
-        <IsEngineRunning />
-        <TempBox x={100} y={317} />
-    </EcamPage>
-);
+    const isRamAirValveOpen = calculatedValues[0];
+    const isLeftPackValveOpen = calculatedValues[1];
+    const isRightPackValveOpen = calculatedValues[2];
+    const packFlowLevel = calculatedValues[3];
+    const isXBleedValveOpen = calculatedValues[4];
+    const leftPackFault = calculatedValues[5];
+    const rightPackFault = calculatedValues[6];
+
+    return (
+        <EcamPage name="main-bleed">
+            <PageTitle x={21} y={33} text="BLEED" />
+
+            <BleedFiexdElement />
+            <Valves />
+
+            <TopTriangles leftPack={isLeftPackValveOpen} rightPack={isRightPackValveOpen} />
+
+            <IpAndHpValves x={100} y={367} eng={1} mirrored={false} />
+            <IpAndHpValves x={499.6} y={367} eng={2} mirrored />
+
+            <Xbleed x={121} y={260} xBleedValveState={isXBleedValveOpen} />
+            <Apu x={121} y={276} />
+
+            <Ground />
+            <Pack isLeftPackOpen={isLeftPackValveOpen} isRightPackOpen={isRightPackValveOpen} isxBleedValueOpen={isXBleedValveOpen} pack1Fault={leftPackFault} pack2Fault={rightPackFault} />
+            <RamAir isRamAirValveOpen={isRamAirValveOpen} />
+            <WingAntiIce />
+            <PackFlowIndicator x={87} y={134} packFlowPosition={packFlowLevel} />
+            <PackFlowIndicator x={445} y={134} packFlowPosition={packFlowLevel} />
+            <IsEngineRunning />
+            <TempBox x={100} y={317} />
+        </EcamPage>
+    );
+};
+
+// this is fake bleed system from currnet js
+function FakeBleedSystem() {
+    const [eng1TLA] = useSimVar('L:A32NX_AUTOTHRUST_TLA:1', 'Number', 500);
+    const [eng2TLA] = useSimVar('L:A32NX_AUTOTHRUST_TLA:2', 'Number', 500);
+    const [eng1State] = useSimVar('L:A32NX_ENGINE_STATE:1', 'Number', 500);
+    const [eng2State] = useSimVar('L:A32NX_ENGINE_STATE:2', 'Number', 500);
+    const [isEng1ProvideBleed] = useSimVar('BLEED AIR ENGINE:1', 'Bool', 500);
+    const [isEng2ProvideBleed] = useSimVar('BLEED AIR ENGINE:2', 'Bool', 500);
+
+    const [isLeftPackButtonPressed] = useSimVar('L:A32NX_AIRCOND_PACK1_TOGGLE', 'Bool', 500);
+    const [isRightPackButtonPressed] = useSimVar('L:A32NX_AIRCOND_PACK2_TOGGLE', 'Bool', 500);
+    const [isApuBleedValueOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 500);
+    const [isRamAirButtonPressed] = useSimVar('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'Bool', 500);
+    const [xBleedValveState] = useSimVar('L:x_bleed_valve', 'Bool', 500);
+    const [packFlowKnob] = useSimVar('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'Number', 500);
+
+    const [isAircraftOnGround] = useSimVar('SIM ON GROUND', 'Bool', 500);
+    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 500);
+    const [deltaPsi] = useSimVar('L:A32NX_DELTA_PSI', 'psi', 500);
+
+    const [eng1N2] = useSimVar('L:A32NX_ENGINE_N2:1', 'Number', 500);
+    const [eng2N2] = useSimVar('L:A32NX_ENGINE_N2:2', 'Number', 500);
+
+    const isEng1Idle = eng1N2 < 58;
+    const isEng2Idle = eng2N2 < 58;
+    const isAircraftOnToga = eng1TLA > 42 && eng2TLA > 42;
+
+    const bothPacksOn = isLeftPackButtonPressed && isRightPackButtonPressed;
+    const singlePackOn = !(isLeftPackButtonPressed && isRightPackButtonPressed) && (isLeftPackButtonPressed || isRightPackButtonPressed);
+
+    // closes the ram on takeoff and landing
+    let isRamAirValveOpen = isRamAirButtonPressed;
+    if (isAircraftOnToga || (isAircraftOnGround && groundSpeed > 70) || deltaPsi > 1) {
+        isRamAirValveOpen = false;
+    }
+
+    // if xbleed valve is open, open xbleed valve
+    // if xbleed valve is auto & apu valve is open, open xbleed valve
+    let isXBleedValveOpen;
+    if (xBleedValveState === 2) {
+        isXBleedValveOpen = true;
+    } else if (isApuBleedValueOpen && xBleedValveState === 1) {
+        isXBleedValveOpen = true;
+    } else {
+        isXBleedValveOpen = false;
+    }
+
+    // closes packs when engines are starting
+    let isLeftPackValveOpen = isLeftPackButtonPressed;
+    let isRightPackValveOpen = isRightPackButtonPressed;
+    if (eng1State === 2 && eng2State === 2 && xBleedValveState) {
+        isLeftPackValveOpen = false;
+        isRightPackValveOpen = false;
+    } else if (eng1State === 2 && !xBleedValveState) {
+        isLeftPackValveOpen = false;
+    } else if (eng2State === 2 && !xBleedValveState) {
+        isRightPackValveOpen = false;
+    }
+
+    // sets pack flow to high if TOGA applied/ single pack on / bleed provided by apu alone
+    let packFlowLevel = packFlowKnob;
+    if (isAircraftOnToga || singlePackOn || (!isEng1ProvideBleed && !isEng2ProvideBleed && isApuBleedValueOpen)) {
+        packFlowLevel = 2;
+    }
+
+    let leftPackFault;
+    if (isLeftPackValveOpen && isEng1ProvideBleed && eng1State !== 0) {
+        leftPackFault = false;
+    } else if (isLeftPackValveOpen && isXBleedValveOpen && eng2State !== 0 && isEng2ProvideBleed) {
+        leftPackFault = false;
+    } else if (isLeftPackValveOpen && isApuBleedValueOpen) {
+        leftPackFault = false;
+    } else if (isLeftPackValveOpen) {
+        leftPackFault = true;
+    }
+
+    let rightPackFault;
+    if (isRightPackValveOpen && isEng2ProvideBleed && eng2State !== 0) {
+        rightPackFault = false;
+    } else if (isRightPackValveOpen && isXBleedValveOpen && eng1State !== 0 && isEng1ProvideBleed) {
+        rightPackFault = false;
+    } else if (isRightPackValveOpen && isApuBleedValueOpen) {
+        rightPackFault = false;
+    } else if (isRightPackValveOpen) {
+        rightPackFault = true;
+    }
+
+    return [isRamAirValveOpen, isLeftPackValveOpen, isRightPackValveOpen, packFlowLevel, isXBleedValveOpen, leftPackFault, rightPackFault];
+}
 
 const BleedFiexdElement = () => (
     <g>
-        {/* triangles above and line under them */}
-        <polyline className="st5" points="121,68 121,49 479,49 479,68" />
-        <polygon className="st5" points="163,43 177,43 170,30 163,43" />
-        <polygon className="st5" points="293,43 307,43 300,30 293,43" />
-        <polygon className="st5" points="423,43 437,43 430,30 423,43" />
-
         {/* indicator arcs */}
         <path className="st12" d="M 76 135 L 88 135 M 154 135 L 166 135" />
         <path className="st9" d="M 88 135 c 15 -25 51 -25 66 0" />
@@ -64,10 +165,20 @@ const BleedFiexdElement = () => (
 
 const Valves = () => (
     <g>
-        <circle className="st5" cx="358" cy="276" r="16" />
-        <circle className="st5" cx="479" cy="227" r="16" />
-        <circle className="st5" cx="121" cy="227" r="16" />
         <circle className="st5" cx="300" cy="87" r="16" />
+    </g>
+);
+
+const TopTriangles = ({ leftPack, rightPack }) => (
+    // triangles above and line under them
+
+    // in amber when pack flow control valves 1 and 2 are fully closed
+    // in amber when the emergency ram air valve is fully closed
+    <g className={leftPack && rightPack ? 'st5' : 'warning st5'}>
+        <polyline points="121,68 121,49 479,49 479,68" />
+        <polygon points="163,43 177,43 170,30 163,43" />
+        <polygon points="293,43 307,43 300,30 293,43" />
+        <polygon points="423,43 437,43 430,30 423,43" />
     </g>
 );
 
@@ -89,20 +200,20 @@ const IpAndHpValves = ({ x, y, eng, mirrored }) => {
                 <circle className="st5" cx={21} cy={40} r="16" />
 
                 {/* eng ip valve */}
-                <g className={isEngProvideBleed ? 'show' : 'hide'}>
+                <g className={isEngProvideBleed ? '' : 'hide'}>
                     <line className="st5" x1={21} y1={24} x2={21} y2={56} />
                     <line id="under-left" className="st5" x1={21} y1={24} x2={21} y2={0} />
                 </g>
-                <g className={isEngProvideBleed ? 'hide' : 'show'}>
+                <g className={isEngProvideBleed ? 'hide' : ''}>
                     <line className="st5" x1={4} y1={40} x2="136" y2={40} />
                 </g>
 
                 {/* eng hp valve */}
-                <g className={engHpValveOpen ? 'show' : 'hide'}>
+                <g className={engHpValveOpen ? '' : 'hide'}>
                     <line className="st5" x1={49} y1={85} x2={81} y2={85} />
                     <line id="left-engine-connection-obj4" className="st5" x1={22} y1={85} x2={50} y2={85} />
                 </g>
-                <g className={engHpValveOpen ? 'hide' : 'show'}>
+                <g className={engHpValveOpen ? 'hide' : ''}>
                     <line className="st5" x1={65} y1={69} x2={65} y2={101} />
                 </g>
             </g>
@@ -110,25 +221,21 @@ const IpAndHpValves = ({ x, y, eng, mirrored }) => {
     );
 };
 
-const Xbleed = ({ x, y }) => {
-    const [xBleedState] = useSimVar('L:A32NX_XBLEED_VALVE', 'Bool');
-    if (xBleedState) {
-        return (
-            <SvgGroup x={x} y={y}>
-                {/* X Bleed valve open */}
-                <line id="center-line-2" className="st5" x1={0} y1={16} x2={222} y2={16} />
-                <line id="center-line-3" className="st5" x1={253} y1={16} x2={219} y2={16} />
-                <line className="st5" x1={221} y1={16} x2={253} y2={16} />
-            </SvgGroup>
-        );
-    }
-    return (
-        <SvgGroup x={x} y={y}>
+const Xbleed = ({ x, y, xBleedValveState }) => (
+    <SvgGroup x={x} y={y}>
+        {/* X Bleed valve closed */}
+        <circle className="st5" cx="358" cy="276" r="16" />
+        <g className={xBleedValveState ? '' : 'hide'}>
             {/* X Bleed valve open */}
+            <line id="center-line-2" className="st5" x1={0} y1={16} x2={222} y2={16} />
+            <line id="center-line-3" className="st5" x1={253} y1={16} x2={219} y2={16} />
+            <line className="st5" x1={221} y1={16} x2={253} y2={16} />
+        </g>
+        <g className={xBleedValveState ? 'hide' : ''}>
             <line className="st5" x1={237} y1={0} x2={237} y2={32} />
-        </SvgGroup>
-    );
-};
+        </g>
+    </SvgGroup>
+);
 
 const Apu = ({ x, y }) => {
     const [isApuMasterSwitchPressed] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 500);
@@ -183,10 +290,7 @@ const Ground = () => {
     return null;
 };
 
-const Pack = () => {
-    const [isLeftPackOpen] = useSimVar('L:A32NX_AIRCOND_PACK1_OPEN', 'Bool', 500);
-    const [isRightPackOpen] = useSimVar('L:A32NX_AIRCOND_PACK2_OPEN', 'Bool', 500);
-    const [isxBleedValueOpen] = useSimVar('L:A32NX_XBLEED_VALVE', 'Bool');
+const Pack = ({ isLeftPackOpen, isRightPackOpen, isxBleedValueOpen, pack1Fault, pack2Fault }) => {
     const [isApuBleedValueOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 500);
 
     const [isEng1Running] = useSimVar('L:A32NX_ENGINE_STATE:1', 'Number', 500);
@@ -194,21 +298,29 @@ const Pack = () => {
     const [isEng1ProvideBleed] = useSimVar('BLEED AIR ENGINE:1', 'Bool', 500);
     const [isEng2ProvideBleed] = useSimVar('BLEED AIR ENGINE:1', 'Bool', 500);
 
-    const [eng1PackInTmp] = useSimVar('L:A32NX_AIRCOND_PACK1_IN_TEMP', 'Celsius', 500);
-    const [eng1PackOutTmp] = useSimVar('L:A32NX_AIRCOND_PACK1_OUT_TEMP', 'Celsius', 500);
-    const [eng2PackInTmp] = useSimVar('L:A32NX_AIRCOND_PACK2_IN_TEMP', 'Celsius', 500);
-    const [eng2PackOutTmp] = useSimVar('L:A32NX_AIRCOND_PACK2_OUT_TEMP', 'Celsius', 500);
-    const [apuPackInTmp] = useSimVar('A32NX_AIRCOND_PACK_APU_IN_TEMP', 'Celsius', 500);
-    const [apuPackOutTmp] = useSimVar('L:A32NX_AIRCOND_PACK_APU_OUT_TEMP', 'Celsius', 500);
+    const [eng1Tmp] = useSimVar('ENG EXHAUST GAS TEMPERATURE:1', 'Celsius', 500);
+    const [eng2Tmp] = useSimVar('ENG EXHAUST GAS TEMPERATURE:2', 'Celsius', 500);
+    const [apuTmp] = useSimVar('L:A32NX_APU_EGT', 'Celsius', 500);
 
-    const [pack1Fault] = useSimVar('L:A32NX_AIRCOND_PACK1_FAULT', 'Bool', 500);
-    const [pack2Fault] = useSimVar('L:A32NX_AIRCOND_PACK1_FAULT', 'Bool', 500);
+    const engTempOffsetH = -510;
+    const packInMultiplier = 0.9;
+    const packOutMultiplier = 0.055;
+    const packInMultiplierApu = 0.8;
+    const packOutMultiplierApu = 0.1;
 
-    let leftPackInTmp = 'xx';
-    let leftPackOutTmp = 'xx';
-    let rightPackInTmp = 'xx';
-    let rightPackOutTmp = 'xx';
+    const eng1PackInTmp = Math.random() * (eng1Tmp + engTempOffsetH) * packInMultiplier;
+    const eng1PackOutTmp = Math.random() * (eng1Tmp + engTempOffsetH) * packOutMultiplier;
 
+    const eng2PackInTmp = Math.random() * (eng2Tmp + engTempOffsetH) * packInMultiplier;
+    const eng2PackOutTmp = Math.random() * (eng2Tmp + engTempOffsetH) * packOutMultiplier;
+
+    const apuPackInTmp = Math.random() * apuTmp * packInMultiplierApu;
+    const apuPackOutTmp = Math.random() * apuTmp * packOutMultiplierApu;
+
+    let leftPackInTmp;
+    let leftPackOutTmp;
+    let rightPackInTmp;
+    let rightPackOutTmp;
     if (isLeftPackOpen && isEng1Running !== 0 && isEng1ProvideBleed) {
         leftPackInTmp = eng1PackInTmp;
         leftPackOutTmp = eng1PackOutTmp;
@@ -218,6 +330,9 @@ const Pack = () => {
     } else if (isLeftPackOpen && isApuBleedValueOpen) {
         leftPackInTmp = apuPackInTmp;
         leftPackOutTmp = apuPackOutTmp;
+    } else {
+        leftPackInTmp = 'xx';
+        leftPackOutTmp = 'xx';
     }
 
     if (isRightPackOpen && isEng2Running !== 0 && isEng2ProvideBleed) {
@@ -229,6 +344,9 @@ const Pack = () => {
     } else if (isRightPackOpen && isApuBleedValueOpen) {
         rightPackInTmp = apuPackInTmp;
         rightPackOutTmp = apuPackOutTmp;
+    } else {
+        rightPackInTmp = 'xx';
+        rightPackOutTmp = 'xx';
     }
 
     return (
@@ -264,6 +382,11 @@ const Pack = () => {
             <text x={508} y={171} className="st8 st2 st13">C</text>
             <text x={500} y={171} className="st8 st2 st13">°</text>
 
+            {/* pack valve circles */}
+            <circle className="st5" cx="479" cy="227" r="16" />
+            <circle className="st5" cx="121" cy="227" r="16" />
+
+            {/* pack valves */}
             <g className={isLeftPackOpen ? '' : 'hide'}>
                 <line className="st5" x1="121" y1="212" x2="121" y2="244" />
             </g>
@@ -317,40 +440,21 @@ const Pack = () => {
     );
 };
 
-const RamAir = () => {
-    const [ramAirButton] = useSimVar('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'Bool', 500);
-    const [pressureDifferent] = useSimVar('L:A32NX_DELTA_PSI', 'psi', 500);
-
-    const [isAircraftOnGround] = useSimVar('SIM ON GROUND', 'Bool', 500);
-    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 500);
-    const isAircraftOnTakeoff = isAircraftOnGround && groundSpeed > 70;
-
-    const [eng1TLA] = useSimVar('L:A32NX_AUTOTHRUST_TLA:1', 'Number', 500);
-    const [eng2TLA] = useSimVar('L:A32NX_AUTOTHRUST_TLA:2', 'Number', 500);
-    const isAircraftOnToga = eng1TLA > 42 && eng2TLA > 42;
-
-    // closes the ram on takeoff and landing
-    let isRamAirValveOpen = ramAirButton;
-    if (isAircraftOnToga || isAircraftOnTakeoff || pressureDifferent > 1) {
-        isRamAirValveOpen = false;
-    }
-
-    return (
-        <g>
-            <text x={282} y={146} className="st1 st2 st6">RAM</text>
-            <text x={282} y={165} className="st1 st2 st6">AIR</text>
-            { isRamAirValveOpen
-                ? (
-                    <g>
-                        <line className="st5" x1="284" y1="87" x2="316" y2="87" />
-                        <line id="ram-air-connection-line" className="st5" x1="300" y1="48" x2="300" y2="71" />
-                    </g>
-                ) : (
-                    <line className="st5" x1="300" y1="71" x2="300" y2="103" />
-                )}
-        </g>
-    );
-};
+const RamAir = ({ isRamAirValveOpen }) => (
+    <g>
+        <text x={282} y={146} className="st1 st2 st6">RAM</text>
+        <text x={282} y={165} className="st1 st2 st6">AIR</text>
+        { isRamAirValveOpen
+            ? (
+                <g>
+                    <line className="st5" x1="284" y1="87" x2="316" y2="87" />
+                    <line id="ram-air-connection-line" className="st5" x1="300" y1="48" x2="300" y2="71" />
+                </g>
+            ) : (
+                <line className="st5" x1="300" y1="71" x2="300" y2="103" />
+            )}
+    </g>
+);
 
 const WingAntiIce = () => {
     const [isAntiIceOn] = useSimVar('STRUCTURAL DEICE SWITCH', 'Bool', 500);
@@ -378,23 +482,7 @@ const WingAntiIce = () => {
     );
 };
 
-const PackFlowIndicator = ({ x, y }) => {
-    const [packFlowKnob] = useSimVar('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'Number', 500);
-    const [isApuBleedValueOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 500);
-
-    const [isLeftPackOpen] = useSimVar('L:A32NX_AIRCOND_PACK1_OPEN', 'Bool', 500);
-    const [isRightPackOpen] = useSimVar('L:A32NX_AIRCOND_PACK2_OPEN', 'Bool', 500);
-    const isAircraftOnSinglePack = !!(!(isLeftPackOpen && isRightPackOpen) && (isLeftPackOpen || isRightPackOpen));
-
-    const [eng1TLA] = useSimVar('L:A32NX_AUTOTHRUST_TLA:1', 'Number', 500);
-    const [eng2TLA] = useSimVar('L:A32NX_AUTOTHRUST_TLA:2', 'Number', 500);
-    const isAircraftOnToga = eng1TLA > 42 && eng2TLA > 42;
-
-    const [isEng1ProvideBleed] = useSimVar('BLEED AIR ENGINE:1', 'Bool', 500);
-    const [isEng2ProvideBleed] = useSimVar('BLEED AIR ENGINE:2', 'Bool', 500);
-
-    const packFlowPosition = (isAircraftOnToga || isAircraftOnSinglePack || (isApuBleedValueOpen && !isEng1ProvideBleed && !isEng2ProvideBleed)) ? 2 : packFlowKnob;
-
+const PackFlowIndicator = ({ x, y, packFlowPosition }) => {
     const packflowRotate = packFlowPosition * 57.5;
 
     const [cockpitSelectedAirTemp1] = useSimVar('L:A320_Neo_AIRCOND_LVL_1', 'Number', 500);
@@ -452,7 +540,6 @@ const TempBox = ({ x, y }) => {
 
     const [isxBleedValueOpen] = useSimVar('L:A32NX_XBLEED_VALVE', 'Bool');
 
-    const [apuN] = useSimVar('L:A32NX_APU_N', 'percent', 500);
     const [isApuBleedValueOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 500);
     const [isApuMasterSwitchPressed] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 500);
     const [isApuBleedSwitchPressed] = useSimVar('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Bool', 500);
@@ -460,11 +547,16 @@ const TempBox = ({ x, y }) => {
 
     const eng1PsiValueCalculated = Math.round(eng1PsiValue / 2.9);
     const eng2PsiValueCalculated = Math.round(eng2PsiValue / 2.9);
-    const apuPSI = Math.round(apuN ? 100 * 0.35 : 0);
+    const apuPSI = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 500);
 
-    const eng1TmpComputed = useSimVar('L:A32NX_ENG1_TEMP', 'Celsius', 500);
-    const eng2TmpComputed = useSimVar('L:A32NX_ENG2_TEMP', 'Celsius', 500);
-    const apuTMPcomputed = useSimVar('L:A32NX_APU_EGT', 'Celsius', 500);
+    const [eng1TmpValue] = useSimVar('ENG EXHAUST GAS TEMPERATURE:1', 'Celsius', 500);
+    const [eng2TmpValue] = useSimVar('ENG EXHAUST GAS TEMPERATURE:2', 'Celsius', 500);
+    const [apuTmp] = useSimVar('L:A32NX_APU_EGT', 'Celsius', 500);
+
+    const engTempOffsetH = -510;
+    const eng1TmpComputed = Math.random() * (eng1TmpValue + engTempOffsetH);
+    const eng2TmpComputed = Math.random() * (eng2TmpValue + engTempOffsetH);
+    const apuTMPcomputed = Math.random() * apuTmp;
 
     let eng1Tmp;
     let eng1Psi;
