@@ -143,6 +143,7 @@
 1. [SOUND] Improved engine startup, idle sounds, and cabin wind - @hotshotp (Boris)
 1. [MODEL] Swap EFIS WPT and VOR D buttons - @tracernz (Mike)
 1. [MODEL] Fix no-smoking/no-PED switch animation - @tracernz (Mike)
+1. [DISPLAYS] Add pixelated screens - @bouveng (Johan Bouveng)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
