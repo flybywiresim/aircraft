@@ -80,11 +80,14 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
                 </g>
             </svg>
         );
-    } if (state === DisplayUnitState.Off) {
+    }
+
+    if (state === DisplayUnitState.Off) {
         return (
             <></>
         );
     }
+
     return (
         <>{children}</>
     );

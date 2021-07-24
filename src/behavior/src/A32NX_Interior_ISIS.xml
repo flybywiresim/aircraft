@@ -2,6 +2,7 @@
     <Template Name="FBW_ISIS_Knob_Template">
         <DefaultTemplateParameters>
             <ID>2</ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <ANIMREF_ID>-1</ANIMREF_ID>
             <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
             <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
@@ -37,7 +38,6 @@
             <SET_STD_CODE>
                 2 16211 (&gt;K:2:KOHLSMAN_SET)
             </SET_STD_CODE>
-            <!--ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Baro_#ID#_pushpull#SUFFIX_ID#</ANIM_NAME_PUSHPULL-->
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
@@ -61,7 +61,6 @@
                         }
                     }
                 </CLOCKWISE_CODE>
-
                 <LEFT_SINGLE_CODE type="rnp">
                     alias bugsActive = (L:A32NX_ISIS_BUGS_ACTIVE, bool);
                     alias baroMode = (L:A32NX_ISIS_BARO_MODE, enum);

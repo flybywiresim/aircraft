@@ -39,26 +39,21 @@ type AirspeedIndicatorProps = {
     bugs: Bug[]
 }
 
-export const AirspeedIndicator: React.FC<AirspeedIndicatorProps> = ({ indicatedAirspeed, bugs }) => {
-    const createTick = (elementValue: number, offset: number) => <Tick offset={offset} airspeed={elementValue} />;
-    const createBug = (bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />;
-
-    return (
-        <g id="AirspeedIndicator">
-            <svg x={0} y={112} width={108} height={296} viewBox="0 0 108 296">
-                <VerticalTape
-                    displayRange={42}
-                    valueSpacing={5}
-                    distanceSpacing={16}
-                    graduationElementFunction={createTick}
-                    bugs={bugs}
-                    bugElementFunction={createBug}
-                    tapeValue={indicatedAirspeed}
-                    lowerLimit={30}
-                    upperLimit={660}
-                />
-            </svg>
-            <SpeedtapeArrow />
-        </g>
-    );
-};
+export const AirspeedIndicator: React.FC<AirspeedIndicatorProps> = ({ indicatedAirspeed, bugs }) => (
+    <g id="AirspeedIndicator">
+        <svg x={0} y={112} width={108} height={296} viewBox="0 0 108 296">
+            <VerticalTape
+                displayRange={42}
+                valueSpacing={5}
+                distanceSpacing={16}
+                graduationElementFunction={(elementValue: number, offset: number) => <Tick offset={offset} airspeed={elementValue} />}
+                bugs={bugs}
+                bugElementFunction={(bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />}
+                tapeValue={indicatedAirspeed}
+                lowerLimit={30}
+                upperLimit={660}
+            />
+        </svg>
+        <SpeedtapeArrow />
+    </g>
+);

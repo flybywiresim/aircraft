@@ -46,7 +46,6 @@ export const Att10sFlag: React.FC = ({ children }) => {
                         y="186"
                     >
                         {`ATT ${Math.max(0, Math.ceil(timer!)).toString().padStart(2, '0')}s`}
-
                     </text>
                 </g>
             </g>
