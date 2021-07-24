@@ -232,7 +232,7 @@ function makePathFromGeometry(geometry: Geometry, mapParams: MapParameters): str
                     y = MathUtils.fastToFixed(outY, 1);
                     const cw = transition.clockwise;
 
-                    path.push(`A ${r} ${r} 0 0 ${cw ? 1 : 0} ${x} ${y}`);
+                    path.push(`A ${r} ${r} 0 ${transition.angle >= 180 ? 1 : 0} ${cw ? 1 : 0} ${x} ${y}`);
                 }
             }
 
