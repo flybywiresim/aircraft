@@ -14,6 +14,7 @@ setIsEcamPage('eng_page');
 
 export const EngPage: FC = () => {
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
 
     return (
         <EcamPage name="main-eng">
@@ -39,11 +40,13 @@ export const EngPage: FC = () => {
             <line className="Indicator" x1={350} y1={340} x2={375} y2={342} />
 
             <line className="Indicator" x1={250} y1={370} x2={225} y2={372} />
-            <text x={300} y={370} className="FillWhite FontSmall TextCenter">N2</text>
+            <text x={300} y={370} className="FillWhite FontSmall TextCenter">&nbsp;&nbsp;&nbsp; N2</text>
             <line className="Indicator" x1={350} y1={370} x2={375} y2={372} />
 
+            <text x={300} y={420} className={`FillWhite FontSmall TextCenter ${engSelectorPosition !== 2 && 'Hidden'}`}>IGN</text>
+
             <line className="Indicator" x1={250} y1={488} x2={225} y2={490} />
-            <text x={300} y={485} className="FillCyan FontSmall TextCenter">PSI</text>
+            <text x={300} y={490} className="FillCyan FontSmall TextCenter">PSI</text>
             <line className="Indicator" x1={350} y1={488} x2={375} y2={490} />
 
             <EngineColumn x={210} y={40} engineNumber={2} />
@@ -59,50 +62,106 @@ interface EngineColumnProps {
 }
 
 const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
+    const [isEngineStarting] = useSimVar(`GENERAL ENG STARTER:${engineNumber}`, 'bool', 300);
+    const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
+    const [isValveOpen, setIsValveOpen] = useState(false);
+    const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
+
+    useEffect(() => {
+        if (n2Percent >= 50) {
+            setIsValveOpen(false);
+        }
+    }, [n2Percent]);
+
+    useEffect(() => {
+        if (isEngineStarting && n2Percent < 50) {
+            setTimeout(() => setIsValveOpen(true), 1200);
+        } else {
+            setTimeout(() => setIsValveOpen(false), 1200);
+        }
+
+        return () => clearTimeout();
+    }, [isEngineStarting]);
+
+    // const [isEngineOneStarting] = useSimVar('GENERAL ENG STARTER:1', 'bool', 500);
+    // const [isEngineOneIgniting] = useSimVar('TURB ENG IS IGNITING:1', 'bool');
+    // const [engineOneN2Percent] = useSimVar('ENG N2 RPM:1', 'percent');
+
+    // const [isEngineTwoStarting] = useSimVar('GENERAL ENG STARTER:2', 'bool', 500);
+    // const [isEngineTwoIgniting] = useSimVar('TURB ENG IS IGNITING:2', 'bool');
+    // const [engineTwoN2Percent] = useSimVar('ENG N2 RPM:2', 'percent');
+
+    // if (engineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
+    //     if (currentState !== Definitions.IGN_STATE.NONE) {
+    //         return currentState;
+    //     }
+    //     if (this._lastUsedIgniter === Definitions.IGN_STATE.NONE
+    //         || this._lastUsedIgniter === Definitions.IGN_STATE.B) {
+    //         return Definitions.IGN_STATE.A;
+    //     } if (this._lastUsedIgniter === Definitions.IGN_STATE.A) {
+    //         return Definitions.IGN_STATE.B;
+    //     }
+    // }
+    // return Definitions.IGN_STATE.NONE;
+
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
-    const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'number', 2000);
-    const [pressureClassName, setPressureClassName] = useState('');
+    const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'number', 4000);
+    const [shouldPressurePulse, setShouldPressurePulse] = useState(false);
+    const [shouldQuantityPulse, setShouldQuantityPulse] = useState(false);
 
     const [fuelUsed] = useSimVar(`L:A32NX_FUEL_USED:${engineNumber}`, 'number', 500);
     // Fuel used has a step of 10 when in Kilograms and 20 when in imperial pounds
-    const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed / 20) * 20;
+    const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed * 2.20462 / 20) * 20;
 
-    const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 150); //* 0.01
+    const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 200);
     const OIL_QTY_MAX = 17.1;
-    const displayedEngineOilQuantity = (Math.round((engineOilQuantity / 100) * OIL_QTY_MAX / 0.5) * 0.5).toFixed(1); // Engine oil quantity has a step of 0.2
+    const OIL_QTY_LOW_ADVISORY = 3; // FIXME: this value is only a standin!!!
+    const displayedEngineOilQuantity = engineOilQuantity === 100 ? OIL_QTY_MAX : Math.round((engineOilQuantity / 100) * OIL_QTY_MAX / 0.5) * 0.5; // Engine oil quantity has a step of 0.2
 
-    const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 200);
+    const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
-    const OIL_PSI_VLOW_LIMIT = 17;
+    const OIL_PSI_VLOW_LIMIT = 12;
+    const [psiNeedleRed, setPsiNeedleRed] = useState(true);
 
-    const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 200);
+    function handlePsiReadoutStyle() {
+        if (engineOilPressure <= OIL_PSI_VLOW_LIMIT) {
+            setPsiNeedleRed(true);
+        }
+        if (psiNeedleRed && engineOilPressure >= OIL_PSI_VLOW_LIMIT + 0.5) {
+            setPsiNeedleRed(false);
+        }
+    }
+
+    const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 250);
     const displayedEngineOilTemperature = Math.round(engineOilTemperature / 5) * 5; // Engine oil temperature has a step of 5
 
     const [n1Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number');
 
     const [n2Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number'); // FIXME: should have a different value than N1, currently API limited
 
-    const [isValveOpen, setIsValveOpen] = useState(false);
-
     useEffect(() => {
-        if (flightPhase === 2 || flightPhase === 6 || engineOilPressure <= OIL_PSI_VLOW_LIMIT) {
-            if (engineOilPressure >= OIL_PSI_MAX - 1) {
-                setPressureClassName('animate-pulse');
+        if (flightPhase === 2 || flightPhase === 6) {
+            if (engineOilPressure > OIL_PSI_MAX - 1 || (engineOilPressure < OIL_PSI_VLOW_LIMIT && n2Percent > 75)) {
+                setShouldPressurePulse(true);
             }
-            if (engineOilPressure <= OIL_PSI_VLOW_LIMIT) {
-                setPressureClassName('animate-pulse RedLine');
+            if (shouldPressurePulse && engineOilPressure < OIL_PSI_MAX - 4 && engineOilPressure > OIL_PSI_MAX + 2) {
+                setShouldPressurePulse(false);
             }
-            if (pressureClassName.length > 0) {
-                if (engineOilPressure <= OIL_PSI_MAX - 4 || engineOilPressure >= OIL_PSI_VLOW_LIMIT + 0.5) {
-                    setPressureClassName('');
-                }
+
+            if (engineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
+                setShouldQuantityPulse(true);
+            }
+            if (shouldQuantityPulse && engineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
+                setShouldPressurePulse(false);
             }
         } else {
-            setPressureClassName('');
+            setShouldPressurePulse(false);
+            setShouldQuantityPulse(false);
         }
-    }, [flightPhase, engineOilPressure]);
+        handlePsiReadoutStyle();
+    }, [flightPhase, engineOilPressure, engineOilQuantity]);
 
     function getNeedleValue(value: any, max: number): number {
         const numberValue = (Number)(value);
@@ -120,20 +179,61 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             <line className="GaugeMarking" x1={x} y1={y + 35} x2={x} y2={y + 40} />
             <line className="GaugeMarking" x1={x + 45} y1={y + 85} x2={x + 51} y2={y + 85} />
             <Arc x={x} y={y + 85} radius={50} toValue={100} scaleMax={100} className="WhiteLine NoFill" />
-            <Needle x={x} y={y + 85} length={60} scaleMax={100} value={getNeedleValue(engineOilQuantity, OIL_QTY_MAX)} className="GreenLine NoFill" dashOffset={-40} />
-            <text x={x + 5} y={y + 85} className="FillGreen FontLarge TextCenter">
-                <tspan className="FontLarge">{displayedEngineOilQuantity.toString().split('.')[0]}</tspan>
+            <Needle
+                x={x}
+                y={y + 85}
+                length={60}
+                scaleMax={100}
+                value={getNeedleValue(engineOilQuantity, OIL_QTY_MAX)}
+                className={`NoFill ${displayedEngineOilQuantity === 0 && 'Hidden'} ${shouldQuantityPulse ? 'LinePulse' : 'GreenLine '}`}
+                dashOffset={-40}
+            />
+            <Needle
+                x={x}
+                y={y + 85}
+                length={60}
+                scaleMax={100}
+                value={OIL_QTY_LOW_ADVISORY}
+                className="NoFill AmberHeavy"
+                dashOffset={-50}
+            />
+            <Needle
+                x={x}
+                y={y + 85}
+                length={50}
+                scaleMax={100}
+                value={OIL_QTY_LOW_ADVISORY + 1}
+                className="NoFill AmberLine"
+                dashOffset={-45}
+            />
+            <text x={x + 5} y={y + 85} className={`FontLarge TextCenter ${shouldQuantityPulse ? 'FillPulse' : 'FillGreen'}`}>
+                <tspan className="FontLarge">{displayedEngineOilQuantity.toFixed(1).split('.')[0]}</tspan>
                 <tspan className="FontSmall">.</tspan>
-                <tspan className="FontSmall">{displayedEngineOilQuantity.toString().split('.')[1]}</tspan>
+                <tspan className="FontSmall">{displayedEngineOilQuantity.toFixed(1).split('.')[1]}</tspan>
             </text>
-
             <line className="GaugeMarking" x1={x} y1={y + 110} x2={x} y2={y + 115} />
             <line className="GaugeMarking" x1={x + 45} y1={y + 160} x2={x + 51} y2={y + 160} />
             <Arc x={x} y={y + 160} radius={50} toValue={100} scaleMax={100} className="WhiteLine NoFill" />
-            <Arc x={x} y={y + 160} radius={50} toValue={13} scaleMax={100} className="RedLine NoFill" />
-            <Needle x={x} y={y + 160} length={60} scaleMax={100} value={getNeedleValue(engineOilPressure, OIL_PSI_MAX)} className={`GreenLine NoFill ${pressureClassName}`} dashOffset={-40} />
-            <text x={x} y={y + 155} className={`FillGreen FontLarge TextCenter ${pressureClassName}`}>{displayedEngineOilPressure}</text>
+            <Arc x={x} y={y + 160} radius={50} toValue={OIL_PSI_VLOW_LIMIT} scaleMax={100} className="RedLine NoFill" />
+            <Needle
+                x={x}
+                y={y + 160}
+                length={60}
+                scaleMax={100}
+                value={getNeedleValue(engineOilPressure, OIL_PSI_MAX)}
+                // eslint-disable-next-line no-nested-ternary
+                className={`NoFill ${shouldPressurePulse ? 'LinePulse' : psiNeedleRed ? 'RedLine' : 'GreenLine'}`}
+                dashOffset={-40}
+            />
 
+            <text
+                x={x}
+                y={y + 155}
+                // eslint-disable-next-line no-nested-ternary
+                className={`FontLarge TextCenter ${shouldPressurePulse ? 'FillPulse' : psiNeedleRed ? 'FillRed' : 'FillGreen'}`}
+            >
+                {displayedEngineOilPressure}
+            </text>
             <text x={x} y={y + 220} className="FillGreen FontLarge TextCenter">{displayedEngineOilTemperature}</text>
             <text x={x} y={y + 270} className="FillGreen TextCenter">
                 <tspan className="FontLarge">{n1Vibration.toFixed(1).toString().split('.')[0]}</tspan>
@@ -146,12 +246,14 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 <tspan className="FontSmall">{n2Vibration.toFixed(1).toString().split('.')[1]}</tspan>
             </text>
 
-            <g>
-                <circle r={12} cx={420} cy={456} />
-                <line id="StartValveRight_CLOSED" x1={408} y1={456} x2={432} y2={456} className={`${isValveOpen && 'hidden'}`} />
-                <line id="StartValveRight_OPEN" x1={420} y1={436} x2={420} y2={468} className={`${!isValveOpen && 'hidden'}`} />
-                <line id="ValveRightBleed" x1={420} y1={468} x2={420} y2={476} />
+            <text x={x} y={y + 345} className="FillGreen FontMedium TextCenter">AB</text>
+            <g className="StartValveDiagram">
+                <circle r={14} cx={x} cy={y + 375} />
+                <line x1={x} y1={y - 20 + 375} x2={x} y2={y + 14 + 375} className={`${!isValveOpen && 'Hidden'}`} />
+                <line x1={x - 14} y1={y + 375} x2={x + 14} y2={y + 375} className={`${isValveOpen && 'Hidden'}`} />
+                <line x1={x} y1={y + 13 + 375} x2={x} y2={y + 20 + 375} />
             </g>
+            <text x={x} y={y + 410} className="FillGreen FontLarge TextCenter">{apuBleedPressure}</text>
         </SvgGroup>
     );
 };

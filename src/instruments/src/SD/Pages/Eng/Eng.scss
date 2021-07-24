@@ -11,7 +11,9 @@
     .FontSmall {
         font-size: 16px;
     }
-    .FontMedium
+    .FontMedium{
+        font-size: 18px;
+    }
     .FontLarge {
         font-size: 20px;
     }
@@ -41,9 +43,16 @@
     .FillBlack {
       fill: $display-background;
     }
+    .FillRed {
+        fill: $display-red;
+    }
     .GreenLine {
       stroke: $display-green;
       stroke-width: 2;
+    }
+    .AmberHeavy  {
+        stroke: $display-amber;
+        stroke-width: 6;
     }
     .AmberLine {
       stroke: $display-amber;
@@ -61,7 +70,44 @@
         stroke: $display-green;
         stroke-width: 2;
     }
-    .Hide {
+    .Hidden {
       display: none;
+    }
+    .FillPulse {
+        animation: fill-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        @keyframes fill-pulse {
+            0%, 100% {
+              fill: $display-green;
+            }
+            50% {
+                fill: hsl(126, 93%, 17%);
+            }
+        }
+    }
+    .LinePulse {
+        animation: line-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        @keyframes line-pulse {
+            0%, 100% {
+              stroke: $display-green;
+            }
+            50% {
+              stroke: hsl(126, 93%, 17%);
+            }
+        }
+    }
+    .StartValveDiagram {
+        stroke: $display-green;
+        stroke-width: 2;
+        &path {
+            fill: none;
+        }
+        &circle {
+            fill: rgba(4, 4, 5, 1);
+        }
+        &line {
+            fill: $display-green
+        }
     }
 }
