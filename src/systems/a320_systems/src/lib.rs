@@ -193,6 +193,7 @@ impl SimulationElement for A320 {
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
         self.pressurization.accept(visitor);
+        self.pressurization_overhead.accept(visitor);
 
         visitor.visit(self);
     }

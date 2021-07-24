@@ -146,9 +146,9 @@ pub struct PressurizationOverheadPanel {
 impl PressurizationOverheadPanel {
     pub fn new() -> Self {
         Self {
-            mode_sel: AutoManFaultPushButton::new_auto("MODE_SEL"),
-            ldg_elev_knob: ValueKnob::new_with_value("LDG_ELEV", -2000.),
-            ditching: NormalOnPushButton::new_normal("DITCHING"),
+            mode_sel: AutoManFaultPushButton::new_auto("PRESS_MODE_SEL"),
+            ldg_elev_knob: ValueKnob::new_with_value("PRESS_LDG_ELEV", -2000.),
+            ditching: NormalOnPushButton::new_normal("PRESS_DITCHING"),
         }
     }
 
@@ -265,23 +265,27 @@ mod tests {
         }
 
         fn command_ditching_pb_on(mut self) -> Self {
-            self.write("OVHD_DITCHING_PB_IS_ON", true);
+            self.write("OVHD_PRESS_DITCHING_PB_IS_ON", true);
             self
         }
 
         fn command_mode_sel_pb_auto(mut self) -> Self {
-            self.write("OVHD_MODE_SEL_PB_IS_AUTO", true);
+            self.write("OVHD_PRESS_MODE_SEL_PB_IS_AUTO", true);
             self
         }
 
         fn command_mode_sel_pb_man(mut self) -> Self {
-            self.write("OVHD_MODE_SEL_PB_IS_AUTO", false);
+            self.write("OVHD_PRESS_MODE_SEL_PB_IS_AUTO", false);
             self
         }
 
         fn command_ldg_elev_knob_value(mut self, value: f64) -> Self {
-            self.write("OVHD_KNOB_LDG_ELEV", value);
+            self.write("OVHD_KNOB_PRESS_LDG_ELEV", value);
             self
+        }
+
+        fn is_mode_sel_pb_auto(&mut self) -> bool {
+            self.read("OVHD_PRESS_MODE_SEL_PB_IS_AUTO")
         }
     }
 
@@ -485,6 +489,13 @@ mod tests {
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
                 < Ratio::new::<percent>(1.)
         );
+    }
+
+    #[test]
+    fn cpc_man_mode_starts_in_auto() {
+        let mut test_bed = test_bed();
+        test_bed.run();
+        assert!(test_bed.is_mode_sel_pb_auto());
     }
 
     #[test]

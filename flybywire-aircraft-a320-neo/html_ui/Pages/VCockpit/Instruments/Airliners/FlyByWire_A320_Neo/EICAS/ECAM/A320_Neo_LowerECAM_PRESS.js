@@ -72,8 +72,6 @@ var A320_Neo_LowerECAM_PRESS;
             this.oldActiveSystemValue = 0;
             this.oldManModValue = 0;
 
-            this.manModeTime = 0;
-
             //set initial visibility
             this.htmlSYS1text.setAttribute("visibility", "visible");
             this.htmlSYS2text.setAttribute("visibility", "hidden");
@@ -214,14 +212,16 @@ var A320_Neo_LowerECAM_PRESS;
             const leftPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool"));
             const rightPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
             let landingElev;
-            if (SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet") !== -2000) {
-                landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
+            let landingElevManual;
+            if (SimVar.GetSimVarValue("L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV", "number") !== 0) {
+                landingElev = SimVar.GetSimVarValue("L:A32NX_OVHD_KNOB_PRESS_LDG_ELEV", "feet");
+                landingElevManual = true;
             } else {
                 landingElev = SimVar.GetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet");
+                landingElevManual = false;
             }
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "int");
-            const manMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "Bool");
-            const landingElevMode = SimVar.GetSimVarValue("L:LANDING_ELEV_MODE", "Bool");
+            const manMode = !SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO", "Bool");
 
             const cabinOutletIndicatorRot = this.setMaxIndicatorRotation(outletValveOpenPercent, 0.9, 10, 90, 0);
             const cabinVSIndicatorRot = this.setMaxIndicatorRotation(cabinVSValue, 0.045, 0, 108, -108);
@@ -265,7 +265,7 @@ var A320_Neo_LowerECAM_PRESS;
             this.oldSafetyValue = this.updateValve(this.htmlValveSafety, this.oldSafetyValue, safetyValvePosition, "550px 340px", -90);
 
             //landing elev
-            if (landingElevMode) {
+            if (landingElevManual) {
                 this.oldLandingElev = this.updateValue(this.htmlLdgElevValue, this.oldLandingElev, fastToFixed(landingElev, 0));
                 this.oldLandingElevText = this.updateValue(this.htmlLdgElevText, this.oldLandingElevText, "MAN");
             } else {
@@ -291,7 +291,6 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevValueUnit.setAttribute("visibility", "hidden");
                 this.htmlSYS1text.setAttribute("visibility", "hidden");
                 this.htmlSYS2text.setAttribute("visibility", "hidden");
-                this.manModeTime = Date.now();
                 this.oldManModValue = 1;
             } else if (!manMode && this.oldManModValue) {
                 this.htmlMANtext.setAttribute("visibility", "hidden");
@@ -304,7 +303,6 @@ var A320_Neo_LowerECAM_PRESS;
                 } else {
                     this.htmlSYS2text.setAttribute("visibility", "visible");
                 }
-                this.manModeTime = 0;
                 this.oldManModValue = 0;
             }
 
