@@ -34,9 +34,19 @@ const ecamPages = [
     },
 ];
 
-function getInputs() {
-    const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src'), { withFileTypes: true })
-        .filter((d) => d.isDirectory() && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
+export function getInputs() {
+    const baseInstruments = fs.readdirSync(`${Directories.instruments}/src`, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && fs.existsSync(`${Directories.instruments}/src/${d.name}/config.json`));
+
+    return [
+        ...baseInstruments.map(({ name }) => ({ path: name, name, isInstrument: true })),
+        ...ecamPages.map((def) => ({ ...def, isInstrument: false })),
+    ];
+}
+
+export function getInstrumentsIgniterTasks() {
+    const baseInstruments = fs.readdirSync(`${Directories.instruments}/src`, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && fs.existsSync(`${Directories.instruments}/src/${d.name}/config.json`));
 
     return [
         ...baseInstruments.map(({ name }) => new ExecTask(
@@ -51,5 +61,3 @@ function getInputs() {
         )),
     ];
 }
-
-export default getInputs();
