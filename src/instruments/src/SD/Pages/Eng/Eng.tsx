@@ -43,7 +43,7 @@ export const EngPage: FC = () => {
             <text x={300} y={370} className="FillWhite FontSmall TextCenter">&nbsp;&nbsp;&nbsp; N2</text>
             <line className="Indicator" x1={350} y1={370} x2={375} y2={372} />
 
-            <text x={300} y={420} className={`FillWhite FontSmall TextCenter ${engSelectorPosition !== 2 && 'Hidden'}`}>IGN</text>
+            <text x={300} y={425} className={`FillWhite FontSmall TextCenter ${engSelectorPosition !== 2 && 'Hidden'}`}>IGN</text>
 
             <line className="Indicator" x1={250} y1={488} x2={225} y2={490} />
             <text x={300} y={490} className="FillCyan FontSmall TextCenter">PSI</text>
