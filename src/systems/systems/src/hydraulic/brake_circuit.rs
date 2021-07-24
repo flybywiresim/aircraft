@@ -416,13 +416,13 @@ pub struct AutobrakeDecelerationGovernor {
 }
 impl AutobrakeDecelerationGovernor {
     // Low pass filter for controller acceleration input, time constant in second
-    const ACCELERATION_INPUT_FILTER: f64 = 0.15;
+    const ACCELERATION_INPUT_FILTER: f64 = 0.1;
 
     pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
-            i_gain: 0.02,
-            p_gain: 0.2,
+            i_gain: 0.018,
+            p_gain: 0.18,
             last_error: 0.,
 
             current_output: 0.,

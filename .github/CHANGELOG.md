@@ -5,7 +5,6 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
-1. [ENGINE] Cold Engine start-up model (primary parameters) - @Taz5150 (TazX [Z+2]#0405)
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
@@ -104,6 +103,7 @@
 1. [AP] Improved disengage conditions for ROLL OUT and when excessive pitch or roll attitude - @aguther (Andreas Guther)
 1. [FBW] Improved ground spoiler logic - @aguther (Andreas Guther)
 1. [ATHR] Fixed incorrect THR LK activation when A/THR disconnect buttons have been used - @aguther (Andreas Guther)
+1. [ECAM] Convert Cruise page to React - @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [ATHR] Support flight director off take-off procedure - @aguther (Andreas Guther)
 1. [MCDU] Fixed tropo entry validation - @MisterChocker (Leon)
 1. [AP/FMGC] Improved managed speed and V2 validity - @aguther (Andreas Guther)
@@ -118,10 +118,13 @@
 1. [FMGC] Added reset of fmgc variables - @MisterChocker (Leon)
 1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
 1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
+1. [ENGINE] Cold Engine start-up model (primary parameters) - @Taz5150 (TazX [Z+2]#0405)
+1. [ATSU] Aircraft can only be fueled when on ground - @erso44 (Ersin Karakilic)
 1. [ATHR/FWC] Adapted take-off A/THR engagement and added thrust lever not set warning - @aguther (Andreas Guther)
 1. [TEXTURE] Added a white dot to the test button and corrected DISCH alignment on the fire panel - @ImenesFBW (Imenes)
 1. [ECAM] Added ISA DEV to ECAM - @BlueberryKing (BlueberryKing#6641)
 1. [AOC] Reworked airport handling on AOC Weather Request Page - @MisterChocker (Leon)
+1. [EFB] Add flypad themed simbrief maps to EFB/OFP - @bouveng (Johan Bouveng)
 1. [SOUND] Added blue and yellow electric hydraulic pump sounds - @hotshotp (Boris)
 1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
 1. [ELEC] Improve electrical system implementation to allow for implementing advanced scenarios - @davidwalschots (David Walschots)
@@ -133,7 +136,13 @@
 1. [HYD] Switched hydraulics to new engine model simvars - @Crocket63 (crocket)
 1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
+1. [HYD] Fixed autobrake inputs response for rotating knob type controllers - @Crocket63 (crocket)
 1. [ECAM] Autoswitch ECAM pages use proper FWC phase logic - @2hwk (2Cas#1022)
+1. [MISC] Improved logic for chronometer operations - @sidnov (Sid)
+1. [DISPLAYS] Fix Self-Test no longer triggers when spawning from an in-flight state i.e. cruise/landing/takeoff on runway - @2hwk (2Cas#1022)
+1. [SOUND] Improved engine startup, idle sounds, and cabin wind - @hotshotp (Boris)
+1. [MODEL] Swap EFIS WPT and VOR D buttons - @tracernz (Mike)
+1. [MODEL] Fix no-smoking/no-PED switch animation - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -235,6 +244,7 @@
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
 1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo smoke DISCH, etc.) - @ErickSharp (Erick Torres)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
+1. [EFB] Landing performance calculations page - @matt-winfield (TheMightyMat#0585)
 1. [LIGHTS] Improved Exterior Lights - @Snapmatics (Harry)
 1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
 1. [MCDU] Added custom MCDU font - @tyler58546 (tyler58546)

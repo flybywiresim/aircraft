@@ -867,6 +867,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.mode_reversion_lateral,
           autopilotStateMachineOutput.mode_reversion_vertical,
           autopilotStateMachineOutput.mode_reversion_TRK_FPA,
+          autopilotStateMachineOutput.mode_reversion_triple_click,
+          autopilotStateMachineOutput.mode_reversion_fma,
           autopilotStateMachineOutput.speed_protection_mode,
           autopilotStateMachineOutput.autothrust_mode,
           autopilotStateMachineOutput.Psi_c_deg,
