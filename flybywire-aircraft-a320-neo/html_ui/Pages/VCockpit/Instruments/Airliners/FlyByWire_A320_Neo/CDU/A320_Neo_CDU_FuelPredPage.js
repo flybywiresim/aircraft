@@ -151,12 +151,8 @@ class CDUFuelPredPage {
                     const altEFOBCellVal = (mcdu.getAltEFOB(true) * mcdu._conversionWeight).toFixed(1);
                     altEFOBCellColor = "[color]green";
                     altEFOBCell = altEFOBCellVal;
-                    if (altEFOBCellVal < (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1)) {
+                    if (altEFOBCellVal < (mcdu._minDestFob * mcdu._conversionWeight).toFixed(1)) {
                         altEFOBCellColor = "[color]amber";
-                    }
-                    if (altEFOBCellVal <= 0) {
-                        altEFOBCellColor = "[color]amber";
-                        altEFOBCell = "---.-";
                     }
                     altTimeCellColor = "[color]green";
                 }
