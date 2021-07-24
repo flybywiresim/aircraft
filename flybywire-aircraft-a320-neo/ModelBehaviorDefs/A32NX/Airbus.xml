@@ -1055,6 +1055,15 @@
     </Template>
 
     <Template Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+        <DefaultTemplateParameters>
+            <Node_ID>KNOB_SWITCHING_#ID#</Node_ID>
+            <PART_ID>KNOB_SWITCHING_#ID#</PART_ID>
+            <ANIM_NAME>KNOB_SWITCHING_#ID#</ANIM_NAME>
+            <ANIM_CODE>50</ANIM_CODE>
+            <ANIMTIP_0>Set #TIP_TEXT# to CAPT</ANIMTIP_0>
+            <ANIMTIP_1>Set #TIP_TEXT# to NORM</ANIMTIP_1>
+            <ANIMTIP_2>Set #TIP_TEXT# to F/O</ANIMTIP_2>
+        </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_3States">
                 <WWISE_EVENT>turnknob</WWISE_EVENT>
@@ -1062,7 +1071,7 @@
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                 <ARROW_TYPE>Curved</ARROW_TYPE>
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                <SWITCH_POSITION_VAR>A32NX_#NODE_ID#_Position</SWITCH_POSITION_VAR>
+                <SWITCH_POSITION_VAR>A32NX_#TYPE#_SWITCHING_KNOB</SWITCH_POSITION_VAR>
             </UseTemplate>
         </Component>
   </Template>
