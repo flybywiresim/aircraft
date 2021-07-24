@@ -1,5 +1,5 @@
 use std::time::Duration;
-use uom::si::{f64::*, time::second};
+use uom::si::{f64::*, pressure::inch_of_mercury, time::second, velocity::foot_per_second};
 
 use super::{Read, SimulatorReader};
 
@@ -11,7 +11,9 @@ pub struct UpdateContext {
     indicated_airspeed: Velocity,
     indicated_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
+    ambient_pressure: Pressure,
     is_on_ground: bool,
+    vertical_speed: Velocity,
     longitudinal_acceleration: Acceleration,
 }
 impl UpdateContext {
@@ -19,6 +21,9 @@ impl UpdateContext {
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const INDICATED_ALTITUDE_KEY: &'static str = "INDICATED ALTITUDE";
     pub(crate) const IS_ON_GROUND_KEY: &'static str = "SIM ON GROUND";
+    pub(crate) const AMBIENT_PRESSURE_KEY: &'static str = "AMBIENT PRESSURE";
+    pub(crate) const VERTICAL_SPEED_KEY: &'static str = "VELOCITY WORLD Y";
+
     pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION BODY Z";
 
     pub fn new(
@@ -34,7 +39,9 @@ impl UpdateContext {
             indicated_airspeed,
             indicated_altitude,
             ambient_temperature,
+            ambient_pressure: Pressure::new::<inch_of_mercury>(29.92),
             is_on_ground,
+            vertical_speed: Velocity::new::<foot_per_second>(0.),
             longitudinal_acceleration,
         }
     }
@@ -46,6 +53,12 @@ impl UpdateContext {
             indicated_airspeed: reader.read(UpdateContext::INDICATED_AIRSPEED_KEY),
             indicated_altitude: reader.read(UpdateContext::INDICATED_ALTITUDE_KEY),
             is_on_ground: reader.read(UpdateContext::IS_ON_GROUND_KEY),
+            ambient_pressure: Pressure::new::<inch_of_mercury>(
+                reader.read(UpdateContext::AMBIENT_PRESSURE_KEY),
+            ),
+            vertical_speed: Velocity::new::<foot_per_second>(
+                reader.read(UpdateContext::VERTICAL_SPEED_KEY),
+            ),
             delta: delta_time,
             longitudinal_acceleration: reader.read(UpdateContext::ACCEL_BODY_Z_KEY),
         }
@@ -77,6 +90,14 @@ impl UpdateContext {
 
     pub fn ambient_temperature(&self) -> ThermodynamicTemperature {
         self.ambient_temperature
+    }
+
+    pub fn ambient_pressure(&self) -> Pressure {
+        self.ambient_pressure
+    }
+
+    pub fn vertical_speed(&self) -> Velocity {
+        self.vertical_speed
     }
 
     pub fn is_on_ground(&self) -> bool {
