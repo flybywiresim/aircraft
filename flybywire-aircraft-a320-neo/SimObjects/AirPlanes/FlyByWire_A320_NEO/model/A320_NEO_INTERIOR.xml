@@ -485,19 +485,17 @@
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <!-- NYI
-        <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
-            <NODE_ID>PUSH_EFIS_CS_PFD</NODE_ID>
-            <ANIM_NAME>PUSH_EFIS_CS_PFD</ANIM_NAME>
-            <ID>1</ID>
-        </UseTemplate>
+            <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
+                <NODE_ID>PUSH_EFIS_CS_PFD</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_CS_PFD</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
+            <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
+                <NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_FO_PFD</ANIM_NAME>
+                <ID>2</ID>
+            </UseTemplate>
 
-        <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
-            <NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
-            <ANIM_NAME>PUSH_EFIS_FO_PFD</ANIM_NAME>
-            <ID>2</ID>
-        </UseTemplate>
-        -->
 
             <Component ID="Screens_Left">
                 <DefaultTemplateParameters>
@@ -783,7 +781,7 @@
                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 <TOOLTIPID>Auto brake MAX</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Switch_AntiSkid_Template">
+            <UseTemplate Name="FBW_HANDLING_Switch_AntiSkid_Template">
                 <NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>
                 <PART_ID>Antiskid_Switch</PART_ID>
                 <ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>
@@ -806,7 +804,6 @@
                     <BARO_ID> (L:A32NX_BARO_BUGS_ACTIVE) 0 == if{ 2 } els{ -1 } </BARO_ID>
                     <CLOCKWISE_CONDITION> (H:A320_Neo_SAI_KNOB_BARO_C) ! (>H:A320_Neo_SAI_KNOB_BARO_C) 1</CLOCKWISE_CONDITION>
                     <ANTICLOCKWISE_CONDITION> (H:A320_Neo_SAI_KNOB_BARO_AC) ! (>H:A320_Neo_SAI_KNOB_BARO_AC) 1</ANTICLOCKWISE_CONDITION>
-
                     <ANIMREF_ID>-1</ANIMREF_ID>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STBY_TUNING_KNOB_INCREASE</ANIMTIP_0>
                     <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
@@ -4053,9 +4050,6 @@
             <NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
         </UseTemplate>
          -->
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
-            </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_EFIS_FO_LOUDSPKR</NODE_ID>
             </UseTemplate>
