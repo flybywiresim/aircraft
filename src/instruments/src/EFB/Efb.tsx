@@ -114,8 +114,6 @@ const emptySimbriefData: SimbriefData = {
     costInd: '--',
 };
 
-const navigraph = new NavigraphClient();
-
 const Efb = () => {
     const history = useHistory();
 

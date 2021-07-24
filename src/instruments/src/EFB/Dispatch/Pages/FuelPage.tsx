@@ -220,7 +220,7 @@ export const FuelPage = () => {
                     <div className="w-1/3 mr-3">
                         <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Left Inner Tank</h2>
-                            <div className="flex mt-4">
+                            <div className="mt-4">
                                 <ProgressBar
                                     height="10px"
                                     width="200px"
@@ -232,11 +232,7 @@ export const FuelPage = () => {
                                 />
                                 <div className="fuel-label">
                                     <label className="fuel-content-label text-base" htmlFor="fuel-label">
-                                        {convertFuelValue(LInnCurrent)}
-                                        /
-                                        {round(innerCell())}
-                                        {' '}
-                                        {currentUnit()}
+                                        {`${convertFuelValue(LInnCurrent)}/${round(innerCell())} ${currentUnit()}`}
                                     </label>
                                 </div>
                             </div>
@@ -245,7 +241,7 @@ export const FuelPage = () => {
                     <div className="w-1/3 mx-3">
                         <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Center Tank</h2>
-                            <div className="flex mt-4">
+                            <div className="mt-4">
                                 <ProgressBar
                                     height="10px"
                                     width="200px"
@@ -257,11 +253,7 @@ export const FuelPage = () => {
                                 />
                                 <div className="fuel-label">
                                     <label className="fuel-content-label text-base" htmlFor="fuel-label">
-                                        {convertFuelValueCenter(centerCurrent)}
-                                        /
-                                        {round(centerTank())}
-                                        {' '}
-                                        {currentUnit()}
+                                        {`${convertFuelValueCenter(centerCurrent)}/${round(centerTank())} ${currentUnit()}`}
                                     </label>
                                 </div>
                             </div>
@@ -270,7 +262,7 @@ export const FuelPage = () => {
                     <div className="w-1/3 ml-3">
                         <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Right Inner Tank</h2>
-                            <div className="flex mt-4">
+                            <div className="mt-4">
                                 <ProgressBar
                                     height="10px"
                                     width="200px"
@@ -282,11 +274,7 @@ export const FuelPage = () => {
                                 />
                                 <div className="fuel-label">
                                     <label className="fuel-content-label text-base" htmlFor="fuel-label">
-                                        {convertFuelValue(RInnCurrent)}
-                                        /
-                                        {round(innerCell())}
-                                        {' '}
-                                        {currentUnit()}
+                                        {`${convertFuelValue(RInnCurrent)}/${round(innerCell())} ${currentUnit()}`}
                                     </label>
                                 </div>
                             </div>
@@ -297,7 +285,7 @@ export const FuelPage = () => {
                     <div className="w-4/12 mr-3">
                         <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Left Outer Tank</h2>
-                            <div className="flex mt-4">
+                            <div className="mt-4">
                                 <ProgressBar
                                     height="10px"
                                     width="200px"
@@ -309,11 +297,7 @@ export const FuelPage = () => {
                                 />
                                 <div className="fuel-label">
                                     <label className="fuel-content-label text-base" htmlFor="fuel-label">
-                                        {convertFuelValue(LOutCurrent)}
-                                        /
-                                        {round(outerCell())}
-                                        {' '}
-                                        {currentUnit()}
+                                        {`${convertFuelValue(LOutCurrent)}/${round(outerCell())} ${currentUnit()}`}
                                     </label>
                                 </div>
                             </div>
@@ -363,11 +347,7 @@ export const FuelPage = () => {
                                 <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(totalCurrent() / round(totalFuel())) * 100} />
                                 <div className="fuel-label">
                                     <label className="fuel-content-label text-base" htmlFor="fuel-label">
-                                        {totalCurrent()}
-                                        /
-                                        {round(totalFuel())}
-                                        {' '}
-                                        {currentUnit()}
+                                        {`${totalCurrent()}/${round(totalFuel())} ${currentUnit()}`}
                                     </label>
                                 </div>
                             </div>
@@ -376,7 +356,7 @@ export const FuelPage = () => {
                     <div className="w-4/12 ml-3">
                         <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Right Outer Tank</h2>
-                            <div className="flex mt-4">
+                            <div className="mt-4">
                                 <ProgressBar
                                     height="10px"
                                     width="200px"
@@ -388,11 +368,7 @@ export const FuelPage = () => {
                                 />
                                 <div className="mt-4">
                                     <label className="fuel-content-label" htmlFor="fuel-label">
-                                        {convertFuelValue(ROutCurrent)}
-                                        /
-                                        {round(outerCell())}
-                                        {' '}
-                                        {currentUnit()}
+                                        {`${convertFuelValue(ROutCurrent)}/${round(outerCell())} ${currentUnit()}`}
                                     </label>
                                 </div>
                             </div>
