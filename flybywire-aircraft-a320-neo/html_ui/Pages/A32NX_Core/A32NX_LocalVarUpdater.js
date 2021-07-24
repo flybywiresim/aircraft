@@ -89,8 +89,7 @@ class A32NX_LocalVarUpdater {
                 type: "psi",
                 selector: this._deltaPSI.bind(this),
                 refreshInterval: 1000,
-            },
-
+            }
             // New updaters go here...
         ];
 
