@@ -103,6 +103,8 @@ fn create_aircraft_variable_reader(
     );
     reader.add("PLANE LATITUDE", "degree latitude", 0)?;
     reader.add("PLANE LONGITUDE", "degree longitude", 0)?;
+    reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
+    reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
 
     Ok(reader)
 }
