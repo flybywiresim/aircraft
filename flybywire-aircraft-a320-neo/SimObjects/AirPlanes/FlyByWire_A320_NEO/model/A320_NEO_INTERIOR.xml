@@ -198,18 +198,6 @@
             </UseTemplate>
         </Component>
 
-        <!-- G1000 ###################################### -->
-
-        <Component ID="Screen_emissive" Node="DYN_SCREEN">
-            <Material>
-                <EmissiveFactor>
-                    <Parameter>
-                        <Code>0.5</Code>
-                    </Parameter>
-                </EmissiveFactor>
-            </Material>
-        </Component>
-
         <Component ID="Pedestal_Fwd">
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_1</NODE_ID>
@@ -485,19 +473,17 @@
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <!-- NYI
-        <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
-            <NODE_ID>PUSH_EFIS_CS_PFD</NODE_ID>
-            <ANIM_NAME>PUSH_EFIS_CS_PFD</ANIM_NAME>
-            <ID>1</ID>
-        </UseTemplate>
+            <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
+                <NODE_ID>PUSH_EFIS_CS_PFD</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_CS_PFD</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
+            <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
+                <NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_FO_PFD</ANIM_NAME>
+                <ID>2</ID>
+            </UseTemplate>
 
-        <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
-            <NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
-            <ANIM_NAME>PUSH_EFIS_FO_PFD</ANIM_NAME>
-            <ID>2</ID>
-        </UseTemplate>
-        -->
 
             <Component ID="Screens_Left">
                 <DefaultTemplateParameters>
@@ -511,6 +497,15 @@
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE</ANIMTIP_1>
                     <POTENTIOMETER>88</POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>SCREEN_PFD_L</NODE_ID>
+                    <POTENTIOMETER>88</POTENTIOMETER>
+                    <PART_ID>SCREEN_PFD1</PART_ID>
+                    <CAMERA_TITLE>PFD</CAMERA_TITLE>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -587,13 +582,6 @@
                     <NODE_ID>PRINT_TORN</NODE_ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                    <NODE_ID>SCREEN_PFD_L</NODE_ID>
-                    <POTENTIOMETER>88</POTENTIOMETER>
-                    <PART_ID>SCREEN_PFD1</PART_ID>
-                    <CAMERA_TITLE>PFD</CAMERA_TITLE>
-                </UseTemplate>
-
                 <!-- CPT ND SCREEN -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
@@ -617,14 +605,17 @@
                     <POTENTIOMETER>89</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_L</NODE_ID>
+                    <!-- Pixelated screens needs more light -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
-                            (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100)
+                            2 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -658,6 +649,8 @@
                     <NODE_ID>SCREEN_PFD_R</NODE_ID>
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND SCREEN -->
@@ -669,6 +662,14 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                 </UseTemplate>
 
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>SCREEN_MFD_R</NODE_ID>
+                    <POTENTIOMETER>91</POTENTIOMETER>
+                    <PART_ID>SCREEN_MFD2</PART_ID>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                </UseTemplate>
+
                 <!-- F/O WX SCREEN -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_ND</NODE_ID>
@@ -678,18 +679,13 @@
                     <POTENTIOMETER>95</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                    <NODE_ID>SCREEN_MFD_R</NODE_ID>
-                    <POTENTIOMETER>91</POTENTIOMETER>
-                    <PART_ID>SCREEN_MFD2</PART_ID>
-                </UseTemplate>
-
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_R</NODE_ID>
+                    <!-- Pixelated screens needs more light -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
-                            (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100)
+                            2 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -783,7 +779,7 @@
                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 <TOOLTIPID>Auto brake MAX</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Switch_AntiSkid_Template">
+            <UseTemplate Name="FBW_HANDLING_Switch_AntiSkid_Template">
                 <NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>
                 <PART_ID>Antiskid_Switch</PART_ID>
                 <ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>
@@ -792,12 +788,13 @@
             </UseTemplate>
 
             <Component ID="Standby_Indicator">
-                <!-- TODO: Model change required to not affect brake/clock - Uncomment when this is done -->
-                <!--
+                <!-- TODO: SAI/ISIS/CLOCK/BAT/ATC/RUD TRIM is sharing the same emissive/mesh. Model change needed to split these. So we control the individual emissives with css opacity. -->
+                <!-- SAI/ISIS & CLOCK SCREENS -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
-                    <EMISSIVE_CODE>(L:A32NX_BARO_BRIGHTNESS, Percent over 100)</EMISSIVE_CODE>
-                </UseTemplate> -->
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
                     <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
@@ -806,7 +803,6 @@
                     <BARO_ID> (L:A32NX_BARO_BUGS_ACTIVE) 0 == if{ 2 } els{ -1 } </BARO_ID>
                     <CLOCKWISE_CONDITION> (H:A320_Neo_SAI_KNOB_BARO_C) ! (>H:A320_Neo_SAI_KNOB_BARO_C) 1</CLOCKWISE_CONDITION>
                     <ANTICLOCKWISE_CONDITION> (H:A320_Neo_SAI_KNOB_BARO_AC) ! (>H:A320_Neo_SAI_KNOB_BARO_AC) 1</ANTICLOCKWISE_CONDITION>
-
                     <ANIMREF_ID>-1</ANIMREF_ID>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STBY_TUNING_KNOB_INCREASE</ANIMTIP_0>
                     <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
@@ -882,6 +878,8 @@
                     <POTENTIOMETER>92</POTENTIOMETER>
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
@@ -897,6 +895,8 @@
                     <POTENTIOMETER>93</POTENTIOMETER>
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+                    <!-- Pixelated screens needs more light -->
+                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
@@ -1690,30 +1690,22 @@
                     </UseTemplate>
 
                     <Component ID="ADIRS">
-                        <UseTemplate Name="FBW_Airbus_ADIRS_Light">
+                        <UseTemplate Name="FBW_Airbus_ADIRS_IR_Button">
                             <ID>1</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
 
-                        <UseTemplate Name="FBW_Airbus_ADIRS_Light">
+                        <UseTemplate Name="FBW_Airbus_ADIRS_IR_Button">
                             <ID>2</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
 
-                        <UseTemplate Name="FBW_Airbus_ADIRS_Light">
+                        <UseTemplate Name="FBW_Airbus_ADIRS_IR_Button">
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
 
+                        <!-- ADIRS ON BAT indication -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_ADIRS</NODE_ID>
                             <!--
@@ -1728,51 +1720,27 @@
 
                         <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
                             <ID>1</ID>
-                            <ANIM_CODE>50</ANIM_CODE>
-                            <NODE_ID>KNOB_OVHD_ADIRS_1</NODE_ID>
-                            <ANIM_NAME>KNOB_OVHD_ADIRS_1</ANIM_NAME>
                         </UseTemplate>
 
                         <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
                             <ID>2</ID>
-                            <ANIM_CODE>50</ANIM_CODE>
-                            <NODE_ID>KNOB_OVHD_ADIRS_2</NODE_ID>
-                            <ANIM_NAME>KNOB_OVHD_ADIRS_2</ANIM_NAME>
                         </UseTemplate>
 
                         <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
                             <ID>3</ID>
-                            <ANIM_CODE>50</ANIM_CODE>
-                            <NODE_ID>KNOB_OVHD_ADIRS_3</NODE_ID>
-                            <ANIM_NAME>KNOB_OVHD_ADIRS_3</ANIM_NAME>
                         </UseTemplate>
 
-                        <UseTemplate Name="FBW_Push_Toggle">
-                            <NODE_ID>PUSH_OVHD_ADIRS_1</NODE_ID>
+                        <UseTemplate Name="FBW_Airbus_ADIRS_ADR_Button">
                             <ID>1</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <DUMMY_BUTTON/>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Push_Toggle">
-                            <NODE_ID>PUSH_OVHD_ADIRS_2</NODE_ID>
+                        <UseTemplate Name="FBW_Airbus_ADIRS_ADR_Button">
                             <ID>2</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <DUMMY_BUTTON/>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Push_Toggle">
-                            <NODE_ID>PUSH_OVHD_ADIRS_3</NODE_ID>
+                        <UseTemplate Name="FBW_Airbus_ADIRS_ADR_Button">
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <DUMMY_BUTTON/>
                         </UseTemplate>
 
                     <Component ID="EVAC">
@@ -3797,40 +3765,24 @@
         <Component ID="Airbus_Pedestal_Radios">
             <Component ID="Switching_Panel">
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
-                    <Node_ID>KNOB_SWITCHING_1</Node_ID>
-                    <PART_ID>KNOB_SWITCHING_1</PART_ID>
-                    <ANIM_NAME>KNOB_SWITCHING_1</ANIM_NAME>
-                    <ANIM_CODE>50</ANIM_CODE>
-                    <ANIMTIP_0>Set ATT HDG to CAPT</ANIMTIP_0>
-                    <ANIMTIP_1>Set ATT HDG to NORM</ANIMTIP_1>
-                    <ANIMTIP_2>Set ATT HDG to F/O</ANIMTIP_2>
+                    <ID>1</ID>
+                    <TYPE>ATT_HDG</TYPE>
+                    <TIP_TEXT>ATT HDG</TIP_TEXT>
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
-                    <Node_ID>KNOB_SWITCHING_2</Node_ID>
-                    <PART_ID>KNOB_SWITCHING_2</PART_ID>
-                    <ANIM_NAME>KNOB_SWITCHING_2</ANIM_NAME>
-                    <ANIM_CODE>50</ANIM_CODE>
-                    <ANIMTIP_0>Set AIR DATA to CAPT</ANIMTIP_0>
-                    <ANIMTIP_1>Set AIR DATA to NORM</ANIMTIP_1>
-                    <ANIMTIP_2>Set AIR DATA to F/O</ANIMTIP_2>
+                    <ID>2</ID>
+                    <TYPE>AIR_DATA</TYPE>
+                    <TIP_TEXT>AIR DATA</TIP_TEXT>
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
-                    <Node_ID>KNOB_SWITCHING_3</Node_ID>
-                    <PART_ID>KNOB_SWITCHING_3</PART_ID>
-                    <ANIM_NAME>KNOB_SWITCHING_3</ANIM_NAME>
-                    <ANIM_CODE>50</ANIM_CODE>
-                    <ANIMTIP_0>Set EIS DMC to CAPT</ANIMTIP_0>
-                    <ANIMTIP_1>Set EIS DMC to NORM</ANIMTIP_1>
-                    <ANIMTIP_2>Set EIS DMC to F/O</ANIMTIP_2>
+                    <ID>3</ID>
+                    <TYPE>EIS_DMC</TYPE>
+                    <TIP_TEXT>EIS DMC</TIP_TEXT>
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
-                    <Node_ID>KNOB_SWITCHING_4</Node_ID>
-                    <PART_ID>KNOB_SWITCHING_4</PART_ID>
-                    <ANIM_NAME>KNOB_SWITCHING_4</ANIM_NAME>
-                    <ANIM_CODE>50</ANIM_CODE>
-                    <ANIMTIP_0>Set ECAM/ND XFR to CAPT</ANIMTIP_0>
-                    <ANIMTIP_1>Set ECAM/ND XFR to NORM</ANIMTIP_1>
-                    <ANIMTIP_2>Set ECAM/ND XFR to F/O</ANIMTIP_2>
+                    <ID>4</ID>
+                    <TYPE>ECAM_ND_XFR</TYPE>
+                    <TIP_TEXT>ECAM/ND XFR</TIP_TEXT>
                 </UseTemplate>
             </Component>
         </Component>
@@ -4064,9 +4016,6 @@
         </UseTemplate>
          -->
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_EFIS_FO_LOUDSPKR</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -4257,15 +4206,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>HANDLE_RIGHT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_ADIRS_1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_ADIRS_2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_ADIRS_3</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>

@@ -528,4 +528,121 @@
             </SEQ1_CODE>
         </UseTemplate>
     </Template>
+
+    <Template Name="FBW_AUTOPILOT_Knob_Baro_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
+            <ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
+            <ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
+            <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
+            <ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+            <TEMPLATE_TO_CALL>FBW_AUTOPILOT_Knob_Baro_SubTemplate1</TEMPLATE_TO_CALL>
+        </UseTemplate>
+    </Template>
+    <Template Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate1">
+        <DefaultTemplateParameters>
+            <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
+            <ANIM_NAME>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</ANIM_NAME>
+            <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+        </DefaultTemplateParameters>
+            <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                <UseTemplate Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate2">
+                </UseTemplate>
+            </Component>
+        </Template>
+        <Template Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate2">
+            <DefaultTemplateParameters>
+                <BARO_ID>#ID#</BARO_ID>
+                <ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
+                <ANIM_NAME_PUSH>AUTOPILOT_Knob_Baro_#ID#_push#SUFFIX_ID#</ANIM_NAME_PUSH>
+                <Switch Param="AIRLINER_TYPE">
+                    <Case Value="A320">
+                        <MODE_BARO>0</MODE_BARO>
+                        <MODE_QNH>1</MODE_QNH>
+                        <MODE_STD>2</MODE_STD>
+                        <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Baro_#ID#_pushpull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+                    </Case>
+                </Switch>
+                <Condition Valid="USE_PUSH_STD">
+                    <PUSH/>
+                </Condition>
+            </DefaultTemplateParameters>
+
+            <Switch>
+                <Case Check="AIRLINER_TYPE">
+                    <Switch Param="AIRLINER_TYPE">
+                        <Case Value="A320">
+                            <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                                <ANTICLOCKWISE_CODE>
+                                    #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                                </ANTICLOCKWISE_CODE>
+                                <CLOCKWISE_CODE>
+                                    #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                                </CLOCKWISE_CODE>
+                                <CLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</CLOCKWISE_CONDITION>
+                                <ANTICLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</ANTICLOCKWISE_CONDITION>
+                                <PULL_CODE>
+                                    #MODE_STD# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                                </PULL_CODE>
+                                <PUSH_CODE>
+                                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == if{ #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) } els{ (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) }
+                                </PUSH_CODE>
+                                <CENTER_RADIUS>0</CENTER_RADIUS>
+                                <OVERRIDE_PUSH_ANIM_CODE>0 100 (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == ? 50 (O:_PushAnimVar) ?</OVERRIDE_PUSH_ANIM_CODE>
+                                <COUNT>36</COUNT>
+                            </UseTemplate>
+                        </Case>
+                        <Default>
+                            <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
+                                <ANTICLOCKWISE_CODE>
+                                (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! if{
+                                    #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                                }
+                                </ANTICLOCKWISE_CODE>
+                                <CLOCKWISE_CODE>
+                                (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! if{
+                                    #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                                }
+                                </CLOCKWISE_CODE>
+                                <LEFT_SINGLE_CODE>
+                                    (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! (&gt;L:XMLVAR_Baro#BARO_ID#_ForcedToSTD)
+                                    (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) if{
+                                        (A:KOHLSMAN SETTING MB:1, mbars) 16 * (&gt;L:XMLVAR_Baro#BARO_ID#_SavedPressure)
+                                        #BARO_ID# (&gt;K:BAROMETRIC_STD_PRESSURE)
+                                    } els{
+                                        #BARO_ID# (L:XMLVAR_Baro#BARO_ID#_SavedPressure) (&gt;K:2:KOHLSMAN_SET)
+                                    }
+                                </LEFT_SINGLE_CODE>
+                                <COUNT>36</COUNT>
+                                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                            </UseTemplate>
+                        </Default>
+                    </Switch>
+                </Case>
+                <Default>
+                    <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                        <ANTICLOCKWISE_CODE>#BARO_ID# (&gt;K:KOHLSMAN_DEC)</ANTICLOCKWISE_CODE>
+                        <CLOCKWISE_CODE>#BARO_ID# (&gt;K:KOHLSMAN_INC)</CLOCKWISE_CODE>
+                        <WWISE_EVENT>RMPknob</WWISE_EVENT>
+                        <COUNT>36</COUNT>
+                    </UseTemplate>
+                </Default>
+            </Switch>
+    </Template>
 </ModelBehaviors>

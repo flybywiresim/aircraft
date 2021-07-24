@@ -345,8 +345,8 @@
         <UseTemplate Name="ASOBO_GT_Switch_Dummy">
             <NODE_ID>#LOCK_NODE_ID#</NODE_ID>
             <ANIM_NAME>#LOCK_NODE_ID#</ANIM_NAME>
-            <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1></WWISE_EVENT_1>
+            <WWISE_EVENT_2></WWISE_EVENT_2>
             <LEFT_SINGLE_CODE>(#TOGGLE_SIMVAR#_LOCK) ! (&gt;#TOGGLE_SIMVAR#_LOCK)</LEFT_SINGLE_CODE>
         </UseTemplate>
 
