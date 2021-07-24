@@ -116,6 +116,20 @@ html body {
 
 .leaflet-container {
   @apply rounded-2xl;
+
+  .leaflet-control-attribution {
+    display: none;
+  }
+}
+
+.credits {
+  font-family: 'IBMPlexMono';
+  font-size: 10px;
+  letter-spacing: -0.5px;
+  color: rgba(255, 255, 255, .5);
+  display: block;
+  text-align: right;
+  margin-right: 5px;
 }
 
 /* ---- Dispatch Components ---- */

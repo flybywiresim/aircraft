@@ -51,9 +51,9 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                         </div>
                     </div>
 
-                    <div className="h-3/5 ml-3 mt-3 rounded-2xl overflow-hidden shadow-lg">
+                    <div className="h-3/5 ml-3 mt-3 rounded-2xl shadow-lg">
                         <Map currentFlight={handleGettingCurrentFlightData} forceTileset="carto-dark" disableMenu hideOthers />
-
+                        <small className="credits">Leaflet OpenStreetMap CartoDB &copy;</small>
                     </div>
                 </div>
             </div>
