@@ -26,7 +26,7 @@ const SpeedtapeArrow: React.FC = () => (
     </g>
 );
 
-type BugProps = { bug: Bug, offset: number }
+type BugProps = { offset: number }
 
 const BugElement: React.FC<BugProps> = ({ offset }) => (
     <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
@@ -48,7 +48,7 @@ export const AirspeedIndicator: React.FC<AirspeedIndicatorProps> = ({ indicatedA
                 distanceSpacing={16}
                 graduationElementFunction={(elementValue: number, offset: number) => <Tick offset={offset} airspeed={elementValue} />}
                 bugs={bugs}
-                bugElementFunction={(bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />}
+                bugElementFunction={(bug: Bug, offset: number) => <BugElement offset={offset} />}
                 tapeValue={indicatedAirspeed}
                 lowerLimit={30}
                 upperLimit={660}
