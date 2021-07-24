@@ -1,18 +1,6 @@
-/**
- * This method assembles the airport data which contains the raw data as well as the output that can be seen on the page
- * @param _icao {string}
- * @param _isManaged {boolean}
- * @returns {{output: string, icao: string, isManaged: boolean}}
- */
-function assembleAirportInfo(_icao = "", _isManaged = false) {
-    return { icao: _icao, isManaged: _isManaged, output: `{${!_isManaged || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
-}
-
-const defaultRow = assembleAirportInfo();
-
 class CDUAocAirportList {
     constructor() {
-        this.rows = [defaultRow, defaultRow, defaultRow, defaultRow];
+        this.rows = Array(4).fill(this.getAssembledAirportInfo());
     }
 
     /**
@@ -21,13 +9,23 @@ class CDUAocAirportList {
      * @param _arr {string}
      * @param _alt {string}
      */
-    init(_dep = undefined, _arr = undefined, _alt = undefined) {
+    init(_dep = "", _arr = "", _alt = "") {
         this.rows = [
-            _dep ? assembleAirportInfo(_dep, true) : defaultRow,
-            _arr ? assembleAirportInfo(_arr, true) : defaultRow,
-            _alt ? assembleAirportInfo(_alt, true) : defaultRow,
-            defaultRow
+            this.getAssembledAirportInfo(_dep),
+            this.getAssembledAirportInfo(_arr),
+            this.getAssembledAirportInfo(_alt),
+            this.getAssembledAirportInfo()
         ];
+    }
+
+    /**
+     * This method assembles the airport data which contains the raw data as well as the output that can be seen on the page
+     * @param _icao {string}
+     * @param _isManaged {boolean}
+     * @returns {{output: string, icao: string, isManaged: boolean}}
+     */
+    getAssembledAirportInfo(_icao = "", _isManaged = true) {
+        return { icao: _icao, isManaged: _isManaged && !!_icao, output: `{${!_isManaged || !_icao ? "cyan" : "green"}}${_icao ? _icao : "[ ]"}{end}` };
     }
 
     /**
@@ -35,7 +33,7 @@ class CDUAocAirportList {
      * @param _value {string}
      */
     set arrival(_value) {
-        this.canUpdate(1, _value);
+        this.tryUpdate(1, _value);
     }
 
     /**
@@ -43,7 +41,7 @@ class CDUAocAirportList {
      * @param _value {string}
      */
     set alternate(_value) {
-        this.canUpdate(2, _value);
+        this.tryUpdate(2, _value);
     }
 
     /**
@@ -51,14 +49,14 @@ class CDUAocAirportList {
      * @param _index {number}
      * @param _value {string}
      */
-    canUpdate(_index, _value) {
-        if (this.rows[_index].isManaged || (!this.rows[_index].isManaged && !this.rows[_index].icao)) {
-            this.rows[_index] = assembleAirportInfo(_value, true);
+    tryUpdate(_index, _value) {
+        if (this.rows[_index].isManaged || !this.rows[_index].icao) {
+            this.rows[_index] = this.getAssembledAirportInfo(_value);
         }
     }
 
     set(_index, _value) {
-        this.rows[_index] = _value === FMCMainDisplay.clrValue ? defaultRow : assembleAirportInfo(_value);
+        this.rows[_index] = this.getAssembledAirportInfo(_value === FMCMainDisplay.clrValue ? "" : _value, false);
     }
 
     /**

@@ -386,7 +386,7 @@ export const FuelPage = () => {
                                     bgcolor="#3b82f6"
                                     completed={(Math.max(ROutCurrent, 0) / outerCellGallon) * 100}
                                 />
-                                <div className="fuel-label">
+                                <div className="mt-4">
                                     <label className="fuel-content-label" htmlFor="fuel-label">
                                         {convertFuelValue(ROutCurrent)}
                                         /

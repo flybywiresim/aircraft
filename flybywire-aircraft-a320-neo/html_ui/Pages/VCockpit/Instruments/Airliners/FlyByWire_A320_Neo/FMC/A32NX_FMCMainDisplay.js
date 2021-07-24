@@ -131,9 +131,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._forceNextAltitudeUpdate = undefined;
         this._lastUpdateAPTime = undefined;
         this.updateAutopilotCooldown = undefined;
-        this._lastHasReachFlex = undefined;
-        this._apMasterStatus = undefined;
-        this._lastRequestedFLCModeWaypointIndex = undefined;
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = undefined;
         this._activeCruiseFlightLevelDefaulToFcu = undefined;
@@ -173,6 +170,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
+        this.activeWpIdx = undefined;
     }
 
     Init() {
@@ -424,9 +422,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._forceNextAltitudeUpdate = false;
         this._lastUpdateAPTime = NaN;
         this.updateAutopilotCooldown = 0;
-        this._lastHasReachFlex = false;
-        this._apMasterStatus = false;
-        this._lastRequestedFLCModeWaypointIndex = -1;
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = 0;
         this._activeCruiseFlightLevelDefaulToFcu = false;
@@ -575,8 +570,6 @@ class FMCMainDisplay extends BaseAirliners {
                 if (_lastFlightPhase === FmgcFlightPhases.TAKEOFF) {
                     this.activatePreSelSpeedMach(this.preSelectedClbSpeed);
                 }
-
-                SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
 
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedCrzSpeed);
@@ -915,146 +908,24 @@ class FMCMainDisplay extends BaseAirliners {
     updateAutopilot() {
         const now = performance.now();
         const dt = now - this._lastUpdateAPTime;
-        let apLogicOn = (this._apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1));
         this._lastUpdateAPTime = now;
         if (isFinite(dt)) {
             this.updateAutopilotCooldown -= dt;
         }
-        if (SimVar.GetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number") === 1) {
-            SimVar.SetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number", 0);
-            this.updateAutopilotCooldown = -1;
-        }
-        if (apLogicOn && this.currentFlightPhase >= FmgcFlightPhases.TAKEOFF) {
-            if (this.isHeadingManaged()) {
-                const heading = SimVar.GetSimVarValue("GPS COURSE TO STEER", "degree", "FMC");
-                if (isFinite(heading)) {
-                    Coherent.call("HEADING_BUG_SET", 2, heading);
-                }
-            }
-        }
         if (this.updateAutopilotCooldown < 0) {
             this.updatePerfSpeeds();
             this.updateManagedSpeed();
-            const currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
-            if (currentApMasterStatus !== this._apMasterStatus) {
-                this._apMasterStatus = currentApMasterStatus;
-                apLogicOn = (this._apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1));
-                this._forceNextAltitudeUpdate = true;
-                console.log("Enforce AP in Altitude Lock mode. Cause : AP Master Status has changed.");
-                SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
-                if (this._apMasterStatus) {
-                    if (this.flightPlanManager.getWaypointsCount() === 0) {
-                        this._onModeSelectedAltitude();
-                        this._onModeSelectedHeading();
-                    }
-                }
-            }
-            if (apLogicOn) {
-                if (!Simplane.getAutoPilotFLCActive() && !SimVar.GetSimVarValue("AUTOPILOT AIRSPEED HOLD", "Boolean")) {
-                    SimVar.SetSimVarValue("K:AP_PANEL_SPEED_HOLD", "Number", 1);
-                }
-                if (!SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK", "Boolean")) {
-                    if (!SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "Boolean")) {
-                        SimVar.SetSimVarValue("K:AP_PANEL_HEADING_HOLD", "Number", 1);
-                    }
-                }
+
+            const activeWpIdx = this.flightPlanManager.getActiveWaypointIndex();
+            if (activeWpIdx !== this.activeWpIdx) {
+                this.activeWpIdx = activeWpIdx;
+                this.updateConstraints();
             }
 
-            const currentHasReachedFlex = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35;
-            if (currentHasReachedFlex !== this._lastHasReachFlex) {
-                this._lastHasReachFlex = currentHasReachedFlex;
-                console.log("Current Has Reached Flex = " + currentHasReachedFlex);
-                if (currentHasReachedFlex) {
-                    if (!SimVar.GetSimVarValue("AUTOPILOT THROTTLE ARM", "boolean")) {
-                        //SimVar.SetSimVarValue("K:AUTO_THROTTLE_ARM", "number", 1);
-                    }
-                }
-            }
-            const currentAltitude = Simplane.getAltitude();
-            const groundSpeed = Simplane.getGroundSpeed();
-            const apTargetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
-            let showTopOfClimb = false;
-            let topOfClimbLlaHeading;
-            const planeCoordinates = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-            if (apTargetAltitude > currentAltitude + 40) {
-                const vSpeed = Simplane.getVerticalSpeed();
-                const climbDuration = (apTargetAltitude - currentAltitude) / vSpeed / 60;
-                const climbDistance = climbDuration * groundSpeed;
-                if (climbDistance > 1) {
-                    topOfClimbLlaHeading = this.flightPlanManager.getCoordinatesHeadingAtDistanceAlongFlightPlan(climbDistance);
-                    if (topOfClimbLlaHeading) {
-                        showTopOfClimb = true;
-                    }
-                }
-            }
-            if (showTopOfClimb) {
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 1);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_CLIMB", "number", topOfClimbLlaHeading.lla.lat);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_CLIMB", "number", topOfClimbLlaHeading.lla.long);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_CLIMB", "number", topOfClimbLlaHeading.heading);
-            } else {
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 0);
-            }
+            // TODO: Figure out usage (maybe for atc?)
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MIN_CALCULATED", "knots", Simplane.getStallProtectionMinSpeed());
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MAX_CALCULATED", "knots", Simplane.getMaxSpeed(Aircraft.A320_NEO));
-            if (this.isAltitudeManaged()) {
-                const prevWaypoint = this.flightPlanManager.getPreviousActiveWaypoint();
-                const nextWaypoint = this.flightPlanManager.getActiveWaypoint();
-                if (prevWaypoint && nextWaypoint) {
-                    let targetAltitude = nextWaypoint.legAltitude1;
-                    if (nextWaypoint.legAltitudeDescription === 4) {
-                        targetAltitude = Math.max(nextWaypoint.legAltitude1, nextWaypoint.legAltitude2);
-                    }
-                    let showTopOfDescent = false;
-                    let topOfDescentLat;
-                    let topOfDescentLong;
-                    let topOfDescentHeading;
-                    if (currentAltitude > targetAltitude + 40) {
-                        let vSpeed = Math.abs(Math.min(0, Simplane.getVerticalSpeed()));
-                        if (vSpeed < 200) {
-                            vSpeed = 2000;
-                        }
-                        const descentDuration = Math.abs(targetAltitude - currentAltitude) / vSpeed / 60;
-                        const descentDistance = descentDuration * groundSpeed;
-                        const distanceToTarget = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, nextWaypoint.infos.coordinates);
-                        showTopOfDescent = true;
-                        const f = 1 - descentDistance / distanceToTarget;
-                        topOfDescentLat = Avionics.Utils.lerpAngle(prevWaypoint.infos.lat, nextWaypoint.infos.lat, f);
-                        topOfDescentLong = Avionics.Utils.lerpAngle(prevWaypoint.infos.long, nextWaypoint.infos.long, f);
-                        topOfDescentHeading = nextWaypoint.bearingInFP;
-                    }
-                    if (showTopOfDescent) {
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 1);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_DSCNT", "number", topOfDescentLat);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_DSCNT", "number", topOfDescentLong);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_DSCNT", "number", topOfDescentHeading);
-                    } else {
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
-                    }
-                    const activeWpIdx = this.flightPlanManager.getActiveWaypointIndex();
-                    if (activeWpIdx !== this.activeWpIdx) {
-                        this.activeWpIdx = activeWpIdx;
-                        this.updateConstraints();
-                    }
-                    if (this.constraintAlt) {
-                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate);
-                        this._forceNextAltitudeUpdate = false;
-                    } else {
-                        const altitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-                        if (isFinite(altitude)) {
-                            Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate);
-                            this._forceNextAltitudeUpdate = false;
-                        }
-                    }
-                } else {
-                    const altitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-                    if (isFinite(altitude)) {
-                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", 0);
-                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate);
-                        this._forceNextAltitudeUpdate = false;
-                    }
-                }
-            }
+
             if (!this.flightPlanManager.isActiveApproach()) {
                 const activeWaypoint = this.flightPlanManager.getActiveWaypoint();
                 const nextActiveWaypoint = this.flightPlanManager.getNextActiveWaypoint();
@@ -1071,6 +942,7 @@ class FMCMainDisplay extends BaseAirliners {
                     if (airspeed < 400) {
                         const turnRadius = airspeed * 360 / (1091 * 0.36 / airspeed) / 3600 / 2 / Math.PI;
                         const activateDistance = Math.pow(90 / absPathAngle, 1.6) * turnRadius * 1.2;
+                        const planeCoordinates = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
                         const distanceToActive = Avionics.Utils.computeGreatCircleDistance(planeCoordinates, activeWaypoint.infos.coordinates);
                         if (distanceToActive < activateDistance) {
                             this.flightPlanManager.setActiveWaypointIndex(this.flightPlanManager.getActiveWaypointIndex() + 1);
@@ -1083,55 +955,7 @@ class FMCMainDisplay extends BaseAirliners {
                     this.flightPlanManager.tryAutoActivateApproach();
                 }
             }
-            if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:A320_NEO_FCU_STATE", "number") !== 1) {
-                const currentWaypointIndex = this.flightPlanManager.getActiveWaypointIndex();
-                if (currentWaypointIndex !== this._lastRequestedFLCModeWaypointIndex) {
-                    this._lastRequestedFLCModeWaypointIndex = currentWaypointIndex;
-                    setTimeout(() => {
-                        if (Simplane.getAutoPilotAltitudeManaged()) {
-                            this._onModeManagedAltitude();
-                        }
-                    }, 1000);
-                }
-            }
-
-            if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-                if (Simplane.getAltitudeAboveGround() < 1.5) {
-                    if (this.landingAutoBrakeTimer == null) {
-                        this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-                    }
-                    this.landingAutoBrakeTimer -= dt / 1000;
-                    if (this.landingAutoBrakeTimer <= 0) {
-                        this.landingAutoBrakeTimer = null;
-                        SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
-                    }
-                } else {
-                    //Reset timer to 30 when airborne in case of go around
-                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-                }
-            } else if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
-                if (apLogicOn) {
-                    //depending if on HDR/TRK or NAV mode, select appropriate Alt Mode (WIP)
-                    //this._onModeManagedAltitude();
-                    this._onModeSelectedAltitude();
-                }
-            }
             this.updateAutopilotCooldown = this._apCooldown;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            if (Simplane.getAltitudeAboveGround() < 1.5) {
-                if (this.landingAutoBrakeTimer == null) {
-                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-                }
-                this.landingAutoBrakeTimer -= dt / 1000;
-                if (this.landingAutoBrakeTimer <= 0) {
-                    this.landingAutoBrakeTimer = null;
-                    SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
-                }
-            } else {
-                //Reset timer to 30 when airborne in case of go around
-                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-            }
         }
     }
 
@@ -1253,9 +1077,6 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this.initRadioNav(true);
 
-        this._onModeSelectedHeading();
-        this._onModeSelectedAltitude();
-
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
         CDUPerformancePage.UpdateThrRedAccFromDestination(this);
 
@@ -1266,89 +1087,20 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     onEvent(_event) {
-        if (_event === "MODE_SELECTED_HEADING") {
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-            if (Simplane.getAutoPilotHeadingManaged()) {
-                if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
-                    const currentHeading = Simplane.getHeadingMagnetic();
-                    Coherent.call("HEADING_BUG_SET", 1, currentHeading);
-                }
-            }
-            this._onModeSelectedHeading();
-        }
-        if (_event === "MODE_MANAGED_HEADING") {
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
-            if (this.flightPlanManager.getWaypointsCount() === 0) {
-                return;
-            }
-            this._onModeManagedHeading();
-        }
         if (_event === "MODE_SELECTED_ALTITUDE") {
             this.flightPhaseManager.handleFcuAltKnobPushPull();
-            this._onModeSelectedAltitude();
             this._onStepClimbDescent();
         }
         if (_event === "MODE_MANAGED_ALTITUDE") {
             this.flightPhaseManager.handleFcuAltKnobPushPull();
-            this._onModeManagedAltitude();
             this._onStepClimbDescent();
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
             this.flightPhaseManager.handleFcuAltKnobTurn();
             this._onTrySetCruiseFlightLevel();
         }
-        if (_event === "AP_DEC_HEADING" || _event === "AP_INC_HEADING") {
-            if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
-                const currentHeading = Simplane.getHeadingMagnetic();
-                Coherent.call("HEADING_BUG_SET", 1, currentHeading);
-            }
-            SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
-        }
         if (_event === "VS") {
             this.flightPhaseManager.handleFcuVSKnob();
-        }
-    }
-
-    _onModeSelectedHeading() {
-        if (SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean")) {
-            return;
-        }
-        if (!SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK", "Boolean")) {
-            SimVar.SetSimVarValue("K:AP_PANEL_HEADING_HOLD", "Number", 1);
-        }
-        SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 1);
-        SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
-    }
-
-    _onModeManagedHeading() {
-        if (SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean")) {
-            return;
-        }
-        if (!SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK", "Boolean")) {
-            SimVar.SetSimVarValue("K:AP_PANEL_HEADING_HOLD", "Number", 1);
-        }
-        SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 2);
-        SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 0);
-    }
-
-    _onModeSelectedAltitude() {
-        if (!Simplane.getAutoPilotGlideslopeHold()) {
-            SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
-        }
-        SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
-    }
-
-    _onModeManagedAltitude() {
-        SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 2);
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
-        if (!Simplane.getAutoPilotGlideslopeHold()) {
-            this.requestCall(() => {
-                SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
-            });
         }
     }
 

@@ -2,7 +2,10 @@
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
-use std::{pin::Pin, time::Duration};
+use std::{
+    pin::Pin,
+    time::{Duration, Instant},
+};
 use systems::simulation::Simulation;
 use systems_wasm::{
     electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
@@ -22,6 +25,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             8,
         )?),
         Box::new(Brakes::new(&mut sim_connect.as_mut())?),
+        Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
         Box::new(create_aircraft_variable_reader()?),
         Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
     ]);
@@ -61,7 +65,7 @@ fn create_aircraft_variable_reader(
     reader.add("PUSHBACK STATE", "Enum", 0)?;
     reader.add("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
     reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
-    reader.add("SURFACE TYPE", "Enum", 0)?;
+
     reader.add_with_additional_names(
         "APU GENERATOR SWITCH",
         "Bool",
@@ -87,6 +91,8 @@ fn create_aircraft_variable_reader(
         &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
     );
     reader.add("GPS POSITION LAT", "degree latitude", 0)?;
+    reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
+    reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
 
     Ok(reader)
 }
@@ -110,6 +116,147 @@ fn create_electrical_buses() -> MsfsElectricalBuses {
     buses.add("DC_GND_FLT_SVC", 1, 15);
 
     buses
+}
+
+struct Autobrakes {
+    id_mode_max: sys::DWORD,
+    id_mode_med: sys::DWORD,
+    id_mode_low: sys::DWORD,
+    id_disarm: sys::DWORD,
+
+    low_mode_panel_pushbutton: NamedVariable,
+    med_mode_panel_pushbutton: NamedVariable,
+    max_mode_panel_pushbutton: NamedVariable,
+
+    low_mode_requested: bool,
+    med_mode_requested: bool,
+    max_mode_requested: bool,
+    disarm_requested: bool,
+
+    last_button_press: Instant,
+}
+impl Autobrakes {
+    // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
+    // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
+    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(650);
+
+    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self {
+            // SimConnect inputs masking
+            id_mode_max: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_HI_SET", false)?,
+            id_mode_med: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_MED_SET", false)?,
+            id_mode_low: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_LO_SET", false)?,
+            id_disarm: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_DISARM", false)?,
+
+            low_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
+            med_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
+            max_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
+
+            low_mode_requested: false,
+            med_mode_requested: false,
+            max_mode_requested: false,
+            disarm_requested: false,
+
+            last_button_press: Instant::now(),
+        })
+    }
+
+    fn synchronise_with_sim(&mut self) {
+        if self.low_mode_panel_pushbutton.get_value() {
+            self.set_mode_low();
+        }
+        if self.med_mode_panel_pushbutton.get_value() {
+            self.set_mode_med();
+        }
+        if self.max_mode_panel_pushbutton.get_value() {
+            self.set_mode_max();
+        }
+    }
+
+    fn reset_events(&mut self) {
+        if self.last_button_press.elapsed() > Self::DEFAULT_REARMING_DURATION {
+            self.max_mode_requested = false;
+            self.med_mode_requested = false;
+            self.low_mode_requested = false;
+        }
+        self.disarm_requested = false;
+    }
+
+    fn on_receive_pushbutton_event(&mut self) {
+        self.last_button_press = Instant::now();
+    }
+
+    fn set_mode_max(&mut self) {
+        self.max_mode_requested = true;
+        self.med_mode_requested = false;
+        self.low_mode_requested = false;
+        self.on_receive_pushbutton_event();
+    }
+
+    fn set_mode_med(&mut self) {
+        self.med_mode_requested = true;
+        self.max_mode_requested = false;
+        self.low_mode_requested = false;
+        self.on_receive_pushbutton_event();
+    }
+
+    fn set_mode_low(&mut self) {
+        self.low_mode_requested = true;
+        self.med_mode_requested = false;
+        self.max_mode_requested = false;
+        self.on_receive_pushbutton_event();
+    }
+
+    fn set_disarm(&mut self) {
+        self.disarm_requested = true;
+    }
+}
+impl SimulatorAspect for Autobrakes {
+    fn read(&mut self, name: &str) -> Option<f64> {
+        match name {
+            "AUTOBRAKE_DISARM" => Some(self.disarm_requested as u8 as f64),
+            "OVHD_AUTOBRK_LOW_ON_IS_PRESSED" => Some(self.low_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MED_ON_IS_PRESSED" => Some(self.med_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MAX_ON_IS_PRESSED" => Some(self.max_mode_requested as u8 as f64),
+            _ => None,
+        }
+    }
+
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        match message {
+            SimConnectRecv::Event(e) => {
+                if e.id() == self.id_mode_low {
+                    self.set_mode_low();
+                    true
+                } else if e.id() == self.id_mode_med {
+                    self.set_mode_med();
+                    true
+                } else if e.id() == self.id_mode_max {
+                    self.set_mode_max();
+                    true
+                } else if e.id() == self.id_disarm {
+                    self.set_disarm();
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+
+    fn pre_tick(&mut self, _: Duration) {
+        self.synchronise_with_sim();
+    }
+
+    fn post_tick(
+        &mut self,
+        _: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.reset_events();
+
+        Ok(())
+    }
 }
 
 struct Brakes {
@@ -194,7 +341,7 @@ impl Brakes {
 
     fn synchronise_with_sim(&mut self) {
         // Synchronising WASM park brake state with simulator park brake lever variable
-        let mut current_in_sim_park_brake: f64 = self.park_brake_lever_masked_input.get_value();
+        let current_in_sim_park_brake: f64 = self.park_brake_lever_masked_input.get_value();
 
         if current_in_sim_park_brake != self.last_transmitted_park_brake_lever_position {
             self.receive_a_park_brake_set_event(current_in_sim_park_brake as u32);

@@ -98,5 +98,6 @@ module.exports = {
         SimVar: 'readonly',
         Utils: 'readonly',
         JSX: 'readonly',
+        Coherent: 'readonly',
     },
 };

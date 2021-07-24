@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { join } from 'path';
 import image from '@rollup/plugin-image';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -31,10 +32,10 @@ function babel() {
     });
 }
 
-function postCss(instrumentName, instrumentFolder) {
+function postCss(_, instrumentFolder) {
     let plugins;
 
-    const tailwindConfigPath = `${Directories.instruments}/src/${instrumentFolder}/tailwind.config.js`;
+    const tailwindConfigPath = join(Directories.instruments, 'src', instrumentFolder, 'tailwind.config.js');
 
     if (fs.existsSync(tailwindConfigPath)) {
         plugins = [
@@ -60,7 +61,7 @@ export function baseCompile(instrumentName, instrumentFolder) {
         commonjs({ include: /node_modules/ }),
         babel(),
         typescriptPaths({
-            tsConfigPath: `${Directories.src}/tsconfig.json`,
+            tsConfigPath: join(Directories.src, 'tsconfig.json'),
             preserveExtensions: true,
         }),
         replace({

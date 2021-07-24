@@ -527,7 +527,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={clearInputs}
-                                className="mx-2 w-1/4 font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
+                                className="mx-2 w-1/4 text-lg font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
                                 type="button"
                             >
                                 Clear
