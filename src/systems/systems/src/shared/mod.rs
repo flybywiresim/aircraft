@@ -52,6 +52,10 @@ pub trait EngineCorrectedN2 {
     fn corrected_n2(&self) -> Ratio;
 }
 
+pub trait EngineUncorrectedN2 {
+    fn uncorrected_n2(&self) -> Ratio;
+}
+
 /// The common types of electrical buses within Airbus aircraft.
 /// These include types such as AC, DC, AC ESS, etc.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -224,6 +228,42 @@ impl DelayedTrueLogicGate {
     }
 }
 
+/// The delay pulse logic gate delays the true result of a given expression by the given amount of time.
+/// True will be set as output when time delay is over for one update only, then false.
+/// False results are output immediately.
+pub struct DelayedPulseTrueLogicGate {
+    output: bool,
+    last_gate_output: bool,
+    true_delayed_gate: DelayedTrueLogicGate,
+}
+impl DelayedPulseTrueLogicGate {
+    pub fn new(delay: Duration) -> DelayedPulseTrueLogicGate {
+        DelayedPulseTrueLogicGate {
+            output: false,
+            last_gate_output: false,
+            true_delayed_gate: DelayedTrueLogicGate::new(delay),
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
+        self.true_delayed_gate.update(&context, expression_result);
+
+        let gate_out = self.true_delayed_gate.output();
+
+        if gate_out && !self.last_gate_output {
+            self.output = true;
+        } else {
+            self.output = false;
+        }
+
+        self.last_gate_output = gate_out;
+    }
+
+    pub fn output(&self) -> bool {
+        self.output
+    }
+}
+
 /// The delay logic gate delays the false result of a given expression by the given amount of time.
 /// True results are output immediately. Starts with a false result state.
 pub struct DelayedFalseLogicGate {
@@ -279,7 +319,7 @@ pub(crate) fn calculate_towards_target_temperature(
 }
 
 // Interpolate values_map_y at point value_at_point in breakpoints break_points_x
-pub(crate) fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
+pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
     debug_assert!(xs.len() == ys.len());
     debug_assert!(xs.len() >= 2);
     debug_assert!(ys.len() >= 2);
@@ -305,6 +345,15 @@ pub(crate) fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 
 
 pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
+}
+
+/// The ratio of flow velocity past a boundary to the local speed of sound.
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+pub struct MachNumber(pub f64);
+impl Default for MachNumber {
+    fn default() -> Self {
+        Self(0.)
+    }
 }
 
 #[cfg(test)]
@@ -352,7 +401,7 @@ mod delayed_true_logic_gate_tests {
         });
 
         test_bed.run_with_delta(Duration::from_millis(0));
-        test_bed.run_with_delta(Duration::from_millis(1_000));
+        test_bed.run();
 
         assert_eq!(test_bed.query(|a| a.gate_output()), false);
     }
@@ -366,7 +415,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.command(|a| a.set_expression(true));
 
         test_bed.run_with_delta(Duration::from_millis(0));
-        test_bed.run_with_delta(Duration::from_millis(1_000));
+        test_bed.run();
 
         assert_eq!(test_bed.query(|a| a.gate_output()), false);
     }
@@ -380,7 +429,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.command(|a| a.set_expression(true));
 
         test_bed.run_with_delta(Duration::from_millis(0));
-        test_bed.run_with_delta(Duration::from_millis(1_000));
+        test_bed.run();
 
         assert_eq!(test_bed.query(|a| a.gate_output()), true);
     }
@@ -448,7 +497,7 @@ mod delayed_false_logic_gate_tests {
             TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)))
         });
 
-        test_bed.run_with_delta(Duration::from_millis(1_000));
+        test_bed.run();
 
         assert_eq!(test_bed.query(|a| a.gate_output()), false);
     }
@@ -460,7 +509,7 @@ mod delayed_false_logic_gate_tests {
         });
 
         test_bed.command(|a| a.set_expression(true));
-        test_bed.run_with_delta(Duration::from_millis(1_000));
+        test_bed.run();
 
         assert_eq!(test_bed.query(|a| a.gate_output()), true);
     }
@@ -475,7 +524,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.run_with_delta(Duration::from_millis(0));
 
         test_bed.command(|a| a.set_expression(false));
-        test_bed.run_with_delta(Duration::from_millis(1_000));
+        test_bed.run();
 
         assert_eq!(test_bed.query(|a| a.gate_output()), true);
     }
@@ -490,7 +539,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.run_with_delta(Duration::from_millis(0));
 
         test_bed.command(|a| a.set_expression(false));
-        test_bed.run_with_delta(Duration::from_millis(1_000));
+        test_bed.run();
 
         assert_eq!(test_bed.query(|a| a.gate_output()), false);
     }
@@ -514,6 +563,116 @@ mod delayed_false_logic_gate_tests {
     }
 }
 
+#[cfg(test)]
+mod delayed_pulse_true_logic_gate_tests {
+    use super::*;
+    use crate::electrical::Electricity;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::{Aircraft, SimulationElement};
+
+    struct TestAircraft {
+        gate: DelayedPulseTrueLogicGate,
+        expression_result: bool,
+    }
+    impl TestAircraft {
+        fn new(gate: DelayedPulseTrueLogicGate) -> Self {
+            Self {
+                gate,
+                expression_result: false,
+            }
+        }
+
+        fn set_expression(&mut self, value: bool) {
+            self.expression_result = value;
+        }
+
+        fn gate_output(&self) -> bool {
+            self.gate.output()
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            context: &UpdateContext,
+            _: &mut Electricity,
+        ) {
+            self.gate.update(context, self.expression_result);
+        }
+    }
+    impl SimulationElement for TestAircraft {}
+
+    #[test]
+    fn when_the_expression_is_false_initially_returns_false() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(100)))
+        });
+
+        test_bed.run();
+
+        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+    }
+
+    #[test]
+    fn when_the_expression_is_true_returns_false_if_less_than_delay() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(100)))
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+        test_bed.run_with_delta(Duration::from_millis(0));
+
+        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+    }
+
+    #[test]
+    fn when_the_expression_is_false_and_delay_hasnt_passed_returns_false() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(10000)))
+        });
+
+        test_bed.command(|a| a.set_expression(false));
+        test_bed.run();
+
+        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_becomes_false_before_delay_has_passed_returns_false_once_delay_passed(
+    ) {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(1000)))
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+        test_bed.run_with_delta(Duration::from_millis(800));
+
+        test_bed.command(|a| a.set_expression(false));
+        test_bed.run_with_delta(Duration::from_millis(300));
+
+        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_stays_true_until_delay_has_passed_returns_true_on_one_update_only(
+    ) {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(DelayedPulseTrueLogicGate::new(Duration::from_millis(1000)))
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+        test_bed.run_with_delta(Duration::from_millis(1200));
+
+        assert_eq!(test_bed.query(|a| a.gate_output()), true);
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+
+        test_bed.run_with_delta(Duration::from_millis(1200));
+
+        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+    }
+}
 #[cfg(test)]
 mod interpolation_tests {
     use super::*;

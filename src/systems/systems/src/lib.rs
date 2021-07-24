@@ -13,6 +13,7 @@ pub mod electrical;
 pub mod engine;
 pub mod hydraulic;
 pub mod landing_gear;
+pub mod navigation;
 pub mod overhead;
 pub mod pneumatic;
 pub mod shared;

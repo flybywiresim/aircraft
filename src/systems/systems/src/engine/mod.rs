@@ -2,13 +2,13 @@ use uom::si::f64::*;
 
 use crate::{
     overhead::FirePushButton,
-    shared::{EngineCorrectedN2, EngineFirePushButtons},
+    shared::{EngineCorrectedN2, EngineFirePushButtons, EngineUncorrectedN2},
     simulation::{SimulationElement, SimulationElementVisitor},
 };
 
 pub mod leap_engine;
 
-pub trait Engine: EngineCorrectedN2 {
+pub trait Engine: EngineCorrectedN2 + EngineUncorrectedN2 {
     fn hydraulic_pump_output_speed(&self) -> AngularVelocity;
     fn oil_pressure(&self) -> Pressure;
     fn is_above_minimum_idle(&self) -> bool;
@@ -33,9 +33,7 @@ impl EngineFirePushButtons for EngineFireOverheadPanel {
 }
 impl SimulationElement for EngineFireOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.engine_fire_push_buttons.iter_mut().for_each(|el| {
-            el.accept(visitor);
-        });
+        accept_iterable!(self.engine_fire_push_buttons, visitor);
 
         visitor.visit(self);
     }

@@ -53,7 +53,7 @@ const RadioAltIndicator = ({ radioAlt }) => {
 };
 
 export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+    if (Number.isNaN(altitude)) {
         return (
             <AltTapeBackground />
         );
@@ -72,7 +72,7 @@ export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
 };
 
 export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAlt }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+    if (Number.isNaN(altitude)) {
         return (
             <>
                 <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />

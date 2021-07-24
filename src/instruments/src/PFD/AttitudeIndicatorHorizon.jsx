@@ -14,7 +14,7 @@ const DistanceSpacing = 15;
 const ValueSpacing = 10;
 const SideslipIndicatorFilter = new LagFilter(0.8);
 
-const TickFunction = (heading, offset) => (
+const TickFunction = (_, offset) => (
     <path transform={`translate(${offset} 0)`} className="NormalStroke White" d="m68.906 80.823v1.8" />
 );
 
@@ -26,11 +26,11 @@ const HeadingBug = (offset) => (
 );
 
 export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive, deltaTime }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
+    if (Number.isNaN(pitch) || Number.isNaN(roll)) {
         return null;
     }
 
-    const headingAvail = getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') === 2;
+    const headingAvailable = !Number.isNaN(heading);
 
     const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch), 31.563), -31.563);
 
@@ -130,7 +130,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White" />
             <SideslipIndicator isOnGround={isOnGround} roll={roll} deltaTime={deltaTime} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
-            {headingAvail
+            {headingAvailable
             && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={DisplayRange} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing} heading={heading} />}
             {!isAttExcessive
             && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}

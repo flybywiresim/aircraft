@@ -3,10 +3,11 @@ use std::time::Duration;
 mod update_context;
 use crate::{
     electrical::Electricity,
-    shared::{to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
+    shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 use uom::si::{
     acceleration::foot_per_second_squared,
+    angle::degree,
     electric_current::ampere,
     electric_potential::volt,
     f64::*,
@@ -631,5 +632,41 @@ impl<T: Writer> Write<VolumeRate> for T {
 impl<T: Reader> Read<Mass> for T {
     fn read(&mut self, name: &str) -> Mass {
         Mass::new::<pound>(self.read_f64(name))
+    }
+}
+
+impl<T: Reader> Read<Angle> for T {
+    fn read(&mut self, name: &str) -> Angle {
+        Angle::new::<degree>(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<Angle> for T {
+    fn write(&mut self, name: &str, value: Angle) {
+        self.write_f64(name, value.get::<degree>());
+    }
+}
+
+impl<T: Reader> Read<Duration> for T {
+    fn read(&mut self, name: &str) -> Duration {
+        Duration::from_secs_f64(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<Duration> for T {
+    fn write(&mut self, name: &str, value: Duration) {
+        self.write_f64(name, value.as_secs_f64());
+    }
+}
+
+impl<T: Reader> Read<MachNumber> for T {
+    fn read(&mut self, name: &str) -> MachNumber {
+        MachNumber(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<MachNumber> for T {
+    fn write(&mut self, name: &str, value: MachNumber) {
+        self.write_f64(name, value.0);
     }
 }

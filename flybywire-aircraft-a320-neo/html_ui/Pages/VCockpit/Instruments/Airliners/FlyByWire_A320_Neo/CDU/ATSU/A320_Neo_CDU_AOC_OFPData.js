@@ -157,7 +157,12 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[4] = async () => {
-            if (currentBlockFuel) {
+            const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
+            const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+            const oneEngineRunning = SimVar.GetSimVarValue('GENERAL ENG COMBUSTION:1', 'bool') ||
+                SimVar.GetSimVarValue('GENERAL ENG COMBUSTION:2', 'bool');
+
+            if (gs < 1 && onGround && currentBlockFuel && !oneEngineRunning) {
                 loadFuel(mcdu, updateView);
 
                 updateView();
@@ -422,7 +427,10 @@ function setEstimatedBaggagePayload(mcdu) {
         return;
     }
 
-    const {forwardBaggageWeight, rearBaggageWeight} = getDistributedBaggagePayload(currentPayload, mcdu.aocWeight.zfwcg);
+    const {
+        forwardBaggageWeight,
+        rearBaggageWeight
+    } = getDistributedBaggagePayload(currentPayload, mcdu.aocWeight.zfwcg);
 
     mcdu.aocWeight.estFwdBag = forwardBaggageWeight;
     mcdu.aocWeight.estRearBag = rearBaggageWeight;
