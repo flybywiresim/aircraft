@@ -144,6 +144,7 @@
 1. [SOUND] Improved engine startup, idle sounds, and cabin wind - @hotshotp (Boris)
 1. [MODEL] Swap EFIS WPT and VOR D buttons - @tracernz (Mike)
 1. [MODEL] Fix no-smoking/no-PED switch animation - @tracernz (Mike)
+1. [DISPLAYS] Add pixelated screens - @bouveng (Johan Bouveng)
 1. [ADIRS] Simple ATT mode implementation (does not yet include HDG entry) - @davidwalschots (David Walschots)
 1. [ADIRS] The longest instead of the shortest remaining alignment time is displayed on the upper ECAM - @davidwalschots (David Walschots)
 1. [ADIRS] IR1, IR3, or IR2 can be pushed OFF to disconnect output of IR information from that particular ADIRU - @davidwalschots (David Walschots)
