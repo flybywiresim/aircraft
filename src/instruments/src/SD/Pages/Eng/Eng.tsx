@@ -193,7 +193,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 y={y + 85}
                 length={60}
                 scaleMax={100}
-                value={OIL_QTY_LOW_ADVISORY}
+                value={getNeedleValue(OIL_QTY_LOW_ADVISORY, OIL_QTY_MAX) - 3}
                 className="NoFill AmberHeavy"
                 dashOffset={-50}
             />
@@ -202,7 +202,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 y={y + 85}
                 length={50}
                 scaleMax={100}
-                value={OIL_QTY_LOW_ADVISORY + 1}
+                value={getNeedleValue(OIL_QTY_LOW_ADVISORY, OIL_QTY_MAX) - 2}
                 className="NoFill AmberLine"
                 dashOffset={-45}
             />
