@@ -3,7 +3,7 @@ use std::time::Duration;
 mod update_context;
 use crate::{
     electrical::Electricity,
-    shared::{to_bool, ConsumePower, ElectricalBuses, PowerConsumptionReport},
+    shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 use uom::si::{
     acceleration::foot_per_second_squared,
@@ -656,5 +656,17 @@ impl<T: Reader> Read<Duration> for T {
 impl<T: Writer> Write<Duration> for T {
     fn write(&mut self, name: &str, value: Duration) {
         self.write_f64(name, value.as_secs_f64());
+    }
+}
+
+impl<T: Reader> Read<MachNumber> for T {
+    fn read(&mut self, name: &str) -> MachNumber {
+        MachNumber(self.read_f64(name))
+    }
+}
+
+impl<T: Writer> Write<MachNumber> for T {
+    fn write(&mut self, name: &str, value: MachNumber) {
+        self.write_f64(name, value.0);
     }
 }
