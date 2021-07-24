@@ -171,13 +171,15 @@ export class LagFilter {
      * @returns {number} Filtered output
      */
     step(input, deltaTime) {
+        const filteredInput = !Number.isNaN(input) ? input : 0;
+
         const scaledDeltaTime = deltaTime * this.TimeConstant;
         const sum0 = scaledDeltaTime + 2;
 
-        const output = (input + this.PreviousInput) * scaledDeltaTime / sum0
+        const output = (filteredInput + this.PreviousInput) * scaledDeltaTime / sum0
             + (2 - scaledDeltaTime) / sum0 * this.PreviousOutput;
 
-        this.PreviousInput = input;
+        this.PreviousInput = filteredInput;
         if (Number.isFinite(output)) {
             this.PreviousOutput = output;
             return output;
@@ -195,7 +197,9 @@ export class RateLimiter {
     }
 
     step(input, deltaTime) {
-        const subInput = input - this.PreviousOutput;
+        const filteredInput = !Number.isNaN(input) ? input : 0;
+
+        const subInput = filteredInput - this.PreviousOutput;
 
         const scaledUpper = deltaTime * this.RisingRate;
         const scaledLower = deltaTime * this.FallingRate;

@@ -182,22 +182,12 @@
     - Bool
     - True if evac switch set to CAPT
 
-- A32NX_KNOB_SWITCHING_1_Position
-    - ATT HDG
-    - Position (0-2)
-    - 0 is CAPT, 1 is NORM, 2 is F/O
-
-- A32NX_KNOB_SWITCHING_2_Position
-    - AIR DATA
-    - Position (0-2)
-    - 0 is CAPT, 1 is NORM, 2 is F/O
-
-- A32NX_KNOB_SWITCHING_3_Position
+- A32NX_EIS_DMC_SWITCHING_KNOB
     - EIS DMC
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
-- A32NX_KNOB_SWITCHING_4_Position
+- A32NX_ECAM_ND_XFR_SWITCHING_KNOB
     - ECAM/ND XFR
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
@@ -1074,6 +1064,8 @@
 
 ## ADIRS
 
+In the variables below, {number} should be replaced with one item in the set: { 1, 2, 3 }, unless declared otherwise.
+
 - A32NX_CONFIG_ADIRS_IR_ALIGN_TIME
     - Enum
     - Input for: systems.wasm
@@ -1086,7 +1078,6 @@
 
 - A32NX_OVHD_ADIRS_IR_{number}_MODE_SELECTOR_KNOB
     - Enum
-    - number: { 1, 2, 3 }
     - The Inertial Reference mode selected through the selector knobs.
       Description | Value
       --- | ---
@@ -1098,12 +1089,33 @@
     - Bool
     - Whether the ON BAT indication should illuminate.
 
-- A32NX_OVHD_ADIRS_IR_{number}_HAS_FAULT
+- A32NX_OVHD_ADIRS_IR_{number}_PB_HAS_FAULT
     - Bool
-    - Whether the FAULT light illuminates for IR {number}
-    - number: { 1, 2, 3 }
+    - Whether the FAULT light illuminates for IR {number}.
 
-- A32NX_ADIRS_STATE
+- A32NX_OVHD_ADIRS_IR_{number}_PB_IS_ON
+    - Bool
+    - Whether the IR push button is in the ON position.
+
+- A32NX_OVHD_ADIRS_ADR_{number}_PB_HAS_FAULT
+    - Bool
+    - Whether the FAULT light illuminates for ADR {number}.
+
+- A32NX_OVHD_ADIRS_ADR_{number}_PB_IS_ON
+    - Bool
+    - Whether the ADR push button is in the ON position.
+
+- A32NX_ATT_HDG_SWITCHING_KNOB
+    - ATT HDG
+    - Position (0-2)
+    - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- A32NX_AIR_DATA_SWITCHING_KNOB
+    - AIR DATA
+    - Position (0-2)
+    - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- A32NX_ADIRS_ADIRU_{number}_STATE
     - Enum
     - The Inertial Reference alignment state.
       Description | Value
@@ -1112,17 +1124,88 @@
       Aligning | 1
       Aligned | 2
 
-- A32NX_ADIRS_TIME
+- A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME
     - Seconds
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
-- A32NX_ADIRS_PFD_ALIGNED_FIRST
-    - Bool
-    - Indicates whether the PFD should display altitude, air speed and vertical speed information.
+- A32NX_ADIRS_ADR_{number}_ALTITUDE
+    - Feet
+    - The altitude. Approximately -1000000 when unavailable.
 
-- A32NX_ADIRS_PFD_ALIGNED_ATT
+- A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
+    - Knots
+    - The computed airspeed (CAS). Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_ADR_{number}_MACH
+    - Mach
+    - The Mach number (M). Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_ADR_{number}_BAROMETRIC_VERTICAL_SPEED
+    - Feet per minute
+    - The vertical speed (V/S) based on barometric altitude data. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_ADR_{number}_TRUE_AIRSPEED
+    - Knots
+    - The true airspeed (TAS). Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_ADR_{number}_STATIC_AIR_TEMPERATURE
+    - Celsius
+    - The static air temperature (SAT). Approximately -1000000 when unavailable.
+      {number}: 1 or 3
+
+- A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
+    - Celsius
+    - The total air temperature (TAT). Approximately -1000000 when unavailable.
+      {number}: 1 or 3
+
+- A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
+    - Celsius
+    - The delta (deviation) from international standard atmosphere temperature. Approximately -1000000 when unavailable.
+      {number}: 1 or 3
+
+- A32NX_ADIRS_IR_{number}_PITCH
+    - Degrees
+    - The pitch angle of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_ROLL
+    - Degrees
+    - The roll angle of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_HEADING
+    - Degrees
+    - The inertial heading of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_TRACK
+    - Degrees
+    - The inertial track of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_VERTICAL_SPEED
+    - Feet per minute
+    - The vertical speed (V/S) based on inertial reference data. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_GROUND_SPEED
+    - Knots
+    - The ground speed (GS) of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_WIND_DIRECTION
+    - Degrees
+    - The direction of the wind. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_WIND_VELOCITY
+    - Degrees
+    - The velocity of the wind. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_LATITUDE
+    - Degrees
+    - The latitude of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_IR_{number}_LONGITUDE
+    - Degrees
+    - The longitude of the aircraft. Approximately -1000000 when unavailable.
+
+- A32NX_ADIRS_USES_GPS_AS_PRIMARY
     - Bool
-    - Indicates whether the PFD should display attitude information.
+    - Whether or not the GPS is used as the primary means of navigation/position determination.
 
 ## Autopilot System
 

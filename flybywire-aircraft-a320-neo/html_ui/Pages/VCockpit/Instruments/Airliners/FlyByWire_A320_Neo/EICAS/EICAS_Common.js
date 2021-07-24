@@ -43,69 +43,70 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         if (!this.isInitialised) {
             return;
         }
-        this.refreshTAT(Math.round(Simplane.getTotalAirTemperature()));
-        this.refreshSAT(Math.round(Simplane.getAmbientTemperature()));
-        this.refreshISA(Math.round(A32NX_Util.getIsaTempDeviation()));
+
+        const airDataReferenceSource = this.getStatusAirDataReferenceSource();
+        const sat = Math.round(ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`, 'Celsius'));
+        this.refreshTAT(Math.round(ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`, 'Celsius')));
+        this.refreshSAT(sat);
+        this.refreshISA(Math.round(ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA`, 'Celsius')), sat);
+
         this.refreshClock();
         this.refreshLoadFactor(_deltaTime, SimVar.GetSimVarValue("G FORCE", "GFORCE"));
         this.refreshGrossWeight();
-        this.refreshADIRS();
     }
-    refreshTAT(_value) {
-        if (_value === this.currentTAT && this.areAdirsAligned === this.isTATVisible) {
-            return;
-        }
 
-        this.currentTAT = _value;
-        this.isTATVisible = this.areAdirsAligned;
-
-        if (this.isTATVisible && this.tatText != null) {
-            if (this.currentTAT > 0) {
-                this.tatText.textContent = "+" + this.currentTAT.toString();
-            } else {
-                this.tatText.textContent = this.currentTAT.toString();
-            }
-        }
+    getStatusAirDataReferenceSource() {
+        return this.getStatusSupplier(SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum'));
     }
-    refreshSAT(_value) {
-        if (_value === this.currentSAT && this.areAdirsAligned === this.isSATVisible) {
-            return;
-        }
 
-        this.currentSAT = _value;
-        this.isSATVisible = this.areAdirsAligned;
+    getStatusSupplier(knobValue) {
+        const adirs3ToCaptain = 0;
+        return knobValue === adirs3ToCaptain ? 3 : 1;
+    }
 
-        if (this.isSATVisible && this.satText != null) {
-            if (this.currentSAT > 0) {
-                this.satText.textContent = "+" + this.currentSAT.toString();
-            } else {
-                this.satText.textContent = this.currentSAT.toString();
-            }
+    refreshTAT(value) {
+        if (Number.isNaN(value)) {
+            this.tatText.textContent = "XX";
+            this.toggleWarning(true, this.tatText);
+        } else {
+            this.setValueOnTemperatureElement(value, this.tatText);
+            this.toggleWarning(false, this.tatText);
         }
     }
-    refreshISA(_value) {
+
+    refreshSAT(value) {
+        if (Number.isNaN(value)) {
+            this.satText.textContent = "XX";
+            this.toggleWarning(true, this.satText);
+        } else {
+            this.setValueOnTemperatureElement(value, this.satText);
+            this.toggleWarning(false, this.satText);
+        }
+    }
+
+    refreshISA(value, sat) {
         const isInStdMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD";
-        const shouldISABeVisible = isInStdMode && this.areAdirsAligned;
+        // As ISA relates to SAT, we cannot present ISA when SAT is unavailable. We might want to move this into
+        // Rust ADIRS code itself.
+        const isaShouldBeVisible = isInStdMode && !Number.isNaN(value) && !Number.isNaN(sat);
+        this.isaContainer.setAttribute("visibility", isaShouldBeVisible ? "visible" : "hidden");
 
-        // Only perform DOM update if visibility changed
-        if (this.isaContainer && this.isISAVisible !== shouldISABeVisible) {
-            this.isaContainer.setAttribute("visibility", shouldISABeVisible ? "visible" : "hidden");
-            this.isISAVisible = shouldISABeVisible;
-        }
+        this.setValueOnTemperatureElement(value, this.isaText);
+    }
 
-        if (_value === this.currentISA) {
-            return;
-        }
-
-        this.currentISA = _value;
-        if (this.isaText != null) {
-            if (this.currentISA > 0) {
-                this.isaText.textContent = "+" + this.currentISA.toString();
-            } else {
-                this.isaText.textContent = this.currentISA.toString();
-            }
+    setValueOnTemperatureElement(value, element) {
+        if (value > 0) {
+            element.textContent = "+" + value.toString().padStart(2);
+        } else {
+            element.textContent = (value < 0 ? "-" : "") + Math.abs(value).toString().padStart(2);
         }
     }
+
+    toggleWarning(isWarning, element) {
+        element.classList.toggle("Warning", isWarning);
+        element.classList.toggle("Value", !isWarning);
+    }
+
     refreshLoadFactor(_deltaTime, value) {
         const conditionsMet = value > 1.4 || value < 0.7;
         const loadFactorSet = this.loadFactorSet.write(conditionsMet, _deltaTime);
@@ -170,33 +171,6 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
             payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
         }
         return payloadWeight;
-    }
-    refreshADIRS() {
-        if (this.tatText != null && this.satText != null) {
-            const areAdirsAlignedNow = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") == 2;
-
-            if (areAdirsAlignedNow === this.areAdirsAligned) {
-                return;
-            }
-
-            this.areAdirsAligned = areAdirsAlignedNow;
-
-            if (!this.areAdirsAligned) {
-                this.tatText.textContent = "XX";
-                this.tatText.classList.add("Warning");
-                this.tatText.classList.remove("Value");
-                this.satText.textContent = "XX";
-                this.satText.classList.add("Warning");
-                this.satText.classList.remove("Value");
-            } else {
-                this.satText.classList.add("Value");
-                this.satText.classList.remove("Warning");
-                this.tatText.classList.add("Value");
-                this.tatText.classList.remove("Warning");
-                this.isaText.classList.add("Value");
-                this.isaText.classList.remove("Warning");
-            }
-        }
     }
 }
 customElements.define("eicas-common-display", EICASCommonDisplay);

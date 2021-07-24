@@ -33,9 +33,7 @@ impl EngineFirePushButtons for EngineFireOverheadPanel {
 }
 impl SimulationElement for EngineFireOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.engine_fire_push_buttons.iter_mut().for_each(|el| {
-            el.accept(visitor);
-        });
+        accept_iterable!(self.engine_fire_push_buttons, visitor);
 
         visitor.visit(self);
     }
