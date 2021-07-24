@@ -221,9 +221,9 @@ impl EngineBleedSystem {
 	fn new(number: usize) -> Self {
 		Self {
 			number,
-			ip_valve: DefaultValve::new(),
-			hp_valve: DefaultValve::new(),
-			pr_valve: DefaultValve::new(),
+			ip_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
+			hp_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
+			pr_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
 			ip_valve_controller: IPValveController::new(number),
 			hp_valve_controller: HPValveController::new(number),
 			pr_valve_controller: PRValveController::new(number),
@@ -277,4 +277,57 @@ impl SimulationElement for A320PneumaticOverheadPanel {
 
         visitor.visit(self);
     }
+}
+#[cfg(tests)]
+mod tests {
+		use crate::{
+		simulation::{
+			Aircraft,
+			SimulationElement,
+			test::{TestBed, SimulationTestBed}
+		},
+		pneumatic::{DefaultValve, PneumaticPipe, PneumaticContainer},
+		hydraulic::{Fluid},
+	};
+
+	use uom::si::{
+		f64::*,
+		pressure::{pascal},
+		volume::{cubic_meter},
+		ratio::{percent}
+	};
+
+	struct PneumaticTestAircraft {
+		pneumatic: A320Pneumatic
+	}
+	impl PneumaticTestAircraft {
+		fn new() -> Self {
+			pneumatic: A320Pneumatic::new()
+		}
+	}
+	impl Aircraft for PneumaticTestAircraft {
+
+	}
+	impl SimulationElement for PneumaticTestAircraft {
+
+	}
+	struct PneumaticTestBed {
+		test_bed: SimulationTestBed<PneumaticTestAircraft>
+	}
+	impl PneumaticTestBed {
+		fn new() -> Self {
+			Self {
+				test_bed: SimulationTestBed::<PneumaticTestAircraft>::new(|_| PneumaticTestAircraft::new())
+			}
+		}
+	}
+	impl TestBed for PneumaticTestBed {
+		fn test_bed(&self) -> &SimulationTestBed<PneumaticTestAircraft> {
+			&self.test_bed
+		}
+
+	 	fn test_bed_mut(&self) -> &mut SimulationTestBed<PneumaticTestAircraft> {
+			&mut self.test_bed
+		}
+	}
 }

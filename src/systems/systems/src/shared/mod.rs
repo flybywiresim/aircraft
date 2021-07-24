@@ -173,7 +173,7 @@ pub struct PneumaticValveSignal {
     target_open_amount: Ratio
 }
 impl PneumaticValveSignal {
-	fn new(target_open_amount: Ratio) -> Self {
+	pub fn new(target_open_amount: Ratio) -> Self {
 		Self { target_open_amount }
 	}
 
