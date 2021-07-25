@@ -1,8 +1,14 @@
 import { Coordinates, Xy } from '@fmgc/flightplanning/data/geo';
+
 export class MapParameters {
     public centerCoordinates: Coordinates;
+
     public mapUpTrueDeg: number;
+
     public nmToPx: number;
+
+    public nmRadius: number;
+
     public version = 0;
 
     compute(centerCoordinates: Coordinates, nmRadius: number, pxRadius: number, mapUpTrueDeg: number): void {
@@ -11,6 +17,7 @@ export class MapParameters {
         this.mapUpTrueDeg = mapUpTrueDeg;
         this.centerCoordinates = centerCoordinates;
         this.nmToPx = pxRadius / nmRadius;
+        this.nmRadius = nmRadius;
     }
 
     coordinatesToXYy(coordinates: Coordinates): Xy {
