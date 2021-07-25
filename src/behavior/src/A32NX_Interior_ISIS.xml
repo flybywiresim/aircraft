@@ -1,4 +1,9 @@
 <ModelBehaviors>
+    <!-- Template for the rotatable, clickable barometric setting knob around the ISIS
+    Main Parameters:
+        - NODE_ID               <no default>    Switch node ID                          (anim name will be same)
+        - ANIM_NAME             #NODE_ID#        The knob animation name
+    -->
     <Template Name="FBW_ISIS_Knob_Template">
         <DefaultTemplateParameters>
             <ID>2</ID>
@@ -88,6 +93,14 @@
         </Component>
     </Template>
 
+    <!--
+    Template for the toggle buttons around the ISIS (LS and BUGS)
+    Main Parameters:
+        - NODE_ID               <no default>    Switch node ID                          (anim name will be same)
+        - TOOLTIPID             <no default>    Tooltip to show
+        - BTN_ID                <no default>    ID used to identify emitted event and toggled simvar
+        - ONLY_SEQ1             Not present     Specifies if only sequence 1 emissive should be used
+    -->
     <Template Name="A32NX_ISIS_Push_Template">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -106,6 +119,14 @@
         </Component>
     </Template>
 
+    <!--
+    Template for the buttons around the ISIS which can be held (+, -, and RST)
+    Main Parameters:
+        - NODE_ID               <no default>    Switch node ID                          (anim name will be same)
+        - TOOLTIPID             <no default>    Tooltip to show
+        - BTN_ID                <no default>    ID used to identify emitted event and toggled simvar
+        - ONLY_SEQ1             Not present     Specifies if only sequence 1 emissive should be used
+    -->
     <Template Name="A32NX_ISIS_Push_Held_Template">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
