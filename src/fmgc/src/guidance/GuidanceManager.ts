@@ -1,5 +1,11 @@
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
+import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { Degrees } from '@typings/types';
+import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { Leg } from '@fmgc/guidance/lnav/legs';
+import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
-import { Leg, Geometry, TFLeg, Type1Transition, Transition } from './Geometry';
+import { Geometry, Type1Transition } from './Geometry';
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
@@ -16,8 +22,17 @@ export class GuidanceManager {
         this.flightPlanManager = flightPlanManager;
     }
 
-    getActiveLeg(): TFLeg | null {
+    private static tfBetween(from: WayPoint, to: WayPoint) {
+        return new TFLeg(from, to);
+    }
+
+    private static vmWithHeading(heading: Degrees, initialCourse: Degrees) {
+        return new VMLeg(heading, initialCourse);
+    }
+
+    getActiveLeg(): TFLeg | VMLeg | null {
         const activeIndex = this.flightPlanManager.getActiveWaypointIndex();
+
         const from = this.flightPlanManager.getWaypoint(activeIndex - 1);
         const to = this.flightPlanManager.getWaypoint(activeIndex);
 
@@ -29,13 +44,17 @@ export class GuidanceManager {
             return null;
         }
 
-        return new TFLeg(from, to);
+        if (to.isVectors) {
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse);
+        }
+
+        return GuidanceManager.tfBetween(from, to);
     }
 
-    getNextLeg(): TFLeg | null {
+    getNextLeg(): TFLeg | VMLeg | null {
         const activeIndex = this.flightPlanManager.getActiveWaypointIndex();
-        const from = this.flightPlanManager.getWaypoint(activeIndex);
 
+        const from = this.flightPlanManager.getWaypoint(activeIndex);
         const to = this.flightPlanManager.getWaypoint(activeIndex + 1);
 
         if (!from || !to) {
@@ -46,12 +65,17 @@ export class GuidanceManager {
             return null;
         }
 
-        return new TFLeg(from, to);
+        if (to.isVectors) {
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse);
+        }
+
+        return GuidanceManager.tfBetween(from, to);
     }
 
     /**
      * The active leg path geometry, used for immediate autoflight.
      */
+    // TODO Extract leg and transition building
     getActiveLegPathGeometry(): Geometry | null {
         const activeLeg = this.getActiveLeg();
         const nextLeg = this.getNextLeg();
@@ -63,7 +87,7 @@ export class GuidanceManager {
         const legs = new Map<number, Leg>([[1, activeLeg]]);
         const transitions = new Map<number, Transition>();
 
-        if (nextLeg) {
+        if (nextLeg && activeLeg instanceof TFLeg) {
             legs.set(2, nextLeg);
 
             const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
@@ -96,68 +120,71 @@ export class GuidanceManager {
 
     /**
      * The full leg path geometry, used for the ND and predictions on the F-PLN page.
-     *
-     * @param onlyFirstContinuousSegment if set to `true`, only the first segment before any discontinuities will be returned. If set to `false`,
-     *                                   all segments will be return, regardless of discontinuities
      */
-    getMultipleLegGeometry(onlyFirstContinuousSegment = true): Geometry | null {
-        const activeLeg = this.getActiveLeg();
-        const nextLeg = this.getNextLeg();
-
-        if (!activeLeg) {
-            return null;
-        }
-
-        const legs = new Map<number, Leg>([[1, activeLeg]]);
+    // TODO Extract leg and transition building
+    getMultipleLegGeometry(): Geometry | null {
+        const activeIdx = this.flightPlanManager.getCurrentFlightPlan().activeWaypointIndex;
+        const legs = new Map<number, Leg>();
         const transitions = new Map<number, Transition>();
 
-        if (nextLeg) {
-            legs.set(2, nextLeg);
-
-            const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
-
-            // bank angle limits, always assume limit 2 for now @ 25 degrees between 150 and 300 knots
-            let bankAngleLimit = 25;
-            if (kts < 150) {
-                bankAngleLimit = 15 + Math.min(kts / 150, 1) * (25 - 15);
-            } else if (kts > 300) {
-                bankAngleLimit = 25 - Math.min((kts - 300) / 150, 1) * (25 - 19);
-            }
-
-            // turn radius
-            const xKr = (kts ** 2 / (9.81 * Math.tan(bankAngleLimit * Avionics.Utils.DEG2RAD))) / 6080.2;
-
-            // turn direction
-            const courseChange = mod(nextLeg.bearing - activeLeg.bearing + 180, 360) - 180;
-            const cw = courseChange >= 0;
-
-            transitions.set(2, new Type1Transition(
-                activeLeg,
-                nextLeg,
-                xKr,
-                cw,
-            ));
-        }
-
-        const activeIndex = this.flightPlanManager.getActiveWaypointIndex();
+        // We go in reverse order here, since transitions often need info about the next leg
         const wpCount = this.flightPlanManager.getCurrentFlightPlan().length;
-        for (let i = activeIndex + 1; i < wpCount; i++) {
-            const from = this.flightPlanManager.getWaypoint(i);
-            const to = this.flightPlanManager.getWaypoint(i + 1);
+        for (let i = wpCount - 1; (i >= activeIdx - 1); i--) {
+            const nextLeg = legs.get(i + 1);
 
+            const from = this.flightPlanManager.getWaypoint(i - 1);
+            const to = this.flightPlanManager.getWaypoint(i);
+
+            // Reached the end or start of the flight plan
             if (!from || !to) {
                 continue;
             }
 
-            if (from.endsInDiscontinuity) {
-                if (onlyFirstContinuousSegment) {
-                    break;
-                } else {
-                    continue;
-                }
+            // If TO is a MANUAL leg, make a VM(FROM -> TO)
+            if (to.isVectors) {
+                const currentLeg = GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse);
+                legs.set(i, currentLeg);
+
+                continue;
             }
 
-            legs.set(legs.size + 1, new TFLeg(from, to));
+            // If FROM ends in a discontinuity there is no leg "FROM -> TO"
+            if (from.endsInDiscontinuity) {
+                continue;
+            }
+
+            // Leg (hard-coded to TF for now)
+            const currentLeg = new TFLeg(from, to);
+            legs.set(i, currentLeg);
+
+            // Transition (hard-coded to Type 1 for now)
+            if (nextLeg && nextLeg instanceof TFLeg || nextLeg instanceof VMLeg) { // FIXME this cannot happen, but what are you gonna do about it ?
+                const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
+
+                // Bank angle limits, always assume limit 2 for now @ 25 degrees between 150 and 300 knots
+                let bankAngleLimit = 25;
+                if (kts < 150) {
+                    bankAngleLimit = 15 + Math.min(kts / 150, 1) * (25 - 15);
+                } else if (kts > 300) {
+                    bankAngleLimit = 25 - Math.min((kts - 300) / 150, 1) * (25 - 19);
+                }
+
+                // Turn radius
+                const xKr = (kts ** 2 / (9.81 * Math.tan(bankAngleLimit * Avionics.Utils.DEG2RAD))) / 6080.2;
+
+                // Turn direction
+                const courseChange = mod(nextLeg.bearing - currentLeg.bearing + 180, 360) - 180;
+                const cw = courseChange >= 0;
+
+                const transition = new Type1Transition(
+                    currentLeg,
+                    nextLeg,
+                    xKr,
+                    cw,
+                );
+
+                transitions.set(i, transition);
+            }
         }
 
         return new Geometry(transitions, legs);

@@ -112,15 +112,16 @@ export class ManagedFlightPlan {
         stats.set(this.activeWaypointIndex, firstData);
 
         this.waypoints.slice(0).forEach((waypoint, index) => {
+            // TODO redo when we have a better solution for vector legs
+            const distPpos = (waypoint.isVectors) ? 1 : waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos;
             const data = {
                 ident: waypoint.ident,
                 bearingInFp: waypoint.bearingInFP,
                 distanceInFP: waypoint.distanceInFP,
-                distanceFromPpos: waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos,
+                distanceFromPpos: distPpos,
                 timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
                 etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
             };
-
             stats.set(index, data);
         });
 
@@ -138,7 +139,8 @@ export class ManagedFlightPlan {
         }
 
         const bearingInFp = Avionics.Utils.computeGreatCircleHeading(ppos, this.activeWaypoint.infos.coordinates);
-        const distanceFromPpos = Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
+        // TODO redo when we have a better solution for vector legs
+        const distanceFromPpos = (this.activeWaypoint.isVectors) ? 1 : Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
         const timeFromPpos = this.computeWaypointTime(distanceFromPpos);
         const etaFromPpos = this.computeWaypointEta(distanceFromPpos, timeFromPpos);
 
@@ -149,6 +151,7 @@ export class ManagedFlightPlan {
             distanceFromPpos,
             timeFromPpos,
             etaFromPpos,
+            magneticVariation: GeoMath.getMagvar(this.activeWaypoint.infos.coordinates.lat, this.activeWaypoint.infos.coordinates.long),
         };
     }
 
@@ -544,8 +547,14 @@ export class ManagedFlightPlan {
                 const trueCourseToWaypoint = Avionics.Utils.computeGreatCircleHeading(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
                 referenceWaypoint.bearingInFP = trueCourseToWaypoint - GeoMath.getMagvar(prevWaypoint.infos.coordinates.lat, prevWaypoint.infos.coordinates.long);
                 referenceWaypoint.bearingInFP = referenceWaypoint.bearingInFP < 0 ? 360 + referenceWaypoint.bearingInFP : referenceWaypoint.bearingInFP;
-                referenceWaypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
-
+                // TODO redo when we have a better solution for vector legs
+                if (referenceWaypoint.isVectors) {
+                    referenceWaypoint.distanceInFP = 1;
+                } else if (prevWaypoint.endsInDiscontinuity) {
+                    referenceWaypoint.distanceInFP = 0;
+                } else {
+                    referenceWaypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
+                }
                 cumulativeDistance += referenceWaypoint.distanceInFP;
                 referenceWaypoint.cumulativeDistanceInFP = cumulativeDistance;
             }
@@ -565,12 +574,14 @@ export class ManagedFlightPlan {
             legAltitudeDescription: waypoint.legAltitudeDescription,
             legAltitude1: waypoint.legAltitude1,
             legAltitude2: waypoint.legAltitude2,
+            speedConstraint: waypoint.speedConstraint,
             isVectors: waypoint.isVectors,
             endsInDiscontinuity: waypoint.endsInDiscontinuity,
             discontinuityCanBeCleared: waypoint.discontinuityCanBeCleared,
             distanceInFP: waypoint.distanceInFP,
             cumulativeDistanceInFP: waypoint.cumulativeDistanceInFP,
             isRunway: waypoint.isRunway,
+            additionalData: waypoint.additionalData,
             infos: {
                 icao: waypoint.infos.icao,
                 ident: waypoint.infos.ident,
@@ -747,6 +758,7 @@ export class ManagedFlightPlan {
                     const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, runway.endCoordinates);
 
                     const faLeg = procedure.buildWaypoint(`${Math.round(altitudeFeet)}`, coordinates);
+                    // TODO should this check for unclr discont? (probs not)
                     faLeg.endsInDiscontinuity = true;
                     faLeg.discontinuityCanBeCleared = true;
 
@@ -853,8 +865,10 @@ export class ManagedFlightPlan {
                 const prevWaypointIndex = segment.offset - 1;
                 if (prevWaypointIndex > 0) {
                     const prevWaypoint = this.getWaypoint(segment.offset - 1);
-                    prevWaypoint.endsInDiscontinuity = true;
-                    prevWaypoint.discontinuityCanBeCleared = true;
+                    if (!prevWaypoint.endsInDiscontinuity) {
+                        prevWaypoint.endsInDiscontinuity = true;
+                        prevWaypoint.discontinuityCanBeCleared = true;
+                    }
                 }
             }
 
