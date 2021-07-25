@@ -988,7 +988,8 @@ impl A320YellowElectricPumpController {
         self.should_activate_yellow_pump_for_cargo_door_operation
             .update(
                 context,
-                forward_cargo_door.has_moved() || aft_cargo_door.has_moved(),
+                !forward_cargo_door.should_close_control_valves()
+                    || !aft_cargo_door.should_close_control_valves(),
             );
 
         self.should_pressurise = (overhead_panel.yellow_epump_push_button.is_on()
@@ -1569,11 +1570,20 @@ impl Door {
         self.is_uplocked = self.should_uplock();
         self.is_downlocked = hydraulic_assembly.is_locked();
         self.available_hydraulic_pressure = available_hydraulic_pressure;
-        self.update_position(hydraulic_assembly.position())
+        self.update_position(hydraulic_assembly.position());
+
+        println!("DOOR CTROL: Otime:{:.1} Ctime:{:.1} CloseV:{:.1} PosReq:{:.1} LockReq:{:.1} LockPos:{:.1}",
+        self.opening_time.as_secs_f64(),self.closing_time.as_secs_f64(),
+        self.should_close_control_valves(),
+        self.position_request(),
+        self.should_lock(),
+        self.lock_position_request(),
+        );
     }
 
     fn should_unlock(&self) -> bool {
-        self.position_request > 0. && self.position_request_prev <= 0. && self.position <= 0.
+        self.position_request > 0. && self.position <= 0.5
+        //self.position_request > 0. && self.position_request_prev <= 0. && self.position <= 0.
     }
 
     fn is_opening(&self) -> bool {
@@ -1585,7 +1595,7 @@ impl Door {
     }
 
     fn should_uplock(&self) -> bool {
-        self.is_opening() && self.position > 0.9
+        self.is_opening() && self.position > 0.9 && !self.is_uplocked
     }
 
     fn should_control_opening(&self) -> bool {
@@ -1620,7 +1630,7 @@ impl HydraulicAssemblyController for Door {
         }
     }
     fn should_lock(&self) -> bool {
-        self.should_request_downlock() && self.is_closing()
+        !self.should_unlock()
     }
     fn lock_position_request(&self) -> f64 {
         0.
@@ -1634,7 +1644,7 @@ impl SimulationElement for Door {
         //let read_position: f64 = state.read(&self.position_id);
         self.position_request_prev = self.position_request;
         self.position_request = state.read(&self.requested_position_id);
-        println!("cargo pos read requested: {:.2} ", self.position_request);
+        //println!("cargo pos read requested: {:.2} ", self.position_request);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -2228,6 +2238,14 @@ mod tests {
                 self.hydraulics.forward_cargo_door.is_uplocked
             }
 
+            fn cargo_fwd_door_opening_time(&self) -> Duration {
+                self.hydraulics.forward_cargo_door.opening_time
+            }
+
+            fn cargo_fwd_door_closing_time(&self) -> Duration {
+                self.hydraulics.forward_cargo_door.closing_time
+            }
+
             fn is_cargo_fwd_door_locked_down(&self) -> bool {
                 self.hydraulics.forward_cargo_door.is_downlocked
             }
@@ -2389,6 +2407,14 @@ mod tests {
 
             fn is_cargo_fwd_door_locked_up(&self) -> bool {
                 self.query(|a| a.is_cargo_fwd_door_locked_up())
+            }
+
+            fn cargo_fwd_door_opening_time(&self) -> Duration {
+                self.query(|a| a.cargo_fwd_door_opening_time())
+            }
+
+            fn cargo_fwd_door_closing_time(&self) -> Duration {
+                self.query(|a| a.cargo_fwd_door_closing_time())
             }
 
             fn cargo_fwd_door_position(&mut self) -> f64 {
@@ -5585,6 +5611,47 @@ mod tests {
         }
 
         #[test]
+        fn cargo_door_stays_closed_at_init() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+        }
+
+        #[test]
+        fn cargo_door_unlocks_when_commanded() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() >= 0.);
+        }
+
+        #[test]
         fn cargo_door_controller_opens_the_door() {
             let mut test_bed = test_bed_with()
                 .engines_off()
@@ -5593,6 +5660,7 @@ mod tests {
                 .run_one_tick();
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
 
             test_bed = test_bed
                 .open_fwd_cargo_door()
@@ -5613,6 +5681,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(30.));
 
             assert!(test_bed.cargo_fwd_door_position() > 0.85);
+            assert!(test_bed.cargo_fwd_door_opening_time() == Duration::from_secs(0));
         }
 
         fn context(delta_time: Duration) -> UpdateContext {

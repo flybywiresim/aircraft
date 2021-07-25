@@ -301,11 +301,11 @@ impl HydraulicActuatorAssembly {
         self.linear_actuator
             .update_after_rigid_body(&self.rigid_body, context);
 
-        println!(
-            "Current position {:.3}, dt{:.3}",
-            self.position(),
-            context.delta_as_secs_f64()
-        );
+        // println!(
+        //     "Current position {:.3}, dt{:.3}",
+        //     self.position(),
+        //     context.delta_as_secs_f64()
+        // );
     }
 
     pub fn is_locked(&self) -> bool {

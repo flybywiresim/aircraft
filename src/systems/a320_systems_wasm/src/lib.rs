@@ -562,7 +562,7 @@ struct CargoDoors {
 impl CargoDoors {
     fn set_forward_door_postition(&mut self, value: f64) {
         self.fwd_position = value;
-        println!("set_forward_door_postition {}", value);
+        //println!("set_forward_door_postition {}", value);
     }
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
@@ -642,7 +642,7 @@ impl SimulatorAspect for CargoDoors {
         &mut self,
         sim_connect: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Sending final position {}", self.fwd_position * 100.);
+        //println!("Sending final position {}", self.fwd_position * 100.);
         self.forward_cargo_door_position
             .set_value(self.fwd_position * 100.);
 
