@@ -12,7 +12,7 @@ use uom::si::{
     f64::*,
     length::foot,
     thermodynamic_temperature::degree_celsius,
-    velocity::{foot_per_minute, knot},
+    velocity::{foot_per_minute, knot, foot_per_second},
 };
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
@@ -215,7 +215,7 @@ impl SimulationElement for AdirsSimulatorData {
         // To reduce reads, we only read these values once and then share it with the underlying ADRs and IRs.
         self.mach = reader.read(Self::MACH);
         let vertical_speed: f64 = reader.read(Self::VERTICAL_SPEED);
-        self.vertical_speed = Velocity::new::<foot_per_minute>(vertical_speed);
+        self.vertical_speed = Velocity::new::<foot_per_second>(vertical_speed);
         self.true_airspeed = reader.read(Self::TRUE_AIRSPEED);
         self.latitude = reader.read(Self::LATITUDE);
         self.longitude = reader.read(Self::LONGITUDE);
