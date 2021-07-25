@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { FC, useState, useEffect } from 'react';
 import { render } from '@instruments/common/index';
 import { setIsEcamPage } from '@instruments/common/defaults';
@@ -66,19 +67,6 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const [isValveOpen, setIsValveOpen] = useState(false);
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
 
-    // if (engineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
-    //     if (currentState !== Definitions.IGN_STATE.NONE) {
-    //         return currentState;
-    //     }
-    //     if (this._lastUsedIgniter === Definitions.IGN_STATE.NONE
-    //         || this._lastUsedIgniter === Definitions.IGN_STATE.B) {
-    //         return Definitions.IGN_STATE.A;
-    //     } if (this._lastUsedIgniter === Definitions.IGN_STATE.A) {
-    //         return Definitions.IGN_STATE.B;
-    //     }
-    // }
-    // return Definitions.IGN_STATE.NONE;
-
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'number', 4000);
@@ -105,7 +93,11 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const [pressureBelowLow, setPressureBelowLow] = useState(false);
 
     const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 250);
+    const OIL_TEMP_HIGH_ADVISORY = 90; // FIXME TODO: this value is only a standin
+    const OIL_TEMP_VHIGH_LIMIT = 110;// FIXME TODO: this value is only a standin
     const displayedEngineOilTemperature = Math.round(engineOilTemperature / 5) * 5; // Engine oil temperature has a step of 5
+    const [tempAmber, setTempAmber] = useState(false);
+    const [shouldTemperaturePulse, setShouldTemperaturePulse] = useState(false);
 
     const [n1Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number');
 
@@ -161,7 +153,29 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
         if (psiNeedleRed && engineOilPressure >= OIL_PSI_LOW_LIMIT + 0.5) {
             setPsiNeedleRed(false);
         }
-    }, [flightPhase, engineOilPressure, engineOilQuantity]);
+    }, [flightPhase, engineOilQuantity, engineOilPressure]);
+
+    useEffect(() => {
+        if (engineOilTemperature >= OIL_TEMP_HIGH_ADVISORY) {
+            setShouldTemperaturePulse(true);
+        } else {
+            setShouldTemperaturePulse(false);
+        }
+
+        if (engineOilTemperature > OIL_TEMP_VHIGH_LIMIT) {
+            setTempAmber(true);
+        } else {
+            setTempAmber(false);
+        }
+
+        // if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
+        //     setTimeout(() => setTempAmber(true), 3000);// 900_000
+        // } else {
+        //     clearTimeout();
+        // }
+        // TODO FIXME: text should be amber if engineOilTemperature has been ABOVE OIL_TEMP_HIGH_ADVISORY for greater than 900 seconds
+        // return () => clearTimeout();
+    }, [engineOilTemperature]);
 
     useEffect(() => {
         if (n2Percent >= 50) {
@@ -229,7 +243,6 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 length={60}
                 scaleMax={100}
                 value={getNeedleValue(engineOilPressure, OIL_PSI_MAX)}
-                // eslint-disable-next-line no-nested-ternary
                 className={`NoFill ${shouldPressurePulse ? 'LinePulse' : psiNeedleRed ? 'RedLine' : 'GreenLine'}`}
                 dashOffset={-40}
             />
@@ -237,12 +250,11 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             <text
                 x={x}
                 y={y + 155}
-                // eslint-disable-next-line no-nested-ternary
                 className={`FontLarge TextCenter ${shouldPressurePulse ? 'FillPulse' : psiNeedleRed ? 'FillRed' : 'FillGreen'}`}
             >
                 {displayedEngineOilPressure}
             </text>
-            <text x={x} y={y + 220} className="FillGreen FontLarge TextCenter">{displayedEngineOilTemperature}</text>
+            <text x={x} y={y + 220} className={`FontLarge TextCenter ${tempAmber ? 'FillAmber' : shouldTemperaturePulse ? 'FillPulse' : 'FillGreen'}`}>{displayedEngineOilTemperature}</text>
             <text x={x} y={y + 270} className="FillGreen TextCenter">
                 <tspan className="FontLarge">{n1Vibration.toFixed(1).toString().split('.')[0]}</tspan>
                 <tspan className="FontSmall">.</tspan>
@@ -254,7 +266,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 <tspan className="FontSmall">{n2Vibration.toFixed(1).toString().split('.')[1]}</tspan>
             </text>
 
-            <text x={x} y={y + 345} className="FillGreen FontMedium TextCenter">AB</text>
+            <text x={x} y={y + 345} className={`FillGreen FontMedium TextCenter ${!isValveOpen && 'Hidden'}`}>AB</text>
             <g className="StartValveDiagram">
                 <circle r={14} cx={x} cy={y + 375} />
                 <line x1={x} y1={y - 20 + 375} x2={x} y2={y + 14 + 375} className={`${!isValveOpen && 'Hidden'}`} />
