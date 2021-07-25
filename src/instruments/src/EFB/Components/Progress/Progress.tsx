@@ -5,7 +5,7 @@ export type ProgressBarProps = {
     displayBar?: boolean;
     completedBarBegin?: number;
     completedBarBeginValue?: string;
-    rawThrottlePosition?: number
+    completionValue?: number
 
     completedBarEnd?: number;
     completedBarEndValue?: string;
@@ -31,7 +31,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     completedBarEnd,
     completedBarBegin,
     completedBarBeginValue,
-    rawThrottlePosition,
+    completionValue,
     baseBgColor,
     height,
     width,
@@ -109,10 +109,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     };
 
     const getBarStyle = () => {
-        if (completedBarBeginValue && completedBarEnd && rawThrottlePosition) {
+        if (completedBarBeginValue && completedBarEnd && completionValue) {
             const barBegin = parseFloat(completedBarBeginValue);
             const barEnd = parseFloat((completedBarEnd !== 0 ? (completedBarEnd / 50 - 1) : 0.00).toFixed(2));
-            const roundedThrottlePos = parseFloat(rawThrottlePosition.toPrecision(2));
+            const roundedThrottlePos = parseFloat(completionValue.toPrecision(2));
 
             if (vertical) {
                 if (roundedThrottlePos <= barEnd && roundedThrottlePos >= barBegin) {

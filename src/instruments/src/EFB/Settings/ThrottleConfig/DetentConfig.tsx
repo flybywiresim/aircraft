@@ -78,7 +78,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         vertical
                         baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
                         completed={(props.throttlePosition + 1) / 2 * 100}
-                        rawThrottlePosition={props.throttlePosition}
+                        completionValue={props.throttlePosition}
                     />
                 </div>
             ) }
