@@ -550,7 +550,7 @@ export class ManagedFlightPlan {
                 if (prevWaypoint.endsInDiscontinuity) {
                     referenceWaypoint.distanceInFP = 0;
                 } else if (referenceWaypoint.additionalData) {
-                    switch (referenceWaypoint.additionalData.legtype) {
+                    switch (referenceWaypoint.additionalData.legType) {
                     case 11:
                     case 22:
                         referenceWaypoint.distanceInFP = 1;
