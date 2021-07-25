@@ -6,6 +6,7 @@
     "jsx": "react",
     "moduleResolution": "node",
     "skipLibCheck": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "downlevelIteration": true,
   }
 }
