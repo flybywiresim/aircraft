@@ -92,8 +92,8 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
     const OIL_PSI_HIGH_LIMIT = 130;
-    const OIL_PSI_LOW_LIMIT = 12;
-    const OIL_PSI_VLOW_LIMIT = 7; // TODO FIXME: standin value
+    const OIL_PSI_LOW_LIMIT = 14; // TODO FIXME: standin value
+    const OIL_PSI_VLOW_LIMIT = 12;
     const [psiNeedleRed, setPsiNeedleRed] = useState(true);
     const [pressureAboveHigh, setPressureAboveHigh] = useState(false);
     const [pressureBelowLow, setPressureBelowLow] = useState(false);
