@@ -93,6 +93,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const OIL_PSI_MAX = 130;
     const OIL_PSI_HIGH_LIMIT = 130;
     const OIL_PSI_LOW_LIMIT = 12;
+    const OIL_PSI_VLOW_LIMIT = 7; // TODO FIXME: standin value
     const [psiNeedleRed, setPsiNeedleRed] = useState(true);
     const [pressureAboveHigh, setPressureAboveHigh] = useState(false);
     const [pressureBelowLow, setPressureBelowLow] = useState(false);
@@ -153,10 +154,10 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             setShouldQuantityPulse(false);
         }
 
-        if (displayedEngineOilPressure <= OIL_PSI_LOW_LIMIT) {
+        if (displayedEngineOilPressure <= OIL_PSI_VLOW_LIMIT) {
             setPsiNeedleRed(true);
         }
-        if (psiNeedleRed && displayedEngineOilPressure >= OIL_PSI_LOW_LIMIT + 0.5) {
+        if (psiNeedleRed && displayedEngineOilPressure >= OIL_PSI_VLOW_LIMIT + 0.5) {
             setPsiNeedleRed(false);
         }
     }, [flightPhase, engineOilQuantity, engineOilPressure]);
@@ -168,7 +169,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             setShouldTemperaturePulse(false);
         }
 
-        if (displayedEngineOilTemperature > OIL_TEMP_VHIGH_LIMIT) {
+        if (displayedEngineOilTemperature >= OIL_TEMP_VHIGH_LIMIT) {
             setTempAmber(true);
         } else {
             setTempAmber(false);
