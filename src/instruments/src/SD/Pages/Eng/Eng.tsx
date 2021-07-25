@@ -46,9 +46,11 @@ export const EngPage: FC = () => {
 
             <text x={300} y={425} className={`FillWhite FontSmall TextCenter ${engSelectorPosition !== 2 && 'Hidden'}`}>IGN</text>
 
-            <line className="Indicator" x1={250} y1={488} x2={225} y2={490} />
-            <text x={300} y={490} className="FillCyan FontSmall TextCenter">PSI</text>
-            <line className="Indicator" x1={350} y1={488} x2={375} y2={490} />
+            <SvgGroup x={0} y={0} className={`${engSelectorPosition !== 2 && 'Hidden'}`}>
+                <line className="Indicator" x1={250} y1={488} x2={225} y2={490} />
+                <text x={300} y={490} className="FillCyan FontSmall TextCenter">PSI</text>
+                <line className="Indicator" x1={350} y1={488} x2={375} y2={490} />
+            </SvgGroup>
 
             <EngineColumn x={210} y={40} engineNumber={2} />
         </EcamPage>
@@ -90,7 +92,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
     const OIL_PSI_HIGH_LIMIT = 130;
-    const OIL_PSI_LOW_LIMIT = 0;
+    const OIL_PSI_LOW_LIMIT = 12;
     const [psiNeedleRed, setPsiNeedleRed] = useState(true);
     const [pressureAboveHigh, setPressureAboveHigh] = useState(false);
     const [pressureBelowLow, setPressureBelowLow] = useState(false);
@@ -162,10 +164,8 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     useEffect(() => {
         if (displayedEngineOilTemperature >= OIL_TEMP_HIGH_ADVISORY) {
             setShouldTemperaturePulse(true);
-        } else {
-            if(!tempBeenAboveAdvisory){
-                setShouldTemperaturePulse(false);
-            }
+        } else if (!tempBeenAboveAdvisory) {
+            setShouldTemperaturePulse(false);
         }
 
         if (displayedEngineOilTemperature > OIL_TEMP_VHIGH_LIMIT) {
@@ -176,23 +176,23 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
 
         if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
             setTimeout(() => {
-              if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
-                setTempBeenAboveAdvisory(true);
-              }
+                if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
+                    setTempBeenAboveAdvisory(true);
+                }
             }, 900_000);
-          } else {
-             clearTimeout();
-             setTempBeenAboveAdvisory(false);
+        } else {
+            clearTimeout();
+            setTempBeenAboveAdvisory(false);
         }
 
         return () => clearTimeout();
     }, [engineOilTemperature]);
 
     useEffect(() => {
-        if(tempBeenAboveAdvisory){
+        if (tempBeenAboveAdvisory) {
             setTempAmber(true);
         }
-    }, [tempBeenAboveAdvisory])
+    }, [tempBeenAboveAdvisory]);
 
     useEffect(() => {
         if (n2Percent >= 50) {
@@ -291,17 +291,19 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 <tspan className="FontSmall">{n2Vibration.toFixed(1).toString().split('.')[1]}</tspan>
             </text>
 
-            {/* ${!(isValveOpen && showIgniter && activeIgniter === 0 && activeIgniter === 2 ) && 'Hidden'} */}
-            <text x={x - 7} y={y + 345} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>A</text>
-            {/* ${!(isValveOpen && showIgniter && activeIgniter === 1 && activeIgniter === 2 ) && 'Hidden'} */}
-            <text x={x + 7} y={y + 345} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>B</text>
-            <g className="StartValveDiagram">
-                <circle r={14} cx={x} cy={y + 375} />
-                <line x1={x} y1={y - 20 + 375} x2={x} y2={y + 14 + 375} className={`${!isValveOpen && 'Hidden'}`} />
-                <line x1={x - 14} y1={y + 375} x2={x + 14} y2={y + 375} className={`${isValveOpen && 'Hidden'}`} />
-                <line x1={x} y1={y + 13 + 375} x2={x} y2={y + 20 + 375} />
-            </g>
-            <text x={x} y={y + 410} className="FillGreen FontLarge TextCenter">{apuBleedPressure}</text>
+            <SvgGroup x={0} y={0} className={`${engSelectorPosition !== 2 && 'Hidden'}`}>
+                {/* ${!(isValveOpen && showIgniter && activeIgniter === 0 && activeIgniter === 2 ) && 'Hidden'} */}
+                <text x={x - 7} y={y + 345} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>A</text>
+                {/* ${!(isValveOpen && showIgniter && activeIgniter === 1 && activeIgniter === 2 ) && 'Hidden'} */}
+                <text x={x + 7} y={y + 345} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>B</text>
+                <g className="StartValveDiagram">
+                    <circle r={14} cx={x} cy={y + 375} />
+                    <line x1={x} y1={y - 20 + 375} x2={x} y2={y + 14 + 375} className={`${!isValveOpen && 'Hidden'}`} />
+                    <line x1={x - 14} y1={y + 375} x2={x + 14} y2={y + 375} className={`${isValveOpen && 'Hidden'}`} />
+                    <line x1={x} y1={y + 13 + 375} x2={x} y2={y + 20 + 375} />
+                </g>
+                <text x={x} y={y + 410} className="FillGreen FontLarge TextCenter">{apuBleedPressure}</text>
+            </SvgGroup>
         </SvgGroup>
     );
 };
