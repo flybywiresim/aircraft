@@ -303,7 +303,7 @@ declare interface RawVor extends RawFacility {
     type: VorType;
     vorClass: VorClass;
     weatherBroadcast: number;
-    //[0, 360)
+    // [0, 360)
     magneticVariation?: number;
     __Type: 'JS_FacilityVOR';
 }
@@ -332,10 +332,10 @@ declare interface RawNdb extends RawFacility {
     freqMHz: number;
     type: NdbType;
     weatherBroadcast: number;
-    //[0, 360)
+    // [0, 360)
     magneticVariation?: number;
     __Type: 'JS_FacilityNDB';
-};
+}
 
 declare enum NdbType {
     Unknown = 0,

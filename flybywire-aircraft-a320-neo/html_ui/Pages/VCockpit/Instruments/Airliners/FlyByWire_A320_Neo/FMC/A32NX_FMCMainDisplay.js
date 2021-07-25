@@ -2049,11 +2049,17 @@ class FMCMainDisplay extends BaseAirliners {
                 this.addNewMessage(NXSystemMessages.notAllowed);
                 return callback(false);
             }
-            this.flightPlanManager.clearDiscontinuity(index);
+            if (!this.flightPlanManager.clearDiscontinuity(index)) {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return callback(false);
+            }
             callback();
         } else {
             this.ensureCurrentFlightPlanIsTemporary(() => {
-                this.flightPlanManager.clearDiscontinuity(index);
+                if (!this.flightPlanManager.clearDiscontinuity(index)) {
+                    this.addNewMessage(NXSystemMessages.notAllowed);
+                    return callback(false);
+                }
                 callback();
             });
         }

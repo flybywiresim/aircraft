@@ -28,6 +28,11 @@ export interface WaypointStats {
      * Predicted ETA from PPOS in seconds
      */
     etaFromPpos: number;
+
+    /**
+     * Magnetic variation in degrees
+     */
+    magneticVariation: number;
 }
 
 export interface ApproachStats {
