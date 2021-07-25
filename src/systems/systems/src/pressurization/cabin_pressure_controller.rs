@@ -77,7 +77,7 @@ impl CabinPressureController {
         self.landing_elev = landing_elevation;
         self.cabin_target_vs = self.calculate_cabin_vs(context);
         self.cabin_vs = self.set_cabin_vs(context);
-        self.cabin_flow_in = self.calculate_cabin_flow_in(engines, packs_are_on);
+        self.cabin_flow_in = self.calculate_cabin_flow_in(engines, packs_are_on, context);
         self.cabin_flow_out = self.calculate_cabin_flow_out();
     }
 
@@ -257,36 +257,56 @@ impl CabinPressureController {
     }
 
     fn set_cabin_vs(&self, context: &UpdateContext) -> Velocity {
-        // Rate of change of 100fpm per second
         const INTERNAL_VS_RATE_CHANGE: f64 = 100.;
 
-        let rate_of_change_for_delta = INTERNAL_VS_RATE_CHANGE * context.delta_as_secs_f64();
-        if self.cabin_target_vs > self.cabin_vs {
-            self.cabin_vs
-                + Velocity::new::<foot_per_minute>(rate_of_change_for_delta.min(
-                    self.cabin_target_vs.get::<foot_per_minute>()
-                        - self.cabin_vs.get::<foot_per_minute>(),
-                ))
-        } else if self.cabin_target_vs < self.cabin_vs {
-            self.cabin_vs
-                - Velocity::new::<foot_per_minute>(rate_of_change_for_delta.min(
-                    self.cabin_vs.get::<foot_per_minute>()
-                        - self.cabin_target_vs.get::<foot_per_minute>(),
-                ))
+        let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
+        let equilibrium_ratio = self.calculate_equilibrium_outflow_valve_open_amount();
+
+        if (pressure_ratio - 1.) >= 0. && self.outflow_valve_open_amount >= equilibrium_ratio {
+            let rate_of_change_for_delta = INTERNAL_VS_RATE_CHANGE * context.delta_as_secs_f64();
+            if Velocity::new::<meter_per_second>(0.) > self.cabin_vs {
+                self.cabin_vs
+                    + Velocity::new::<foot_per_minute>(
+                        rate_of_change_for_delta.min(self.cabin_vs.get::<foot_per_minute>()),
+                    )
+            } else if Velocity::new::<meter_per_second>(0.) < self.cabin_vs {
+                self.cabin_vs
+                    - Velocity::new::<foot_per_minute>(
+                        rate_of_change_for_delta.min(self.cabin_vs.get::<foot_per_minute>()),
+                    )
+            } else {
+                Velocity::new::<meter_per_second>(0.)
+            }
         } else {
-            self.cabin_target_vs
+            let z = self.calculate_z();
+            let vertical_speed = (self.outflow_valve_open_amount.get::<ratio>()
+                * CabinPressureController::OFV_SIZE
+                * CabinPressureController::C
+                * (2.
+                    * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
+                    * CabinPressureController::RHO
+                    * self.cabin_pressure.get::<pascal>()
+                    * z)
+                    .sqrt()
+                - self.cabin_flow_in.get::<cubic_meter_per_second>()
+                + self.cabin_flow_out.get::<cubic_meter_per_second>())
+                / ((CabinPressureController::RHO
+                    * CabinPressureController::G
+                    * CabinPressureController::CABIN_VOLUME)
+                    / (CabinPressureController::R * CabinPressureController::T_0));
+            Velocity::new::<meter_per_second>(vertical_speed)
         }
     }
 
     fn calculate_z(&self) -> f64 {
         let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
 
-        let margin = 0.05;
-        if (0.53..1.).contains(&pressure_ratio) {
+        let margin = 0.005;
+        if (0.53..0.995).contains(&pressure_ratio) {
             pressure_ratio.powf(2. / CabinPressureController::GAMMA)
                 - pressure_ratio
                     .powf((CabinPressureController::GAMMA + 1.) / CabinPressureController::GAMMA)
-        } else if (pressure_ratio - 1.).abs() < margin {
+        } else if (pressure_ratio - 1.).abs() <= margin || (pressure_ratio - 1.) > 0. {
             0.001
         } else {
             0.256
@@ -297,29 +317,72 @@ impl CabinPressureController {
         &self,
         engines: [&impl EngineCorrectedN1; 2],
         packs_are_on: bool,
+        context: &UpdateContext,
     ) -> VolumeRate {
+        const INTERNAL_FLOW_RATE_CHANGE: f64 = 0.1;
+        const FLOW_RATE_WITH_PACKS_ON: f64 = 0.6;
         if engines
             .iter()
             .any(|&x| x.corrected_n1() > Ratio::new::<percent>(15.))
             && packs_are_on
         {
-            VolumeRate::new::<cubic_meter_per_second>(0.9)
+            let rate_of_change_for_delta = INTERNAL_FLOW_RATE_CHANGE * context.delta_as_secs_f64();
+            if VolumeRate::new::<cubic_meter_per_second>(FLOW_RATE_WITH_PACKS_ON)
+                > self.cabin_flow_in
+            {
+                self.cabin_flow_in
+                    + VolumeRate::new::<cubic_meter_per_second>(rate_of_change_for_delta.min(
+                        FLOW_RATE_WITH_PACKS_ON
+                            - self.cabin_flow_in.get::<cubic_meter_per_second>(),
+                    ))
+            } else {
+                VolumeRate::new::<cubic_meter_per_second>(FLOW_RATE_WITH_PACKS_ON)
+            }
         } else {
             VolumeRate::new::<cubic_meter_per_second>(0.)
         }
     }
 
     fn calculate_cabin_flow_out(&self) -> VolumeRate {
-        VolumeRate::new::<cubic_meter_per_second>(
+        let z = self.calculate_z();
+
+        let w_leakage = VolumeRate::new::<cubic_meter_per_second>(
             CabinPressureController::C
                 * CabinPressureController::AREA_LEAKAGE
                 * (2.
                     * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
                     * CabinPressureController::RHO
                     * self.cabin_pressure.get::<pascal>()
-                    * self.calculate_z())
+                    * z.abs())
                 .sqrt(),
-        )
+        );
+        if z >= 0. {
+            w_leakage
+        } else {
+            -w_leakage
+        }
+    }
+
+    fn calculate_equilibrium_outflow_valve_open_amount(&self) -> Ratio {
+        let z = self.calculate_z();
+
+        // Ouflow valve open area for v/s = 0
+        let ofv_area = (self.cabin_flow_in.get::<cubic_meter_per_second>()
+            - self.cabin_flow_out.get::<cubic_meter_per_second>())
+            / (CabinPressureController::C
+                * (2.
+                    * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
+                    * CabinPressureController::RHO
+                    * self.cabin_pressure.get::<pascal>()
+                    * z)
+                    .sqrt());
+
+        let ofv_ratio = Ratio::new::<ratio>(ofv_area / CabinPressureController::OFV_SIZE);
+        if ofv_ratio > Ratio::new::<percent>(100.) {
+            Ratio::new::<percent>(100.)
+        } else {
+            ofv_ratio
+        }
     }
 
     pub fn update_outflow_valve_state(&mut self, outflow_valve: &PressureValve) {
@@ -753,6 +816,8 @@ mod pressure_schedule_manager_tests {
 
     struct TestAircraft {
         cpc: CabinPressureController,
+        outflow_valve: PressureValve,
+        press_overhead: PressurizationOverheadPanel,
         engine_1: TestEngine,
         engine_2: TestEngine,
     }
@@ -760,6 +825,8 @@ mod pressure_schedule_manager_tests {
         fn new() -> Self {
             let mut test_aircraft = Self {
                 cpc: CabinPressureController::new(),
+                outflow_valve: PressureValve::new(),
+                press_overhead: PressurizationOverheadPanel::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
             };
@@ -825,6 +892,9 @@ mod pressure_schedule_manager_tests {
                 true,
                 false,
             );
+            self.outflow_valve
+                .update(context, &self.cpc, &self.press_overhead);
+            self.cpc.update_outflow_valve_state(&self.outflow_valve);
         }
     }
     impl SimulationElement for TestAircraft {}
@@ -872,10 +942,11 @@ mod pressure_schedule_manager_tests {
         test_bed.run();
         assert!(test_bed.query(|a| a.is_takeoff()));
         test_bed.run_with_delta(Duration::from_secs(10));
+        test_bed.run();
 
-        assert_eq!(
-            test_bed.query(|a| a.cpc.cabin_vs()),
-            Velocity::new::<foot_per_minute>(-400.)
+        assert!(
+            (test_bed.query(|a| a.cpc.cabin_vs()) - Velocity::new::<foot_per_minute>(-400.)).abs()
+                < Velocity::new::<foot_per_minute>(10.)
         );
     }
 
@@ -891,10 +962,7 @@ mod pressure_schedule_manager_tests {
         test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.cpc.cabin_delta_p()) > Pressure::new::<psi>(0.1));
-        assert_eq!(
-            test_bed.query(|a| a.cpc.cabin_vs()),
-            Velocity::new::<foot_per_minute>(0.)
-        );
+        assert!(test_bed.query(|a| a.cpc.cabin_vs()).abs() < Velocity::new::<foot_per_minute>(10.));
     }
 
     #[test]
@@ -920,7 +988,6 @@ mod pressure_schedule_manager_tests {
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(10));
-
         assert!(test_bed.query(|a| a.cpc.cabin_vs()) > Velocity::new::<foot_per_minute>(0.));
     }
 
@@ -934,11 +1001,15 @@ mod pressure_schedule_manager_tests {
         let first_vs = test_bed.query(|a| a.cpc.cabin_vs());
 
         test_bed.set_indicated_altitude(Length::new::<foot>(20000.));
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(465.67));
         test_bed.run_with_delta(Duration::from_secs(10));
 
         test_bed.set_indicated_altitude(Length::new::<foot>(30000.));
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(300.92));
         test_bed.run_with_delta(Duration::from_secs(10));
+
         test_bed.set_indicated_altitude(Length::new::<foot>(39000.));
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.4));
         test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.cpc.cabin_vs()) > first_vs);
