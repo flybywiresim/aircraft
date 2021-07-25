@@ -58,7 +58,6 @@ interface EngineColumnProps {
     x: number,
     y: number,
     engineNumber: number
-    // TODO: add simvars for engine parameters
 }
 
 const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
@@ -66,30 +65,6 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
     const [isValveOpen, setIsValveOpen] = useState(false);
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
-
-    useEffect(() => {
-        if (n2Percent >= 50) {
-            setIsValveOpen(false);
-        }
-    }, [n2Percent]);
-
-    useEffect(() => {
-        if (isEngineStarting && n2Percent < 50) {
-            setTimeout(() => setIsValveOpen(true), 1200);
-        } else {
-            setTimeout(() => setIsValveOpen(false), 1200);
-        }
-
-        return () => clearTimeout();
-    }, [isEngineStarting]);
-
-    // const [isEngineOneStarting] = useSimVar('GENERAL ENG STARTER:1', 'bool', 500);
-    // const [isEngineOneIgniting] = useSimVar('TURB ENG IS IGNITING:1', 'bool');
-    // const [engineOneN2Percent] = useSimVar('ENG N2 RPM:1', 'percent');
-
-    // const [isEngineTwoStarting] = useSimVar('GENERAL ENG STARTER:2', 'bool', 500);
-    // const [isEngineTwoIgniting] = useSimVar('TURB ENG IS IGNITING:2', 'bool');
-    // const [engineTwoN2Percent] = useSimVar('ENG N2 RPM:2', 'percent');
 
     // if (engineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
     //     if (currentState !== Definitions.IGN_STATE.NONE) {
@@ -116,52 +91,24 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
 
     const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 200);
     const OIL_QTY_MAX = 17.1;
-    const OIL_QTY_LOW_ADVISORY = 3; // FIXME: this value is only a standin!!!
+    const OIL_QTY_LOW_ADVISORY = 3; // FIXME TODO: this value is only a standin!!!
     const displayedEngineOilQuantity = engineOilQuantity === 100 ? OIL_QTY_MAX : Math.round((engineOilQuantity / 100) * OIL_QTY_MAX / 0.5) * 0.5; // Engine oil quantity has a step of 0.2
 
     const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
-    const OIL_PSI_VLOW_LIMIT = 12;
+    const OIL_PSI_HIGH_LIMIT = 120; // FIXME TODO: this value is only a standin!!!
+    const OIL_PSI_LOW_LIMIT = 12;// FIXME TODO: this value is only a standin!!!
     const [psiNeedleRed, setPsiNeedleRed] = useState(true);
-
-    function handlePsiReadoutStyle() {
-        if (engineOilPressure <= OIL_PSI_VLOW_LIMIT) {
-            setPsiNeedleRed(true);
-        }
-        if (psiNeedleRed && engineOilPressure >= OIL_PSI_VLOW_LIMIT + 0.5) {
-            setPsiNeedleRed(false);
-        }
-    }
+    const [pressureAboveHigh, setPressureAboveHigh] = useState(false);
+    const [pressureBelowLow, setPressureBelowLow] = useState(false);
 
     const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 250);
     const displayedEngineOilTemperature = Math.round(engineOilTemperature / 5) * 5; // Engine oil temperature has a step of 5
 
     const [n1Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number');
 
-    const [n2Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number'); // FIXME: should have a different value than N1, currently API limited
-
-    useEffect(() => {
-        if (flightPhase === 2 || flightPhase === 6) {
-            if (engineOilPressure > OIL_PSI_MAX - 1 || (engineOilPressure < OIL_PSI_VLOW_LIMIT && n2Percent > 75)) {
-                setShouldPressurePulse(true);
-            }
-            if (shouldPressurePulse && engineOilPressure < OIL_PSI_MAX - 4 && engineOilPressure > OIL_PSI_MAX + 2) {
-                setShouldPressurePulse(false);
-            }
-
-            if (engineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
-                setShouldQuantityPulse(true);
-            }
-            if (shouldQuantityPulse && engineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
-                setShouldPressurePulse(false);
-            }
-        } else {
-            setShouldPressurePulse(false);
-            setShouldQuantityPulse(false);
-        }
-        handlePsiReadoutStyle();
-    }, [flightPhase, engineOilPressure, engineOilQuantity]);
+    const [n2Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number'); // FIXME TODO: should have a different value than N1, currently API limited
 
     function getNeedleValue(value: any, max: number): number {
         const numberValue = (Number)(value);
@@ -170,6 +117,58 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
         }
         return 100;
     }
+
+    useEffect(() => {
+        if (flightPhase === 2 || flightPhase === 6) {
+            if (engineOilPressure > OIL_PSI_HIGH_LIMIT - 1) {
+                setPressureAboveHigh(true);
+            }
+
+            if (pressureAboveHigh && engineOilPressure < OIL_PSI_HIGH_LIMIT - 4) {
+                setPressureAboveHigh(false);
+            }
+
+            if (engineOilPressure < OIL_PSI_LOW_LIMIT && n2Percent > 75) {
+                setPressureBelowLow(true);
+            }
+
+            if (pressureBelowLow && engineOilPressure > OIL_PSI_LOW_LIMIT + 2) {
+                setPressureBelowLow(true);
+            }
+
+            if (pressureAboveHigh || pressureBelowLow) {
+                setShouldPressurePulse(true);
+            } else {
+                setShouldPressurePulse(false);
+            }
+        } else {
+            setShouldPressurePulse(false);
+            setShouldQuantityPulse(false);
+        }
+
+        if (engineOilPressure <= OIL_PSI_LOW_LIMIT) {
+            setPsiNeedleRed(true);
+        }
+        if (psiNeedleRed && engineOilPressure >= OIL_PSI_LOW_LIMIT + 0.5) {
+            setPsiNeedleRed(false);
+        }
+    }, [flightPhase, engineOilPressure, engineOilQuantity]);
+
+    useEffect(() => {
+        if (n2Percent >= 50) {
+            setIsValveOpen(false);
+        }
+    }, [n2Percent]);
+
+    useEffect(() => {
+        if (isEngineStarting && n2Percent < 50) {
+            setTimeout(() => setIsValveOpen(true), 1200);
+        } else {
+            setTimeout(() => setIsValveOpen(false), 1200);
+        }
+
+        return () => clearTimeout();
+    }, [isEngineStarting]);
 
     return (
         <SvgGroup x={x} y={y}>
@@ -214,7 +213,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             <line className="GaugeMarking" x1={x} y1={y + 110} x2={x} y2={y + 115} />
             <line className="GaugeMarking" x1={x + 45} y1={y + 160} x2={x + 51} y2={y + 160} />
             <Arc x={x} y={y + 160} radius={50} toValue={100} scaleMax={100} className="WhiteLine NoFill" />
-            <Arc x={x} y={y + 160} radius={50} toValue={OIL_PSI_VLOW_LIMIT} scaleMax={100} className="RedLine NoFill" />
+            <Arc x={x} y={y + 160} radius={50} toValue={OIL_PSI_LOW_LIMIT} scaleMax={100} className="RedLine NoFill" />
             <Needle
                 x={x}
                 y={y + 160}
