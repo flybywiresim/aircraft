@@ -74,6 +74,8 @@ const Waypoint: FC<{ waypoint: WayPoint, index: number, isActive: boolean, mapPa
     // TODO FL
     //debugger;
 
+    // TODO VNAV to provide met/missed prediction => magenta if met, amber if missed
+    const constrainedAltitudeClass = waypoint.legAltitudeDescription > 0 ? "White" : null;
     let constraintY = -6;
     let constraintText: string[] = [];
     if (constraints) {
@@ -108,9 +110,12 @@ const Waypoint: FC<{ waypoint: WayPoint, index: number, isActive: boolean, mapPa
                 {debug && `(${index})`}
             </text>
             { constraints && (
-                constraintText.map(t => {
-                    return <text x={15} y={constraintY += 20} className="Magenta" fontSize={20}>{t}</text>
-                })
+                constraintText.map(t => (
+                    <text x={15} y={constraintY += 20} className="Magenta" fontSize={20}>{t}</text>
+                ))
+            )}
+            { constrainedAltitudeClass && (
+                <circle r={12} className={constrainedAltitudeClass} strokeWidth={2} />
             )}
         </Layer>
     );
