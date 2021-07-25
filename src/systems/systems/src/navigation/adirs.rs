@@ -12,7 +12,7 @@ use uom::si::{
     f64::*,
     length::foot,
     thermodynamic_temperature::degree_celsius,
-    velocity::{foot_per_minute, knot, foot_per_second},
+    velocity::{foot_per_minute, foot_per_second, knot},
 };
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
@@ -1058,7 +1058,7 @@ mod tests {
         fn vertical_speed_of(mut self, velocity: Velocity) -> Self {
             self.write(
                 AdirsSimulatorData::VERTICAL_SPEED,
-                velocity.get::<foot_per_minute>(),
+                velocity.get::<foot_per_second>(),
             );
             self
         }
