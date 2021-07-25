@@ -1567,7 +1567,7 @@ impl Door {
             self.closing_time = Duration::from_secs(0);
         }
 
-        self.is_uplocked = self.should_uplock();
+        self.is_uplocked = self.is_uplock();
         self.is_downlocked = hydraulic_assembly.is_locked();
         self.available_hydraulic_pressure = available_hydraulic_pressure;
         self.update_position(hydraulic_assembly.position());
@@ -1581,11 +1581,6 @@ impl Door {
         );
     }
 
-    fn should_unlock(&self) -> bool {
-        self.position_request > 0. && self.position <= 0.5
-        //self.position_request > 0. && self.position_request_prev <= 0. && self.position <= 0.
-    }
-
     fn is_opening(&self) -> bool {
         self.position > 0. && self.position_request > 0.9 && !self.is_uplocked
     }
@@ -1595,7 +1590,11 @@ impl Door {
     }
 
     fn should_uplock(&self) -> bool {
-        self.is_opening() && self.position > 0.9 && !self.is_uplocked
+        self.position > 0.99 && self.position_request > 0.9
+    }
+
+    fn is_uplock(&self) -> bool {
+        self.position > 0.8 && self.position_request > 0.9 && self.should_close_control_valves()
     }
 
     fn should_control_opening(&self) -> bool {
@@ -1608,17 +1607,15 @@ impl Door {
     }
 
     fn should_start_closing(&self) -> bool {
-        self.position_request < self.position_request_prev
-            && self.available_hydraulic_pressure > Pressure::new::<psi>(200.)
-    }
-
-    fn should_request_downlock(&self) -> bool {
         self.position_request <= 0.
+            && self.available_hydraulic_pressure > Pressure::new::<psi>(200.)
     }
 }
 impl HydraulicAssemblyController for Door {
     fn should_close_control_valves(&self) -> bool {
-        self.is_uplocked || !self.should_control_opening() || self.is_downlocked
+        self.should_uplock()
+            || (!self.should_control_opening() && !self.should_start_closing())
+            || self.is_downlocked
     }
     fn position_request(&self) -> f64 {
         if self.should_start_closing() {
@@ -1630,7 +1627,7 @@ impl HydraulicAssemblyController for Door {
         }
     }
     fn should_lock(&self) -> bool {
-        !self.should_unlock()
+        self.position_request <= 0.
     }
     fn lock_position_request(&self) -> f64 {
         0.
@@ -5682,6 +5679,31 @@ mod tests {
 
             assert!(test_bed.cargo_fwd_door_position() > 0.85);
             assert!(test_bed.cargo_fwd_door_opening_time() == Duration::from_secs(0));
+        }
+
+        #[test]
+        fn cargo_door_controller_closes_the_door() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+            assert!(test_bed.cargo_fwd_door_opening_time() == Duration::from_secs(0));
+
+            test_bed = test_bed
+                .close_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(50.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() <= 0.);
+            assert!(test_bed.cargo_fwd_door_closing_time() == Duration::from_secs(0));
         }
 
         fn context(delta_time: Duration) -> UpdateContext {
