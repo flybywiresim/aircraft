@@ -546,7 +546,7 @@ function renderFixTableHeader(isFlying) {
 function renderFixHeader(rowObj) {
     return [
         `{sp}${(rowObj.fixAnnotation) ? rowObj.fixAnnotation : ""}`,
-        (rowObj.active ? rowObj.distance : ""),
+        rowObj.distance,
         ""
     ];
 }
