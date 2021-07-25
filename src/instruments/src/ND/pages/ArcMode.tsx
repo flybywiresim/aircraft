@@ -8,16 +8,17 @@ import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { EfisSide, Mode } from '../index';
+import { EfisSide, EfisOption, Mode } from '../index';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface ArcModeProps {
     rangeSetting: number,
     side: EfisSide,
     ppos: LatLongData,
+    efisOption: EfisOption,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -28,7 +29,6 @@ export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) =>
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
-    const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -49,6 +49,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) =>
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
                 clipPath="url(#arc-mode-map-clip)"
+                constraints={efisOption === EfisOption.Constraints}
                 debug={false}
             />
 

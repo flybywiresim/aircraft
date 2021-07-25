@@ -8,7 +8,7 @@ import { TuningMode } from '@fmgc/radionav';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { EfisSide, Mode } from '../index';
+import { EfisOption, EfisSide, Mode } from '../index';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
@@ -17,9 +17,10 @@ export interface RoseModeProps {
     mode: Mode.ROSE_ILS | Mode.ROSE_VOR | Mode.ROSE_NAV,
     side: EfisSide,
     ppos: LatLongData,
+    efisOption: EfisOption,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) => {
+export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -30,7 +31,6 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) 
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
-    const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -51,6 +51,7 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) 
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
                 clipPath="url(#rose-mode-map-clip)"
+                constraints={efisOption === EfisOption.Constraints}
                 debug={false}
             />)}
 

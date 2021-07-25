@@ -20,10 +20,11 @@ export type FlightPathProps = {
     flightPlanManager: FlightPlanManager,
     mapParams: MapParameters,
     clipPath: string,
+    constraints: boolean,
     debug: boolean,
 }
 
-export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, clipPath, debug = false }) => {
+export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, clipPath, constraints, debug = false }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const flightPlan = useCurrentFlightPlan();
 
@@ -39,7 +40,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                 <g clipPath={clipPath}>
                     {flightPlan.visibleWaypoints.map((waypoint, index) => {
                         if (!waypoint.isVectors) {
-                            return <Waypoint key={waypoint.ident} waypoint={waypoint} index={index} mapParams={mapParams} debug={debug} />;
+                            return <Waypoint key={waypoint.ident} waypoint={waypoint} index={index} isActive={index === flightPlan.activeWaypointIndex} mapParams={mapParams} constraints={constraints} debug={debug} />;
                         }
                         return null;
                     })}
@@ -67,17 +68,50 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     return null;
 };
 
-const Waypoint: FC<{ waypoint: WayPoint, index: number, mapParams: MapParameters, debug: boolean }> = ({ waypoint, index, mapParams, debug = false }) => {
+const Waypoint: FC<{ waypoint: WayPoint, index: number, isActive: boolean, mapParams: MapParameters, constraints: boolean, debug: boolean }> = ({ waypoint, index, isActive, mapParams, constraints = false, debug = false }) => {
     const [x, y] = mapParams.coordinatesToXYy(waypoint.infos.coordinates);
+
+    // TODO FL
+    //debugger;
+
+    let constraintY = -6;
+    let constraintText: string[] = [];
+    if (constraints) {
+        // minus, plus, then speed
+        switch (waypoint.legAltitudeDescription) {
+        case 1:
+            constraintText.push("" + Math.round(waypoint.legAltitude1));
+            break;
+        case 2:
+            constraintText.push("+" + Math.round(waypoint.legAltitude1));
+            break;
+        case 3:
+            constraintText.push("-" + Math.round(waypoint.legAltitude1));
+            break;
+        case 4:
+            constraintText.push("-" + Math.round(waypoint.legAltitude1));
+            constraintText.push("+" + Math.round(waypoint.legAltitude2));
+            break;
+        }
+
+        if (waypoint.speedConstraint > 0) {
+            constraintText.push("" + Math.round(waypoint.speedConstraint) + "KT");
+        }
+    }
 
     return (
         <Layer x={x} y={y}>
-            <rect x={-4} y={-4} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform="rotate(45 0 0)" />
+            <rect x={-4} y={-4} width={8} height={8} className={isActive ? "White" : "Green"} strokeWidth={2} transform="rotate(45 0 0)" />
 
-            <text x={15} y={10} fontSize={20} fill="#00ff00">
+            <text x={15} y={-6} fontSize={20} className={isActive ? "White" : "Green"}>
                 {waypoint.ident}
                 {debug && `(${index})`}
             </text>
+            { constraints && (
+                constraintText.map(t => {
+                    return <text x={15} y={constraintY += 20} className="Magenta" fontSize={20}>{t}</text>
+                })
+            )}
         </Layer>
     );
 };

@@ -566,6 +566,7 @@ export class ManagedFlightPlan {
             legAltitudeDescription: waypoint.legAltitudeDescription,
             legAltitude1: waypoint.legAltitude1,
             legAltitude2: waypoint.legAltitude2,
+            speedConstraint: waypoint.speedConstraint,
             isVectors: waypoint.isVectors,
             endsInDiscontinuity: waypoint.endsInDiscontinuity,
             discontinuityCanBeCleared: waypoint.discontinuityCanBeCleared,

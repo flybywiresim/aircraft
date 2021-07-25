@@ -6,13 +6,15 @@ import { useSimVar } from '@instruments/common/simVars';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
+import { EfisOption } from '../index';
 
 export interface PlanModeProps {
     rangeSetting: number,
     ppos: LatLongData,
+    efisOption: EfisOption,
 }
 
-export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos }) => {
+export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
@@ -43,6 +45,7 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos }) => {
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
                 clipPath="url(#plan-mode-map-clip)"
+                constraints={efisOption === EfisOption.Constraints}
                 debug={false}
             />
 

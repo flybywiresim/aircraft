@@ -499,6 +499,7 @@ export class FlightPlanManager {
                         wp.legAltitudeDescription = approach.finalLegs[i].altDesc;
                         wp.legAltitude1 = approach.finalLegs[i].altitude1 * 3.28084;
                         wp.legAltitude2 = approach.finalLegs[i].altitude2 * 3.28084;
+                        wp.speedConstraint = approach.finalLegs[i].speedRestriction;
                         approachWaypoints.push(wp);
                     }
                 }
@@ -510,6 +511,7 @@ export class FlightPlanManager {
                         wp.legAltitudeDescription = approachTransition.legs[i].altDesc;
                         wp.legAltitude1 = approachTransition.legs[i].altitude1 * 3.28084;
                         wp.legAltitude2 = approachTransition.legs[i].altitude2 * 3.28084;
+                        wp.speedConstraint = approach.finalLegs[i].speedRestriction;
                         approachWaypoints.push(wp);
                     }
                 }
