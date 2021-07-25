@@ -7,9 +7,9 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
+import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Eng.scss';
-import { SvgGroup } from '../../Common/SvgGroup';
 
 setIsEcamPage('eng_page');
 
