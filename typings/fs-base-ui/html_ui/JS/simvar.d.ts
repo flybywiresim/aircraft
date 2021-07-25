@@ -4,7 +4,7 @@
 
 type NumberVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree" | "Radians")
     | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets" | "Feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
-    | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds" | "seconds" | "kilograms per second" | "nautical miles" | "degrees"
+    | "degree longitude" | "meters per second" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds" | "seconds" | "kilograms per second" | "nautical miles" | "degrees"
 
 type TextVarUnit = "Text" | "string"
 
