@@ -1,6 +1,7 @@
 import React, { FC, memo } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
+import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 
 export type ToWaypointIndicatorProps = {
     info?: WaypointStats,
@@ -36,12 +37,14 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info })
         timeText = '--:--';
     }
 
+    const heading = GeoMath.correctMagvar(info.bearingInFp, info.magneticVariation);
+
     return (
         <Layer x={690} y={28}>
             {/* EIS2 can only display 9 characters for this ident */}
             <text x={-9} y={0} fontSize={25} className="White" textAnchor="end">{info.ident.substring(0, 8)}</text>
 
-            <text x={54} y={0} fontSize={25} className="Green" textAnchor="end">{(Math.round(info.bearingInFp)).toString().padStart(3, '0')}</text>
+            <text x={54} y={0} fontSize={25} className="Green" textAnchor="end">{(Math.round(heading)).toString().padStart(3, '0')}</text>
             <text x={73} y={2} fontSize={25} className="Cyan" textAnchor="end">&deg;</text>
 
             {info.distanceFromPpos < 20 ? (

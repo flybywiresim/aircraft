@@ -29,4 +29,8 @@ export class MathUtils {
        }
        return diff;
    }
+
+   public static mod(x: number, n: number): number {
+       return x - Math.floor(x / n) * n;
+   }
 }
