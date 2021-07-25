@@ -166,6 +166,8 @@ export class LegsProcedure {
                       mappedLeg = this.mapExactFix(currentLeg);
                       break;
                   case 2:
+                      mappedLeg = this.mapCourseUntilAltitude(currentLeg, this._previousFix);
+                      break;
                   case 19:
                       mappedLeg = this.mapHeadingUntilAltitude(currentLeg, this._previousFix);
                       break;
@@ -356,13 +358,43 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapHeadingUntilAltitude(leg: ProcedureLeg, prevLeg: WayPoint) {
+      const magVar = Facilities.getMagVar(prevLeg.infos.coordinates);
+      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
       const altitudeFeet = (leg.altitude1 * 3.2808399);
       const distanceInNM = altitudeFeet / 500.0;
 
-      const course = leg.course + GeoMath.getMagvar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
-      const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, prevLeg.infos.coordinates);
+      const coordinates = GeoMath.relativeBearingDistanceToCoords(heading, distanceInNM, prevLeg.infos.coordinates);
+      const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, prevLeg.infos.magneticVariation);
+      // TODO move
+      if (!waypoint.additionalData) {
+          waypoint.additionalData = {};
+      }
+      waypoint.additionalData.vectorsHeading = heading;
+      waypoint.additionalData.legType = leg.type;
+      return waypoint;
+  }
 
-      return this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, prevLeg.infos.magneticVariation);
+  /**
+   * Maps flying a course until a proscribed altitude.
+   * @param leg The procedure leg to map.
+   * @param prevLeg The previous leg in the procedure.
+   * @returns The mapped leg.
+   */
+  public mapCourseUntilAltitude(leg: ProcedureLeg, prevLeg: WayPoint) {
+      const magVar = Facilities.getMagVar(prevLeg.infos.coordinates);
+      const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
+      const altitudeFeet = (leg.altitude1 * 3.2808399);
+      const distanceInNM = altitudeFeet / 500.0;
+
+      const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, prevLeg.infos.coordinates);
+      const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, prevLeg.infos.magneticVariation);
+      // TODO move
+      if (!waypoint.additionalData) {
+          waypoint.additionalData = {};
+      }
+      waypoint.additionalData.vectorsCourse = course;
+      waypoint.additionalData.legType = leg.type;
+      return waypoint;
   }
 
   /**
@@ -381,6 +413,7 @@ export class LegsProcedure {
       waypoint.isVectors = true;
       waypoint.endsInDiscontinuity = true;
       waypoint.discontinuityCanBeCleared = false;
+      // TODO move
       if (!waypoint.additionalData) {
           waypoint.additionalData = {};
       }
