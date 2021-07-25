@@ -68,6 +68,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
     const [n2Igniting] = useSimVar(`TURB ENG IS IGNITING:${engineNumber}`, 'bool', 300);
     const [showIgniter, setShowIgniter] = useState(false);
+    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
 
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
@@ -80,26 +81,27 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed * 2.20462 / 20) * 20;
 
     const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 200);
-    const OIL_QTY_MAX = 17.1;
-    const OIL_QTY_LOW_ADVISORY = 3; // FIXME TODO: this value is only a standin, should likely be tied to a simvar!!!
+    const OIL_QTY_MAX = 24.25;
+    const OIL_QTY_LOW_ADVISORY = 1.35;
     const displayedEngineOilQuantity = engineOilQuantity === 100 ? OIL_QTY_MAX : Math.round((engineOilQuantity / 100) * OIL_QTY_MAX / 0.5) * 0.5; // Engine oil quantity has a step of 0.2
     const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
 
     const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
-    const OIL_PSI_HIGH_LIMIT = 120; // FIXME TODO: this value is only a standin!!!
-    const OIL_PSI_LOW_LIMIT = 12;// FIXME TODO: this value is only a standin!!!
+    const OIL_PSI_HIGH_LIMIT = 130;
+    const OIL_PSI_LOW_LIMIT = 0;
     const [psiNeedleRed, setPsiNeedleRed] = useState(true);
     const [pressureAboveHigh, setPressureAboveHigh] = useState(false);
     const [pressureBelowLow, setPressureBelowLow] = useState(false);
 
     const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 250);
-    const OIL_TEMP_HIGH_ADVISORY = 90; // FIXME TODO: this value is only a standin
-    const OIL_TEMP_VHIGH_LIMIT = 110;// FIXME TODO: this value is only a standin
+    const OIL_TEMP_HIGH_ADVISORY = 140;
+    const OIL_TEMP_VHIGH_LIMIT = 155;
     const displayedEngineOilTemperature = Math.round(engineOilTemperature / 5) * 5; // Engine oil temperature has a step of 5
     const [tempAmber, setTempAmber] = useState(false);
     const [shouldTemperaturePulse, setShouldTemperaturePulse] = useState(false);
+    const [tempBeenAboveAdvisory, setTempBeenAboveAdvisory] = useState(false);
 
     const [n1Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number');
 
@@ -161,7 +163,9 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
         if (displayedEngineOilTemperature >= OIL_TEMP_HIGH_ADVISORY) {
             setShouldTemperaturePulse(true);
         } else {
-            setShouldTemperaturePulse(false);
+            if(!tempBeenAboveAdvisory){
+                setShouldTemperaturePulse(false);
+            }
         }
 
         if (displayedEngineOilTemperature > OIL_TEMP_VHIGH_LIMIT) {
@@ -170,14 +174,25 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             setTempAmber(false);
         }
 
-        // if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
-        //     setTimeout(() => setTempAmber(true), 3000);// 900_000
-        // } else {
-        //     clearTimeout();
-        // }
-        // TODO FIXME: text should be amber if engineOilTemperature has been ABOVE OIL_TEMP_HIGH_ADVISORY for greater than 900 seconds
-        // return () => clearTimeout();
+        if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
+            setTimeout(() => {
+              if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
+                setTempBeenAboveAdvisory(true);
+              }
+            }, 900_000);
+          } else {
+             clearTimeout();
+             setTempBeenAboveAdvisory(false);
+        }
+
+        return () => clearTimeout();
     }, [engineOilTemperature]);
+
+    useEffect(() => {
+        if(tempBeenAboveAdvisory){
+            setTempAmber(true);
+        }
+    }, [tempBeenAboveAdvisory])
 
     useEffect(() => {
         if (n2Percent >= 50) {
@@ -186,14 +201,14 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     }, [n2Percent]);
 
     useEffect(() => {
-        if (isEngineStarting && n2Percent < 50) {
+        if (isEngineStarting && n2Percent < 50 && engSelectorPosition === 2) {
             setTimeout(() => setIsValveOpen(true), 1200);
         } else {
             setTimeout(() => setIsValveOpen(false), 1200);
         }
 
         return () => clearTimeout();
-    }, [isEngineStarting]);
+    }, [isEngineStarting, engSelectorPosition]);
 
     useEffect(() => {
         if (isEngineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
