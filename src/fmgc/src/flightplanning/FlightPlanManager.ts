@@ -368,6 +368,7 @@ export class FlightPlanManager {
      * Gets the distance, in NM, to the active waypoint.
      */
     public getDistanceToActiveWaypoint(): number {
+        // TODO Replace with ADIRS getLatitude() getLongitude()
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
         const ll = new LatLongAlt(lat, long);
@@ -384,6 +385,7 @@ export class FlightPlanManager {
      * Gets the bearing, in degrees, to the active waypoint.
      */
     public getBearingToActiveWaypoint(): number {
+        // TODO Replace with ADIRS getLatitude() getLongitude()
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
         const ll = new LatLongAlt(lat, long);
@@ -400,6 +402,7 @@ export class FlightPlanManager {
      * Gets the estimated time enroute to the active waypoint.
      */
     public getETEToActiveWaypoint(): number {
+        // TODO Replace with ADIRS getLatitude() getLongitude()
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
         const ll = new LatLongAlt(lat, long);
@@ -885,7 +888,9 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         if (currentFlightPlan.hasOrigin
             && currentFlightPlan.procedureDetails.departureRunwayIndex !== -1
-            && currentFlightPlan.procedureDetails.departureIndex !== -1) {
+            && currentFlightPlan.procedureDetails.departureIndex !== -1
+            && currentFlightPlan.originAirfield
+        ) {
             const depRunway = (currentFlightPlan.originAirfield.infos as AirportInfo)
                 .departures[currentFlightPlan.procedureDetails.departureIndex]
                 .runwayTransitions[currentFlightPlan.procedureDetails.departureRunwayIndex]
@@ -900,7 +905,7 @@ export class FlightPlanManager {
 
             return undefined;
         }
-        if (currentFlightPlan.procedureDetails.originRunwayIndex !== -1) {
+        if (currentFlightPlan.procedureDetails.originRunwayIndex !== -1 && currentFlightPlan.originAirfield) {
             return (currentFlightPlan.originAirfield.infos as AirportInfo).oneWayRunways[currentFlightPlan.procedureDetails.originRunwayIndex];
         }
 

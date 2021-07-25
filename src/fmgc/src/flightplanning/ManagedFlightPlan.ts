@@ -676,6 +676,7 @@ export class ManagedFlightPlan {
      * @param index The waypoint index to go direct to.
      */
     public addDirectTo(index: number): void {
+        // TODO Replace with ADIRS getLatitude() getLongitude()
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
