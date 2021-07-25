@@ -81,12 +81,12 @@ class CDUFlightPlanPage {
             waypointsAndMarkers.push({ wp: fpm.getWaypoint(i), fpIndex: i});
 
             if (wp.endsInDiscontinuity) {
-                waypointsAndMarkers.push({ marker: Markers.FPLN_DISCONTINUITY, clr: wp.discontinuityCanBeCleared, fpIndex: i});
+                waypointsAndMarkers.push({ marker: Markers.FPLN_DISCONTINUITY, fpIndex: i});
             }
             if (i === fpm.getWaypointsCount() - 1) {
-                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, clr: false, fpIndex: i});
+                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i});
                 // TODO: Rewrite once alt fpln exists
-                waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, clr: false, fpIndex: i});
+                waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, fpIndex: i});
             }
         }
         // TODO: Alt F-PLAN
@@ -327,11 +327,11 @@ class CDUFlightPlanPage {
                         } else if (value === FMCMainDisplay.clrValue) {
                             mcdu.removeWaypoint(waypointsAndMarkers[winI].fpIndex, () => {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
-                            }, true);
+                            }, !fpm.isCurrentFlightPlanTemporary());
                         } else if (value.length > 0) {
                             mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex, () => {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
-                            }, true);
+                            }, !fpm.isCurrentFlightPlanTemporary());
                         }
                     });
                 } else {
@@ -360,17 +360,15 @@ class CDUFlightPlanPage {
                 scrollWindow[rowI] = waypointsAndMarkers[winI];
                 addLskAt(rowI, 0, (value) => {
                     if (value === FMCMainDisplay.clrValue) {
-                        if (waypointsAndMarkers[winI].clr) {
-                            mcdu.clearDiscontinuity(waypointsAndMarkers[winI].fpIndex, () => {
-                                CDUFlightPlanPage.ShowPage(mcdu, offset);
-                            }, true);
-                        }
+                        mcdu.clearDiscontinuity(waypointsAndMarkers[winI].fpIndex, () => {
+                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                        }, !fpm.isCurrentFlightPlanTemporary());
                         return;
                     }
 
                     mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex + 1, () => {
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
-                    }, true);
+                    }, !fpm.isCurrentFlightPlanTemporary());
                 });
             }
         }
@@ -550,7 +548,7 @@ function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
 
     return [
         `${rowObj.ident}[color]${rowObj.color}`,
-        `{${rowObj.spdColor}}${spdRepeat ? "\xa0\"\xa0" : rowObj.speedConstraint}{end}{${rowObj.altColor}}/${altRepeat ? "\xa0\xa0\"\xa0\xa0" : rowObj.altitudeConstraint.altPrefix + rowObj.altitudeConstraint.alt}{end}[s-text]`,
+        `{${rowObj.spdColor}}${spdRepeat ? "\xa0\"\xa0" : rowObj.speedConstraint}{end}{${rowObj.altColor}}/${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : rowObj.altitudeConstraint.altPrefix + rowObj.altitudeConstraint.alt}{end}[s-text]`,
         `${rowObj.timeCell}{sp}{sp}[color]${rowObj.timeColor}`
     ];
 }

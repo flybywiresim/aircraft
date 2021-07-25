@@ -6,13 +6,15 @@ import { useSimVar } from '@instruments/common/simVars';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
+import { EfisOption } from '../index';
 
 export interface PlanModeProps {
     rangeSetting: number,
     ppos: LatLongData,
+    efisOption: EfisOption,
 }
 
-export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos }) => {
+export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
@@ -42,7 +44,8 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos }) => {
                 y={384}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
-                clipPath="url(#plan-mode-flight-plan-clip)"
+                clipPath="url(#plan-mode-map-clip)"
+                constraints={efisOption === EfisOption.Constraints}
                 debug={false}
             />
 
@@ -59,8 +62,8 @@ interface OverlayProps {
 
 const Overlay: FC<OverlayProps> = ({ rangeSetting }) => (
     <>
-        <clipPath id="plan-mode-flight-plan-clip">
-            <circle cx={0} cy={0} r={248.5} />
+        <clipPath id="plan-mode-map-clip">
+            <polygon points="-339,-272 -244,-272 -104,-328 104,-328 244,-272 339,-272 339,336 -270,336 -270,249 -339,249" />
         </clipPath>
         <g className="White" strokeWidth={3}>
             <circle cx={384} cy={384} r={250} />

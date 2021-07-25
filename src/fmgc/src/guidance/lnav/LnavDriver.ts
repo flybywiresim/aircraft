@@ -1,7 +1,9 @@
 import { LateralMode, VerticalMode } from '@shared/autopilot';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
+import { Leg } from '@fmgc/guidance/lnav/legs';
+import { MathUtils } from '@shared/MathUtils';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ControlLaw } from '../ControlLaws';
-import { Leg, TFLeg } from '../Geometry';
 import { GuidanceController } from '../GuidanceController';
 
 export class LnavDriver implements GuidanceComponent {
@@ -61,22 +63,55 @@ export class LnavDriver implements GuidanceComponent {
                         trackAngleError,
                         phiCommand,
                     } = params;
+
                     if (!this.lastAvail) {
                         SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
                         this.lastAvail = true;
                     }
+
                     if (crossTrackError !== this.lastXTE) {
                         SimVar.SetSimVarValue('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles', crossTrackError);
                         this.lastXTE = crossTrackError;
                     }
+
                     if (trackAngleError !== this.lastTAE) {
                         SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', trackAngleError);
                         this.lastTAE = trackAngleError;
                     }
+
                     if (phiCommand !== this.lastPhi) {
                         SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', phiCommand);
                         this.lastPhi = phiCommand;
                     }
+
+                    break;
+                case ControlLaw.HEADING:
+                    const { heading } = params;
+
+                    if (!this.lastAvail) {
+                        SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
+                        this.lastAvail = true;
+                    }
+
+                    if (this.lastXTE !== 0) {
+                        SimVar.SetSimVarValue('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles', 0);
+                        this.lastXTE = 0;
+                    }
+
+                    // Track Angle Error
+                    const currentHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'Degrees');
+                    const deltaHeading = MathUtils.diffAngle(currentHeading, heading);
+
+                    if (deltaHeading !== this.lastTAE) {
+                        SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', deltaHeading);
+                        this.lastTAE = deltaHeading;
+                    }
+
+                    if (this.lastPhi !== 0) {
+                        SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);
+                        this.lastPhi = 0;
+                    }
+
                     break;
                 default:
                     throw new Error(`Invalid control law: ${params.law}`);
@@ -87,8 +122,12 @@ export class LnavDriver implements GuidanceComponent {
 
             if (geometry.shouldSequenceLeg(this.ppos)) {
                 const currentLeg = geometry.legs.get(1);
+                const nextLeg = geometry.legs.get(2);
 
-                if (currentLeg instanceof TFLeg && currentLeg.to.endsInDiscontinuity) {
+                // FIXME we should stop relying on discos in the wpt objects, but for now it's fiiiiiine
+                // Hard-coded check for TF leg after the disco for now - only case where we don't wanna
+                // sequence this way is VM
+                if (currentLeg instanceof TFLeg && currentLeg.to.endsInDiscontinuity && nextLeg instanceof TFLeg) {
                     this.sequenceDiscontinuity(currentLeg);
                 } else {
                     this.sequenceLeg(currentLeg);
