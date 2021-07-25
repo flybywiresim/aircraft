@@ -83,7 +83,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed * 2.20462 / 20) * 20;
 
     const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 100);
-    const OIL_QTY_MAX = 17.1;
+    const OIL_QTY_MAX = 24.25;
     const OIL_QTY_LOW_ADVISORY = 1.35;
     const displayedEngineOilQuantity = engineOilQuantity === 100 ? OIL_QTY_MAX : Math.round((engineOilQuantity / 100) * OIL_QTY_MAX / 0.5) * 0.5; // Engine oil quantity has a step of 0.2
     const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
@@ -262,7 +262,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             <line className="GaugeMarking" x1={x} y1={y + 110} x2={x} y2={y + 115} />
             <line className="GaugeMarking" x1={x + 45} y1={y + 160} x2={x + 51} y2={y + 160} />
             <Arc x={x} y={y + 160} radius={50} toValue={100} scaleMax={100} className="WhiteLine NoFill" />
-            <Arc x={x} y={y + 160} radius={50} toValue={OIL_PSI_LOW_LIMIT} scaleMax={100} className="RedLine NoFill" />
+            <Arc x={x} y={y + 160} radius={50} toValue={OIL_PSI_VLOW_LIMIT} scaleMax={100} className="RedLine NoFill" />
             <Needle
                 x={x}
                 y={y + 160}
