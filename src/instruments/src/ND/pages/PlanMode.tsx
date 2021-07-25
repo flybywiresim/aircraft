@@ -70,8 +70,8 @@ const Overlay: FC<OverlayProps> = ({ rangeSetting }) => (
 
             <path d="M259,384a125,125 0 1,0 250,0a125,125 0 1,0 -250,0" strokeDasharray="14 13" />
 
-            <text x={310} y={474} className="Cyan" fontSize={22}>{rangeSetting}</text>
-            <text x={212} y={556} className="Cyan" fontSize={22}>{rangeSetting / 2}</text>
+            <text x={310} y={474} className="Cyan" fontSize={22}>{rangeSetting / 2}</text>
+            <text x={212} y={556} className="Cyan" fontSize={22}>{rangeSetting}</text>
 
             <text x={384} y={170} className="White" fontSize={25} textAnchor="middle" alignmentBaseline="central">N</text>
             <path d="M384,141.5 L390,151 L378,151 L384,141.5" fill="white" stroke="none" />
