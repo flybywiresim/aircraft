@@ -547,11 +547,17 @@ export class ManagedFlightPlan {
                 const trueCourseToWaypoint = Avionics.Utils.computeGreatCircleHeading(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
                 referenceWaypoint.bearingInFP = trueCourseToWaypoint - GeoMath.getMagvar(prevWaypoint.infos.coordinates.lat, prevWaypoint.infos.coordinates.long);
                 referenceWaypoint.bearingInFP = referenceWaypoint.bearingInFP < 0 ? 360 + referenceWaypoint.bearingInFP : referenceWaypoint.bearingInFP;
-                // TODO redo when we have a better solution for vector legs
-                if (referenceWaypoint.isVectors) {
-                    referenceWaypoint.distanceInFP = 1;
-                } else if (prevWaypoint.endsInDiscontinuity) {
+                if (prevWaypoint.endsInDiscontinuity) {
                     referenceWaypoint.distanceInFP = 0;
+                } else if (referenceWaypoint.additionalData) {
+                    switch (referenceWaypoint.additionalData.legtype) {
+                    case 11:
+                    case 22:
+                        referenceWaypoint.distanceInFP = 1;
+                        break;
+                    default:
+                        break;
+                    }
                 } else {
                     referenceWaypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
                 }
