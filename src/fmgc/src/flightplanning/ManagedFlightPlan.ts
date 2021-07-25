@@ -112,15 +112,16 @@ export class ManagedFlightPlan {
         stats.set(this.activeWaypointIndex, firstData);
 
         this.waypoints.slice(0).forEach((waypoint, index) => {
+            // TODO redo when we have a better solution for vector legs
+            const distPpos = (waypoint.isVectors) ? 1 : waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos;
             const data = {
                 ident: waypoint.ident,
                 bearingInFp: waypoint.bearingInFP,
                 distanceInFP: waypoint.distanceInFP,
-                distanceFromPpos: waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos,
+                distanceFromPpos: distPpos,
                 timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
                 etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
             };
-
             stats.set(index, data);
         });
 
@@ -138,7 +139,8 @@ export class ManagedFlightPlan {
         }
 
         const bearingInFp = Avionics.Utils.computeGreatCircleHeading(ppos, this.activeWaypoint.infos.coordinates);
-        const distanceFromPpos = Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
+        // TODO redo when we have a better solution for vector legs
+        const distanceFromPpos = (this.activeWaypoint.isVectors) ? 1 : Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
         const timeFromPpos = this.computeWaypointTime(distanceFromPpos);
         const etaFromPpos = this.computeWaypointEta(distanceFromPpos, timeFromPpos);
 
@@ -545,8 +547,14 @@ export class ManagedFlightPlan {
                 const trueCourseToWaypoint = Avionics.Utils.computeGreatCircleHeading(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
                 referenceWaypoint.bearingInFP = trueCourseToWaypoint - GeoMath.getMagvar(prevWaypoint.infos.coordinates.lat, prevWaypoint.infos.coordinates.long);
                 referenceWaypoint.bearingInFP = referenceWaypoint.bearingInFP < 0 ? 360 + referenceWaypoint.bearingInFP : referenceWaypoint.bearingInFP;
-                referenceWaypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
-
+                // TODO redo when we have a better solution for vector legs
+                if (referenceWaypoint.isVectors) {
+                    referenceWaypoint.distanceInFP = 1;
+                } else if (prevWaypoint.endsInDiscontinuity) {
+                    referenceWaypoint.distanceInFP = 0;
+                } else {
+                    referenceWaypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
+                }
                 cumulativeDistance += referenceWaypoint.distanceInFP;
                 referenceWaypoint.cumulativeDistanceInFP = cumulativeDistance;
             }

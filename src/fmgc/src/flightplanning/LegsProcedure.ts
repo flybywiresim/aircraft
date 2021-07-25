@@ -386,6 +386,7 @@ export class LegsProcedure {
       }
       waypoint.additionalData.vectorsCourse = course;
       waypoint.additionalData.vectorsHeading = heading;
+      waypoint.additionalData.legType = leg.type;
 
       return waypoint;
   }
