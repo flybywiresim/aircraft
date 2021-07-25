@@ -29,6 +29,15 @@ export enum Mode {
 
 export type EfisSide = 'L' | 'R'
 
+export enum EfisOption {
+    None = 0,
+    Constraints = 1,
+    VorDmes = 2,
+    Waypoints = 3,
+    Ndbs = 4,
+    Airports = 5,
+}
+
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
         const url = document.getElementsByTagName('a32nx-nd')[0].getAttribute('url');
@@ -37,6 +46,8 @@ const NavigationDisplay: React.FC = () => {
     });
 
     const side = displayIndex === 1 ? 'L' : 'R';
+
+    const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
 
     const [lat] = useSimVar('PLANE LATITUDE', 'degree latitude');
     const [long] = useSimVar('PLANE LONGITUDE', 'degree longitude');
@@ -59,9 +70,9 @@ const NavigationDisplay: React.FC = () => {
                     <SpeedIndicator adirsState={adirsState} tas={tas} />
                     <WindIndicator adirsState={adirsState} tas={tas} />
 
-                    {modeIndex === Mode.PLAN && <PlanMode rangeSetting={rangeSettings[rangeIndex]} ppos={ppos} />}
-                    {modeIndex === Mode.ARC && <ArcMode rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} />}
-                    {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV) && <RoseMode rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} />}
+                    {modeIndex === Mode.PLAN && <PlanMode rangeSetting={rangeSettings[rangeIndex]} ppos={ppos} efisOption={efisOption} />}
+                    {modeIndex === Mode.ARC && <ArcMode rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} efisOption={efisOption} />}
+                    {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV) && <RoseMode rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} efisOption={efisOption} />}
 
                     <Chrono side={side} />
 
