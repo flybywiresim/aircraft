@@ -8,7 +8,7 @@ import { TuningMode } from '@fmgc/radionav';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { EfisSide, Mode } from '../index';
+import { EfisOption, EfisSide, Mode } from '../index';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
@@ -17,9 +17,10 @@ export interface RoseModeProps {
     mode: Mode.ROSE_ILS | Mode.ROSE_VOR | Mode.ROSE_NAV,
     side: EfisSide,
     ppos: LatLongData,
+    efisOption: EfisOption,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) => {
+export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -30,7 +31,6 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) 
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
-    const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -50,7 +50,8 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) 
                 y={384}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
-                clipPath="url(#rose-mode-flight-plan-clip)"
+                clipPath="url(#rose-mode-map-clip)"
+                constraints={efisOption === EfisOption.Constraints}
                 debug={false}
             />)}
 
@@ -93,8 +94,8 @@ interface OverlayProps {
 
 const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMode, displayMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
-        <clipPath id="rose-mode-flight-plan-clip">
-            <circle cx={0} cy={0} r={248.5} />
+        <clipPath id="rose-mode-map-clip">
+            <path d="M-339,-229 L-102,-229 a250,250 0 0 1 204,0 L339,-229 L339,178 L264,178 L207,241 L207,384 L-210,384 L-210,299 L-262,241 L-339,241 L-339,-229" />
         </clipPath>
 
         {/* C = 384,384 */}
@@ -468,7 +469,7 @@ const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMod
 
             <TrackBug heading={heading} track={track} />
             { displayMode === Mode.ROSE_NAV && lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
-            <SelectedHeadingBug heading={heading} selected={selectedHeading} />
+            <SelectedHeadingBug heading={Math.round(heading)} selected={selectedHeading} />
         </g>
 
         <RadioNeedle index={1} side={side} displayMode={displayMode} centreHeight={384} />

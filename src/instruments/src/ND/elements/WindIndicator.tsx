@@ -16,7 +16,7 @@ export const WindIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ adirsState, ta
         <Layer x={17} y={56}>
             <text x={25} y={0} fontSize={22} textAnchor="end" className="Green">
                 {windInfoShown ? (
-                    Math.round(windDirection).toString().padStart(3, '0')
+                    (Math.round(windDirection) % 360).toString().padStart(3, '0')
                 ) : (
                     '---'
                 )}
