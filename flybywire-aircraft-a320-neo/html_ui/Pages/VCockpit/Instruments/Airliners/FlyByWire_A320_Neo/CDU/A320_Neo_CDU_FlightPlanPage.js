@@ -54,6 +54,8 @@ class CDUFlightPlanPage {
 
         let showFrom = false;
         let showTMPY = false;
+        // TODO Replace with ADIRS getLatitude() getLongitude()
+        // TODO Account for no position data
         const ppos = {
             lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
             long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
@@ -156,12 +158,28 @@ class CDUFlightPlanPage {
                 // Fix Header
 
                 let fixAnnotation;
-                if (waypointsAndMarkers[winI].wp.additionalData) {
+                if (winI > 0 &&
+                    fpm.getDepartureRunway() &&
+                    waypointsAndMarkers[winI - 1].wp &&
+                    waypointsAndMarkers[winI - 1].wp === fpm.getOrigin()) {
+                    fixAnnotation = `${waypointsAndMarkers[winI - 1].wp.ident.substring(0,3)}${fpm.getDepartureRunway().direction.toFixed(0)}`;
+                } else if (waypointsAndMarkers[winI].wp.additionalData) {
                     // ARINC Leg Types - R1A 610
                     switch (waypointsAndMarkers[winI].wp.additionalData.legType) {
-                        case 11:
-                        case 22:
-                            fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading}`;
+                        case 2: // CA
+                            fixAnnotation = `C${waypointsAndMarkers[winI].wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}\u00b0`;
+                            break;
+                        case 19: // VA
+                            fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
+                            break;
+                        case 11: // FM
+                            const prevWp = waypointsAndMarkers[winI - 1].wp;
+                            if (prevWp) {
+                                fixAnnotation = `${prevWp.ident.substring(0,3)}${waypointsAndMarkers[winI].wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}`;
+                            }
+                            break;
+                        case 22: // VM
+                            fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                     }
                 } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
@@ -188,6 +206,21 @@ class CDUFlightPlanPage {
                     fixAnnotation = airwayName;
                 }
 
+                // Bearing/Track
+
+                let bearingTrack = "";
+                if (waypointsAndMarkers[winI] &&
+                    waypointsAndMarkers[winI].wp &&
+                    waypointsAndMarkers[winI - 1] &&
+                    waypointsAndMarkers[winI - 1].wp) {
+                    if (fpm.getActiveWaypoint() === waypointsAndMarkers[winI].wp && rowI === 1) {
+                        bearingTrack = `BRG${fpm.getBearingToActiveWaypoint().toFixed(0).padStart(3,"0")}\u00b0`;
+                    } else if (rowI === 2) {
+                        const track = Avionics.Utils.computeGreatCircleHeading(waypointsAndMarkers[winI - 1].wp.infos.coordinates, waypointsAndMarkers[winI].wp.infos.coordinates);
+                        bearingTrack = `{green}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
+
+                    }
+                }
                 // Distance
                 let distance = "";
 
@@ -314,7 +347,8 @@ class CDUFlightPlanPage {
                     altitudeConstraint: { alt: altitudeConstraint, altPrefix: altPrefix },
                     timeCell: timeCell,
                     timeColor: timeColor,
-                    fixAnnotation: fixAnnotation
+                    fixAnnotation: fixAnnotation,
+                    bearingTrack: bearingTrack
                 };
 
                 if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
@@ -547,7 +581,7 @@ function renderFixHeader(rowObj) {
     return [
         `{sp}${(rowObj.fixAnnotation) ? rowObj.fixAnnotation : ""}`,
         rowObj.distance,
-        ""
+        rowObj.bearingTrack,
     ];
 }
 
