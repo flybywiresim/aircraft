@@ -91,8 +91,9 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
 
     const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 200);
     const OIL_QTY_MAX = 17.1;
-    const OIL_QTY_LOW_ADVISORY = 3; // FIXME TODO: this value is only a standin!!!
+    const OIL_QTY_LOW_ADVISORY = 3; // FIXME TODO: this value is only a standin, should likely be tied to a simvar!!!
     const displayedEngineOilQuantity = engineOilQuantity === 100 ? OIL_QTY_MAX : Math.round((engineOilQuantity / 100) * OIL_QTY_MAX / 0.5) * 0.5; // Engine oil quantity has a step of 0.2
+    const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
 
     const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
@@ -140,6 +141,14 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 setShouldPressurePulse(true);
             } else {
                 setShouldPressurePulse(false);
+            }
+
+            if (engineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
+                setQuantityAtOrBelowLow(true);
+            }
+
+            if (quantityAtOrBelowLow && engineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
+                setQuantityAtOrBelowLow(false);
             }
         } else {
             setShouldPressurePulse(false);
