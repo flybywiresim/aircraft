@@ -158,13 +158,13 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     }, [flightPhase, engineOilQuantity, engineOilPressure]);
 
     useEffect(() => {
-        if (engineOilTemperature >= OIL_TEMP_HIGH_ADVISORY) {
+        if (displayedEngineOilTemperature >= OIL_TEMP_HIGH_ADVISORY) {
             setShouldTemperaturePulse(true);
         } else {
             setShouldTemperaturePulse(false);
         }
 
-        if (displayedEngineOilPressure > OIL_TEMP_VHIGH_LIMIT) {
+        if (displayedEngineOilTemperature > OIL_TEMP_VHIGH_LIMIT) {
             setTempAmber(true);
         } else {
             setTempAmber(false);
