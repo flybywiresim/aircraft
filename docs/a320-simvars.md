@@ -9,12 +9,9 @@
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
 1. [Engine and FADEC System](#engine-fadec-system)
+1. [Air Conditioning / Pressurisation / Ventilation](#aircon-press-vent-systems)
 
 ## Uncategorized
-
-- A32NX_APPROACH_RUNWAY_ELEVATION
-    - Meters
-    - Elevation of approach runway once this is set in the MCDU
 
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
@@ -240,6 +237,10 @@
     - Bool
     - Determines if the FAULT light on the CABIN PRESS MODE SEL pushbutton
       should be on
+
+- A32NX_DESTINATION_QNH
+    - Millibar
+    - Destination QNH as entered by the pilot in the MCDU during descent
 
 - A32NX_DITCHING
     - Bool
@@ -1678,3 +1679,30 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ENGINE_TANK_OIL:{index}
     - Number (quarts)
     - Total engine {index} oil quantity in the oil tank
+
+## Air Conditioning / Pressurisation / Ventilation
+
+- A32NX_PRESS_CABIN_ALTITUDE
+    - Feet
+    - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
+
+- A32NX_PRESS_CABIN_DELTA_PRESSURE
+    - PSI
+    - The difference in pressure between the cabin interior and the exterior air.
+    Positive when cabin pressure is higher than external pressure.
+
+- A32NX_PRESS_CABIN_VS
+    - Feet per minute
+    - Rate of pressurization or depressurization of the cabin expressed as altitude change
+
+- A32NX_PRESS_ACTIVE_CPC_SYS
+    - Number [0, 1, 2]
+    - Indicates which cabin pressure controller is active. 0 indicates neither is active.
+
+- A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE
+    - Ratio
+    - Percent open of the cabin pressure outflow valve
+
+- A32NX_PRESS_AUTO_LANDING_ELEVATION
+    - Feet
+    - Automatic landing elevation as calculated by the MCDU when a destination runway is entered

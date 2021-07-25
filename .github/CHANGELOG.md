@@ -154,6 +154,7 @@
 1. [ADIRS] Upper ECAM shows IR x IN ATT ALIGN when any ADIRU is in ATT mode alignment  - @davidwalschots (David Walschots)
 1. [ADIRS] Wind, TAS, and GS indications depend on availability of IR and ADR data - @davidwalschots (David Walschots)
 1. [ADIRS] SAT, TAT, and ISA indications depend on the selected ADR (1 or 3) - @davidwalschots (David Walschots)
+1. [PRESS] First implementation of automatic pressurization system - @MJuhe (Miquel)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

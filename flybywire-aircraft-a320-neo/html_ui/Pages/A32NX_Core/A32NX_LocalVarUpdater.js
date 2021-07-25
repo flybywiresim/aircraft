@@ -83,12 +83,6 @@ class A32NX_LocalVarUpdater {
                 type: "Bool",
                 selector: this._areSlidesArmed.bind(this),
                 refreshInterval: 100,
-            },
-            {
-                varName: "L:A32NX_DELTA_PSI",
-                type: "psi",
-                selector: this._deltaPSI.bind(this),
-                refreshInterval: 1000,
             }
             // New updaters go here...
         ];
@@ -215,27 +209,6 @@ class A32NX_LocalVarUpdater {
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
         );
-    }
-
-    _deltaPSI() {
-        const cabinVs = SimVar.GetSimVarValue('PRESSURIZATION CABIN ALTITUDE RATE', 'feet per second');
-        const cabinAlt = SimVar.GetSimVarValue('PRESSURIZATION CABIN ALTITUDE', 'feet');
-        const ambPressure = SimVar.GetSimVarValue('AMBIENT PRESSURE', 'inHg');
-
-        const feetToMeters = 0.3048;
-        const seaLevelPressurePascal = 101325;
-        const barometricPressureFactor = -0.00011857591;
-        const pascalToPSI = 0.000145038;
-        const inHgToPSI = 0.491154;
-
-        const cabinAltMeters = cabinAlt * feetToMeters;
-        const cabinPressurePascal = seaLevelPressurePascal * Math.exp(barometricPressureFactor * cabinAltMeters); // Barometric formula
-        const cabinPressurePSI = cabinPressurePascal * pascalToPSI;
-        const outsidePressurePSI = ambPressure * inHgToPSI;
-        let pressureDiff = cabinPressurePSI - outsidePressurePSI;
-        pressureDiff = (pressureDiff > -0.05) && (pressureDiff < 0.0) ? 0.0 : pressureDiff;
-        pressureDiff = pressureDiff > 8.6 ? 8.6 : pressureDiff; // DeltaPSI will not go above 8.6psi normally
-        return (pressureDiff);
     }
 
     // New selectors go here...
