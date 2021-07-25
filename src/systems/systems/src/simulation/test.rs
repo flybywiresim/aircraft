@@ -6,7 +6,7 @@ use uom::si::{
     length::foot,
     pressure::inch_of_mercury,
     thermodynamic_temperature::degree_celsius,
-    velocity::{foot_per_minute, foot_per_second, knot},
+    velocity::{foot_per_minute, knot},
 };
 
 use crate::electrical::{Electricity, Potential};
@@ -234,7 +234,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
     fn set_vertical_speed(&mut self, vertical_speed: Velocity) {
         self.write(
             UpdateContext::VERTICAL_SPEED_KEY,
-            vertical_speed.get::<foot_per_second>(),
+            vertical_speed.get::<foot_per_minute>(),
         );
     }
 

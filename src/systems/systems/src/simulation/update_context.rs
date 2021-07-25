@@ -1,5 +1,5 @@
 use std::time::Duration;
-use uom::si::{f64::*, pressure::inch_of_mercury, time::second, velocity::foot_per_second};
+use uom::si::{f64::*, pressure::inch_of_mercury, time::second, velocity::foot_per_minute};
 
 use super::{Read, SimulatorReader};
 
@@ -41,7 +41,7 @@ impl UpdateContext {
             ambient_temperature,
             ambient_pressure: Pressure::new::<inch_of_mercury>(29.92),
             is_on_ground,
-            vertical_speed: Velocity::new::<foot_per_second>(0.),
+            vertical_speed: Velocity::new::<foot_per_minute>(0.),
             longitudinal_acceleration,
         }
     }
@@ -56,7 +56,7 @@ impl UpdateContext {
             ambient_pressure: Pressure::new::<inch_of_mercury>(
                 reader.read(UpdateContext::AMBIENT_PRESSURE_KEY),
             ),
-            vertical_speed: Velocity::new::<foot_per_second>(
+            vertical_speed: Velocity::new::<foot_per_minute>(
                 reader.read(UpdateContext::VERTICAL_SPEED_KEY),
             ),
             delta: delta_time,
