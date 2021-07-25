@@ -115,19 +115,19 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
 
     useEffect(() => {
         if (flightPhase === 2 || flightPhase === 6) {
-            if (engineOilPressure > OIL_PSI_HIGH_LIMIT - 1) {
+            if (displayedEngineOilPressure > OIL_PSI_HIGH_LIMIT - 1) {
                 setPressureAboveHigh(true);
             }
 
-            if (pressureAboveHigh && engineOilPressure < OIL_PSI_HIGH_LIMIT - 4) {
+            if (pressureAboveHigh && displayedEngineOilPressure < OIL_PSI_HIGH_LIMIT - 4) {
                 setPressureAboveHigh(false);
             }
 
-            if (engineOilPressure < OIL_PSI_LOW_LIMIT && n2Percent > 75) {
+            if (displayedEngineOilPressure < OIL_PSI_LOW_LIMIT && n2Percent > 75) {
                 setPressureBelowLow(true);
             }
 
-            if (pressureBelowLow && engineOilPressure > OIL_PSI_LOW_LIMIT + 2) {
+            if (pressureBelowLow && displayedEngineOilPressure > OIL_PSI_LOW_LIMIT + 2) {
                 setPressureBelowLow(true);
             }
 
@@ -137,11 +137,11 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 setShouldPressurePulse(false);
             }
 
-            if (engineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
+            if (displayedEngineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
                 setQuantityAtOrBelowLow(true);
             }
 
-            if (quantityAtOrBelowLow && engineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
+            if (quantityAtOrBelowLow && displayedEngineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
                 setQuantityAtOrBelowLow(false);
             }
         } else {
@@ -149,10 +149,10 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             setShouldQuantityPulse(false);
         }
 
-        if (engineOilPressure <= OIL_PSI_LOW_LIMIT) {
+        if (displayedEngineOilPressure <= OIL_PSI_LOW_LIMIT) {
             setPsiNeedleRed(true);
         }
-        if (psiNeedleRed && engineOilPressure >= OIL_PSI_LOW_LIMIT + 0.5) {
+        if (psiNeedleRed && displayedEngineOilPressure >= OIL_PSI_LOW_LIMIT + 0.5) {
             setPsiNeedleRed(false);
         }
     }, [flightPhase, engineOilQuantity, engineOilPressure]);
