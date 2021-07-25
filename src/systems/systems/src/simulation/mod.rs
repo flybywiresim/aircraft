@@ -557,6 +557,12 @@ impl<T: Writer> Write<usize> for T {
     }
 }
 
+impl<T: Reader> Read<usize> for T {
+    fn read(&mut self, name: &str) -> usize {
+        self.read_f64(name) as usize
+    }
+}
+
 impl<T: Reader> Read<f64> for T {
     fn read(&mut self, name: &str) -> f64 {
         self.read_f64(name)

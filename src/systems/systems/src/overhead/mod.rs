@@ -708,6 +708,40 @@ impl SimulationElement for ValueKnob {
     }
 }
 
+pub struct SpringLoadedSwitch {
+    is_toggled_id: String,
+    toggle_position: usize,
+}
+impl SpringLoadedSwitch {
+    pub fn new(name: &str) -> Self {
+        Self {
+            is_toggled_id: format!("OVHD_{}_SWITCH", name),
+            toggle_position: 1,
+        }
+    }
+
+    pub fn set(&mut self, position: usize) {
+        self.toggle_position = position;
+    }
+
+    pub fn toggle_position(&self) -> usize {
+        self.toggle_position
+    }
+
+    pub fn is_in_neutral_position(&self) -> bool {
+        self.toggle_position == 1
+    }
+}
+impl SimulationElement for SpringLoadedSwitch {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_toggled_id, self.toggle_position);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set(reader.read(&self.is_toggled_id));
+    }
+}
+
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
     use crate::simulation::test::{SimulationTestBed, TestBed};

@@ -1,7 +1,10 @@
-use self::{cabin_pressure_controller::CabinPressureController, pressure_valve::PressureValve};
+use self::{
+    cabin_pressure_controller::CabinPressureController,
+    pressure_valve::{OutflowValveManualSignal, PressureValve},
+};
 use crate::{
-    overhead::{AutoManFaultPushButton, NormalOnPushButton, ValueKnob},
-    shared::{random_number, EngineCorrectedN1},
+    overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
+    shared::{random_number, ControllerSignal, EngineCorrectedN1},
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext, Write,
@@ -27,6 +30,7 @@ pub struct Pressurization {
     destination_qnh: Pressure,
     is_in_man_mode: bool,
     man_mode_duration: Duration,
+    packs_are_on: bool,
 }
 
 impl Pressurization {
@@ -46,6 +50,7 @@ impl Pressurization {
             destination_qnh: Pressure::new::<hectopascal>(0.),
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
+            packs_are_on: true,
         }
     }
 
@@ -66,9 +71,12 @@ impl Pressurization {
                 self.landing_elevation,
                 self.sea_level_pressure,
                 self.destination_qnh,
+                self.packs_are_on,
+                self.is_in_man_mode,
             );
             self.outflow_valve
                 .update(context, controller, press_overhead);
+            controller.update_outflow_valve_state(&self.outflow_valve);
         }
 
         if self.is_in_man_mode && press_overhead.mode_sel.is_man() {
@@ -128,6 +136,8 @@ impl SimulationElement for Pressurization {
         self.landing_elevation = reader.read("PRESS_AUTO_LANDING_ELEVATION");
         self.sea_level_pressure = Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE"));
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH"));
+        self.packs_are_on =
+            reader.read("AIRCOND_PACK1_TOGGLE") || reader.read("AIRCOND_PACK2_TOGGLE");
     }
 }
 
@@ -139,6 +149,7 @@ impl Default for Pressurization {
 
 pub struct PressurizationOverheadPanel {
     mode_sel: AutoManFaultPushButton,
+    man_vs_ctl_switch: SpringLoadedSwitch,
     ldg_elev_knob: ValueKnob,
     ditching: NormalOnPushButton,
 }
@@ -147,6 +158,7 @@ impl PressurizationOverheadPanel {
     pub fn new() -> Self {
         Self {
             mode_sel: AutoManFaultPushButton::new_auto("PRESS_MODE_SEL"),
+            man_vs_ctl_switch: SpringLoadedSwitch::new("PRESS_MAN_VS_CTL"),
             ldg_elev_knob: ValueKnob::new_with_value("PRESS_LDG_ELEV", -2000.),
             ditching: NormalOnPushButton::new_normal("PRESS_DITCHING"),
         }
@@ -160,10 +172,20 @@ impl PressurizationOverheadPanel {
         let margin = 100.;
         (self.ldg_elev_knob.value() + 2000.).abs() < margin
     }
+
+    fn is_in_man_mode(&self) -> bool {
+        !self.mode_sel.is_auto()
+    }
+
+    fn man_vs_switch_position(&self) -> usize {
+        self.man_vs_ctl_switch.toggle_position()
+    }
 }
+
 impl SimulationElement for PressurizationOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.mode_sel.accept(visitor);
+        self.man_vs_ctl_switch.accept(visitor);
         self.ldg_elev_knob.accept(visitor);
         self.ditching.accept(visitor);
 
@@ -173,6 +195,20 @@ impl SimulationElement for PressurizationOverheadPanel {
 impl Default for PressurizationOverheadPanel {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl ControllerSignal<OutflowValveManualSignal> for PressurizationOverheadPanel {
+    fn signal(&self) -> Option<OutflowValveManualSignal> {
+        if !self.is_in_man_mode() {
+            None
+        } else {
+            match self.man_vs_switch_position() {
+                0 => Some(OutflowValveManualSignal::Open),
+                2 => Some(OutflowValveManualSignal::Close),
+                _ => None,
+            }
+        }
     }
 }
 
@@ -206,7 +242,11 @@ mod tests {
                 corrected_n1: engine_corrected_n1,
             }
         }
+        fn set_engine_n1(&mut self, n: Ratio) {
+            self.corrected_n1 = n;
+        }
     }
+
     impl EngineCorrectedN1 for TestEngine {
         fn corrected_n1(&self) -> Ratio {
             self.corrected_n1
@@ -222,15 +262,20 @@ mod tests {
 
     impl TestAircraft {
         fn new() -> Self {
-            let mut press = Pressurization::new();
-            press.active_system = 1;
-
-            Self {
-                pressurization: press,
+            let mut test_aircraft = Self {
+                pressurization: Pressurization::new(),
                 pressurization_overhead: PressurizationOverheadPanel::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
-            }
+            };
+            test_aircraft.pressurization.active_system = 1;
+            test_aircraft.set_engine_n1(Ratio::new::<percent>(50.));
+            test_aircraft
+        }
+
+        fn set_engine_n1(&mut self, n: Ratio) {
+            self.engine_1.set_engine_n1(n);
+            self.engine_2.set_engine_n1(n)
         }
     }
 
@@ -259,9 +304,12 @@ mod tests {
 
     impl PressurizationTestBed {
         fn new() -> Self {
-            Self {
+            let mut test_bed = Self {
                 test_bed: SimulationTestBed::new(|_| TestAircraft::new()),
-            }
+            };
+            test_bed = test_bed.command_packs_on();
+            test_bed.run();
+            test_bed
         }
 
         fn command_ditching_pb_on(mut self) -> Self {
@@ -281,6 +329,11 @@ mod tests {
 
         fn command_ldg_elev_knob_value(mut self, value: f64) -> Self {
             self.write("OVHD_KNOB_PRESS_LDG_ELEV", value);
+            self
+        }
+
+        fn command_packs_on(mut self) -> Self {
+            self.write("AIRCOND_PACK1_TOGGLE", true);
             self
         }
 
@@ -321,7 +374,7 @@ mod tests {
 
     #[test]
     fn positive_cabin_vs_reduces_cabin_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = test_bed();
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
@@ -334,9 +387,8 @@ mod tests {
 
     #[test]
     fn seventy_seconds_after_landing_cpc_switches() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = test_bed();
 
-        test_bed.run();
         test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
         assert!(test_bed.query(|a| a.pressurization.active_system == 1));
@@ -368,9 +420,8 @@ mod tests {
 
     #[test]
     fn fifty_five_seconds_after_landing_outflow_valve_opens() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = test_bed();
 
-        test_bed.run();
         test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
         assert!(
@@ -421,8 +472,6 @@ mod tests {
     fn outflow_valve_closes_when_ditching_pb_is_on() {
         let mut test_bed = test_bed();
 
-        test_bed.run();
-
         assert!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
                 < Ratio::new::<percent>(90.)
@@ -446,7 +495,6 @@ mod tests {
     fn fifty_five_seconds_after_landing_outflow_valve_doesnt_open_if_ditching_pb_is_on() {
         let mut test_bed = test_bed();
 
-        test_bed.run();
         test_bed.run_with_delta(Duration::from_secs_f64(31.));
 
         assert!(
@@ -494,7 +542,7 @@ mod tests {
     #[test]
     fn cpc_man_mode_starts_in_auto() {
         let mut test_bed = test_bed();
-        test_bed.run();
+
         assert!(test_bed.is_mode_sel_pb_auto());
     }
 
@@ -502,7 +550,6 @@ mod tests {
     fn cpc_switches_if_man_mode_is_engaged_for_at_least_10_seconds() {
         let mut test_bed = test_bed();
 
-        test_bed.run();
         assert!(test_bed.query(|a| a.pressurization.active_system == 1));
 
         test_bed = test_bed.command_mode_sel_pb_man();
@@ -519,7 +566,6 @@ mod tests {
     fn cpc_does_not_switch_if_man_mode_is_engaged_for_less_than_10_seconds() {
         let mut test_bed = test_bed();
 
-        test_bed.run();
         assert!(test_bed.query(|a| a.pressurization.active_system == 1));
 
         test_bed = test_bed.command_mode_sel_pb_man();
@@ -536,7 +582,6 @@ mod tests {
     fn cpc_switching_timer_resets() {
         let mut test_bed = test_bed();
 
-        test_bed.run();
         assert!(test_bed.query(|a| a.pressurization.active_system == 1));
 
         test_bed = test_bed.command_mode_sel_pb_man();
@@ -559,7 +604,7 @@ mod tests {
     #[test]
     fn cpc_targets_manual_landing_elev_if_knob_not_in_initial_position() {
         let mut test_bed = test_bed();
-        test_bed.run();
+
         assert_eq!(
             test_bed.query(|a| a.pressurization.landing_elevation),
             Length::new::<foot>(0.)
@@ -576,7 +621,7 @@ mod tests {
     #[test]
     fn cpc_targets_auto_landing_elev_if_knob_returns_to_initial_position() {
         let mut test_bed = test_bed();
-        test_bed.run();
+
         assert_eq!(
             test_bed.query(|a| a.pressurization.landing_elevation),
             Length::new::<foot>(0.)

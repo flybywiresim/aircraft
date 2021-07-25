@@ -2952,7 +2952,7 @@
 
                     <UseTemplate Name="FBW_3State_Springloaded_Switch">
                         <NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
-                        <ANIM_SIMVAR>L:A32NX_MAN_VS_CONTROL</ANIM_SIMVAR>
+                        <ANIM_SIMVAR>L:A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH</ANIM_SIMVAR>
                         <INVERT_ANIM>1</INVERT_ANIM>
                     </UseTemplate>
 

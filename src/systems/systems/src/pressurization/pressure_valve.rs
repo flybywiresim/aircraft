@@ -1,14 +1,20 @@
-use crate::simulation::UpdateContext;
+use crate::{shared::ControllerSignal, simulation::UpdateContext};
 
 use super::{PressureValveActuator, PressurizationOverheadPanel};
 
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
 
+pub(super) enum OutflowValveManualSignal {
+    Open,
+    Close,
+}
+
 pub(super) struct PressureValve {
     open_amount: Ratio,
     target_open: Ratio,
     full_travel_time: Duration,
+    manual_travel_time: Duration,
 }
 
 impl PressureValve {
@@ -17,6 +23,7 @@ impl PressureValve {
             open_amount: Ratio::new::<percent>(100.),
             target_open: Ratio::new::<percent>(100.),
             full_travel_time: Duration::from_secs(4),
+            manual_travel_time: Duration::from_secs(30),
         }
     }
 
@@ -26,22 +33,48 @@ impl PressureValve {
         actuator: &T,
         press_overhead: &PressurizationOverheadPanel,
     ) {
-        self.target_open = actuator.target_valve_position(press_overhead);
-        if self.open_amount < self.target_open {
-            self.open_amount += Ratio::new::<percent>(
-                self.get_valve_change_for_delta(context)
-                    .min(self.target_open.get::<percent>() - self.open_amount.get::<percent>()),
-            );
-        } else if self.open_amount > self.target_open {
-            self.open_amount -= Ratio::new::<percent>(
-                self.get_valve_change_for_delta(context)
-                    .min(self.open_amount.get::<percent>() - self.target_open.get::<percent>()),
-            );
+        if press_overhead.is_in_man_mode() {
+            match press_overhead.signal() {
+                Some(OutflowValveManualSignal::Open)
+                    if { self.open_amount < Ratio::new::<percent>(100.) } =>
+                {
+                    self.open_amount += Ratio::new::<percent>(
+                        self.get_manual_change_for_delta(context)
+                            .min(100. - self.open_amount.get::<percent>()),
+                    );
+                }
+                Some(OutflowValveManualSignal::Close)
+                    if { self.open_amount > Ratio::new::<percent>(0.) } =>
+                {
+                    self.open_amount -= Ratio::new::<percent>(
+                        self.get_manual_change_for_delta(context)
+                            .min(self.open_amount.get::<percent>()),
+                    );
+                }
+                _ => (),
+            }
+        } else {
+            self.target_open = actuator.target_valve_position(press_overhead);
+            if self.open_amount < self.target_open {
+                self.open_amount += Ratio::new::<percent>(
+                    self.get_valve_change_for_delta(context)
+                        .min(self.target_open.get::<percent>() - self.open_amount.get::<percent>()),
+                );
+            } else if self.open_amount > self.target_open {
+                self.open_amount -= Ratio::new::<percent>(
+                    self.get_valve_change_for_delta(context)
+                        .min(self.open_amount.get::<percent>() - self.target_open.get::<percent>()),
+                );
+            }
         }
     }
 
     fn get_valve_change_for_delta(&self, context: &UpdateContext) -> f64 {
         100. * (context.delta_as_secs_f64() / self.full_travel_time.as_secs_f64())
+    }
+
+    fn get_manual_change_for_delta(&self, context: &UpdateContext) -> f64 {
+        100. * (context.delta_as_secs_f64() / self.manual_travel_time.as_secs_f64())
     }
 
     pub fn open_amount(&self) -> Ratio {
