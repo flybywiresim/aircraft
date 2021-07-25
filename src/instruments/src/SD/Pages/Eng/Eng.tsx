@@ -66,6 +66,8 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
     const [isValveOpen, setIsValveOpen] = useState(false);
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
+    const [n2Igniting] = useSimVar(`TURB ENG IS IGNITING:${engineNumber}`, 'bool', 300);
+    const [showIgniter, setShowIgniter] = useState(false);
 
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
@@ -193,6 +195,14 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
         return () => clearTimeout();
     }, [isEngineStarting]);
 
+    useEffect(() => {
+        if (isEngineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
+            setShowIgniter(true);
+        } else {
+            setShowIgniter(false);
+        }
+    }, [isEngineStarting, n2Igniting, n2Percent]);
+
     return (
         <SvgGroup x={x} y={y}>
             <text x={x} y={y} className="FillGreen FontLarge TextCenter">{displayedFuelUsed}</text>
@@ -266,7 +276,10 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
                 <tspan className="FontSmall">{n2Vibration.toFixed(1).toString().split('.')[1]}</tspan>
             </text>
 
-            <text x={x} y={y + 345} className={`FillGreen FontMedium TextCenter ${!isValveOpen && 'Hidden'}`}>AB</text>
+            {/* ${!(isValveOpen && showIgniter && activeIgniter === 0 && activeIgniter === 2 ) && 'Hidden'} */}
+            <text x={x - 7} y={y + 345} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>A</text>
+            {/* ${!(isValveOpen && showIgniter && activeIgniter === 1 && activeIgniter === 2 ) && 'Hidden'} */}
+            <text x={x + 7} y={y + 345} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>B</text>
             <g className="StartValveDiagram">
                 <circle r={14} cx={x} cy={y + 375} />
                 <line x1={x} y1={y - 20 + 375} x2={x} y2={y + 14 + 375} className={`${!isValveOpen && 'Hidden'}`} />
