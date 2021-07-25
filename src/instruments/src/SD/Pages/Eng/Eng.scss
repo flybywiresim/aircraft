@@ -5,9 +5,6 @@
         text-anchor: middle;
         alignment-baseline: central;
     }
-    .FontExtraSmall {
-        font-size: 14px;
-    }
     .FontSmall {
         font-size: 16px;
     }
@@ -40,15 +37,8 @@
     .FillWhite {
       fill: $display-white;
     }
-    .FillBlack {
-      fill: $display-background;
-    }
     .FillRed {
         fill: $display-red;
-    }
-    .GreenLine {
-      stroke: $display-green;
-      stroke-width: 2;
     }
     .AmberHeavy  {
         stroke: $display-amber;
