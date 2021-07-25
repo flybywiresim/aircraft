@@ -253,6 +253,10 @@ impl RigidBodyOnHingeAxis {
         self.is_lock_requested = true;
         self.lock_position_request = position_normalized;
     }
+
+    pub fn is_locked(&self) -> bool {
+        self.is_locked
+    }
 }
 
 #[cfg(test)]

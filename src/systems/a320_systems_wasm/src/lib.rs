@@ -567,7 +567,7 @@ impl CargoDoors {
 
     fn set_in_sim_position_request(&mut self, position_requested: f64) {
         if position_requested > 0. {
-            self.forward_cargo_door_open_req = 100.;
+            self.forward_cargo_door_open_req = 1.;
         } else {
             self.forward_cargo_door_open_req = 0.;
         }

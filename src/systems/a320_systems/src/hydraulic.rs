@@ -21,7 +21,7 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
-        linear_actuator::LinearActuator,
+        linear_actuator::{HydraulicActuatorAssembly, HydraulicAssemblyController, LinearActuator},
         rigid_body::RigidBodyOnHingeAxis,
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
@@ -42,6 +42,38 @@ use systems::{
         SimulatorWriter, UpdateContext, Write,
     },
 };
+
+fn cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
+    LinearActuator::new(
+        &rigid_body,
+        2,
+        0.04422,
+        0.03366,
+        VolumeRate::new::<gallon_per_second>(0.008),
+        800000.,
+        15000.,
+    )
+}
+
+fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
+    let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
+    let cg_offset = Vector2::new(0., -size[1] / 2.);
+
+    let control_arm = Vector2::new(-0.1597, -0.1614);
+    let anchor = Vector2::new(-0.7596, -0.086);
+
+    RigidBodyOnHingeAxis::new(
+        Mass::new::<kilogram>(130.),
+        size,
+        cg_offset,
+        control_arm,
+        anchor,
+        Angle::new::<degree>(-23.),
+        Angle::new::<degree>(136.),
+        100.,
+        is_locked,
+    )
+}
 
 pub(super) struct A320Hydraulic {
     brake_computer: A320HydraulicBrakeComputerUnit,
@@ -67,8 +99,6 @@ pub(super) struct A320Hydraulic {
     yellow_electric_pump: ElectricPump,
     yellow_electric_pump_controller: A320YellowElectricPumpController,
 
-    forward_cargo_door: Door,
-    aft_cargo_door: Door,
     pushback_tug: PushbackTug,
 
     ram_air_turbine: RamAirTurbine,
@@ -84,7 +114,9 @@ pub(super) struct A320Hydraulic {
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
 
-    cargo_physics: RigidBodyOnHingeAxis,
+    forward_cargo_door: Door,
+    aft_cargo_door: Door,
+    cargo_door_assembly: HydraulicActuatorAssembly,
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
@@ -127,6 +159,8 @@ impl A320Hydraulic {
     const ACTUATORS_SIM_TIME_STEP_MULTIPLIER: u32 = 2;
 
     pub(super) fn new() -> A320Hydraulic {
+        let cargo_door_body = cargo_door_body(true);
+        let cargo_actuator = cargo_door_actuator(&cargo_door_body);
         A320Hydraulic {
             brake_computer: A320HydraulicBrakeComputerUnit::new(),
 
@@ -210,8 +244,6 @@ impl A320Hydraulic {
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
 
-            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
-            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID),
             pushback_tug: PushbackTug::new(),
 
             ram_air_turbine: RamAirTurbine::new(),
@@ -244,17 +276,9 @@ impl A320Hydraulic {
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
 
-            cargo_physics: RigidBodyOnHingeAxis::new(
-                Mass::new::<kilogram>(130.),
-                Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.),
-                Vector2::new(0., -1855. / 2000.),
-                Vector2::new(-0.1597, -0.1614),
-                Vector2::new(-0.759, -0.086),
-                Angle::new::<degree>(-23.),
-                Angle::new::<degree>(136.),
-                100.,
-                false,
-            ),
+            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
+            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID),
+            cargo_door_assembly: HydraulicActuatorAssembly::new(cargo_actuator, cargo_door_body),
         }
     }
 
@@ -337,7 +361,7 @@ impl A320Hydraulic {
             let delta_time_physics =
                 min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
             for _ in 0..num_of_actuators_update_loops {
-                self.update_fast_rate(&context, &delta_time_physics);
+                self.update_fast_rate(&context.with_delta(delta_time_physics));
             }
         }
     }
@@ -469,19 +493,18 @@ impl A320Hydraulic {
 
         self.braking_force
             .update_forces(&self.braking_circuit_norm, &self.braking_circuit_altn);
-
-        self.forward_cargo_door
-            .update_position(self.cargo_physics.position_normalized());
-
-        self.cargo_physics.update(context);
     }
 
     // All the higher frequency updates like physics
-    fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
+    fn update_fast_rate(&mut self, context: &UpdateContext) {
         self.ram_air_turbine
-            .update_physics(&delta_time_physics, &context.indicated_airspeed());
+            .update_physics(&context.delta(), &context.indicated_airspeed());
 
-        // self.cargo_physics.update(context);
+        self.cargo_door_assembly.update(
+            &self.forward_cargo_door,
+            context,
+            self.yellow_loop.pressure(),
+        );
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -630,6 +653,12 @@ impl A320Hydraulic {
 
         self.braking_circuit_norm.update(context, &self.green_loop);
         self.braking_circuit_altn.update(context, &self.yellow_loop);
+
+        self.forward_cargo_door.update(
+            context,
+            &self.cargo_door_assembly,
+            self.yellow_loop.pressure(),
+        );
     }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
@@ -652,7 +681,7 @@ impl SimulationElement for A320Hydraulic {
         self.yellow_electric_pump_controller.accept(visitor);
 
         self.forward_cargo_door.accept(visitor);
-        self.aft_cargo_door.accept(visitor);
+        //self.aft_cargo_door.accept(visitor);
         self.pushback_tug.accept(visitor);
 
         self.ram_air_turbine.accept(visitor);
@@ -1423,14 +1452,40 @@ struct Door {
     requested_position_id: String,
     position: f64,
     previous_position: f64,
+    position_request: f64,
+    position_request_prev: f64,
+
+    available_hydraulic_pressure: Pressure,
+
+    is_uplocked: bool,
+    is_downlocked: bool,
+
+    opening_time: Duration,
+    closing_time: Duration,
 }
 impl Door {
+    // Delay from the ground crew unlocking the door to the time they start requiring up movement in control panel
+    const DELAY_UNLOCK_TO_HYDRAULIC_CONTROL: Duration = Duration::from_secs(3);
+
+    // Delay the hydraulic valves send a open request when request is closing (this is done so uplock can be easily unlocked without friction)
+    const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_secs(1);
+
     fn new(id: &str) -> Self {
         Self {
             position_id: format!("{}_DOOR_CARGO_POSITION", id),
             requested_position_id: format!("{}_DOOR_CARGO_OPEN_REQ", id),
             position: 0.,
             previous_position: 0.,
+            position_request: 0.,
+            position_request_prev: 0.,
+
+            available_hydraulic_pressure: Pressure::new::<psi>(0.),
+
+            is_uplocked: false,
+            is_downlocked: true,
+
+            opening_time: Duration::from_secs(0),
+            closing_time: Duration::from_secs(0),
         }
     }
 
@@ -1443,18 +1498,93 @@ impl Door {
         self.previous_position = self.position;
         self.position = position;
     }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        hydraulic_assembly: &HydraulicActuatorAssembly,
+        available_hydraulic_pressure: Pressure,
+    ) {
+        if self.is_opening() {
+            self.opening_time += context.delta();
+        } else {
+            self.opening_time = Duration::from_secs(0);
+        }
+        if self.is_closing() {
+            self.closing_time += context.delta();
+        } else {
+            self.closing_time = Duration::from_secs(0);
+        }
+
+        self.is_uplocked = self.should_uplock();
+        self.is_downlocked = hydraulic_assembly.is_locked();
+        self.available_hydraulic_pressure = available_hydraulic_pressure;
+        self.update_position(hydraulic_assembly.position())
+    }
+
+    fn should_unlock(&self) -> bool {
+        self.position_request > 0. && self.position_request_prev <= 0. && self.position <= 0.
+    }
+
+    fn is_opening(&self) -> bool {
+        self.position > 0. && self.position_request > 0.9 && !self.is_uplocked
+    }
+
+    fn is_closing(&self) -> bool {
+        self.position - self.position_request > 0.2 && !self.is_downlocked
+    }
+
+    fn should_uplock(&self) -> bool {
+        self.is_opening() && self.position > 0.9
+    }
+
+    fn should_control_opening(&self) -> bool {
+        self.opening_time > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL
+            && self.position_request > 0.9
+            && !self.is_uplocked
+            || self.position_request <= 0.
+                && self.position > 0.
+                && self.closing_time <= Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
+    }
+
+    fn should_start_closing(&self) -> bool {
+        self.position_request < self.position_request_prev
+            && self.available_hydraulic_pressure > Pressure::new::<psi>(200.)
+    }
+
+    fn should_request_downlock(&self) -> bool {
+        self.position_request <= 0.
+    }
+}
+impl HydraulicAssemblyController for Door {
+    fn should_close_control_valves(&self) -> bool {
+        self.is_uplocked || !self.should_control_opening() || self.is_downlocked
+    }
+    fn position_request(&self) -> f64 {
+        if self.should_start_closing() {
+            0.
+        } else if self.should_control_opening() {
+            1.0
+        } else {
+            0.
+        }
+    }
+    fn should_lock(&self) -> bool {
+        self.should_request_downlock() && self.is_closing()
+    }
+    fn lock_position_request(&self) -> f64 {
+        0.
+    }
 }
 impl SimulationElement for Door {
     fn read(&mut self, state: &mut SimulatorReader) {
         // self.previous_position = self.position;
         // self.position = state.read(&self.exit_id);
 
-        let read_position: f64 = state.read(&self.position_id);
-        let read_request: f64 = state.read(&self.requested_position_id);
-        println!(
-            "cargo pos read from system {:.2} requested: {:.2} ",
-            read_position, read_request
-        );
+        //let read_position: f64 = state.read(&self.position_id);
+        self.position_request_prev = self.position_request;
+        self.position_request = state.read(&self.requested_position_id);
+        println!("cargo pos read requested: {:.2} ", self.position_request);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -2044,6 +2174,14 @@ mod tests {
                 self.hydraulics.is_yellow_pressurised()
             }
 
+            fn is_cargo_fwd_door_locked_up(&self) -> bool {
+                self.hydraulics.forward_cargo_door.is_uplocked
+            }
+
+            fn is_cargo_fwd_door_locked_down(&self) -> bool {
+                self.hydraulics.forward_cargo_door.is_downlocked
+            }
+
             fn set_ac_bus_1_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_1_powered = bus_is_alive;
             }
@@ -2195,6 +2333,18 @@ mod tests {
                 self.query(|a| a.is_yellow_pressurised())
             }
 
+            fn is_cargo_fwd_door_locked_down(&self) -> bool {
+                self.query(|a| a.is_cargo_fwd_door_locked_down())
+            }
+
+            fn is_cargo_fwd_door_locked_up(&self) -> bool {
+                self.query(|a| a.is_cargo_fwd_door_locked_up())
+            }
+
+            fn cargo_fwd_door_position(&mut self) -> f64 {
+                self.read("FWD_DOOR_CARGO_POSITION")
+            }
+
             fn green_pressure(&mut self) -> Pressure {
                 self.read("HYD_GREEN_PRESSURE")
             }
@@ -2339,6 +2489,16 @@ mod tests {
 
             fn set_cargo_door_state(mut self, position: f64) -> Self {
                 self.write("EXIT OPEN:5", position);
+                self
+            }
+
+            fn open_fwd_cargo_door(mut self) -> Self {
+                self.write("FWD_DOOR_CARGO_OPEN_REQ", 1.);
+                self
+            }
+
+            fn close_fwd_cargo_door(mut self) -> Self {
+                self.write("FWD_DOOR_CARGO_OPEN_REQ", 0.);
                 self
             }
 
@@ -5372,6 +5532,37 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressurised());
+        }
+
+        #[test]
+        fn cargo_door_controller_opens_the_door() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+
+            let current_position_unlocked = test_bed.cargo_fwd_door_position();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Door::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL);
+
+            assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
         }
 
         fn context(delta_time: Duration) -> UpdateContext {

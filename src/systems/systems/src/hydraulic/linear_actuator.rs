@@ -257,6 +257,66 @@ impl Actuator for LinearActuator {
     }
 }
 
+pub trait HydraulicAssemblyController {
+    fn should_close_control_valves(&self) -> bool;
+    fn position_request(&self) -> f64;
+    fn should_lock(&self) -> bool;
+    fn lock_position_request(&self) -> f64;
+}
+pub struct HydraulicActuatorAssembly {
+    linear_actuator: LinearActuator,
+    rigid_body: RigidBodyOnHingeAxis,
+}
+impl HydraulicActuatorAssembly {
+    pub fn new(linear_actuator: LinearActuator, rigid_body: RigidBodyOnHingeAxis) -> Self {
+        Self {
+            linear_actuator,
+            rigid_body,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        assembly_controller: &impl HydraulicAssemblyController,
+        context: &UpdateContext,
+        available_pressure: Pressure,
+    ) {
+        if assembly_controller.should_close_control_valves() {
+            self.linear_actuator.close_control_valves();
+        } else {
+            self.linear_actuator
+                .open_control_valves_start_position_control(assembly_controller.position_request());
+        }
+
+        if assembly_controller.should_lock() {
+            self.rigid_body
+                .lock_at_position_normalized(assembly_controller.lock_position_request())
+        } else {
+            self.rigid_body.unlock();
+        }
+
+        self.linear_actuator
+            .update(&mut self.rigid_body, available_pressure);
+        self.rigid_body.update(context);
+        self.linear_actuator
+            .update_after_rigid_body(&self.rigid_body, context);
+
+        println!(
+            "Current position {:.3}, dt{:.3}",
+            self.position(),
+            context.delta_as_secs_f64()
+        );
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.rigid_body.is_locked()
+    }
+
+    pub fn position(&self) -> f64 {
+        self.rigid_body.position_normalized()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -324,7 +384,7 @@ mod tests {
         let actuator_position_init = actuator.position;
 
         actuator.close_control_valves();
-        for _ in 0..10 {
+        for _ in 0..100 {
             actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
