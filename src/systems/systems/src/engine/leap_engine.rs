@@ -1,12 +1,14 @@
 use uom::si::{angular_velocity::revolution_per_minute, f64::*, pressure::psi, ratio::percent};
 
 use crate::{
-    shared::{EngineCorrectedN2, EngineUncorrectedN2},
+    shared::{EngineCorrectedN1, EngineCorrectedN2, EngineUncorrectedN2},
     simulation::{Read, SimulationElement, SimulatorReader, UpdateContext},
 };
 
 use super::Engine;
 pub struct LeapEngine {
+    corrected_n1_id: String,
+    corrected_n1: Ratio,
     corrected_n2_id: String,
     corrected_n2: Ratio,
 
@@ -29,6 +31,8 @@ impl LeapEngine {
 
     pub fn new(number: usize) -> LeapEngine {
         LeapEngine {
+            corrected_n1_id: format!("TURB ENG CORRECTED N1:{}", number),
+            corrected_n1: Ratio::new::<percent>(0.),
             corrected_n2_id: format!("TURB ENG CORRECTED N2:{}", number),
             corrected_n2: Ratio::new::<percent>(0.),
             uncorrected_n2_id: format!("ENGINE_N2:{}", number),
@@ -53,9 +57,15 @@ impl LeapEngine {
 }
 impl SimulationElement for LeapEngine {
     fn read(&mut self, reader: &mut SimulatorReader) {
+        self.corrected_n1 = reader.read(&self.corrected_n1_id);
         self.corrected_n2 = reader.read(&self.corrected_n2_id);
         self.uncorrected_n2 = reader.read(&self.uncorrected_n2_id);
         self.update_parameters();
+    }
+}
+impl EngineCorrectedN1 for LeapEngine {
+    fn corrected_n1(&self) -> Ratio {
+        self.corrected_n1
     }
 }
 impl EngineCorrectedN2 for LeapEngine {

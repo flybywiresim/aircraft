@@ -83,6 +83,11 @@
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE />
             </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>firepb</WWISE_EVENT>
+            </UseTemplate>
         </Component>
     </Template>
 
@@ -127,6 +132,11 @@
                     } #LEFT_SINGLE_CODE#
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE />
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>firepbguard</WWISE_EVENT>
             </UseTemplate>
         </Component>
     </Template>

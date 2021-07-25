@@ -3,49 +3,9 @@ import { join } from 'path';
 import { baseCompile } from './plugins.mjs';
 import { getTemplatePlugin } from './templatePlugins.mjs';
 import { Directories } from './directories.mjs';
+import { getInputs } from './igniter/tasks.mjs';
 
 process.chdir(Directories.src);
-
-const ecamPages = [
-    {
-        name: 'door-page',
-        path: 'SD/Pages/Door',
-    },
-    {
-        name: 'cond-page',
-        path: 'SD/Pages/Cond',
-    },
-    {
-        name: 'fctl-page',
-        path: 'SD/Pages/Fctl',
-    },
-    {
-        name: 'elec-page',
-        path: 'SD/Pages/Elec',
-    },
-    {
-        name: 'hyd-page',
-        path: 'SD/Pages/Hyd',
-    },
-    {
-        name: 'wheel-page',
-        path: 'SD/Pages/Wheel',
-    },
-    {
-        name: 'crz-page',
-        path: 'SD/Pages/Crz',
-    },
-];
-
-function getInputs() {
-    const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src'), { withFileTypes: true })
-        .filter((d) => d.isDirectory() && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
-
-    return [
-        ...baseInstruments.map(({ name }) => ({ path: name, name, isInstrument: true })),
-        ...ecamPages.map((def) => ({ ...def, isInstrument: false })),
-    ];
-}
 
 export default getInputs()
     .map(({ path, name, isInstrument }) => {
