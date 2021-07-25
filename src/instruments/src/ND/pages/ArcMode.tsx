@@ -8,16 +8,17 @@ import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { EfisSide, Mode } from '../index';
+import { EfisSide, EfisOption, Mode } from '../index';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface ArcModeProps {
     rangeSetting: number,
     side: EfisSide,
     ppos: LatLongData,
+    efisOption: EfisOption,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -28,7 +29,6 @@ export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) =>
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
-    const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -48,7 +48,8 @@ export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) =>
                 y={620}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
-                clipPath="url(#arc-mode-flight-plan-clip)"
+                clipPath="url(#arc-mode-map-clip)"
+                constraints={efisOption === EfisOption.Constraints}
                 debug={false}
             />
 
@@ -83,8 +84,8 @@ interface OverlayProps {
 
 const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
-        <clipPath id="arc-mode-flight-plan-clip">
-            <circle cx={0} cy={0} r={490.5} />
+        <clipPath id="arc-mode-map-clip">
+            <path d="M-384,-308 a492,492 0 0 1 768,0 L384,-58 L264,-58 L207,5 L207,148 L-210,148 L-210,63 L-262,5 L-384,5 L-384,-308" />
         </clipPath>
         <clipPath id="arc-mode-overlay-clip-4">
             <path d="m 6 0 h 756 v 768 h -756 z" />
@@ -455,7 +456,7 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, si
 
             <TrackBug heading={heading} track={track} />
             { lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
-            <SelectedHeadingBug heading={heading} selected={selectedHeading} />
+            <SelectedHeadingBug heading={Math.round(heading)} selected={selectedHeading} />
         </g>
 
         <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />

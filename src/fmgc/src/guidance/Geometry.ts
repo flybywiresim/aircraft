@@ -1,164 +1,20 @@
 import { Degrees, NauticalMiles } from '@typings/types';
 import { MathUtils } from '@shared/MathUtils';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
+import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { Transition } from '@fmgc/guidance/lnav/transitions';
+import { Leg } from '@fmgc/guidance/lnav/legs';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { ControlLaw, GuidanceParameters } from './ControlLaws';
 
 export const EARTH_RADIUS_NM = 3440.1;
+
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
 export interface Guidable {
-    getGuidanceParameters(ppos: LatLongAlt, trueTrack: number): GuidanceParameters | null;
-    getDistanceToGo(ppos: LatLong | LatLongAlt): NauticalMiles;
-    isAbeam(ppos: LatLongAlt): boolean;
-}
-
-export abstract class Leg implements Guidable {
-    abstract getGuidanceParameters(ppos, trueTrack);
-
-    /**
-     * Calculates directed DTG parameter
-     *
-     * @param ppos {LatLong} the current position of the aircraft
-     */
-    abstract getDistanceToGo(ppos: LatLong): NauticalMiles;
-
-    abstract isAbeam(ppos);
-}
-
-export class TFLeg extends Leg {
-    public from: WayPoint;
-
-    public to: WayPoint;
-
-    constructor(from: WayPoint, to: WayPoint) {
-        super();
-        this.from = from;
-        this.to = to;
-    }
-
-    get bearing(): Degrees {
-        return Avionics.Utils.computeGreatCircleHeading(
-            this.from.infos.coordinates,
-            this.to.infos.coordinates,
-        );
-    }
-
-    getGuidanceParameters(ppos, trueTrack): GuidanceParameters | null {
-        const fromLatLongAlt = this.from.infos.coordinates;
-
-        const desiredTrack = this.bearing;
-        const trackAngleError = mod(desiredTrack - trueTrack + 180, 360) - 180;
-
-        // crosstrack error
-        const bearingAC = Avionics.Utils.computeGreatCircleHeading(fromLatLongAlt, ppos);
-        const bearingAB = desiredTrack;
-        const distanceAC = Avionics.Utils.computeDistance(fromLatLongAlt, ppos);
-
-        const desiredOffset = 0;
-        const actualOffset = (
-            Math.asin(
-                Math.sin(Avionics.Utils.DEG2RAD * (distanceAC / EARTH_RADIUS_NM))
-                * Math.sin(Avionics.Utils.DEG2RAD * (bearingAC - bearingAB)),
-            ) / Avionics.Utils.DEG2RAD
-        ) * EARTH_RADIUS_NM;
-        const crossTrackError = desiredOffset - actualOffset;
-
-        return {
-            law: ControlLaw.LATERAL_PATH,
-            trackAngleError,
-            crossTrackError,
-            phiCommand: 0,
-        };
-    }
-
-    /**
-     * Calculates the angle between the leg and the aircraft PPOS.
-     *
-     * This effectively returns the angle ABC in the figure shown below:
-     *
-     * ```
-     * * A
-     * |
-     * * B (TO)
-     * |\
-     * | \
-     * |  \
-     * |   \
-     * |    \
-     * |     \
-     * |      \
-     * * FROM  * C (PPOS)
-     * ```
-     *
-     * @param ppos {LatLong} the current position of the aircraft
-     */
-    getAircraftToLegBearing(ppos: LatLongData): number {
-        const aircraftToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(ppos, this.to.infos.coordinates);
-
-        // Rotate frame of reference to 0deg
-        let correctedLegBearing = this.bearing - aircraftToTerminationBearing;
-        if (correctedLegBearing < 0) {
-            correctedLegBearing = 360 + correctedLegBearing;
-        }
-
-        let aircraftToLegBearing = 180 - correctedLegBearing;
-        if (aircraftToLegBearing < 0) {
-            // if correctedLegBearing was greater than 180 degrees, then its supplementary angle is negative.
-            // In this case, we can subtract it from 360 degrees to obtain the bearing.
-
-            aircraftToLegBearing = 360 + aircraftToLegBearing;
-        }
-
-        return aircraftToLegBearing;
-    }
-
-    getDistanceToGo(ppos: LatLongData): NauticalMiles {
-        const aircraftLegBearing = this.getAircraftToLegBearing(ppos);
-
-        const absDtg = Avionics.Utils.computeGreatCircleDistance(ppos, this.to.infos.coordinates);
-
-        // @todo should be abeam distance
-        if (aircraftLegBearing >= 90 && aircraftLegBearing <= 270) {
-            // Since a line perpendicular to the leg is formed by two 90 degree angles, an aircraftLegBearing outside
-            // (North - 90) and (North + 90) is in the lower quadrants of a plane centered at the TO fix. This means
-            // the aircraft is NOT past the TO fix, and DTG must be positive.
-
-            return absDtg;
-        }
-
-        return -absDtg;
-    }
-
-    get distance(): NauticalMiles {
-        return Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
-    }
-
-    isAbeam(ppos: LatLongAlt): boolean {
-        const bearingAC = Avionics.Utils.computeGreatCircleHeading(this.from.infos.coordinates, ppos);
-        const headingAC = Math.abs(MathUtils.diffAngle(this.bearing, bearingAC));
-        if (headingAC > 90) {
-            // if we're even not abeam of the starting point
-            return false;
-        }
-        const distanceAC = Avionics.Utils.computeDistance(this.from.infos.coordinates, ppos);
-        const distanceAX = Math.cos(headingAC * Avionics.Utils.DEG2RAD) * distanceAC;
-        // if we're too far away from the starting point to be still abeam of the ending point
-        return distanceAX <= this.distance;
-    }
-
-    toString(): string {
-        return `<TFLeg from=${this.from} to=${this.to}>`;
-    }
-}
-
-export abstract class Transition implements Guidable {
-    abstract isAbeam(ppos: LatLongAlt): boolean;
-
-    abstract getGuidanceParameters(ppos, trueTrack);
-
-    abstract getDistanceToGo(ppos);
-
-    abstract getTrackDistanceToTerminationPoint(ppos: LatLongAlt): NauticalMiles;
+    getGuidanceParameters(ppos: LatLongData, trueTrack: Degrees): GuidanceParameters | null;
+    getDistanceToGo(ppos: LatLongData): NauticalMiles;
+    isAbeam(ppos: LatLongData): boolean;
 }
 
 /**
@@ -167,7 +23,7 @@ export abstract class Transition implements Guidable {
 export class Type1Transition extends Transition {
     public previousLeg: TFLeg;
 
-    public nextLeg: TFLeg;
+    public nextLeg: TFLeg | VMLeg;
 
     public radius: NauticalMiles;
 
@@ -175,7 +31,7 @@ export class Type1Transition extends Transition {
 
     constructor(
         previousLeg: TFLeg,
-        nextLeg: TFLeg,
+        nextLeg: TFLeg | VMLeg, // FIXME this cannot happen, but what are you gonna do about it ?,
         radius: NauticalMiles,
         clockwise: boolean,
     ) {
@@ -316,17 +172,13 @@ export class Type1Transition extends Transition {
 export class Geometry {
     /**
      * The list of transitions between legs.
-     * - entry 1: transition before first leg
-     * - entry 2: transition after first leg
-     * - entry n: transition after leg n - 1
+     * - entry n: transition after leg n
      */
     public transitions: Map<number, Transition>;
 
     /**
      * The list of legs in this geometry, possibly connected through transitions:
-     * - entry 1: first leg, after transition 1
-     * - entry 2: second leg, after transition 2
-     * - entry n: nth leg, after transition n
+     * - entry n: nth leg, before transition n
      */
     public legs: Map<number, Leg>;
 
@@ -377,13 +229,22 @@ export class Geometry {
     }
 
     shouldSequenceLeg(ppos: LatLongAlt): boolean {
+        const activeLeg = this.legs.get(1);
+
+        // VM legs do not connect to anything and do not have a transition after them - we never sequence them
+        if (activeLeg instanceof VMLeg) {
+            return false;
+        }
+
+        // FIXME I don't think this works since getActiveLegGeometry doesn't put a transition at n = 2
         const terminatingTransition = this.transitions.get(2);
+
         if (terminatingTransition) {
             const tdttp = terminatingTransition.getTrackDistanceToTerminationPoint(ppos);
+
             return tdttp < 0.001;
         }
 
-        const activeLeg = this.legs.get(1);
         if (activeLeg) {
             return activeLeg.getDistanceToGo(ppos) < 0.001;
         }
