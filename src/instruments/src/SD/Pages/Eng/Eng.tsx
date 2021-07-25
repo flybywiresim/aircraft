@@ -164,7 +164,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             setShouldTemperaturePulse(false);
         }
 
-        if (engineOilTemperature > OIL_TEMP_VHIGH_LIMIT) {
+        if (displayedEngineOilPressure > OIL_TEMP_VHIGH_LIMIT) {
             setTempAmber(true);
         } else {
             setTempAmber(false);
