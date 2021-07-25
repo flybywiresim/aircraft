@@ -48,7 +48,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos }) =>
                 y={620}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
-                clipPath="url(#arc-mode-flight-plan-clip)"
+                clipPath="url(#arc-mode-map-clip)"
                 debug={false}
             />
 
@@ -83,8 +83,8 @@ interface OverlayProps {
 
 const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
-        <clipPath id="arc-mode-flight-plan-clip">
-            <circle cx={0} cy={0} r={490.5} />
+        <clipPath id="arc-mode-map-clip">
+            <path d="M-384,-308 a492,492 0 0 1 768,0 L384,-58 L264,-58 L207,5 L207,148 L-210,148 L-210,63 L-262,5 L-384,5 L-384,-308" />
         </clipPath>
         <clipPath id="arc-mode-overlay-clip-4">
             <path d="m 6 0 h 756 v 768 h -756 z" />

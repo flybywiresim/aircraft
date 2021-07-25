@@ -50,7 +50,7 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos }) 
                 y={384}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
-                clipPath="url(#rose-mode-flight-plan-clip)"
+                clipPath="url(#rose-mode-map-clip)"
                 debug={false}
             />)}
 
@@ -93,8 +93,8 @@ interface OverlayProps {
 
 const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMode, displayMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
-        <clipPath id="rose-mode-flight-plan-clip">
-            <circle cx={0} cy={0} r={248.5} />
+        <clipPath id="rose-mode-map-clip">
+            <path d="M-339,-229 L-102,-229 a250,250 0 0 1 204,0 L339,-229 L339,178 L264,178 L207,241 L207,384 L-210,384 L-210,299 L-262,241 L-339,241 L-339,-229" />
         </clipPath>
 
         {/* C = 384,384 */}
