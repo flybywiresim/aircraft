@@ -80,13 +80,13 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
     // Fuel used has a step of 10 when in Kilograms and 20 when in imperial pounds
     const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed * 2.20462 / 20) * 20;
 
-    const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 200);
+    const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 100);
     const OIL_QTY_MAX = 24.25;
     const OIL_QTY_LOW_ADVISORY = 1.35;
     const displayedEngineOilQuantity = engineOilQuantity === 100 ? OIL_QTY_MAX : Math.round((engineOilQuantity / 100) * OIL_QTY_MAX / 0.5) * 0.5; // Engine oil quantity has a step of 0.2
     const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
 
-    const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
+    const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 200);
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
     const OIL_PSI_HIGH_LIMIT = 130;
