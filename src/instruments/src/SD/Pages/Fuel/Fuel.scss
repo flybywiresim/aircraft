@@ -2,6 +2,11 @@
 
 #sd-fuel-page {
 
+  .pickMe {
+    fill: red !important;
+    stroke: red !important;
+  }
+
   .PageTitle {
     font-size: 24px;
     text-decoration: underline;
@@ -48,6 +53,16 @@
     stroke-width: 2.5;
   }
 
+  .White {
+    stroke: $display-white;
+    fill: $display-white;
+  }
+
+  .Amber {
+    stroke: $display-amber;
+    fill: $display-amber;
+  }
+
   #APU {
     stroke: $display-white;
 
@@ -57,8 +72,7 @@
     }
 
     text {
-      stroke: $display-white;
-      fill: $display-white;
+
       font-size: $font-size-large;
     }
   }
@@ -112,6 +126,11 @@
   .Unit {
     fill: $display-cyan;
     font-size: 16px;
+  }
+
+  .UnitTemp {
+    @extend .Unit;
+    letter-spacing: -2px !important;
   }
 
   .FuelFlowLabel {
