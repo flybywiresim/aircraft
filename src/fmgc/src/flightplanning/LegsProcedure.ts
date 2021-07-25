@@ -375,7 +375,7 @@ export class LegsProcedure {
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
       const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
-      const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 381, prevLeg.infos.coordinates);
+      const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 1, prevLeg.infos.coordinates);
 
       const waypoint = this.buildWaypoint(FixNamingScheme.vector(), coordinates);
       waypoint.isVectors = true;

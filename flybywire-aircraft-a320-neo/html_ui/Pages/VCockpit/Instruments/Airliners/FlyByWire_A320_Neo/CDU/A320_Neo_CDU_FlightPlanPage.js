@@ -112,7 +112,7 @@ class CDUFlightPlanPage {
         }
 
         // Only examine first 5 (or less) waypoints/markers
-        // TODO: Proper sequencing implementation AMM 22-72-00:59-61 > FROM field (when offset is 0)
+        // TODO FIXME: Proper sequencing implementation AMM 22-72-00:59-61 > FROM field (when offset is 0)
         const scrollWindow = [];
         for (let rowI = 0, winI = offset; rowI < rowsCount; rowI++, winI++) {
             winI = winI % (waypointsAndMarkers.length);
@@ -135,12 +135,12 @@ class CDUFlightPlanPage {
                 if (isFlying) {
                     if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveUTCTo) || isFinite(waypointsAndMarkers[winI].wp.waypointReachedAt)) {
                         time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).etaFromPpos : waypointsAndMarkers[winI].wp.waypointReachedAt;
-                        timeCell = FMCMainDisplay.secondsToUTC(time) + "[s-text]";
+                        timeCell = `${FMCMainDisplay.secondsToUTC(time)}[s-text]`;
                     }
                 } else {
                     if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveETATo)) {
                         time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).timeFromPpos : 0;
-                        timeCell = FMCMainDisplay.secondsTohhmm(time) + "[s-text]";
+                        timeCell = `${FMCMainDisplay.secondsTohhmm(time)}[s-text]`;
                     }
                 }
 
@@ -153,31 +153,38 @@ class CDUFlightPlanPage {
                     color = "white";
                 }
 
-                // Airway
-
-                let airwayName = "";
-                if (wpPrev && waypointsAndMarkers[winI].wp) {
-                    let airway = undefined;
-                    if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === waypointsAndMarkers[winI].wp.infos.airwayIn) {
-                        airway = {name: wpPrev.infos.airwayOut };
-                    } else if (waypointsAndMarkers[winI].wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
-                        airway = {name: waypointsAndMarkers[winI].wp.infos.airwayIn };
-                    }
-                    if (airway) {
-                        airwayName = "\xa0" + airway.name;
-                    }
-                }
-
-                // For Fix Header
+                // Fix Header
 
                 let fixAnnotation;
-                if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                if (waypointsAndMarkers[winI].wp.additionalData) {
+                    // ARINC Leg Types - R1A 610
+                    switch (waypointsAndMarkers[winI].wp.additionalData.legType) {
+                        case 11:
+                        case 22:
+                            fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading}`;
+                            break;
+                    }
+                } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
                     const departure = fpm.getDeparture();
                     fixAnnotation = departure ? departure.name : undefined;
                 } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
                     const arrival = fpm.getArrival();
                     fixAnnotation = arrival ? arrival.name : undefined;
                 } else {
+
+                    // Show airway
+                    let airwayName = "";
+                    if (wpPrev && waypointsAndMarkers[winI].wp) {
+                        let airway = undefined;
+                        if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === waypointsAndMarkers[winI].wp.infos.airwayIn) {
+                            airway = {name: wpPrev.infos.airwayOut };
+                        } else if (waypointsAndMarkers[winI].wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
+                            airway = {name: waypointsAndMarkers[winI].wp.infos.airwayIn };
+                        }
+                        if (airway) {
+                            airwayName = `\xa0${airway.name}`;
+                        }
+                    }
                     fixAnnotation = airwayName;
                 }
 
@@ -185,7 +192,7 @@ class CDUFlightPlanPage {
                 let distance = "";
 
                 // Active waypoint is live distance, others are distances in the flight plan
-                // TODO: actually use the correct prediction
+                // TODO FIXME: actually use the correct prediction
                 if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
                     if (waypointsAndMarkers[winI].wp === fpm.getActiveWaypoint()) {
                         distance = stats.get(waypointsAndMarkers[winI].fpIndex).distanceFromPpos.toFixed(0);
@@ -200,7 +207,7 @@ class CDUFlightPlanPage {
 
                 let speedConstraint = "---";
                 if (waypointsAndMarkers[winI].wp.speedConstraint > 10) {
-                    speedConstraint = "{magenta}*{end}" + waypointsAndMarkers[winI].wp.speedConstraint.toFixed(0);
+                    speedConstraint = `{magenta}*{end}${waypointsAndMarkers[winI].wp.speedConstraint.toFixed(0)}`;
                 }
 
                 let altColor = color;
@@ -239,7 +246,7 @@ class CDUFlightPlanPage {
 
                     if (mcdu.transitionAltitude >= 100 && waypointsAndMarkers[winI].wp.legAltitude1 > mcdu.transitionAltitude) {
                         altitudeConstraint = (waypointsAndMarkers[winI].wp.legAltitude1 / 100).toFixed(0).toString();
-                        altitudeConstraint = "FL" + altitudeConstraint.padStart(3,"0");
+                        altitudeConstraint = `FL${altitudeConstraint.padStart(3,"0")}`;
                     } else {
                         altitudeConstraint = waypointsAndMarkers[winI].wp.legAltitude1.toFixed(0).toString().padStart(5,"\xa0");
                     }
@@ -250,7 +257,7 @@ class CDUFlightPlanPage {
                             altitudeConstraint = ((waypointsAndMarkers[winI].wp.legAltitude1 + waypointsAndMarkers[winI].wp.legAltitude2) * 0.5).toFixed(0).toString();
                             altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                         }
-                        // TODO remove this and replace with proper altitude constraint implementation
+                        // TODO FIXME: remove this and replace with proper altitude constraint implementation
                         // Predict altitude for STAR when constraints are missing
                         /*
                     } else if (departureWp) {
@@ -263,7 +270,7 @@ class CDUFlightPlanPage {
                             altitudeConstraint = "-----\xa0";
                             altPrefix = "";
                         } else {
-                            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
+                            altitudeConstraint = `FL${mcdu.cruiseFlightLevel.toString().padStart(3,"0")}`;
                         }
 
                         // Waypoint is in between on the route
@@ -272,7 +279,7 @@ class CDUFlightPlanPage {
                             altitudeConstraint = "-----\xa0";
                             altPrefix = "";
                         } else {
-                            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
+                            altitudeConstraint = `FL${mcdu.cruiseFlightLevel.toString().padStart(3,"0")}`;
                         }
                         // Waypoint with no alt constraint
                     } else if (!waypointsAndMarkers[winI].wp.legAltitude1 && !waypointsAndMarkers[winI].wp.legAltitudeDescription) {
@@ -400,9 +407,9 @@ class CDUFlightPlanPage {
                     dstnc += "\xa0\xa0";
                 }
                 for (let z = 0; z < 9 - dstnc.length; z++) {
-                    dstnc = dstnc + "\xa0";
+                    dstnc += "\xa0";
                 }
-                dstnc = dstnc + "[color]" + currRow.color;
+                dstnc = `${dstnc}[color]${currRow.color}`;
                 currRow.distance = dstnc;
             }
 
@@ -484,7 +491,7 @@ class CDUFlightPlanPage {
             }
 
             destText[0] = ["\xa0DEST", "DIST EFOB", isFlying ? "UTC{sp}" : "TIME{sp}{sp}"];
-            destText[1] = [destCell, destDistCell + " " + destEFOBCell, destTimeCell + "{sp}{sp}"];
+            destText[1] = [destCell, `${destDistCell} ${destEFOBCell}`, `${destTimeCell}{sp}{sp}`];
 
             addLskAt(5, () => mcdu.getDelaySwitchPage(),
                 () => {
