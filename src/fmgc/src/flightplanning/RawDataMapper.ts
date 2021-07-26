@@ -85,6 +85,7 @@ export class RawDataMapper {
         }
 
         waypoint.infos.coordinates = new LatLongAlt(facility.lat, facility.lon);
+        waypoint.additionalData = {};
         return waypoint;
     }
 
