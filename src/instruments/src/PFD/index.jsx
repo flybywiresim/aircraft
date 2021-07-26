@@ -180,7 +180,7 @@ class PFD extends Component {
         return (
             <DisplayUnit
                 electricitySimvar={this.isCaptainSide() ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
-                potentiometerIndex={this.isCaptainSide() === 1 ? 88 : 90}
+                potentiometerIndex={this.isCaptainSide() ? 88 : 90}
             >
                 <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
                     <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} isAttExcessive={this.isAttExcessive} deltaTime={this.deltaTime} />
