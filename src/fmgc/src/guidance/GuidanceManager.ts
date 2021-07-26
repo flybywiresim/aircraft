@@ -1,11 +1,13 @@
-import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { Degrees } from '@typings/types';
+import { RFLeg } from './lnav/legs/RF';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
 import { Geometry, Type1Transition } from './Geometry';
+import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
@@ -30,7 +32,11 @@ export class GuidanceManager {
         return new VMLeg(heading, initialCourse);
     }
 
-    getActiveLeg(): TFLeg | VMLeg | null {
+    private static rfLeg(from: WayPoint, to: WayPoint, center: LatLongData) {
+        return new RFLeg(from, to, center);
+    }
+
+    getActiveLeg(): RFLeg | TFLeg | VMLeg | null {
         const activeIndex = this.flightPlanManager.getActiveWaypointIndex();
 
         const from = this.flightPlanManager.getWaypoint(activeIndex - 1);
@@ -44,6 +50,10 @@ export class GuidanceManager {
             return null;
         }
 
+        if (to.additionalData && to.additionalData.originalType === 17) {
+            return GuidanceManager.rfLeg(from, to, to.additionalData.center);
+        }
+
         if (to.isVectors) {
             return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse);
         }
@@ -51,7 +61,7 @@ export class GuidanceManager {
         return GuidanceManager.tfBetween(from, to);
     }
 
-    getNextLeg(): TFLeg | VMLeg | null {
+    getNextLeg(): RFLeg | TFLeg | VMLeg | null {
         const activeIndex = this.flightPlanManager.getActiveWaypointIndex();
 
         const from = this.flightPlanManager.getWaypoint(activeIndex);
@@ -63,6 +73,10 @@ export class GuidanceManager {
 
         if (from.endsInDiscontinuity) {
             return null;
+        }
+
+        if (to.additionalData && to.additionalData.originalType === 17) {
+            return GuidanceManager.rfLeg(from, to, to.additionalData.center);
         }
 
         if (to.isVectors) {
@@ -87,7 +101,8 @@ export class GuidanceManager {
         const legs = new Map<number, Leg>([[1, activeLeg]]);
         const transitions = new Map<number, Transition>();
 
-        if (nextLeg && activeLeg instanceof TFLeg) {
+        // TODO generalise selection of transitions
+        if (nextLeg && activeLeg instanceof TFLeg && !(nextLeg instanceof RFLeg)) {
             legs.set(2, nextLeg);
 
             const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
@@ -137,6 +152,13 @@ export class GuidanceManager {
 
             // Reached the end or start of the flight plan
             if (!from || !to) {
+                continue;
+            }
+
+            if (to.additionalData && to.additionalData.originalType === 17) {
+                const currentLeg = GuidanceManager.rfLeg(from, to, to.additionalData.center);
+                legs.set(i, currentLeg);
+
                 continue;
             }
 
