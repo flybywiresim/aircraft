@@ -275,6 +275,10 @@ impl HydraulicActuatorAssembly {
         }
     }
 
+    pub fn actuator(&mut self) -> &mut impl Actuator {
+        &mut self.linear_actuator
+    }
+
     pub fn update(
         &mut self,
         assembly_controller: &impl HydraulicAssemblyController,
