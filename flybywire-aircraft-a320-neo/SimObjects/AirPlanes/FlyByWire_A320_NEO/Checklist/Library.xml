@@ -6,7 +6,7 @@
       </Checkpoint>
       <!-- Preliminary Cockpit Prep. -->
       <Checkpoint Id="A320_PREP_ENGINE_MASTER_SWITCHES">
-         <CheckpointDesc SubjectTT="TT:Engine Master Switches" ExpectationTT="TT:ALL OFF" />
+         <CheckpointDesc SubjectTT="TT:Engine Master Switches" ExpectationTT="TT:ALL CRANK" />
          <Instrument Id="SWITCH_ENGINES_ENG1" />
          <Sequence SeqType="Unordered">
             <Test>
