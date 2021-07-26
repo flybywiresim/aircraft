@@ -277,6 +277,9 @@
       <Checkpoint Id="A320_CPREP1_LANDING_ELEVATION">
          <CheckpointDesc SubjectTT="TT:Landing Elevation" ExpectationTT="TT:AUTO" />
          <Instrument Id="KNOB_OVHD_CABINPRESS_LDGELEV" />
+       </Checkpoint>
+       <Checkpoint Id="A320_CPREP1_ANNUNCIATOR_LIGHTS">
+           <CheckpointDesc SubjectTT="TT:Annunciator Lights" ExpectationTT="TT:CHECK/AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PACK_FLOW">
          <CheckpointDesc SubjectTT="TT:PACK Flow" ExpectationTT="TT:AS REQUIRED" />
