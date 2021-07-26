@@ -156,6 +156,8 @@ impl A320Hydraulic {
 
     // Refresh rate of hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP_MILLISECONDS: u64 = 100;
+    // Refresh rate of max fixed step loop
+    const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: u64 = 50;
     // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update.
     const ACTUATORS_SIM_TIME_STEP_MULTIPLIER: u32 = 2;
 
@@ -318,6 +320,9 @@ impl A320Hydraulic {
             landing_gear,
         );
 
+        // Here we update at the same rate as the sim or max time step if sim rate is too slow
+        self.update_max_fixed_step(&context);
+
         if number_of_steps_floating_point < 1.0 {
             // Can't do a full time step
             // we can decide either do an update with smaller step or wait next iteration
@@ -461,6 +466,45 @@ impl A320Hydraulic {
     }
 
     // Update with same refresh rate as the sim
+    fn update_max_fixed_step(&mut self, context: &UpdateContext) {
+        let max_fixed_seconds =
+            Duration::from_millis(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS).as_secs_f64();
+
+        let number_of_steps_floating_point = context.delta_as_secs_f64() / max_fixed_seconds;
+
+        let num_of_update_loops = number_of_steps_floating_point.floor() as u32;
+
+        let remaining_time_step_update = Duration::from_secs_f64(
+            (number_of_steps_floating_point - (num_of_update_loops as f64)) * max_fixed_seconds,
+        );
+
+        println!(
+            "delta {:.3}, loops {} remaining {:.3}",
+            context.delta_as_secs_f64(),
+            num_of_update_loops,
+            remaining_time_step_update.as_secs_f64()
+        );
+
+        for _ in 0..num_of_update_loops {
+            self.cargo_door_assembly.update(
+                &self.forward_cargo_door,
+                &context.with_delta(Duration::from_millis(
+                    Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS,
+                )),
+                self.yellow_loop.pressure(),
+            );
+        }
+
+        if remaining_time_step_update > Duration::from_millis(1) {
+            self.cargo_door_assembly.update(
+                &self.forward_cargo_door,
+                &context.with_delta(remaining_time_step_update),
+                self.yellow_loop.pressure(),
+            );
+        }
+    }
+
+    // Update with same refresh rate as the sim
     fn update_every_frame(
         &mut self,
         context: &UpdateContext,
@@ -497,18 +541,18 @@ impl A320Hydraulic {
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
         );
+
+        self.forward_cargo_door.update(
+            context,
+            &self.cargo_door_assembly,
+            self.yellow_loop.pressure(),
+        );
     }
 
     // All the higher frequency updates like physics
     fn update_fast_rate(&mut self, context: &UpdateContext) {
         self.ram_air_turbine
             .update_physics(&context.delta(), &context.indicated_airspeed());
-
-        self.cargo_door_assembly.update(
-            &self.forward_cargo_door,
-            context,
-            self.yellow_loop.pressure(),
-        );
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -660,12 +704,6 @@ impl A320Hydraulic {
 
         self.braking_circuit_norm.update(context, &self.green_loop);
         self.braking_circuit_altn.update(context, &self.yellow_loop);
-
-        self.forward_cargo_door.update(
-            context,
-            &self.cargo_door_assembly,
-            self.yellow_loop.pressure(),
-        );
     }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
@@ -1604,9 +1642,9 @@ impl Door {
         self.opening_time > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL
             && self.position_request > 0.9
             && !self.is_uplocked
-            || self.position_request <= 0.
-                && self.position > 0.
-                && self.closing_time <= Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
+        // || self.position_request <= 0.
+        //     && self.position > 0.
+        //     && self.closing_time <= Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
     }
 
     fn should_start_closing(&self) -> bool {
