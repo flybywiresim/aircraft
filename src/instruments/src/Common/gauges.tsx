@@ -61,13 +61,14 @@ export type ArcProps = {
     toValue: number,
     scaleMin?: number,
     scaleMax: number,
-    className?: string
+    className: string,
+    stroke?: string
 }
 
-export const Arc: FC<ArcProps> = memo(({ x, y, radius, toValue, scaleMin = 0, scaleMax, className }) => (
+export const Arc: FC<ArcProps> = memo(({ x, y, radius, toValue, scaleMin = 0, scaleMax, className, stroke }) => (
     <path
-        className={className ?? 'White'}
-        strokeWidth={2.5}
+        className={className}
+        strokeWidth={stroke ?? 2.5}
         d={describeArc(x, y, radius, -90, gaugeRotationFor(toValue, scaleMin, scaleMax))}
     />
 ));
