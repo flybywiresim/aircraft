@@ -551,6 +551,12 @@ impl<T: Writer> WriteWhen<bool> for T {
     }
 }
 
+impl<T: Writer> Write<usize> for T {
+    fn write(&mut self, name: &str, value: usize) {
+        self.write_f64(name, value as f64)
+    }
+}
+
 impl<T: Reader> Read<f64> for T {
     fn read(&mut self, name: &str) -> f64 {
         self.read_f64(name)
