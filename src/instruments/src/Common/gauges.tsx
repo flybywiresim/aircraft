@@ -18,14 +18,15 @@ export type NeedleProps = {
     value: string | number,
     scaleMin?: number,
     scaleMax: number,
-    className?: string,
-    dashOffset?: number
+    className: string,
+    dashOffset?: number,
+    stroke?: number
 }
 
-export const Needle: FC<NeedleProps> = memo(({ x, y, value, length, dashOffset, scaleMin = 0, scaleMax, className }) => (
+export const Needle: FC<NeedleProps> = memo(({ x, y, length, value, scaleMin = 0, scaleMax, className, dashOffset, stroke }) => (
     <path
-        className={`MidGrey GreyFill ${className}`}
-        strokeWidth={2}
+        className={className}
+        strokeWidth={stroke ?? 2}
         d={`M ${x} ${y} v -${length}`}
         transform={`rotate(${gaugeRotationFor(value, scaleMin, scaleMax)} ${x} ${y})`}
         strokeDashoffset={dashOffset}
@@ -62,7 +63,7 @@ export type ArcProps = {
     scaleMin?: number,
     scaleMax: number,
     className: string,
-    stroke?: string
+    stroke?: number
 }
 
 export const Arc: FC<ArcProps> = memo(({ x, y, radius, toValue, scaleMin = 0, scaleMax, className, stroke }) => (
