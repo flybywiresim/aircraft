@@ -293,9 +293,7 @@ const EngineColumn = ({ x, y, engineNumber }: EngineColumnProps) => {
             </text>
 
             <SvgGroup x={0} y={0} className={`${engSelectorPosition !== 2 && 'Hidden'}`}>
-                {/* ${!(isValveOpen && showIgniter && activeIgniter === 0 && activeIgniter === 2 ) && 'Hidden'} */}
                 <text x={x - 7} y={y + 345} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>A</text>
-                {/* ${!(isValveOpen && showIgniter && activeIgniter === 1 && activeIgniter === 2 ) && 'Hidden'} */}
                 <text x={x + 7} y={y + 345} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>B</text>
                 <g className="StartValveDiagram">
                     <circle r={14} cx={x} cy={y + 375} />
