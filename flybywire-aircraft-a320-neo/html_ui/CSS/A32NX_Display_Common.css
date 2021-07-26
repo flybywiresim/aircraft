@@ -56,7 +56,7 @@ text {
   /* custom svg */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 0 V10 Z H10 Z' stroke='%23000' stroke-width='3' fill='none'/%3E%3C/svg%3E");
   background-size: 2px;
-  opacity: 0.75;
+  opacity: 0.35;
   /* subtle tint and edge bleed */
   background-color: rgba(0, 0, 255, 0.025);
   box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
