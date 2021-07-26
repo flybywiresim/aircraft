@@ -77,8 +77,8 @@ export class LegsProcedure {
           }
 
           if (this.isIcaoValid(leg.arcCenterFixIcao)) {
-            this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000));
-        }
+              this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000));
+          }
       }
   }
 
@@ -172,8 +172,6 @@ export class LegsProcedure {
                       mappedLeg = this.mapRadiusToFix(currentLeg);
                       break;
                   case 2:
-                      mappedLeg = this.mapCourseUntilAltitude(currentLeg, this._previousFix);
-                      break;
                   case 19:
                       mappedLeg = this.mapHeadingUntilAltitude(currentLeg, this._previousFix);
                       break;
@@ -191,7 +189,7 @@ export class LegsProcedure {
                   mappedLeg.legAltitude2 = currentLeg.altitude2 * 3.28084;
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
                   mappedLeg.additionalData.originalType = currentLeg.type;
-               }
+              }
 
               this._currentIndex++;
           }
@@ -366,30 +364,8 @@ export class LegsProcedure {
    */
   public mapHeadingUntilAltitude(leg: ProcedureLeg, prevLeg: WayPoint) {
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates);
-      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
-      const altitudeFeet = (leg.altitude1 * 3.2808399);
-      const distanceInNM = altitudeFeet / 500.0;
-
-      const coordinates = GeoMath.relativeBearingDistanceToCoords(heading, distanceInNM, prevLeg.infos.coordinates);
-      const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, prevLeg.infos.magneticVariation);
-      // TODO move
-      if (!waypoint.additionalData) {
-          waypoint.additionalData = {};
-      }
-      waypoint.additionalData.vectorsHeading = heading;
-      waypoint.additionalData.legType = leg.type;
-      return waypoint;
-  }
-
-  /**
-   * Maps flying a course until a proscribed altitude.
-   * @param leg The procedure leg to map.
-   * @param prevLeg The previous leg in the procedure.
-   * @returns The mapped leg.
-   */
-  public mapCourseUntilAltitude(leg: ProcedureLeg, prevLeg: WayPoint) {
-      const magVar = Facilities.getMagVar(prevLeg.infos.coordinates);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
+      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
       const altitudeFeet = (leg.altitude1 * 3.2808399);
       const distanceInNM = altitudeFeet / 500.0;
 
@@ -399,7 +375,7 @@ export class LegsProcedure {
       if (!waypoint.additionalData) {
           waypoint.additionalData = {};
       }
-      waypoint.additionalData.vectorsCourse = course;
+      waypoint.additionalData.vectorsHeading = heading;
       waypoint.additionalData.legType = leg.type;
       return waypoint;
   }
@@ -447,21 +423,21 @@ export class LegsProcedure {
   }
 
   public mapRadiusToFix(leg: ProcedureLeg): Waypoint {
-    const arcCentreFix = this._facilities.get(leg.arcCenterFixIcao);
-    const arcCenterCoordinates = new LatLongAlt(arcCentreFix.lat, arcCentreFix.lon, 0);
+      const arcCentreFix = this._facilities.get(leg.arcCenterFixIcao);
+      const arcCenterCoordinates = new LatLongAlt(arcCentreFix.lat, arcCentreFix.lon, 0);
 
-    const toFix = this._facilities.get(leg.fixIcao);
-    const toIdent = toFix.icao.substring(7, 12).trim();
-    const toCoordinates = new LatLongAlt(toFix.lat, toFix.lon, 0);
+      const toFix = this._facilities.get(leg.fixIcao);
+      const toIdent = toFix.icao.substring(7, 12).trim();
+      const toCoordinates = new LatLongAlt(toFix.lat, toFix.lon, 0);
 
-    const radius = Avionics.Utils.computeGreatCircleDistance(arcCenterCoordinates, toCoordinates);
-    const waypoint = this.buildWaypoint(toIdent, toCoordinates);
+      const radius = Avionics.Utils.computeGreatCircleDistance(arcCenterCoordinates, toCoordinates);
+      const waypoint = this.buildWaypoint(toIdent, toCoordinates);
 
-    waypoint.additionalData.radius = radius;
-    waypoint.additionalData.center = arcCenterCoordinates;
-    waypoint.additionalData.turnDirection = leg.turnDirection;
+      waypoint.additionalData.radius = radius;
+      waypoint.additionalData.center = arcCenterCoordinates;
+      waypoint.additionalData.turnDirection = leg.turnDirection;
 
-    return waypoint;
+      return waypoint;
   }
 
   /**
