@@ -45,7 +45,6 @@ class CDUFlightPlanPage {
             approachRunway = mcdu.flightPlanManager.getApproachRunway();
             if (approachRunway) {
                 destCell += Avionics.Utils.formatRunway(approachRunway.designation);
-                SimVar.SetSimVarValue('L:A32NX_APPROACH_RUNWAY_ELEVATION', 'Meters', approachRunway.elevation);
             }
         }
         let rows = [[""], [""], [""], [""], [""], [""], [""], [""], [""], [""], [""], [""],];

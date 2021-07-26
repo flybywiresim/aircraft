@@ -36,13 +36,11 @@ class CDUIRSMonitor {
         const state = SimVar.GetSimVarValue(`L:A32NX_ADIRS_ADIRU_${number}_STATE`, "Enum");
         switch (state) {
             case 1:
-                IRSStatus = "ALIGN";
-                break;
+                return "ALIGN";
             case 2:
-                IRSStatus = "NAV";
-                break;
+                return "NAV";
             default:
-                IRSStatus = "";
+                return "";
         }
     }
 }
