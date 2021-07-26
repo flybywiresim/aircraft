@@ -280,6 +280,7 @@
        </Checkpoint>
        <Checkpoint Id="A320_CPREP1_ANNUNCIATOR_LIGHTS">
            <CheckpointDesc SubjectTT="TT:Annunciator Lights" ExpectationTT="TT:CHECK/AS REQUIRED" />
+           <InstrumentId="SWITCH_OVHD_INTLT_ANNLT" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PACK_FLOW">
          <CheckpointDesc SubjectTT="TT:PACK Flow" ExpectationTT="TT:AS REQUIRED" />
