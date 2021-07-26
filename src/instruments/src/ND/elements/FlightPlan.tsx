@@ -8,6 +8,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import useInterval from '@instruments/common/useInterval';
 import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { RFLeg } from '@fmgc/guidance/lnav/legs/RF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
@@ -335,6 +336,23 @@ function makePathFromGeometry(geometry: Geometry, mapParams: MapParameters): str
 
                 path.push(`L ${x} ${y}`);
             }
+        } else if (leg instanceof RFLeg) {
+            // Move to inbound point
+            const [inX, inY] = mapParams.coordinatesToXYy(leg.from.infos.coordinates);
+            x = MathUtils.fastToFixed(inX, 1);
+            y = MathUtils.fastToFixed(inY, 1);
+
+            path.push(`M ${x} ${y}`);
+
+            const r = MathUtils.fastToFixed(leg.radius * mapParams.nmToPx, 0);
+
+            // Draw arc to outbound point
+            const [outX, outY] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
+            x = MathUtils.fastToFixed(outX, 1);
+            y = MathUtils.fastToFixed(outY, 1);
+            const cw = leg.clockwise;
+
+            path.push(`A ${r} ${r} 0 ${leg.angle >= 180 ? 1 : 0} ${cw ? 1 : 0} ${x} ${y}`);
         }
     }
 

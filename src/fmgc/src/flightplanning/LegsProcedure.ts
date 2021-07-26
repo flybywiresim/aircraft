@@ -75,6 +75,10 @@ export class LegsProcedure {
           if (this.isIcaoValid(leg.originIcao)) {
               this._facilitiesToLoad.set(leg.originIcao, this._instrument.facilityLoader.getFacilityRaw(leg.originIcao, 2000));
           }
+
+          if (this.isIcaoValid(leg.arcCenterFixIcao)) {
+            this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000));
+        }
       }
   }
 
@@ -161,9 +165,11 @@ export class LegsProcedure {
                       }
                       break;
                   case 7:
-                  case 17:
                   case 18:
                       mappedLeg = this.mapExactFix(currentLeg);
+                      break;
+                  case 17:
+                      mappedLeg = this.mapRadiusToFix(currentLeg);
                       break;
                   case 2:
                       mappedLeg = this.mapCourseUntilAltitude(currentLeg, this._previousFix);
@@ -184,7 +190,8 @@ export class LegsProcedure {
                   mappedLeg.legAltitude1 = currentLeg.altitude1 * 3.28084;
                   mappedLeg.legAltitude2 = currentLeg.altitude2 * 3.28084;
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
-              }
+                  mappedLeg.additionalData.originalType = currentLeg.type;
+               }
 
               this._currentIndex++;
           }
@@ -413,10 +420,7 @@ export class LegsProcedure {
       waypoint.isVectors = true;
       waypoint.endsInDiscontinuity = true;
       waypoint.discontinuityCanBeCleared = false;
-      // TODO move
-      if (!waypoint.additionalData) {
-          waypoint.additionalData = {};
-      }
+
       waypoint.additionalData.vectorsCourse = course;
       waypoint.additionalData.vectorsHeading = heading;
       waypoint.additionalData.legType = leg.type;
@@ -440,6 +444,24 @@ export class LegsProcedure {
 
       const coordinates = Avionics.Utils.bearingDistanceToCoordinates(leg.theta, leg.rho / 1852, origin.lat, origin.lon);
       return this.buildWaypoint(`${originIdent}${Math.trunc(leg.rho / 1852)}`, coordinates);
+  }
+
+  public mapRadiusToFix(leg: ProcedureLeg): Waypoint {
+    const arcCentreFix = this._facilities.get(leg.arcCenterFixIcao);
+    const arcCenterCoordinates = new LatLongAlt(arcCentreFix.lat, arcCentreFix.lon, 0);
+
+    const toFix = this._facilities.get(leg.fixIcao);
+    const toIdent = toFix.icao.substring(7, 12).trim();
+    const toCoordinates = new LatLongAlt(toFix.lat, toFix.lon, 0);
+
+    const radius = Avionics.Utils.computeGreatCircleDistance(arcCenterCoordinates, toCoordinates);
+    const waypoint = this.buildWaypoint(toIdent, toCoordinates);
+
+    waypoint.additionalData.radius = radius;
+    waypoint.additionalData.center = arcCenterCoordinates;
+    waypoint.additionalData.turnDirection = leg.turnDirection;
+
+    return waypoint;
   }
 
   /**
@@ -493,6 +515,8 @@ export class LegsProcedure {
 
       waypoint.ident = ident;
       waypoint.infos.ident = ident;
+
+      waypoint.additionalData = {};
 
       return waypoint;
   }
