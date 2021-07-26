@@ -85,6 +85,22 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'number', 4000);
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
 
+    /* This useEffect checks to see if the flight phase is either 2 or 6,
+    if it is, it checks to see if:
+
+    the engine oil pressure is greater than the high limit -1
+    this condition will go away when the oil pressure falls below the high limit - 4 PSI
+
+    the engine oil pressure is less than the low limit and n2 percent is greater than 75
+    this condition will go away when the oil pressure goes past the low limit + 2 PSI
+
+    if either the pressureAboveHigh condition or pressureBelowLow condition are true, the pressure needle and digital readout will pulse green.
+
+    if the flight phase is not 2 or 6, it will clear the green pulsing
+
+    Regardless of flight phase, if the engine oil pressure is less than or equal to the pressure very low limit, the needle and readout will be red
+    this indication will stop when the oil pressure goes past the very low limit + 0.5 PSI
+    */
     useEffect(() => {
         if (flightPhase === 2 || flightPhase === 6) {
             if (displayedEngineOilPressure > OIL_PSI_HIGH_LIMIT - 1) {
@@ -156,6 +172,11 @@ const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
     const [shouldQuantityPulse, setShouldQuantityPulse] = useState(false);
 
+    /* This useEffect first checks if the current flight phase is 2 or 6
+    then checks if the engine oil quantity is less than the low advisory level, setting the hook to true.
+    If the engine oil quantity is at or below the low advisory level, and the oil quantity is now above the low advisory level + 2 quarts, this hook is instead set to false.
+    If the flight phase is not 2 or 6, it will set the hook to false, regardless of the setQuantityAtOrBelowLow hook's value.
+    */
     useEffect(() => {
         if (flightPhase === 2 || flightPhase === 6) {
             if (displayedEngineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
@@ -221,6 +242,7 @@ const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [n2Igniting] = useSimVar(`TURB ENG IS IGNITING:${engineNumber}`, 'bool', 300);
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
 
+    // This useEffect ensures that the igniter is only shown when the engine is starting, n2 is igniting, and n2 percent is in between 18 and 55
     useEffect(() => {
         if (isEngineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
             setShowIgniter(true);
@@ -229,6 +251,7 @@ const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
         }
     }, [isEngineStarting, n2Igniting, n2Percent]);
 
+    // This useEffect ensures that the valve is only opened if the engine mode selector is set to IGN/START, the engine is starting, and n2% is below 50
     useEffect(() => {
         if (isEngineStarting && n2Percent < 50 && engSelectorPosition === 2) {
             setTimeout(() => setIsValveOpen(true), 1200);
