@@ -564,6 +564,7 @@ export class ManagedFlightPlan {
                         referenceWaypoint.distanceInFP = 1;
                         break;
                     default:
+                        referenceWaypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
                         break;
                     }
                 } else {

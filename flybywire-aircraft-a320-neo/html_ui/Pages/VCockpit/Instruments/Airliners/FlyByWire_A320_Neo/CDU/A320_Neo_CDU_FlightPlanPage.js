@@ -167,7 +167,7 @@ class CDUFlightPlanPage {
                     // ARINC Leg Types - R1A 610
                     switch (waypointsAndMarkers[winI].wp.additionalData.legType) {
                         case 2: // CA
-                            fixAnnotation = `C${waypointsAndMarkers[winI].wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}\u00b0`;
+                            fixAnnotation = `C${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                         case 19: // VA
                             fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
@@ -213,12 +213,15 @@ class CDUFlightPlanPage {
                     waypointsAndMarkers[winI].wp &&
                     waypointsAndMarkers[winI - 1] &&
                     waypointsAndMarkers[winI - 1].wp) {
+                    const magVar = Facilities.getMagVar(waypointsAndMarkers[winI - 1].wp.infos.coordinates);
                     if (fpm.getActiveWaypoint() === waypointsAndMarkers[winI].wp && rowI === 1) {
-                        bearingTrack = `BRG${fpm.getBearingToActiveWaypoint().toFixed(0).padStart(3,"0")}\u00b0`;
+                        const br = fpm.getBearingToActiveWaypoint();
+                        const bearing = A32NX_Util.trueToMagnetic(br, magVar);
+                        bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
                     } else if (rowI === 2) {
-                        const track = Avionics.Utils.computeGreatCircleHeading(waypointsAndMarkers[winI - 1].wp.infos.coordinates, waypointsAndMarkers[winI].wp.infos.coordinates);
+                        const tr = Avionics.Utils.computeGreatCircleHeading(waypointsAndMarkers[winI - 1].wp.infos.coordinates, waypointsAndMarkers[winI].wp.infos.coordinates);
+                        const track = A32NX_Util.trueToMagnetic(tr, magVar);
                         bearingTrack = `{green}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
-
                     }
                 }
                 // Distance
