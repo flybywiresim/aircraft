@@ -217,6 +217,14 @@ export class ManagedFlightPlan {
         return allWaypoints.slice(this.activeWaypointIndex - 1, allWaypoints.length);
     }
 
+    public get activeVisibleWaypointIndex(): number {
+        if (this.directTo.isActive) {
+            const directToWaypointIndex = this.directTo.planWaypointIndex;
+            return (this.activeWaypointIndex - 1) > directToWaypointIndex ? 1 : 0;
+        }
+        return 1;
+    }
+
     public get segments(): FlightPlanSegment[] {
         return this._segments;
     }

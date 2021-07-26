@@ -40,7 +40,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                 <g clipPath={clipPath}>
                     {flightPlan.visibleWaypoints.map((waypoint, index) => {
                         if (!waypoint.isVectors) {
-                            return <Waypoint key={waypoint.ident} waypoint={waypoint} index={index} isActive={index === flightPlan.activeWaypointIndex} mapParams={mapParams} constraints={constraints} debug={debug} />;
+                            return <Waypoint key={waypoint.ident} waypoint={waypoint} index={index} isActive={index === flightPlan.activeVisibleWaypointIndex} mapParams={mapParams} constraints={constraints} debug={debug} />;
                         }
                         return null;
                     })}
