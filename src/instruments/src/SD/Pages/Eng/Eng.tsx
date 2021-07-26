@@ -275,7 +275,7 @@ const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
             <g className="StartValveDiagram">
                 {/* 375 to 30 */}
                 <circle r={14} cx={x} cy={y + 30} />
-                <line x1={x} y1={y - 50} x2={x} y2={y + 44} className={`${!isValveOpen && 'Hidden'}`} />
+                <line x1={x} y1={y + 10} x2={x} y2={y + 43} className={`${!isValveOpen && 'Hidden'}`} />
                 <line x1={x - 14} y1={y + 30} x2={x + 14} y2={y + 30} className={`${isValveOpen && 'Hidden'}`} />
                 <line x1={x} y1={y + 43} x2={x} y2={y + 50} />
             </g>
