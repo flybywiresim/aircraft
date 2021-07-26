@@ -49,6 +49,8 @@ declare global {
 
             static diffAngle(a: number, b: number): number;
 
+            static clampAngle(a: number): number;
+
             static fmod(a: number, b: number): number;
 
             /**
