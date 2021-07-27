@@ -1,7 +1,14 @@
 import { Degrees, NauticalMiles } from '@typings/types';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { AltitudeConstrainedLeg, AltitudeConstraint, SpeedConstraint, getAltitudeConstraintFromWaypoint, getSpeedConstraintFromWaypoint } from '@fmgc/guidance/lnav/legs';
+import {
+    AltitudeConstrainedLeg,
+    AltitudeConstraint,
+    SpeedConstraint,
+    getAltitudeConstraintFromWaypoint,
+    getSpeedConstraintFromWaypoint,
+    waypointToTerminatorLocation,
+} from '@fmgc/guidance/lnav/legs';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 
 export class RFLeg implements AltitudeConstrainedLeg {
@@ -67,6 +74,27 @@ export class RFLeg implements AltitudeConstrainedLeg {
 
     get altitudeConstraint(): AltitudeConstraint | undefined {
         return getAltitudeConstraintFromWaypoint(this.to);
+    }
+
+    get terminatorLocation(): LatLongData {
+        return waypointToTerminatorLocation(this.to);
+    }
+
+    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData {
+        const bearingTo = Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates);
+        const angleDelta = distanceBeforeTerminator / ((2 * Math.PI * this.radius) / 360);
+        const pseudoWaypointBearing = this.clockwise ? Avionics.Utils.clampAngle(bearingTo + angleDelta) : Avionics.Utils.clampAngle(bearingTo - angleDelta);
+        const latLongAltResult = Avionics.Utils.bearingDistanceToCoordinates(
+            pseudoWaypointBearing,
+            this.radius,
+            this.center.lat,
+            this.center.long,
+        );
+        const loc: LatLongData = {
+            lat: latLongAltResult.lat,
+            long: latLongAltResult.long,
+        };
+        return loc;
     }
 
     // basically straight from type 1 transition... willl need refinement
