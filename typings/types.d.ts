@@ -1,5 +1,6 @@
 export type NauticalMiles = number;
 export type Heading = number;
+export type Track = number;
 export type Latitude = number;
 export type Longitude = number;
 export type Feet = number;
