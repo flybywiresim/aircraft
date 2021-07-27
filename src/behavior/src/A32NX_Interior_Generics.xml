@@ -9,12 +9,17 @@
             - ANIM_SIMVAR_MIN       Default: 0          The lower bound of the position
             - ANIM_SIMVAR_MAX       Default: 100        The upper bound of the position
             - INCREMENT             Default: 1          The increment for each click / hold update
+
+            OR:
+
+            - POTENTIOMETER         <no default>        The potentiometer index to increment
     -->
     <Template Name="FBW_Continuous_Knob_Finite_From_Simvar">
         <DefaultTemplateParameters>
             <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
             <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
             <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+            <ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
             <INCREMENT>1</INCREMENT>
             <WHEEL_INCREMENT>4</WHEEL_INCREMENT>
             <EXTRA_INTERACTION/>
@@ -27,6 +32,15 @@
             <ANIM_WRAP>True</ANIM_WRAP>
         </DefaultTemplateParameters>
 
+        <OverrideTemplateParameters>
+            <Condition Valid="POTENTIOMETER">
+                <True>
+                    <ANIM_SIMVAR>#ANIM_SIMVAR#:#POTENTIOMETER#</ANIM_SIMVAR>
+                    <SET_CODE>#POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)</SET_CODE>
+                </True>
+            </Condition>
+        </OverrideTemplateParameters>
+
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 *
@@ -35,21 +49,21 @@
 
         <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
             <CLOCKWISE_CODE>
-                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min (&gt;#ANIM_SIMVAR#)
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
             </CLOCKWISE_CODE>
             <ANTICLOCKWISE_CODE>
-                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# - #ANIM_SIMVAR_MIN# max (&gt;#ANIM_SIMVAR#)
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
             </ANTICLOCKWISE_CODE>
 
             <!-- Provide the wheel code if we have WHEEL_INCREMENT -->
             <Condition Valid="WHEEL_INCREMENT">
                 <True>
                     <WHEEL_CLOCKWISE_CODE>
-                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# min (&gt;#ANIM_SIMVAR#)
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
                     </WHEEL_CLOCKWISE_CODE>
 
                     <WHEEL_ANTICLOCKWISE_CODE>
-                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# - #ANIM_SIMVAR_MIN# max (&gt;#ANIM_SIMVAR#)
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
                     </WHEEL_ANTICLOCKWISE_CODE>
                 </True>
             </Condition>
@@ -283,6 +297,32 @@
         </UseTemplate>
     </Template>
 
+    <Template Name="FBW_Chrono_Push_Toggle">
+        <DefaultTemplateParameters>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <Condition Check="LEFT_SINGLE_CODE">
+                <True>
+                    <Condition Check="MOMENTARY">
+                        <True>
+                            <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                        </True>
+                        <False>
+                            <LEFT_SINGLE_CODE>
+                                #LEFT_SINGLE_CODE#
+
+                                (L:XMLVAR_Momentary_#NODE_ID#_Pressed) ! (&gt;L:XMLVAR_Momentary_#NODE_ID#_Pressed)
+                            </LEFT_SINGLE_CODE>
+                        </False>
+                    </Condition>
+                </True>
+            </Condition>
+        </UseTemplate>
+    </Template>
 
     <!--
     Template for rigging covered push buttons
@@ -305,8 +345,8 @@
         <UseTemplate Name="ASOBO_GT_Switch_Dummy">
             <NODE_ID>#LOCK_NODE_ID#</NODE_ID>
             <ANIM_NAME>#LOCK_NODE_ID#</ANIM_NAME>
-            <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1></WWISE_EVENT_1>
+            <WWISE_EVENT_2></WWISE_EVENT_2>
             <LEFT_SINGLE_CODE>(#TOGGLE_SIMVAR#_LOCK) ! (&gt;#TOGGLE_SIMVAR#_LOCK)</LEFT_SINGLE_CODE>
         </UseTemplate>
 
@@ -322,34 +362,48 @@
             - HOLD_SIMVAR                       <no default>    SimVar to contain the held state
             - SEQ1_CODE                         Not present     Sequence 1 emissive code. If not present, the SEQ1 emissive will also not respond to the ANN LT TEST
             - SEQ2_CODE                         Not present     Sequence 2 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
+            - SEQ3_CODE                         Not present     Sequence 3 emissive code. If not present, the SEQ3 emissive will also not respond to the ANN LT TEST
+            - SEQ4_CODE                         Not present     Sequence 4 emissive code. If not present, the SEQ4 emissive will also not respond to the ANN LT TEST
             - SEQ_POWERED                       1               Whether SEQ1 and SEQ2 are powered. When unpowered, the emissive won't emit light
                                                                 even when SEQ1_CODE or SEQ2_CODE is true.
             - SEQ1_POWERED                      1               Whether SEQ1 is powered. When unpowered, the emissive won't emit light
                                                                 even when SEQ1_CODE is true.
             - SEQ2_POWERED                      1               Whether SEQ2 is powered. When unpowered, the emissive won't emit light
                                                                 even when SEQ2_CODE is true.
+            - SEQ3_POWERED                      1               Whether SEQ3 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ3_CODE is true.
+            - SEQ4_POWERED                      1               Whether SEQ4 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ4_CODE is true.
             - SEQ1_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ1 emissive drives the visibility of the SEQ1 text
             - SEQ2_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ2 emissive drives the visibility of the SEQ2 text
+            - SEQ3_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ3 emissive drives the visibility of the SEQ3 text
+            - SEQ4_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ4 emissive drives the visibility of the SEQ4 text
             - INVERTED                          False           Whether or not the switch is OFF by default
             - LEFT_SINGLE_CODE                  Not present    Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed, and when it's released
     -->
     <Template Name="FBW_Push_Held">
         <DefaultTemplateParameters>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-            <WWISE_EVENT_1>yoke_push_button_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
             <CURSOR>Hand</CURSOR>
 
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ3_EMISSIVE_DRIVES_VISIBILITY>True</SEQ3_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ4_EMISSIVE_DRIVES_VISIBILITY>True</SEQ4_EMISSIVE_DRIVES_VISIBILITY>
             <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
 
             <SEQ1_NODE_ID>#NODE_ID#_SEQ1</SEQ1_NODE_ID>
             <SEQ2_NODE_ID>#NODE_ID#_SEQ2</SEQ2_NODE_ID>
+            <SEQ3_NODE_ID>#NODE_ID#_SEQ3</SEQ3_NODE_ID>
+            <SEQ4_NODE_ID>#NODE_ID#_SEQ4</SEQ4_NODE_ID>
 
             <SEQ_POWERED>1</SEQ_POWERED>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
+            <SEQ3_POWERED>1</SEQ3_POWERED>
+            <SEQ4_POWERED>1</SEQ4_POWERED>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -390,6 +444,38 @@
                         <EMISSIVE_CODE>#SEQ2_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
 
                         <Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
+                            <True>
+                                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                            </True>
+                        </Condition>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <Condition Check="SEQ3_CODE">
+            <True>
+                <Component ID="#SEQ3_NODE_ID#" Node="#SEQ3_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                        <EMISSIVE_CODE>#SEQ3_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ3_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
+
+                        <Condition Valid="SEQ3_EMISSIVE_DRIVES_VISIBILITY">
+                            <True>
+                                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                            </True>
+                        </Condition>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <Condition Check="SEQ4_CODE">
+            <True>
+                <Component ID="#SEQ4_NODE_ID#" Node="#SEQ4_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                        <EMISSIVE_CODE>#SEQ4_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ4_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
+
+                        <Condition Valid="SEQ4_EMISSIVE_DRIVES_VISIBILITY">
                             <True>
                                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                             </True>
@@ -469,27 +555,69 @@
             - NODE_ID               <no default>        The Node ID associated with this knob
             - LOCAL_SIMVAR          <no default>        The LVar that will be used for this knob
             - ANIM_VAR_TYPE         <I>                 Type of the variable used for the animation
-            - MAX_ROT_PERCENT       <100>               The maximum percent out of it's animation the knob can rotate
+            - ANIM_SIMVAR_MAX       <100>               The maximum percent out of it's animation the knob can rotate
             - CONVERSION_FORMULA    <optional>          The formula with which the rotation percentage will be transformed into the LOCAL_SIMVAR.
             - INCREMENT             Default: 1          The increment for each click / hold update
     -->
     <Template Name="FBW_Continuous_Knob_Limited_From_Simvar">
         <DefaultTemplateParameters>
-            <MAX_ROT_PERCENT>100</MAX_ROT_PERCENT>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <PART_ID>#NODE_ID#</PART_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
             <CONVERSION_FORMULA></CONVERSION_FORMULA>
-            <ANIM_VAR_TYPE>L</ANIM_VAR_TYPE>
         </DefaultTemplateParameters>
 
         <Update Frequency="40">
-            (#ANIM_VAR_TYPE#:XMLVAR_#NODE_ID#, percent) #MAX_ROT_PERCENT# min (&gt;#ANIM_VAR_TYPE#:XMLVAR_#NODE_ID#, percent)
-            (#ANIM_VAR_TYPE#:XMLVAR_#NODE_ID#, percent) #CONVERSION_FORMULA# (&gt;#LOCAL_SIMVAR#, #LOCAL_SIMVAR_UNITS#)
+            (L:XMLVAR_#NODE_ID#, percent) #ANIM_SIMVAR_MAX# min (&gt;L:XMLVAR_#NODE_ID#, percent)
+            (L:XMLVAR_#NODE_ID#, percent) #CONVERSION_FORMULA# (&gt;#LOCAL_SIMVAR#, #LOCAL_SIMVAR_UNITS#)
         </Update>
 
         <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
             <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
             <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
-            <ANIM_SIMVAR>#ANIM_VAR_TYPE#:XMLVAR_#NODE_ID#</ANIM_SIMVAR>
+            <ANIM_SIMVAR>L:XMLVAR_#NODE_ID#</ANIM_SIMVAR>
             <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+            <ANIM_CODE>#ANIM_CODE#</ANIM_CODE>
         </UseTemplate>
     </Template>
+
+
+    <!--
+    Template for rigging a stepless knob/potentiometer to be used for dimming of lights, emissives and screens.
+
+    Main Parameters:
+            - NODE_ID               <no default>                The Node ID associated with this potentiometer
+            - ANIM_SIMVAR           <A:LIGHT POTENTIOMETER>     The name of the simvar to use for this potentiometer
+            - ANIM_SIMVAR_UNITS     Default: "percent"          The simvar units
+            - ANIM_SIMVAR_MIN       Default: 0                  The lower bound of the position
+            - ANIM_SIMVAR_MAX       Default: 100                The upper bound of the position
+            - INCREMENT             Default: 1                  The increment for each click / hold update
+            - WHEEL_INCREMENT       Default: 5                  The increment for mouse wheel interactions
+            - POTENTIOMETER         <no default>                The light potentiometer index to increment
+            - ANNOTATE_TOOLTIP      Default: True               Turn on tooltip potentiometer % value (#ANIMTIP# (73%))
+    -->
+    <Template Name="FBW_Stepless_Potentiometer">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <PART_ID>#NODE_ID#</PART_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+            <ANIM_SIMVAR>A:LIGHT POTENTIOMETER</ANIM_SIMVAR>
+            <WHEEL_INCREMENT>5</WHEEL_INCREMENT>
+            <ANNOTATE_TOOLTIP>True</ANNOTATE_TOOLTIP>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
+                <Condition Valid="ANNOTATE_TOOLTIP">
+                    <True>
+                        <ANIMTIP_0>#ANIMTIP_0# (%((#ANIM_SIMVAR#:#POTENTIOMETER#, #ANIM_SIMVAR_UNITS#))%!d!%%)</ANIMTIP_0>
+                        <ANIMTIP_1>#ANIMTIP_1# (%((#ANIM_SIMVAR#:#POTENTIOMETER#, #ANIM_SIMVAR_UNITS#))%!d!%%)</ANIMTIP_1>
+                    </True>
+                </Condition>
+            </UseTemplate>
+        </Component>
+    </Template>
+
 </ModelBehaviors>

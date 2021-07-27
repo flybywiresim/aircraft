@@ -196,7 +196,6 @@ class CDUFlightPlanPage {
                 let apprElev = "-----";
                 let apprColor = "white";
                 if (approachRunway) {
-                    apprElev = (approachRunway.elevation * 3.280).toFixed(0).toString();
                     apprColor = color;
                 }
                 apprElev = apprElev.padStart(6,"\xa0");

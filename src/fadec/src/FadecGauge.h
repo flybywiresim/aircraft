@@ -17,9 +17,8 @@
 #include <MSFS\MSFS.h>
 #include <MSFS\MSFS_Render.h>
 #include <SimConnect.h>
-#include <math.h>
-#include <chrono>    // For PerfProf
-#include <iostream>  // For PerfProf
+//#include <chrono>    // For PerfProf
+#include <iostream>
 #include <string>
 
 #include "EngineControl.h"
@@ -45,9 +44,17 @@ class FadecGauge {
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK CENTER QUANTITY", "Gallons");
 
+      // SimConnect Oil Temperature Definitions
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilControls, "GENERAL ENG OIL TEMPERATURE:1", "Celsius");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilControls, "GENERAL ENG OIL TEMPERATURE:2", "Celsius");
+
+      // SimConnect Oil Definitions
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilPsiLeft, "GENERAL ENG OIL PRESSURE:1", "Psi");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilPsiRight, "GENERAL ENG OIL PRESSURE:2", "Psi");
+
       // SimConnect Engine Start Definitions
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::EngineStartControls, "TURB ENG CORRECTED N2:1", "Percent");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::EngineStartControls, "TURB ENG CORRECTED N2:2", "Percent");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::StartCN2Left, "TURB ENG CORRECTED N2:1", "Percent");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::StartCN2Right, "TURB ENG CORRECTED N2:2", "Percent");
 
       std::cout << "FADEC: SimConnect registrations complete." << std::endl;
       return true;

@@ -270,6 +270,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustStatus = make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
   idAutothrustMode = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
   idAutothrustModeMessage = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE_MESSAGE");
+  idAutothrustThrustLeverWarningFlex = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX");
+  idAutothrustThrustLeverWarningToga = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA");
   idAutothrustDisconnect = make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISCONNECT");
 
   idAirConditioningPack_1 = make_unique<LocalVariable>("A32NX_AIRCOND_PACK1_TOGGLE");
@@ -286,9 +288,20 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustN1_c_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
   idAutothrustN1_c_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
 
+  engineEngine1N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:1");
+  engineEngine2N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:2");
+  engineEngine1N1 = make_unique<LocalVariable>("A32NX_ENGINE_N1:1");
+  engineEngine2N1 = make_unique<LocalVariable>("A32NX_ENGINE_N1:2");
   engineEngineIdleN1 = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N1");
+  engineEngineIdleN2 = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N2");
+  engineEngineIdleFF = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_FF");
+  engineEngineIdleEGT = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_EGT");
   engineEngine1EGT = make_unique<LocalVariable>("A32NX_ENGINE_EGT:1");
   engineEngine2EGT = make_unique<LocalVariable>("A32NX_ENGINE_EGT:2");
+  engineEngine1Oil = make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:1");
+  engineEngine2Oil = make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:2");
+  engineEngine1TotalOil = make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:1");
+  engineEngine2TotalOil = make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:2");
   engineEngine1FF = make_unique<LocalVariable>("A32NX_ENGINE_FF:1");
   engineEngine2FF = make_unique<LocalVariable>("A32NX_ENGINE_FF:2");
   engineEngine1PreFF = make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:1");
@@ -302,6 +315,10 @@ void FlyByWireInterface::setupLocalVariables() {
   engineFuelAuxRightPre = make_unique<LocalVariable>("A32NX_FUEL_AUX_RIGHT_PRE");
   engineFuelCenterPre = make_unique<LocalVariable>("A32NX_FUEL_CENTER_PRE");
   engineEngineCycleTime = make_unique<LocalVariable>("A32NX_ENGINE_CYCLE_TIME");
+  engineEngine1State = make_unique<LocalVariable>("A32NX_ENGINE_STATE:1");
+  engineEngine2State = make_unique<LocalVariable>("A32NX_ENGINE_STATE:2");
+  engineEngine1Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:1");
+  engineEngine2Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:2");
 
   idFlapsHandleIndex = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
   idFlapsHandlePercent = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
@@ -417,8 +434,20 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   engineData.fuelTankQuantityCenter = simData.fuelTankQuantityCenter;
   engineData.fuelTankQuantityTotal = simData.fuelTankQuantityTotal;
   engineData.fuelWeightPerGallon = simData.fuelWeightPerGallon;
+  engineData.engineEngine1N2 = engineEngine1N2->get();
+  engineData.engineEngine2N2 = engineEngine2N2->get();
+  engineData.engineEngine1N1 = engineEngine1N1->get();
+  engineData.engineEngine2N1 = engineEngine2N1->get();
+  engineData.engineEngineIdleN1 = engineEngineIdleN1->get();
+  engineData.engineEngineIdleN2 = engineEngineIdleN2->get();
+  engineData.engineEngineIdleFF = engineEngineIdleFF->get();
+  engineData.engineEngineIdleEGT = engineEngineIdleEGT->get();
   engineData.engineEngine1EGT = engineEngine1EGT->get();
   engineData.engineEngine2EGT = engineEngine2EGT->get();
+  engineData.engineEngine1Oil = engineEngine1Oil->get();
+  engineData.engineEngine2Oil = engineEngine2Oil->get();
+  engineData.engineEngine1TotalOil = engineEngine1TotalOil->get();
+  engineData.engineEngine2TotalOil = engineEngine2TotalOil->get();
   engineData.engineEngine1FF = engineEngine1FF->get();
   engineData.engineEngine2FF = engineEngine2FF->get();
   engineData.engineEngine1PreFF = engineEngine1PreFF->get();
@@ -432,6 +461,10 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   engineData.engineFuelAuxRightPre = engineFuelAuxRightPre->get();
   engineData.engineFuelCenterPre = engineFuelCenterPre->get();
   engineData.engineEngineCycleTime = engineEngineCycleTime->get();
+  engineData.engineEngine1State = engineEngine1State->get();
+  engineData.engineEngine2State = engineEngine2State->get();
+  engineData.engineEngine1Timer = engineEngine1Timer->get();
+  engineData.engineEngine2Timer = engineEngine2Timer->get();
 
   return true;
 }
@@ -834,6 +867,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.mode_reversion_lateral,
           autopilotStateMachineOutput.mode_reversion_vertical,
           autopilotStateMachineOutput.mode_reversion_TRK_FPA,
+          autopilotStateMachineOutput.mode_reversion_triple_click,
+          autopilotStateMachineOutput.mode_reversion_fma,
           autopilotStateMachineOutput.speed_protection_mode,
           autopilotStateMachineOutput.autothrust_mode,
           autopilotStateMachineOutput.Psi_c_deg,
@@ -1223,6 +1258,16 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   idAutothrustStatus->set(autoThrustOutput.status);
   idAutothrustMode->set(autoThrustOutput.mode);
   idAutothrustModeMessage->set(autoThrustOutput.mode_message);
+
+  // update warnings
+  auto fwcFlightPhase = idFwcFlightPhase->get();
+  if (fwcFlightPhase == 2 || fwcFlightPhase == 3 || fwcFlightPhase == 4 || fwcFlightPhase == 8 || fwcFlightPhase == 9) {
+    idAutothrustThrustLeverWarningFlex->set(autoThrustOutput.thrust_lever_warning_flex);
+    idAutothrustThrustLeverWarningToga->set(autoThrustOutput.thrust_lever_warning_toga);
+  } else {
+    idAutothrustThrustLeverWarningFlex->set(0);
+    idAutothrustThrustLeverWarningToga->set(0);
+  }
 
   // reset button state
   simConnectInterface.resetSimInputThrottles();
