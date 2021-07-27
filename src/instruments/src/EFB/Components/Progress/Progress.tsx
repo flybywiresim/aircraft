@@ -116,8 +116,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             const barEnd = parseFloat((completedBarEnd !== 0 ? (completedBarEnd / 50 - 1) : 0.00).toFixed(2));
             const roundedCompletion = parseFloat(completionValue.toPrecision(2));
 
-            if (vertical && greenBarsWhenInRange) {
-                if (roundedCompletion <= barEnd && roundedCompletion >= barBegin) {
+            if (vertical) {
+                if (roundedCompletion <= barEnd && roundedCompletion >= barBegin && greenBarsWhenInRange) {
                     return 'absolute z-10 -mt-2.5 h-1.5 bg-green-500'; // horizontal progress bar with green bg
                 }
                 return 'absolute z-10 -mt-2.5 h-1.5 bg-gray-400'; // horizontal progress bar
