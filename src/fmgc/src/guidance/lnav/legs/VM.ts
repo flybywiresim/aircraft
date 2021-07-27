@@ -27,6 +27,16 @@ export class VMLeg implements Leg {
         return undefined;
     }
 
+    // No terminator location since manual legs are infinite
+    get terminatorLocation(): undefined {
+        return undefined;
+    }
+
+    // Can't get pseudo-waypoint location without a finite terminator
+    getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): undefined {
+        return undefined;
+    }
+
     getGuidanceParameters(_ppos: LatLongData, _trueTrack: Track): GuidanceParameters | null {
         return {
             law: ControlLaw.HEADING,
