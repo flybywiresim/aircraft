@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { getSmallestAngle } from '@instruments/common/utils';
+import { Layer, getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
@@ -12,13 +12,14 @@ import { EfisSide, EfisOption, Mode } from '../index';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface ArcModeProps {
+    adirsState: boolean,
     rangeSetting: number,
     side: EfisSide,
     ppos: LatLongData,
     efisOption: EfisOption,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos, efisOption }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ adirsState, rangeSetting, side, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -41,37 +42,45 @@ export const ArcMode: React.FC<ArcModeProps> = ({ rangeSetting, side, ppos, efis
         mapParams.compute(ppos, rangeSetting, 492, trueHeading);
     }, [ppos.lat, ppos.long, magHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
+    if (adirsState) {
+        return (
+            <>
+                <FlightPlan
+                    x={384}
+                    y={620}
+                    flightPlanManager={flightPlanManager}
+                    mapParams={mapParams}
+                    clipPath="url(#arc-mode-map-clip)"
+                    constraints={efisOption === EfisOption.Constraints}
+                    debug={false}
+                />
+                <Overlay
+                    heading={Number(MathUtils.fastToFixed(magHeading, 1))}
+                    track={Number(MathUtils.fastToFixed(magTrack, 1))}
+                    rangeSetting={rangeSetting}
+                    side={side}
+                    tcasMode={tcasMode}
+                    selectedHeading={selectedHeading}
+                    ilsCourse={ilsCourse}
+                    lsDisplayed={lsDisplayed}
+                />
+                <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
+                <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
+            </>
+        );
+    }
     return (
         <>
-            <FlightPlan
-                x={384}
-                y={620}
-                flightPlanManager={flightPlanManager}
-                mapParams={mapParams}
-                clipPath="url(#arc-mode-map-clip)"
-                constraints={efisOption === EfisOption.Constraints}
-                debug={false}
-            />
-
-            <Overlay
-                heading={Number(MathUtils.fastToFixed(magHeading, 1))}
-                track={Number(MathUtils.fastToFixed(magTrack, 1))}
+            <MapFailOverlay
                 rangeSetting={rangeSetting}
-                side={side}
-                tcasMode={tcasMode}
-                selectedHeading={selectedHeading}
-                ilsCourse={ilsCourse}
-                lsDisplayed={lsDisplayed}
             />
-
-            <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
-
-            <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
+            <text x={681} y={28} fontSize={25} className="White" textAnchor="end">PPOS</text>
         </>
     );
 };
 
 interface OverlayProps {
+    adirsState: boolean,
     heading: number,
     track: number,
     rangeSetting: number,
@@ -461,8 +470,83 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, si
 
         <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
         <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
-
         <Plane />
+    </>
+));
+
+const MapFailOverlay: React.FC<OverlayProps> = memo(({ rangeSetting }) => (
+    <>
+
+        <>
+            <text className="Red" fontSize={30} textAnchor="middle" x={384} y={241}>HDG</text>
+            <text className="Red" fontSize={30} textAnchor="middle" x={384} y={320.6}>MAP NOT AVAIL</text>
+        </>
+        <clipPath id="arc-mode-map-clip">
+            <path d="M-384,-308 a492,492 0 0 1 768,0 L384,-58 L264,-58 L207,5 L207,148 L-210,148 L-210,63 L-262,5 L-384,5 L-384,-308" />
+        </clipPath>
+        <clipPath id="arc-mode-overlay-clip-4">
+            <path d="m 6 0 h 756 v 768 h -756 z" />
+        </clipPath>
+        <clipPath id="arc-mode-overlay-clip-3">
+            <path d="m 0 564 l 384 145 l 384 -145 v -564 h -768 z" />
+        </clipPath>
+        <clipPath id="arc-mode-overlay-clip-2">
+            <path d="m 0 532 l 384 155 l 384 -146 v -512 h -768 z" />
+        </clipPath>
+        <clipPath id="arc-mode-overlay-clip-1">
+            <path d="m 0 519 l 384 145 l 384 -86 v -580 h -768 z" />
+        </clipPath>
+        {/* C = 384,620 */}
+        <g stroke="white" strokeWidth={3} fill="none">
+            <g clipPath="url(#arc-mode-overlay-clip-4)">
+                <g>
+                    {/* R = 492 */}
+                    <path
+                        d="M-108,620a492,492 0 1,0 984,0a492,492 0 1,0 -984,0"
+                        strokeWidth={3.25}
+                        stroke="red"
+                    />
+
+                </g>
+            </g>
+
+            {/* R = 369 */}
+            <path
+                d="M15,620a369,369 0 1,0 738,0a369,369 0 1,0 -738,0"
+                strokeDasharray="15 10.5"
+                strokeDashoffset="15"
+                clipPath="url(#arc-mode-overlay-clip-3)"
+                stroke="red"
+            />
+            <text x={58} y={482} fill="#00ffff" stroke="none" fontSize={22}>{(rangeSetting / 4) * 3}</text>
+            <text x={709} y={482} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{(rangeSetting / 4) * 3}</text>
+
+            {/* R = 246 */}
+            <path
+                d="M138,620a246,246 0 1,0 492,0a246,246 0 1,0 -492,00"
+                strokeDasharray="15 10"
+                strokeDashoffset="-6"
+                clipPath="url(#arc-mode-overlay-clip-2)"
+                stroke="red"
+            />
+            <text x={168} y={528} fill="#00ffff" stroke="none" fontSize={22}>{rangeSetting / 2}</text>
+            <text x={592} y={528} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{rangeSetting / 2}</text>
+
+            {/* R = 123 */}
+            <path
+                d="M261,620a123,123 0 1,0 246,0a123,123 0 1,0 -246,00"
+                strokeDasharray="15 10"
+                strokeDashoffset="-4.2"
+                clipPath="url(#arc-mode-overlay-clip-1)"
+                stroke="red"
+            />
+        </g>
+        <>
+            <clipPath id="mask">
+                <rect x={372} y={615} width={24} height={20} />
+            </clipPath>
+            <circle cx={384} cy={634} r={10} fill="none" stroke="red" strokeWidth={3.25} clipPath="url(#mask)" />
+        </>
     </>
 ));
 
