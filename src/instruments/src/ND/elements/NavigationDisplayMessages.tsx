@@ -2,11 +2,12 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import { Mode, RangeSetting } from '../index';
 
 export interface NavigationDisplayMessagesProps {
+    adirsState: boolean,
     rangeSetting: RangeSetting,
     mode: Mode,
 }
 
-export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ rangeSetting, mode }) => {
+export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ adirsState, rangeSetting, mode }) => {
     const [modeChangeShown, setModeChangeShown] = useState(false);
     const [rangeChangeShown, setRangeChangeShown] = useState(false);
 
@@ -49,14 +50,14 @@ export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ 
     }, [rangeSetting]);
 
     // Do not show general messages in ROSE VOR/ILS or ANF (latter is not in neo)
-    const modeValidForGeneralMessages = mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS;
+    const modeValidForGeneralMessages = (mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS) && (adirsState || mode === Mode.PLAN);
 
     return (
         <>
             <text
                 x={384}
                 y={320}
-                className="Green MiddleAlign"
+                className="Green"
                 textAnchor="middle"
                 fontSize={31}
                 visibility={(modeChangeShown && modeValidForGeneralMessages) ? 'visible' : 'hidden'}
@@ -66,7 +67,7 @@ export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ 
             <text
                 x={384}
                 y={320}
-                className="Green MiddleAlign"
+                className="Green"
                 textAnchor="middle"
                 fontSize={31}
                 visibility={(rangeChangeShown && modeValidForGeneralMessages) ? 'visible' : 'hidden'}
