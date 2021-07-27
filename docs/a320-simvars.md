@@ -126,6 +126,11 @@
 - A32NX_OVHD_HYD_PTU_PB_HAS_FAULT
     - Bool
     - True if PTU fault
+    
+- A32NX_GAME_PAUSED
+    - Bool
+    - True if game is paused using esc
+    - Used by chrono to determine whether to pause 
 
 - A32NX_OVHD_HYD_PTU_PB_IS_AUTO
     - Bool
