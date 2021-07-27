@@ -9,7 +9,7 @@ export const Chrono = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 250);
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 200);
-    const [isPaused] = useSimVar('L:A32NX_GAME_PAUSED', 'bool', 250)
+    const [isPaused] = useSimVar('L:A32NX_GAME_PAUSED', 'bool', 1000)
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState<null | number>(null);
