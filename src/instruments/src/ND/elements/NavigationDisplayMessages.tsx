@@ -2,12 +2,12 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import { Mode, RangeSetting } from '../index';
 
 export interface NavigationDisplayMessagesProps {
-    adirsState: boolean,
+    adirsAlign: boolean,
     rangeSetting: RangeSetting,
     mode: Mode,
 }
 
-export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ adirsState, rangeSetting, mode }) => {
+export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ adirsAlign, rangeSetting, mode }) => {
     const [modeChangeShown, setModeChangeShown] = useState(false);
     const [rangeChangeShown, setRangeChangeShown] = useState(false);
 
@@ -50,7 +50,7 @@ export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ 
     }, [rangeSetting]);
 
     // Do not show general messages in ROSE VOR/ILS or ANF (latter is not in neo)
-    const modeValidForGeneralMessages = (mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS) && (adirsState || mode === Mode.PLAN);
+    const modeValidForGeneralMessages = (mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS) && (adirsAlign || mode === Mode.PLAN);
 
     return (
         <>
