@@ -12,14 +12,14 @@ import { EfisSide, EfisOption, Mode } from '../index';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface ArcModeProps {
-    adirsState: boolean,
+    adirsAlign: boolean,
     rangeSetting: number,
     side: EfisSide,
     ppos: LatLongData,
     efisOption: EfisOption,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ adirsState, rangeSetting, side, ppos, efisOption }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -42,7 +42,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsState, rangeSetting, side
         mapParams.compute(ppos, rangeSetting, 492, trueHeading);
     }, [ppos.lat, ppos.long, magHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
-    if (adirsState) {
+    if (adirsAlign) {
         return (
             <>
                 <FlightPlan
@@ -80,7 +80,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsState, rangeSetting, side
 };
 
 interface OverlayProps {
-    adirsState: boolean,
+    adirsAlign: boolean,
     heading: number,
     track: number,
     rangeSetting: number,

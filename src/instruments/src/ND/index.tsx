@@ -3,6 +3,7 @@ import { DisplayUnit } from '@instruments/common/displayUnit';
 import { FlightPlanProvider } from '@instruments/common/flightplan';
 import { useSimVar } from '@instruments/common/simVars';
 import { Knots } from '@typings/types';
+import { ADIRS } from '@instruments/common/adirs';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
 import { WindIndicator } from './elements/WindIndicator';
@@ -48,18 +49,16 @@ const NavigationDisplay: React.FC = () => {
     const side = displayIndex === 1 ? 'L' : 'R';
 
     const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
-
-    const [lat] = useSimVar('PLANE LATITUDE', 'degree latitude');
-    const [long] = useSimVar('PLANE LONGITUDE', 'degree longitude');
+    const adirsAlign = !ADIRS.mapNotAvailable(displayIndex);
+    const airDataReferenceSource = ADIRS.getNdAirDataReferenceSource(displayIndex);
+    const inertialReferenceSource = ADIRS.getNdInertialReferenceSource(displayIndex);
+    const lat = ADIRS.getLatitude();
+    const long = ADIRS.getLongitude();
 
     const ppos = { lat, long };
 
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [modeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
-
-    const [tas] = useSimVar('AIRSPEED TRUE', 'knots', 500);
-    // TODO FIXME Proper ADIRS
-    const adirsState = true;
 
     return (
         <DisplayUnit
@@ -68,18 +67,18 @@ const NavigationDisplay: React.FC = () => {
         >
             <FlightPlanProvider>
                 <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
-                    <SpeedIndicator adirsState={2} tas={tas} />
-                    <WindIndicator adirsState={2} tas={tas} />
+                    <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
+                    <WindIndicator irs={inertialReferenceSource} />
 
                     {modeIndex === Mode.PLAN && <PlanMode rangeSetting={rangeSettings[rangeIndex]} ppos={ppos} efisOption={efisOption} />}
-                    {modeIndex === Mode.ARC && <ArcMode adirsState={adirsState} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} efisOption={efisOption} />}
+                    {modeIndex === Mode.ARC && <ArcMode adirsAlign={adirsAlign} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} efisOption={efisOption} />}
                     {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV)
-                    && <RoseMode adirsState={adirsState} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} efisOption={efisOption} />}
+                    && <RoseMode adirsAlign={adirsAlign} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} efisOption={efisOption} />}
 
                     <Chrono side={side} />
 
-                    <NavigationDisplayMessages adirsState={adirsState} rangeSetting={rangeSettings[rangeIndex]} mode={modeIndex} />
-                    {(adirsState) && (
+                    <NavigationDisplayMessages adirsAlign={adirsAlign} rangeSetting={rangeSettings[rangeIndex]} mode={modeIndex} />
+                    {(adirsAlign) && (
                         <>
                             <RadioNavInfo index={1} side={side} />
                             <RadioNavInfo index={2} side={side} />
@@ -92,8 +91,8 @@ const NavigationDisplay: React.FC = () => {
 };
 
 export type AdirsTasDrivenIndicatorProps = {
-    adirsState: number,
-    tas: Knots,
+    adrs: number,
+    irs: number
 }
 
 render(<NavigationDisplay />);
