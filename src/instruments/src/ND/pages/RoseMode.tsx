@@ -13,6 +13,7 @@ import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface RoseModeProps {
+    adirsState: boolean,
     rangeSetting: number,
     mode: Mode.ROSE_ILS | Mode.ROSE_VOR | Mode.ROSE_NAV,
     side: EfisSide,
@@ -20,7 +21,7 @@ export interface RoseModeProps {
     efisOption: EfisOption,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos, efisOption }) => {
+export const RoseMode: FC<RoseModeProps> = ({ adirsState, rangeSetting, mode, side, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -43,39 +44,49 @@ export const RoseMode: FC<RoseModeProps> = ({ rangeSetting, mode, side, ppos, ef
         mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading);
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
+    if (adirsState) {
+        return (
+            <>
+                { mode === Mode.ROSE_NAV && (
+                    <FlightPlan
+                        x={384}
+                        y={384}
+                        flightPlanManager={flightPlanManager}
+                        mapParams={mapParams}
+                        clipPath="url(#rose-mode-map-clip)"
+                        constraints={efisOption === EfisOption.Constraints}
+                        debug={false}
+                    />
+                )}
+                <Overlay
+                    adirsState={adirsState}
+                    heading={Number(MathUtils.fastToFixed(magHeading, 1))}
+                    track={Number(MathUtils.fastToFixed(magTrack, 1))}
+                    rangeSetting={rangeSetting}
+                    side={side}
+                    tcasMode={tcasMode}
+                    displayMode={mode}
+                    selectedHeading={selectedHeading}
+                    ilsCourse={ilsCourse}
+                    lsDisplayed={lsDisplayed}
+                />
+
+                { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={magHeading} side={side} /> }
+
+                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} side={side} /> }
+
+                { mode === Mode.ROSE_NAV && <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} /> }
+                { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
+                { mode === Mode.ROSE_ILS && <IlsInfo /> }
+
+                <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
+            </>
+        );
+    }
     return (
         <>
-            { mode === Mode.ROSE_NAV && (<FlightPlan
-                x={384}
-                y={384}
-                flightPlanManager={flightPlanManager}
-                mapParams={mapParams}
-                clipPath="url(#rose-mode-map-clip)"
-                constraints={efisOption === EfisOption.Constraints}
-                debug={false}
-            />)}
-
-            <Overlay
-                heading={Number(MathUtils.fastToFixed(magHeading, 1))}
-                track={Number(MathUtils.fastToFixed(magTrack, 1))}
-                rangeSetting={rangeSetting}
-                side={side}
-                tcasMode={tcasMode}
-                displayMode={mode}
-                selectedHeading={selectedHeading}
-                ilsCourse={ilsCourse}
-                lsDisplayed={lsDisplayed}
-            />
-
-            { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={magHeading} side={side} /> }
-
-            { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} side={side} /> }
-
-            { mode === Mode.ROSE_NAV && <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} /> }
-            { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
-            { mode === Mode.ROSE_ILS && <IlsInfo /> }
-
-            <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
+            <MapFailOverlay rangeSetting={rangeSetting} />
+            <text x={681} y={28} fontSize={25} className="White" textAnchor="end">PPOS</text>
         </>
     );
 };
@@ -406,7 +417,6 @@ const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMod
                     </g>
                 </g>
             </g>
-
             {/* R = 125, middle range ring */}
             { (tcasMode === 0 || rangeSetting > 10)
                     && (
@@ -478,6 +488,33 @@ const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMod
         { displayMode === Mode.ROSE_ILS && <GlideSlope /> }
 
         <Plane />
+    </>
+);
+
+const MapFailOverlay: FC<OverlayProps> = ({ rangeSetting }) => (
+    <>
+        <text className="Red" fontSize={30} textAnchor="middle" x={384} y={241}>HDG</text>
+        <text className="Red" fontSize={30} textAnchor="middle" x={384} y={320.6}>MAP NOT AVAIL</text>
+        <clipPath id="rose-mode-map-clip">
+            <path d="M-339,-229 L-102,-229 a250,250 0 0 1 204,0 L339,-229 L339,178 L264,178 L207,241 L207,384 L-210,384 L-210,299 L-262,241 L-339,241 L-339,-229" />
+        </clipPath>
+
+        {/* C = 384,384 */}
+        <g stroke="white" strokeWidth={3} fill="none">
+            <g clipPath="url(#arc-mode-overlay-clip-4)">
+                <g>
+                    {/* R = 250 */}
+                    <circle cx={384} cy={384} r={250} stroke="red" />
+                </g>
+            </g>
+            {/* R = 125, middle range ring */}
+            <path
+                d="M 509 384 A 125 125 0 0 1 259 384 M 259 384 A 125 125 180 0 1 509 384"
+                stroke="red"
+            />
+        </g>
+        <text x={212} y={556} className="Cyan" fontSize={22}>{rangeSetting / 2}</text>
+        <text x={310} y={474} className="Cyan" fontSize={22}>{rangeSetting / 4}</text>
     </>
 );
 
