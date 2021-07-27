@@ -1,8 +1,13 @@
 use rand::Rng;
 use std::{cell::Ref, collections::HashMap, time::Duration};
 use uom::si::{
-    acceleration::foot_per_second_squared, f64::*, length::foot, ratio::ratio,
-    thermodynamic_temperature::degree_celsius, velocity::knot,
+    acceleration::foot_per_second_squared,
+    f64::*,
+    length::foot,
+    pressure::inch_of_mercury,
+    ratio::ratio,
+    thermodynamic_temperature::degree_celsius,
+    velocity::{foot_per_minute, knot},
 };
 
 use crate::electrical::{Electricity, Potential};
@@ -74,6 +79,14 @@ pub trait TestBed {
         self.test_bed_mut().set_on_ground(on_ground);
     }
 
+    fn set_ambient_pressure(&mut self, ambient_pressure: Pressure) {
+        self.test_bed_mut().set_ambient_pressure(ambient_pressure);
+    }
+
+    fn set_vertical_speed(&mut self, vertical_speed: Velocity) {
+        self.test_bed_mut().set_vertical_speed(vertical_speed);
+    }
+
     fn contains_key(&self, name: &str) -> bool {
         self.test_bed().contains_key(name)
     }
@@ -108,6 +121,8 @@ impl<T: Aircraft> SimulationTestBed<T> {
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
         test_bed.set_indicated_altitude(Length::new::<foot>(5000.));
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
+        test_bed.set_ambient_pressure(Pressure::new::<inch_of_mercury>(29.92));
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
         test_bed.set_on_ground(false);
         test_bed.seed();
 
@@ -218,6 +233,20 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.write(LandingGear::GEAR_CENTER_COMPRESSION, gear_compression);
         self.write(LandingGear::GEAR_LEFT_COMPRESSION, gear_compression);
         self.write(LandingGear::GEAR_RIGHT_COMPRESSION, gear_compression);
+    }
+
+    fn set_ambient_pressure(&mut self, ambient_pressure: Pressure) {
+        self.write(
+            UpdateContext::AMBIENT_PRESSURE_KEY,
+            ambient_pressure.get::<inch_of_mercury>(),
+        );
+    }
+
+    fn set_vertical_speed(&mut self, vertical_speed: Velocity) {
+        self.write(
+            UpdateContext::VERTICAL_SPEED_KEY,
+            vertical_speed.get::<foot_per_minute>(),
+        );
     }
 
     pub fn set_long_acceleration(&mut self, accel: Acceleration) {

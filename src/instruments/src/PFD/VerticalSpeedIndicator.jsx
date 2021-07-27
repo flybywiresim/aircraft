@@ -1,7 +1,5 @@
-import { getSimVar } from '../util.js';
-
-export const VerticalSpeedIndicator = ({ radioAlt }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }) => {
+    if (Number.isNaN(verticalSpeed)) {
         return (
             <>
                 <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
@@ -13,9 +11,6 @@ export const VerticalSpeedIndicator = ({ radioAlt }) => {
             </>
         );
     }
-
-    // This represents inertial vertical speed
-    const verticalSpeed = getSimVar('VELOCITY WORLD Y', 'feet per minute');
 
     let isAmber = false;
     if ((Math.abs(verticalSpeed) > 6000 || (radioAlt < 2500 && radioAlt > 1000 && verticalSpeed < -2000) || (radioAlt < 1000 && verticalSpeed < -1200))) {
