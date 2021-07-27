@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common.h"
+
 /// A collection of multi-variate regression polynomials for engine parameters
 class Polynomial {
  public:
@@ -16,11 +18,11 @@ class Polynomial {
                           -2.15034888e-06, 1.08288379e-07,  -2.48504632e-09, 2.52307089e-11,  -2.06869243e-14, 8.99045761e-16,
                           -9.94853959e-17, 1.85366499e-18,  -1.44869928e-20, 4.31033031e-23};
 
-    n2_out = n2_coef[0] + (n2_coef[1] * norm_n2) + (n2_coef[2] * pow(norm_n2, 2)) + (n2_coef[3] * pow(norm_n2, 3)) +
-             (n2_coef[4] * pow(norm_n2, 4)) + (n2_coef[5] * pow(norm_n2, 5)) + (n2_coef[6] * pow(norm_n2, 6)) +
-             (n2_coef[7] * pow(norm_n2, 7)) + (n2_coef[8] * pow(norm_n2, 8)) + (n2_coef[9] * pow(norm_n2, 9)) +
-             (n2_coef[10] * pow(norm_n2, 10)) + (n2_coef[11] * pow(norm_n2, 11)) + (n2_coef[12] * pow(norm_n2, 12)) +
-             (n2_coef[13] * pow(norm_n2, 13)) + (n2_coef[14] * pow(norm_n2, 14)) + (n2_coef[15] * pow(norm_n2, 15));
+    n2_out = n2_coef[0] + (n2_coef[1] * norm_n2) + (n2_coef[2] * powFBW(norm_n2, 2)) + (n2_coef[3] * powFBW(norm_n2, 3)) +
+             (n2_coef[4] * powFBW(norm_n2, 4)) + (n2_coef[5] * powFBW(norm_n2, 5)) + (n2_coef[6] * powFBW(norm_n2, 6)) +
+             (n2_coef[7] * powFBW(norm_n2, 7)) + (n2_coef[8] * powFBW(norm_n2, 8)) + (n2_coef[9] * powFBW(norm_n2, 9)) +
+             (n2_coef[10] * powFBW(norm_n2, 10)) + (n2_coef[11] * powFBW(norm_n2, 11)) + (n2_coef[12] * powFBW(norm_n2, 12)) +
+             (n2_coef[13] * powFBW(norm_n2, 13)) + (n2_coef[14] * powFBW(norm_n2, 14)) + (n2_coef[15] * powFBW(norm_n2, 15));
 
     n2_out = n2_out * n2;
 
@@ -45,9 +47,9 @@ class Polynomial {
       double n1_coef[9] = {-2.2812155821763376e-12, -59.830374492124584, 706.2909384361325,  -3458.036096870525, 9142.892323008544,
                            -14097.740017074308,     12704.109614026833,  -6209.993469596153, 1273.3070825616032};
 
-      n1_norm = n1_coef[0] + (n1_coef[1] * norm_n2) + (n1_coef[2] * pow(norm_n2, 2)) + (n1_coef[3] * pow(norm_n2, 3)) +
-                (n1_coef[4] * pow(norm_n2, 4)) + (n1_coef[5] * pow(norm_n2, 5)) + (n1_coef[6] * pow(norm_n2, 6)) +
-                (n1_coef[7] * pow(norm_n2, 7)) + (n1_coef[8] * pow(norm_n2, 8));
+      n1_norm = n1_coef[0] + (n1_coef[1] * norm_n2) + (n1_coef[2] * powFBW(norm_n2, 2)) + (n1_coef[3] * powFBW(norm_n2, 3)) +
+                (n1_coef[4] * powFBW(norm_n2, 4)) + (n1_coef[5] * powFBW(norm_n2, 5)) + (n1_coef[6] * powFBW(norm_n2, 6)) +
+                (n1_coef[7] * powFBW(norm_n2, 7)) + (n1_coef[8] * powFBW(norm_n2, 8));
     }
 
     return n1_norm * idleN1;
@@ -64,9 +66,9 @@ class Polynomial {
       double ff_coef[9] = {3.1110281573954915e-12, 108.04331472261403, -1397.2628762726968, 7487.41310408937,  -21511.983301100157,
                            35957.75663785097,      -35093.99370177828, 18573.03302758947,   -4122.006205101296};
 
-      ff_norm = ff_coef[0] + (ff_coef[1] * norm_n2) + (ff_coef[2] * pow(norm_n2, 2)) + (ff_coef[3] * pow(norm_n2, 3)) +
-                (ff_coef[4] * pow(norm_n2, 4)) + (ff_coef[5] * pow(norm_n2, 5)) + (ff_coef[6] * pow(norm_n2, 6)) +
-                (ff_coef[7] * pow(norm_n2, 7)) + (ff_coef[8] * pow(norm_n2, 8));
+      ff_norm = ff_coef[0] + (ff_coef[1] * norm_n2) + (ff_coef[2] * powFBW(norm_n2, 2)) + (ff_coef[3] * powFBW(norm_n2, 3)) +
+                (ff_coef[4] * powFBW(norm_n2, 4)) + (ff_coef[5] * powFBW(norm_n2, 5)) + (ff_coef[6] * powFBW(norm_n2, 6)) +
+                (ff_coef[7] * powFBW(norm_n2, 7)) + (ff_coef[8] * powFBW(norm_n2, 8));
     }
 
     if (ff_norm < 0) {
@@ -89,9 +91,9 @@ class Polynomial {
       double egt_coef[9] = {-687.2516656387066, 7754.886445826888,   -37507.09758216612, 101470.16132481281, -167792.72627748575,
                             173571.57498305102, -109609.24313962896, 38591.95594405077,  -5791.260032821959};
 
-      egt_norm = egt_coef[0] + (egt_coef[1] * norm_n2) + (egt_coef[2] * pow(norm_n2, 2)) + (egt_coef[3] * pow(norm_n2, 3)) +
-                 (egt_coef[4] * pow(norm_n2, 4)) + (egt_coef[5] * pow(norm_n2, 5)) + (egt_coef[6] * pow(norm_n2, 6)) +
-                 (egt_coef[7] * pow(norm_n2, 7)) + (egt_coef[8] * pow(norm_n2, 8));
+      egt_norm = egt_coef[0] + (egt_coef[1] * norm_n2) + (egt_coef[2] * powFBW(norm_n2, 2)) + (egt_coef[3] * powFBW(norm_n2, 3)) +
+                 (egt_coef[4] * powFBW(norm_n2, 4)) + (egt_coef[5] * powFBW(norm_n2, 5)) + (egt_coef[6] * powFBW(norm_n2, 6)) +
+                 (egt_coef[7] * powFBW(norm_n2, 7)) + (egt_coef[8] * powFBW(norm_n2, 8));
     }
 
     egt_out = (egt_norm * (idleEGT - (ambientTemp))) + (ambientTemp);
@@ -110,9 +112,9 @@ class Polynomial {
                             -5.1229403e-07, 7.4657497e+01, -4.6016728e-03, 2.8637860e-08};
 
     cegt_out = cegt_coef[0] + cegt_coef[1] + (cegt_coef[2] * cn1) + (cegt_coef[3] * cff) + (cegt_coef[4] * mach) + (cegt_coef[5] * alt) +
-               (cegt_coef[6] * pow(cn1, 2)) + (cegt_coef[7] * cn1 * cff) + (cegt_coef[8] * cn1 * mach) + (cegt_coef[9] * cn1 * alt) +
-               (cegt_coef[10] * pow(cff, 2)) + (cegt_coef[11] * mach * cff) + (cegt_coef[12] * cff * alt) + (cegt_coef[13] * pow(mach, 2)) +
-               (cegt_coef[14] * mach * alt) + (cegt_coef[15] * pow(alt, 2));
+               (cegt_coef[6] * powFBW(cn1, 2)) + (cegt_coef[7] * cn1 * cff) + (cegt_coef[8] * cn1 * mach) + (cegt_coef[9] * cn1 * alt) +
+               (cegt_coef[10] * powFBW(cff, 2)) + (cegt_coef[11] * mach * cff) + (cegt_coef[12] * cff * alt) + (cegt_coef[13] * powFBW(mach, 2)) +
+               (cegt_coef[14] * mach * alt) + (cegt_coef[15] * powFBW(alt, 2));
 
     return cegt_out;
   }
@@ -126,12 +128,12 @@ class Polynomial {
 
     // CRZ fuel cflow
     cflow_out = cflow_coef[0] + cflow_coef[1] + (cflow_coef[2] * cn1) + (cflow_coef[3] * mach) + (cflow_coef[4] * alt) +
-                (cflow_coef[5] * pow(cn1, 2)) + (cflow_coef[6] * cn1 * mach) + (cflow_coef[7] * cn1 * alt) +
-                (cflow_coef[8] * pow(mach, 2)) + (cflow_coef[9] * mach * alt) + (cflow_coef[10] * pow(alt, 2)) +
-                (cflow_coef[11] * pow(cn1, 3)) + (cflow_coef[12] * pow(cn1, 2) * mach) + (cflow_coef[13] * pow(cn1, 2) * alt) +
-                (cflow_coef[14] * cn1 * pow(mach, 2)) + (cflow_coef[15] * cn1 * mach * alt) + (cflow_coef[16] * cn1 * pow(alt, 2)) +
-                (cflow_coef[17] * pow(mach, 3)) + (cflow_coef[18] * pow(mach, 2) * alt) + (cflow_coef[19] * mach * pow(alt, 2)) +
-                (cflow_coef[20] * pow(alt, 3));
+                (cflow_coef[5] * powFBW(cn1, 2)) + (cflow_coef[6] * cn1 * mach) + (cflow_coef[7] * cn1 * alt) +
+                (cflow_coef[8] * powFBW(mach, 2)) + (cflow_coef[9] * mach * alt) + (cflow_coef[10] * powFBW(alt, 2)) +
+                (cflow_coef[11] * powFBW(cn1, 3)) + (cflow_coef[12] * powFBW(cn1, 2) * mach) + (cflow_coef[13] * powFBW(cn1, 2) * alt) +
+                (cflow_coef[14] * cn1 * powFBW(mach, 2)) + (cflow_coef[15] * cn1 * mach * alt) + (cflow_coef[16] * cn1 * powFBW(alt, 2)) +
+                (cflow_coef[17] * powFBW(mach, 3)) + (cflow_coef[18] * powFBW(mach, 2) * alt) + (cflow_coef[19] * mach * powFBW(alt, 2)) +
+                (cflow_coef[20] * powFBW(alt, 3));
 
     return cflow_out;
   }
@@ -141,7 +143,7 @@ class Polynomial {
 
     double oilGulpPct_coef[3] = {20.1968848, -1.2270302e-4, 1.78442e-8};
 
-    oilGulpPct_out = oilGulpPct_coef[0] + (oilGulpPct_coef[1] * thrust) + (oilGulpPct_coef[2] * pow(thrust, 2));
+    oilGulpPct_out = oilGulpPct_coef[0] + (oilGulpPct_coef[1] * thrust) + (oilGulpPct_coef[2] * powFBW(thrust, 2));
 
     return oilGulpPct_out / 100;
   }
@@ -152,7 +154,7 @@ class Polynomial {
     //double oilPressure_coef[2] = {-59.82000, 1.52844};
     double oilPressure_coef[3] = {-0.88921, 0.23711, 0.00682};
 
-    oilPressure_out = oilPressure_coef[0] + (oilPressure_coef[1] * simN2) + (oilPressure_coef[2] * pow(simN2,2));
+    oilPressure_out = oilPressure_coef[0] + (oilPressure_coef[1] * simN2) + (oilPressure_coef[2] * powFBW(simN2,2));
 
     return oilPressure_out;
   }
