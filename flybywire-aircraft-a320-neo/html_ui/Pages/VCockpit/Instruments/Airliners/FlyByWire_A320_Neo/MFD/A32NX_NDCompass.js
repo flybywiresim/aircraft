@@ -668,8 +668,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.root.appendChild(neutralLine);
         }
     }
-    updateFail() {
-        const failed = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") != 2;
+    updateFail(failed) {
         if (this.arcs) {
             for (const arc of this.arcs) {
                 arc.setAttribute("fill", failed ? "red" : "white");
@@ -698,9 +697,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
     /**
      * Updates navigation aid arrows such as VOR or ADF bearings
      */
-    updateNavAid() {
-        // Don't show arrows if ADIRS not ready
-        const failed = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") != 2;
+    updateNavAid(failed) {
         if (failed) {
             this.setAttribute("show_bearing1", "false");
             this.setAttribute("show_bearing2", "false");
@@ -801,12 +798,14 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
      */
     update(_deltaTime) {
         // Update parent class state
-        super.update(_deltaTime);
+        super.update(_deltaTime, this.mfdIndex);
 
-        this.updateNavAid();
+        const failed = ADIRS.mapNotAvailable(this.mfdIndex);
+
+        this.updateNavAid(failed);
 
         // Update fail last to overwrite every other updates
-        this.updateFail();
+        this.updateFail(failed);
     }
 }
 customElements.define("jet-mfd-nd-compass", Jet_MFD_NDCompass);

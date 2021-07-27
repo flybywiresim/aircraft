@@ -75,7 +75,7 @@ const VProtBug = (offset) => (
 );
 
 export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+    if (Number.isNaN(airspeed)) {
         return (
             <>
                 <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
@@ -178,8 +178,8 @@ const VLsBar = ({ VAlphaProt, VLs, airspeed }) => {
     );
 };
 
-export const AirspeedIndicatorOfftape = ({ airspeed, mach, airspeedAcc, targetSpeed, speedIsManaged }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged }) => {
+    if (Number.isNaN(airspeed)) {
         return (
             <>
                 <path id="SpeedTapeOutlineUpper" className="NormalStroke Red" d="m1.9058 38.086h21.859" />
@@ -197,7 +197,6 @@ export const AirspeedIndicatorOfftape = ({ airspeed, mach, airspeedAcc, targetSp
             <SpeedTarget airspeed={clampedSpeed} targetSpeed={clampedTargetSpeed} isManaged={speedIsManaged} />
             <path className="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
             <path className="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
-            <MachNumber mach={mach} airspeedAcc={airspeedAcc} />
         </g>
     );
 };
@@ -229,7 +228,13 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
     );
 };
 
-const MachNumber = ({ mach, airspeedAcc }) => {
+export const MachNumber = ({ mach, airspeedAcc }) => {
+    if (Number.isNaN(mach)) {
+        return (
+            <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
+        );
+    }
+
     if ((airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
         return null;
     }

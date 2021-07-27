@@ -2,30 +2,15 @@ class CDUIRSMonitor {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.IRSMonitor;
-        const checkAligned = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Number") || 2;
-        let IRSStatus;
-        switch (checkAligned) {
-            case 0:
-                IRSStatus = "";
-                break;
-            case 1:
-                IRSStatus = "ALIGN";
-                break;
-            case 2:
-                IRSStatus = "NAV";
-                break;
-            default:
-                IRSStatus = "NAV";
-        }
         mcdu.setTemplate([
             ["IRS MONITOR"],
             [""],
             ["<IRS1"],
-            [`\xa0${IRSStatus}[color]green`],
+            [`\xa0${CDUIRSMonitor.getAdiruStateMessage(1)}[color]green`],
             ["<IRS2"],
-            [`\xa0${IRSStatus}[color]green`],
+            [`\xa0${CDUIRSMonitor.getAdiruStateMessage(2)}[color]green`],
             ["<IRS3"],
-            [`\xa0${IRSStatus}[color]green`],
+            [`\xa0${CDUIRSMonitor.getAdiruStateMessage(3)}[color]green`],
         ]);
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
@@ -45,5 +30,17 @@ class CDUIRSMonitor {
         mcdu.onLeftInput[2] = () => {
             CDUIRSStatus.ShowPage(mcdu, 3);
         };
+    }
+
+    static getAdiruStateMessage(number) {
+        const state = SimVar.GetSimVarValue(`L:A32NX_ADIRS_ADIRU_${number}_STATE`, "Enum");
+        switch (state) {
+            case 1:
+                return "ALIGN";
+            case 2:
+                return "NAV";
+            default:
+                return "";
+        }
     }
 }
