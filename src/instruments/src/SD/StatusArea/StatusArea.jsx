@@ -7,6 +7,7 @@
  */
 
 import './StatusArea.scss';
+import { ADIRS } from '@instruments/common/adirs';
 import { Text } from '../Text/Text.jsx';
 import { useGlobalVar, getSimVar } from '../../util.js';
 
@@ -21,7 +22,9 @@ export const StatusArea = () => {
     if (sat > 99 || sat < -99) {
         sat = sat > 99 ? 99 : -99;
     }
-    const adirsState = getSimVar('L:A32NX_ADIRS_STATE', 'Enum');
+    // TODO FIXME improve this
+    const adirsAlign = !ADIRS.mapNotAvailable(1) || !ADIRS.mapNotAvailable(2);
+
     const satPrefix = sat > 0 ? '+' : '';
     const tatPrefix = tat > 0 ? '+' : '';
     const seconds = Math.floor(zulu);
@@ -41,7 +44,7 @@ export const StatusArea = () => {
             <Text title x={35} y={534} alignStart>
                 TAT
             </Text>
-            { adirsState !== 2
+            { adirsAlign
                 ? (
                     <Text warning x={125} y={534} alignEnd>
                         XX
@@ -60,7 +63,7 @@ export const StatusArea = () => {
             <Text title x={35} y={560} alignStart>
                 SAT
             </Text>
-            { adirsState !== 2
+            { adirsAlign
                 ? (
                     <Text warning x={125} y={560} alignEnd>
                         XX
