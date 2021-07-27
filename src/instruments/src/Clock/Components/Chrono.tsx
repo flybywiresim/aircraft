@@ -9,12 +9,18 @@ export const Chrono = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 250);
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 200);
+    const [isPaused] = useSimVar('L:A32NX_GAME_PAUSED', 'bool', 250)
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState<null | number>(null);
     const [running, setRunning] = useState(false);
 
     useEffect(() => {
+        if (isPaused) {
+            setPrevTime(absTime-elapsedTime);
+            //Return early to skip updating elapsedTime
+            return;
+        }
         if (running) {
             setElapsedTime(Math.max((elapsedTime || 0) + absTime - prevTime, 0));
         }
