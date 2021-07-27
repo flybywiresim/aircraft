@@ -21,7 +21,8 @@ export type ProgressBarProps = {
     labelColor?: string;
     labelSize?: string;
     isLabelVisible?: boolean;
-    vertical?: boolean
+    vertical?: boolean;
+    greenBarsWhenInRange?: boolean;
 }
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -43,6 +44,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     labelSize,
     isLabelVisible,
     vertical,
+    greenBarsWhenInRange,
 }) => {
     const getAlignment = (
         alignmentOption: ProgressBarProps['labelAlignment'],
@@ -112,15 +114,15 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         if (completedBarBeginValue && completedBarEnd && completionValue) {
             const barBegin = parseFloat(completedBarBeginValue);
             const barEnd = parseFloat((completedBarEnd !== 0 ? (completedBarEnd / 50 - 1) : 0.00).toFixed(2));
-            const roundedThrottlePos = parseFloat(completionValue.toPrecision(2));
+            const roundedCompletion = parseFloat(completionValue.toPrecision(2));
 
-            if (vertical) {
-                if (roundedThrottlePos <= barEnd && roundedThrottlePos >= barBegin) {
+            if (vertical && greenBarsWhenInRange) {
+                if (roundedCompletion <= barEnd && roundedCompletion >= barBegin) {
                     return 'absolute z-10 -mt-2.5 h-1.5 bg-green-500'; // horizontal progress bar with green bg
                 }
                 return 'absolute z-10 -mt-2.5 h-1.5 bg-gray-400'; // horizontal progress bar
             }
-            if (roundedThrottlePos <= barEnd && roundedThrottlePos >= barBegin) {
+            if (roundedCompletion <= barEnd && roundedCompletion >= barBegin && greenBarsWhenInRange) {
                 return 'absolute -mt-2.5 w-1.5 h-8 bg-green-500'; // vertical progress bar with green bg
             }
         }
