@@ -241,7 +241,7 @@
     Template for beacon light switches
     -->
     <Template Name="FBW_Airbus_LIGHTING_Switch_Light_Beacon_Template">
-        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Beacon_Template">
             <DefaultTemplateParameters>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.BEACON_LIGHT_OFF</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.BEACON_LIGHT_ON</ANIMTIP_1>
@@ -251,7 +251,6 @@
                 <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             </DefaultTemplateParameters>
 
-            <LIGHT_TYPE>BEACON</LIGHT_TYPE>
         </UseTemplate>
     </Template>
 
@@ -259,7 +258,7 @@
     Template for wing light switches
     -->
     <Template Name="FBW_Airbus_LIGHTING_Switch_Light_Wing_Template">
-        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Wing_Template">
             <LIGHT_TYPE>WING</LIGHT_TYPE>
             <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
             <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
@@ -282,9 +281,8 @@
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
         </DefaultTemplateParameters>
-        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
             <LIGHT_TYPE>LANDING</LIGHT_TYPE>
-            <KEY_ID>LANDING_LIGHTS_TOGGLE</KEY_ID>
         </UseTemplate>
     </Template>
 
@@ -292,21 +290,21 @@
     Template for console light switches
     -->
     <Template Name="FBW_LIGHTING_Switch_Console_Template">
-        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
-            <DIMMER/>
-            <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-            <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-            <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
-            <ANIMTIP_0>Set CONSOLE/FLOOR OFF</ANIMTIP_0>
-            <ANIMTIP_1>Set CONSOLE/FLOOR DIM</ANIMTIP_1>
-            <ANIMTIP_2>Set CONSOLE/FLOOR BRT</ANIMTIP_2>
-            <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
-            <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
-            <INVERT_ANIM>True</INVERT_ANIM>
-            <WWISE_EVENT>lswitch</WWISE_EVENT>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-        </UseTemplate>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <INVERT_ANIM>True</INVERT_ANIM>
+                <WWISE_EVENT>lswitch</WWISE_EVENT>
+                <ANIMTIP_0>Set Console/Floor light to off</ANIMTIP_0>
+                <ANIMTIP_1>Set Console/Floor light to dim</ANIMTIP_1>
+                <ANIMTIP_2>Set Console/Floor light to bright</ANIMTIP_2>
+                <CODE_POS_0>100 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_0>
+                <CODE_POS_1>50 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_1>
+                <CODE_POS_2>0 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_2>
+                <STATE0_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 100 ==</STATE0_TEST>
+                <STATE1_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 50 ==</STATE1_TEST>
+                <STATE2_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 ==</STATE2_TEST>
+            </UseTemplate>
+        </Component>
     </Template>
 
     <!--
