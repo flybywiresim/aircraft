@@ -118,18 +118,19 @@ html body {
   @apply rounded-2xl;
 
   .leaflet-control-attribution {
-    display: none;
+    @apply hidden;
   }
 }
 
 .credits {
-  font-family: 'IBMPlexMono';
-  font-size: 10px;
-  letter-spacing: -0.5px;
-  color: rgba(255, 255, 255, .5);
-  display: block;
-  text-align: right;
-  margin-right: 5px;
+  @apply font-mono;
+  @apply text-sm;
+  @apply tracking-tighter;
+  @apply text-white;
+  @apply opacity-50;
+  @apply block;
+  @apply text-right;
+  @apply mr-1;
 }
 
 /* ---- Dispatch Components ---- */
