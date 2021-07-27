@@ -12,6 +12,7 @@ use uom::si::{
 
 use crate::simulation::UpdateContext;
 
+#[derive(PartialEq, Clone, Copy)]
 pub struct RigidBodyOnHingeAxis {
     throw: f64,
     min_angle: f64,

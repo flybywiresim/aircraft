@@ -22,6 +22,8 @@ pub trait Actuator {
     fn reservoir_return(&self) -> Volume;
     fn reset_accumulators(&mut self);
 }
+
+#[derive(PartialEq, Clone, Copy)]
 pub struct LinearActuator {
     number_of_actuators: u8,
 
@@ -113,7 +115,7 @@ impl LinearActuator {
             flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
 
             max_flow: actual_max_flow,
-            min_flow: -max_flow / volume_extension_ratio,
+            min_flow: -actual_max_flow / volume_extension_ratio,
 
             delta_displacement: 0.,
 
