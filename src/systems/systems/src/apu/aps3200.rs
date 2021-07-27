@@ -550,7 +550,7 @@ pub struct Aps3200ApuGenerator {
     is_emergency_shutdown: bool,
 }
 impl Aps3200ApuGenerator {
-    const APU_GEN_POWERED_N: f64 = 84.;
+    pub(super) const APU_GEN_POWERED_N: f64 = 84.;
 
     pub fn new(
         number: usize,
@@ -587,20 +587,13 @@ impl Aps3200ApuGenerator {
         if n < Aps3200ApuGenerator::APU_GEN_POWERED_N {
             panic!("Should not be invoked for APU N below {}", n);
         } else if n < 100. {
-            const APU_FREQ_CONST: f64 = 1076894372064.8204;
-            const APU_FREQ_X: f64 = -118009165327.71873;
-            const APU_FREQ_X2: f64 = 5296044666.7118;
-            const APU_FREQ_X3: f64 = -108419965.09400678;
-            const APU_FREQ_X4: f64 = -36793.31899267512;
-            const APU_FREQ_X5: f64 = 62934.36386220135;
-            const APU_FREQ_X6: f64 = -1870.5197158547767;
-            const APU_FREQ_X7: f64 = 31.376473743149806;
-            const APU_FREQ_X8: f64 = -0.3510150716459761;
-            const APU_FREQ_X9: f64 = 0.002726493614147866;
-            const APU_FREQ_X10: f64 = -0.00001463272647792659;
-            const APU_FREQ_X11: f64 = 0.00000005203375009496;
-            const APU_FREQ_X12: f64 = -0.00000000011071318044;
-            const APU_FREQ_X13: f64 = 0.00000000000010697005;
+            const APU_FREQ_CONST: f64 = -6798871.803967841;
+            const APU_FREQ_X: f64 = 461789.45241984475;
+            const APU_FREQ_X2: f64 = -13021.412660356296;
+            const APU_FREQ_X3: f64 = 195.15835365339123;
+            const APU_FREQ_X4: f64 = -1.639931967033938;
+            const APU_FREQ_X5: f64 = 0.007326808864133604;
+            const APU_FREQ_X6: f64 = -0.00001359879185066017;
 
             Frequency::new::<hertz>(
                 APU_FREQ_CONST
@@ -609,14 +602,7 @@ impl Aps3200ApuGenerator {
                     + (APU_FREQ_X3 * n.powi(3))
                     + (APU_FREQ_X4 * n.powi(4))
                     + (APU_FREQ_X5 * n.powi(5))
-                    + (APU_FREQ_X6 * n.powi(6))
-                    + (APU_FREQ_X7 * n.powi(7))
-                    + (APU_FREQ_X8 * n.powi(8))
-                    + (APU_FREQ_X9 * n.powi(9))
-                    + (APU_FREQ_X10 * n.powi(10))
-                    + (APU_FREQ_X11 * n.powi(11))
-                    + (APU_FREQ_X12 * n.powi(12))
-                    + (APU_FREQ_X13 * n.powi(13)),
+                    + (APU_FREQ_X6 * n.powi(6)),
             )
         } else {
             Frequency::new::<hertz>(400.)

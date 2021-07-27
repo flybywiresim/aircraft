@@ -48,6 +48,10 @@ pub trait LandingGearPosition {
     fn is_down_and_locked(&self) -> bool;
 }
 
+pub trait EngineCorrectedN1 {
+    fn corrected_n1(&self) -> Ratio;
+}
+
 pub trait EngineCorrectedN2 {
     fn corrected_n2(&self) -> Ratio;
 }
@@ -345,6 +349,15 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
 
 pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
+}
+
+/// The ratio of flow velocity past a boundary to the local speed of sound.
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+pub struct MachNumber(pub f64);
+impl Default for MachNumber {
+    fn default() -> Self {
+        Self(0.)
+    }
 }
 
 #[cfg(test)]

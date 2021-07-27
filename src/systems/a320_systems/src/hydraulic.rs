@@ -6,7 +6,9 @@ use uom::si::{
     pressure::pascal,
     pressure::psi,
     ratio::{percent, ratio},
+    velocity::knot,
     volume::gallon,
+    volume_rate::gallon_per_second,
 };
 
 use systems::{
@@ -320,6 +322,54 @@ impl A320Hydraulic {
         }
     }
 
+    // Placeholder function to give an estimation of blue pump flow for sound purpose
+    // Todo remove when hydraulics gives directly correct values of flow and displacement
+    fn blue_electric_pump_estimated_flow(&self) -> VolumeRate {
+        // If RAT pump has some RPM then we consider epump provides only a fraction of the loop total flow
+        let rat_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
+
+        let estimated_blue_epump_flow: VolumeRate;
+        if self.blue_electric_pump_controller.should_pressurise() {
+            if rat_produces_flow {
+                estimated_blue_epump_flow = self.blue_loop.current_flow() * 0.4;
+            } else {
+                estimated_blue_epump_flow = self.blue_loop.current_flow();
+            }
+        } else {
+            estimated_blue_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+
+        estimated_blue_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
+    }
+
+    // Placeholder function to give an estimation of yellow pump flow for sound purpose
+    // Todo remove when hydraulics gives directly correct values of flow and displacement
+    fn yellow_electric_pump_estimated_flow(&self) -> VolumeRate {
+        // If EDP started pumping and has some RPM then we consider epump provides a fraction of the loop total flow
+        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
+            && self.engine_driven_pump_2_controller.should_pressurise();
+
+        let mut estimated_yellow_epump_flow: VolumeRate;
+        if self.yellow_electric_pump_controller.should_pressurise() {
+            if yellow_edp_outputs_some_flow {
+                // If electric pump is not the only pump to work we only consider it gives a 0.2 fraction of the loop total flow
+                estimated_yellow_epump_flow = self.yellow_loop.current_flow() * 0.2;
+            } else {
+                estimated_yellow_epump_flow = self.yellow_loop.current_flow();
+            }
+
+            if self.power_transfer_unit.is_active_right_to_left() {
+                estimated_yellow_epump_flow += self.power_transfer_unit.flow();
+            } else if self.power_transfer_unit.is_active_left_to_right() {
+                estimated_yellow_epump_flow -= self.power_transfer_unit.flow();
+            }
+        } else {
+            estimated_yellow_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+
+        estimated_yellow_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
+    }
+
     fn green_edp_has_low_press_fault(&self) -> bool {
         self.engine_driven_pump_1_controller
             .has_pressure_low_fault()
@@ -397,8 +447,11 @@ impl A320Hydraulic {
         // Tug has its angle changing on each frame and we'd like to detect this
         self.pushback_tug.update();
 
-        self.braking_force
-            .update_forces(&self.braking_circuit_norm, &self.braking_circuit_altn);
+        self.braking_force.update_forces(
+            &context,
+            &self.braking_circuit_norm,
+            &self.braking_circuit_altn,
+        );
     }
 
     // All the higher frequency updates like physics
@@ -597,6 +650,20 @@ impl SimulationElement for A320Hydraulic {
         self.braking_force.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            "HYD_YELLOW_EPUMP_FLOW",
+            self.yellow_electric_pump_estimated_flow()
+                .get::<gallon_per_second>(),
+        );
+
+        writer.write(
+            "HYD_BLUE_EPUMP_FLOW",
+            self.blue_electric_pump_estimated_flow()
+                .get::<gallon_per_second>(),
+        );
     }
 }
 
@@ -1293,31 +1360,71 @@ impl SimulationElement for A320HydraulicBrakeComputerUnit {
 struct A320BrakingForce {
     left_braking_force: f64,
     right_braking_force: f64,
+
+    flap_position: f64,
 }
 impl A320BrakingForce {
-    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
+    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
+
+    const FLAPS_BREAKPOINTS: [f64; 3] = [0., 50., 100.];
+    const FLAPS_PENALTY_PERCENT: [f64; 3] = [5., 5., 0.];
 
     pub fn new() -> Self {
         A320BrakingForce {
             left_braking_force: 0.,
             right_braking_force: 0.,
+
+            flap_position: 0.,
         }
     }
 
-    pub fn update_forces(&mut self, norm_brakes: &BrakeCircuit, altn_brakes: &BrakeCircuit) {
-        let left_force_norm =
-            norm_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
-        let left_force_altn =
-            altn_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+    pub fn update_forces(
+        &mut self,
+        context: &UpdateContext,
+        norm_brakes: &BrakeCircuit,
+        altn_brakes: &BrakeCircuit,
+    ) {
+        // Base formula for output force is output_force[0:1] = 50 * sqrt(hydraulic_pressure) / Max_brake_pressure
+        // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
+        // gives really too low brake force for 1000psi
+
+        let left_force_norm = 50. * norm_brakes.left_brake_pressure().get::<psi>().sqrt()
+            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        let left_force_altn = 50. * altn_brakes.left_brake_pressure().get::<psi>().sqrt()
+            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.left_braking_force = left_force_norm + left_force_altn;
         self.left_braking_force = self.left_braking_force.max(0.).min(1.);
 
-        let right_force_norm = norm_brakes.right_brake_pressure().get::<psi>()
+        let right_force_norm = 50. * norm_brakes.right_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
-        let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>()
+        let right_force_altn = 50. * altn_brakes.right_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
+
+        self.correct_with_flaps_state(context);
+    }
+
+    fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
+        let flap_correction = Ratio::new::<percent>(interpolation(
+            &Self::FLAPS_BREAKPOINTS,
+            &Self::FLAPS_PENALTY_PERCENT,
+            self.flap_position,
+        ));
+
+        // Using airspeed with formula 0.1 * sqrt(airspeed) to get a 0 to 1 ratio to use our flap correction
+        // This way the less airspeed, the less our correction is used as it is an aerodynamic effect on brakes
+        let mut airspeed_corrective_factor =
+            0.1 * context.indicated_airspeed().get::<knot>().abs().sqrt();
+        airspeed_corrective_factor = airspeed_corrective_factor.min(1.0);
+
+        let final_flaps_correction_with_speed = flap_correction * airspeed_corrective_factor;
+
+        self.left_braking_force = self.left_braking_force
+            - (self.left_braking_force * final_flaps_correction_with_speed.get::<ratio>());
+
+        self.right_braking_force = self.right_braking_force
+            - (self.right_braking_force * final_flaps_correction_with_speed.get::<ratio>());
     }
 }
 
@@ -1326,6 +1433,12 @@ impl SimulationElement for A320BrakingForce {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
         writer.write("BRAKE LEFT FORCE FACTOR", self.left_braking_force);
         writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
+    }
+
+    fn read(&mut self, state: &mut SimulatorReader) {
+        let left_flap: f64 = state.read("TRAILING EDGE FLAPS LEFT PERCENT");
+        let right_flap: f64 = state.read("TRAILING EDGE FLAPS RIGHT PERCENT");
+        self.flap_position = (left_flap + right_flap) / 2.;
     }
 }
 
@@ -1421,16 +1534,18 @@ pub struct A320AutobrakeController {
 
     should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
     should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate,
+
+    external_disarm_event: bool,
 }
 impl A320AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
 
     // Dynamic decel target map versus time for any mode that needs it
-    const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [5., 5., 0., -2.];
-    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 6.];
+    const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [4., 4., 0., -2.];
+    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 4.5];
 
-    const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [5., 5., 0., -2., -3.];
-    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 5., 6.];
+    const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [4., 4., 0., -2., -3.];
+    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 2.5, 4.];
 
     const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
     const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
@@ -1454,6 +1569,7 @@ impl A320AutobrakeController {
             should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
             ),
+            external_disarm_event: false,
         }
     }
 
@@ -1541,6 +1657,7 @@ impl A320AutobrakeController {
             || !self.arming_is_allowed_by_bcu
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
+            || self.external_disarm_event
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -1613,6 +1730,7 @@ impl SimulationElement for A320AutobrakeController {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
         self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
+        self.external_disarm_event = state.read("AUTOBRAKE_DISARM");
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         self.mode = state.read_f64("AUTOBRAKES_ARMED_MODE").into();

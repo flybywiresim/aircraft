@@ -9,7 +9,7 @@ class CDUProgressPage {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = mcdu.getMaxFlCorrected();
         const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "{green}FL" + (Math.floor(flMax / 5) * 5).toString() + "{end}" : "-----";
-        const gpsPrimaryStatus = (SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Number") === 2) ? "{green}GPS PRIMARY{end}" : "";
+        const gpsPrimaryStatus = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool") ? "{green}GPS PRIMARY{end}" : "";
         let flCrz = "-----";
         switch (mcdu.currentFlightPhase) {
             case FmgcFlightPhases.PREFLIGHT:
