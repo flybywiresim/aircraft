@@ -34,6 +34,10 @@ export interface Leg extends Guidable {
 
     get speedConstraint(): SpeedConstraint | undefined;
 
+    get terminatorLocation(): LatLongData | undefined;
+
+    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined;
+
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: Degrees);
 
     /**
@@ -85,4 +89,12 @@ export function getSpeedConstraintFromWaypoint(wp: WayPoint): SpeedConstraint | 
         return sc;
     }
     return undefined;
+}
+
+export function waypointToTerminatorLocation(wp: WayPoint): LatLongData {
+    const loc: LatLongData = {
+        lat: wp.infos.coordinates.lat,
+        long: wp.infos.coordinates.long,
+    };
+    return loc;
 }
