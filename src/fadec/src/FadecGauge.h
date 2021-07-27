@@ -17,9 +17,8 @@
 #include <MSFS\MSFS.h>
 #include <MSFS\MSFS_Render.h>
 #include <SimConnect.h>
-#include <math.h>
-#include <chrono>    // For PerfProf
-#include <iostream>  // For PerfProf
+//#include <chrono>    // For PerfProf
+#include <iostream>
 #include <string>
 
 #include "EngineControl.h"
