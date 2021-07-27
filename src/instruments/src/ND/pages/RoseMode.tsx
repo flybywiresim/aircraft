@@ -13,7 +13,7 @@ import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface RoseModeProps {
-    adirsState: boolean,
+    adirsAlign: boolean,
     rangeSetting: number,
     mode: Mode.ROSE_ILS | Mode.ROSE_VOR | Mode.ROSE_NAV,
     side: EfisSide,
@@ -21,7 +21,7 @@ export interface RoseModeProps {
     efisOption: EfisOption,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ adirsState, rangeSetting, mode, side, ppos, efisOption }) => {
+export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, side, ppos, efisOption }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -44,7 +44,7 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsState, rangeSetting, mode, si
         mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading);
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
-    if (adirsState) {
+    if (adirsAlign) {
         return (
             <>
                 { mode === Mode.ROSE_NAV && (
@@ -59,7 +59,7 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsState, rangeSetting, mode, si
                     />
                 )}
                 <Overlay
-                    adirsState={adirsState}
+                    adirsAlign={adirsAlign}
                     heading={Number(MathUtils.fastToFixed(magHeading, 1))}
                     track={Number(MathUtils.fastToFixed(magTrack, 1))}
                     rangeSetting={rangeSetting}
