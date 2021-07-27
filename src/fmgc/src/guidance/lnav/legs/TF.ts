@@ -3,16 +3,20 @@ import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { MathUtils } from '@shared/MathUtils';
 import { EARTH_RADIUS_NM } from '@fmgc/guidance/Geometry';
-import { Leg } from '@fmgc/guidance/lnav/legs';
+import { AltitudeConstrainedLeg, AltitudeConstraint, SpeedConstraint, getAltitudeConstraintFromWaypoint, getSpeedConstraintFromWaypoint } from '@fmgc/guidance/lnav/legs';
+import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 
-export class TFLeg implements Leg {
+export class TFLeg implements AltitudeConstrainedLeg {
     public from: WayPoint;
 
     public to: WayPoint;
 
+    private mDistance: NauticalMiles;
+
     constructor(from: WayPoint, to: WayPoint) {
         this.from = from;
         this.to = to;
+        this.mDistance = Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
     }
 
     get bearing(): Degrees {
@@ -20,6 +24,18 @@ export class TFLeg implements Leg {
             this.from.infos.coordinates,
             this.to.infos.coordinates,
         );
+    }
+
+    get distance(): NauticalMiles {
+        return this.mDistance;
+    }
+
+    get speedConstraint(): SpeedConstraint | undefined {
+        return getSpeedConstraintFromWaypoint(this.to);
+    }
+
+    get altitudeConstraint(): AltitudeConstraint | undefined {
+        return getAltitudeConstraintFromWaypoint(this.to);
     }
 
     getGuidanceParameters(ppos: LatLongData, trueTrack: Degrees): GuidanceParameters | null {
@@ -106,10 +122,6 @@ export class TFLeg implements Leg {
         }
 
         return -absDtg;
-    }
-
-    get distance(): NauticalMiles {
-        return Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
     }
 
     isAbeam(ppos: LatLongAlt): boolean {
