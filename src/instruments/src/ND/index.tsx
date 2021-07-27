@@ -57,8 +57,9 @@ const NavigationDisplay: React.FC = () => {
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [modeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
 
-    const [adirsState] = useSimVar('L:A32NX_ADIRS_STATE', 'Enum', 500);
     const [tas] = useSimVar('AIRSPEED TRUE', 'knots', 500);
+    // TODO FIXME Proper ADIRS
+    const adirsState = true;
 
     return (
         <DisplayUnit
@@ -66,20 +67,24 @@ const NavigationDisplay: React.FC = () => {
             potentiometerIndex={displayIndex === 1 ? 89 : 91}
         >
             <FlightPlanProvider>
-                <svg className="pfd-svg" version="1.1" viewBox="0 0 768 768">
-                    <SpeedIndicator adirsState={adirsState} tas={tas} />
-                    <WindIndicator adirsState={adirsState} tas={tas} />
+                <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
+                    <SpeedIndicator adirsState={2} tas={tas} />
+                    <WindIndicator adirsState={2} tas={tas} />
 
                     {modeIndex === Mode.PLAN && <PlanMode rangeSetting={rangeSettings[rangeIndex]} ppos={ppos} efisOption={efisOption} />}
-                    {modeIndex === Mode.ARC && <ArcMode rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} efisOption={efisOption} />}
-                    {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV) && <RoseMode rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} efisOption={efisOption} />}
+                    {modeIndex === Mode.ARC && <ArcMode adirsState={adirsState} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} efisOption={efisOption} />}
+                    {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV)
+                    && <RoseMode adirsState={adirsState} rangeSetting={rangeSettings[rangeIndex]} side={side} ppos={ppos} mode={modeIndex} efisOption={efisOption} />}
 
                     <Chrono side={side} />
 
-                    <NavigationDisplayMessages rangeSetting={rangeSettings[rangeIndex]} mode={modeIndex} />
-
-                    <RadioNavInfo index={1} side={side} />
-                    <RadioNavInfo index={2} side={side} />
+                    <NavigationDisplayMessages adirsState={adirsState} rangeSetting={rangeSettings[rangeIndex]} mode={modeIndex} />
+                    {(adirsState) && (
+                        <>
+                            <RadioNavInfo index={1} side={side} />
+                            <RadioNavInfo index={2} side={side} />
+                        </>
+                    )}
                 </svg>
             </FlightPlanProvider>
         </DisplayUnit>
