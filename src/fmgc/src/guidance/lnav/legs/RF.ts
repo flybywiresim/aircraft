@@ -1,19 +1,26 @@
 import { Degrees, NauticalMiles } from '@typings/types';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { Leg } from '@fmgc/guidance/lnav/legs';
+import { AltitudeConstrainedLeg, AltitudeConstraint, SpeedConstraint, getAltitudeConstraintFromWaypoint, getSpeedConstraintFromWaypoint } from '@fmgc/guidance/lnav/legs';
+import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 
-export class RFLeg implements Leg {
+export class RFLeg implements AltitudeConstrainedLeg {
     // termination fix of the previous leg
     public from: WayPoint;
+
     // to fix for the RF leg, most params referenced off this
     public to: WayPoint;
+
     // location of the centre fix of the arc
     public center: LatLongData;
+
     public radius: number;
+
     public angle: Degrees;
-    public distance: number;
+
     public clockwise: boolean;
+
+    private mDistance: NauticalMiles;
 
     constructor(from: WayPoint, to: WayPoint, center: LatLongData) {
         this.from = from;
@@ -42,12 +49,24 @@ export class RFLeg implements Leg {
             break;
         }
 
-        this.distance = 2 * Math.PI * this.radius / 360 * this.angle;
+        this.mDistance = 2 * Math.PI * this.radius / 360 * this.angle;
     }
 
     // this is used for transitions... which are not allowed for RF
     public get bearing(): Degrees {
         return -1;
+    }
+
+    public get distance(): NauticalMiles {
+        return this.mDistance;
+    }
+
+    get speedConstraint(): SpeedConstraint | undefined {
+        return getSpeedConstraintFromWaypoint(this.to);
+    }
+
+    get altitudeConstraint(): AltitudeConstraint | undefined {
+        return getAltitudeConstraintFromWaypoint(this.to);
     }
 
     // basically straight from type 1 transition... willl need refinement
@@ -97,7 +116,7 @@ export class RFLeg implements Leg {
         return circumference / 360 * angleToGo;
     }
 
-    isAbeam(ppos) {
+    isAbeam(ppos: LatLongData): boolean {
         const bearingPpos = Avionics.Utils.computeGreatCircleHeading(
             this.center,
             ppos,
