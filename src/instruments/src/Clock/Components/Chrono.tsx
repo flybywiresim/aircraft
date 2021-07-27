@@ -17,7 +17,7 @@ export const Chrono = () => {
 
     useEffect(() => {
         if (isPaused) {
-            setPrevTime(absTime-elapsedTime);
+            setPrevTime(absTime+elapsedTime);
             //Return early to skip updating elapsedTime
             return;
         }
