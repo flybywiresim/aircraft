@@ -3,7 +3,14 @@ import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { MathUtils } from '@shared/MathUtils';
 import { EARTH_RADIUS_NM } from '@fmgc/guidance/Geometry';
-import { AltitudeConstrainedLeg, AltitudeConstraint, SpeedConstraint, getAltitudeConstraintFromWaypoint, getSpeedConstraintFromWaypoint } from '@fmgc/guidance/lnav/legs';
+import {
+    AltitudeConstrainedLeg,
+    AltitudeConstraint,
+    SpeedConstraint,
+    getAltitudeConstraintFromWaypoint,
+    getSpeedConstraintFromWaypoint,
+    waypointToTerminatorLocation,
+} from '@fmgc/guidance/lnav/legs';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 
 export class TFLeg implements AltitudeConstrainedLeg {
@@ -36,6 +43,28 @@ export class TFLeg implements AltitudeConstrainedLeg {
 
     get altitudeConstraint(): AltitudeConstraint | undefined {
         return getAltitudeConstraintFromWaypoint(this.to);
+    }
+
+    get terminatorLocation(): LatLongData {
+        return waypointToTerminatorLocation(this.to);
+    }
+
+    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData {
+        const inverseBearing = Avionics.Utils.computeGreatCircleHeading(
+            this.to.infos.coordinates,
+            this.from.infos.coordinates,
+        );
+        const latLongAltResult = Avionics.Utils.bearingDistanceToCoordinates(
+            inverseBearing,
+            distanceBeforeTerminator,
+            this.terminatorLocation.lat,
+            this.terminatorLocation.long,
+        );
+        const loc: LatLongData = {
+            lat: latLongAltResult.lat,
+            long: latLongAltResult.long,
+        };
+        return loc;
     }
 
     getGuidanceParameters(ppos: LatLongData, trueTrack: Degrees): GuidanceParameters | null {
