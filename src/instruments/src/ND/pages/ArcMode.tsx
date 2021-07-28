@@ -465,7 +465,7 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, si
 
             <TrackBug heading={heading} track={track} />
             { lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
-            <SelectedHeadingBug heading={Math.round(heading)} selected={selectedHeading} />
+            <SelectedHeadingBug heading={heading} selected={selectedHeading} />
         </g>
 
         <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
@@ -633,7 +633,7 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
             className="Cyan"
             fontSize={22}
         >
-            {`${selected}`}
+            {`${("" + Math.round(selected)).padStart(3, "0")}`}
         </text>
     );
 };
