@@ -6,7 +6,8 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { Geometry, Type1Transition } from './Geometry';
+import { Geometry } from './Geometry';
+import { Type1Transition } from '@fmgc/guidance/lnav/transitions/index';
 import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
