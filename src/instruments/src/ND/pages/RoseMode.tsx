@@ -479,7 +479,7 @@ const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMod
 
             <TrackBug heading={heading} track={track} />
             { displayMode === Mode.ROSE_NAV && lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
-            <SelectedHeadingBug heading={Math.round(heading)} selected={selectedHeading} />
+            <SelectedHeadingBug heading={heading} selected={selectedHeading} />
         </g>
 
         <RadioNeedle index={1} side={side} displayMode={displayMode} centreHeight={384} />
