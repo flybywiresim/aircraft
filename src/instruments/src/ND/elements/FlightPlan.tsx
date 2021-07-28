@@ -1,6 +1,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useCurrentFlightPlan } from '@instruments/common/flightplan';
-import { Geometry, Type1Transition } from '@fmgc/guidance/Geometry';
+import { Geometry } from '@fmgc/guidance/Geometry';
+import { Type1Transition } from '@fmgc/guidance/lnav/transitions/index';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { MathUtils } from '@shared/MathUtils';
 import { Layer } from '@instruments/common/utils';
