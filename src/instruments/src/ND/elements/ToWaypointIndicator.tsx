@@ -37,7 +37,7 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info })
         timeText = '--:--';
     }
 
-    const heading = GeoMath.correctMagvar(info.bearingInFp, info.magneticVariation);
+    const heading = Avionics.Utils.clampAngle(GeoMath.correctMagvar(info.bearingInFp, info.magneticVariation));
 
     return (
         <Layer x={690} y={28}>
