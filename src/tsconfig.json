@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "allowJs": true,
     "typeRoots": ["../typings", "../node_modules/@types"],
     "paths": {
       "@shared/*": ["./shared/src/*"],
