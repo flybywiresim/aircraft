@@ -66,8 +66,6 @@ type SimVarCache = Record<string, {
     lastUpdatedAgo: number,
 }>;
 
-declare const SimVar; // this can also be replaced once /typings are available
-
 /**
  * This component provides the basic functionality for the useSimVar hooks.
  * By keeping the last known SimVar values inside this provider, we're

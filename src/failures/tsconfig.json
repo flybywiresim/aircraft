@@ -7,6 +7,5 @@
   },
   "include": [
     "src/**/*",
-    "../../typings/**/*.d.ts"
   ]
 }
