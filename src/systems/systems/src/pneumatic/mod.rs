@@ -121,6 +121,10 @@ impl DefaultValve {
         }
     }
 
+    pub fn open_amount(&self) -> Ratio {
+        self.open_amount
+    }
+
     pub fn update_move_fluid(
         &self,
         from: &mut impl PneumaticContainer,
@@ -131,7 +135,7 @@ impl DefaultValve {
             / Self::GAMMA
             / (from.pressure() * to.volume() + to.pressure() * from.volume());
 
-        self.move_volume(from, to, equalization_volume);
+        self.move_volume(from, to, self.open_amount * equalization_volume);
     }
 
     fn move_volume(
@@ -147,6 +151,7 @@ impl DefaultValve {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::{
         hydraulic::Fluid,
         pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
@@ -158,14 +163,6 @@ mod tests {
     };
 
     use std::time::Duration;
-
-    use uom::si::{
-        length::foot,
-        pressure::{pascal, psi},
-        ratio::{percent, ratio},
-        velocity::knot,
-        volume::cubic_meter,
-    };
 
     struct ValveTestController {
         command_open_amount: Ratio,

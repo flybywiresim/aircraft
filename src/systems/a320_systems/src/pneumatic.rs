@@ -1,4 +1,6 @@
 use crate::UpdateContext;
+use systems::overhead::PressSingleSignalButton;
+use systems::pneumatic::PneumaticCompressionChamber;
 use systems::shared::{
     ControllerSignal, EngineCorrectedN1, MachNumber, PneumaticValve, PneumaticValveSignal,
 };
@@ -25,7 +27,7 @@ pub struct A320Pneumatic {
     engine_systems: [EngineBleedSystem; 2],
 }
 impl A320Pneumatic {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             bmcs: [
                 BleedMonitoringComputer::new(1),
@@ -35,7 +37,7 @@ impl A320Pneumatic {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) {
+    pub fn update(&mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) {
         // Update BMC
         for bmc in self.bmcs.iter_mut() {
             bmc.update(context, &self.engine_systems);
@@ -62,6 +64,8 @@ impl SimulationElement for A320Pneumatic {
         for engine_system in self.engine_systems.iter_mut() {
             engine_system.accept(visitor);
         }
+
+        visitor.visit(self);
     }
 }
 
@@ -90,10 +94,10 @@ impl IPCompressionChamber {
     fn new() -> Self {
         Self {
             pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(1.),
+                Volume::new::<cubic_meter>(5.),
                 // TODO: This should really be more global
                 Fluid::new(Pressure::new::<pascal>(142000.)),
-                Pressure::new::<psi>(0.),
+                Pressure::new::<psi>(14.7),
             ),
             mach: MachNumber::default(),
         }
@@ -103,6 +107,8 @@ impl IPCompressionChamber {
         // Idea: Calculate what pressure would be realistic for this airspeed and altitude
         // I have done quite a bit of researching on what it would take to do a full gas turbine simulation, but it's just not feasable, so
         // we settle on this instead.
+        println!("engine.corrected_n1(): {:?}", engine.corrected_n1());
+
         let target_pressure =
             self.get_target_pressure(context.ambient_pressure(), self.mach, engine.corrected_n1());
         let delta_vol = self.vol_to_target(target_pressure);
@@ -127,7 +133,8 @@ impl IPCompressionChamber {
         let corrected_mach = mach.0
             + Self::N1_CONTRIBUTION_FACTOR * n1_ratio
                 / (1. + mach.0 * Self::N1_CONTRIBUTION_FACTOR * n1_ratio);
-        let total_pressure: Pressure = (Self::GAMMA + 1.) / 2. * ambient_pressure * corrected_mach;
+        let total_pressure: Pressure =
+            (1. + (Self::GAMMA * corrected_mach) / 2.) * ambient_pressure;
 
         Self::COMPRESSION_FACTOR * total_pressure
     }
@@ -171,10 +178,10 @@ impl HPCompressionChamber {
     fn new() -> Self {
         Self {
             pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(1.),
+                Volume::new::<cubic_meter>(5.),
                 // TODO: This should really be more global
                 Fluid::new(Pressure::new::<pascal>(142000.)),
-                Pressure::new::<psi>(0.),
+                Pressure::new::<psi>(14.7),
             ),
             mach: MachNumber::default(),
         }
@@ -208,7 +215,9 @@ impl HPCompressionChamber {
         let corrected_mach = mach.0
             + Self::N1_CONTRIBUTION_FACTOR * n1_ratio
                 / (1. + mach.0 * Self::N1_CONTRIBUTION_FACTOR * n1_ratio);
-        let total_pressure: Pressure = (Self::GAMMA + 1.) / 2. * ambient_pressure * corrected_mach;
+
+        let total_pressure: Pressure =
+            (1. + (Self::GAMMA * corrected_mach) / 2.) * ambient_pressure;
 
         Self::COMPRESSION_FACTOR * total_pressure
     }
@@ -228,9 +237,9 @@ struct IPValveController {
 impl ControllerSignal<PneumaticValveSignal> for IPValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
         if self.upstream_pressure > self.downstream_pressure {
-            Some(PneumaticValveSignal::close())
-        } else {
             Some(PneumaticValveSignal::open())
+        } else {
+            Some(PneumaticValveSignal::close())
         }
     }
 }
@@ -244,7 +253,7 @@ impl IPValveController {
     }
 
     fn update(&mut self, context: &UpdateContext, bmc: &BleedMonitoringComputer) {
-        self.upstream_pressure = bmc.ip_pressure();
+        self.upstream_pressure = bmc.at_engine(self.number).ip_pressure();
     }
 }
 
@@ -252,29 +261,63 @@ struct HPValveController {
     // Engine number
     number: usize,
     upstream_pressure: Pressure,
+    previous_downstream_pressure: Pressure,
+    relative_downstream_pressure_change_rate: Ratio,
+    current_open_amount: Ratio,
+    is_prv_open: bool,
 }
 impl ControllerSignal<PneumaticValveSignal> for HPValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
-        if self.upstream_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI) {
-            Some(PneumaticValveSignal::close())
-        } else {
-            Some(PneumaticValveSignal::open())
+        // Mechanically closed
+        if self.upstream_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI)
+            || self.upstream_pressure > Pressure::new::<psi>(Self::CLOSING_PRESSURE_PSI)
+            || !self.is_prv_open
+        {
+            return Some(PneumaticValveSignal::close());
         }
+
+        Some(PneumaticValveSignal::new(
+            self.calculate_open_amount_from_pressure_change()
+                .max(Ratio::new::<percent>(0.))
+                .min(Ratio::new::<percent>(100.)),
+        ))
     }
 }
 impl HPValveController {
     // https://discord.com/channels/738864299392630914/755137986508882021/867145227042029578
     const OPENING_PRESSURE_PSI: f64 = 18.;
+    const CLOSING_PRESSURE_PSI: f64 = 65.;
 
     fn new(number: usize) -> Self {
         Self {
             number,
             upstream_pressure: Pressure::new::<psi>(0.),
+            previous_downstream_pressure: Pressure::new::<psi>(0.),
+            relative_downstream_pressure_change_rate: Ratio::new::<percent>(0.),
+            current_open_amount: Ratio::new::<percent>(0.),
+            is_prv_open: false,
         }
     }
 
+    fn calculate_open_amount_from_pressure_change(&self) -> Ratio {
+        // TODO: Tune this
+        let pressure_change_response: f64 = -0.5;
+
+        self.current_open_amount
+            + pressure_change_response * self.relative_downstream_pressure_change_rate
+    }
+
     fn update(&mut self, context: &UpdateContext, bmc: &BleedMonitoringComputer) {
-        self.upstream_pressure = bmc.hp_pressure();
+        // TODO: Maybe I should just pass in bmc.at_engine instead of doing it here
+        self.upstream_pressure = bmc.at_engine(self.number).hp_pressure();
+        self.relative_downstream_pressure_change_rate =
+            (bmc.at_engine(self.number).transfer_pressure() - self.previous_downstream_pressure)
+                / self.previous_downstream_pressure
+                / context.delta_as_secs_f64();
+        self.previous_downstream_pressure = bmc.at_engine(self.number).transfer_pressure();
+
+        self.current_open_amount = bmc.at_engine(self.number).hpv_open_amount();
+        self.is_prv_open = bmc.at_engine(self.number).is_prv_open();
     }
 }
 
@@ -291,6 +334,8 @@ impl ControllerSignal<PneumaticValveSignal> for PRValveController {
         if self.transfer_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI) {
             Some(PneumaticValveSignal::close())
         } else if self.regulated_pressure > Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI) {
+            Some(PneumaticValveSignal::close())
+        } else if self.regulated_pressure < Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI) {
             Some(PneumaticValveSignal::open())
         } else {
             Some(PneumaticValveSignal::close())
@@ -313,11 +358,12 @@ impl PRValveController {
     }
 
     fn update(&mut self, context: &UpdateContext, bmc: &BleedMonitoringComputer) {
-        self.transfer_pressure = bmc.transfer_pressure(self.number);
-        self.regulated_pressure = bmc.regulated_pressure(self.number);
+        self.transfer_pressure = bmc.at_engine(self.number).transfer_pressure();
+        self.regulated_pressure = bmc.at_engine(self.number).regulated_pressure();
     }
 }
 
+#[derive(Debug)]
 struct EngineBleedSystemData {
     // Engine number
     number: usize,
@@ -325,6 +371,12 @@ struct EngineBleedSystemData {
     transfer_pressure: Pressure,
     // Pressure after PRV
     regulated_pressure: Pressure,
+    is_prv_open: bool,
+    hpv_open_amount: Ratio,
+    // IP stage
+    ip_compressor_pressure: Pressure,
+    // HP stage
+    hp_compressor_pressure: Pressure,
 }
 impl EngineBleedSystemData {
     fn new(number: usize) -> Self {
@@ -332,7 +384,35 @@ impl EngineBleedSystemData {
             number,
             transfer_pressure: Pressure::new::<psi>(0.),
             regulated_pressure: Pressure::new::<psi>(0.),
+            is_prv_open: false,
+            hpv_open_amount: Ratio::new::<percent>(0.),
+            ip_compressor_pressure: Pressure::new::<psi>(0.),
+            hp_compressor_pressure: Pressure::new::<psi>(0.),
         }
+    }
+
+    pub fn transfer_pressure(&self) -> Pressure {
+        self.transfer_pressure
+    }
+
+    pub fn regulated_pressure(&self) -> Pressure {
+        self.regulated_pressure
+    }
+
+    pub fn is_prv_open(&self) -> bool {
+        self.is_prv_open
+    }
+
+    pub fn hpv_open_amount(&self) -> Ratio {
+        self.hpv_open_amount
+    }
+
+    pub fn ip_pressure(&self) -> Pressure {
+        self.ip_compressor_pressure
+    }
+
+    pub fn hp_pressure(&self) -> Pressure {
+        self.hp_compressor_pressure
     }
 }
 
@@ -351,22 +431,8 @@ impl BleedMonitoringComputer {
         }
     }
 
-    fn hp_pressure(&self) -> Pressure {
-        // TODO: use engine parameters
-        Pressure::new::<psi>(40.)
-    }
-
-    fn ip_pressure(&self) -> Pressure {
-        // TODO: use engine parameters
-        Pressure::new::<psi>(20.)
-    }
-
-    fn transfer_pressure(&self, number: usize) -> Pressure {
-        self.engine_bleed_system_datas[number - 1].transfer_pressure
-    }
-
-    fn regulated_pressure(&self, number: usize) -> Pressure {
-        self.engine_bleed_system_datas[number - 1].regulated_pressure
+    pub fn at_engine(&self, number: usize) -> &EngineBleedSystemData {
+        &self.engine_bleed_system_datas[number - 1]
     }
 
     fn update(&mut self, context: &UpdateContext, engines: &[EngineBleedSystem; 2]) {
@@ -375,11 +441,21 @@ impl BleedMonitoringComputer {
         }
     }
 
+    // TODO: This is ugly. I should use an update method on EngineBleedSystemData
     fn update_engine_data(&mut self, engine: &EngineBleedSystem) {
+        self.engine_bleed_system_datas[engine.number - 1].ip_compressor_pressure =
+            engine.ip_compression_chamber.pressure();
+        self.engine_bleed_system_datas[engine.number - 1].hp_compressor_pressure =
+            engine.hp_compression_chamber.pressure();
+
         self.engine_bleed_system_datas[engine.number - 1].transfer_pressure =
             engine.transfer_pressure_pipe.pressure();
         self.engine_bleed_system_datas[engine.number - 1].regulated_pressure =
             engine.regulated_pressure_pipe.pressure();
+
+        self.engine_bleed_system_datas[engine.number - 1].is_prv_open = engine.pr_valve.is_open();
+        self.engine_bleed_system_datas[engine.number - 1].hpv_open_amount =
+            engine.hp_valve.open_amount()
     }
 }
 
@@ -412,12 +488,12 @@ impl EngineBleedSystem {
             transfer_pressure_pipe: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
-                Pressure::new::<psi>(0.),
+                Pressure::new::<psi>(14.7),
             ),
             regulated_pressure_pipe: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
-                Pressure::new::<psi>(0.),
+                Pressure::new::<psi>(14.7),
             ),
         }
     }
@@ -500,29 +576,40 @@ mod tests {
     use systems::{
         hydraulic::Fluid,
         pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
-        shared::MachNumber,
+        shared::{MachNumber, ISA},
         simulation::{
             test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElement, Write,
         },
     };
 
-    use std::time::Duration;
+    use std::{fs::File, io::prelude::*, time::Duration};
 
     use uom::si::{
-        length::foot, pressure::pascal, ratio::percent, velocity::knot, volume::cubic_meter,
+        acceleration::foot_per_second_squared, length::foot, pressure::pascal, ratio::percent,
+        thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
     };
 
     struct TestEngine {
+        number: usize,
         corrected_n1: Ratio,
     }
     impl TestEngine {
-        fn new(engine_corrected_n1: Ratio) -> Self {
+        fn new(number: usize, engine_corrected_n1: Ratio) -> Self {
             Self {
+                number,
                 corrected_n1: engine_corrected_n1,
             }
         }
+
+        fn update(&self, context: &UpdateContext) {}
     }
+    impl SimulationElement for TestEngine {
+        fn read(&mut self, reader: &mut systems::simulation::SimulatorReader) {
+            self.corrected_n1 = reader.read(&format!("TURB_ENG_CORRECTED_N1:{}", self.number))
+        }
+    }
+
     impl EngineCorrectedN1 for TestEngine {
         fn corrected_n1(&self) -> Ratio {
             self.corrected_n1
@@ -538,8 +625,8 @@ mod tests {
         fn new() -> Self {
             Self {
                 pneumatic: A320Pneumatic::new(),
-                engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
-                engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                engine_1: TestEngine::new(1, Ratio::new::<percent>(0.)),
+                engine_2: TestEngine::new(2, Ratio::new::<percent>(0.)),
             }
         }
     }
@@ -555,6 +642,8 @@ mod tests {
             Self: Sized,
         {
             self.pneumatic.accept(visitor);
+            self.engine_1.accept(visitor);
+            self.engine_2.accept(visitor);
 
             visitor.visit(self);
         }
@@ -582,15 +671,59 @@ mod tests {
             }
         }
 
-        fn set_mach_number(&mut self, mach: MachNumber) {
+        fn mach_number(mut self, mach: MachNumber) -> Self {
             self.write("AIRSPEED MACH", mach);
+
+            self
         }
 
-        fn is_hp_valve_open(&self) -> bool {
-            self.query(|a| a.pneumatic.engine_systems[0].hp_valve.is_open())
+        fn in_isa_atmosphere(mut self, altitude: Length) -> Self {
+            self.set_ambient_pressure(ISA::pressure_at_altitude(altitude));
+            self.set_ambient_temperature(ISA::temperature_at_altitude(altitude));
+
+            self
         }
 
-        fn for_both_engine_systems<T: Fn(&EngineBleedSystem, &mut U) -> (), U>(
+        fn idle_eng1(mut self) -> Self {
+            self.write("GENERAL ENG STARTER ACTIVE:1", true);
+            self.write("ENGINE_N2:1", 55.);
+
+            self
+        }
+
+        fn idle_eng2(mut self) -> Self {
+            self.write("GENERAL ENG STARTER ACTIVE:2", true);
+            self.write("ENGINE_N2:2", 55.);
+
+            self
+        }
+
+        fn stop_eng1(mut self) -> Self {
+            self.write("GENERAL ENG STARTER ACTIVE:1", false);
+            self.write("ENGINE_N2:1", 0.);
+
+            self
+        }
+
+        fn stop_eng2(mut self) -> Self {
+            self.write("GENERAL ENG STARTER ACTIVE:2", false);
+            self.write("ENGINE_N2:2", 0.);
+
+            self
+        }
+
+        fn corrected_n1(mut self, corrected_n1: Ratio) -> Self {
+            self.write("TURB_ENG_CORRECTED_N1:1", corrected_n1);
+            self.write("TURB_ENG_CORRECTED_N1:2", corrected_n1);
+
+            self
+        }
+
+        fn for_both_engine_systems<T: Fn(&EngineBleedSystem) -> ()>(&self, func: T) {
+            self.query(|a| a.pneumatic.engine_systems.iter().for_each(|sys| func(sys)));
+        }
+
+        fn for_both_engine_systems_with_capture<T: Fn(&EngineBleedSystem, &mut U) -> (), U>(
             &self,
             func: T,
             captured_variables: &mut U,
@@ -604,31 +737,93 @@ mod tests {
         }
     }
 
-    #[test]
-    fn exampe_test_hp_valve_open() {
-        let test_bed = PneumaticTestBed::new();
+    fn test_bed() -> PneumaticTestBed {
+        PneumaticTestBed::new()
+    }
 
-        assert_eq!(test_bed.is_hp_valve_open(), false);
+    fn test_bed_with() -> PneumaticTestBed {
+        test_bed()
+    }
+
+    // Just a way for me to plot some graphs
+    #[test]
+    fn test() {
+        let mut test_bed = test_bed_with()
+            .mach_number(MachNumber(0.))
+            .in_isa_atmosphere(Length::new::<foot>(0.))
+            .corrected_n1(Ratio::new::<percent>(0.));
+
+        let mut hps = Vec::new();
+        let mut ips = Vec::new();
+        let mut c2s = Vec::new();
+        let mut c1s = Vec::new();
+        let mut hpv_open = Vec::new();
+
+        for i in 1..100 {
+            test_bed.run_with_delta(Duration::from_millis(100));
+
+            hps.push(test_bed.query(|aircraft| {
+                aircraft.pneumatic.engine_systems[0]
+                    .hp_compression_chamber
+                    .pressure()
+                    .get::<psi>()
+            }));
+
+            ips.push(test_bed.query(|aircraft| {
+                aircraft.pneumatic.engine_systems[0]
+                    .ip_compression_chamber
+                    .pressure()
+                    .get::<psi>()
+            }));
+
+            c2s.push(test_bed.query(|aircraft| {
+                aircraft.pneumatic.engine_systems[0]
+                    .transfer_pressure_pipe
+                    .pressure()
+                    .get::<psi>()
+            }));
+
+            c1s.push(test_bed.query(|aircraft| {
+                aircraft.pneumatic.engine_systems[0]
+                    .regulated_pressure_pipe
+                    .pressure()
+                    .get::<psi>()
+            }));
+
+            hpv_open.push(test_bed.query(|aircraft| {
+                aircraft.pneumatic.engine_systems[0]
+                    .hp_valve
+                    .open_amount()
+                    .get::<ratio>()
+                    * 20.
+            }));
+        }
+
+        // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
+        let data = vec![hps, ips, c2s, c1s, hpv_open];
+        let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
+
+        use std::io::Write;
+
+        writeln!(file, "{:?}", data).expect("Could not write file");
     }
 
     #[test]
     fn ip_pressure_stabilises() {
-        let mut test_bed = PneumaticTestBed::new();
+        let mut test_bed = test_bed_with().mach_number(MachNumber(0.78));
 
         test_bed.set_indicated_altitude(Length::new::<foot>(36000.));
-        test_bed.set_mach_number(MachNumber(0.78));
-
         let mut pressures: [Pressure; 2] = [Pressure::new::<psi>(0.), Pressure::new::<psi>(0.)];
 
         test_bed.run();
-        test_bed.for_both_engine_systems(
+        test_bed.for_both_engine_systems_with_capture(
             |sys, pressures| {
                 pressures[sys.number - 1] = sys.ip_compression_chamber.pressure();
             },
             &mut pressures,
         );
         test_bed.run();
-        test_bed.for_both_engine_systems(
+        test_bed.for_both_engine_systems_with_capture(
             |sys, pressures| {
                 assert_eq!(
                     sys.ip_compression_chamber.pressure(),
@@ -641,10 +836,9 @@ mod tests {
 
     #[test]
     fn hp_pressure_stabilises() {
-        let mut test_bed = PneumaticTestBed::new();
+        let mut test_bed = test_bed_with().mach_number(MachNumber(0.78));
 
         test_bed.set_indicated_altitude(Length::new::<foot>(36000.));
-        test_bed.set_mach_number(MachNumber(0.78));
 
         let mut pressures: [Pressure; 2] = [Pressure::new::<psi>(0.), Pressure::new::<psi>(0.)];
 
@@ -652,17 +846,21 @@ mod tests {
         test_bed.run();
 
         // Save current pressure
-        test_bed.for_both_engine_systems(
+        test_bed.for_both_engine_systems_with_capture(
             |sys, pressures| {
                 pressures[sys.number - 1] = sys.hp_compression_chamber.pressure();
             },
             &mut pressures,
         );
 
+        println!("{:#?}", pressures);
+
         test_bed.run();
         // Expect pressures not to have changed after update
-        test_bed.for_both_engine_systems(
+        test_bed.for_both_engine_systems_with_capture(
             |sys, pressures| {
+                println!("{:#?}", sys.hp_compression_chamber.pressure());
+
                 assert_eq!(
                     sys.hp_compression_chamber.pressure(),
                     pressures[sys.number - 1]
@@ -670,5 +868,16 @@ mod tests {
             },
             &mut pressures,
         );
+    }
+
+    #[test]
+    fn cold_dark_valves_closed() {
+        let mut test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .in_isa_atmosphere(Length::new::<foot>(0.));
+
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.hp_valve.is_open()));
     }
 }

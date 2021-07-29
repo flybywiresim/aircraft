@@ -4,7 +4,13 @@ use crate::{
 };
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
-use uom::si::{f64::*, thermodynamic_temperature::degree_celsius, ratio::{percent}};
+use uom::si::{
+    f64::*,
+    length::meter,
+    pressure::pascal,
+    ratio::percent,
+    thermodynamic_temperature::{degree_celsius, kelvin},
+};
 
 mod random;
 pub use random::*;
@@ -174,24 +180,24 @@ pub trait ControllerSignal<S> {
 }
 
 pub struct PneumaticValveSignal {
-    target_open_amount: Ratio
+    target_open_amount: Ratio,
 }
 impl PneumaticValveSignal {
-	pub fn new(target_open_amount: Ratio) -> Self {
-		Self { target_open_amount }
-	}
+    pub fn new(target_open_amount: Ratio) -> Self {
+        Self { target_open_amount }
+    }
 
-	pub fn target_open_amount(&self) -> Ratio {
-		self.target_open_amount
-	}
+    pub fn target_open_amount(&self) -> Ratio {
+        self.target_open_amount
+    }
 
-	pub fn open() -> Self {
-		PneumaticValveSignal::new(Ratio::new::<percent>(100.))
-	}
+    pub fn open() -> Self {
+        PneumaticValveSignal::new(Ratio::new::<percent>(100.))
+    }
 
-	pub fn close() -> Self {
-		PneumaticValveSignal::new(Ratio::new::<percent>(0.))
-	}
+    pub fn close() -> Self {
+        PneumaticValveSignal::new(Ratio::new::<percent>(0.))
+    }
 }
 
 pub trait PneumaticValve {
@@ -365,6 +371,42 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
 
 pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
+}
+
+pub struct ISA;
+impl ISA {
+    const TEMPERATURE_LAPSE_RATE: f64 = 0.0065;
+    const GAS_CONSTANT_DRY_AIR: f64 = 287.04;
+    const GRAVITY_ACCELERATION: f64 = 9.807;
+    const GROUND_PRESSURE_PASCAL: f64 = 101325.;
+    const GROUND_TEMPERATURE_KELVIN: f64 = 288.15;
+
+    fn ground_pressure() -> Pressure {
+        Pressure::new::<pascal>(Self::GROUND_PRESSURE_PASCAL)
+    }
+
+    fn ground_temperature() -> ThermodynamicTemperature {
+        ThermodynamicTemperature::new::<kelvin>(Self::GROUND_TEMPERATURE_KELVIN)
+    }
+
+    pub fn pressure_at_altitude(altitude: Length) -> Pressure {
+        Self::ground_pressure()
+            * (1.
+                - Self::TEMPERATURE_LAPSE_RATE * altitude.get::<meter>()
+                    / Self::GROUND_TEMPERATURE_KELVIN)
+                .powf(
+                    Self::GRAVITY_ACCELERATION
+                        / Self::GAS_CONSTANT_DRY_AIR
+                        / Self::TEMPERATURE_LAPSE_RATE,
+                )
+    }
+
+    pub fn temperature_at_altitude(altitude: Length) -> ThermodynamicTemperature {
+        ThermodynamicTemperature::new::<kelvin>(
+            Self::GROUND_TEMPERATURE_KELVIN
+                - Self::TEMPERATURE_LAPSE_RATE * altitude.get::<meter>(),
+        )
+    }
 }
 
 /// The ratio of flow velocity past a boundary to the local speed of sound.

@@ -12,6 +12,7 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
+use pneumatic::A320Pneumatic;
 use power_consumption::A320PowerConsumption;
 use systems::{
     apu::{
@@ -51,6 +52,7 @@ pub struct A320 {
     autobrake_panel: AutobrakePanel,
     landing_gear: LandingGear,
     pressurization: Pressurization,
+    pneumatic: A320Pneumatic,
 }
 impl A320 {
     pub fn new(electricity: &mut Electricity) -> A320 {
@@ -81,6 +83,7 @@ impl A320 {
             autobrake_panel: AutobrakePanel::new(),
             landing_gear: LandingGear::new(),
             pressurization: Pressurization::new(),
+            pneumatic: A320Pneumatic::new(),
         }
     }
 }
@@ -149,6 +152,9 @@ impl Aircraft for A320 {
         self.adirs_overhead.update(context, &self.adirs);
 
         self.power_consumption.update(context);
+
+        self.pneumatic
+            .update(context, [&self.engine_1, &self.engine_2])
     }
 }
 impl SimulationElement for A320 {
@@ -173,6 +179,7 @@ impl SimulationElement for A320 {
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
         self.pressurization.accept(visitor);
+        self.pneumatic.accept(visitor);
 
         visitor.visit(self);
     }
