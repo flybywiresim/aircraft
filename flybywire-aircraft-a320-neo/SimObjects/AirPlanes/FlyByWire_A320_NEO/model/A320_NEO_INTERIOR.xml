@@ -1321,6 +1321,7 @@
 
                 <UseTemplate Name="A32NX_GT_Switch_Dummy">
                     <NODE_ID>SWITCH_OVHD_INTLT_ANNLT</NODE_ID>
+                    <PART_ID>SWITCH_OVHD_INTLT_ANNLT</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_ANNLT</ANIM_NAME>
                     <NUM_STATES>3</NUM_STATES>
                     <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
