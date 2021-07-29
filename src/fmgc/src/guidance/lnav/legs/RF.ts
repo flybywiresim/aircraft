@@ -2,21 +2,24 @@ import { Degrees, NauticalMiles } from '@typings/types';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import {
-    AltitudeConstrainedLeg,
+    Leg,
     AltitudeConstraint,
     SpeedConstraint,
     getAltitudeConstraintFromWaypoint,
     getSpeedConstraintFromWaypoint,
-    waypointToTerminatorLocation,
+    waypointToLocation,
 } from '@fmgc/guidance/lnav/legs';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { SegmentType } from '@fmgc/wtsdk';
 
-export class RFLeg implements AltitudeConstrainedLeg {
+export class RFLeg implements Leg {
     // termination fix of the previous leg
     public from: WayPoint;
 
     // to fix for the RF leg, most params referenced off this
     public to: WayPoint;
+
+    public segment: SegmentType;
 
     // location of the centre fix of the arc
     public center: LatLongData;
@@ -29,11 +32,12 @@ export class RFLeg implements AltitudeConstrainedLeg {
 
     private mDistance: NauticalMiles;
 
-    constructor(from: WayPoint, to: WayPoint, center: LatLongData) {
+    constructor(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType) {
         this.from = from;
         this.to = to;
         this.center = center;
         this.radius = Avionics.Utils.computeGreatCircleDistance(this.center, this.to.infos.coordinates);
+        this.segment = segment;
 
         const bearingFrom = Avionics.Utils.computeGreatCircleHeading(this.center, this.from.infos.coordinates); // -90?
         const bearingTo = Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates); // -90?
@@ -76,8 +80,12 @@ export class RFLeg implements AltitudeConstrainedLeg {
         return getAltitudeConstraintFromWaypoint(this.to);
     }
 
+    get initialLocation(): LatLongData {
+        return waypointToLocation(this.from);
+    }
+
     get terminatorLocation(): LatLongData {
-        return waypointToTerminatorLocation(this.to);
+        return waypointToLocation(this.to);
     }
 
     getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData {

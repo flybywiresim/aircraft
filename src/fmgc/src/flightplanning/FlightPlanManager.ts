@@ -28,6 +28,11 @@ import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 
+enum WaypointConstraintType {
+    CLB = 1,
+    DES = 2,
+}
+
 /**
  * A system for managing flight plan data used by various instruments.
  */
@@ -668,12 +673,13 @@ export class FlightPlanManager {
     }
 
     /**
-     * Sets the altitude for a waypoint in the current flight plan.
+     * Sets the altitude constraint for a waypoint in the current flight plan.
      * @param altitude The altitude to set for the waypoint.
      * @param index The index of the waypoint to set.
      * @param callback A callback to call once the operation is complete.
+     * @param isDescentConstraint For enroute waypoints, indicates whether constraint is a descent or climb constraint
      */
-    public setWaypointAltitude(altitude: number, index: number, callback = () => { }): void {
+    public setWaypointAltitude(altitude: number, index: number, callback = () => { }, isDescentConstraint?: boolean): void {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const waypoint = currentFlightPlan.getWaypoint(index);
 
@@ -681,17 +687,30 @@ export class FlightPlanManager {
             const altCoord = (altitude < 1000 ? altitude * 100 : altitude) / 3.28084;
             waypoint.infos.coordinates.alt = altCoord;
             waypoint.legAltitude1 = altitude;
+            if (isDescentConstraint !== undefined && !waypoint.constraintType) {
+                waypoint.constraintType = isDescentConstraint ? WaypointConstraintType.DES : WaypointConstraintType.CLB;
+            }
             this._updateFlightPlanVersion();
         }
 
         callback();
     }
 
-    public setWaypointSpeed(speed: number, index: number, callback = () => { }): void {
+    /**
+     * Sets the speed constraint for a waypoint in the current flight plan.
+     * @param speed The speed to set for the waypoint.
+     * @param index The index of the waypoint to set.
+     * @param callback A callback to call once the operation is complete.
+     * @param isDescentConstraint For enroute waypoints, indicates whether constraint is a descent or climb constraint
+     */
+    public setWaypointSpeed(speed: number, index: number, callback = () => { }, isDescentConstraint?: boolean): void {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const waypoint = currentFlightPlan.getWaypoint(index);
         if (waypoint) {
             waypoint.speedConstraint = speed;
+            if (isDescentConstraint !== undefined && !waypoint.constraintType) {
+                waypoint.constraintType = isDescentConstraint ? WaypointConstraintType.DES : WaypointConstraintType.CLB;
+            }
         }
         callback();
     }
