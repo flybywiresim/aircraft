@@ -1,5 +1,12 @@
 import { CallbackReader, Writer } from '..';
 
+/**
+ * Provides queued reading on top of another reader.
+ *
+ * Requires that the variable is written by a queued writer.
+ *
+ * Internally this reads values and writes 0 when it consumes the value.
+ */
 export class QueuedSimVarReader implements CallbackReader {
     private simVar: CallbackReader & Writer;
 

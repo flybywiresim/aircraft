@@ -1,6 +1,9 @@
 import { CallbackReader, Reader } from '.';
 import { Writer } from './writer';
 
+/**
+ * Reads (either directly or through a callback) and writes variables.
+ */
 export class SimVarReaderWriter implements CallbackReader, Reader, Writer {
     private simVarName: string;
 

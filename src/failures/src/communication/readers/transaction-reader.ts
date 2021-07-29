@@ -1,5 +1,10 @@
 import { CallbackReader, Updatable, Writer } from '..';
 
+/**
+ * Provides transactional reading on top of another reader.
+ *
+ * Requires that the variable is written by a transactional writer.
+ */
 export class TransactionReader implements CallbackReader {
     private valueSimVar: CallbackReader;
 

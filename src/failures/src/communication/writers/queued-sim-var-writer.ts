@@ -2,7 +2,11 @@ import { Queue } from './queue';
 import { Reader, Writer } from '..';
 
 /**
- * Writes values to a SimVar one after the other, waiting for the SimVar to be
+ * Provides queued writing on top of another writer.
+ *
+ * Requires that the variable is read by a queued reader.
+ *
+ * Internally this writes values to a SimVar one after the other, waiting for the SimVar to be
  * consumed (set to 0) before writing the next value.
  */
 export class QueuedSimVarWriter implements Writer {
