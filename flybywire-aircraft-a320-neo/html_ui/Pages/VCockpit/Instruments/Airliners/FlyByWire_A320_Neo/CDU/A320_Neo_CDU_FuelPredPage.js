@@ -148,10 +148,9 @@ class CDUFuelPredPage {
                 };
                 if (mcdu.altDestination) {
                     altIdentCell = mcdu.altDestination.ident;
-                    const altEFOBCellVal = (mcdu.getAltEFOB(true) * mcdu._conversionWeight).toFixed(1);
                     altEFOBCellColor = "[color]green";
-                    altEFOBCell = altEFOBCellVal;
-                    if (altEFOBCellVal < (mcdu._minDestFob * mcdu._conversionWeight).toFixed(1)) {
+                    altEFOBCell = (mcdu.getAltEFOB(true) * mcdu._conversionWeight).toFixed(1);
+                    if ((mcdu.getAltEFOB(true) * mcdu._conversionWeight).toFixed(1) < (mcdu._minDestFob * mcdu._conversionWeight).toFixed(1)) {
                         altEFOBCellColor = "[color]amber";
                     }
                     altTimeCellColor = "[color]green";
