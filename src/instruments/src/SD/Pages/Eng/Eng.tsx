@@ -85,21 +85,7 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'number', 4000);
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
 
-    /* This useEffect checks to see if the flight phase is either 2 or 6,
-    if it is, it checks to see if:
-
-    the engine oil pressure is greater than the high limit -1
-    this condition will go away when the oil pressure falls below the high limit - 4 PSI
-
-    the engine oil pressure is less than the low limit and n2 percent is greater than 75
-    this condition will go away when the oil pressure goes past the low limit + 2 PSI
-
-    if either the pressureAboveHigh condition or pressureBelowLow condition are true, the pressure needle and digital readout will pulse green.
-
-    if the flight phase is not 2 or 6, it will clear the green pulsing
-
-    Regardless of flight phase, if the engine oil pressure is less than or equal to the pressure very low limit, the needle and readout will be red
-    this indication will stop when the oil pressure goes past the very low limit + 0.5 PSI
+    /* Controls different styling of pressure needle and digital readout according to certain critical, or cautionary ranges.
     */
     useEffect(() => {
         if (flightPhase === 2 || flightPhase === 6) {
