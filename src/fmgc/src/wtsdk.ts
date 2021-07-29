@@ -24,7 +24,7 @@
 
 import { DirectTo } from './flightplanning/DirectTo';
 import { FlightPlanManager } from './flightplanning/FlightPlanManager';
-import { FlightPlanSegment } from './flightplanning/FlightPlanSegment';
+import { FlightPlanSegment, SegmentType } from './flightplanning/FlightPlanSegment';
 import { getSegmentedFlightPlan } from './flightplanning/SegmentedFlightPlan';
 import { GPS } from './flightplanning/GPS';
 import { LegsProcedure } from './flightplanning/LegsProcedure';
@@ -35,6 +35,6 @@ import { GuidanceManager } from './guidance/GuidanceManager';
 import { FlightPlanAsoboSync } from './flightplanning/FlightPlanAsoboSync';
 
 export {
-    DirectTo, FlightPlanAsoboSync, FlightPlanManager, FlightPlanSegment, getSegmentedFlightPlan, GPS, LegsProcedure, ManagedFlightPlan, ProcedureDetails, RawDataMapper,
+    DirectTo, FlightPlanAsoboSync, FlightPlanManager, FlightPlanSegment, SegmentType, getSegmentedFlightPlan, GPS, LegsProcedure, ManagedFlightPlan, ProcedureDetails, RawDataMapper,
     GuidanceManager,
 };
