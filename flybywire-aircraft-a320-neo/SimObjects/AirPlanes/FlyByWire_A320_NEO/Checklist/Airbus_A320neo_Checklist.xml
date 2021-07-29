@@ -47,6 +47,7 @@
                     <Checkpoint ReferenceId="A320_CPREP1_NO_SMOKING"/>
                     <Checkpoint ReferenceId="A320_CPREP1_SEATBELTS"/>
                     <Checkpoint ReferenceId="A320_CPREP1_EMERGENCY_EXIT"/>
+                    <Checkpoint ReferenceId="A320_CPREP1_ANNUNCIATOR_LIGHTS"/>
                     <Checkpoint ReferenceId="A320_CPREP1_LANDING_ELEVATION"/>
                     <Checkpoint ReferenceId="A320_CPREP1_PACK_FLOW"/>
                     <Checkpoint ReferenceId="A320_CPREP1_ECAM_ELEC"/>
