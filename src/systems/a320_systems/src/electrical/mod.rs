@@ -11,6 +11,7 @@ pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 #[cfg(test)]
 use systems::electrical::Battery;
 use systems::{
+    accept_iterable,
     electrical::{
         AlternatingCurrentElectricalSystem, BatteryPushButtons,
         ElectricalElementIdentifierProvider, Electricity, EmergencyElectrical, EmergencyGenerator,
@@ -332,15 +333,10 @@ impl BatteryPushButtons for A320ElectricalOverheadPanel {
 }
 impl SimulationElement for A320ElectricalOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.batteries.iter_mut().for_each(|bat| {
-            bat.accept(visitor);
-        });
-        self.idgs.iter_mut().for_each(|idg| {
-            idg.accept(visitor);
-        });
-        self.generators.iter_mut().for_each(|gen| {
-            gen.accept(visitor);
-        });
+        accept_iterable!(self.batteries, visitor);
+        accept_iterable!(self.idgs, visitor);
+        accept_iterable!(self.generators, visitor);
+
         self.apu_gen.accept(visitor);
         self.bus_tie.accept(visitor);
         self.ac_ess_feed.accept(visitor);
