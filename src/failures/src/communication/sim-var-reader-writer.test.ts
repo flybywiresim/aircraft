@@ -1,5 +1,18 @@
-import { SimVarReader } from '.';
-import { CallbackReader } from '..';
+import { CallbackReader, SimVarReaderWriter } from '.';
+
+test('reads a value', async () => {
+    const simVarValue = 1;
+    await SimVar.SetSimVarValue(simVarName, 'number', simVarValue);
+
+    expect(readerWriter().read()).toBe(simVarValue);
+});
+
+test('writes a value', async () => {
+    const value = 1;
+    await readerWriter().write(value);
+
+    expect(SimVar.GetSimVarValue(simVarName, 'number')).toBe(value);
+});
 
 test('does not read a value that is not in the collection', async () => {
     await expectToBeCalledTimes(0, async (r) => {
@@ -27,13 +40,13 @@ const simVarName = 'L:VARIABLE';
 const inCollectionIdentifier = 1;
 const notInCollectionIdentifier = 2;
 
-function reader(): CallbackReader {
-    return new SimVarReader(simVarName);
+function readerWriter(): SimVarReaderWriter {
+    return new SimVarReaderWriter(simVarName);
 }
 
 async function expectToBeCalledTimes(length: number, act: (r: CallbackReader) => Promise<void>) {
     const callback = jest.fn();
-    const r = reader();
+    const r = readerWriter();
     r.register(inCollectionIdentifier, callback);
 
     await act(r);

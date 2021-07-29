@@ -1,4 +1,4 @@
-import { QueuedSimVarReader, SimVarReader, TransactionReader, QueuedSimVarWriter, SimVarWriter, TransactionWriter } from '.';
+import { QueuedSimVarReader, SimVarReaderWriter, TransactionReader, QueuedSimVarWriter, TransactionWriter } from '.';
 import { flushPromises } from '../test-functions';
 
 test('read/write', async () => {
@@ -57,19 +57,18 @@ const failuresToOrchestratorActivateSimVarName = 'L:FAILURES_TO_ORCHESTRATOR_ACT
 const failuresToOrchestratorTransactionSimVarName = 'L:FAILURES_ORCHESTRATOR_ACTIVATE_RECEIVED';
 
 function writer(simVarName: string) {
-    return new QueuedSimVarWriter(new SimVarReader(simVarName), new SimVarWriter(simVarName));
+    return new QueuedSimVarWriter(new SimVarReaderWriter(simVarName));
 }
 
 function reader(simVarName: string) {
-    return new QueuedSimVarReader(new SimVarReader(simVarName), new SimVarWriter(simVarName));
+    return new QueuedSimVarReader(new SimVarReaderWriter(simVarName));
 }
 
 function transactionReader(simVarName: string, transactionSimVarName: string) {
     return new TransactionReader(
         reader(simVarName),
         new QueuedSimVarWriter(
-            new SimVarReader(transactionSimVarName),
-            new SimVarWriter(transactionSimVarName),
+            new SimVarReaderWriter(transactionSimVarName),
         ),
     );
 }
@@ -77,10 +76,8 @@ function transactionReader(simVarName: string, transactionSimVarName: string) {
 function transactionWriter(simVarName: string, transactionSimVarName: string) {
     return new TransactionWriter(
         new QueuedSimVarWriter(
-            new SimVarReader(simVarName),
-            new SimVarWriter(simVarName),
+            new SimVarReaderWriter(simVarName),
         ),
-        new SimVarReader(transactionSimVarName),
-        new SimVarWriter(transactionSimVarName),
+        new SimVarReaderWriter(transactionSimVarName),
     );
 }

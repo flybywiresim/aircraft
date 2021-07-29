@@ -1,5 +1,5 @@
-import { QueuedSimVarReader, SimVarReader, TransactionReader } from '.';
-import { CallbackReader, QueuedSimVarWriter, SimVarWriter } from '..';
+import { QueuedSimVarReader, TransactionReader } from '.';
+import { CallbackReader, SimVarReaderWriter, QueuedSimVarWriter } from '..';
 import { flushPromises } from '../../test-functions';
 
 test('confirms receival', async () => {
@@ -33,12 +33,10 @@ const transactionSimVar = 'L:FAILURES_ORCHESTRATOR_ACTIVATE_RECEIVED';
 function reader(): CallbackReader {
     return new TransactionReader(
         new QueuedSimVarReader(
-            new SimVarReader(failuresSimVar),
-            new SimVarWriter(failuresSimVar),
+            new SimVarReaderWriter(failuresSimVar),
         ),
         new QueuedSimVarWriter(
-            new SimVarReader(transactionSimVar),
-            new SimVarWriter(transactionSimVar),
+            new SimVarReaderWriter(transactionSimVar),
         ),
     );
 }

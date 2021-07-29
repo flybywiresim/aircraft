@@ -1,6 +1,6 @@
 import { flushPromises } from '../../test-functions';
 import { QueuedSimVarWriter } from '.';
-import { SimVarReader, SimVarWriter } from '..';
+import { SimVarReaderWriter } from '..';
 
 test('writes a value', async () => {
     const w = writer();
@@ -56,7 +56,7 @@ test('resolves as soon as the write and consumption are observed', async () => {
 const simVarName = 'L:SIMVAR';
 
 function writer() {
-    return new QueuedSimVarWriter(new SimVarReader(simVarName), new SimVarWriter(simVarName));
+    return new QueuedSimVarWriter(new SimVarReaderWriter(simVarName));
 }
 
 async function consumeSimVarValue(expected: number) {

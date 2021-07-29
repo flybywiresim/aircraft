@@ -1,6 +1,7 @@
-import { CallbackReader, Reader } from '..';
+import { CallbackReader, Reader } from '.';
+import { Writer } from './writer';
 
-export class SimVarReader implements CallbackReader, Reader {
+export class SimVarReaderWriter implements CallbackReader, Reader, Writer {
     private simVarName: string;
 
     private callbacks: Record<number, () => void> = {};
@@ -22,6 +23,10 @@ export class SimVarReader implements CallbackReader, Reader {
 
     read(): number {
         return SimVar.GetSimVarValue(this.simVarName, 'number');
+    }
+
+    write(value: number): Promise<void> {
+        return SimVar.SetSimVarValue(this.simVarName, 'number', value);
     }
 
     private handles(identifier: number) {

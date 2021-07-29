@@ -1,4 +1,4 @@
-import { QueuedSimVarReader, SimVarReader, SimVarWriter } from './communication';
+import { QueuedSimVarReader, SimVarReaderWriter } from './communication';
 
 export class FailuresConsumer {
     private activeFailures: Record<number, boolean> = {};
@@ -11,9 +11,9 @@ export class FailuresConsumer {
 
     constructor(prefix: string) {
         const activateSimVar = `${prefix}FAILURE_ACTIVATE`;
-        this.activateFailureReader = new QueuedSimVarReader(new SimVarReader(activateSimVar), new SimVarWriter(activateSimVar));
+        this.activateFailureReader = new QueuedSimVarReader(new SimVarReaderWriter(activateSimVar));
         const deactivateSimVar = `${prefix}FAILURE_DEACTIVATE`;
-        this.deactivateFailureReader = new QueuedSimVarReader(new SimVarReader(deactivateSimVar), new SimVarWriter(deactivateSimVar));
+        this.deactivateFailureReader = new QueuedSimVarReader(new SimVarReaderWriter(deactivateSimVar));
     }
 
     register(identifier: number, callback?: (isActive: boolean) => void) {

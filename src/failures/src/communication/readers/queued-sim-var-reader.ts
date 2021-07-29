@@ -1,19 +1,16 @@
 import { CallbackReader, Writer } from '..';
 
 export class QueuedSimVarReader implements CallbackReader {
-    private reader: CallbackReader;
-
-    private writer: Writer;
+    private simVar: CallbackReader & Writer;
 
     private isResetting: boolean = false;
 
-    constructor(reader: CallbackReader, writer: Writer) {
-        this.reader = reader;
-        this.writer = writer;
+    constructor(simVar: CallbackReader & Writer) {
+        this.simVar = simVar;
     }
 
     register(identifier: number, callback: () => void) {
-        this.reader.register(identifier, () => {
+        this.simVar.register(identifier, () => {
             this.resetSimVar();
             callback();
         });
@@ -21,13 +18,13 @@ export class QueuedSimVarReader implements CallbackReader {
 
     update() {
         if (!this.isResetting) {
-            this.reader.update();
+            this.simVar.update();
         }
     }
 
     private resetSimVar() {
         this.isResetting = true;
-        this.writer.write(0).then(() => {
+        this.simVar.write(0).then(() => {
             this.isResetting = false;
         });
     }

@@ -1,4 +1,4 @@
-import { QueuedSimVarWriter, SimVarReader, SimVarWriter } from './communication';
+import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 
 export class FailuresOrchestrator {
     private activeFailures: Record<number, boolean> = {};
@@ -9,9 +9,9 @@ export class FailuresOrchestrator {
 
     constructor(simVarPrefix: string) {
         const activateSimVar = `${simVarPrefix}FAILURE_ACTIVATE`;
-        this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReader(activateSimVar), new SimVarWriter(activateSimVar));
+        this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(activateSimVar));
         const deactivateSimVar = `${simVarPrefix}FAILURE_DEACTIVATE`;
-        this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReader(deactivateSimVar), new SimVarWriter(deactivateSimVar));
+        this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(deactivateSimVar));
     }
 
     update() {

@@ -1,27 +1,24 @@
 import { CallbackReader, Updatable, Writer } from '..';
 
 export class TransactionReader implements CallbackReader {
-    private innerReader: CallbackReader;
+    private valueSimVar: CallbackReader;
 
-    private callbacks: Record<number, () => void> = {};
+    private transactionSimVar: Writer & Updatable;
 
-    private transactionWriter: Writer & Updatable;
-
-    constructor(innerReader: CallbackReader, transactionWriter: Writer & Updatable) {
-        this.innerReader = innerReader;
-        this.transactionWriter = transactionWriter;
+    constructor(valueSimVar: CallbackReader, transactionSimVar: Writer & Updatable) {
+        this.valueSimVar = valueSimVar;
+        this.transactionSimVar = transactionSimVar;
     }
 
     register(identifier: number, callback: () => void): void {
-        this.callbacks[identifier] = callback;
-        this.innerReader.register(identifier, () => {
-            this.callbacks[identifier]();
-            this.transactionWriter.write(identifier);
+        this.valueSimVar.register(identifier, () => {
+            callback();
+            this.transactionSimVar.write(identifier);
         });
     }
 
     update(): void {
-        this.innerReader.update();
-        this.transactionWriter.update();
+        this.valueSimVar.update();
+        this.transactionSimVar.update();
     }
 }

@@ -1,5 +1,5 @@
-import { QueuedSimVarReader, SimVarReader } from '.';
-import { SimVarWriter } from '..';
+import { QueuedSimVarReader } from '.';
+import { SimVarReaderWriter } from '..';
 
 test('does not read a value that is not in the collection', async () => {
     await expectToBeCalledTimes(0, async (r) => {
@@ -49,5 +49,5 @@ async function expectToBeCalledTimes(length: number, act: (r: QueuedSimVarReader
 const simVarName = 'L:SIMVAR';
 
 function reader() {
-    return new QueuedSimVarReader(new SimVarReader(simVarName), new SimVarWriter(simVarName));
+    return new QueuedSimVarReader(new SimVarReaderWriter(simVarName));
 }

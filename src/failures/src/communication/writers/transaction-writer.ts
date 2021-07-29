@@ -1,75 +1,106 @@
 import { Reader, Updatable, Writer } from '..';
 
-export const RETRY_AFTER_NO_OF_UPDATES = 30;
-
+/**
+ * Provides transactional writing on top of another writer.
+ *
+ * Requires that the written variable is read by a transactional reader.
+ */
 export class TransactionWriter implements Writer {
-    private innerWriter: Writer & Updatable;
+    private retryAfterNumberOfUpdates: number;
 
-    private transactionReader: Reader;
+    private valueSimVar: Writer & Updatable;
 
-    private transactionWriter: Writer;
+    private transactionSimVar: Reader & Writer;
 
-    private expectedWrites: Record<number, ExpectedWriteContext> = {};
+    private openTransactions: Record<number, Transaction> = {};
 
-    constructor(innerWriter: Writer & Updatable, transactionReader: Reader, transactionWriter: Writer) {
-        this.innerWriter = innerWriter;
-        this.transactionReader = transactionReader;
-        this.transactionWriter = transactionWriter;
+    /**
+     *
+     * @param valueSimVar The writer to use for writing values.
+     * @param transactionSimVar The reader/writer to use for managing the transaction.
+     * @param retryAfterNumberOfUpdates The number of calls to `update` to wait before making another write attempt. Defaults to 30.
+     */
+    constructor(valueSimVar: Writer & Updatable, transactionSimVar: Reader & Writer, retryAfterNumberOfUpdates?: number) {
+        this.retryAfterNumberOfUpdates = retryAfterNumberOfUpdates || 30;
+        this.valueSimVar = valueSimVar;
+        this.transactionSimVar = transactionSimVar;
     }
 
+    /**
+     * Writes the value to the underlying writer and waits for a transactional
+     * reader to confirm the successful reading of the value after which the Promise resolves.
+     */
     async write(value: number): Promise<void> {
-        return this.innerWriter.write(value).then(() => new Promise((resolve) => {
-            this.addExpectedWrite(value, resolve);
-        }));
+        return new Promise((resolve) => {
+            this.valueSimVar.write(value).then(() => {
+                this.addTransaction(value, resolve);
+            });
+        });
     }
 
     update(): void {
-        this.innerWriter.update();
+        this.valueSimVar.update();
 
-        if (Object.keys(this.expectedWrites).length > 0) {
-            const transactionSimVarValue = this.transactionReader.read();
-            this.forEachExpectedWriteContext((context) => {
-                if (context.value === transactionSimVarValue) {
-                    this.transactionWriter.write(0).then(() => {
-                        context.resolve();
-                    });
-                    delete this.expectedWrites[context.value];
-                }
-            });
+        if (!this.hasOpenTransactions()) {
+            return;
         }
 
-        this.forEachExpectedWriteContext((context) => {
-            context.waitedUpdates++;
-            if (context.waitedUpdates >= RETRY_AFTER_NO_OF_UPDATES) {
-                this.retryWrite(context);
-            }
+        this.resolveTransactionWithValue(this.transactionSimVar.read());
+        this.increaseTransactionsWaitingDuration();
+        this.retryWriteForExpiredTransactions();
+    }
+
+    private resolveTransactionWithValue(value: number) {
+        Object.values(this.openTransactions)
+            .filter((transaction) => transaction.value === value)
+            .forEach((transaction) => this.resolveTransaction(transaction));
+    }
+
+    private increaseTransactionsWaitingDuration() {
+        Object.values(this.openTransactions).forEach((transaction) => {
+            transaction.waitedUpdates++;
         });
     }
 
-    private retryWrite(context: ExpectedWriteContext) {
+    private retryWriteForExpiredTransactions() {
+        Object.values(this.openTransactions)
+            .filter((transaction) => transaction.waitedUpdates >= this.retryAfterNumberOfUpdates)
+            .forEach((transaction) => this.retryWrite(transaction));
+    }
+
+    private retryWrite(transaction: Transaction) {
         // Remove the existing write, to ensure we do not check and confirm
         // during the retry attempt of the write.
-        delete this.expectedWrites[context.value];
+        this.removeTransaction(transaction.value);
 
-        this.innerWriter.write(context.value).then(() => {
+        this.valueSimVar.write(transaction.value).then(() => {
             // The caller is waiting for the original resolve function to be called,
             // thus we pass it to the new expectation here.
-            this.addExpectedWrite(context.value, context.resolve);
+            this.addTransaction(transaction.value, transaction.resolve);
         });
     }
 
-    private forEachExpectedWriteContext(func: (context: ExpectedWriteContext) => void) {
-        Object.entries(this.expectedWrites).forEach(([_, context]: [string, ExpectedWriteContext]) => {
-            func(context);
-        });
+    private hasOpenTransactions() {
+        return Object.keys(this.openTransactions).length > 0;
     }
 
-    private addExpectedWrite(value: number, resolve: () => void) {
-        this.expectedWrites[value] = { waitedUpdates: 0, value, resolve };
+    private addTransaction(value: number, resolve: () => void) {
+        this.openTransactions[value] = { waitedUpdates: 0, value, resolve };
+    }
+
+    private resolveTransaction(transaction: Transaction) {
+        this.transactionSimVar.write(0).then(() => {
+            transaction.resolve();
+        });
+        this.removeTransaction(transaction.value);
+    }
+
+    private removeTransaction(value: number) {
+        delete this.openTransactions[value];
     }
 }
 
-interface ExpectedWriteContext {
+interface Transaction {
     waitedUpdates: number,
     value: number,
     resolve: () => void,

@@ -1,5 +1,5 @@
-import { RETRY_AFTER_NO_OF_UPDATES, TransactionWriter } from './transaction-writer';
-import { SimVarReader, Updatable, Writer, QueuedSimVarWriter, SimVarWriter } from '..';
+import { TransactionWriter } from './transaction-writer';
+import { SimVarReaderWriter, Updatable, Writer, QueuedSimVarWriter } from '..';
 import { flushPromises, updateWriter } from '../../test-functions';
 
 test('waits for receival confirmation', async () => {
@@ -10,7 +10,7 @@ test('waits for receival confirmation', async () => {
     const callback = jest.fn();
     write.innerPromise.then(callback);
 
-    updateWriter(w, RETRY_AFTER_NO_OF_UPDATES - 1);
+    updateWriter(w, retryAfterNumberOfUpdates - 1);
 
     await flushPromises();
     expect(callback).not.toHaveBeenCalled();
@@ -40,7 +40,7 @@ test('retries when receival not confirmed', async () => {
     const callback = jest.fn();
     const promise = write.innerPromise.then(callback);
 
-    updateWriter(w, RETRY_AFTER_NO_OF_UPDATES);
+    updateWriter(w, retryAfterNumberOfUpdates);
 
     await flushPromises();
     expect(callback).not.toHaveBeenCalled();
@@ -54,15 +54,15 @@ test('retries when receival not confirmed', async () => {
 
 const simVarName = 'L:SIMVAR';
 const transactionSimVarName = 'L:SIMVAR_CONFIRMATION';
+const retryAfterNumberOfUpdates = 30;
 
 function writer(): Writer & Updatable {
     return new TransactionWriter(
         new QueuedSimVarWriter(
-            new SimVarReader(simVarName),
-            new SimVarWriter(simVarName),
+            new SimVarReaderWriter(simVarName),
         ),
-        new SimVarReader(transactionSimVarName),
-        new SimVarWriter(transactionSimVarName),
+        new SimVarReaderWriter(transactionSimVarName),
+        retryAfterNumberOfUpdates,
     );
 }
 

@@ -1,22 +1,19 @@
 import { Queue } from './queue';
-import { CallbackReader, Reader, Writer } from '..';
+import { Reader, Writer } from '..';
 
 /**
  * Writes values to a SimVar one after the other, waiting for the SimVar to be
  * consumed (set to 0) before writing the next value.
  */
 export class QueuedSimVarWriter implements Writer {
-    private reader: CallbackReader & Reader;
-
-    private writer: Writer;
+    private simVar: Reader & Writer;
 
     private messageQueue: Queue<() => WritingContext>;
 
     private context: WritingContext | undefined;
 
-    constructor(reader: CallbackReader & Reader, writer: Writer) {
-        this.reader = reader;
-        this.writer = writer;
+    constructor(simVar: Reader & Writer) {
+        this.simVar = simVar;
         this.messageQueue = new Queue<() => WritingContext>();
         this.context = undefined;
     }
@@ -29,7 +26,7 @@ export class QueuedSimVarWriter implements Writer {
                     isWritten: false,
                     resolve,
                 };
-                this.writer.write(value).then(() => {
+                this.simVar.write(value).then(() => {
                     context.isWritten = true;
                 });
 
@@ -66,7 +63,7 @@ export class QueuedSimVarWriter implements Writer {
     }
 
     private isReadByConsumer() {
-        return this.reader.read() !== this.context.value;
+        return this.simVar.read() !== this.context.value;
     }
 
     private immediatelyWriteWhenAble() {
