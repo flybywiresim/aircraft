@@ -2,6 +2,7 @@ import { Degrees, NauticalMiles, Feet, Knots } from '@typings/types';
 import { Guidable } from '@fmgc/guidance/Geometry';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { SegmentType } from '@fmgc/wtsdk';
 
 export enum AltitudeConstraintType {
     at,
@@ -28,11 +29,17 @@ export interface SpeedConstraint {
 }
 
 export interface Leg extends Guidable {
+    segment: SegmentType;
+
     get bearing(): Degrees;
 
     get distance(): NauticalMiles;
 
     get speedConstraint(): SpeedConstraint | undefined;
+
+    get altitudeConstraint(): AltitudeConstraint | undefined;
+
+    get initialLocation(): LatLongData | undefined;
 
     get terminatorLocation(): LatLongData | undefined;
 
@@ -48,10 +55,6 @@ export interface Leg extends Guidable {
     getDistanceToGo(ppos: LatLongData): NauticalMiles;
 
     isAbeam(ppos);
-}
-
-export interface AltitudeConstrainedLeg extends Leg {
-    get altitudeConstraint(): AltitudeConstraint | undefined;
 }
 
 export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstraint | undefined {
@@ -91,7 +94,7 @@ export function getSpeedConstraintFromWaypoint(wp: WayPoint): SpeedConstraint | 
     return undefined;
 }
 
-export function waypointToTerminatorLocation(wp: WayPoint): LatLongData {
+export function waypointToLocation(wp: WayPoint): LatLongData {
     const loc: LatLongData = {
         lat: wp.infos.coordinates.lat,
         long: wp.infos.coordinates.long,

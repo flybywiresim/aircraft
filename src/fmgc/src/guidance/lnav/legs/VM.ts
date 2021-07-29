@@ -1,7 +1,8 @@
 import { Degrees, NauticalMiles, Track } from '@typings/types';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { Leg, SpeedConstraint } from '@fmgc/guidance/lnav/legs';
+import { Leg } from '@fmgc/guidance/lnav/legs';
+import { SegmentType } from '@fmgc/wtsdk';
 
 // TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
 export class VMLeg implements Leg {
@@ -9,9 +10,12 @@ export class VMLeg implements Leg {
 
     public initialCourse: Degrees;
 
-    constructor(heading: Degrees, initialCourse: Degrees) {
+    public segment: SegmentType;
+
+    constructor(heading: Degrees, initialCourse: Degrees, segment: SegmentType) {
         this.heading = heading;
         this.initialCourse = initialCourse;
+        this.segment = segment;
     }
 
     get bearing(): Degrees {
@@ -23,7 +27,15 @@ export class VMLeg implements Leg {
     }
 
     // Manual legs don't have speed contraints
-    get speedConstraint(): SpeedConstraint | undefined {
+    get speedConstraint(): undefined {
+        return undefined;
+    }
+
+    get altitudeConstraint(): undefined {
+        return undefined;
+    }
+
+    get initialLocation(): undefined {
         return undefined;
     }
 
