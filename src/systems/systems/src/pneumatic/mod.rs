@@ -3,14 +3,19 @@
 use crate::{
     engine::Engine,
     hydraulic::Fluid,
-    shared::{ControllerSignal, PneumaticValve, PneumaticValveSignal},
-    simulation::UpdateContext,
+    shared::{
+        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve,
+        PneumaticValveSignal,
+    },
+    simulation::{
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
+    },
 };
 
 use uom::si::{
     f64::*,
-    pressure::{self, psi},
-    ratio::percent,
+    pressure::{pascal, psi},
+    ratio::{percent, ratio},
     volume::{cubic_inch, gallon},
 };
 
@@ -49,12 +54,6 @@ pub trait PneumaticContainer {
     fn pressure(&self) -> Pressure;
     fn volume(&self) -> Volume; // Not the volume of gas, but the physical measurements
     fn change_volume(&mut self, volume: Volume);
-}
-
-// This should be it's own trait because I really don't want the compression chamber to act like a pipe
-pub trait PneumaticCompressionChamber {
-    // Not sure I like this
-    fn update(&mut self, engine: &impl Engine);
 }
 
 // Default container
@@ -149,6 +148,116 @@ impl DefaultValve {
     }
 }
 
+pub struct TargetPressureSignal {
+    target_pressure: Pressure,
+}
+
+pub struct EngineCompressionChamberController {
+    current_mach: MachNumber,
+    target_pressure: Pressure,
+    n1_contribution_factor: f64,
+    n2_contribution_factor: f64,
+    compression_factor: f64,
+}
+impl ControllerSignal<TargetPressureSignal> for EngineCompressionChamberController {
+    fn signal(&self) -> Option<TargetPressureSignal> {
+        Some(TargetPressureSignal {
+            target_pressure: self.target_pressure,
+        })
+    }
+}
+impl SimulationElement for EngineCompressionChamberController {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.current_mach = reader.read("AIRSPEED MACH");
+    }
+}
+impl EngineCompressionChamberController {
+    const GAMMA: f64 = 1.4; // Adiabatic index of dry air
+
+    pub fn new(
+        n1_contribution_factor: f64,
+        n2_contribution_factor: f64,
+        compression_factor: f64,
+    ) -> Self {
+        Self {
+            current_mach: MachNumber::default(),
+            target_pressure: Pressure::new::<psi>(0.),
+            n1_contribution_factor,
+            n2_contribution_factor,
+            compression_factor,
+        }
+    }
+
+    pub fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
+        &mut self,
+        context: &UpdateContext,
+        engine: &T,
+    ) {
+        let n1 = engine.corrected_n1().get::<ratio>();
+        let n2 = engine.corrected_n2().get::<ratio>();
+
+        // TODO: I know I'm probably shooting myself in the foot by actively avoiding using units, but I couldn't find another way
+        // This computes an estimate of the airflow velocity. It uses the current mach number as basis and adds contributions for n1 and n2.
+        // We make sure it never exceeds mach 1 using some math.
+        let corrected_mach = (self.current_mach.0
+            + self.n1_contribution_factor * n1
+            + self.n2_contribution_factor * n2)
+            / (1.
+                + self.current_mach.0
+                    * self.n1_contribution_factor
+                    * n1
+                    * self.n2_contribution_factor
+                    * n2);
+        let total_pressure =
+            (1. + (Self::GAMMA * corrected_mach) / 2.) * context.ambient_pressure();
+
+        self.target_pressure = self.compression_factor * total_pressure;
+    }
+}
+
+pub struct CompressionChamber {
+    pipe: DefaultPipe,
+}
+impl PneumaticContainer for CompressionChamber {
+    fn pressure(&self) -> Pressure {
+        self.pipe.pressure()
+    }
+    fn volume(&self) -> Volume {
+        self.pipe.volume()
+    }
+    fn change_volume(&mut self, volume: Volume) {
+        self.pipe.change_volume(volume);
+    }
+}
+impl CompressionChamber {
+    pub fn new(volume: Volume) -> Self {
+        Self {
+            pipe: DefaultPipe::new(
+                volume,
+                Fluid::new(Pressure::new::<pascal>(142000.)),
+                Pressure::new::<psi>(14.7),
+            ),
+        }
+    }
+
+    pub fn update(&mut self, controller: &impl ControllerSignal<TargetPressureSignal>) {
+        if let Some(signal) = controller.signal() {
+            self.change_volume(self.vol_to_target(signal.target_pressure))
+        }
+    }
+
+    fn vol_to_target(&self, target_press: Pressure) -> Volume {
+        (target_press - self.pressure()) * self.volume() / self.pipe.fluid().bulk_mod()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -163,6 +272,10 @@ mod tests {
     };
 
     use std::time::Duration;
+    use uom::si::{
+        acceleration::foot_per_second_squared, length::foot, pressure::pascal,
+        thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
+    };
 
     struct ValveTestController {
         command_open_amount: Ratio,

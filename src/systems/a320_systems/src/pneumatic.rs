@@ -1,15 +1,18 @@
 use crate::UpdateContext;
 use systems::overhead::PressSingleSignalButton;
-use systems::pneumatic::PneumaticCompressionChamber;
 use systems::shared::{
-    ControllerSignal, EngineCorrectedN1, MachNumber, PneumaticValve, PneumaticValveSignal,
+    ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve,
+    PneumaticValveSignal,
 };
 use systems::simulation::{Read, Simulation};
 use systems::{
     engine::Engine,
     hydraulic::Fluid,
     overhead::OnOffFaultPushButton,
-    pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
+    pneumatic::{
+        CompressionChamber, DefaultPipe, DefaultValve, EngineCompressionChamberController,
+        PneumaticContainer,
+    },
     simulation::{SimulationElement, SimulationElementVisitor},
 };
 use uom::num_traits::sign;
@@ -37,7 +40,12 @@ impl A320Pneumatic {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) {
+    // TODO: Extract T to it's own type since it's used a lot.
+    pub fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
+        &mut self,
+        context: &UpdateContext,
+        engines: [&T; 2],
+    ) {
         // Update BMC
         for bmc in self.bmcs.iter_mut() {
             bmc.update(context, &self.engine_systems);
@@ -70,165 +78,6 @@ impl SimulationElement for A320Pneumatic {
         }
 
         visitor.visit(self);
-    }
-}
-
-struct IPCompressionChamber {
-    pipe: DefaultPipe,
-    mach: MachNumber,
-}
-impl PneumaticContainer for IPCompressionChamber {
-    fn pressure(&self) -> Pressure {
-        self.pipe.pressure()
-    }
-
-    fn volume(&self) -> Volume {
-        self.pipe.volume()
-    }
-
-    fn change_volume(&mut self, volume: Volume) {
-        self.pipe.change_volume(volume);
-    }
-}
-impl IPCompressionChamber {
-    const N1_CONTRIBUTION_FACTOR: f64 = 0.5;
-    const COMPRESSION_FACTOR: f64 = 5.;
-    const GAMMA: f64 = 1.4; // Adiabatic index of dry air
-
-    fn new() -> Self {
-        Self {
-            pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(5.),
-                // TODO: This should really be more global
-                Fluid::new(Pressure::new::<pascal>(142000.)),
-                Pressure::new::<psi>(14.7),
-            ),
-            mach: MachNumber::default(),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext, engine: &EngineCorrectedN1) {
-        // Idea: Calculate what pressure would be realistic for this airspeed and altitude
-        // I have done quite a bit of researching on what it would take to do a full gas turbine simulation, but it's just not feasable, so
-        // we settle on this instead.
-        println!("engine.corrected_n1(): {:?}", engine.corrected_n1());
-
-        let target_pressure =
-            self.get_target_pressure(context.ambient_pressure(), self.mach, engine.corrected_n1());
-        let delta_vol = self.vol_to_target(target_pressure);
-
-        self.change_volume(delta_vol);
-    }
-
-    fn vol_to_target(&self, target_press: Pressure) -> Volume {
-        (target_press - self.pressure()) * self.volume() / self.pipe.fluid().bulk_mod()
-    }
-
-    fn get_target_pressure(
-        &self,
-        ambient_pressure: Pressure,
-        mach: MachNumber,
-        n1: Ratio,
-    ) -> Pressure {
-        // TODO: Tune
-        let n1_ratio = n1.get::<ratio>();
-
-        // TODO: I know I'm probably shooting myself in the foot by actively avoiding using units, but I couldn't find another way
-        let corrected_mach = mach.0
-            + Self::N1_CONTRIBUTION_FACTOR * n1_ratio
-                / (1. + mach.0 * Self::N1_CONTRIBUTION_FACTOR * n1_ratio);
-        let total_pressure: Pressure =
-            (1. + (Self::GAMMA * corrected_mach) / 2.) * ambient_pressure;
-
-        Self::COMPRESSION_FACTOR * total_pressure
-    }
-}
-impl SimulationElement for IPCompressionChamber {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
-        visitor.visit(self);
-    }
-
-    fn read(&mut self, reader: &mut systems::simulation::SimulatorReader) {
-        self.mach = reader.read("AIRSPEED MACH");
-    }
-}
-
-struct HPCompressionChamber {
-    pipe: DefaultPipe,
-    mach: MachNumber,
-}
-impl PneumaticContainer for HPCompressionChamber {
-    fn pressure(&self) -> Pressure {
-        self.pipe.pressure()
-    }
-
-    fn volume(&self) -> Volume {
-        self.pipe.volume()
-    }
-
-    fn change_volume(&mut self, volume: Volume) {
-        self.pipe.change_volume(volume);
-    }
-}
-
-impl HPCompressionChamber {
-    const N1_CONTRIBUTION_FACTOR: f64 = 0.5;
-    const COMPRESSION_FACTOR: f64 = 10.;
-    const GAMMA: f64 = 1.4; // Adiabatic index of dry air
-
-    fn new() -> Self {
-        Self {
-            pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(5.),
-                // TODO: This should really be more global
-                Fluid::new(Pressure::new::<pascal>(142000.)),
-                Pressure::new::<psi>(14.7),
-            ),
-            mach: MachNumber::default(),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext, engine: &EngineCorrectedN1) {
-        // Idea: Calculate what pressure would be realistic for this airspeed and altitude
-        // I have done quite a bit of researching on what it would take to do a full gas turbine simulation, but it's just not feasable, so
-        // we settle on this instead.
-        let target_pressure =
-            self.get_target_pressure(context.ambient_pressure(), self.mach, engine.corrected_n1());
-        let delta_vol = self.vol_to_target(target_pressure);
-
-        self.change_volume(delta_vol);
-    }
-
-    fn vol_to_target(&self, target_press: Pressure) -> Volume {
-        (target_press - self.pressure()) * self.volume() / self.pipe.fluid().bulk_mod()
-    }
-
-    fn get_target_pressure(
-        &self,
-        ambient_pressure: Pressure,
-        mach: MachNumber,
-        n1: Ratio,
-    ) -> Pressure {
-        // TODO: Tune
-        let n1_ratio = n1.get::<ratio>();
-
-        // TODO: I know I'm probably shooting myself in the foot by actively avoiding using units, but I couldn't find another way
-        let corrected_mach = mach.0
-            + Self::N1_CONTRIBUTION_FACTOR * n1_ratio
-                / (1. + mach.0 * Self::N1_CONTRIBUTION_FACTOR * n1_ratio);
-
-        let total_pressure: Pressure =
-            (1. + (Self::GAMMA * corrected_mach) / 2.) * ambient_pressure;
-
-        Self::COMPRESSION_FACTOR * total_pressure
-    }
-}
-impl SimulationElement for HPCompressionChamber {
-    fn read(&mut self, reader: &mut systems::simulation::SimulatorReader) {
-        self.mach = reader.read("AIRSPEED MACH");
     }
 }
 
@@ -469,8 +318,10 @@ impl BleedMonitoringComputer {
 // TODO: Would it make sense to use the generics for traits here? e.g T: PneumaticCompressionChamber, U: PneumaticValve, etc.
 struct EngineBleedSystem {
     number: usize,
-    ip_compression_chamber: IPCompressionChamber,
-    hp_compression_chamber: HPCompressionChamber,
+    ip_compression_chamber_controller: EngineCompressionChamberController,
+    hp_compression_chamber_controller: EngineCompressionChamberController,
+    ip_compression_chamber: CompressionChamber,
+    hp_compression_chamber: CompressionChamber,
     ip_valve: DefaultValve,
     hp_valve: DefaultValve,
     pr_valve: DefaultValve,
@@ -484,8 +335,12 @@ impl EngineBleedSystem {
     fn new(number: usize) -> Self {
         Self {
             number,
-            ip_compression_chamber: IPCompressionChamber::new(),
-            hp_compression_chamber: HPCompressionChamber::new(),
+            ip_compression_chamber_controller: EngineCompressionChamberController::new(0.5, 0., 5.),
+            hp_compression_chamber_controller: EngineCompressionChamberController::new(
+                0.5, 0.5, 10.,
+            ),
+            ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
+            hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             ip_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
             hp_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
             pr_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
@@ -505,15 +360,22 @@ impl EngineBleedSystem {
         }
     }
 
-    fn update<T: EngineCorrectedN1>(
+    fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
         &mut self,
         context: &UpdateContext,
         bleed_data: &impl EngineBleedDataProvider,
         engine: &T,
     ) {
         // Update engines
-        self.ip_compression_chamber.update(context, engine);
-        self.hp_compression_chamber.update(context, engine);
+        self.ip_compression_chamber_controller
+            .update(context, engine);
+        self.ip_compression_chamber_controller
+            .update(context, engine);
+
+        self.ip_compression_chamber
+            .update(&self.ip_compression_chamber_controller);
+        self.hp_compression_chamber
+            .update(&self.ip_compression_chamber_controller);
 
         // Update controllers
         self.ip_valve_controller.update(context, bleed_data);
@@ -548,8 +410,8 @@ impl SimulationElement for EngineBleedSystem {
     where
         Self: Sized,
     {
-        self.hp_compression_chamber.accept(visitor);
-        self.ip_compression_chamber.accept(visitor);
+        self.ip_compression_chamber_controller.accept(visitor);
+        self.hp_compression_chamber_controller.accept(visitor);
 
         visitor.visit(self);
     }
@@ -600,12 +462,14 @@ mod tests {
     struct TestEngine {
         number: usize,
         corrected_n1: Ratio,
+        corrected_n2: Ratio,
     }
     impl TestEngine {
-        fn new(number: usize, engine_corrected_n1: Ratio) -> Self {
+        fn new(number: usize, engine_corrected_n1: Ratio, engine_corrected_n2: Ratio) -> Self {
             Self {
                 number,
                 corrected_n1: engine_corrected_n1,
+                corrected_n2: engine_corrected_n2,
             }
         }
 
@@ -613,13 +477,19 @@ mod tests {
     }
     impl SimulationElement for TestEngine {
         fn read(&mut self, reader: &mut systems::simulation::SimulatorReader) {
-            self.corrected_n1 = reader.read(&format!("TURB_ENG_CORRECTED_N1:{}", self.number))
+            self.corrected_n1 = reader.read(&format!("TURB ENG CORRECTED_N1:{}", self.number));
+            self.corrected_n2 = reader.read(&format!("TURB ENG CORRECTED_N2:{}", self.number));
         }
     }
 
     impl EngineCorrectedN1 for TestEngine {
         fn corrected_n1(&self) -> Ratio {
             self.corrected_n1
+        }
+    }
+    impl EngineCorrectedN2 for TestEngine {
+        fn corrected_n2(&self) -> Ratio {
+            self.corrected_n2
         }
     }
 
@@ -632,8 +502,8 @@ mod tests {
         fn new() -> Self {
             Self {
                 pneumatic: A320Pneumatic::new(),
-                engine_1: TestEngine::new(1, Ratio::new::<percent>(0.)),
-                engine_2: TestEngine::new(2, Ratio::new::<percent>(0.)),
+                engine_1: TestEngine::new(1, Ratio::new::<percent>(0.), Ratio::new::<percent>(0.)),
+                engine_2: TestEngine::new(2, Ratio::new::<percent>(0.), Ratio::new::<percent>(0.)),
             }
         }
     }
@@ -720,8 +590,8 @@ mod tests {
         }
 
         fn corrected_n1(mut self, corrected_n1: Ratio) -> Self {
-            self.write("TURB_ENG_CORRECTED_N1:1", corrected_n1);
-            self.write("TURB_ENG_CORRECTED_N1:2", corrected_n1);
+            self.write("TURB ENG CORRECTED N1:1", corrected_n1);
+            self.write("TURB ENG CORRECTED N1:2", corrected_n1);
 
             self
         }
