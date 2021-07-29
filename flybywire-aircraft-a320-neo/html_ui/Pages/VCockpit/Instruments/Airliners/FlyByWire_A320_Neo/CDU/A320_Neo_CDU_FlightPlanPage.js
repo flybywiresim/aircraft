@@ -85,6 +85,9 @@ class CDUFlightPlanPage {
             if (wp.endsInDiscontinuity) {
                 waypointsAndMarkers.push({ marker: Markers.FPLN_DISCONTINUITY, fpIndex: i});
             }
+
+            // TODO: Add pseudo-waypoint insertion here
+
             if (i === fpm.getWaypointsCount() - 1) {
                 waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i});
                 // TODO: Rewrite once alt fpln exists
@@ -132,6 +135,7 @@ class CDUFlightPlanPage {
                 const isOverfly = waypointsAndMarkers[winI].wp.additionalData && waypointsAndMarkers[winI].wp.additionalData.overfly;
 
                 // Time
+                // TODO/VNAV: Replace with new VNAV ETE/UTC predictions
                 let time;
                 let timeCell = "----[s-text]";
                 if (ident !== "MANUAL") {
@@ -251,11 +255,12 @@ class CDUFlightPlanPage {
                         bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
                     }
                 }
+
                 // Distance
                 let distance = "";
-
                 // Active waypoint is live distance, others are distances in the flight plan
                 // TODO FIXME: actually use the correct prediction
+                // TODO/VNAV: Replace with new VNAV leg dist predictions
                 if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
                     if (waypointsAndMarkers[winI].wp === fpm.getActiveWaypoint()) {
                         distance = stats.get(waypointsAndMarkers[winI].fpIndex).distanceFromPpos.toFixed(0);
@@ -268,6 +273,7 @@ class CDUFlightPlanPage {
                     distance = distance.toString();
                 }
 
+                // TODO/VNAV: Replace with new VNAV speed constraint data
                 let speedConstraint = "---";
                 if (waypointsAndMarkers[winI].wp.speedConstraint > 10 && ident !== "MANUAL") {
                     speedConstraint = `{magenta}*{end}${waypointsAndMarkers[winI].wp.speedConstraint.toFixed(0)}`;
@@ -292,7 +298,6 @@ class CDUFlightPlanPage {
                         altColor = color;
                     }
                     altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
-
                 } else if (waypointsAndMarkers[winI].wp === fpm.getOrigin()) {
                     const [rwTxt, rwAlt] = getRunwayInfo(fpm.getDepartureRunway());
                     if (rwTxt && rwAlt) {
@@ -553,6 +558,7 @@ class CDUFlightPlanPage {
             let destDistCell = "---";
             let destEFOBCell = "---";
 
+            // TODO/VNAV: Destination time, distance, EFOB predictions
             if (fpm.getDestination()) {
                 const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
                 destDistCell = destStats.distanceFromPpos.toFixed(0);

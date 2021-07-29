@@ -11,7 +11,7 @@ import {
     getSpeedConstraintFromWaypoint,
     waypointToLocation,
 } from '@fmgc/guidance/lnav/legs';
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { WayPoint, WaypointConstraintType } from '@fmgc/types/fstypes/FSTypes';
 import { SegmentType } from '@fmgc/wtsdk';
 import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 
@@ -22,6 +22,8 @@ export class TFLeg implements Leg {
 
     public segment: SegmentType;
 
+    public constraintType: WaypointConstraintType;
+
     private mDistance: NauticalMiles;
 
     constructor(from: WayPoint, to: WayPoint, segment: SegmentType) {
@@ -29,6 +31,7 @@ export class TFLeg implements Leg {
         this.to = to;
         this.mDistance = Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
         this.segment = segment;
+        this.constraintType = to.constraintType;
     }
 
     get isCircularArc(): boolean {
