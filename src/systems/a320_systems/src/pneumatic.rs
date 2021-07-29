@@ -50,7 +50,11 @@ impl A320Pneumatic {
         // Update engine systems
         for engine_system in self.engine_systems.iter_mut() {
             // TODO: This index shift is not the prettiest
-            engine_system.update(context, bmc, engines[engine_system.number - 1]);
+            engine_system.update(
+                context,
+                bmc.engine_data(engine_system.number),
+                engines[engine_system.number - 1],
+            );
         }
 
         // Update APU stuff
@@ -252,8 +256,8 @@ impl IPValveController {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, bmc: &BleedMonitoringComputer) {
-        self.upstream_pressure = bmc.at_engine(self.number).ip_pressure();
+    fn update(&mut self, context: &UpdateContext, engine_data: &impl EngineBleedDataProvider) {
+        self.upstream_pressure = engine_data.ip_pressure();
     }
 }
 
@@ -307,17 +311,16 @@ impl HPValveController {
             + pressure_change_response * self.relative_downstream_pressure_change_rate
     }
 
-    fn update(&mut self, context: &UpdateContext, bmc: &BleedMonitoringComputer) {
-        // TODO: Maybe I should just pass in bmc.at_engine instead of doing it here
-        self.upstream_pressure = bmc.at_engine(self.number).hp_pressure();
-        self.relative_downstream_pressure_change_rate =
-            (bmc.at_engine(self.number).transfer_pressure() - self.previous_downstream_pressure)
-                / self.previous_downstream_pressure
-                / context.delta_as_secs_f64();
-        self.previous_downstream_pressure = bmc.at_engine(self.number).transfer_pressure();
+    fn update(&mut self, context: &UpdateContext, engine_data: &impl EngineBleedDataProvider) {
+        self.upstream_pressure = engine_data.hp_pressure();
+        self.relative_downstream_pressure_change_rate = (engine_data.transfer_pressure()
+            - self.previous_downstream_pressure)
+            / self.previous_downstream_pressure
+            / context.delta_as_secs_f64();
+        self.previous_downstream_pressure = engine_data.transfer_pressure();
 
-        self.current_open_amount = bmc.at_engine(self.number).hpv_open_amount();
-        self.is_prv_open = bmc.at_engine(self.number).is_prv_open();
+        self.current_open_amount = engine_data.hpv_open_amount();
+        self.is_prv_open = engine_data.is_prv_open();
     }
 }
 
@@ -357,9 +360,9 @@ impl PRValveController {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, bmc: &BleedMonitoringComputer) {
-        self.transfer_pressure = bmc.at_engine(self.number).transfer_pressure();
-        self.regulated_pressure = bmc.at_engine(self.number).regulated_pressure();
+    fn update(&mut self, context: &UpdateContext, engine_data: &impl EngineBleedDataProvider) {
+        self.transfer_pressure = engine_data.transfer_pressure();
+        self.regulated_pressure = engine_data.regulated_pressure();
     }
 }
 
@@ -391,71 +394,75 @@ impl EngineBleedSystemData {
         }
     }
 
-    pub fn transfer_pressure(&self) -> Pressure {
+    fn update(&mut self, bleed_system: &EngineBleedSystem) {
+        self.ip_compressor_pressure = bleed_system.ip_compression_chamber.pressure();
+        self.hp_compressor_pressure = bleed_system.hp_compression_chamber.pressure();
+
+        self.transfer_pressure = bleed_system.transfer_pressure_pipe.pressure();
+        self.regulated_pressure = bleed_system.regulated_pressure_pipe.pressure();
+
+        self.is_prv_open = bleed_system.pr_valve.is_open();
+        self.hpv_open_amount = bleed_system.hp_valve.open_amount()
+    }
+}
+impl EngineBleedDataProvider for EngineBleedSystemData {
+    fn transfer_pressure(&self) -> Pressure {
         self.transfer_pressure
     }
 
-    pub fn regulated_pressure(&self) -> Pressure {
+    fn regulated_pressure(&self) -> Pressure {
         self.regulated_pressure
     }
 
-    pub fn is_prv_open(&self) -> bool {
+    fn is_prv_open(&self) -> bool {
         self.is_prv_open
     }
 
-    pub fn hpv_open_amount(&self) -> Ratio {
+    fn hpv_open_amount(&self) -> Ratio {
         self.hpv_open_amount
     }
 
-    pub fn ip_pressure(&self) -> Pressure {
+    fn ip_pressure(&self) -> Pressure {
         self.ip_compressor_pressure
     }
 
-    pub fn hp_pressure(&self) -> Pressure {
+    fn hp_pressure(&self) -> Pressure {
         self.hp_compressor_pressure
     }
+}
+trait EngineBleedDataProvider {
+    fn transfer_pressure(&self) -> Pressure;
+    fn regulated_pressure(&self) -> Pressure;
+    fn is_prv_open(&self) -> bool;
+    fn hpv_open_amount(&self) -> Ratio;
+    fn ip_pressure(&self) -> Pressure;
+    fn hp_pressure(&self) -> Pressure;
 }
 
 struct BleedMonitoringComputer {
     number: usize,
-    engine_bleed_system_datas: [EngineBleedSystemData; 2],
+    engine_bleed_systems_data: [EngineBleedSystemData; 2],
 }
 impl BleedMonitoringComputer {
     fn new(number: usize) -> Self {
         Self {
             number,
-            engine_bleed_system_datas: [
+            engine_bleed_systems_data: [
                 EngineBleedSystemData::new(1),
                 EngineBleedSystemData::new(2),
             ],
         }
     }
 
-    pub fn at_engine(&self, number: usize) -> &EngineBleedSystemData {
-        &self.engine_bleed_system_datas[number - 1]
+    fn engine_data(&self, number: usize) -> &impl EngineBleedDataProvider {
+        &self.engine_bleed_systems_data[number - 1]
     }
 
-    fn update(&mut self, context: &UpdateContext, engines: &[EngineBleedSystem; 2]) {
-        for engine in engines.iter() {
-            self.update_engine_data(engine);
+    fn update(&mut self, context: &UpdateContext, engine_bleed_systems: &[EngineBleedSystem; 2]) {
+        for engine_bleed_system in engine_bleed_systems.iter() {
+            self.engine_bleed_systems_data[engine_bleed_system.number - 1]
+                .update(engine_bleed_system);
         }
-    }
-
-    // TODO: This is ugly. I should use an update method on EngineBleedSystemData
-    fn update_engine_data(&mut self, engine: &EngineBleedSystem) {
-        self.engine_bleed_system_datas[engine.number - 1].ip_compressor_pressure =
-            engine.ip_compression_chamber.pressure();
-        self.engine_bleed_system_datas[engine.number - 1].hp_compressor_pressure =
-            engine.hp_compression_chamber.pressure();
-
-        self.engine_bleed_system_datas[engine.number - 1].transfer_pressure =
-            engine.transfer_pressure_pipe.pressure();
-        self.engine_bleed_system_datas[engine.number - 1].regulated_pressure =
-            engine.regulated_pressure_pipe.pressure();
-
-        self.engine_bleed_system_datas[engine.number - 1].is_prv_open = engine.pr_valve.is_open();
-        self.engine_bleed_system_datas[engine.number - 1].hpv_open_amount =
-            engine.hp_valve.open_amount()
     }
 }
 
@@ -501,7 +508,7 @@ impl EngineBleedSystem {
     fn update<T: EngineCorrectedN1>(
         &mut self,
         context: &UpdateContext,
-        bmc: &BleedMonitoringComputer,
+        bleed_data: &impl EngineBleedDataProvider,
         engine: &T,
     ) {
         // Update engines
@@ -509,9 +516,9 @@ impl EngineBleedSystem {
         self.hp_compression_chamber.update(context, engine);
 
         // Update controllers
-        self.ip_valve_controller.update(context, bmc);
-        self.hp_valve_controller.update(context, bmc);
-        self.pr_valve_controller.update(context, bmc);
+        self.ip_valve_controller.update(context, bleed_data);
+        self.hp_valve_controller.update(context, bleed_data);
+        self.pr_valve_controller.update(context, bleed_data);
 
         // Update valves (open amount)
         self.ip_valve
