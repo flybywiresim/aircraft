@@ -65,6 +65,8 @@ export declare class WayPoint {
 
     speedConstraint: number;
 
+    constraintType: WaypointConstraintType;
+
     additionalData: { [key: string]: any }
 
     _svgElements: any;
@@ -512,6 +514,11 @@ declare enum RunwaySurface {
     Unknown = 254,
     Fs20Material = 512,
     Fs20ApronMaterial = 65283,
+}
+
+declare enum WaypointConstraintType {
+    CLB = 1,
+    DES = 2,
 }
 
 declare function RegisterViewListener(handler: string): void
