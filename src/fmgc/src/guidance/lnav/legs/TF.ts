@@ -4,26 +4,30 @@ import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { MathUtils } from '@shared/MathUtils';
 import { EARTH_RADIUS_NM } from '@fmgc/guidance/Geometry';
 import {
-    AltitudeConstrainedLeg,
+    Leg,
     AltitudeConstraint,
     SpeedConstraint,
     getAltitudeConstraintFromWaypoint,
     getSpeedConstraintFromWaypoint,
-    waypointToTerminatorLocation,
+    waypointToLocation,
 } from '@fmgc/guidance/lnav/legs';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { SegmentType } from '@fmgc/wtsdk';
 
-export class TFLeg implements AltitudeConstrainedLeg {
+export class TFLeg implements Leg {
     public from: WayPoint;
 
     public to: WayPoint;
 
+    public segment: SegmentType;
+
     private mDistance: NauticalMiles;
 
-    constructor(from: WayPoint, to: WayPoint) {
+    constructor(from: WayPoint, to: WayPoint, segment: SegmentType) {
         this.from = from;
         this.to = to;
         this.mDistance = Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
+        this.segment = segment;
     }
 
     get bearing(): Degrees {
@@ -45,8 +49,12 @@ export class TFLeg implements AltitudeConstrainedLeg {
         return getAltitudeConstraintFromWaypoint(this.to);
     }
 
+    get initialLocation(): LatLongData {
+        return waypointToLocation(this.from);
+    }
+
     get terminatorLocation(): LatLongData {
-        return waypointToTerminatorLocation(this.to);
+        return waypointToLocation(this.to);
     }
 
     getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData {
