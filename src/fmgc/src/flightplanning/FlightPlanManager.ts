@@ -28,7 +28,7 @@ import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 
-enum WaypointConstraintType {
+export enum WaypointConstraintType {
     CLB = 1,
     DES = 2,
 }

@@ -452,6 +452,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedDesSpeed = undefined;
         this.managedSpeedTarget = NaN;
         this.managedSpeedTargetIsMach = false;
+        // TODO/VNAV: adjust these
         this.managedSpeedLimit = 250;
         this.managedSpeedLimitAlt = 10000;
         this.managedSpeedClimb = 290;
@@ -1080,6 +1081,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateDisplayedConstraints(true);
     }
 
+    // TODO/VNAV: Speed constraint
     getSpeedConstraint() {
         if (this.flightPlanManager.getIsDirectTo()) {
             return Infinity;
