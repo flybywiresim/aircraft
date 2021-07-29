@@ -15,7 +15,7 @@ const root = join(__dirname, '..', '..');
 process.chdir(src);
 
 module.exports = {
-    input: join(__dirname, 'src/index.ts'),
+    input: join(__dirname, 'index.ts'),
     plugins: [
         nodeResolve({ extensions }),
         commonjs(),
