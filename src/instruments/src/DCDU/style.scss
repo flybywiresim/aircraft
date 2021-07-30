@@ -15,7 +15,7 @@
 /* pixels for screen */
 @import "../Common/pixels";
 .LcdOverlayDcdu {
-  @include pixels;
+  @include pixels($checkered: true);
 }
 
 .dcdu-lines {

@@ -48,16 +48,22 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
         const camXyz = useGameVar('CAMERA POS IN PLANE', 'xyz', 200);
 
         useEffect(() => {
+            // ZPlane - Every MFD + ISIS + DCDU
             // zTarget: Target zPos that marks max pixel effect point (11.625z @ 100%, 11.7z @ 75%)
             const zTarget = (3975 - zoomLevel) / 333.33;
             // zΔ: Diff between current zPos and zTarget
             const zDelta = camXyz.z - zTarget;
             // opacity: 4zΔ + 0.5 < 0.5
             setOpacity(Math.min(0.5, 4 * (zDelta) + 0.5));
-            setSimVar('L:A32NX_LCD_MASK_OPACITY', opacity, 'number');
+            setSimVar('L:A32NX_MFD_MASK_OPACITY', opacity, 'number');
+
+            // YPlane = MCDU
+            const yTarget = (zoomLevel + 423.33) / 333.33;
+            const yDelta = yTarget - camXyz.y;
+            setSimVar('L:A32NX_MCDU_MASK_OPACITY', Math.min(1, 4 * (yDelta) + 0.5), 'number');
         }, [camXyz, zoomLevel]);
     } else {
-        const [maskOpacity] = useSimVar('L:A32NX_LCD_MASK_OPACITY', 'number');
+        const [maskOpacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 200);
         useEffect(() => {
             setOpacity(maskOpacity);
         }, [maskOpacity]);

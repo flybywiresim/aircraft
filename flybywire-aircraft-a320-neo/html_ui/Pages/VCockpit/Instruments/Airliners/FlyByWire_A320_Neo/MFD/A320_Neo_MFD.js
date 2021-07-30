@@ -106,7 +106,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.info.showILS(this.showILS);
 
         // LCD OVERLAY
-        this.lcdoverlay = document.querySelector("#LcdOverlay");
+        this.lcdOverlay = document.querySelector("#LcdOverlay");
 
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector("#MfdEngTest");
@@ -180,7 +180,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             return;
         }
 
-        this.lcdoverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_LCD_MASK_OPACITY", "number");
+        this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
 
         this.displayUnit.update(deltaTime);
 

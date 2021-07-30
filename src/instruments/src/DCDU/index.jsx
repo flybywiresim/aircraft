@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
+
 import {
     renderTarget,
     useInteractionEvent,
@@ -15,34 +16,25 @@ function powerAvailable() {
 }
 
 function SelfTest() {
-    const opacity = getSimVar('L:A32NX_LCD_MASK_OPACITY', 'number');
     return (
-        <>
-            <div className="LcdOverlayDcdu" style={{ opacity }} />
-            <svg className="text-wrapper">
-                <text x="246" y="170">SELF TEST IN PROGRESS</text>
-                <text x="246" y="210">(MAX 10 SECONDS)</text>
-            </svg>
-        </>
+        <svg className="text-wrapper">
+            <text x="246" y="170">SELF TEST IN PROGRESS</text>
+            <text x="246" y="210">(MAX 10 SECONDS)</text>
+        </svg>
     );
 }
 
 function WaitingForData() {
-    const opacity = getSimVar('L:A32NX_LCD_MASK_OPACITY', 'number');
     return (
-        <>
-            <div className="LcdOverlayDcdu" style={{ opacity }} />
-            <svg className="text-wrapper">
-                <text x="246" y="170">WAITING FOR DATA</text>
-                <text x="246" y="210">(MAX 30 SECONDS)</text>
-            </svg>
-        </>
+        <svg className="text-wrapper">
+            <text x="246" y="170">WAITING FOR DATA</text>
+            <text x="246" y="210">(MAX 30 SECONDS)</text>
+        </svg>
     );
 }
 
 function Idle() {
     const [inop, setInop] = useState(false);
-    const opacity = getSimVar('L:A32NX_LCD_MASK_OPACITY', 'number');
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
         if (!inop) {
@@ -55,7 +47,6 @@ function Idle() {
 
     return (
         <>
-            <div className="LcdOverlayDcdu" style={{ opacity }} />
             <svg className="dcdu-lines">
                 <g>
                     <path d="m 21 236 h 450" />
@@ -70,9 +61,9 @@ function Idle() {
         </>
     );
 }
-
 function DCDU() {
     const [state, setState] = useState('DEFAULT');
+    const [opacity, setOpacity] = useState('0');
 
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
@@ -82,6 +73,7 @@ function DCDU() {
         } else if (!powerAvailable()) {
             setState('OFF');
         }
+        setOpacity(getSimVar('L:A32NX_MFD_MASK_OPACITY', 'number'));
     });
 
     switch (state) {
@@ -101,16 +93,32 @@ function DCDU() {
                 setState('WAITING');
             }
         }, 8000);
-        return <SelfTest />;
+        return (
+            <>
+                <div className="LcdOverlayDcdu" style={{ opacity }} />
+                <SelfTest />
+            </>
+        );
+
     case 'WAITING':
         setTimeout(() => {
             if (powerAvailable()) {
                 setState('IDLE');
             }
         }, 12000);
-        return <WaitingForData />;
+        return (
+            <>
+                <div className="LcdOverlayDcdu" style={{ opacity }} />
+                <WaitingForData />
+            </>
+        );
     case 'IDLE':
-        return <Idle />;
+        return (
+            <>
+                <div className="LcdOverlayDcdu" style={{ opacity }} />
+                <Idle />
+            </>
+        );
     default:
         throw new RangeError();
     }
