@@ -664,7 +664,6 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD2</PART_ID>
                     <!-- Pixelated screens needs more light -->
-                    <!-- Pixels disabled for now -->
                 </UseTemplate>
 
                 <!-- F/O WX SCREEN -->
