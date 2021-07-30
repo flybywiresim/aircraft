@@ -1,17 +1,26 @@
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 
 export class FailuresOrchestrator {
-    private activeFailures: Record<number, boolean> = {};
+    private failures: Record<number, Failure> = {};
 
     private activateFailureQueue: QueuedSimVarWriter;
 
     private deactivateFailureQueue: QueuedSimVarWriter;
 
     constructor(simVarPrefix: string) {
-        const activateSimVar = `${simVarPrefix}FAILURE_ACTIVATE`;
+        const activateSimVar = `L:${simVarPrefix}FAILURE_ACTIVATE`;
         this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(activateSimVar));
-        const deactivateSimVar = `${simVarPrefix}FAILURE_DEACTIVATE`;
+        const deactivateSimVar = `L:${simVarPrefix}FAILURE_DEACTIVATE`;
         this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(deactivateSimVar));
+    }
+
+    add(identifier: number, name: string) {
+        this.failures[identifier] = {
+            identifier,
+            name,
+            isActive: false,
+            isChanging: false,
+        };
     }
 
     update() {
@@ -23,19 +32,44 @@ export class FailuresOrchestrator {
      * Activates the failure with the given identifier.
      */
     async activate(identifier: number): Promise<void> {
+        const failure = this.getFailure(identifier);
+        failure.isChanging = true;
         await this.activateFailureQueue.write(identifier);
-        this.activeFailures[identifier] = true;
+        failure.isChanging = false;
+        failure.isActive = true;
     }
 
     /**
      * Deactivates the failure with the given identifier.
      */
     async deactivate(identifier: number): Promise<void> {
+        const failure = this.getFailure(identifier);
+        failure.isChanging = true;
         await this.deactivateFailureQueue.write(identifier);
-        this.activeFailures[identifier] = false;
+        failure.isChanging = false;
+        failure.isActive = false;
     }
 
     isActive(identifier: number): boolean {
-        return this.activeFailures[identifier] === true;
+        return this.getFailure(identifier).isActive === true;
     }
+
+    isChanging(identifier: number): boolean {
+        return this.getFailure(identifier).isChanging === true;
+    }
+
+    getFailures(): Readonly<Record<number, Readonly<Failure>>> {
+        return this.failures;
+    }
+
+    private getFailure(identifier: number) {
+        return this.failures[identifier];
+    }
+}
+
+export interface Failure {
+    identifier: number,
+    name: string,
+    isActive: boolean,
+    isChanging: boolean,
 }
