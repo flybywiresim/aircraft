@@ -10,10 +10,8 @@ export class FailuresConsumer {
     private deactivateFailureReader: QueuedSimVarReader;
 
     constructor(prefix: string) {
-        const activateSimVar = `${prefix}FAILURE_ACTIVATE`;
-        this.activateFailureReader = new QueuedSimVarReader(new SimVarReaderWriter(activateSimVar));
-        const deactivateSimVar = `${prefix}FAILURE_DEACTIVATE`;
-        this.deactivateFailureReader = new QueuedSimVarReader(new SimVarReaderWriter(deactivateSimVar));
+        this.activateFailureReader = new QueuedSimVarReader(new SimVarReaderWriter(`L:${prefix}_FAILURE_ACTIVATE`));
+        this.deactivateFailureReader = new QueuedSimVarReader(new SimVarReaderWriter(`L:${prefix}_FAILURE_DEACTIVATE`));
     }
 
     register(identifier: number, callback?: (isActive: boolean) => void) {

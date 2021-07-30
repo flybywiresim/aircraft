@@ -8,10 +8,8 @@ export class FailuresOrchestrator {
     private deactivateFailureQueue: QueuedSimVarWriter;
 
     constructor(simVarPrefix: string) {
-        const activateSimVar = `L:${simVarPrefix}FAILURE_ACTIVATE`;
-        this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(activateSimVar));
-        const deactivateSimVar = `L:${simVarPrefix}FAILURE_DEACTIVATE`;
-        this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(deactivateSimVar));
+        this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(`L:${simVarPrefix}_FAILURE_ACTIVATE`));
+        this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(`L:${simVarPrefix}_FAILURE_DEACTIVATE`));
     }
 
     add(identifier: number, name: string) {
