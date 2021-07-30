@@ -521,14 +521,10 @@ mod tests {
 
         brake_actuator.set_position_demand(1.2);
 
-        for loop_idx in 0..15 {
+        for _loop_idx in 0..15 {
             brake_actuator.update(
                 &context(Duration::from_secs_f64(0.1)),
                 Pressure::new::<psi>(BrakeActuator::PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI),
-            );
-            println!(
-                "Loop {}, position: {}",
-                loop_idx, brake_actuator.current_position
             );
         }
 
