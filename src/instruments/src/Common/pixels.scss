@@ -13,7 +13,6 @@
     background-position: 1px 0;
     background-color: rgba(80, 80, 80, 0.2);
   } @else {
-    /* pixels disabled for now */
     @if $bleed {
       /* subtle tint, bleed and edge bleed */
       background-color: rgba(0, 0, 255, 0.025);
