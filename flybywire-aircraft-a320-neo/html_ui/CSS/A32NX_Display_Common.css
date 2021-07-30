@@ -54,7 +54,7 @@ text {
   z-index: 999;
   position: absolute;
   /* custom svg */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 0 V10 Z H10 Z' stroke='%23000' stroke-width='3' fill='none'/%3E%3C/svg%3E");
+  /* pixels disabled for now */
   background-size: 2px;
   opacity: 0.35;
   /* subtle tint and edge bleed */

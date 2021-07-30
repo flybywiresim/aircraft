@@ -13,7 +13,7 @@
     background-position: 1px 0;
     background-color: rgba(80, 80, 80, 0.2);
   } @else {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 0 V10 Z H10 Z' stroke='%23000' stroke-width='#{$spacing}' fill='none'/%3E%3C/svg%3E");
+    /* pixels disabled for now */
     @if $bleed {
       /* subtle tint, bleed and edge bleed */
       background-color: rgba(0, 0, 255, 0.025);

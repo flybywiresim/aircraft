@@ -13,10 +13,7 @@
 }
 
 /* pixels for screen */
-@import "../Common/pixels";
-#panel:after {
-  @include pixels($checkered: true);
-}
+/* pixels disabled for now */
 
 .dcdu-lines {
   position: absolute;
