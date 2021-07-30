@@ -969,6 +969,10 @@
       0 | inactive
       1 | active
 
+- A32NX_LCD_MASK_OPACITY
+    - Number
+    - Current LCD mask opacity, used for driving MFD LCD display pixels effect
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X

@@ -15,25 +15,34 @@ function powerAvailable() {
 }
 
 function SelfTest() {
+    const opacity = getSimVar('L:A32NX_LCD_MASK_OPACITY', 'number');
     return (
-        <svg className="text-wrapper">
-            <text x="246" y="170">SELF TEST IN PROGRESS</text>
-            <text x="246" y="210">(MAX 10 SECONDS)</text>
-        </svg>
+        <>
+            <div className="LcdOverlayDcdu" style={{ opacity }} />
+            <svg className="text-wrapper">
+                <text x="246" y="170">SELF TEST IN PROGRESS</text>
+                <text x="246" y="210">(MAX 10 SECONDS)</text>
+            </svg>
+        </>
     );
 }
 
 function WaitingForData() {
+    const opacity = getSimVar('L:A32NX_LCD_MASK_OPACITY', 'number');
     return (
-        <svg className="text-wrapper">
-            <text x="246" y="170">WAITING FOR DATA</text>
-            <text x="246" y="210">(MAX 30 SECONDS)</text>
-        </svg>
+        <>
+            <div className="LcdOverlayDcdu" style={{ opacity }} />
+            <svg className="text-wrapper">
+                <text x="246" y="170">WAITING FOR DATA</text>
+                <text x="246" y="210">(MAX 30 SECONDS)</text>
+            </svg>
+        </>
     );
 }
 
 function Idle() {
     const [inop, setInop] = useState(false);
+    const opacity = getSimVar('L:A32NX_LCD_MASK_OPACITY', 'number');
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
         if (!inop) {
@@ -46,6 +55,7 @@ function Idle() {
 
     return (
         <>
+            <div className="LcdOverlayDcdu" style={{ opacity }} />
             <svg className="dcdu-lines">
                 <g>
                     <path d="m 21 236 h 450" />

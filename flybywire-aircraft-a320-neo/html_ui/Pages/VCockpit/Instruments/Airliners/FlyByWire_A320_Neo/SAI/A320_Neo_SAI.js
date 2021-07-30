@@ -12,9 +12,12 @@ class A320_Neo_SAI extends BaseAirliners {
         this.addIndependentElementContainer(new NavSystemElementContainer("AttReset", "AttReset", new A320_Neo_SAI_AttReset()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Bugs", "Bugs", new A320_Neo_SAI_Bugs()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Pressure", "Pressure", new A320_Neo_SAI_Pressure()));
+        // LCD OVERLAY
+        this.lcdoverlay = document.querySelector("#LcdOverlay");
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+        this.lcdoverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_LCD_MASK_OPACITY", "number");
     }
     onEvent(_event) {
     }

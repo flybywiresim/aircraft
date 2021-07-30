@@ -157,6 +157,7 @@
 1. [ADIRS] SAT, TAT, and ISA indications depend on the selected ADR (1 or 3) - @davidwalschots (David Walschots)
 1. [PRESS] First implementation of automatic pressurization system - @MJuhe (Miquel)
 2. [MISC] Added annunciator lights to interactive checklist - @oim1 (oim)
+1. [DISPLAYS] Improved pixelated screens, only appears when camera is close to displays - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
