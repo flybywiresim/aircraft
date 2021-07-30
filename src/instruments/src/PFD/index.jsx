@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 import { Horizon } from './AttitudeIndicatorHorizon.jsx';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed.jsx';
 import { LandingSystem } from './LandingSystemIndicator.jsx';
@@ -38,6 +39,9 @@ class PFD extends Component {
         this.AirspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
 
         this.LSButtonPressed = false;
+
+        this.failuresConsumer = new FailuresConsumer('A32NX');
+        this.failuresConsumer.register(this.isCaptainSide() ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
     }
 
     componentDidMount() {
@@ -89,6 +93,7 @@ class PFD extends Component {
 
     update(_deltaTime) {
         this.deltaTime = _deltaTime;
+        this.failuresConsumer.update();
         this.forceUpdate();
     }
 
@@ -181,6 +186,7 @@ class PFD extends Component {
             <DisplayUnit
                 electricitySimvar={this.isCaptainSide() ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
                 potentiometerIndex={this.isCaptainSide() ? 88 : 90}
+                failed={this.failuresConsumer.isActive(this.isCaptainSide() ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay)}
             >
                 <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
                     <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} isAttExcessive={this.isAttExcessive} deltaTime={this.deltaTime} />

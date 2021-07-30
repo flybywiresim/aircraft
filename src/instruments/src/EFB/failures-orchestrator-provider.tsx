@@ -1,13 +1,13 @@
 import React from 'react';
-import { FailuresOrchestrator } from '@flybywiresim/failures';
+import { A320Failure, FailuresOrchestrator } from '@flybywiresim/failures';
 import { useUpdate } from '@instruments/common/hooks';
 
 const context = new FailuresOrchestrator('A32NX');
-context.add(1, 'Captain PFD display');
-context.add(2, 'F/O PFD display');
-context.add(3, 'TR 1');
-context.add(4, 'TR 2');
-context.add(5, 'TR ESS');
+context.add(A320Failure.LeftPfdDisplay, 'Captain PFD display');
+context.add(A320Failure.RightPfdDisplay, 'F/O PFD display');
+context.add(A320Failure.TransformerRectifier1, 'TR 1');
+context.add(A320Failure.TransformerRectifier2, 'TR 2');
+context.add(A320Failure.TransformerRectifierEssential, 'TR ESS');
 
 const Context = React.createContext<FailuresOrchestrator>(context);
 
