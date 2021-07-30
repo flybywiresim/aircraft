@@ -116,6 +116,10 @@ html body {
 
 .leaflet-container {
   @apply rounded-2xl;
+
+  .leaflet-control-attribution {
+    @apply hidden;
+  }
 }
 
 /* ---- Dispatch Components ---- */

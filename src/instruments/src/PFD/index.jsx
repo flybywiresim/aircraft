@@ -149,8 +149,14 @@ class PFD extends Component {
 
         const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
         const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
-        const isManaged = ((armedVerticalBitmask >> 1) & 1) || activeVerticalMode === 21 || activeVerticalMode === 20;
-        const targetAlt = isManaged ? getSimVar('L:A32NX_AP_CSTN_ALT', 'feet') : Simplane.getAutoPilotDisplayedAltitudeLockValue();
+        const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
+        const fmgcFlightPhase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
+        const cstnAlt = getSimVar('L:A32NX_AP_CSTN_ALT', 'feet');
+        const altArmed = (armedVerticalBitmask >> 1) & 1;
+        const clbArmed = (armedVerticalBitmask >> 2) & 1;
+        const navArmed = (armedLateralBitmask >> 0) & 1;
+        const isManaged = altArmed || activeVerticalMode === 21 || activeVerticalMode === 20 || (!!cstnAlt && fmgcFlightPhase < 2 && clbArmed && navArmed);
+        const targetAlt = isManaged ? cstnAlt : Simplane.getAutoPilotDisplayedAltitudeLockValue();
 
         let targetSpeed;
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
@@ -180,7 +186,7 @@ class PFD extends Component {
         return (
             <DisplayUnit
                 electricitySimvar={this.isCaptainSide() ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
-                potentiometerIndex={this.isCaptainSide() === 1 ? 88 : 90}
+                potentiometerIndex={this.isCaptainSide() ? 88 : 90}
             >
                 <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
                     <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} isAttExcessive={this.isAttExcessive} deltaTime={this.deltaTime} />
