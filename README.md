@@ -67,7 +67,9 @@ This branch is used from time-to-time for experimental features under heavy deve
 
 ## Installation
 
-### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
+**Please Note**: Prior to asking for support for any installation issue follow ALL the steps outlined below:
+
+---
 
 Open the zip that you downloaded from one of the links above, and drag the `flybywire-aircraft-a320-neo` folder inside the zip into your `Community` folder.
 
