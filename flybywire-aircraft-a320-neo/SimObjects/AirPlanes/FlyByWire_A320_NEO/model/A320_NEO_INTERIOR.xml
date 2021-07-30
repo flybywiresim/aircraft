@@ -791,7 +791,6 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
                     <!-- Pixelated screens needs more light -->
-                    <!-- Pixels disabled for now -->
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
