@@ -648,7 +648,6 @@
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
                     <!-- Pixelated screens needs more light -->
-                    <!-- Pixels disabled for now -->
                 </UseTemplate>
 
                 <!-- F/O ND SCREEN -->
