@@ -54,7 +54,6 @@ text {
   z-index: 999;
   position: absolute;
   /* custom svg */
-  /* pixels disabled for now */
   background-size: 2px;
   opacity: 0.35;
   /* subtle tint and edge bleed */
