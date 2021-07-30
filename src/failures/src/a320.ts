@@ -4,6 +4,6 @@ export const A320Failure = Object.freeze({
     TransformerRectifier1: 24000,
     TransformerRectifier2: 24001,
     TransformerRectifierEssential: 24002,
-    LeftPfdDisplay: 25000,
-    RightPfdDisplay: 25001,
+    LeftPfdDisplay: 31000,
+    RightPfdDisplay: 31001,
 });
