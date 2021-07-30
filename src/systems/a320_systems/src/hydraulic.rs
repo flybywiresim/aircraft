@@ -22,7 +22,10 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
-        linear_actuator::{HydraulicActuatorAssembly, HydraulicAssemblyController, LinearActuator},
+        linear_actuator::{
+            HydraulicActuatorAssembly, HydraulicAssemblyController, LinearActuator,
+            LinearActuatorMode,
+        },
         rigid_body::RigidBodyOnHingeAxis,
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
@@ -53,6 +56,7 @@ fn cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
         VolumeRate::new::<gallon_per_second>(0.01),
         600000.,
         15000.,
+        500.,
     )
 }
 
@@ -1589,7 +1593,7 @@ struct A320DoorController {
 }
 impl A320DoorController {
     // Delay the hydraulic valves send a open request when request is closing (this is done so uplock can be easily unlocked without friction)
-    const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(400);
+    const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(300);
 
     // Delay from the ground crew unlocking the door to the time they start requiring up movement in control panel
     const DELAY_UNLOCK_TO_HYDRAULIC_CONTROL: Duration = Duration::from_secs(5);
@@ -1611,22 +1615,22 @@ impl A320DoorController {
 
     fn update(&mut self, context: &UpdateContext, door: &Door, pressure_available: Pressure) {
         self.state = self.determine_mode(door, pressure_available);
-        self.update_timers(context, pressure_available);
+        self.update_timers(context);
         self.update_actions_from_state();
 
-        println!(
-            "REQ:{:.1} / ControlReq {:.1} / STATE:{}/ NoctrlTime:{:.1}/ HydTime:{:.1} / Shouldunlock {} / Press avail{:.0}",
-            self.position_requested,
-            self.control_position_request,
-            self.state as u8,
-            self.duration_in_no_control.as_secs_f64(),
-            self.duration_in_hyd_control.as_secs_f64(),
-            self.should_unlock,
-            pressure_available.get::<psi>()
-        );
+        // println!(
+        //     "REQ:{:.1} / ControlReq {:.1} / STATE:{}/ NoctrlTime:{:.1}/ HydTime:{:.1} / Shouldunlock {} / Press avail{:.0}",
+        //     self.position_requested,
+        //     self.control_position_request,
+        //     self.state as u8,
+        //     self.duration_in_no_control.as_secs_f64(),
+        //     self.duration_in_hyd_control.as_secs_f64(),
+        //     self.should_unlock,
+        //     pressure_available.get::<psi>()
+        // );
     }
 
-    fn update_timers(&mut self, context: &UpdateContext, pressure_available: Pressure) {
+    fn update_timers(&mut self, context: &UpdateContext) {
         if self.state == DoorControlState::NoControl {
             self.duration_in_no_control += context.delta();
         } else {
@@ -1675,8 +1679,6 @@ impl A320DoorController {
             DoorControlState::NoControl => {
                 if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL {
                     DoorControlState::HydControl
-                } else if pressure_available > Pressure::new::<psi>(300.) {
-                    DoorControlState::HydControl
                 } else {
                     DoorControlState::NoControl
                 }
@@ -1687,16 +1689,12 @@ impl A320DoorController {
                     DoorControlState::DownLocked
                 } else if door.position() > 0.9 && self.position_requested > 0.5 {
                     DoorControlState::UpLocked
-                } else if pressure_available < Pressure::new::<psi>(300.)
-                    && self.duration_in_hyd_control > Duration::from_secs(1)
-                {
-                    DoorControlState::NoControl
                 } else {
                     DoorControlState::HydControl
                 }
             }
             DoorControlState::UpLocked => {
-                if self.position_requested < 1. && pressure_available > Pressure::new::<psi>(2000.)
+                if self.position_requested < 1. && pressure_available > Pressure::new::<psi>(1000.)
                 {
                     DoorControlState::HydControl
                 } else {
@@ -1712,8 +1710,12 @@ impl A320DoorController {
     }
 }
 impl HydraulicAssemblyController for A320DoorController {
-    fn should_close_control_valves(&self) -> bool {
-        self.should_close_valves
+    fn mode_requested(&self) -> LinearActuatorMode {
+        if self.should_close_valves {
+            LinearActuatorMode::ClosedValves
+        } else {
+            LinearActuatorMode::PositionControl
+        }
     }
     fn position_request(&self) -> f64 {
         self.control_position_request

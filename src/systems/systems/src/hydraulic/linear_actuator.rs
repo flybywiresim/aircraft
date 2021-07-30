@@ -24,6 +24,12 @@ pub trait Actuator {
 }
 
 #[derive(PartialEq, Clone, Copy)]
+pub enum LinearActuatorMode {
+    ClosedValves = 0,
+    PositionControl = 1,
+    Damping = 2,
+}
+#[derive(PartialEq, Clone, Copy)]
 pub struct LinearActuator {
     number_of_actuators: u8,
 
@@ -56,12 +62,14 @@ pub struct LinearActuator {
     volume_to_actuator_accumulator: Volume,
     volume_to_res_accumulator: Volume,
 
+    mode: LinearActuatorMode,
     is_control_valves_closed: bool,
     closed_valves_reference_position: f64,
     opened_valves_target_position: f64,
 
     fluid_compression_spring_constant: f64,
     fluid_compression_damping_constant: f64,
+    active_damping_constant: f64,
 }
 impl LinearActuator {
     const DEFAULT_I_GAIN: f64 = 0.2;
@@ -75,6 +83,7 @@ impl LinearActuator {
         max_flow: VolumeRate,
         spring: f64,
         damping: f64,
+        active_damping: f64,
     ) -> Self {
         let max_pos = connected_body.max_linear_distance_to_anchor();
         let min_pos = connected_body.min_linear_distance_to_anchor();
@@ -122,18 +131,36 @@ impl LinearActuator {
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
 
+            mode: LinearActuatorMode::ClosedValves,
             is_control_valves_closed: false,
             closed_valves_reference_position: 0.,
             opened_valves_target_position: 0.,
 
             fluid_compression_spring_constant: spring,
             fluid_compression_damping_constant: damping,
+            active_damping_constant: active_damping,
         }
     }
 
-    fn update(&mut self, connected_body: &mut RigidBodyOnHingeAxis, available_pressure: Pressure) {
-        self.update_force(available_pressure);
+    fn update(
+        &mut self,
+        connected_body: &mut RigidBodyOnHingeAxis,
+        requested_mode: LinearActuatorMode,
+        available_pressure: Pressure,
+    ) {
+        self.update_mode(requested_mode);
+        self.update_force(requested_mode, available_pressure);
         connected_body.apply_control_arm_force(self.force);
+    }
+
+    fn update_mode(&mut self, requested_mode: LinearActuatorMode) {
+        match requested_mode {
+            LinearActuatorMode::ClosedValves => {
+                self.close_control_valves();
+            }
+            LinearActuatorMode::PositionControl => self.open_control_valves_for_position_control(),
+            LinearActuatorMode::Damping => self.mode = LinearActuatorMode::Damping,
+        }
     }
 
     fn update_after_rigid_body(
@@ -181,25 +208,30 @@ impl LinearActuator {
         self.volume_to_res_accumulator += Volume::new::<cubic_meter>(volume_to_reservoir);
     }
 
-    fn update_force(&mut self, hydraulic_pressure: Pressure) {
-        if self.is_control_valves_closed {
+    fn update_force(&mut self, current_mode: LinearActuatorMode, hydraulic_pressure: Pressure) {
+        if self.mode == LinearActuatorMode::ClosedValves {
             let position_error = self.closed_valves_reference_position - self.position;
             self.force = position_error * self.fluid_compression_spring_constant
                 - self.speed * self.fluid_compression_damping_constant;
+        } else if self.mode == LinearActuatorMode::Damping {
+            self.force = -self.speed * self.active_damping_constant;
         } else {
             self.compute_control_force(hydraulic_pressure);
         }
     }
 
     fn close_control_valves(&mut self) {
-        if !self.is_control_valves_closed {
+        if self.mode != LinearActuatorMode::ClosedValves {
             self.closed_valves_reference_position = self.position;
-            self.is_control_valves_closed = true;
+            self.mode = LinearActuatorMode::ClosedValves;
         }
     }
 
-    fn open_control_valves_start_position_control(&mut self, target_position: f64) {
-        self.is_control_valves_closed = false;
+    fn open_control_valves_for_position_control(&mut self) {
+        self.mode = LinearActuatorMode::PositionControl;
+    }
+
+    fn set_position_target(&mut self, target_position: f64) {
         self.opened_valves_target_position = target_position;
     }
 
@@ -260,7 +292,7 @@ impl Actuator for LinearActuator {
 }
 
 pub trait HydraulicAssemblyController {
-    fn should_close_control_valves(&self) -> bool;
+    fn mode_requested(&self) -> LinearActuatorMode;
     fn position_request(&self) -> f64;
     fn should_lock(&self) -> bool;
     fn lock_position_request(&self) -> f64;
@@ -287,12 +319,8 @@ impl HydraulicActuatorAssembly {
         context: &UpdateContext,
         available_pressure: Pressure,
     ) {
-        if assembly_controller.should_close_control_valves() {
-            self.linear_actuator.close_control_valves();
-        } else {
-            self.linear_actuator
-                .open_control_valves_start_position_control(assembly_controller.position_request());
-        }
+        self.linear_actuator
+            .set_position_target(assembly_controller.position_request());
 
         if assembly_controller.should_lock() {
             self.rigid_body
@@ -301,17 +329,22 @@ impl HydraulicActuatorAssembly {
             self.rigid_body.unlock();
         }
 
-        self.linear_actuator
-            .update(&mut self.rigid_body, available_pressure);
-        self.rigid_body.update(context);
-        self.linear_actuator
-            .update_after_rigid_body(&self.rigid_body, context);
+        if !self.rigid_body.is_locked() {
+            self.linear_actuator.update(
+                &mut self.rigid_body,
+                assembly_controller.mode_requested(),
+                available_pressure,
+            );
+            self.rigid_body.update(context);
+            self.linear_actuator
+                .update_after_rigid_body(&self.rigid_body, context);
 
-        println!(
-            "Current position {:.3}, dt{:.3}",
-            self.position(),
-            context.delta_as_secs_f64()
-        );
+            println!(
+                "Current position {:.3}, dt{:.3}",
+                self.position(),
+                context.delta_as_secs_f64()
+            );
+        }
     }
 
     pub fn is_locked(&self) -> bool {
@@ -350,7 +383,11 @@ mod tests {
         let actuator_position_init = actuator.position;
 
         for _ in 0..5 {
-            actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
+            actuator.update(
+                &mut rigid_body,
+                LinearActuatorMode::ClosedValves,
+                Pressure::new::<psi>(1500.),
+            );
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
@@ -389,9 +426,12 @@ mod tests {
 
         let actuator_position_init = actuator.position;
 
-        actuator.close_control_valves();
         for _ in 0..100 {
-            actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
+            actuator.update(
+                &mut rigid_body,
+                LinearActuatorMode::ClosedValves,
+                Pressure::new::<psi>(1500.),
+            );
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
@@ -443,9 +483,13 @@ mod tests {
         let actuator_position_init = actuator.position;
 
         rigid_body.unlock();
-        actuator.open_control_valves_start_position_control(1.0);
+        actuator.set_position_target(1.);
         for _ in 0..700 {
-            actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
+            actuator.update(
+                &mut rigid_body,
+                LinearActuatorMode::PositionControl,
+                Pressure::new::<psi>(1500.),
+            );
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
@@ -493,9 +537,13 @@ mod tests {
         let actuator_position_init = actuator.position;
 
         rigid_body.unlock();
-        actuator.open_control_valves_start_position_control(1.0);
+        actuator.set_position_target(1.0);
         for _ in 0..700 {
-            actuator.update(&mut rigid_body, Pressure::new::<psi>(1500.));
+            actuator.update(
+                &mut rigid_body,
+                LinearActuatorMode::PositionControl,
+                Pressure::new::<psi>(1500.),
+            );
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
@@ -579,6 +627,7 @@ mod tests {
             VolumeRate::new::<gallon_per_second>(0.008),
             800000.,
             15000.,
+            500.,
         )
     }
 }
