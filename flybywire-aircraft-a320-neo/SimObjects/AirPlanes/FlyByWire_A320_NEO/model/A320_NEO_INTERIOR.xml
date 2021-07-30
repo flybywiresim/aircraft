@@ -876,7 +876,6 @@
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Pixelated screens needs more light -->
-                    <!-- Pixels disabled for now -->
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
