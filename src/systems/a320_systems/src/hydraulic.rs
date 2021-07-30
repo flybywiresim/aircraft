@@ -3203,13 +3203,14 @@ mod tests {
             // Enabled on cold start
             assert!(test_bed.is_ptu_enabled());
 
-            // Ptu push button disables PTU accordingly
-            test_bed = test_bed.set_cargo_door_state(1.).run_one_tick();
-            assert!(!test_bed.is_ptu_enabled());
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+            // Ptu disabled from cargo operation
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+            );
+
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.run_waiting_for(
-                A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
+                Duration::from_secs(25)+A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
             ); // Should re enabled after 40s
             assert!(test_bed.is_ptu_enabled());
         }
@@ -3249,11 +3250,15 @@ mod tests {
 
             assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
-            test_bed = test_bed.set_cargo_door_state(1.0).run_one_tick();
+            // Need to wait for operator to first unlock, then activate hydraulic control
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+            );
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
+            // Wait for the door to fully open
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(25));
+            assert!(test_bed.is_cargo_fwd_door_locked_up());
 
             test_bed = test_bed.run_waiting_for(
                 A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
@@ -5288,8 +5293,11 @@ mod tests {
 
             test_bed = test_bed
                 .dc_ground_service_lost()
-                .set_cargo_door_state(1.0)
-                .run_one_tick();
+                .open_fwd_cargo_door()
+                .run_waiting_for(
+                    Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                );
+
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
         }
 
@@ -5398,12 +5406,14 @@ mod tests {
 
             assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            test_bed = test_bed.set_cargo_door_state(1.0).run_one_tick();
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+            );
 
             assert!(!test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            // Ptu should reactivate after 40s
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(41));
+            // Ptu should reactivate after door fully opened + 40s
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(25) + Duration::from_secs(41));
 
             assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
         }
