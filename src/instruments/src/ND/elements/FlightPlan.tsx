@@ -174,10 +174,10 @@ const WaypointMarker: FC<WaypointMarkerProps> = ({ ident, position, altitudeCons
         default:
             throw new Error(`Invalid leg altitude constraint type for leg '${ident}'.`);
         }
+    }
 
-        if (speedConstraint) {
-            constraintText.push(`${Math.round(speedConstraint.speed)}KT`);
-        }
+    if (constraints && speedConstraint) {
+        constraintText.push(`${Math.round(speedConstraint.speed)}KT`);
     }
 
     return (
