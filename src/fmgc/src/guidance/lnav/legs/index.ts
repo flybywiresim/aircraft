@@ -60,11 +60,11 @@ export interface Leg extends Guidable {
 }
 
 export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstraint | undefined {
-    if (wp.altDesc && wp.altitude1) {
+    if (wp.legAltitudeDescription && wp.legAltitude1) {
         const ac: Partial<AltitudeConstraint> = {};
-        ac.altitude1 = wp.altitude1;
+        ac.altitude1 = wp.legAltitude1;
         ac.altitude2 = undefined;
-        switch (wp.altDesc) {
+        switch (wp.legAltitudeDescription) {
         case 1:
             ac.type = AltitudeConstraintType.at;
             break;
@@ -76,7 +76,7 @@ export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstra
             break;
         case 4:
             ac.type = AltitudeConstraintType.range;
-            ac.altitude2 = wp.altitude2;
+            ac.altitude2 = wp.legAltitude2;
             break;
         default:
             break;
