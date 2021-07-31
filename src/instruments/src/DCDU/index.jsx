@@ -95,6 +95,7 @@ function DCDU() {
         }, 8000);
         return (
             <>
+                <div className="BacklightBleed" />
                 <div className="LcdOverlayDcdu" style={{ opacity }} />
                 <SelfTest />
             </>
@@ -108,6 +109,7 @@ function DCDU() {
         }, 12000);
         return (
             <>
+                <div className="BacklightBleed" />
                 <div className="LcdOverlayDcdu" style={{ opacity }} />
                 <WaitingForData />
             </>
@@ -115,6 +117,7 @@ function DCDU() {
     case 'IDLE':
         return (
             <>
+                <div className="BacklightBleed" />
                 <div className="LcdOverlayDcdu" style={{ opacity }} />
                 <Idle />
             </>

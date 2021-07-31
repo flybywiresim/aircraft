@@ -61,6 +61,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
         return (
             <>
                 <div className="LcdOverlay" style={{ opacity }} />
+                <div className="BacklightBleed" />
                 <svg className="SelfTest" viewBox="0 0 600 600">
                     <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
@@ -89,6 +90,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     return (
         <>
             <div className="LcdOverlay" style={{ opacity }} />
+            <div className="BacklightBleed" />
             <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
         </>
     );
