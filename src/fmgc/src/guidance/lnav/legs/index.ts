@@ -29,6 +29,8 @@ export interface SpeedConstraint {
 }
 
 export interface Leg extends Guidable {
+    ident: string;
+
     segment: SegmentType;
 
     get bearing(): Degrees;
@@ -59,7 +61,7 @@ export interface Leg extends Guidable {
 
 export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstraint | undefined {
     if (wp.altDesc && wp.altitude1) {
-        let ac: AltitudeConstraint;
+        const ac: Partial<AltitudeConstraint> = {};
         ac.altitude1 = wp.altitude1;
         ac.altitude2 = undefined;
         switch (wp.altDesc) {
@@ -79,17 +81,17 @@ export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstra
         default:
             break;
         }
-        return ac;
+        return ac as AltitudeConstraint;
     }
     return undefined;
 }
 
 export function getSpeedConstraintFromWaypoint(wp: WayPoint): SpeedConstraint | undefined {
     if (wp.speedConstraint) {
-        let sc: SpeedConstraint;
+        const sc: Partial<SpeedConstraint> = {};
         sc.type = SpeedConstraintType.at;
         sc.speed = wp.speedConstraint;
-        return sc;
+        return sc as SpeedConstraint;
     }
     return undefined;
 }
