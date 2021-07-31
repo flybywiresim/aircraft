@@ -335,9 +335,9 @@ impl EngineBleedSystem {
     fn new(number: usize) -> Self {
         Self {
             number,
-            ip_compression_chamber_controller: EngineCompressionChamberController::new(0.5, 0., 5.),
+            ip_compression_chamber_controller: EngineCompressionChamberController::new(0.5, 0., 2.),
             hp_compression_chamber_controller: EngineCompressionChamberController::new(
-                0.5, 0.5, 10.,
+                0.5, 0.5, 3.,
             ),
             ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
@@ -369,13 +369,13 @@ impl EngineBleedSystem {
         // Update engines
         self.ip_compression_chamber_controller
             .update(context, engine);
-        self.ip_compression_chamber_controller
+        self.hp_compression_chamber_controller
             .update(context, engine);
 
         self.ip_compression_chamber
             .update(&self.ip_compression_chamber_controller);
         self.hp_compression_chamber
-            .update(&self.ip_compression_chamber_controller);
+            .update(&self.hp_compression_chamber_controller);
 
         // Update controllers
         self.ip_valve_controller.update(context, bleed_data);
@@ -392,14 +392,17 @@ impl EngineBleedSystem {
 
         // Update valves (fluid movement)
         self.ip_valve.update_move_fluid(
+            context,
             &mut self.ip_compression_chamber,
             &mut self.transfer_pressure_pipe,
         );
         self.hp_valve.update_move_fluid(
+            context,
             &mut self.hp_compression_chamber,
             &mut self.transfer_pressure_pipe,
         );
         self.pr_valve.update_move_fluid(
+            context,
             &mut self.transfer_pressure_pipe,
             &mut self.regulated_pressure_pipe,
         );
@@ -443,6 +446,7 @@ impl SimulationElement for A320PneumaticOverheadPanel {
 mod tests {
     use super::*;
     use systems::{
+        engine::leap_engine::LeapEngine,
         hydraulic::Fluid,
         pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
         shared::{MachNumber, ISA},
@@ -459,51 +463,17 @@ mod tests {
         thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
     };
 
-    struct TestEngine {
-        number: usize,
-        corrected_n1: Ratio,
-        corrected_n2: Ratio,
-    }
-    impl TestEngine {
-        fn new(number: usize, engine_corrected_n1: Ratio, engine_corrected_n2: Ratio) -> Self {
-            Self {
-                number,
-                corrected_n1: engine_corrected_n1,
-                corrected_n2: engine_corrected_n2,
-            }
-        }
-
-        fn update(&self, context: &UpdateContext) {}
-    }
-    impl SimulationElement for TestEngine {
-        fn read(&mut self, reader: &mut systems::simulation::SimulatorReader) {
-            self.corrected_n1 = reader.read(&format!("TURB ENG CORRECTED_N1:{}", self.number));
-            self.corrected_n2 = reader.read(&format!("TURB ENG CORRECTED_N2:{}", self.number));
-        }
-    }
-
-    impl EngineCorrectedN1 for TestEngine {
-        fn corrected_n1(&self) -> Ratio {
-            self.corrected_n1
-        }
-    }
-    impl EngineCorrectedN2 for TestEngine {
-        fn corrected_n2(&self) -> Ratio {
-            self.corrected_n2
-        }
-    }
-
     struct PneumaticTestAircraft {
         pneumatic: A320Pneumatic,
-        engine_1: TestEngine,
-        engine_2: TestEngine,
+        engine_1: LeapEngine,
+        engine_2: LeapEngine,
     }
     impl PneumaticTestAircraft {
         fn new() -> Self {
             Self {
                 pneumatic: A320Pneumatic::new(),
-                engine_1: TestEngine::new(1, Ratio::new::<percent>(0.), Ratio::new::<percent>(0.)),
-                engine_2: TestEngine::new(2, Ratio::new::<percent>(0.), Ratio::new::<percent>(0.)),
+                engine_1: LeapEngine::new(1),
+                engine_2: LeapEngine::new(2),
             }
         }
     }
@@ -628,13 +598,16 @@ mod tests {
         let mut test_bed = test_bed_with()
             .mach_number(MachNumber(0.))
             .in_isa_atmosphere(Length::new::<foot>(0.))
-            .corrected_n1(Ratio::new::<percent>(0.));
+            .idle_eng1()
+            .idle_eng2()
+            .corrected_n1(Ratio::new::<percent>(20.));
 
         let mut hps = Vec::new();
         let mut ips = Vec::new();
         let mut c2s = Vec::new();
         let mut c1s = Vec::new();
         let mut hpv_open = Vec::new();
+        let mut prv_open = Vec::new();
 
         for i in 1..100 {
             test_bed.run_with_delta(Duration::from_millis(100));
@@ -674,10 +647,18 @@ mod tests {
                     .get::<ratio>()
                     * 20.
             }));
+
+            prv_open.push(test_bed.query(|aircraft| {
+                aircraft.pneumatic.engine_systems[0]
+                    .pr_valve
+                    .open_amount()
+                    .get::<ratio>()
+                    * 20.
+            }));
         }
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
-        let data = vec![hps, ips, c2s, c1s, hpv_open];
+        let data = vec![hps, ips, c2s, c1s, hpv_open, prv_open];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
 
         use std::io::Write;
@@ -732,7 +713,7 @@ mod tests {
 
         println!("{:#?}", pressures);
 
-        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(10));
         // Expect pressures not to have changed after update
         test_bed.for_both_engine_systems_with_capture(
             |sys, pressures| {
@@ -756,5 +737,46 @@ mod tests {
 
         test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
         test_bed.for_both_engine_systems(|sys| assert!(!sys.hp_valve.is_open()));
+    }
+
+    #[test]
+    fn idle() {
+        let altitude = Length::new::<foot>(0.);
+
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng1()
+            .corrected_n1(Ratio::new::<ratio>(0.2))
+            .in_isa_atmosphere(Length::new::<foot>(0.));
+
+        test_bed.run();
+        test_bed.run();
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(sys.regulated_pressure_pipe.pressure() > ISA::pressure_at_altitude(altitude))
+        });
+        // test_bed.for_both_engine_systems(|sys| assert!(sys.hp_valve.is_open()));
+    }
+
+    #[test]
+    fn hp_pressure_higher_than_ip_pressure() {
+        let altitude = Length::new::<foot>(0.);
+
+        let mut test_bed = test_bed_with()
+            .mach_number(MachNumber(0.))
+            .idle_eng1()
+            .idle_eng1()
+            .corrected_n1(Ratio::new::<ratio>(0.2))
+            .in_isa_atmosphere(altitude);
+
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(50));
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(sys.ip_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
+            assert!(sys.hp_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
+            assert!(sys.hp_compression_chamber.pressure() > sys.ip_compression_chamber.pressure())
+        });
+        // test_bed.for_both_engine_systems(|sys| assert!(sys.hp_valve.is_open()));
     }
 }
