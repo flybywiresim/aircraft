@@ -4,6 +4,7 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 0.6.2
+1. [MISC] Fixed flight plan entry and @Saschl (saschl#9432), @Taz5150 (TazX [Z+2]#0405)
 1. [TEXTURE] Corrected fire panel - @ImenesFBW (Imenes)
 1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
 1. [MODEL] Fixed artifacting of pedestal and push buttons - @tyler58546 (tyler58546)
