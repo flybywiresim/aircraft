@@ -21,9 +21,9 @@ See `FMMessage` in `src/shared/src/FmMessages.ts`.
 - A32NX_FMGC_RECALL_MESSAGE_FROM_MCDU_WITH_ID
     - Removes a previously sent Type II message from the MCDU
     - The `efisTarget` option is ignored by the MCDU
-    - Payload: `[id: number]`
-    - `id`:
-        -  The ID of the message to remove
+    - Payload: `[text: string]`
+    - `text`:
+        -  The MCDU text of the message to remove
 
 - A32NX_FMGC_RECALL_MESSAGE_FROM_EFIS_WITH_ID
     - Removes a previously sent Type II message from the EFIS
