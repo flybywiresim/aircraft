@@ -6,8 +6,9 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { Type1Transition } from '@fmgc/guidance/lnav/transitions/index';
+import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
 import { SegmentType } from '@fmgc/wtsdk';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from './Geometry';
 import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
 
@@ -30,8 +31,8 @@ export class GuidanceManager {
         return new TFLeg(from, to, segment);
     }
 
-    private static vmWithHeading(heading: Degrees, initialCourse: Degrees, segment: SegmentType) {
-        return new VMLeg(heading, initialCourse, segment);
+    private static vmWithHeading(heading: Degrees, initialPosition: Coordinates, initialCourse: Degrees, segment: SegmentType) {
+        return new VMLeg(heading, initialPosition, initialCourse, segment);
     }
 
     private static rfLeg(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType) {
@@ -58,7 +59,7 @@ export class GuidanceManager {
         }
 
         if (to.isVectors) {
-            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse, segment);
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment);
         }
 
         return GuidanceManager.tfBetween(from, to, segment);
@@ -84,7 +85,7 @@ export class GuidanceManager {
         }
 
         if (to.isVectors) {
-            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse, segment);
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment);
         }
 
         return GuidanceManager.tfBetween(from, to, segment);
@@ -169,7 +170,7 @@ export class GuidanceManager {
 
             // If TO is a MANUAL leg, make a VM(FROM -> TO)
             if (to.isVectors) {
-                const currentLeg = GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse, segment);
+                const currentLeg = GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment);
                 legs.set(i, currentLeg);
 
                 continue;
