@@ -416,13 +416,13 @@ pub struct AutobrakeDecelerationGovernor {
 }
 impl AutobrakeDecelerationGovernor {
     // Low pass filter for controller acceleration input, time constant in second
-    const ACCELERATION_INPUT_FILTER: f64 = 0.15;
+    const ACCELERATION_INPUT_FILTER: f64 = 0.1;
 
     pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
             target: Acceleration::new::<meter_per_second_squared>(10.),
-            i_gain: 0.02,
-            p_gain: 0.2,
+            i_gain: 0.018,
+            p_gain: 0.18,
             last_error: 0.,
 
             current_output: 0.,
@@ -527,14 +527,10 @@ mod tests {
 
         brake_actuator.set_position_demand(1.2);
 
-        for loop_idx in 0..15 {
+        for _loop_idx in 0..15 {
             brake_actuator.update(
                 &context(Duration::from_secs_f64(0.1)),
                 Pressure::new::<psi>(BrakeActuator::PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI),
-            );
-            println!(
-                "Loop {}, position: {}",
-                loop_idx, brake_actuator.current_position
             );
         }
 

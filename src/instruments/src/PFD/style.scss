@@ -1,6 +1,12 @@
 @import "../Common/definitions";
 @import "animations";
 
+/* pixels for screen */
+@import "../Common/pixels";
+#panel:after {
+  @include pixels;
+}
+
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
@@ -13,9 +19,7 @@
   position: absolute;
   width: 1280px;
   height: 1280px;
-
   background: $display-background;
-
   font-family: "Ecam", monospace !important;
 }
 

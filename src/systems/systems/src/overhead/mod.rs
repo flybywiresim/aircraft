@@ -52,6 +52,14 @@ impl OnOffFaultPushButton {
     pub fn is_off(&self) -> bool {
         !self.is_on
     }
+
+    pub fn is_on_id(name: &str) -> String {
+        format!("OVHD_{}_PB_IS_ON", name)
+    }
+
+    pub fn has_fault_id(name: &str) -> String {
+        format!("OVHD_{}_PB_HAS_FAULT", name)
+    }
 }
 impl SimulationElement for OnOffFaultPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {

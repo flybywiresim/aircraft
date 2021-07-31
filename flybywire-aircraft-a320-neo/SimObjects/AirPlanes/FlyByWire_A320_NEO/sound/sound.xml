@@ -1709,7 +1709,7 @@
         <Sound WwiseData="true" WwiseEvent="cchordloop" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="aural_stall" />
         <Sound WwiseData="true" WwiseEvent="aural_pull_up" />
-        <Sound WwiseData="true" WwiseEvent="aural_pullup_new" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="aural_pullup_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="aural_overspeed" />
         <Sound WwiseData="true" WwiseEvent="aural_sink_rate" />
         <Sound WwiseData="true" WwiseEvent="aural_sink_rate_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />

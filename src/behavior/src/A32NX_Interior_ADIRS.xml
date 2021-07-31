@@ -12,6 +12,7 @@
 
             <NODE_ID>KNOB_OVHD_ADIRS_#ID#</NODE_ID>
             <ANIM_NAME>KNOB_OVHD_ADIRS_#ID#</ANIM_NAME>
+            <ANIM_CODE>50</ANIM_CODE>
             <WWISE_EVENT>pulloutknob</WWISE_EVENT>
             <WWISE_EVENT_1>pulloutknob</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -35,27 +36,48 @@
     </Template>
 
     <!--
-    Template for rigging ADIRS lights.
+    Template for the ADIRS IR buttons.
 
     Main parameters:
-            - ID        <no default>    ADIRS light #
+            - ID        <no default>    IR #
     -->
-    <Template Name="FBW_Airbus_ADIRS_Light">
+    <Template Name="FBW_Airbus_ADIRS_IR_Button">
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_OVHD_ADIRS_IR#ID#</NODE_ID>
         </DefaultTemplateParameters>
 
-        <!-- Dummy button, using the FAULT variable -->
         <UseTemplate Name="FBW_Push_Toggle">
-            <!--
-            This should be a blue "OFF" light but the current texture is
-            an amber "ALIGN" light.
-            <SEQ2_CODE>(L:A32NX_ADIRS_OFF_LIGHT_#ID#, Bool)</SEQ2_CODE>
-            -->
+            <TOGGLE_SIMVAR>L:A32NX_OVHD_ADIRS_IR_#ID#_PB_IS_ON</TOGGLE_SIMVAR>
 
-            <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_IR_#ID#_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_IR_#ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_OVHD_ADIRS_IR_#ID#_PB_IS_ON, Bool) !</SEQ2_CODE>
 
-            <DUMMY_BUTTON/>
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for the ADIRS ADR buttons.
+
+    Main parameters:
+            - ID        <no default>    ADR #
+    -->
+    <Template Name="FBW_Airbus_ADIRS_ADR_Button">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_OVHD_ADIRS_#ID#</NODE_ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <TOGGLE_SIMVAR>L:A32NX_OVHD_ADIRS_ADR_#ID#_PB_IS_ON</TOGGLE_SIMVAR>
+
+            <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_ADR_#ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_OVHD_ADIRS_ADR_#ID#_PB_IS_ON, Bool) !</SEQ2_CODE>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
         </UseTemplate>
     </Template>
 
