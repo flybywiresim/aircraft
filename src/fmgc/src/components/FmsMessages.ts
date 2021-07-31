@@ -40,7 +40,7 @@ export class FmsMessages implements FmgcComponent {
                 }
                 break;
             case FMMessageUpdate.RECALL:
-                this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.id);
+                this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text);
 
                 if (message.efisTarget) {
                     this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_EFIS_WITH_ID, message.id);
