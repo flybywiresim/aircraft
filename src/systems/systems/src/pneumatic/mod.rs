@@ -264,7 +264,7 @@ mod tests {
     use crate::{
         hydraulic::Fluid,
         pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
-        shared::{ControllerSignal, PneumaticValveSignal},
+        shared::{ControllerSignal, PneumaticValveSignal, ISA},
         simulation::{
             test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElement, UpdateContext,
@@ -295,6 +295,49 @@ mod tests {
         fn signal(&self) -> Option<PneumaticValveSignal> {
             Some(PneumaticValveSignal::new(self.command_open_amount))
         }
+    }
+
+    struct TestEngine {
+        n1: Ratio,
+        n2: Ratio,
+    }
+    impl TestEngine {
+        fn new(n1: Ratio, n2: Ratio) -> Self {
+            Self { n1, n2 }
+        }
+
+        fn cold_dark() -> Self {
+            Self::new(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(0.))
+        }
+
+        fn toga() -> Self {
+            Self::new(Ratio::new::<ratio>(1.), Ratio::new::<ratio>(1.))
+        }
+
+        fn idle() -> Self {
+            Self::new(Ratio::new::<ratio>(0.2), Ratio::new::<ratio>(0.2))
+        }
+    }
+    impl EngineCorrectedN1 for TestEngine {
+        fn corrected_n1(&self) -> Ratio {
+            self.n1
+        }
+    }
+    impl EngineCorrectedN2 for TestEngine {
+        fn corrected_n2(&self) -> Ratio {
+            self.n2
+        }
+    }
+
+    fn context(delta_time: Duration, altitude: Length) -> UpdateContext {
+        UpdateContext::new(
+            delta_time,
+            Velocity::new::<knot>(0.),
+            altitude,
+            ISA::temperature_at_altitude(altitude),
+            true,
+            Acceleration::new::<foot_per_second_squared>(0.),
+        )
     }
 
     #[test]
@@ -361,5 +404,70 @@ mod tests {
 
         assert!(from.pressure() < Pressure::new::<pascal>(28.));
         assert!(to.pressure() > Pressure::new::<pascal>(14.));
+    }
+
+    #[test]
+    fn compression_chamber_pressure_cold_and_dark() {
+        let engine = TestEngine::cold_dark();
+        let mut compression_chamber = EngineCompressionChamberController::new(0., 0., 1.);
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+
+        compression_chamber.update(&context, &engine);
+
+        if let Some(signal) = compression_chamber.signal() {
+            assert_eq!(signal.target_pressure, context.ambient_pressure());
+        } else {
+            assert!(false)
+        }
+    }
+
+    #[test]
+    fn compression_chamber_pressure_toga() {
+        let engine = TestEngine::toga();
+        let mut compression_chamber = EngineCompressionChamberController::new(1., 1., 1.);
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+
+        compression_chamber.update(&context, &engine);
+
+        if let Some(signal) = compression_chamber.signal() {
+            assert!(signal.target_pressure > context.ambient_pressure());
+        } else {
+            assert!(false)
+        }
+    }
+
+    #[test]
+    fn compression_chamber_pressure_idle() {
+        let engine = TestEngine::idle();
+        let mut compression_chamber = EngineCompressionChamberController::new(1., 1., 1.);
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+
+        compression_chamber.update(&context, &engine);
+
+        if let Some(signal) = compression_chamber.signal() {
+            assert!(signal.target_pressure > context.ambient_pressure());
+        } else {
+            assert!(false)
+        }
+    }
+
+    #[test]
+    fn compression_chamber_stabilises() {
+        let epsilon = Pressure::new::<pascal>(100.);
+
+        let engine = TestEngine::toga();
+        let mut compression_chamber_controller =
+            EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(1.));
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+
+        compression_chamber_controller.update(&context, &engine);
+        compression_chamber.update(&compression_chamber_controller);
+
+        if let Some(signal) = compression_chamber_controller.signal() {
+            assert!((signal.target_pressure - compression_chamber.pressure()).abs() < epsilon);
+        } else {
+            assert!(false)
+        }
     }
 }
