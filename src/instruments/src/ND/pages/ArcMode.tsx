@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { Layer, getSmallestAngle } from '@instruments/common/utils';
+import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
@@ -8,12 +8,12 @@ import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { EfisSide, EfisOption, Mode } from '../index';
+import { EfisSide, EfisOption, Mode, RangeSetting } from '../index';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface ArcModeProps {
     adirsAlign: boolean,
-    rangeSetting: number,
+    rangeSetting: RangeSetting,
     side: EfisSide,
     ppos: LatLongData,
     efisOption: EfisOption,
@@ -80,7 +80,6 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
 };
 
 interface OverlayProps {
-    adirsAlign: boolean,
     heading: number,
     track: number,
     rangeSetting: number,
@@ -427,7 +426,7 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, si
                 strokeDashoffset="-6"
                 clipPath="url(#arc-mode-overlay-clip-2)"
             />
-            <text x={168} y={528} fill="#00ffff" stroke="none" fontSize={22}>{rangeSetting / 2}</text>
+            <text x={175} y={528} fill="#00ffff" stroke="none" fontSize={22}>{rangeSetting / 2}</text>
             <text x={592} y={528} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{rangeSetting / 2}</text>
 
             {/* R = 123 */}
@@ -465,7 +464,7 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, si
 
             <TrackBug heading={heading} track={track} />
             { lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
-            <SelectedHeadingBug heading={heading} selected={selectedHeading} />
+            <SelectedHeadingBug heading={Math.round(heading)} selected={selectedHeading} />
         </g>
 
         <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
@@ -474,7 +473,11 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, si
     </>
 ));
 
-const MapFailOverlay: React.FC<OverlayProps> = memo(({ rangeSetting }) => (
+type MapFailOverlayProps = {
+    rangeSetting: RangeSetting,
+}
+
+const MapFailOverlay: React.FC<MapFailOverlayProps> = memo(({ rangeSetting }) => (
     <>
 
         <>
@@ -633,7 +636,7 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
             className="Cyan"
             fontSize={22}
         >
-            {`${("" + Math.round(selected)).padStart(3, "0")}`}
+            {`${selected}`}
         </text>
     );
 };
