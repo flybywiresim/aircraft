@@ -54,7 +54,7 @@ export class GuidanceManager {
             return null;
         }
 
-        if (to.additionalData && to.additionalData.originalType === 17) {
+        if (to.additionalData && to.additionalData.legType === 17) {
             return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment);
         }
 
@@ -80,7 +80,7 @@ export class GuidanceManager {
             return null;
         }
 
-        if (to.additionalData && to.additionalData.originalType === 17) {
+        if (to.additionalData && to.additionalData.legType === 17) {
             return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment);
         }
 
@@ -161,7 +161,7 @@ export class GuidanceManager {
                 continue;
             }
 
-            if (to.additionalData && to.additionalData.originalType === 17) {
+            if (to.additionalData && to.additionalData.legType === 17) {
                 const currentLeg = GuidanceManager.rfLeg(from, to, to.additionalData.center, segment);
                 legs.set(i, currentLeg);
 
