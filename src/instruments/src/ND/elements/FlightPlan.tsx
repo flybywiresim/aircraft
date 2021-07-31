@@ -31,6 +31,9 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
 
     const [geometry, setGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
 
+    // TODO figure out a better way
+    const unused = useCurrentFlightPlan();
+
     useInterval(() => {
         setGeometry(guidanceManager.getMultipleLegGeometry());
     }, 2_000);
