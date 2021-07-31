@@ -178,6 +178,9 @@ class CDUFlightPlanPage {
                                 fixAnnotation = `${prevWp.ident.substring(0,3)}${waypointsAndMarkers[winI].wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}`;
                             }
                             break;
+                        case 17: // RF
+                            fixAnnotation = `${("" + Math.round(waypointsAndMarkers[winI].wp.additionalData.radius)).padStart(2, "0")}\xa0ARC`;
+                            break;
                         case 22: // VM
                             fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
