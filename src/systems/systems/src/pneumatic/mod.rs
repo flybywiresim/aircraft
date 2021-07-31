@@ -105,6 +105,7 @@ impl PneumaticValve for DefaultValve {
 }
 impl DefaultValve {
     const GAMMA: f64 = 1.4;
+    const TRANSFER_SPEED: f64 = 10.;
 
     pub fn new(open_amount: Ratio) -> Self {
         Self { open_amount }
@@ -126,6 +127,7 @@ impl DefaultValve {
 
     pub fn update_move_fluid(
         &self,
+        context: &UpdateContext,
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
     ) {
@@ -134,7 +136,14 @@ impl DefaultValve {
             / Self::GAMMA
             / (from.pressure() * to.volume() + to.pressure() * from.volume());
 
-        self.move_volume(from, to, self.open_amount * equalization_volume);
+        self.move_volume(
+            from,
+            to,
+            self.open_amount
+                * equalization_volume
+                * Self::TRANSFER_SPEED
+                * context.delta_as_secs_f64(),
+        );
     }
 
     fn move_volume(
