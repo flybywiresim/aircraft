@@ -43,9 +43,32 @@ pub trait RamAirTurbineHydraulicLoopPressurised {
     fn is_rat_hydraulic_loop_pressurised(&self) -> bool;
 }
 
-pub trait LandingGearPosition {
+pub trait LandingGearRealPosition {
     fn is_up_and_locked(&self) -> bool;
     fn is_down_and_locked(&self) -> bool;
+}
+
+pub trait LgciuWeightOnWheels {
+    fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn left_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn left_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn left_and_right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn left_and_right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+
+    fn nose_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
+    fn nose_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
+}
+pub trait LgciuGearExtension {
+    fn all_down_and_locked(&self) -> bool;
+    fn all_up_and_locked(&self) -> bool;
+}
+
+pub trait LgciuInterface: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait EngineCorrectedN1 {
+    fn corrected_n1(&self) -> Ratio;
 }
 
 pub trait EngineCorrectedN2 {
@@ -345,6 +368,15 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
 
 pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
+}
+
+/// The ratio of flow velocity past a boundary to the local speed of sound.
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+pub struct MachNumber(pub f64);
+impl Default for MachNumber {
+    fn default() -> Self {
+        Self(0.)
+    }
 }
 
 #[cfg(test)]

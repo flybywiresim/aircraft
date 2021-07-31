@@ -83,12 +83,6 @@ class A32NX_LocalVarUpdater {
                 type: "Bool",
                 selector: this._areSlidesArmed.bind(this),
                 refreshInterval: 100,
-            },
-            {
-                varName: "L:A32NX_DELTA_PSI",
-                type: "psi",
-                selector: this._deltaPSI.bind(this),
-                refreshInterval: 1000,
             }
             // New updaters go here...
         ];
@@ -190,9 +184,13 @@ class A32NX_LocalVarUpdater {
         const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
         const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
 
+        const engineOneState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "number");
+        const engineTwoState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "number");
+
+        const isEngineOneRunning = engineOneState === 1 || (engineOneState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:1", "number") >= 18);
+        const isEngineTwoRunning = engineTwoState === 1 || (engineTwoState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:2", "number") >= 18);
+
         const isApuDelivering = SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
-        const isEngineOneRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
-        const isEngineTwoRunning = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
         const isEngineOneDelivering = isEngineOneRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
         const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
 
@@ -215,27 +213,6 @@ class A32NX_LocalVarUpdater {
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
         );
-    }
-
-    _deltaPSI() {
-        const cabinVs = SimVar.GetSimVarValue('PRESSURIZATION CABIN ALTITUDE RATE', 'feet per second');
-        const cabinAlt = SimVar.GetSimVarValue('PRESSURIZATION CABIN ALTITUDE', 'feet');
-        const ambPressure = SimVar.GetSimVarValue('AMBIENT PRESSURE', 'inHg');
-
-        const feetToMeters = 0.3048;
-        const seaLevelPressurePascal = 101325;
-        const barometricPressureFactor = -0.00011857591;
-        const pascalToPSI = 0.000145038;
-        const inHgToPSI = 0.491154;
-
-        const cabinAltMeters = cabinAlt * feetToMeters;
-        const cabinPressurePascal = seaLevelPressurePascal * Math.exp(barometricPressureFactor * cabinAltMeters); // Barometric formula
-        const cabinPressurePSI = cabinPressurePascal * pascalToPSI;
-        const outsidePressurePSI = ambPressure * inHgToPSI;
-        let pressureDiff = cabinPressurePSI - outsidePressurePSI;
-        pressureDiff = (pressureDiff > -0.05) && (pressureDiff < 0.0) ? 0.0 : pressureDiff;
-        pressureDiff = pressureDiff > 8.6 ? 8.6 : pressureDiff; // DeltaPSI will not go above 8.6psi normally
-        return (pressureDiff);
     }
 
     // New selectors go here...
