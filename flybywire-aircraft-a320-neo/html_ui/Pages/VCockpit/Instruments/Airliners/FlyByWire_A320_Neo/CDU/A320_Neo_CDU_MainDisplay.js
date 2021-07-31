@@ -90,7 +90,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     setupFmgcTriggers() {
         Coherent.on('A32NX_FMGC_SEND_MESSAGE_TO_MCDU', (message) => {
-            this.addNewMessage(new McduMessage('BRUH ' + message.text, message.color === 'Amber', true));
+            this.addNewMessage(new McduMessage(message.text, message.color === 'Amber', true));
         });
 
         Coherent.on('A32NX_FMGC_RECALL_MESSAGE_FROM_MCDU_WITH_ID', (_, text) => {
