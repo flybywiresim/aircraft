@@ -1,19 +1,19 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 import { Geometry } from '@fmgc/guidance/Geometry';
-import { Type1Transition } from '@fmgc/guidance/lnav/transitions/index';
+import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { MathUtils } from '@shared/MathUtils';
 import { Layer } from '@instruments/common/utils';
 import { useSimVar } from '@instruments/common/simVars';
 import useInterval from '@instruments/common/useInterval';
 import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { RFLeg } from '@fmgc/guidance/lnav/legs/RF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { Leg } from '@fmgc/guidance/lnav/legs';
+import { AltitudeConstraint, Leg, SpeedConstraint } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
+import { Xy } from '@fmgc/flightplanning/data/geo';
 import { MapParameters } from '../utils/MapParameters';
 
 export type FlightPathProps = {
@@ -28,7 +28,6 @@ export type FlightPathProps = {
 
 export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, clipPath, constraints, debug = false }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
-    const flightPlan = useCurrentFlightPlan();
 
     const [geometry, setGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
 
@@ -37,17 +36,24 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     }, 2_000);
 
     if (geometry) {
+        const legs = Array.from(geometry.legs.values());
+
         return (
             <Layer x={x} y={y}>
-                <g clipPath={clipPath}>
-                    {flightPlan.visibleWaypoints.map((waypoint, index) => {
-                        if (!waypoint.isVectors) {
-                            return <Waypoint key={waypoint.ident} waypoint={waypoint} index={index} isActive={index === flightPlan.activeVisibleWaypointIndex} mapParams={mapParams} constraints={constraints} debug={debug} />;
-                        }
-                        return null;
-                    })}
-                </g>
                 <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" clipPath={clipPath} />
+                <g clipPath={clipPath}>
+                    {legs.map((leg, index) => (
+                        <LegWaypointMarkers
+                            leg={leg}
+                            nextLeg={legs[index - 1]}
+                            index={index}
+                            constraints={constraints}
+                            key={leg.ident}
+                            mapParams={mapParams}
+                            debug={debug}
+                        />
+                    ))}
+                </g>
                 {debug && (
                     <>
                         {
@@ -70,53 +76,121 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     return null;
 };
 
-const Waypoint: FC<{ waypoint: WayPoint, index: number, isActive: boolean, mapParams: MapParameters, constraints: boolean, debug: boolean }> = ({ waypoint, index, isActive, mapParams, constraints = false, debug = false }) => {
-    const [x, y] = mapParams.coordinatesToXYy(waypoint.infos.coordinates);
+interface LegWaypointMarkersProps {
+    leg: Leg,
+    nextLeg: Leg,
+    index: number,
+    mapParams: MapParameters,
+    constraints: boolean,
+    debug: boolean,
+}
 
+const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, mapParams, constraints, debug }) => {
+    let x;
+    let y;
+    if (leg instanceof TFLeg || leg instanceof RFLeg) {
+        [x, y] = mapParams.coordinatesToXYy(leg.from.infos.coordinates);
+    } else if (leg instanceof VMLeg) {
+        [x, y] = mapParams.coordinatesToXYy(leg.initialPosition);
+    } else {
+        throw new Error(`Invalid leg type for leg '${leg.ident}'.`);
+    }
+
+    // In the case where we have a VM leg after this leg, which we will not render, we have to draw the TO fix.
+    // In the geometry legs, this is a TF(XYZ -> MANUAL). The VM is really after the "MANUAL" waypoint.
+    // If this ever changes you need to edit this code too :')
+    if (leg instanceof TFLeg && nextLeg instanceof VMLeg) {
+        const [x1, y1] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
+
+        return (
+            <WaypointMarker
+                ident={leg.to.ident}
+                position={[x1, y1]}
+                altitudeConstraint={leg.altitudeConstraint}
+                speedConstraint={leg.speedConstraint}
+                index={index}
+                isActive={index === 2}
+                constraints={constraints}
+                debug={debug}
+            />
+        );
+    }
+
+    if (leg instanceof VMLeg && !debug) {
+        return null;
+    }
+
+    return (
+        <WaypointMarker
+            ident={leg.ident}
+            position={[x, y]}
+            altitudeConstraint={leg.altitudeConstraint}
+            speedConstraint={leg.speedConstraint}
+            index={index}
+            isActive={index === 2}
+            constraints={constraints}
+            debug={debug}
+        />
+    );
+};
+
+interface WaypointMarkerProps {
+    ident: string,
+    position: Xy,
+    altitudeConstraint?: AltitudeConstraint,
+    speedConstraint?: SpeedConstraint,
+    index: number,
+    isActive: boolean,
+    constraints: boolean,
+    debug: boolean
+}
+
+const WaypointMarker: FC<WaypointMarkerProps> = ({ ident, position, altitudeConstraint, speedConstraint, index, isActive, constraints = false, debug = false }) => {
     // TODO FL
-    //debugger;
 
     // TODO VNAV to provide met/missed prediction => magenta if met, amber if missed
-    const constrainedAltitudeClass = waypoint.legAltitudeDescription > 0 ? "White" : null;
+    const constrainedAltitudeClass = (altitudeConstraint?.type ?? -1) > 0 ? 'White' : null;
     let constraintY = -6;
-    let constraintText: string[] = [];
-    if (constraints) {
+    const constraintText: string[] = [];
+    if (constraints && altitudeConstraint) {
         // minus, plus, then speed
-        switch (waypoint.legAltitudeDescription) {
+        switch (altitudeConstraint.type) {
+        case 0:
+            constraintText.push(`${Math.round(altitudeConstraint.altitude1)}`);
+            break;
         case 1:
-            constraintText.push("" + Math.round(waypoint.legAltitude1));
+            constraintText.push(`+${Math.round(altitudeConstraint.altitude1)}`);
             break;
         case 2:
-            constraintText.push("+" + Math.round(waypoint.legAltitude1));
+            constraintText.push(`-${Math.round(altitudeConstraint.altitude1)}`);
             break;
         case 3:
-            constraintText.push("-" + Math.round(waypoint.legAltitude1));
+            constraintText.push(`-${Math.round(altitudeConstraint.altitude1)}`);
+            constraintText.push(`+${Math.round(altitudeConstraint.altitude2 ?? 0)}`);
             break;
-        case 4:
-            constraintText.push("-" + Math.round(waypoint.legAltitude1));
-            constraintText.push("+" + Math.round(waypoint.legAltitude2));
-            break;
+        default:
+            throw new Error(`Invalid leg altitude constraint type for leg '${ident}'.`);
         }
 
-        if (waypoint.speedConstraint > 0) {
-            constraintText.push("" + Math.round(waypoint.speedConstraint) + "KT");
+        if (speedConstraint) {
+            constraintText.push(`${Math.round(speedConstraint.speed)}KT`);
         }
     }
 
     return (
-        <Layer x={x} y={y}>
-            <rect x={-4} y={-4} width={8} height={8} className={isActive ? "White" : "Green"} strokeWidth={2} transform="rotate(45 0 0)" />
+        <Layer x={position[0]} y={position[1]}>
+            <rect x={-4} y={-4} width={8} height={8} className={isActive ? 'White' : 'Green'} strokeWidth={2} transform="rotate(45 0 0)" />
 
-            <text x={15} y={-6} fontSize={20} className={isActive ? "White" : "Green"}>
-                {waypoint.ident}
+            <text x={15} y={-6} fontSize={20} className={isActive ? 'White' : 'Green'}>
+                {ident}
                 {debug && `(${index})`}
             </text>
-            { constraints && (
-                constraintText.map(t => (
+            {constraints && (
+                constraintText.map((t) => (
                     <text x={15} y={constraintY += 20} className="Magenta" fontSize={20}>{t}</text>
                 ))
             )}
-            { constrainedAltitudeClass && (
+            {constrainedAltitudeClass && (
                 <circle r={12} className={constrainedAltitudeClass} strokeWidth={2} />
             )}
         </Layer>

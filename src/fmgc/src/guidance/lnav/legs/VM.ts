@@ -3,17 +3,24 @@ import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { SegmentType } from '@fmgc/wtsdk';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
 // TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
 export class VMLeg implements Leg {
+    public ident = 'MANUAL';
+
+    // FIXME this is not really a thing, but it's temporary, ok ? I promise !
+    public initialPosition: Coordinates;
+
     public heading: Degrees;
 
     public initialCourse: Degrees;
 
     public segment: SegmentType;
 
-    constructor(heading: Degrees, initialCourse: Degrees, segment: SegmentType) {
+    constructor(heading: Degrees, initialPosition: Coordinates, initialCourse: Degrees, segment: SegmentType) {
         this.heading = heading;
+        this.initialPosition = initialPosition;
         this.initialCourse = initialCourse;
         this.segment = segment;
     }
