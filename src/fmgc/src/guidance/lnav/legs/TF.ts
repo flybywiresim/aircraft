@@ -15,6 +15,8 @@ import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { SegmentType } from '@fmgc/wtsdk';
 
 export class TFLeg implements Leg {
+    public ident: string;
+
     public from: WayPoint;
 
     public to: WayPoint;
@@ -26,6 +28,7 @@ export class TFLeg implements Leg {
     constructor(from: WayPoint, to: WayPoint, segment: SegmentType) {
         this.from = from;
         this.to = to;
+        this.ident = from.ident;
         this.mDistance = Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
         this.segment = segment;
     }
