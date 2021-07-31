@@ -23,8 +23,8 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
-        RamAirTurbineHydraulicLoopPressurised,
+        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons,
+        LandingGearRealPosition, RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -66,7 +66,7 @@ impl A320Electrical {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
         hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
     ) {
         self.alternating_current.update_main_power_sources(
             context,
@@ -2212,7 +2212,7 @@ mod a320_electrical_circuit_tests {
             Self {}
         }
     }
-    impl LandingGearPosition for TestLandingGear {
+    impl LandingGearRealPosition for TestLandingGear {
         fn is_up_and_locked(&self) -> bool {
             true
         }

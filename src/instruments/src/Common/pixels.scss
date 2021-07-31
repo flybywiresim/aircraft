@@ -6,7 +6,7 @@
   z-index: 999;
   position: absolute;
   background-size: $density * 1px;
-  opacity: 0.75;
+  opacity: 0.35;
 
   @if $checkered {
     background-image: url("data:image/svg+xml,%3Csvg width='2' height='2' xmlns='http://www.w3.org/2000/svg'%3E%3Crect height='1' width='1' y='0' x='0' /%3E%3Crect height='1' width='1' y='1' x='1' /%3E%3C/svg%3E");

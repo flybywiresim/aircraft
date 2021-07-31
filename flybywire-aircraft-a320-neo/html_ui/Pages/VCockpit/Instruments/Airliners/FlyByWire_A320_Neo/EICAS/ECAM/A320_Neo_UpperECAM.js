@@ -1406,8 +1406,8 @@ var A320_Neo_UpperECAM;
                     {
                         message: "LDG LT",
                         isActive: () => (
-                            !SimVar.GetSimVarValue("L:LANDING_1_Retracted", "Bool") ||
-                            !SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool")
+                            !SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool") ||
+                            !SimVar.GetSimVarValue("L:LANDING_3_Retracted", "Bool")
                         ),
                     },
                     {

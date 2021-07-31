@@ -8,8 +8,8 @@
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
-1. [Engine and FADEC System](#engine-fadec-system)
-1. [Air Conditioning / Pressurisation / Ventilation](#aircon-press-vent-systems)
+1. [Engine and FADEC System](#engine-and-fadec-system)
+1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
 
 ## Uncategorized
 
