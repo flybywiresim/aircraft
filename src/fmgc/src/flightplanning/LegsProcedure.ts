@@ -188,8 +188,8 @@ export class LegsProcedure {
                   mappedLeg.legAltitude1 = currentLeg.altitude1 * 3.28084;
                   mappedLeg.legAltitude2 = currentLeg.altitude2 * 3.28084;
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
-                  mappedLeg.additionalData.originalType = currentLeg.type;
-              }
+                  mappedLeg.additionalData.legType = currentLeg.type;
+               }
 
               this._currentIndex++;
           }
@@ -371,12 +371,9 @@ export class LegsProcedure {
 
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, prevLeg.infos.coordinates);
       const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, prevLeg.infos.magneticVariation);
-      // TODO move
-      if (!waypoint.additionalData) {
-          waypoint.additionalData = {};
-      }
+
       waypoint.additionalData.vectorsHeading = heading;
-      waypoint.additionalData.legType = leg.type;
+
       return waypoint;
   }
 
@@ -399,7 +396,6 @@ export class LegsProcedure {
 
       waypoint.additionalData.vectorsCourse = course;
       waypoint.additionalData.vectorsHeading = heading;
-      waypoint.additionalData.legType = leg.type;
 
       return waypoint;
   }
