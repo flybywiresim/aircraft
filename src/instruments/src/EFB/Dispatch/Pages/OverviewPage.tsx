@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, IconBolt } from '@tabler/icons';
+import { useSimVar } from 'react-msfs';
 import fuselage from '../../Assets/320neo-outline-nose.svg';
-import { useSimVar } from '../../../Common/simVars';
 
 /* eslint-disable react/no-unused-prop-types */
 

@@ -78,14 +78,6 @@ export function setSimVar(name, value, type = SIMVAR_TYPES[name]) {
     return SimVar.SetSimVarValue(name, type, value);
 }
 
-export function useSimVar(name, type) {
-    const [value, updater] = useState(0);
-
-    useUpdate(() => updater(getSimVar(name, type)));
-
-    return value;
-}
-
 export function useGlobalVar(name, type) {
     const [value, updater] = useState(0);
 

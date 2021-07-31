@@ -1,9 +1,7 @@
-import ReactDOM from 'react-dom';
 import React from 'react';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
-
-import './Fctl.scss';
+import { render } from '@instruments/common/index';
+import { useSimVar } from 'react-msfs';
+import { setIsEcamPage } from '../../../Common/defaults';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
@@ -13,6 +11,8 @@ import { HydraulicSystem } from '../../Common/HydraulicSystem';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 import { ComponentSidePositionProps } from '../../Common/ComponentSidePositionProps';
 import { Spoilers } from '../../Common/Spoilers';
+
+import './Fctl.scss';
 
 setIsEcamPage('fctl_page');
 
@@ -286,4 +286,4 @@ const Note: React.FunctionComponent<ComponentPositionProps> = ({ x, y, children 
     <text x={x} y={y} className="Note" textAnchor="middle" alignmentBaseline="central">{children}</text>
 );
 
-ReactDOM.render(<SimVarProvider><FctlPage /></SimVarProvider>, getRenderTarget());
+render(<FctlPage />);

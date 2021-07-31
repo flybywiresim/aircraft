@@ -19,12 +19,12 @@
 import React, { useContext } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import metarParser from 'aewx-metar-parser';
+import { useSimVar } from 'react-msfs';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
-import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { EPerformanceActions, PerformanceContext, performanceInitialState } from '../../Store/performance-context';
 

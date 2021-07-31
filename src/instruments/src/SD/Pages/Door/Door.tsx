@@ -1,8 +1,8 @@
 import './Door.scss';
-import ReactDOM from 'react-dom';
 import React from 'react';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { render } from '@instruments/common/index';
+import { useSimVar } from 'react-msfs';
+import { setIsEcamPage } from '../../../Common/defaults';
 
 setIsEcamPage('door_page');
 
@@ -88,4 +88,4 @@ export const DoorPage = () => {
     );
 };
 
-ReactDOM.render(<SimVarProvider><DoorPage /></SimVarProvider>, getRenderTarget());
+render(<DoorPage />);

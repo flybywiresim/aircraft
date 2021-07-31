@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
 import { Metar } from '@flybywiresim/api-client';
 import { IconWind, IconGauge, IconDroplet, IconTemperature, IconPoint, IconCloud } from '@tabler/icons';
+import { usePersistentProperty, usePersistentPropertyWithDefault } from 'react-msfs';
 import { MetarParserType, Wind } from '../../../Common/metarTypes';
-import { usePersistentProperty } from '../../../Common/persistence';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
@@ -74,7 +74,7 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
 
-    let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    let [metarSource] = usePersistentPropertyWithDefault('CONFIG_METAR_SRC', 'MSFS');
 
     if (metarSource === 'MSFS') {
         metarSource = 'MS';

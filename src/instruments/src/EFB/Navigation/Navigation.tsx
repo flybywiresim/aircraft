@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode.react';
 import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMoon, IconSun, IconPlus, IconMinus } from '@tabler/icons';
+import { usePersistentProperty } from 'react-msfs';
 import useInterval from '../../Common/useInterval';
 import NavigraphClient, {
     AirportInfo,
@@ -12,7 +13,6 @@ import NavigraphClient, {
 } from '../ChartsApi/Navigraph';
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 import navigraphLogo from '../Assets/navigraph-logo.svg';
-import { usePersistentProperty } from '../../Common/persistence';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 
 type Chart = NavigraphChart | ChartFoxChart;

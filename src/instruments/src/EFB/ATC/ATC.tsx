@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSimVar, useSplitSimVar, usePersistentProperty } from 'react-msfs';
 import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
 import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconRadio, IconTrafficLights } from '@tabler/icons';
 import { useInterval } from '@flybywiresim/react-components';
-import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button from '../Components/Button/Button';
-import { usePersistentProperty } from '../../Common/persistence';
 
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
     distance: number;

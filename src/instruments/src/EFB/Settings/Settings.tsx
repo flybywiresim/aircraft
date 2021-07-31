@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import {
+    useSimVar,
+    usePersistentProperty,
+    useSimVarSyncedPersistentProperty,
+    usePersistentPropertyWithDefault,
+} from 'react-msfs';
 import { Slider, Toggle } from '@flybywiresim/react-components';
-import { useSimVar } from '@instruments/common/simVars';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
-import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
@@ -268,7 +272,7 @@ const OtherSettings = (props: {simbriefUsername, setSimbriefUsername}) => {
     const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
     const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
     const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
-    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+    const [paxSigns, setPaxSigns] = usePersistentPropertyWithDefault('CONFIG_USING_PORTABLE_DEVICES', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },

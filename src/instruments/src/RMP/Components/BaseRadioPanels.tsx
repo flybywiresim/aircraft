@@ -1,6 +1,5 @@
 import React from 'react';
-import { useSimVar, useInteractionSimVar } from '@instruments/common/simVars';
-import { useInteractionEvent } from '@instruments/common/hooks';
+import { useSimVar, useInteractionSimVar, useInteractionEvent } from 'react-msfs';
 import { VhfRadioPanel } from './VhfRadioPanel';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 

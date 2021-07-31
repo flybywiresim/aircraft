@@ -2,7 +2,7 @@ import React, { useEffect, useState, useReducer } from 'react';
 
 import { Provider } from 'react-redux';
 import { Route, Switch, useHistory } from 'react-router-dom';
-import { usePersistentProperty } from '../Common/persistence';
+import { usePersistentProperty } from 'react-msfs';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from './StatusBar/StatusBar';

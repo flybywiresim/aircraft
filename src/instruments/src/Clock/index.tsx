@@ -1,7 +1,7 @@
 import './style.scss';
 import React from 'react';
 import { render } from '@instruments/common/index';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from 'react-msfs';
 import { Chrono } from './Components/Chrono';
 import { Clock } from './Components/Clock';
 import { ElapsedTime } from './Components/ElapsedTime';

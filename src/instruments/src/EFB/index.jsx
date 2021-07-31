@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useSimVar } from 'react-msfs';
 import { MemoryRouter as Router } from 'react-router-dom';
+import { render } from '../Common/index.tsx';
 import Efb from './Efb.tsx';
 import { getSimVar, setSimVar } from '../util.js';
+import { readSettingsFromPersistentStorage } from './Settings/sync.ts';
+
 import logo from './Assets/fbw-logo.svg';
 
 import './Assets/Reset.scss';
 import './Assets/Efb.scss';
-import { render } from '../Common/index.tsx';
-import { readSettingsFromPersistentStorage } from './Settings/sync.ts';
-import { useSimVar } from '../Common/simVars.tsx';
 
 const ScreenBlank = () => {
     const [, setTurnedOn] = useSimVar('L:A32NX_EFB_TURNED_ON', 'number');

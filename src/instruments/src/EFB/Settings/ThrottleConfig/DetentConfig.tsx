@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty, usePersistentPropertyWithDefault } from '../../../Common/persistence';
-
+import { usePersistentProperty, usePersistentPropertyWithDefault } from 'react-msfs';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import Input from '../../Components/Form/Input/Input';
 import { ProgressBar } from '../../Components/Progress/Progress';

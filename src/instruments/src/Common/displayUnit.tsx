@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NXDataStore } from '@shared/persistence';
-import { useSimVar } from './simVars';
-import { useUpdate } from './hooks';
+import { useSimVar, useUpdate } from 'react-msfs';
 
 import './common.scss';
 

@@ -1,10 +1,11 @@
-import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
+import { useSimVar } from 'react-msfs';
 import { ComponentPositionProps } from './ComponentPositionProps';
 import { ComponentSidePositionProps } from './ComponentSidePositionProps';
 import { useHydraulics } from './HydraulicsProvider';
 import { HydraulicSystem } from './HydraulicSystem';
 import { SvgGroup } from './SvgGroup';
+
 import './Spoilers.scss';
 
 export const Spoilers = ({ x, y }) => {

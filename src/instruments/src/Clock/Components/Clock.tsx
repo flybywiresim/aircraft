@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-import { useInteractionEvent } from '@instruments/common/hooks';
+import { useSimVar, useInteractionEvent } from 'react-msfs';
 
 const secondsToDisplay = (seconds: number): number[] => {
     const displayTime = [0, 0, 0];

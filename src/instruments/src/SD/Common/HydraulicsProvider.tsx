@@ -1,5 +1,5 @@
-import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
+import { useSimVar } from 'react-msfs';
 
 interface HydraulicSystemAvailable {
     available: boolean

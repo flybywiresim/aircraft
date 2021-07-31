@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSimVar } from '../../Common/simVars';
+import { useSimVar } from 'react-msfs';
 
 interface Props {
     /**

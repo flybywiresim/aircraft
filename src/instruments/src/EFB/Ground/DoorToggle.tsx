@@ -1,6 +1,6 @@
 import { IconLayoutSidebar } from '@tabler/icons';
 import React, { useEffect, useState } from 'react';
-import { useSplitSimVar } from '../../Common/simVars';
+import { useSplitSimVar } from 'react-msfs';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 
 interface Props {

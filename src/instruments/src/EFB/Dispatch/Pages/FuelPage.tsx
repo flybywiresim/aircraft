@@ -2,13 +2,12 @@ import React from 'react';
 import { round } from 'lodash';
 import { IconPlayerPlay, IconHandStop } from '@tabler/icons';
 import { Slider } from '@flybywiresim/react-components';
+import { useSimVar, useSimVarSyncedPersistentProperty } from 'react-msfs';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import { ProgressBar } from '../../Components/Progress/Progress';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import fuselage from '../../Assets/320neo_outline_fuel.svg';
-import { useSimVar } from '../../../Common/simVars';
-import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
 
 export const FuelPage = () => {
     const totalFuelGallons = 6267;

@@ -1,8 +1,7 @@
-import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
-import { usePersistentProperty } from '../../../Common/persistence';
+import { render } from '@instruments/common/index';
+import { useSimVar, usePersistentProperty } from 'react-msfs';
+import { setIsEcamPage } from '../../../Common/defaults';
 import { splitDecimals, valueRadianAngleConverter, polarToCartesian } from './common';
 
 import './Crz.scss';
@@ -297,4 +296,4 @@ export const CondComponent = () => {
     );
 };
 
-ReactDOM.render(<SimVarProvider><CrzPage /></SimVarProvider>, getRenderTarget());
+render(<CrzPage />);

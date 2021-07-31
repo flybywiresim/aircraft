@@ -1,9 +1,10 @@
-import './Hyd.scss';
-import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
-import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
-import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
+import { useSimVar } from 'react-msfs';
+import { setIsEcamPage } from '@instruments/common/defaults';
+import { render } from '@instruments/common/index';
 import { ptuArray, levels } from './common';
+
+import './Hyd.scss';
 
 setIsEcamPage('hyd_page');
 
@@ -470,4 +471,4 @@ const Triangle = ({ x, y, colour, fill, orientation } : TriangleProps) => {
     );
 };
 
-ReactDOM.render(<SimVarProvider><HydPage /></SimVarProvider>, getRenderTarget());
+render(<HydPage />);

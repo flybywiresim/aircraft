@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useSimVar, usePersistentPropertyWithDefault } from 'react-msfs';
 import { Toggle } from '@flybywiresim/react-components';
-import { usePersistentPropertyWithDefault } from '../../../Common/persistence';
-import { useSimVar } from '../../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
-
 import BaseThrottleConfig from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 

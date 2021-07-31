@@ -1,6 +1,6 @@
 import { IconEdit } from '@tabler/icons';
 import React, { useState } from 'react';
-import { useSimVar } from '../../../Common/simVars';
+import { useSimVar } from 'react-msfs';
 import DetentConfig from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 

@@ -1,4 +1,4 @@
-import { useSimVar } from '../../../Common/simVars';
+import { useSimVar } from 'react-msfs';
 
 export class ThrottleSimvar {
     readableName: string;

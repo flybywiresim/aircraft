@@ -1,7 +1,7 @@
 import './style.scss';
 import React from 'react';
 import { render } from '@instruments/common/index';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from 'react-msfs';
 
 const BatDisplay = ({ number, x, y }) => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 200);
