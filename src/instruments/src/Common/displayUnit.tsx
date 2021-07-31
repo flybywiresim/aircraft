@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NXDataStore } from '@shared/persistence';
-import { useGameVar, useSimVar } from './simVars';
+import { useSimVar } from './simVars';
 import { useUpdate } from './hooks';
-import { setSimVar } from '../util';
 
 import './common.scss';
 import './pixels.scss';
@@ -26,7 +25,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
-    const [opacity, setOpacity] = useState(0.0);
+    const [opacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 200);
 
     useUpdate((deltaTime) => {
         if (timer !== null) {
@@ -41,33 +40,6 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
             }
         }
     });
-
-    // TODO: This only calculates in one instance (on Captain's PFD), move this to FCU when in react.
-    if (props.potentiometerIndex === 88) {
-        const [zoomLevel] = useSimVar('COCKPIT CAMERA ZOOM', 'percent', 200);
-        const camXyz = useGameVar('CAMERA POS IN PLANE', 'xyz', 200);
-
-        useEffect(() => {
-            // ZPlane - Every MFD + ISIS + DCDU
-            // zTarget: Target zPos that marks max pixel effect point (11.625z @ 100%, 11.7z @ 75%)
-            const zTarget = (3975 - zoomLevel) / 333.33;
-            // zΔ: Diff between current zPos and zTarget
-            const zDelta = camXyz.z - zTarget;
-            // opacity: 4zΔ + 0.5 < 0.5
-            setOpacity(Math.min(0.5, 4 * (zDelta) + 0.5));
-            setSimVar('L:A32NX_MFD_MASK_OPACITY', opacity, 'number');
-
-            // YPlane = MCDU
-            const yTarget = (zoomLevel + 423.33) / 333.33;
-            const yDelta = yTarget - camXyz.y;
-            setSimVar('L:A32NX_MCDU_MASK_OPACITY', Math.min(1, 4 * (yDelta) + 0.5), 'number');
-        }, [camXyz, zoomLevel]);
-    } else {
-        const [maskOpacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 200);
-        useEffect(() => {
-            setOpacity(maskOpacity);
-        }, [maskOpacity]);
-    }
 
     useEffect(() => {
         if (state === DisplayUnitState.On && (potentiometer === 0 || electricityState === 0)) {

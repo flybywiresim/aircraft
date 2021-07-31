@@ -16,6 +16,11 @@ class A32NX_LocalVarUpdater {
             "FWD":false,
             "AFT":false
         };
+        // Init for LCD effect
+        this.zoomLevel = SimVar.GetSimVarValue('COCKPIT CAMERA ZOOM', 'percent');
+        const camXyz = SimVar.GetGameVarValue('CAMERA POS IN PLANE', 'xyz');
+        this.camZ = camXyz.z;
+        this.camY = camXyz.y;
 
         this.updaters = [
             {
@@ -83,6 +88,18 @@ class A32NX_LocalVarUpdater {
                 type: "Bool",
                 selector: this._areSlidesArmed.bind(this),
                 refreshInterval: 100,
+            },
+            {
+                varName: "L:A32NX_MFD_MASK_OPACITY",
+                type: "number",
+                selector: this._mfdLcdEffectSelector.bind(this),
+                refreshInterval: 150,
+            },
+            {
+                varName: "L:A32NX_MCDU_MASK_OPACITY",
+                type: "number",
+                selector: this._mcduLcdEffectSelector.bind(this),
+                refreshInterval: 150,
             }
             // New updaters go here...
         ];
@@ -213,6 +230,42 @@ class A32NX_LocalVarUpdater {
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
         );
+    }
+
+    _mfdLcdEffectSelector() {
+        // Calculate opacity for MFD LCD effect
+        const zoomLevel = SimVar.GetSimVarValue('COCKPIT CAMERA ZOOM', 'percent');
+        const camXyz = SimVar.GetGameVarValue('CAMERA POS IN PLANE', 'xyz');
+
+        if (this.zoomLevel !== zoomLevel || this.camZ !== camXyz.z) {
+            // z-axis - away from screen >> -ve
+            // zTarget: Target zPos that marks max pixel effect point [11.625z @ 100%, 11.7z @ 75%]
+            const zTarget = (3975 - zoomLevel) / 333.33;
+            // zΔ: Diff between current zPos and zTarget
+            const zDelta = camXyz.z - zTarget;
+            // opacity: 0 < [4zΔ + 0.5] < 0.5
+            SimVar.SetSimVarValue('L:A32NX_MFD_MASK_OPACITY', 'number', Math.max(0, Math.min(0.5, 4 * (zDelta) + 0.5)));
+
+            this.camZ = camXyz.z;
+            this.zoomLevel = zoomLevel;
+        }
+    }
+
+    _mcduLcdEffectSelector() {
+        // Calculate opacity for MCDU LCD effect
+        const zoomLevel = SimVar.GetSimVarValue('COCKPIT CAMERA ZOOM', 'percent');
+        const camXyz = SimVar.GetGameVarValue('CAMERA POS IN PLANE', 'xyz');
+
+        if (this.zoomLevel !== zoomLevel || this.camY !== camXyz.y) {
+            // y-axis - away from screen >> +ve
+            const yTarget = (zoomLevel + 423.33) / 333.33;
+            const yDelta = yTarget - camXyz.y;
+            // opacity: 0 < [4zΔ + 0.5] < 1
+            SimVar.SetSimVarValue('L:A32NX_MCDU_MASK_OPACITY', 'number', Math.max(0, Math.min(1, 4 * (yDelta) + 0.5)));
+
+            this.camY = camXyz.y;
+            this.zoomLevel = zoomLevel;
+        }
     }
 
     // New selectors go here...
