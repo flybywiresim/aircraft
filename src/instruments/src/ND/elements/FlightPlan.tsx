@@ -1,5 +1,4 @@
 import React, { FC, useState } from 'react';
-import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
@@ -14,6 +13,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { AltitudeConstraint, Leg, SpeedConstraint } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { Xy } from '@fmgc/flightplanning/data/geo';
+import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 import { MapParameters } from '../utils/MapParameters';
 
 export type FlightPathProps = {
