@@ -79,6 +79,10 @@ text.White {
   stroke: $display-green;
   fill: none;
 }
+.Green.Fill {
+  fill: $display-green;
+  stroke: none;
+}
 text.Green {
   fill: $display-green;
   stroke: none;
@@ -122,6 +126,10 @@ text.Red {
 .Grey.Fill {
   fill: $display-grey;
   stroke: none;
+}
+
+.BackgroundFill {
+  fill: $display-background;
 }
 
 path.rounded {
