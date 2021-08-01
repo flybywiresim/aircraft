@@ -1,18 +1,13 @@
 /* eslint-disable no-nested-ternary */
 import './Fuel.scss';
 import ReactDOM from 'react-dom';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
 import { usePersistentProperty } from '../../../Common/persistence';
+import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
 
 setIsEcamPage('fuel_page');
-
-const fuelForDisplay = (fuelValue, unitsC, timeUnit = 1, fobMultiplier = 1) => {
-    const fuelWeight = unitsC === '1' ? fuelValue / timeUnit : fuelValue / timeUnit * 2.20462;
-    const roundValue = unitsC === '1' ? 10 * fobMultiplier : 20 * fobMultiplier;
-    return Math.round(fuelWeight / roundValue) * roundValue;
-};
 
 export const FuelPage = () => {
     const [crossFeedPosition] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'number', 500);
@@ -30,8 +25,24 @@ export const FuelPage = () => {
     const [tankRightInner] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'gallons', 500);
     const [tankRightOuter] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'gallons', 500);
 
-    // const [leftFuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:1', 'kg', 200);
-    // const [rightFuelUsed] = useSimVar('GENERAL ENG FUEL USED SINCE START:2', 'kg', 200);
+    const [pump1] = useSimVar('FUELSYSTEM VALVE OPEN:1', 'bool', 500);
+    const [pump2] = useSimVar('FUELSYSTEM VALVE OPEN:2', 'bool', 500);
+    const [pump3] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'bool', 500);
+    const [pump5] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
+    const [pump7] = useSimVar('FUELSYSTEM VALVE OPEN:7', 'bool', 500);
+    const [pump4] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
+    const [pump6] = useSimVar('FUELSYSTEM VALVE OPEN:6', 'bool', 500);
+
+    useEffect(() => {
+        console.log(`pump1 valve is ${pump1}`);
+        console.log(`pump2 valve is ${pump2}`);
+        console.log(`pump3 valve is ${pump3}`);
+        console.log(`pump5 valve is ${pump5}`);
+        console.log(`pump7 valve is ${pump7}`);
+        console.log(`pump4 valve is ${pump4}`);
+        console.log(`pump6 valve is ${pump6}`);
+        console.log(' ----------- ');
+    }, [pump5, pump7, pump4, pump6]);
 
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT');
 
@@ -42,13 +53,6 @@ export const FuelPage = () => {
     const rightFuelUsed = fuelForDisplay(rightConsumption, unit);
 
     const [fuelWeightPerGallon] = useSimVar('FUEL WEIGHT PER GALLON', 'kilogram', 60_000);
-
-    const fuelInTanksForDisplay = (fuelValue, unitsC, gallon2Kg) => {
-        const weightInKg = fuelValue * gallon2Kg;
-        const fuelWeight = unitsC === '1' ? weightInKg : weightInKg * 2.20462;
-        const roundValue = unitsC === '1' ? 10 : 20;
-        return Math.round(fuelWeight / roundValue) * roundValue;
-    };
 
     return (
         // This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM
