@@ -78,14 +78,6 @@ export function setSimVar(name, value, type = SIMVAR_TYPES[name]) {
     return SimVar.SetSimVarValue(name, type, value);
 }
 
-export function useGlobalVar(name, type) {
-    const [value, updater] = useState(0);
-
-    useUpdate(() => updater(getGlobalVar(name, type)));
-
-    return value;
-}
-
 export const createDeltaTimeCalculator = (startTime = Date.now()) => {
     let lastTime = startTime;
 
