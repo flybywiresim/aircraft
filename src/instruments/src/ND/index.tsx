@@ -91,7 +91,7 @@ const NavigationDisplay: React.FC = () => {
                             <RadioNavInfo index={2} side={side} />
                         </>
                     )}
-                    <FMMessages />
+                    <FMMessages modeIndex={modeIndex} />
 
                 </svg>
             </FlightPlanProvider>
