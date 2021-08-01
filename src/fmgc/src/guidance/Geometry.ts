@@ -40,27 +40,72 @@ export class Geometry {
      * const b = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude")
      * const ppos = new LatLongAlt(a, b);
      * const trueTrack = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "degree");
-     * getGuidanceParameters(ppos, trueTrack);
+     * const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+     * getGuidanceParameters(ppos, trueTrack, gs);
      */
-    getGuidanceParameters(ppos, trueTrack) {
+    getGuidanceParameters(ppos, trueTrack, gs) {
         // first, check if we're abeam with one of the transitions (start or end)
         const fromTransition = this.transitions.get(1);
+        // TODO RAD
         if (fromTransition && fromTransition.isAbeam(ppos)) {
             return fromTransition.getGuidanceParameters(ppos, trueTrack);
         }
 
+        const activeLeg = this.legs.get(1);
+
         const toTransition = this.transitions.get(2);
-        if (toTransition && toTransition.isAbeam(ppos)) {
-            return toTransition.getGuidanceParameters(ppos, trueTrack);
+        if (toTransition) {
+            if (toTransition.isAbeam(ppos)) {
+                return toTransition.getGuidanceParameters(ppos, trueTrack);
+            }
+
+            if (activeLeg) {
+                const [itp,] = toTransition.getTurningPoints();
+                // TODO this should be tidied up somewhere else
+                const unTravelled = Avionics.Utils.computeGreatCircleDistance(itp, activeLeg.terminatorLocation);
+                const rad = this.getRollAnticipationDistance(gs, activeLeg, toTransition);
+                if ((activeLeg.getDistanceToGo(ppos) - unTravelled) <= rad) {
+                    console.log(`RAD for transition ${rad}`);
+                    const params = activeLeg.getGuidanceParameters(ppos, trueTrack);
+                    const toParams = toTransition.getGuidanceParameters(ppos, trueTrack);
+                    params.phiCommand = toParams.phiCommand ?? 0;
+                    return params;
+                }
+            }
         }
 
-        // otherwise perform straight point-to-point guidance for the first leg
-        const activeLeg = this.legs.get(1);
         if (activeLeg) {
+            const nextLeg = this.legs.get(2);
+            if (nextLeg) {
+                const rad = this.getRollAnticipationDistance(gs, activeLeg, nextLeg);
+                if (activeLeg.getDistanceToGo(ppos) <= rad) {
+                    console.log(`RAD for next leg ${rad}`);
+                    const params = activeLeg.getGuidanceParameters(ppos, trueTrack);
+                    const toParams = nextLeg.getGuidanceParameters(ppos, trueTrack);
+                    params.phiCommand = toParams.phiCommand ?? 0;
+                    return params;
+                }
+            }
+
+            // otherwise perform straight point-to-point guidance for the first leg
             return activeLeg.getGuidanceParameters(ppos, trueTrack);
         }
 
         return null;
+    }
+
+    getRollAnticipationDistance(gs, from: Leg | Transition, to: Leg | Transition) {
+        if (!from.isCircularArc && !to.isCircularArc) {
+            return 0;
+        }
+
+        const deltaPhi = Math.abs(to.getNominalRollAngle(gs) - from.getNominalRollAngle(gs));
+        const maxRollRate = 5; // deg / s, TODO picked off the wind
+        const k2 = 0.1;
+        const rad = gs / 3600 * (Math.sqrt(1 + 2 * k2 * 9.81 * deltaPhi / maxRollRate) - 1) / (k2 * 9.81);
+        // TODO consider case where RAD > transition distance
+
+        return rad;
     }
 
     getDistanceToGo(ppos): number | null {
