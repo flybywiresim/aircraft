@@ -99,10 +99,21 @@ export class Geometry {
             return 0;
         }
 
-        const deltaPhi = Math.abs(to.getNominalRollAngle(gs) - from.getNominalRollAngle(gs));
+        // convert ground speed to m/s
+        const groundSpeedMeterPerSecond = gs * (463 / 900);
+
+        // get nominal phi from previous and next leg
+        const phiNominalFrom = from.getNominalRollAngle(groundSpeedMeterPerSecond);
+        const phiNominalTo = to.getNominalRollAngle(groundSpeedMeterPerSecond);
+
+        // calculate delta phi
+        const deltaPhi = Math.abs(phiNominalTo - phiNominalFrom);
+
+        // calculate RAD
         const maxRollRate = 5; // deg / s, TODO picked off the wind
-        const k2 = 0.1;
+        const k2 = 0.0092;
         const rad = gs / 3600 * (Math.sqrt(1 + 2 * k2 * 9.81 * deltaPhi / maxRollRate) - 1) / (k2 * 9.81);
+
         // TODO consider case where RAD > transition distance
 
         return rad;
