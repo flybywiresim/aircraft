@@ -12,6 +12,7 @@ import { RadioNavInfo } from './elements/RadioNavInfo';
 import { Chrono } from './elements/Chrono';
 import { NavigationDisplayMessages } from './elements/messages/NavigationDisplayMessages';
 import { FMMessages } from './elements/messages/FMMessages';
+import { TcasWxrMessages } from './elements/messages/TcasWxrMessages';
 import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
 
@@ -91,6 +92,7 @@ const NavigationDisplay: React.FC = () => {
                             <RadioNavInfo index={2} side={side} />
                         </>
                     )}
+                    <TcasWxrMessages modeIndex={modeIndex} />
                     <FMMessages modeIndex={modeIndex} />
 
                 </svg>
