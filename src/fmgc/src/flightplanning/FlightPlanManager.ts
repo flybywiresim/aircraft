@@ -508,6 +508,7 @@ export class FlightPlanManager {
                         wp.legAltitude1 = approach.finalLegs[i].altitude1 * 3.28084;
                         wp.legAltitude2 = approach.finalLegs[i].altitude2 * 3.28084;
                         wp.speedConstraint = approach.finalLegs[i].speedRestriction;
+                        wp.additionalData.overfly = approach.finalLegs[i].flyOver;
                         approachWaypoints.push(wp);
                     }
                 }
@@ -520,6 +521,7 @@ export class FlightPlanManager {
                         wp.legAltitude1 = approachTransition.legs[i].altitude1 * 3.28084;
                         wp.legAltitude2 = approachTransition.legs[i].altitude2 * 3.28084;
                         wp.speedConstraint = approach.finalLegs[i].speedRestriction;
+                        wp.additionalData.overfly = approachTransition.finalLegs[i].flyOver;
                         approachWaypoints.push(wp);
                     }
                 }
@@ -795,6 +797,20 @@ export class FlightPlanManager {
      */
     public removeWaypoint(index: number, thenSetActive = false, callback = () => { }): void {
         this._flightPlans[this._currentFlightPlanIndex].removeWaypoint(index);
+
+        this._updateFlightPlanVersion();
+        callback();
+    }
+
+    addWaypointOverfly(index: number, thenSetActive = false, callback = () => { }): void {
+        this._flightPlans[this._currentFlightPlanIndex].setWaypointOverfly(index, true);
+
+        this._updateFlightPlanVersion();
+        callback();
+    }
+
+    removeWaypointOverfly(index: number, thenSetActive = false, callback = () => { }): void {
+        this._flightPlans[this._currentFlightPlanIndex].setWaypointOverfly(index, false);
 
         this._updateFlightPlanVersion();
         callback();
