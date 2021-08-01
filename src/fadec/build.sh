@@ -9,6 +9,7 @@ set -ex
 
 # compile c++ code
 clang++ \
+  -c \
   -Wno-unused-command-line-argument \
   -Wno-ignored-attributes \
   -Wno-macro-redefined \
@@ -24,15 +25,26 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
-  -Wl,--strip-debug \
-  -Wl,--no-entry \
-  -Wl,--export=malloc \
-  -Wl,--export=free \
-  -Wl,--export=__wasm_call_ctors \
-  -Wl,--export-table \
-  -Wl,--allow-undefined \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/src" \
   "${DIR}/src/FadecGauge.cpp" \
+   -o fadec.o
+
+ wasm-ld \
+  --no-entry \
+  --allow-undefined \
+  -L "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi" \
+  -lc "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a" \
+  --export __wasm_call_ctors \
+  --strip-debug \
+  --export-dynamic \
+  --export malloc \
+  --export free \
+  --export __wasm_call_ctors \
+  --export-table \
+  --gc-sections \
+  -O3 --lto-O3 \
+  -lc++ -lc++abi \
+   fadec.o \
   -o $OUTPUT

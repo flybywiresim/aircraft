@@ -45,10 +45,12 @@ clang \
   "${DIR}/src/zlib/zutil.c"
 
 # restore directory
-popd
+#popd
+
 
 # compile c++ code
 clang++ \
+  -c \
   -Wno-unused-command-line-argument \
   -Wno-ignored-attributes \
   -Wno-macro-redefined \
@@ -64,13 +66,6 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
-  -Wl,--strip-debug \
-  -Wl,--no-entry \
-  -Wl,--export=malloc \
-  -Wl,--export=free \
-  -Wl,--export=__wasm_call_ctors \
-  -Wl,--export-table \
-  -Wl,--allow-undefined \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/src/inih" \
@@ -108,18 +103,24 @@ clang++ \
   "${DIR}/src/RudderTrimHandler.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
   "${DIR}/src/ThrottleAxisMapping.cpp" \
-  "${DIR}/src/main.cpp" \
-  "${DIR}/obj/adler32.o" \
-  "${DIR}/obj/crc32.o" \
-  "${DIR}/obj/deflate.o" \
-  "${DIR}/obj/gzclose.o" \
-  "${DIR}/obj/gzlib.o" \
-  "${DIR}/obj/gzread.o" \
-  "${DIR}/obj/gzwrite.o" \
-  "${DIR}/obj/infback.o" \
-  "${DIR}/obj/inffast.o" \
-  "${DIR}/obj/inflate.o" \
-  "${DIR}/obj/inftrees.o" \
-  "${DIR}/obj/trees.o" \
-  "${DIR}/obj/zutil.o" \
+  "${DIR}/src/main.cpp"
+
+popd
+
+ wasm-ld \
+  --no-entry \
+  --allow-undefined \
+  -L "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi" \
+  -lc "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a" \
+  --export __wasm_call_ctors \
+  --strip-debug \
+  --export-dynamic \
+  --export malloc \
+  --export free \
+  --export __wasm_call_ctors \
+  --export-table \
+  --gc-sections \
+  -O3 --lto-O3 \
+  -lc++ -lc++abi \
+  ${DIR}/obj/*.o \
   -o $OUTPUT
