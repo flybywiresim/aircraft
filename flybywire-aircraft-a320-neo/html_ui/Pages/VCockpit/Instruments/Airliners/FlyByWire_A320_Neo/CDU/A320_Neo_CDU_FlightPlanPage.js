@@ -130,6 +130,7 @@ class CDUFlightPlanPage {
                 const activeIndex = fpm.getActiveWaypointIndex();
                 const wpActive = (waypointsAndMarkers[winI].fpIndex >= activeIndex);
                 let ident = waypointsAndMarkers[winI].wp.ident;
+                const isOverfly = waypointsAndMarkers[winI].wp.additionalData.overfly;
 
                 // Time
                 let time;
@@ -355,7 +356,8 @@ class CDUFlightPlanPage {
                     timeCell: timeCell,
                     timeColor: timeColor,
                     fixAnnotation: fixAnnotation,
-                    bearingTrack: bearingTrack
+                    bearingTrack: bearingTrack,
+                    isOverfly: isOverfly,
                 };
 
                 if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
@@ -376,6 +378,18 @@ class CDUFlightPlanPage {
                             mcdu.removeWaypoint(waypointsAndMarkers[winI].fpIndex, () => {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
                             }, !fpm.isCurrentFlightPlanTemporary());
+                        } else if (value === FMCMainDisplay.ovfyValue) {
+                            if (waypointsAndMarkers[winI].wp) {
+                                if (waypointsAndMarkers[winI].wp.additionalData.overfly) {
+                                    mcdu.removeWaypointOverfly(waypointsAndMarkers[winI].fpIndex, () => {
+                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                    }, !fpm.isCurrentFlightPlanTemporary());
+                                } else {
+                                    mcdu.addWaypointOverfly(waypointsAndMarkers[winI].fpIndex, () => {
+                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                    }, !fpm.isCurrentFlightPlanTemporary());
+                                }
+                            }
                         } else if (value.length > 0) {
                             mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex, () => {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
@@ -595,7 +609,7 @@ function renderFixHeader(rowObj) {
 function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
 
     return [
-        `${rowObj.ident}[color]${rowObj.color}`,
+        `${rowObj.ident}${rowObj.isOverfly ? FMCMainDisplay.ovfyValue : ""}[color]${rowObj.color}`,
         `{${rowObj.spdColor}}${spdRepeat ? "\xa0\"\xa0" : rowObj.speedConstraint}{end}{${rowObj.altColor}}/${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : rowObj.altitudeConstraint.altPrefix + rowObj.altitudeConstraint.alt}{end}[s-text]`,
         `${rowObj.timeCell}{sp}{sp}[color]${rowObj.timeColor}`
     ];
