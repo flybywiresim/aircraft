@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
+import { useSimVar } from '@instruments/common/simVars';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
@@ -11,8 +12,13 @@ type ButtonType = {
     setting: string,
 }
 
+type AdirsButton = {
+    simVarValue: number,
+}
+
 const PlaneSettings = () => {
     const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
+    const [_, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
@@ -26,10 +32,10 @@ const PlaneSettings = () => {
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
     const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
-    const adirsAlignTimeButtons: ButtonType[] = [
-        { name: 'Instant', setting: 'INSTANT' },
-        { name: 'Fast', setting: 'FAST' },
-        { name: 'Real', setting: 'REAL' },
+    const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
+        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
+        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
+        { name: 'Real', setting: 'REAL', simVarValue: 0 },
     ];
 
     const dmcSelfTestTimeButtons: ButtonType[] = [
@@ -110,7 +116,10 @@ const PlaneSettings = () => {
                     <SelectGroup>
                         {adirsAlignTimeButtons.map((button) => (
                             <SelectItem
-                                onSelect={() => setAdirsAlignTime(button.setting)}
+                                onSelect={() => {
+                                    setAdirsAlignTime(button.setting);
+                                    setAdirsAlignTimeSimVar(button.simVarValue);
+                                }}
                                 selected={adirsAlignTime === button.setting}
                             >
                                 {button.name}

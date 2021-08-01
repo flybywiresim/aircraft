@@ -22,6 +22,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inFocus = false;
         this.lastInput = 0;
         this.clrStop = false;
+        this.allSelected = false;
         this.aocAirportList = new CDUAocAirportList;
         this.initB = false;
         this.PageTimeout = {
@@ -329,8 +330,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     console.log("TELEX MSG FETCH FAILED");
                 });
         }, NXApi.updateRate);
-
-        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0).then();
     }
 
     onUpdate(_deltaTime) {
@@ -881,6 +880,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     clearFocus() {
         this.inFocus = false;
+        this.allSelected = false;
         Coherent.trigger('UNFOCUS_INPUT_FIELD');
         this._inOutElement.style = null;
         this.getChildById("header").style = null;
@@ -901,7 +901,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (mcduInput === "ENABLED") {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
-
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
                     this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
                     Coherent.trigger('FOCUS_INPUT_FIELD');
@@ -933,6 +932,30 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
                 if (e.altKey || (e.ctrlKey && keycode === KeyCode.KEY_Z)) {
                     this.clearFocus();
+                } else if (e.ctrlKey && keycode === KeyCode.KEY_A) {
+                    this.allSelected = !this.allSelected;
+                    this._inOutElement.style = `display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`;
+                } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
+                    this.forceClearScratchpad();
+                } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
+                    let wordFlag = this.inOut.includes(' ') ? false : true;
+                    for (let i = this.inOut.length; i > 0; i--) {
+                        if (this.inOut.slice(-1) === ' ') {
+                            if (!wordFlag) {
+                                this.onClr();
+                            } else {
+                                wordFlag = true;
+                                break;
+                            }
+                        }
+                        if (this.inOut.slice(-1) !== ' ') {
+                            if (!wordFlag) {
+                                wordFlag = true;
+                            } else {
+                                this.onClr();
+                            }
+                        }
+                    }
                 } else if (e.shiftKey && keycode === KeyCode.KEY_BACK_SPACE) {
                     if (!this.check_clr) {
                         this.onClr();
@@ -956,7 +979,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_SLASH", "Number", 1);
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SLASH", "Number", 1);
                 } else if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
-                    if (!this.clrStop) {
+                    if (this.allSelected) {
+                        this.forceClearScratchpad();
+                    } else if (!this.clrStop) {
                         this.onClr();
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
@@ -1007,17 +1032,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     /**
      * General message handler
-     * @param msg {{text, isAmber, isTypeTwo}} Message Object
-     * @param c {function} Function that checks for validity of error message (typeII only)
-     * @param f {function} Function gets executed when error message has been cleared (typeII only)
+     * @param message {{text, isAmber, isTypeTwo}} Message Object
+     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
+     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    addNewMessage(msg, c = () => {}, f = () => {
+    addNewMessage(message, isResolved = () => {
         return false;
-    }) {
-        if (msg.isTypeTwo) {
-            this._addTypeTwoMessage(msg.text, msg.isAmber, c, f);
+    }, onClear = () => {}) {
+        if (message.isTypeTwo) {
+            if (!isResolved()) {
+                this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
+            }
         } else {
-            this._showTypeOneMessage(msg.text, msg.isAmber);
+            this._showTypeOneMessage(message.text, message.isAmber);
         }
     }
 
@@ -1034,10 +1061,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Add Type II Message
      * @param message {string} Message to be displayed
      * @param isAmber {boolean} Is color amber
-     * @param c {function} Function that checks for validity of error message
-     * @param f {function} Function gets executed when error message has been cleared
+     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
+     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    _addTypeTwoMessage(message, isAmber, c, f) {
+    _addTypeTwoMessage(message, isAmber, isResolved, onClear) {
         if (this.checkForMessage(message)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
@@ -1045,7 +1072,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.messageQueue.splice(i, 1);
                 }
             }
-            this.messageQueue.unshift([message, isAmber, c, f]);
+            this.messageQueue.unshift([message, isAmber, isResolved, onClear]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }

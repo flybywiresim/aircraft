@@ -3,9 +3,11 @@ import { join } from 'path';
 import { baseCompile } from './plugins.mjs';
 import { getTemplatePlugin } from './templatePlugins.mjs';
 import { Directories } from './directories.mjs';
+import { getInputs } from './igniter/tasks.mjs';
 
 process.chdir(Directories.src);
 
+<<<<<<< HEAD
 const ecamPages = [
     {
         name: 'door-page',
@@ -51,6 +53,8 @@ function getInputs() {
     ];
 }
 
+=======
+>>>>>>> master
 export default getInputs()
     .map(({ path, name, isInstrument }) => {
         const config = JSON.parse(fs.readFileSync(join(Directories.instruments, 'src', path, 'config.json')));

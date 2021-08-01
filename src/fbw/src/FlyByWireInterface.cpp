@@ -89,6 +89,9 @@ bool FlyByWireInterface::update(double sampleTime) {
     return result;
   }
 
+  // update altimeter setting
+  result &= updateAltimeterSetting(sampleTime);
+
   // update autopilot state machine
   result &= updateAutopilotStateMachine(sampleTime);
 
@@ -1333,6 +1336,20 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   idSpoilersArmed->set(spoilersHandler->getIsArmed() ? 1 : 0);
   idSpoilersHandlePosition->set(spoilersHandler->getHandlePosition());
   idSpoilersGroundSpoilersActive->set(spoilersHandler->getIsGroundSpoilersActive() ? 1 : 0);
+
+  // result
+  return true;
+}
+
+bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // determine if change is needed
+  if (simData.kohlsmanSettingStd_3 == 0) {
+    SimOutputAltimeter out = {true};
+    simConnectInterface.sendData(out);
+  }
 
   // result
   return true;

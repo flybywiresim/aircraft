@@ -73,3 +73,15 @@ double imbalance_extractor(double imbalance, int parameter) {
 
   return int(reg);
 }
+
+// FBW Power Function
+double powFBW(double x, size_t n) {
+  double r = 1.0;
+
+  while (n > 0) {
+    r *= x;
+    --n;
+  }
+
+  return r;
+}
