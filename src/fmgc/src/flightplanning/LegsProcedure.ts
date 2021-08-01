@@ -189,7 +189,8 @@ export class LegsProcedure {
                   mappedLeg.legAltitude2 = currentLeg.altitude2 * 3.28084;
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
                   mappedLeg.additionalData.legType = currentLeg.type;
-               }
+                  mappedLeg.additionalData.overfly = currentLeg.flyOver;
+              }
 
               this._currentIndex++;
           }
