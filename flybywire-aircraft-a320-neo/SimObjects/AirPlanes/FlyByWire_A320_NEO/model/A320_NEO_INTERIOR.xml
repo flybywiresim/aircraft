@@ -1397,8 +1397,7 @@
                     (O:_ShouldBeConnectedToPowerGrid) sp0
                     2 (&gt;A:BUS LOOKUP INDEX, Number)
                     (A:CIRCUIT CONNECTION ON:29, Bool) l0 != if{ 29 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
-                    3 (&gt;A:BUS LOOKUP INDEX, Number)
-                    (A:CIRCUIT CONNECTION ON:30, Bool) l0 != if{ 30 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                    (A:CIRCUIT CONNECTION ON:30, Bool) l0 != if{ 30 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                 </Update>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
