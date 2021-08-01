@@ -193,6 +193,8 @@ class SimConnectInterface {
 
   bool sendData(SimOutputSpoilers output);
 
+  bool sendData(SimOutputAltimeter output);
+
   bool sendEvent(Events eventId);
 
   bool sendEvent(Events eventId, DWORD data);
