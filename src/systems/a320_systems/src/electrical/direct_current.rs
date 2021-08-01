@@ -10,7 +10,7 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
-        LandingGearPosition,
+        LandingGearRealPosition,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -114,7 +114,7 @@ impl A320DirectCurrentElectrical {
         emergency_generator: &EmergencyGenerator,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
     ) {
         self.tr_1_contactor
             .close_when(electricity.is_powered(ac_state.tr_1()));

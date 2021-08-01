@@ -877,12 +877,7 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.eBingMode !== EBingMode.HORIZON) {
             const setConfig = () => {
                 if (this.navMap.configLoaded) {
-                    for (let i = 0; i < 3; i++) {
-                        const conf = this.navMap.config.generateBing(i);
-                        if (conf) {
-                            this.bingMap.addConfig(conf);
-                        }
-                    }
+                    this.navMap.config.generateBingMap(this.bingMap);
                     this.bingMap.setConfig(this.bingMapConfigId);
                 } else {
                     setTimeout(setConfig, 1000);

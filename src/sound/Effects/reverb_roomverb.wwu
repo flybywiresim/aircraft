@@ -46,6 +46,13 @@
 						<Property Name="RoomShape" Type="Real32" Value="0"/>
 					</PropertyList>
 				</Effect>
+				<Effect Name="test" ID="{78D1CDAF-411F-4364-83FD-FD822C7A1A74}" PluginName="Wwise Guitar Distortion" CompanyID="0" PluginID="126" PluginType="3">
+					<PropertyList>
+						<Property Name="DistortionDrive" Type="Real32" Value="35"/>
+						<Property Name="DistortionType" Type="int32" Value="4"/>
+						<Property Name="WetDryMix" Type="Real32" Value="41"/>
+					</PropertyList>
+				</Effect>
 			</ChildrenList>
 		</WorkUnit>
 	</Effects>
