@@ -2133,6 +2133,40 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_Asobo_A320_NEO_extwind" ID="{6BA8A38C-0A08-448B-B11C-615FBF9DE7D7}">
+					<ChildrenList>
+						<Action Name="" ID="{1FCFE931-B993-40E6-A8E1-D7A9304484A1}" ShortID="588830402">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="extwind" ID="{8B597F9B-B9A6-48FB-BF08-E545563928F9}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+						<Action Name="" ID="{B82D4478-B247-43F7-87B1-F58442944A5B}" ShortID="383916336">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="ExL_01" ID="{57AB96DF-5547-4865-8780-31517277DB06}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+						<Action Name="" ID="{331B34E7-2D7E-4F17-B4CD-C7AADBB05CEA}" ShortID="458923574">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="ExR_01" ID="{034DBF05-905F-4E0C-9362-CB12D237D218}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>
