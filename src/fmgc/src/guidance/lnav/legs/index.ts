@@ -33,6 +33,8 @@ export interface Leg extends Guidable {
 
     segment: SegmentType;
 
+    get isCircularArc(): boolean;
+
     get bearing(): Degrees;
 
     get distance(): NauticalMiles;
@@ -48,6 +50,8 @@ export interface Leg extends Guidable {
     getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined;
 
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: Degrees);
+
+    getNominalRollAngle(gs): Degrees;
 
     /**
      * Calculates directed DTG parameter
