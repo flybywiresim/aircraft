@@ -163,7 +163,30 @@ class CDUFlightPlanPage {
                     waypointsAndMarkers[winI - 1].wp &&
                     waypointsAndMarkers[winI - 1].wp === fpm.getOrigin()) {
                     fixAnnotation = `${waypointsAndMarkers[winI - 1].wp.ident.substring(0,3)}${fpm.getDepartureRunway().direction.toFixed(0)}`;
-                } else if (waypointsAndMarkers[winI].wp.additionalData) {
+                } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                    const departure = fpm.getDeparture();
+                    fixAnnotation = departure ? departure.name : undefined;
+                } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                    const arrival = fpm.getArrival();
+                    fixAnnotation = arrival ? arrival.name : undefined;
+                } else {
+                    // Show airway
+                    let airwayName = "";
+                    if (wpPrev && waypointsAndMarkers[winI].wp) {
+                        let airway = undefined;
+                        if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === waypointsAndMarkers[winI].wp.infos.airwayIn) {
+                            airway = {name: wpPrev.infos.airwayOut };
+                        } else if (waypointsAndMarkers[winI].wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
+                            airway = {name: waypointsAndMarkers[winI].wp.infos.airwayIn };
+                        }
+                        if (airway) {
+                            airwayName = `\xa0${airway.name}`;
+                        }
+                    }
+                    fixAnnotation = airwayName;
+                }
+
+                if (waypointsAndMarkers[winI].wp.additionalData) {
                     // ARINC Leg Types - R1A 610
                     switch (waypointsAndMarkers[winI].wp.additionalData.legType) {
                         case 2: // CA
@@ -185,28 +208,6 @@ class CDUFlightPlanPage {
                             fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                     }
-                } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
-                    const departure = fpm.getDeparture();
-                    fixAnnotation = departure ? departure.name : undefined;
-                } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
-                    const arrival = fpm.getArrival();
-                    fixAnnotation = arrival ? arrival.name : undefined;
-                } else {
-
-                    // Show airway
-                    let airwayName = "";
-                    if (wpPrev && waypointsAndMarkers[winI].wp) {
-                        let airway = undefined;
-                        if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === waypointsAndMarkers[winI].wp.infos.airwayIn) {
-                            airway = {name: wpPrev.infos.airwayOut };
-                        } else if (waypointsAndMarkers[winI].wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
-                            airway = {name: waypointsAndMarkers[winI].wp.infos.airwayIn };
-                        }
-                        if (airway) {
-                            airwayName = `\xa0${airway.name}`;
-                        }
-                    }
-                    fixAnnotation = airwayName;
                 }
 
                 // Bearing/Track
