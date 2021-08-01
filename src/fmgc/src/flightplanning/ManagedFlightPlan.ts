@@ -472,6 +472,22 @@ export class ManagedFlightPlan {
         return null;
     }
 
+    public setWaypointOverfly(index: number, value: boolean): void {
+        if (this.originAirfield && index === 0) {
+            return;
+        }
+
+        if (this.destinationAirfield && index === this.length - 1) {
+            return;
+        }
+
+        const segment = this.findSegmentByWaypointIndex(index);
+
+        if (segment) {
+            segment.waypoints[index - segment.offset].additionalData.overfly = value;
+        }
+    }
+
     /**
      * Adds a plan segment to the flight plan.
      * @param type The type of the segment to add.
