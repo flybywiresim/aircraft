@@ -22,14 +22,31 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
     constructor(
         previousLeg: TFLeg,
         nextLeg: TFLeg | VMLeg, // FIXME this cannot happen, but what are you gonna do about it ?,
-        radius: NauticalMiles,
-        clockwise: boolean,
     ) {
         super();
         this.previousLeg = previousLeg;
         this.nextLeg = nextLeg;
-        this.radius = radius;
-        this.clockwise = clockwise;
+
+        const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
+
+        // Bank angle limits, always assume limit 2 for now @ 25 degrees between 150 and 300 knots
+        let bankAngleLimit = 25;
+        if (kts < 150) {
+            bankAngleLimit = 15 + Math.min(kts / 150, 1) * (25 - 15);
+        } else if (kts > 300) {
+            bankAngleLimit = 25 - Math.min((kts - 300) / 150, 1) * (25 - 19);
+        }
+
+        // Turn radius
+        this.radius = (kts ** 2 / (9.81 * Math.tan(bankAngleLimit * Avionics.Utils.DEG2RAD))) / 6080.2;
+
+        // Turn direction
+        const courseChange = mod(nextLeg.bearing - previousLeg.bearing + 180, 360) - 180;
+        this.clockwise = courseChange >= 0;
+    }
+
+    get isCircularArc(): boolean {
+        return true;
     }
 
     get angle(): Degrees {
@@ -152,6 +169,10 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
             crossTrackError,
             phiCommand,
         };
+    }
+
+    getNominalRollAngle(gs): Degrees {
+        return (this.clockwise ? 1 : -1) * Math.atan((gs ** 2) / (this.radius * 1852 * 9.81)) * (180 / Math.PI);
     }
 
     toString(): string {
