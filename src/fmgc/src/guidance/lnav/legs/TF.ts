@@ -33,6 +33,10 @@ export class TFLeg implements Leg {
         this.segment = segment;
     }
 
+    get isCircularArc(): boolean {
+        return false;
+    }
+
     get bearing(): Degrees {
         return Avionics.Utils.computeGreatCircleHeading(
             this.from.infos.coordinates,
@@ -104,6 +108,10 @@ export class TFLeg implements Leg {
             crossTrackError,
             phiCommand: 0,
         };
+    }
+
+    getNominalRollAngle(gs): Degrees {
+        return 0;
     }
 
     /**

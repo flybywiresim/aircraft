@@ -66,6 +66,10 @@ export class RFLeg implements Leg {
         this.mDistance = 2 * Math.PI * this.radius / 360 * this.angle;
     }
 
+    get isCircularArc(): boolean {
+        return true;
+    }
+
     // this is used for transitions... which are not allowed for RF
     public get bearing(): Degrees {
         return -1;
@@ -138,6 +142,10 @@ export class RFLeg implements Leg {
             crossTrackError,
             phiCommand,
         };
+    }
+
+    getNominalRollAngle(gs): Degrees {
+        return (this.clockwise ? 1 : -1) * Math.atan((gs ** 2) / (this.radius * 1852 * 9.81)) * (180 / Math.PI);
     }
 
     /**
