@@ -176,7 +176,7 @@ const WaypointMarker: FC<WaypointMarkerProps> = ({ ident, position, altitudeCons
         }
     }
 
-    if (constraints && speedConstraint) {
+    if (constraints && speedConstraint && speedConstraint.speed > 0) {
         constraintText.push(`${Math.round(speedConstraint.speed)}KT`);
     }
 
