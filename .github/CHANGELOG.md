@@ -157,6 +157,7 @@
 1. [ADIRS] SAT, TAT, and ISA indications depend on the selected ADR (1 or 3) - @davidwalschots (David Walschots)
 1. [PRESS] First implementation of automatic pressurization system - @MJuhe (Miquel)
 1. [MISC] Added annunciator lights to interactive checklist - @oim1 (oim)
+1. [MISC] Workaround for altitude issues of MSFS - @aguther (Andreas Guther)
 1. [MODEL] Un-mirror sharklet textures - @tracernz (Mike)
 
 ## 0.6.0

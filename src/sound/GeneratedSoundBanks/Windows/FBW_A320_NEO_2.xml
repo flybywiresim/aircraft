@@ -279,9 +279,9 @@
 				</Event>
 				<Event Id="3500260578" Name="Play_Asobo_A320_NEO_cabinwind" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cabinwind" GUID="{8DB24E50-C491-42D0-A543-C7FA91DD6900}" MaxAttenuation="34.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="904912824" Language="SFX">
+						<File Id="384308497" Language="SFX">
 							<ShortName>Cabin_wind.wav</ShortName>
-							<Path>SFX\Cabin_wind_9D0E1E16.wem</Path>
+							<Path>SFX\Cabin_wind_60609F9E.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -434,6 +434,14 @@
 						<File Id="866189345" Language="SFX">
 							<ShortName>blueyellowshutdownext.wav</ShortName>
 							<Path>SFX\blueyellowshutdownext_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="2660889588" Name="Play_Asobo_A320_NEO_extwind" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_extwind" GUID="{6BA8A38C-0A08-448B-B11C-615FBF9DE7D7}" MaxAttenuation="1000.000000" DurationType="Infinite">
+					<IncludedMemoryFiles>
+						<File Id="55166845" Language="SFX">
+							<ShortName>extwind.wav</ShortName>
+							<Path>SFX\extwind_89DC6E16.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -1177,11 +1185,11 @@
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
-				<Event Id="2991007884" Name="Play_Asobo_A320_NEO_StartBassR" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\Play_Asobo_A320_NEO_StartBassR" GUID="{A7AC71A9-F895-4551-BE38-3562FEB0EDC8}" MaxAttenuation="25.000000" DurationType="OneShot" DurationMin="14.416750" DurationMax="14.416750">
+				<Event Id="2991007884" Name="Play_Asobo_A320_NEO_StartBassR" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\Play_Asobo_A320_NEO_StartBassR" GUID="{A7AC71A9-F895-4551-BE38-3562FEB0EDC8}" MaxAttenuation="25.000000" DurationType="OneShot" DurationMin="8.327541" DurationMax="8.327541">
 					<IncludedMemoryFiles>
-						<File Id="178010788" Language="SFX">
-							<ShortName>StartBass41.wav</ShortName>
-							<Path>SFX\StartBass41_5B925487.wem</Path>
+						<File Id="490462741" Language="SFX">
+							<ShortName>StartBass4.wav</ShortName>
+							<Path>SFX\StartBass4_489946E5.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -1203,11 +1211,11 @@
 				</Event>
 				<Event Id="917958459" Name="Play_Asobo_A320_NEO_StartR" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\Play_Asobo_A320_NEO_StartR" GUID="{2DD9BDA9-9B5B-4CDC-9535-B9B68ADFDEEF}" MaxAttenuation="50.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="195811788" Language="SFX">
+						<File Id="141880321" Language="SFX">
 							<ShortName>crank2.wav</ShortName>
 							<Path>SFX\crank2_F9DAD686.wem</Path>
 						</File>
-						<File Id="304867032" Language="SFX">
+						<File Id="699507954" Language="SFX">
 							<ShortName>crankhigh.wav</ShortName>
 							<Path>SFX\crankhigh_89DC6E16.wem</Path>
 						</File>
@@ -1397,7 +1405,7 @@
 					<IncludedMemoryFiles>
 						<File Id="499200473" Language="SFX">
 							<ShortName>yellowsystemi.wav</ShortName>
-							<Path>SFX\yellowsystemi_F9653C43.wem</Path>
+							<Path>SFX\yellowsystemi_4A20EC27.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -1405,7 +1413,7 @@
 					<IncludedMemoryFiles>
 						<File Id="962363307" Language="SFX">
 							<ShortName>bluesystemext.wav</ShortName>
-							<Path>SFX\bluesystemext_7C16E8A9.wem</Path>
+							<Path>SFX\bluesystemext_D9C5EACD.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
