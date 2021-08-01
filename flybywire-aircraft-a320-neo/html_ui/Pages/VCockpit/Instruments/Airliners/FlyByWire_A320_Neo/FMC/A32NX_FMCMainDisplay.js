@@ -2038,6 +2038,34 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    addWaypointOverfly(index, callback = EmptyCallback.Void, immediately = false) {
+        if (immediately) {
+            if (this.flightPlanManager.isCurrentFlightPlanTemporary()) {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return callback(false);
+            }
+            this.flightPlanManager.addWaypointOverfly(index, true, callback);
+        } else {
+            this.ensureCurrentFlightPlanIsTemporary(() => {
+                this.flightPlanManager.addWaypointOverfly(index, true, callback);
+            });
+        }
+    }
+
+    removeWaypointOverfly(index, callback = EmptyCallback.Void, immediately = false) {
+        if (immediately) {
+            if (this.flightPlanManager.isCurrentFlightPlanTemporary()) {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return callback(false);
+            }
+            this.flightPlanManager.removeWaypointOverfly(index, true, callback);
+        } else {
+            this.ensureCurrentFlightPlanIsTemporary(() => {
+                this.flightPlanManager.removeWaypointOverfly(index, true, callback);
+            });
+        }
+    }
+
     clearDiscontinuity(index, callback = EmptyCallback.Void, immediately = false) {
         if (immediately) {
             if (this.flightPlanManager.isCurrentFlightPlanTemporary()) {
@@ -4091,4 +4119,5 @@ class FMCMainDisplay extends BaseAirliners {
 }
 
 FMCMainDisplay.clrValue = "\xa0\xa0\xa0\xa0\xa0CLR";
+FMCMainDisplay.ovfyValue = "\u0394";
 FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
