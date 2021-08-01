@@ -25,6 +25,10 @@ export class VMLeg implements Leg {
         this.segment = segment;
     }
 
+    get isCircularArc(): boolean {
+        return false;
+    }
+
     get bearing(): Degrees {
         return this.initialCourse;
     }
@@ -61,6 +65,10 @@ export class VMLeg implements Leg {
             law: ControlLaw.HEADING,
             heading: this.heading,
         };
+    }
+
+    getNominalRollAngle(gs): Degrees {
+        return 0;
     }
 
     getDistanceToGo(_ppos: LatLongData): NauticalMiles {
