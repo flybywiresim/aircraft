@@ -160,8 +160,7 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
             : this.radius - distanceFromCenter;
 
         const groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'meters per second');
-        const radiusInMeter = this.radius * 1852;
-        const phiCommand = (this.clockwise ? 1 : -1) * Math.atan((groundSpeed * groundSpeed) / (radiusInMeter * 9.81)) * (180 / Math.PI);
+        const phiCommand = this.angle > 3 ? this.getNominalRollAngle(groundSpeed) : 0;
 
         return {
             law: ControlLaw.LATERAL_PATH,
