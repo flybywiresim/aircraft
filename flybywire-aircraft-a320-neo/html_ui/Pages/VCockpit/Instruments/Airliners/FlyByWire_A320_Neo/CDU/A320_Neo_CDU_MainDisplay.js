@@ -183,6 +183,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.handlePreviousInputState();
             this.inOut += ".";
         };
+        this.onOvfy = () => {
+            this.handlePreviousInputState();
+            this.inOut = FMCMainDisplay.ovfyValue;
+        };
         this.onClr = () => {
             if (this.inOut === "") {
                 this.inOut = FMCMainDisplay.clrValue;
