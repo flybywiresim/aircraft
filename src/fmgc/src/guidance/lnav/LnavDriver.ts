@@ -47,7 +47,10 @@ export class LnavDriver implements GuidanceComponent {
 
             const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
-            const params = geometry.getGuidanceParameters(this.ppos, trueTrack);
+            // this is not the correct groundspeed to use, but it will suffice for now
+            const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+
+            const params = geometry.getGuidanceParameters(this.ppos, trueTrack, gs);
 
             if (this.lastLaw !== params.law) {
                 this.lastLaw = params.law;

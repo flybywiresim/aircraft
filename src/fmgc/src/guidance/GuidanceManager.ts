@@ -107,32 +107,14 @@ export class GuidanceManager {
         const transitions = new Map<number, Transition>();
 
         // TODO generalise selection of transitions
-        if (nextLeg && activeLeg instanceof TFLeg && !(nextLeg instanceof RFLeg)) {
+        if (nextLeg) {
             legs.set(2, nextLeg);
-
-            const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
-
-            // bank angle limits, always assume limit 2 for now @ 25 degrees between 150 and 300 knots
-            let bankAngleLimit = 25;
-            if (kts < 150) {
-                bankAngleLimit = 15 + Math.min(kts / 150, 1) * (25 - 15);
-            } else if (kts > 300) {
-                bankAngleLimit = 25 - Math.min((kts - 300) / 150, 1) * (25 - 19);
+            if (activeLeg instanceof TFLeg && !(nextLeg instanceof RFLeg)) {
+                transitions.set(2, new Type1Transition(
+                    activeLeg,
+                    nextLeg,
+                ));
             }
-
-            // turn radius
-            const xKr = (kts ** 2 / (9.81 * Math.tan(bankAngleLimit * Avionics.Utils.DEG2RAD))) / 6080.2;
-
-            // turn direction
-            const courseChange = mod(nextLeg.bearing - activeLeg.bearing + 180, 360) - 180;
-            const cw = courseChange >= 0;
-
-            transitions.set(2, new Type1Transition(
-                activeLeg,
-                nextLeg,
-                xKr,
-                cw,
-            ));
         }
 
         return new Geometry(transitions, legs);
@@ -187,28 +169,9 @@ export class GuidanceManager {
 
             // Transition (hard-coded to Type 1 for now)
             if (nextLeg && nextLeg instanceof TFLeg || nextLeg instanceof VMLeg) { // FIXME this cannot happen, but what are you gonna do about it ?
-                const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
-
-                // Bank angle limits, always assume limit 2 for now @ 25 degrees between 150 and 300 knots
-                let bankAngleLimit = 25;
-                if (kts < 150) {
-                    bankAngleLimit = 15 + Math.min(kts / 150, 1) * (25 - 15);
-                } else if (kts > 300) {
-                    bankAngleLimit = 25 - Math.min((kts - 300) / 150, 1) * (25 - 19);
-                }
-
-                // Turn radius
-                const xKr = (kts ** 2 / (9.81 * Math.tan(bankAngleLimit * Avionics.Utils.DEG2RAD))) / 6080.2;
-
-                // Turn direction
-                const courseChange = mod(nextLeg.bearing - currentLeg.bearing + 180, 360) - 180;
-                const cw = courseChange >= 0;
-
                 const transition = new Type1Transition(
                     currentLeg,
                     nextLeg,
-                    xKr,
-                    cw,
                 );
 
                 transitions.set(i, transition);
