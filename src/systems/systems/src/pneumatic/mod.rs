@@ -16,7 +16,7 @@ use uom::si::{
     f64::*,
     pressure::{pascal, psi},
     ratio::{percent, ratio},
-    volume::{cubic_inch, gallon},
+    volume::{cubic_inch, cubic_meter, gallon},
 };
 
 pub trait BleedAirValveState {
@@ -161,6 +161,22 @@ pub struct TargetPressureSignal {
     target_pressure: Pressure,
 }
 
+pub struct ConstantPressureController {
+    target_pressure: Pressure,
+}
+impl ControllerSignal<TargetPressureSignal> for ConstantPressureController {
+    fn signal(&self) -> Option<TargetPressureSignal> {
+        Some(TargetPressureSignal {
+            target_pressure: self.target_pressure,
+        })
+    }
+}
+impl ConstantPressureController {
+    pub fn new(target_pressure: Pressure) -> Self {
+        Self { target_pressure }
+    }
+}
+
 pub struct EngineCompressionChamberController {
     current_mach: MachNumber,
     target_pressure: Pressure,
@@ -267,6 +283,68 @@ impl CompressionChamber {
     }
 }
 
+pub struct PneumaticConsumptionSignal {
+    consumed_volume: Volume,
+}
+
+pub struct ConstantConsumerController {
+    consumed_since_update: Volume,
+    consumption_rate: VolumeRate,
+}
+impl ControllerSignal<PneumaticConsumptionSignal> for ConstantConsumerController {
+    fn signal(&self) -> Option<PneumaticConsumptionSignal> {
+        Some(PneumaticConsumptionSignal {
+            consumed_volume: self.consumed_since_update,
+        })
+    }
+}
+impl ConstantConsumerController {
+    pub fn new(consumption_rate: VolumeRate) -> Self {
+        Self {
+            consumed_since_update: Volume::new::<cubic_meter>(0.),
+            consumption_rate,
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        self.consumed_since_update = self.consumption_rate * context.delta_as_time();
+    }
+}
+
+pub struct DefaultConsumer {
+    pipe: DefaultPipe,
+}
+impl PneumaticContainer for DefaultConsumer {
+    fn pressure(&self) -> Pressure {
+        self.pipe.pressure
+    }
+
+    fn volume(&self) -> Volume {
+        self.pipe.volume
+    }
+
+    fn change_volume(&mut self, volume: Volume) {
+        self.pipe.change_volume(volume);
+    }
+}
+impl DefaultConsumer {
+    pub fn new(volume: Volume) -> Self {
+        Self {
+            pipe: DefaultPipe::new(
+                volume,
+                Fluid::new(Pressure::new::<pascal>(142000.)),
+                Pressure::new::<psi>(14.7),
+            ),
+        }
+    }
+
+    pub fn update(&mut self, controller: &impl ControllerSignal<PneumaticConsumptionSignal>) {
+        if let Some(signal) = controller.signal() {
+            self.change_volume(-signal.consumed_volume);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -284,6 +362,7 @@ mod tests {
     use uom::si::{
         acceleration::foot_per_second_squared, length::foot, pressure::pascal,
         thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
+        volume_rate::cubic_meter_per_second,
     };
 
     struct ValveTestController {
@@ -388,7 +467,8 @@ mod tests {
             Pressure::new::<psi>(14.),
         );
 
-        valve.update_move_fluid(&mut from, &mut to);
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context, &mut from, &mut to);
 
         assert_eq!(from.pressure(), Pressure::new::<pascal>(14.));
         assert_eq!(to.pressure(), Pressure::new::<pascal>(14.));
@@ -409,14 +489,38 @@ mod tests {
             Pressure::new::<psi>(14.),
         );
 
-        valve.update_move_fluid(&mut from, &mut to);
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context, &mut from, &mut to);
 
         assert!(from.pressure() < Pressure::new::<pascal>(28.));
         assert!(to.pressure() > Pressure::new::<pascal>(14.));
     }
 
     #[test]
-    fn compression_chamber_pressure_cold_and_dark() {
+    fn constant_compression_chamber_signal() {
+        let compression_chamber_controller =
+            ConstantPressureController::new(Pressure::new::<psi>(30.));
+
+        if let Some(signal) = compression_chamber_controller.signal() {
+            assert_eq!(signal.target_pressure, Pressure::new::<psi>(30.));
+        } else {
+            assert!(false);
+        }
+    }
+
+    #[test]
+    fn compression_chamber_accepts_signal() {
+        let target_pressure = Pressure::new::<psi>(30.);
+
+        let compression_chamber_controller = ConstantPressureController::new(target_pressure);
+        let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(1.));
+
+        compression_chamber.update(&compression_chamber_controller);
+        assert_eq!(compression_chamber.pressure(), target_pressure);
+    }
+
+    #[test]
+    fn engine_compression_chamber_pressure_cold_and_dark() {
         let engine = TestEngine::cold_dark();
         let mut compression_chamber = EngineCompressionChamberController::new(0., 0., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -431,7 +535,7 @@ mod tests {
     }
 
     #[test]
-    fn compression_chamber_pressure_toga() {
+    fn engine_compression_chamber_pressure_toga() {
         let engine = TestEngine::toga();
         let mut compression_chamber = EngineCompressionChamberController::new(1., 1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -446,7 +550,7 @@ mod tests {
     }
 
     #[test]
-    fn compression_chamber_pressure_idle() {
+    fn engine_compression_chamber_pressure_idle() {
         let engine = TestEngine::idle();
         let mut compression_chamber = EngineCompressionChamberController::new(1., 1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -461,7 +565,7 @@ mod tests {
     }
 
     #[test]
-    fn compression_chamber_stabilises() {
+    fn engine_compression_chamber_stabilises() {
         let epsilon = Pressure::new::<pascal>(100.);
 
         let engine = TestEngine::toga();
@@ -479,4 +583,45 @@ mod tests {
             assert!(false)
         }
     }
+
+    #[test]
+    fn constant_consumer_signal() {
+        let mut controller =
+            ConstantConsumerController::new(VolumeRate::new::<cubic_meter_per_second>(0.1));
+
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+        controller.update(&context);
+
+        if let Some(signal) = controller.signal() {
+            assert_eq!(signal.consumed_volume, Volume::new::<cubic_meter>(0.1));
+        } else {
+            assert!(false);
+        }
+    }
+
+    #[test]
+    fn consumer_accepts_signal() {
+        let consumption_rate = VolumeRate::new::<cubic_meter_per_second>(0.1);
+
+        // This is what consumer should be initialized to automatically.
+        let initial_pressure = Pressure::new::<psi>(14.7);
+
+        let mut consumer_controller = ConstantConsumerController::new(consumption_rate);
+        let mut consumer = DefaultConsumer::new(Volume::new::<cubic_meter>(1.));
+
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+
+        consumer_controller.update(&context);
+        consumer.update(&consumer_controller);
+
+        assert!(consumer.pressure() < initial_pressure);
+    }
 }
+
+// Testing HPV / IPV switching logic:
+//  -  Need consumer to implement properly I think
+// - Engine starting logic
+//  - Something happens (maybe master switch)
+//  - Starter valve opens
+//  - PRV on that side closes
+//  -
