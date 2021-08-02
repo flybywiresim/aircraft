@@ -9,7 +9,10 @@ use uom::si::{
     velocity::{foot_per_minute, knot},
 };
 
-use crate::electrical::{Electricity, Potential};
+use crate::{
+    electrical::{Electricity, Potential},
+    failures::FailureType,
+};
 
 use super::{
     Aircraft, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
@@ -33,6 +36,10 @@ pub trait TestBed {
 
     fn run_with_delta(&mut self, delta: Duration) {
         self.test_bed_mut().run_with_delta(delta);
+    }
+
+    fn fail(&mut self, failure_type: FailureType) {
+        self.test_bed_mut().fail(failure_type);
     }
 
     fn command<V: FnOnce(&mut Self::Aircraft)>(&mut self, func: V) {
@@ -175,6 +182,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
             }
             executed_duration += current_delta;
         }
+    }
+
+    fn fail(&mut self, failure_type: FailureType) {
+        self.simulation.fail(failure_type);
     }
 
     fn aircraft(&self) -> &T {

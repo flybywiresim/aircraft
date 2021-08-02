@@ -3,6 +3,7 @@ use std::time::Duration;
 mod update_context;
 use crate::{
     electrical::Electricity,
+    failures::FailureType,
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 use uom::si::{
@@ -178,6 +179,8 @@ pub trait SimulationElement {
         Self: Sized,
     {
     }
+
+    fn fail(&mut self, _failure_type: FailureType) {}
 }
 
 /// Trait for visitors that visit the aircraft's system simulation to call
@@ -287,6 +290,11 @@ impl<T: Aircraft> Simulation<T> {
         self.aircraft.accept(&mut visitor);
     }
 
+    pub fn fail(&mut self, failure_type: FailureType) {
+        self.aircraft
+            .accept(&mut FailSimulationElementVisitor::new(failure_type));
+    }
+
     fn electricity(&self) -> &Electricity {
         &self.electricity
     }
@@ -304,6 +312,20 @@ impl<T: Aircraft> Simulation<T> {
         Self: Sized,
     {
         self.aircraft.accept(visitor);
+    }
+}
+
+struct FailSimulationElementVisitor {
+    failure_type: FailureType,
+}
+impl FailSimulationElementVisitor {
+    fn new(failure_type: FailureType) -> Self {
+        Self { failure_type }
+    }
+}
+impl SimulationElementVisitor for FailSimulationElementVisitor {
+    fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
+        visited.fail(self.failure_type);
     }
 }
 
