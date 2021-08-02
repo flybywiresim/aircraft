@@ -30,8 +30,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
 
     const [geometry, setGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
 
-    // TODO figure out a better way
-    const unused = useCurrentFlightPlan();
+    const flightPlan = useCurrentFlightPlan();
 
     useInterval(() => {
         setGeometry(guidanceManager.getMultipleLegGeometry());
@@ -40,9 +39,20 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     if (geometry) {
         const legs = Array.from(geometry.legs.values());
 
+        const origin = flightPlan.originAirfield;
+
         return (
             <Layer x={x} y={y}>
                 <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" />
+                {origin && (
+                    <WaypointMarker
+                        ident={origin.ident}
+                        position={mapParams.coordinatesToXYy(origin.infos.coordinates)}
+                        index={-1}
+                        constraints={constraints}
+                        debug={debug}
+                    />
+                )}
                 {legs.map((leg, index) => (
                     <LegWaypointMarkers
                         leg={leg}
@@ -50,7 +60,6 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                         index={index}
                         isActive={index == legs.length - 1}
                         constraints={constraints}
-                        key={leg.ident}
                         mapParams={mapParams}
                         debug={debug}
                     />
@@ -91,40 +100,16 @@ const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, 
     let x;
     let y;
     if (leg instanceof TFLeg || leg instanceof RFLeg) {
-        [x, y] = mapParams.coordinatesToXYy(leg.from.infos.coordinates);
+        [x, y] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
     } else if (leg instanceof VMLeg) {
-        [x, y] = mapParams.coordinatesToXYy(leg.initialPosition);
-    } else {
-        throw new Error(`Invalid leg type for leg '${leg.ident}'.`);
-    }
-
-    // In the case where we have a VM leg after this leg, which we will not render, we have to draw the TO fix.
-    // In the geometry legs, this is a TF(XYZ -> MANUAL). The VM is really after the "MANUAL" waypoint.
-    // If this ever changes you need to edit this code too :')
-    if (leg instanceof TFLeg && nextLeg instanceof VMLeg) {
-        const [x1, y1] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
-
-        return (
-            <WaypointMarker
-                ident={leg.to.ident}
-                position={[x1, y1]}
-                altitudeConstraint={leg.altitudeConstraint}
-                speedConstraint={leg.speedConstraint}
-                index={index}
-                isActive={isActive}
-                constraints={constraints}
-                debug={debug}
-            />
-        );
-    }
-
-    if (leg instanceof VMLeg && !debug) {
         return null;
+    } else {
+        throw new Error(`Invalid leg type for leg '${leg}'.`);
     }
 
     return (
         <WaypointMarker
-            ident={leg.ident}
+            ident={leg.to.ident}
             position={[x, y]}
             altitudeConstraint={leg.altitudeConstraint}
             speedConstraint={leg.speedConstraint}
@@ -142,7 +127,7 @@ interface WaypointMarkerProps {
     altitudeConstraint?: AltitudeConstraint,
     speedConstraint?: SpeedConstraint,
     index: number,
-    isActive: boolean,
+    isActive?: boolean,
     constraints: boolean,
     debug: boolean
 }
