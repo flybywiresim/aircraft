@@ -158,6 +158,7 @@
 1. [PRESS] First implementation of automatic pressurization system - @MJuhe (Miquel)
 1. [MISC] Added annunciator lights to interactive checklist - @oim1 (oim)
 1. [MISC] Workaround for altitude issues of MSFS - @aguther (Andreas Guther)
+1. [DISPLAYS] Improved pixelated screens, only appears when camera is close to displays - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
