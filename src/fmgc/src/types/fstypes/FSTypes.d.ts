@@ -136,6 +136,7 @@ declare interface OneWayRunway {
     beginningCoordinates: LatLongAlt;
     endCoordinates: LatLongAlt;
     elevation: number;
+    length: number;
 }
 
 declare interface RawProcedureLeg {
