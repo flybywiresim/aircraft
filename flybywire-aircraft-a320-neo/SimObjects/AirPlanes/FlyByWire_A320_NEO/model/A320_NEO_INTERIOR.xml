@@ -179,12 +179,14 @@
             <UseTemplate Name="FBW_LIGHTING_Switch_Console_Template">
                 <POTENTIOMETER>8</POTENTIOMETER>
                 <NODE_ID>SWITCH_EFIS_CS_CONSOLE</NODE_ID>
+                <PART_ID>SWITCH_EFIS_CS_CONSOLE</PART_ID>
                 <ANIM_NAME>SWITCH_EFIS_CS_CONSOLE</ANIM_NAME>
             </UseTemplate>
 
             <UseTemplate Name="FBW_LIGHTING_Switch_Console_Template">
                 <POTENTIOMETER>9</POTENTIOMETER>
                 <NODE_ID>SWITCH_EFIS_FO_CONSOLE</NODE_ID>
+                <PART_ID>SWITCH_EFIS_FO_CONSOLE</PART_ID>
                 <ANIM_NAME>SWITCH_EFIS_FO_CONSOLE</ANIM_NAME>
             </UseTemplate>
         </Component>

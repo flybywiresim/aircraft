@@ -308,6 +308,27 @@
     </Template>
 
     <!--
+    Template for console light switches
+    -->
+    <Template Name="FBW_LIGHTING_Switch_Console_Template">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <INVERT_ANIM>True</INVERT_ANIM>
+                <WWISE_EVENT>lswitch</WWISE_EVENT>
+                <ANIMTIP_0>Set Console/Floor light to off</ANIMTIP_0>
+                <ANIMTIP_1>Set Console/Floor light to dim</ANIMTIP_1>
+                <ANIMTIP_2>Set Console/Floor light to bright</ANIMTIP_2>
+                <CODE_POS_0>100 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_0>
+                <CODE_POS_1>50 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_1>
+                <CODE_POS_2>0 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)</CODE_POS_2>
+                <STATE0_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 100 ==</STATE0_TEST>
+                <STATE1_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 50 ==</STATE1_TEST>
+                <STATE2_TEST>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 ==</STATE2_TEST>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
     Template for handling landing gear indications
     -->
     <Template Name="FBW_Airbus_LANDING_GEAR_Light_Template">
