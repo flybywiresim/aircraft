@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ExcessivePitchAttitudeArrows: React.FC = () => (
+const ExcessivePitchAttitudeArrows = React.memo(() => (
     <g id="ExcessivePitchArrows">
         <path d="M198 -258 h 46 v 12 h -16 l 28 28 l 28 -28 h -16 v -12 h 46 l -58 58z" strokeWidth={2} className="StrokeRed NoFill" />
         <path d="M216 -162 h 16 l 24 42 l 24 -42 h 16 l -40 70z" strokeWidth={2} className="StrokeRed NoFill" />
@@ -9,13 +9,13 @@ const ExcessivePitchAttitudeArrows: React.FC = () => (
         <path d="M216 674 h 16 l 24 -42 l 24 42 h 16 l -40 -70z" strokeWidth={2} className="StrokeRed NoFill" />
         <path d="M198 770 h 46 v -12 h -16 l 28 -28 l 28 28 h -16 v 12 h 46 l -58 -58z" strokeWidth={2} className="StrokeRed NoFill" />
     </g>
-);
+));
 
 type PitchScaleProps = {
     pitchDegPixels: number
 }
 
-export const PitchScale: React.FC<PitchScaleProps> = ({ pitchDegPixels }) => {
+export const PitchScale: React.FC<PitchScaleProps> = React.memo(({ pitchDegPixels }) => {
     const markers: React.ReactElement[] = [];
     const center = 270;
 
@@ -63,4 +63,4 @@ export const PitchScale: React.FC<PitchScaleProps> = ({ pitchDegPixels }) => {
             <ExcessivePitchAttitudeArrows />
         </g>
     );
-};
+});

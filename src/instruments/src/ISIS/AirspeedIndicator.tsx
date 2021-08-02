@@ -4,7 +4,7 @@ import { VerticalTape } from './VerticalTape';
 
 type TickProps = { offset: number, airspeed: number }
 
-const Tick: React.FC<TickProps> = ({ offset, airspeed }) => {
+const Tick = React.memo<TickProps>(({ offset, airspeed }) => {
     if (airspeed > 250 && airspeed % 10 === 5) {
         return null;
     }
@@ -14,25 +14,25 @@ const Tick: React.FC<TickProps> = ({ offset, airspeed }) => {
     return (
         <g transform={`translate(0 ${offset})`}>
             {airspeed % 20 === 0 && <text x={95} textAnchor="end" y={158 + 12} className="TextWhite FontMedium">{airspeed}</text>}
-            <path stroke="white" d={`M${108 - tickLength},${158} h${tickLength}`} />
+            <path stroke="white" d={`M${108 - tickLength},158 h${tickLength}`} />
         </g>
     );
-};
+});
 
-const SpeedtapeArrow: React.FC = () => (
+const SpeedtapeArrow = React.memo(() => (
     <g id="SpeedtapeArrow">
         <rect className="FillBackground" x={108} y={250} width={34} height={40} />
         <path className="FillYellow" d="M 108 270 l 34 -20 v 40 l -34 -20" />
     </g>
-);
+));
 
 type BugProps = { offset: number }
 
-const BugElement: React.FC<BugProps> = ({ offset }) => (
+const BugElement = React.memo<BugProps>(({ offset }) => (
     <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
         <path strokeWidth={7} d="M78,158 h30" />
     </g>
-);
+));
 
 type AirspeedIndicatorProps = {
     indicatedAirspeed: number,

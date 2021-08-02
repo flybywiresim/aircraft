@@ -5,7 +5,7 @@ import { VerticalTape } from './VerticalTape';
 
 type TickProps = { offset: number, altitude: number }
 
-const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
+const Tick = React.memo<TickProps>(({ altitude, offset }) => {
     const shouldShowText = altitude % 500 === 0;
     const tickLength = shouldShowText ? 5 : 20;
 
@@ -15,11 +15,11 @@ const Tick: React.FC<TickProps> = ({ altitude, offset }) => {
             {shouldShowText && <text x={5} y={158 + 12} className="TextWhite FontMedium">{Math.abs(altitude).toString().padStart(5, '0').slice(0, 3)}</text>}
         </g>
     );
-};
+});
 
 type BugProps = { bug: Bug, offset: number }
 
-const BugElement: React.FC<BugProps> = ({ bug, offset }) => {
+const BugElement = React.memo<BugProps>(({ bug, offset }) => {
     if (bug.value % 500 === 0) {
         return (
             <g className="StrokeCyan NoFill" transform={`translate(0 ${offset})`}>
@@ -33,7 +33,7 @@ const BugElement: React.FC<BugProps> = ({ bug, offset }) => {
             <path strokeWidth={7} d="M0,158 h30" />
         </g>
     );
-};
+});
 
 type AltitudeIndicatorProps = {
     altitude: number,
