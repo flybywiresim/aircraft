@@ -48,6 +48,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                         leg={leg}
                         nextLeg={legs[index - 1]}
                         index={index}
+                        isActive={index == legs.length - 1}
                         constraints={constraints}
                         key={leg.ident}
                         mapParams={mapParams}
@@ -82,10 +83,11 @@ interface LegWaypointMarkersProps {
     index: number,
     mapParams: MapParameters,
     constraints: boolean,
+    isActive: boolean,
     debug: boolean,
 }
 
-const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, mapParams, constraints, debug }) => {
+const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, mapParams, constraints, isActive, debug }) => {
     let x;
     let y;
     if (leg instanceof TFLeg || leg instanceof RFLeg) {
@@ -109,7 +111,7 @@ const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, 
                 altitudeConstraint={leg.altitudeConstraint}
                 speedConstraint={leg.speedConstraint}
                 index={index}
-                isActive={index === 2}
+                isActive={isActive}
                 constraints={constraints}
                 debug={debug}
             />
@@ -127,7 +129,7 @@ const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, 
             altitudeConstraint={leg.altitudeConstraint}
             speedConstraint={leg.speedConstraint}
             index={index}
-            isActive={index === 2}
+            isActive={isActive}
             constraints={constraints}
             debug={debug}
         />
