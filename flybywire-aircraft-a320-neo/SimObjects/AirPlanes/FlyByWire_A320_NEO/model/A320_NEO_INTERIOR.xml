@@ -1456,30 +1456,10 @@
                     </UseTemplate>
                 </Component>
 
-                <!-- Hide the original (non-separated) dome lights. -->
-                <Component ID="Overhead_Lights" Node="LIGHTS_Overhead">
-                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
-                    </UseTemplate>
-                </Component>
-
                 <!-- Captain dome light -->
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
                     <NODE_ID>LIGHTS_Overhead</NODE_ID>
                     <POTENTIOMETER>7</POTENTIOMETER>
-                    <FAILURE>1</FAILURE>
-                    <SIMVAR_INDEX>1</SIMVAR_INDEX>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
-                </UseTemplate>
-
-                <!-- F/O dome light -->
-                <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
-                    <NODE_ID>LIGHTS_Overhead_R</NODE_ID>
-                    <POTENTIOMETER>7</POTENTIOMETER>
-                    <FAILURE>1</FAILURE>
-                    <SIMVAR_INDEX>2</SIMVAR_INDEX>
-                    <NO_SIMVAR_LIGHT/>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
