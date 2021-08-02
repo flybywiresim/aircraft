@@ -2,7 +2,7 @@
 
 /* pixels for screen */
 @import "../Common/pixels";
-#panel:after {
+.LcdOverlayDcdu {
   @include pixels;
 }
 
