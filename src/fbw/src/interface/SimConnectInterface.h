@@ -96,6 +96,7 @@ class SimConnectInterface {
     AUTO_THROTTLE_ARM,
     AUTO_THROTTLE_DISCONNECT,
     AUTO_THROTTLE_TO_GA,
+    A32NX_ATHR_RESET_DISABLE,
     A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE,
     A32NX_THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES,
     A32NX_THROTTLE_MAPPING_SAVE_TO_FILE,
@@ -191,6 +192,8 @@ class SimConnectInterface {
   bool sendData(SimOutputFlaps output);
 
   bool sendData(SimOutputSpoilers output);
+
+  bool sendData(SimOutputAltimeter output);
 
   bool sendEvent(Events eventId);
 

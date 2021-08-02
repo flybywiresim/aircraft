@@ -15,10 +15,16 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
+      - name: Create .env file
+        run: |
+          echo A32NX_PRODUCTION_BUILD=1 >> .env
+          echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
+          echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
+          echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
-          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty
+          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
       - name: Build ZIP file
         run: |
           ./scripts/dev-env/run.sh node ./scripts/fragment.js

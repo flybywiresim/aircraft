@@ -102,7 +102,7 @@ class CDU_OPTIONS_FMGC {
                 mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
                 NXDataStore.set("CONFIG_USING_METRIC_UNIT", storedUsingMetric === 1 ? "2.20462" : "1");
-                mcdu.addNewMessage(NXFictionalMessages.weightUnitChanged);
+                mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
             }
             CDU_OPTIONS_FMGC.ShowPage(mcdu);
         };

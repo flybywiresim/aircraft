@@ -2,13 +2,13 @@ use uom::si::f64::*;
 
 use crate::{
     overhead::FirePushButton,
-    shared::{EngineCorrectedN2, EngineFirePushButtons},
+    shared::{EngineCorrectedN2, EngineFirePushButtons, EngineUncorrectedN2},
     simulation::{SimulationElement, SimulationElementVisitor},
 };
 
 pub mod leap_engine;
 
-pub trait Engine: EngineCorrectedN2 {
+pub trait Engine: EngineCorrectedN2 + EngineUncorrectedN2 {
     fn hydraulic_pump_output_speed(&self) -> AngularVelocity;
     fn oil_pressure(&self) -> Pressure;
     fn is_above_minimum_idle(&self) -> bool;
@@ -33,9 +33,7 @@ impl EngineFirePushButtons for EngineFireOverheadPanel {
 }
 impl SimulationElement for EngineFireOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.engine_fire_push_buttons.iter_mut().for_each(|el| {
-            el.accept(visitor);
-        });
+        accept_iterable!(self.engine_fire_push_buttons, visitor);
 
         visitor.visit(self);
     }
@@ -48,7 +46,10 @@ impl Default for EngineFireOverheadPanel {
 
 #[cfg(test)]
 mod engine_fire_overhead_panel_tests {
-    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::{
+        test::{SimulationTestBed, TestBed},
+        Write,
+    };
 
     use super::*;
 
@@ -62,23 +63,19 @@ mod engine_fire_overhead_panel_tests {
 
     #[test]
     fn fire_push_button_is_released_returns_false_when_not_released() {
-        let mut panel = EngineFireOverheadPanel::new();
+        let mut test_bed = SimulationTestBed::from(EngineFireOverheadPanel::new());
+        test_bed.write("FIRE_BUTTON_ENG1", false);
+        test_bed.run();
 
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_bool("FIRE_BUTTON_ENG1", false);
-        test_bed.run(&mut panel, |_, _| {});
-
-        assert_eq!(panel.is_released(1), false);
+        assert_eq!(test_bed.query_element(|e| e.is_released(1)), false);
     }
 
     #[test]
     fn fire_push_button_is_released_returns_true_when_released() {
-        let mut panel = EngineFireOverheadPanel::new();
+        let mut test_bed = SimulationTestBed::from(EngineFireOverheadPanel::new());
+        test_bed.write("FIRE_BUTTON_ENG1", true);
+        test_bed.run();
 
-        let mut test_bed = SimulationTestBed::new();
-        test_bed.write_bool("FIRE_BUTTON_ENG1", true);
-        test_bed.run(&mut panel, |_, _| {});
-
-        assert_eq!(panel.is_released(1), true);
+        assert_eq!(test_bed.query_element(|e| e.is_released(1)), true);
     }
 }

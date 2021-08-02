@@ -3,7 +3,7 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_3States">
                 <PART_ID>knob_atc_alt</PART_ID>
-                <WWISE_EVENT>autopilot_knob</WWISE_EVENT>
+                <WWISE_EVENT>smallknob</WWISE_EVENT>
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                 <ARROW_TYPE>Curved</ARROW_TYPE>
@@ -16,7 +16,7 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_3States">
                 <PART_ID>ATC_Panel_TARA</PART_ID>
-                <WWISE_EVENT>autopilot_knob</WWISE_EVENT>
+                <WWISE_EVENT>smallknob</WWISE_EVENT>
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                 <ARROW_TYPE>Curved</ARROW_TYPE>
@@ -29,7 +29,7 @@
     <Template Name="FBW_Airbus_ATC_Panel_Traffic">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_4States">
-                <WWISE_EVENT>autopilot_knob</WWISE_EVENT>
+                <WWISE_EVENT>smallknob</WWISE_EVENT>
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                 <ARROW_TYPE>Curved</ARROW_TYPE>
@@ -45,9 +45,9 @@
             <NODE_ID_SEQ1>#BUTTON_NAME##SEQ1_SUFFIX#</NODE_ID_SEQ1>
             <ANIM_NAME_BUTTON>#BUTTON_NAME#</ANIM_NAME_BUTTON>
             <EVENT_NAME>#EVENT_TARGET#_BTN_#BUTTON_ID#</EVENT_NAME>
-            <WWISE_EVENT_1>atc_push_button_on</WWISE_EVENT_1>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <WWISE_EVENT_2>atc_push_button_off</WWISE_EVENT_2>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
         </DefaultTemplateParameters>
@@ -113,9 +113,9 @@
             <BUTTON_5_NAME>#PUSH_BTN_PREFIX#5#PUSH_BTN_SUFFIX#</BUTTON_5_NAME>
             <BUTTON_6_NAME>#PUSH_BTN_PREFIX#6#PUSH_BTN_SUFFIX#</BUTTON_6_NAME>
             <BUTTON_7_NAME>#PUSH_BTN_PREFIX#7#PUSH_BTN_SUFFIX#</BUTTON_7_NAME>
-            <WWISE_EVENT>atc_transponder_knob</WWISE_EVENT>
-            <WWISE_EVENT_1>atc_transponder_push_button_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>atc_transponder_push_button_off</WWISE_EVENT_2>
+            <WWISE_EVENT>smallknob</WWISE_EVENT>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
 
             <BUTTON_IDENT_NAME>#PUSH_BTN_PREFIX#Ident#PUSH_BTN_SUFFIX#</BUTTON_IDENT_NAME>
             <KNOB_XPNDR_MODE_NODE_ID>Knob_ATC_STBY</KNOB_XPNDR_MODE_NODE_ID>

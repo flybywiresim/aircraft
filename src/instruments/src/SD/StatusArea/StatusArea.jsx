@@ -1,3 +1,11 @@
+/**
+ * WARNING
+ *
+ * CODE IN THIS FILE IS OLD. THIS STATUS AREA WAS UNUSED AND THE ORIGINAL ASOBO
+ * STATUS AREA WAS EXTENDED FURTHER. WHEN STARTING TO USE THIS COMPONENT. PLEASE
+ * PORT ANY FUNCTIONALITY FOUND ON THE ORIGINAL STATUS AREA.
+ */
+
 import './StatusArea.scss';
 import { Text } from '../Text/Text.jsx';
 import { useGlobalVar, getSimVar } from '../../util.js';
@@ -13,7 +21,7 @@ export const StatusArea = () => {
     if (sat > 99 || sat < -99) {
         sat = sat > 99 ? 99 : -99;
     }
-    const adirsState = getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum');
+    const adirsState = getSimVar('L:A32NX_ADIRS_STATE', 'Enum');
     const satPrefix = sat > 0 ? '+' : '';
     const tatPrefix = tat > 0 ? '+' : '';
     const seconds = Math.floor(zulu);

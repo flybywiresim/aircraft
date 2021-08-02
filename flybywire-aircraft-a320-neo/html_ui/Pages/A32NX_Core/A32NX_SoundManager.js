@@ -75,15 +75,15 @@ class A32NX_SoundManager {
 // many lengths are approximate until we can get them accuratly (when boris re-makes them and we have the sources)
 const soundList = {
     pull_up: {
-        name: "aural_pull_up",
+        name: "aural_pullup_new",
         length: 0.9
     },
     sink_rate: {
-        name: "aural_sink_rate",
+        name: "aural_sink_rate_new",
         length: 0.9
     },
     dont_sink:{
-        name: "aural_dont_sink",
+        name: "aural_dontsink_new",
         length: 0.9
     },
     too_low_gear:{

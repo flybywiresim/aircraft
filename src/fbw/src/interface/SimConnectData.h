@@ -115,6 +115,7 @@ struct SimData {
   double fuelTankQuantityCenter;
   double fuelTankQuantityTotal;
   double fuelWeightPerGallon;
+  unsigned long long kohlsmanSettingStd_3;
 };
 
 struct SimInput {
@@ -141,6 +142,7 @@ struct SimInputAutopilot {
 struct SimInputThrottles {
   double ATHR_push;
   double ATHR_disconnect;
+  double ATHR_reset_disable;
 };
 
 struct SimOutput {
@@ -179,6 +181,10 @@ struct SimOutputFlaps {
 
 struct SimOutputSpoilers {
   double spoilersHandlePosition;
+};
+
+struct SimOutputAltimeter {
+  unsigned long long kohlsmanSettingStd_3;
 };
 
 struct ClientDataAutopilotStateMachine {

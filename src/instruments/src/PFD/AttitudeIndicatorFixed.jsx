@@ -1,7 +1,7 @@
 import { getSimVar } from '../util.js';
 
-export const AttitudeIndicatorFixedUpper = () => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
+export const AttitudeIndicatorFixedUpper = ({ pitch, roll }) => {
+    if (Number.isNaN(pitch) || Number.isNaN(roll)) {
         return null;
     }
 
@@ -31,8 +31,8 @@ export const AttitudeIndicatorFixedUpper = () => {
     );
 };
 
-export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive, isAttExcessive }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
+export const AttitudeIndicatorFixedCenter = ({ pitch, roll, isOnGround, FDActive, isAttExcessive }) => {
+    if (Number.isNaN(pitch) || Number.isNaN(roll)) {
         return (
             <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
         );
