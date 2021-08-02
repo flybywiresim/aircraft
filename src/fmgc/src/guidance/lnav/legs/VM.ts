@@ -7,8 +7,6 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
 // TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
 export class VMLeg implements Leg {
-    public ident = 'MANUAL';
-
     // FIXME this is not really a thing, but it's temporary, ok ? I promise !
     public initialPosition: Coordinates;
 
