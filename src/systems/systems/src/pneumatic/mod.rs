@@ -333,7 +333,7 @@ impl DefaultConsumer {
             pipe: DefaultPipe::new(
                 volume,
                 Fluid::new(Pressure::new::<pascal>(142000.)),
-                Pressure::new::<psi>(14.7),
+                Pressure::new::<psi>(1.),
             ),
         }
     }
@@ -617,11 +617,3 @@ mod tests {
         assert!(consumer.pressure() < initial_pressure);
     }
 }
-
-// Testing HPV / IPV switching logic:
-//  -  Need consumer to implement properly I think
-// - Engine starting logic
-//  - Something happens (maybe master switch)
-//  - Starter valve opens
-//  - PRV on that side closes
-//  -

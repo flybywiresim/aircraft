@@ -1,5 +1,6 @@
 use crate::UpdateContext;
 use systems::overhead::PressSingleSignalButton;
+use systems::pneumatic::{ConstantConsumerController, DefaultConsumer};
 use systems::shared::{
     ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve,
     PneumaticValveSignal,
@@ -17,6 +18,7 @@ use systems::{
 };
 use uom::num_traits::sign;
 use uom::si::velocity::meter_per_second;
+use uom::si::volume_rate::cubic_meter_per_second;
 use uom::si::{
     area::square_meter,
     f64::*,
@@ -216,6 +218,53 @@ impl PRValveController {
     }
 }
 
+struct EngineStarterValveController {
+    // Engine number
+    number: usize,
+    // True only if the switch was turned on this update
+    engine_master_switched_on: bool,
+    // True only if the switch was turned on this update
+    engine_master_switched_off: bool,
+    engine_n2_reached_50_percent: bool,
+    engine_master_switch_on_id: String,
+    engine_n2_id: String,
+}
+impl ControllerSignal<PneumaticValveSignal> for EngineStarterValveController {
+    fn signal(&self) -> Option<PneumaticValveSignal> {
+        if self.engine_master_switched_on {
+            Some(PneumaticValveSignal::open())
+        } else if self.engine_master_switched_off || self.engine_n2_reached_50_percent {
+            Some(PneumaticValveSignal::close())
+        } else {
+            None
+        }
+    }
+}
+impl SimulationElement for EngineStarterValveController {
+    fn read(&mut self, reader: &mut systems::simulation::SimulatorReader) {
+        let new_engine_master_on = reader.read(&self.engine_master_switch_on_id);
+        let new_engine_n2: Ratio = reader.read(&self.engine_n2_id);
+
+        self.engine_master_switched_on = !self.engine_master_switched_on && new_engine_master_on;
+        self.engine_master_switched_off = self.engine_master_switched_off && !new_engine_master_on;
+
+        self.engine_n2_reached_50_percent =
+            !self.engine_n2_reached_50_percent && (new_engine_n2 > Ratio::new::<percent>(50.));
+    }
+}
+impl EngineStarterValveController {
+    fn new(number: usize) -> Self {
+        Self {
+            number,
+            engine_master_switched_on: false,
+            engine_master_switched_off: false,
+            engine_n2_reached_50_percent: false,
+            engine_master_switch_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", number),
+            engine_n2_id: format!("ENGINE_N2:{}", number),
+        }
+    }
+}
+
 #[derive(Debug)]
 struct EngineBleedSystemData {
     // Engine number
@@ -331,6 +380,11 @@ struct EngineBleedSystem {
     pr_valve_controller: PRValveController,
     transfer_pressure_pipe: DefaultPipe,
     regulated_pressure_pipe: DefaultPipe,
+    engine_starter_consumer: DefaultConsumer,
+    // TODO: Use more sophisticated controller
+    engine_starter_consumer_controller: ConstantConsumerController,
+    engine_starter_valve_controller: EngineStarterValveController,
+    engine_starter_valve: DefaultValve,
 }
 impl EngineBleedSystem {
     fn new(number: usize) -> Self {
@@ -358,6 +412,12 @@ impl EngineBleedSystem {
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
                 Pressure::new::<psi>(14.7),
             ),
+            engine_starter_consumer: DefaultConsumer::new(Volume::new::<cubic_meter>(1.)),
+            engine_starter_consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
+                cubic_meter_per_second,
+            >(0.1)),
+            engine_starter_valve_controller: EngineStarterValveController::new(number),
+            engine_starter_valve: DefaultValve::new(Ratio::new::<ratio>(0.)),
         }
     }
 
@@ -382,6 +442,11 @@ impl EngineBleedSystem {
         self.ip_valve_controller.update(context, bleed_data);
         self.hp_valve_controller.update(context, bleed_data);
         self.pr_valve_controller.update(context, bleed_data);
+        self.engine_starter_consumer_controller.update(context);
+
+        // Update consumers
+        self.engine_starter_consumer
+            .update(&self.engine_starter_consumer_controller);
 
         // Update valves (open amount)
         self.ip_valve
@@ -390,6 +455,8 @@ impl EngineBleedSystem {
             .update_open_amount(context, &self.hp_valve_controller);
         self.pr_valve
             .update_open_amount(context, &self.pr_valve_controller);
+        self.engine_starter_valve
+            .update_open_amount(context, &self.engine_starter_valve_controller);
 
         // Update valves (fluid movement)
         self.ip_valve.update_move_fluid(
@@ -407,6 +474,11 @@ impl EngineBleedSystem {
             &mut self.transfer_pressure_pipe,
             &mut self.regulated_pressure_pipe,
         );
+        self.engine_starter_valve.update_move_fluid(
+            context,
+            &mut self.regulated_pressure_pipe,
+            &mut self.engine_starter_consumer,
+        );
     }
 }
 impl SimulationElement for EngineBleedSystem {
@@ -416,6 +488,7 @@ impl SimulationElement for EngineBleedSystem {
     {
         self.ip_compression_chamber_controller.accept(visitor);
         self.hp_compression_chamber_controller.accept(visitor);
+        self.engine_starter_valve_controller.accept(visitor);
 
         visitor.visit(self);
     }
@@ -566,6 +639,18 @@ mod tests {
             self
         }
 
+        fn start_eng1(mut self) -> Self {
+            self.write("GENERAL ENG STARTER ACTIVE:1", true);
+
+            self
+        }
+
+        fn start_eng2(mut self) -> Self {
+            self.write("GENERAL ENG STARTER ACTIVE:2", true);
+
+            self
+        }
+
         fn corrected_n1(mut self, corrected_n1: Ratio) -> Self {
             self.write("TURB ENG CORRECTED N1:1", corrected_n1);
             self.write("TURB ENG CORRECTED N1:2", corrected_n1);
@@ -623,8 +708,8 @@ mod tests {
         let mut test_bed = test_bed_with()
             .mach_number(MachNumber(0.))
             .in_isa_atmosphere(Length::new::<foot>(0.))
-            .corrected_n1(Ratio::new::<ratio>(1.))
-            .n2(100.);
+            .idle_eng1()
+            .idle_eng2();
 
         let mut hps = Vec::new();
         let mut ips = Vec::new();
@@ -717,12 +802,17 @@ mod tests {
             },
             &mut pressures,
         );
-        test_bed.run();
+
+        println!("{:?}", pressures);
+
+        test_bed.run_with_delta(Duration::from_secs(50));
         test_bed.for_both_engine_systems_with_capture(
             |sys, pressures| {
-                assert_eq!(
-                    sys.ip_compression_chamber.pressure(),
-                    pressures[sys.number - 1]
+                println!("{:?}", sys.ip_compression_chamber.pressure());
+
+                assert!(
+                    (sys.ip_compression_chamber.pressure() - pressures[sys.number - 1]).abs()
+                        < Pressure::new::<pascal>(100.)
                 )
             },
             &mut pressures,
@@ -748,17 +838,13 @@ mod tests {
             &mut pressures,
         );
 
-        println!("{:#?}", pressures);
-
-        test_bed.run_with_delta(Duration::from_secs(10));
+        test_bed.run_with_delta(Duration::from_secs(50));
         // Expect pressures not to have changed after update
         test_bed.for_both_engine_systems_with_capture(
             |sys, pressures| {
-                println!("{:#?}", sys.hp_compression_chamber.pressure());
-
-                assert_eq!(
-                    sys.hp_compression_chamber.pressure(),
-                    pressures[sys.number - 1]
+                assert!(
+                    (sys.hp_compression_chamber.pressure() - pressures[sys.number - 1]).abs()
+                        < Pressure::new::<pascal>(100.)
                 )
             },
             &mut pressures,
@@ -796,13 +882,13 @@ mod tests {
     }
 
     #[test]
-    fn hp_pressure_higher_than_ip_pressure() {
+    fn n1_affects_compression_chamber_pressure() {
         let altitude = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
             .mach_number(MachNumber(0.))
             .idle_eng1()
-            .idle_eng1()
+            .idle_eng2()
             .corrected_n1(Ratio::new::<ratio>(0.2))
             .in_isa_atmosphere(altitude);
 
@@ -810,6 +896,8 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(50));
 
         test_bed.for_both_engine_systems(|sys| {
+            println!("ip pressure: {:?}", sys.ip_compression_chamber.pressure());
+
             assert!(sys.ip_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
             assert!(sys.hp_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
             assert!(sys.hp_compression_chamber.pressure() > sys.ip_compression_chamber.pressure())
@@ -841,6 +929,53 @@ mod tests {
         test_bed.for_both_engine_systems(|sys| {
             assert!(!sys.ip_valve.is_open());
             assert!(sys.hp_valve.is_open());
+        });
+    }
+
+    #[test]
+    fn starter_valve_opens_on_engine_start() {
+        // Set takeoff thrust
+        let mut test_bed = test_bed_with().stop_eng1().stop_eng2();
+
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(50));
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(!sys.engine_starter_valve.is_open());
+        });
+
+        test_bed = test_bed.start_eng1().start_eng2();
+        test_bed.run();
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(sys.engine_starter_valve.is_open());
+        });
+    }
+
+    #[test]
+    fn starter_valve_closes_on_n2_50_percent() {
+        // Set takeoff thrust
+        let mut test_bed = test_bed_with().stop_eng1().stop_eng2();
+
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(50));
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(!sys.engine_starter_valve.is_open());
+        });
+
+        test_bed = test_bed.start_eng1().start_eng2();
+        test_bed.run();
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(sys.engine_starter_valve.is_open());
+        });
+
+        test_bed = test_bed.n2(60.);
+        test_bed.run();
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(!sys.engine_starter_valve.is_open());
         });
     }
 }
