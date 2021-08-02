@@ -62,11 +62,15 @@ const NavigationDisplay: React.FC = () => {
     const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [modeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
 
+    const [opacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 100);
+
     return (
         <DisplayUnit
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
             potentiometerIndex={displayIndex === 1 ? 89 : 91}
         >
+            <div className="BacklightBleed" />
+            <div className="LcdOverlayDcdu" style={{ opacity }} />
             <FlightPlanProvider>
                 <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
                     <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
