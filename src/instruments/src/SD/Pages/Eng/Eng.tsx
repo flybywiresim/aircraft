@@ -82,34 +82,29 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [pressureAboveHigh, setPressureAboveHigh] = useState(false);
     const [pressureBelowLow, setPressureBelowLow] = useState(false);
     const [shouldPressurePulse, setShouldPressurePulse] = useState(false);
-    const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'number', 4000);
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
 
     /* Controls different styling of pressure needle and digital readout according to certain critical, or cautionary ranges.
     */
     useEffect(() => {
-        if (flightPhase === 2 || flightPhase === 6) {
-            if (displayedEngineOilPressure > OIL_PSI_HIGH_LIMIT - 1) {
-                setPressureAboveHigh(true);
-            }
+        if (displayedEngineOilPressure > OIL_PSI_HIGH_LIMIT - 1) {
+            setPressureAboveHigh(true);
+        }
 
-            if (pressureAboveHigh && displayedEngineOilPressure < OIL_PSI_HIGH_LIMIT - 4) {
-                setPressureAboveHigh(false);
-            }
+        if (pressureAboveHigh && displayedEngineOilPressure < OIL_PSI_HIGH_LIMIT - 4) {
+            setPressureAboveHigh(false);
+        }
 
-            if (displayedEngineOilPressure < OIL_PSI_LOW_LIMIT && n2Percent > 75) {
-                setPressureBelowLow(true);
-            }
+        if (displayedEngineOilPressure < OIL_PSI_LOW_LIMIT && n2Percent > 75) {
+            setPressureBelowLow(true);
+        }
 
-            if (pressureBelowLow && displayedEngineOilPressure > OIL_PSI_LOW_LIMIT + 2) {
-                setPressureBelowLow(true);
-            }
+        if (pressureBelowLow && displayedEngineOilPressure > OIL_PSI_LOW_LIMIT + 2) {
+            setPressureBelowLow(true);
+        }
 
-            if (pressureAboveHigh || pressureBelowLow) {
-                setShouldPressurePulse(true);
-            } else {
-                setShouldPressurePulse(false);
-            }
+        if (pressureAboveHigh || pressureBelowLow) {
+            setShouldPressurePulse(true);
         } else {
             setShouldPressurePulse(false);
         }
@@ -120,7 +115,7 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
         if (psiNeedleRed && displayedEngineOilPressure >= OIL_PSI_VLOW_LIMIT + 0.5) {
             setPsiNeedleRed(false);
         }
-    }, [flightPhase, engineOilPressure]);
+    }, [engineOilPressure]);
 
     return (
         <SvgGroup x={0} y={0}>
@@ -149,8 +144,6 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
 };
 
 const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
-    const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'number', 4000);
-
     const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 100);
     const OIL_QTY_MAX = 24.25;
     const OIL_QTY_LOW_ADVISORY = 1.35;
@@ -158,24 +151,18 @@ const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
     const [shouldQuantityPulse, setShouldQuantityPulse] = useState(false);
 
-    /* This useEffect first checks if the current flight phase is 2 or 6
-    then checks if the engine oil quantity is less than the low advisory level, setting the hook to true.
-    If the engine oil quantity is at or below the low advisory level, and the oil quantity is now above the low advisory level + 2 quarts, this hook is instead set to false.
-    If the flight phase is not 2 or 6, it will set the hook to false, regardless of the setQuantityAtOrBelowLow hook's value.
-    */
+    // Sets engine oil quantity's pulsation based on advisory value constant, this should be changed in the future as its calculated on the fly in NEOs
     useEffect(() => {
-        if (flightPhase === 2 || flightPhase === 6) {
-            if (displayedEngineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
-                setQuantityAtOrBelowLow(true);
-            }
-
-            if (quantityAtOrBelowLow && displayedEngineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
-                setQuantityAtOrBelowLow(false);
-            }
-        } else {
-            setShouldQuantityPulse(false);
+        if (displayedEngineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
+            setQuantityAtOrBelowLow(true);
         }
-    }, [flightPhase, engineOilQuantity]);
+
+        if (quantityAtOrBelowLow && displayedEngineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
+            setQuantityAtOrBelowLow(false);
+        }
+
+        if (quantityAtOrBelowLow) setShouldQuantityPulse(true);
+    }, [engineOilQuantity]);
 
     return (
         <SvgGroup x={0} y={0}>
