@@ -6,6 +6,7 @@ export class MapParameters {
     public mapUpTrueDeg: number;
 
     public nmToPx: number;
+    public mToPx: number;
 
     public nmRadius: number;
 
@@ -17,6 +18,7 @@ export class MapParameters {
         this.mapUpTrueDeg = mapUpTrueDeg;
         this.centerCoordinates = centerCoordinates;
         this.nmToPx = pxRadius / nmRadius;
+        this.mToPx = this.nmToPx / 1852;
         this.nmRadius = nmRadius;
     }
 
@@ -31,5 +33,14 @@ export class MapParameters {
             xNm * this.nmToPx,
             yNm * this.nmToPx,
         ];
+    }
+
+    /**
+     * Rotates a true bearing into the map orientation
+     * @param trueBearing
+     * @returns rotation to be applied
+     */
+    rotation(trueBearing: number): number {
+        return trueBearing - this.mapUpTrueDeg;
     }
 }
