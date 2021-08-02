@@ -1,18 +1,28 @@
-#![cfg(any(target_arch = "wasm32", doc))]
+//#![cfg(any(target_arch = "wasm32", doc))]
 pub mod electrical;
+pub mod failures;
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
     sim_connect::{SimConnect, SimConnectRecv},
     MSFSEvent,
 };
 use std::{collections::HashMap, error::Error, pin::Pin, time::Duration};
-use systems::simulation::{Aircraft, Simulation, SimulatorReaderWriter};
+use systems::{
+    failures::FailureType,
+    simulation::{Aircraft, FailureReader, Simulation, SimulatorReaderWriter},
+};
 
 /// An aspect to inject into events in the simulation.
 pub trait SimulatorAspect {
     /// Attempts to read data with the given name.
     /// Returns `Some` when reading was successful, `None` otherwise.
     fn read(&mut self, _name: &str) -> Option<f64> {
+        None
+    }
+
+    /// Attempts to read a failure which is triggered by the simulator's
+    /// failure orchestrator.
+    fn read_failure_activate(&mut self) -> Option<FailureType> {
         None
     }
 
@@ -59,6 +69,7 @@ impl MsfsSimulationHandler {
         match event {
             MSFSEvent::PreDraw(d) => {
                 self.pre_tick(d.delta_time());
+                self.read_failures_into(simulation);
                 simulation.tick(d.delta_time(), self);
                 self.post_tick(&mut sim_connect.as_mut())?;
             }
@@ -98,6 +109,12 @@ impl MsfsSimulationHandler {
 
         Ok(())
     }
+
+    fn read_failures_into<T: Aircraft>(&mut self, simulation: &mut Simulation<T>) {
+        if let Some(failure_type) = self.read_activate() {
+            simulation.fail(failure_type);
+        }
+    }
 }
 impl SimulatorReaderWriter for MsfsSimulationHandler {
     fn read(&mut self, name: &str) -> f64 {
@@ -113,6 +130,13 @@ impl SimulatorReaderWriter for MsfsSimulationHandler {
                 break;
             }
         }
+    }
+}
+impl FailureReader for MsfsSimulationHandler {
+    fn read_activate(&mut self) -> Option<FailureType> {
+        self.aspects
+            .iter_mut()
+            .find_map(|aspect| aspect.read_failure_activate())
     }
 }
 

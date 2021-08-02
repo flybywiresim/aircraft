@@ -36,6 +36,10 @@ pub trait SimulatorReaderWriter {
     fn write(&mut self, name: &str, value: f64);
 }
 
+pub trait FailureReader {
+    fn read_activate(&mut self) -> Option<FailureType>;
+}
+
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].
 ///
 /// [`Aircraft`]: trait.Aircraft.html
@@ -260,14 +264,10 @@ impl<T: Aircraft> Simulation<T> {
     /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
     /// ```
     /// [`tick`]: #method.tick
-    pub fn tick(
-        &mut self,
-        delta: Duration,
-        simulator_reader_writer: &mut impl SimulatorReaderWriter,
-    ) {
+    pub fn tick(&mut self, delta: Duration, reader_writer: &mut impl SimulatorReaderWriter) {
         self.electricity.pre_tick();
 
-        let mut reader = SimulatorReader::new(simulator_reader_writer);
+        let mut reader = SimulatorReader::new(reader_writer);
         let context = UpdateContext::from_reader(&mut reader, delta);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
@@ -285,7 +285,7 @@ impl<T: Aircraft> Simulation<T> {
         self.aircraft
             .report_electricity_consumption(&context, &self.electricity);
 
-        let mut writer = SimulatorWriter::new(simulator_reader_writer);
+        let mut writer = SimulatorWriter::new(reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
         self.aircraft.accept(&mut visitor);
     }

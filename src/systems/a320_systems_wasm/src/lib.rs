@@ -1,4 +1,4 @@
-#![cfg(any(target_arch = "wasm32", doc))]
+//#![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
@@ -6,11 +6,14 @@ use std::{
     pin::Pin,
     time::{Duration, Instant},
 };
+use systems::failures::FailureType;
 use systems::simulation::Simulation;
 use systems_wasm::{
     electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader,
-    MsfsNamedVariableReaderWriter, MsfsSimulationHandler, SimulatorAspect,
+    f64_to_sim_connect_32k_pos,
+    failures::Failures,
+    sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter,
+    MsfsSimulationHandler, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
@@ -28,6 +31,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
         Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
         Box::new(create_aircraft_variable_reader()?),
         Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
+        Box::new(create_failures("A32NX_FAILURE_ACTIVATE")),
     ]);
 
     while let Some(event) = gauge.next_event().await {
@@ -133,6 +137,16 @@ fn create_electrical_buses() -> MsfsElectricalBuses {
     buses.add("DC_GND_FLT_SVC", 1, 15);
 
     buses
+}
+
+fn create_failures(activate_sim_var: &'static str) -> Failures {
+    let mut failures = Failures::new(activate_sim_var);
+
+    failures.add(24_000, FailureType::TransformerRectifier(1));
+    failures.add(24_001, FailureType::TransformerRectifier(2));
+    failures.add(24_002, FailureType::TransformerRectifier(3));
+
+    failures
 }
 
 struct Autobrakes {
