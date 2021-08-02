@@ -21,12 +21,11 @@ export type FlightPathProps = {
     y?: number,
     flightPlanManager: FlightPlanManager,
     mapParams: MapParameters,
-    clipPath: string,
     constraints: boolean,
     debug: boolean,
 }
 
-export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, clipPath, constraints, debug = false }) => {
+export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, constraints, debug = false }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
 
     const [geometry, setGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
@@ -43,20 +42,18 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
 
         return (
             <Layer x={x} y={y}>
-                <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" clipPath={clipPath} />
-                <g clipPath={clipPath}>
-                    {legs.map((leg, index) => (
-                        <LegWaypointMarkers
-                            leg={leg}
-                            nextLeg={legs[index - 1]}
-                            index={index}
-                            constraints={constraints}
-                            key={leg.ident}
-                            mapParams={mapParams}
-                            debug={debug}
-                        />
-                    ))}
-                </g>
+                <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" />
+                {legs.map((leg, index) => (
+                    <LegWaypointMarkers
+                        leg={leg}
+                        nextLeg={legs[index - 1]}
+                        index={index}
+                        constraints={constraints}
+                        key={leg.ident}
+                        mapParams={mapParams}
+                        debug={debug}
+                    />
+                ))}
                 {debug && (
                     <>
                         {
