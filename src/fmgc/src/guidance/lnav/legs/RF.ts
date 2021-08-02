@@ -13,8 +13,6 @@ import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { SegmentType } from '@fmgc/wtsdk';
 
 export class RFLeg implements Leg {
-    public ident: string;
-
     // termination fix of the previous leg
     public from: WayPoint;
 
@@ -37,7 +35,6 @@ export class RFLeg implements Leg {
     constructor(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType) {
         this.from = from;
         this.to = to;
-        this.ident = to.ident;
         this.center = center;
         this.radius = Avionics.Utils.computeGreatCircleDistance(this.center, this.to.infos.coordinates);
         this.segment = segment;
