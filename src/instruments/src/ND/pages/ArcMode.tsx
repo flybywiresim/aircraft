@@ -45,15 +45,18 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
     if (adirsAlign) {
         return (
             <>
-                <FlightPlan
-                    x={384}
-                    y={620}
-                    flightPlanManager={flightPlanManager}
-                    mapParams={mapParams}
-                    clipPath="url(#arc-mode-map-clip)"
-                    constraints={efisOption === EfisOption.Constraints}
-                    debug={false}
-                />
+                <g id="map" clipPath="url(#arc-mode-map-clip)">
+                    <FlightPlan
+                        x={384}
+                        y={620}
+                        flightPlanManager={flightPlanManager}
+                        mapParams={mapParams}
+                        constraints={efisOption === EfisOption.Constraints}
+                        debug={false}
+                    />
+                    <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
+                    <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
+                </g>
                 <Overlay
                     heading={Number(MathUtils.fastToFixed(magHeading, 1))}
                     track={Number(MathUtils.fastToFixed(magTrack, 1))}
@@ -93,7 +96,13 @@ interface OverlayProps {
 const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
         <clipPath id="arc-mode-map-clip">
-            <path d="M-384,-308 a492,492 0 0 1 768,0 L384,-58 L264,-58 L207,5 L207,148 L-210,148 L-210,63 L-262,5 L-384,5 L-384,-308" />
+            <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312" />
+        </clipPath>
+        <clipPath id="arc-mode-wx-terr-clip">
+            <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L0,625 L0,312" />
+        </clipPath>
+        <clipPath id="arc-mode-tcas-clip">
+            <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312" />
         </clipPath>
         <clipPath id="arc-mode-overlay-clip-4">
             <path d="m 6 0 h 756 v 768 h -756 z" />
@@ -466,9 +475,6 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, si
             { lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
             <SelectedHeadingBug heading={heading} selected={selectedHeading} />
         </g>
-
-        <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
-        <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
         <Plane />
     </>
 ));
