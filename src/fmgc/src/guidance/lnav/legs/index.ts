@@ -29,8 +29,6 @@ export interface SpeedConstraint {
 }
 
 export interface Leg extends Guidable {
-    ident: string;
-
     segment: SegmentType;
 
     get isCircularArc(): boolean;
