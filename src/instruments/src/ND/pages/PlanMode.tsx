@@ -39,15 +39,16 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption }) 
 
     return (
         <>
-            <FlightPlan
-                x={384}
-                y={384}
-                flightPlanManager={flightPlanManager}
-                mapParams={mapParams}
-                clipPath="url(#plan-mode-map-clip)"
-                constraints={efisOption === EfisOption.Constraints}
-                debug={false}
-            />
+            <g id="map" clipPath="url(#plan-mode-map-clip)">
+                <FlightPlan
+                    x={384}
+                    y={384}
+                    flightPlanManager={flightPlanManager}
+                    mapParams={mapParams}
+                    constraints={efisOption === EfisOption.Constraints}
+                    debug={false}
+                />
+            </g>
 
             <Overlay rangeSetting={rangeSetting} />
 
@@ -63,7 +64,7 @@ interface OverlayProps {
 const Overlay: FC<OverlayProps> = ({ rangeSetting }) => (
     <>
         <clipPath id="plan-mode-map-clip">
-            <polygon points="-339,-272 -244,-272 -104,-328 104,-328 244,-272 339,-272 339,336 -270,336 -270,249 -339,249" />
+            <polygon points="45,112 140,112 280,56 488,56 628,112 723,112 723,720 114,720 114,633 45,633" />
         </clipPath>
         <g className="White" strokeWidth={3}>
             <circle cx={384} cy={384} r={250} />
