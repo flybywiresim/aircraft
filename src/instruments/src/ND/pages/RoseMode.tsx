@@ -47,17 +47,20 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
     if (adirsAlign) {
         return (
             <>
-                { mode === Mode.ROSE_NAV && (
-                    <FlightPlan
-                        x={384}
-                        y={384}
-                        flightPlanManager={flightPlanManager}
-                        mapParams={mapParams}
-                        clipPath="url(#rose-mode-map-clip)"
-                        constraints={efisOption === EfisOption.Constraints}
-                        debug={false}
-                    />
-                )}
+                <g id="map" clipPath="url(#rose-mode-map-clip)">
+                    { mode === Mode.ROSE_NAV && (
+                        <FlightPlan
+                            x={384}
+                            y={384}
+                            flightPlanManager={flightPlanManager}
+                            mapParams={mapParams}
+                            constraints={efisOption === EfisOption.Constraints}
+                            debug={false}
+                        />
+                    )}
+                    <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
+                    <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
+                </g>
                 <Overlay
                     adirsAlign={adirsAlign}
                     heading={Number(MathUtils.fastToFixed(magHeading, 1))}
@@ -95,7 +98,6 @@ interface OverlayProps {
     heading: number,
     track: number,
     rangeSetting: number,
-    side: EfisSide,
     tcasMode: number,
     displayMode: Mode,
     selectedHeading: number,
@@ -103,10 +105,16 @@ interface OverlayProps {
     lsDisplayed: boolean,
 }
 
-const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMode, displayMode, selectedHeading, ilsCourse, lsDisplayed }) => (
+const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, tcasMode, displayMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
         <clipPath id="rose-mode-map-clip">
-            <path d="M-339,-229 L-102,-229 a250,250 0 0 1 204,0 L339,-229 L339,178 L264,178 L207,241 L207,384 L-210,384 L-210,299 L-262,241 L-339,241 L-339,-229" />
+            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
+        </clipPath>
+        <clipPath id="rose-mode-wx-terr-clip">
+            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,384 L45,384 L45,155" />
+        </clipPath>
+        <clipPath id="rose-mode-tcas-clip">
+            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
         </clipPath>
 
         {/* C = 384,384 */}
@@ -481,9 +489,6 @@ const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, side, tcasMod
             { displayMode === Mode.ROSE_NAV && lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
             <SelectedHeadingBug heading={heading} selected={selectedHeading} />
         </g>
-
-        <RadioNeedle index={1} side={side} displayMode={displayMode} centreHeight={384} />
-        <RadioNeedle index={2} side={side} displayMode={displayMode} centreHeight={384} />
 
         { displayMode === Mode.ROSE_ILS && <GlideSlope /> }
 
