@@ -7,6 +7,9 @@ module.exports = {
     ],
     globals: {
         'ts-jest': {
+            // Babel assumes isolated modules, therefore enable it here as well.
+            // This also speeds up the unit testing performance.
+            isolatedModules: true,
             diagnostics: {
                 ignoreCodes: ['TS151001'],
             }
