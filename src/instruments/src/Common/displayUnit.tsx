@@ -4,6 +4,7 @@ import { useSimVar } from './simVars';
 import { useUpdate } from './hooks';
 
 import './common.scss';
+import './pixels.scss';
 
 type DisplayUnitProps = {
     electricitySimvar: string
@@ -24,6 +25,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
+    const [opacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 200);
 
     useUpdate((deltaTime) => {
         if (timer !== null) {
@@ -57,24 +59,28 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
 
     if (state === DisplayUnitState.Selftest) {
         return (
-            <svg className="SelfTest" viewBox="0 0 600 600">
-                <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
+            <>
+                <div className="LcdOverlay" style={{ opacity }} />
+                <div className="BacklightBleed" />
+                <svg className="SelfTest" viewBox="0 0 600 600">
+                    <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
-                <text
-                    className="SelfTestText"
-                    x="50%"
-                    y="50%"
-                >
-                    SELF TEST IN PROGRESS
-                </text>
-                <text
-                    className="SelfTestText"
-                    x="50%"
-                    y="56%"
-                >
-                    (MAX 40 SECONDS)
-                </text>
-            </svg>
+                    <text
+                        className="SelfTestText"
+                        x="50%"
+                        y="50%"
+                    >
+                        SELF TEST IN PROGRESS
+                    </text>
+                    <text
+                        className="SelfTestText"
+                        x="50%"
+                        y="56%"
+                    >
+                        (MAX 40 SECONDS)
+                    </text>
+                </svg>
+            </>
         );
     } if (state === DisplayUnitState.Off) {
         return (
@@ -82,6 +88,10 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
         );
     }
     return (
-        <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
+        <>
+            <div className="LcdOverlay" style={{ opacity }} />
+            <div className="BacklightBleed" />
+            <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
+        </>
     );
 };

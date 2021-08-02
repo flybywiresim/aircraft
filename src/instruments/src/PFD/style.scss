@@ -1,12 +1,6 @@
 @import "../Common/definitions";
 @import "animations";
 
-/* pixels for screen */
-@import "../Common/pixels";
-#panel:after {
-  @include pixels;
-}
-
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
