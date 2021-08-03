@@ -7,8 +7,8 @@ import { flushPromises } from './test-functions';
 test('added failures can be retrieved', () => {
     const o = orchestrator();
 
-    expect(o.getFailures()).toHaveLength(1);
-    expect(o.getFailures()[0]).toMatchObject({
+    expect(o.getFailures().size).toBe(1);
+    expect(o.getFailures().values().next().value).toMatchObject({
         identifier,
         name,
     });

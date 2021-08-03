@@ -7,14 +7,14 @@ import { Writer } from './writer';
 export class SimVarReaderWriter implements CallbackReader, Reader, Writer {
     private simVarName: string;
 
-    private callbacks: Record<number, () => void> = {};
+    private callbacks: Map<number, () => void> = new Map();
 
     constructor(simVarName: string) {
         this.simVarName = simVarName;
     }
 
     register(identifier: number, callback: () => void): void {
-        this.callbacks[identifier] = callback;
+        this.callbacks.set(identifier, callback);
     }
 
     update(): void {
@@ -33,10 +33,10 @@ export class SimVarReaderWriter implements CallbackReader, Reader, Writer {
     }
 
     private handles(identifier: number) {
-        return this.callbacks[identifier] !== undefined;
+        return this.callbacks.get(identifier) !== undefined;
     }
 
     private notify(identifier: number) {
-        this.callbacks[identifier]();
+        this.callbacks.get(identifier)();
     }
 }

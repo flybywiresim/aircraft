@@ -12,7 +12,7 @@ export class TransactionWriter implements Writer {
 
     private transactionSimVar: Reader & Writer;
 
-    private openTransactions: Record<number, Transaction> = {};
+    private openTransactions = new Map<number, Transaction>();
 
     /**
      *
@@ -51,21 +51,25 @@ export class TransactionWriter implements Writer {
     }
 
     private resolveTransactionWithValue(value: number) {
-        Object.values(this.openTransactions)
-            .filter((transaction) => transaction.value === value)
-            .forEach((transaction) => this.resolveTransaction(transaction));
+        this.openTransactions.forEach((transaction) => {
+            if (transaction.value === value) {
+                this.resolveTransaction(transaction);
+            }
+        });
     }
 
     private increaseTransactionsWaitingDuration() {
-        Object.values(this.openTransactions).forEach((transaction) => {
+        this.openTransactions.forEach((transaction) => {
             transaction.waitedUpdates++;
         });
     }
 
     private retryWriteForExpiredTransactions() {
-        Object.values(this.openTransactions)
-            .filter((transaction) => transaction.waitedUpdates >= this.retryAfterNumberOfUpdates)
-            .forEach((transaction) => this.retryWrite(transaction));
+        this.openTransactions.forEach((transaction) => {
+            if (transaction.waitedUpdates >= this.retryAfterNumberOfUpdates) {
+                this.retryWrite(transaction);
+            }
+        });
     }
 
     private retryWrite(transaction: Transaction) {
@@ -81,11 +85,11 @@ export class TransactionWriter implements Writer {
     }
 
     private hasOpenTransactions() {
-        return Object.keys(this.openTransactions).length > 0;
+        return this.openTransactions.size;
     }
 
     private addTransaction(value: number, resolve: () => void) {
-        this.openTransactions[value] = { waitedUpdates: 0, value, resolve };
+        this.openTransactions.set(value, { waitedUpdates: 0, value, resolve });
     }
 
     private resolveTransaction(transaction: Transaction) {
@@ -96,7 +100,7 @@ export class TransactionWriter implements Writer {
     }
 
     private removeTransaction(value: number) {
-        delete this.openTransactions[value];
+        this.openTransactions.delete(value);
     }
 }
 

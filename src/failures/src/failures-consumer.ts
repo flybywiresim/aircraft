@@ -2,9 +2,9 @@ import { QueuedSimVarReader, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 
 export class FailuresConsumer {
-    private activeFailures: Record<number, boolean> = {};
+    private activeFailures = new Map<number, boolean>();
 
-    private callbacks: Record<number, (isActive: boolean) => void> = {};
+    private callbacks: Map<number, (isActive: boolean) => void> = new Map();
 
     private activateFailureReader: QueuedSimVarReader;
 
@@ -16,11 +16,11 @@ export class FailuresConsumer {
     }
 
     register(identifier: number, callback?: (isActive: boolean) => void) {
-        if (this.callbacks[identifier] !== undefined) {
+        if (this.callbacks.get(identifier) !== undefined) {
             throw new Error(`Cannot register the same failure identifier (${identifier}) multiple times.`);
         }
 
-        this.callbacks[identifier] = callback || ((_) => {});
+        this.callbacks.set(identifier, callback || ((_) => {}));
         this.activateFailureReader.register(identifier, () => {
             this.onReadCallback(identifier, true);
         });
@@ -35,11 +35,11 @@ export class FailuresConsumer {
     }
 
     isActive(identifier: number): boolean {
-        return this.activeFailures[identifier] === true;
+        return this.activeFailures.get(identifier) === true;
     }
 
     private onReadCallback(identifier: number, value: boolean) {
-        this.callbacks[identifier](value);
-        this.activeFailures[identifier] = value;
+        this.callbacks.get(identifier)(value);
+        this.activeFailures.set(identifier, value);
     }
 }

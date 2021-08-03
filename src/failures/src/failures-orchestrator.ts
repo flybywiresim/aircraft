@@ -7,7 +7,7 @@ import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './
  * Only a single instance of the orchestrator should exist within the whole application.
  */
 export class FailuresOrchestrator {
-    private failures: Record<number, Failure> = {};
+    private failures = new Map<number, Failure>();
 
     private activateFailureQueue: QueuedSimVarWriter;
 
@@ -16,15 +16,14 @@ export class FailuresOrchestrator {
     constructor(simVarPrefix: string, failures: [number, string][]) {
         this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)));
         this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)));
-        this.failures = failures.map((failure) => ({
-            identifier: failure[0],
-            name: failure[1],
-            isActive: false,
-            isChanging: false,
-        })).reduce((acc, failure) => {
-            acc[failure.identifier] = failure;
-            return acc;
-        }, {});
+        failures.forEach((failure) => {
+            this.failures.set(failure[0], {
+                identifier: failure[0],
+                name: failure[1],
+                isActive: false,
+                isChanging: false,
+            });
+        });
     }
 
     update() {
@@ -69,12 +68,12 @@ export class FailuresOrchestrator {
         return this.getFailure(identifier).isChanging === true;
     }
 
-    getFailures(): Readonly<Failure>[] {
-        return Object.values(this.failures);
+    getFailures(): Readonly<Map<number, Failure>> {
+        return this.failures;
     }
 
     private getFailure(identifier: number) {
-        return this.failures[identifier];
+        return this.failures.get(identifier);
     }
 }
 
