@@ -7,8 +7,8 @@
 class AutopilotLawsModelClass {
  public:
   typedef struct {
-    uint8_T is_active_c3_sUPy3BXaP8VT23gJSge3dZD_ap_library;
-    uint8_T is_c3_sUPy3BXaP8VT23gJSge3dZD_ap_library;
+    uint8_T is_active_c8_sUPy3BXaP8VT23gJSge3dZD_ap_library;
+    uint8_T is_c8_sUPy3BXaP8VT23gJSge3dZD_ap_library;
   } rtDW_Chart_AutopilotLaws_T;
 
   typedef struct {
@@ -19,8 +19,8 @@ class AutopilotLawsModelClass {
   } rtDW_LagFilter_AutopilotLaws_T;
 
   typedef struct {
-    uint8_T is_active_c3_sQHqjOt6dG4nwhom4nTqEME_ap_library;
-    uint8_T is_c3_sQHqjOt6dG4nwhom4nTqEME_ap_library;
+    uint8_T is_active_c8_sQHqjOt6dG4nwhom4nTqEME_ap_library;
+    uint8_T is_c8_sQHqjOt6dG4nwhom4nTqEME_ap_library;
   } rtDW_Chart_AutopilotLaws_c_T;
 
   typedef struct {
@@ -105,13 +105,13 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_BreakpointsForDimension1[5];
     real_T ScheduledGain3_BreakpointsForDimension1[4];
     real_T ScheduledGain1_BreakpointsForDimension1[4];
-    real_T ScheduledGain2_BreakpointsForDimension1[6];
+    real_T ScheduledGain2_BreakpointsForDimension1[7];
     real_T ScheduledGain_BreakpointsForDimension1_j[3];
-    real_T ScheduledGain_BreakpointsForDimension1_a[6];
-    real_T ScheduledGain_BreakpointsForDimension1_d[6];
-    real_T ScheduledGain2_BreakpointsForDimension1_k[6];
+    real_T ScheduledGain_BreakpointsForDimension1_a[7];
+    real_T ScheduledGain_BreakpointsForDimension1_d[7];
+    real_T ScheduledGain2_BreakpointsForDimension1_k[7];
     real_T ScheduledGain_BreakpointsForDimension1_e[5];
-    real_T ScheduledGain2_BreakpointsForDimension1_j[6];
+    real_T ScheduledGain2_BreakpointsForDimension1_j[7];
     real_T ScheduledGain_BreakpointsForDimension1_h[6];
     real_T LagFilter_C1;
     real_T LagFilter_C1_l;
@@ -146,13 +146,13 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_Table[5];
     real_T ScheduledGain3_Table[4];
     real_T ScheduledGain1_Table[4];
-    real_T ScheduledGain2_Table[6];
+    real_T ScheduledGain2_Table[7];
     real_T ScheduledGain_Table_p[3];
-    real_T ScheduledGain_Table_i[6];
-    real_T ScheduledGain_Table_h[6];
-    real_T ScheduledGain2_Table_g[6];
+    real_T ScheduledGain_Table_i[7];
+    real_T ScheduledGain_Table_h[7];
+    real_T ScheduledGain2_Table_g[7];
     real_T ScheduledGain_Table_pf[5];
-    real_T ScheduledGain2_Table_h[6];
+    real_T ScheduledGain2_Table_h[7];
     real_T ScheduledGain_Table_ir[6];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T Subsystem_Value;
