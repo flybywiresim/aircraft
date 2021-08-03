@@ -837,7 +837,7 @@ export class ManagedFlightPlan {
             legs.push(...destinationInfo.arrivals[arrivalIndex].commonLegs);
         }
 
-        if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1 && approachTransitionIndex === -1) {
+        if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1) {
             const runwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
             legs.push(...runwayTransition.legs);
         }
