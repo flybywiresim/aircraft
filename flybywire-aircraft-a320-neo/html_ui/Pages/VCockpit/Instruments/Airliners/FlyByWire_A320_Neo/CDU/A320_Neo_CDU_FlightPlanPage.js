@@ -130,7 +130,7 @@ class CDUFlightPlanPage {
                 const activeIndex = fpm.getActiveWaypointIndex();
                 const wpActive = (waypointsAndMarkers[winI].fpIndex >= activeIndex);
                 let ident = waypointsAndMarkers[winI].wp.ident;
-                const isOverfly = waypointsAndMarkers[winI].wp.additionalData.overfly;
+                const isOverfly = waypointsAndMarkers[winI].wp.additionalData && waypointsAndMarkers[winI].wp.additionalData.overfly;
 
                 // Time
                 let time;

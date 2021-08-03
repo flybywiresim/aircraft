@@ -53,6 +53,16 @@ export class TFLeg implements Leg {
         return getAltitudeConstraintFromWaypoint(this.to);
     }
 
+    // TODO: refactor
+    get initialSpeedConstraint(): SpeedConstraint | undefined {
+        return getSpeedConstraintFromWaypoint(this.from);
+    }
+
+    // TODO: refactor
+    get initialAltitudeConstraint(): AltitudeConstraint | undefined {
+        return getAltitudeConstraintFromWaypoint(this.from);
+    }
+
     get initialLocation(): LatLongData {
         return waypointToLocation(this.from);
     }
