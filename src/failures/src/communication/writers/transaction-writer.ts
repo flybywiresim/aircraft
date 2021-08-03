@@ -20,8 +20,8 @@ export class TransactionWriter implements Writer {
      * @param transactionSimVar The reader/writer to use for managing the transaction.
      * @param retryAfterNumberOfUpdates The number of calls to `update` to wait before making another write attempt. Defaults to 30.
      */
-    constructor(valueSimVar: Writer & Updatable, transactionSimVar: Reader & Writer, retryAfterNumberOfUpdates?: number) {
-        this.retryAfterNumberOfUpdates = retryAfterNumberOfUpdates || 30;
+    constructor(valueSimVar: Writer & Updatable, transactionSimVar: Reader & Writer, retryAfterNumberOfUpdates = 30) {
+        this.retryAfterNumberOfUpdates = retryAfterNumberOfUpdates;
         this.valueSimVar = valueSimVar;
         this.transactionSimVar = transactionSimVar;
     }
