@@ -2,4 +2,6 @@
 
 set -ex
 
-npm run test
+if [ "${GITHUB_ACTIONS}" != "true" ]; then
+  npm test
+fi

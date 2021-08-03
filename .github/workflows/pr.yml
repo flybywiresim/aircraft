@@ -36,9 +36,10 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: test-js.sh
-        run: |
-          ./scripts/dev-env/run.sh scripts/test-js.sh
+      - name: npm install
+        run: npm install --no-optional
+      - name: npm test
+        run: npm test
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
