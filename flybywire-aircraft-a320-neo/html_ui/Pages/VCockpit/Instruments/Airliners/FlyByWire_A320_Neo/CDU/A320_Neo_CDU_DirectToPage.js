@@ -67,7 +67,7 @@ class CDUDirectToPage {
                 }
                 waypointsCell[cellIter] = "{" + waypoint.ident + "[color]cyan";
                 if (waypointsCell[cellIter]) {
-                    mcdu.onLeftInput[i + 1] = () => {
+                    mcdu.onLeftInput[cellIter + 1] = () => {
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_0", "number", SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"));
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_0", "number", SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
