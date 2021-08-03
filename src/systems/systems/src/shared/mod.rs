@@ -198,6 +198,7 @@ pub trait ControllerSignal<S> {
     fn signal(&self) -> Option<S>;
 }
 
+#[derive(Copy, Clone)]
 pub struct PneumaticValveSignal {
     target_open_amount: Ratio,
 }

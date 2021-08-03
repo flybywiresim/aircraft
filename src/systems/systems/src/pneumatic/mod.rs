@@ -8,7 +8,8 @@ use crate::{
         PneumaticValveSignal,
     },
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
+        Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
+        Write, Writer,
     },
 };
 
@@ -109,6 +110,10 @@ impl DefaultValve {
 
     pub fn new(open_amount: Ratio) -> Self {
         Self { open_amount }
+    }
+
+    pub fn new_closed() -> Self {
+        Self::new(Ratio::new::<ratio>(0.))
     }
 
     pub fn update_open_amount(
@@ -341,6 +346,47 @@ impl DefaultConsumer {
     pub fn update(&mut self, controller: &impl ControllerSignal<PneumaticConsumptionSignal>) {
         if let Some(signal) = controller.signal() {
             self.change_volume(-signal.consumed_volume);
+        }
+    }
+}
+
+pub struct CrossBleedValveSelectorKnob {
+    mode_id: String,
+    mode: CrossBleedValveSelectorMode,
+}
+impl CrossBleedValveSelectorKnob {
+    pub fn new_auto() -> Self {
+        Self {
+            mode_id: String::from("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position"),
+            mode: CrossBleedValveSelectorMode::Auto,
+        }
+    }
+
+    pub fn mode(&self) -> CrossBleedValveSelectorMode {
+        self.mode
+    }
+}
+impl SimulationElement for CrossBleedValveSelectorKnob {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.mode = reader.read(&self.mode_id)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum CrossBleedValveSelectorMode {
+    Shut = 0,
+    Auto = 1,
+    Open = 2,
+}
+
+read_write_enum!(CrossBleedValveSelectorMode);
+
+impl From<f64> for CrossBleedValveSelectorMode {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => CrossBleedValveSelectorMode::Shut,
+            1 => CrossBleedValveSelectorMode::Auto,
+            _ => CrossBleedValveSelectorMode::Open,
         }
     }
 }
@@ -615,5 +661,46 @@ mod tests {
         consumer.update(&consumer_controller);
 
         assert!(consumer.pressure() < initial_pressure);
+    }
+
+    mod cross_bleed_selector_knob {
+        use super::*;
+
+        #[test]
+        fn new_auto_push_button_is_auto() {
+            assert_eq!(
+                CrossBleedValveSelectorKnob::new_auto().mode(),
+                CrossBleedValveSelectorMode::Auto
+            );
+        }
+
+        #[test]
+        fn represents_simvars() {
+            let mut test_bed = SimulationTestBed::from(CrossBleedValveSelectorKnob::new_auto());
+
+            test_bed.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", 0);
+            test_bed.run();
+
+            let read_mode: CrossBleedValveSelectorMode =
+                test_bed.read("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position");
+
+            assert_eq!(read_mode, CrossBleedValveSelectorMode::Shut);
+
+            test_bed.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", 1);
+            test_bed.run();
+
+            let read_mode: CrossBleedValveSelectorMode =
+                test_bed.read("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position");
+
+            assert_eq!(read_mode, CrossBleedValveSelectorMode::Auto);
+
+            test_bed.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", 2);
+            test_bed.run();
+
+            let read_mode: CrossBleedValveSelectorMode =
+                test_bed.read("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position");
+
+            assert_eq!(read_mode, CrossBleedValveSelectorMode::Open);
+        }
     }
 }

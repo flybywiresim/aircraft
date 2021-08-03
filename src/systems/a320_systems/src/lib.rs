@@ -26,6 +26,7 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
+    pneumatic::BleedAirValveState,
     pressurization::Pressurization,
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -166,8 +167,12 @@ impl Aircraft for A320 {
 
         self.power_consumption.update(context);
 
-        self.pneumatic
-            .update(context, [&self.engine_1, &self.engine_2])
+        self.pneumatic.update(
+            context,
+            [&self.engine_1, &self.engine_2],
+            self.apu.bleed_air_valve_is_open(),
+            &self.pneumatic_overhead,
+        )
     }
 }
 impl SimulationElement for A320 {
