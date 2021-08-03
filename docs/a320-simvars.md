@@ -8,8 +8,8 @@
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
-1. [Engine and FADEC System](#engine-fadec-system)
-1. [Air Conditioning / Pressurisation / Ventilation](#aircon-press-vent-systems)
+1. [Engine and FADEC System](#engine-and-fadec-system)
+1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
 
 ## Uncategorized
 
@@ -968,6 +968,14 @@
       --- | ---
       0 | inactive
       1 | active
+
+- A32NX_MFD_MASK_OPACITY
+    - Number
+    - Current LCD mask opacity for MFDs, used for driving LCD display pixels effect
+
+- A32NX_MCDU_MASK_OPACITY
+    - Number
+    - Current LCD mask opacity for MCDU, used for driving MCDU display pixels effect
 
 ## Fly-By-Wire System
 
