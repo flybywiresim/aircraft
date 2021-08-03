@@ -55,13 +55,18 @@ class CDUDirectToPage {
             });
         };
         let i = 0;
+        let cellIter = 0;
         wptsListIndex = Math.max(wptsListIndex, mcdu.flightPlanManager.getActiveWaypointIndex());
         const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypoints().length;
-        while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && i < iMax) {
+        while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && cellIter < iMax) {
             const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
             if (waypoint) {
-                waypointsCell[i] = "{" + waypoint.ident + "[color]cyan";
-                if (waypointsCell[i]) {
+                if (waypoint.isVectors) {
+                    i++;
+                    continue;
+                }
+                waypointsCell[cellIter] = "{" + waypoint.ident + "[color]cyan";
+                if (waypointsCell[cellIter]) {
                     mcdu.onLeftInput[i + 1] = () => {
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_0", "number", SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"));
@@ -72,12 +77,13 @@ class CDUDirectToPage {
                     };
                 }
             } else {
-                waypointsCell[i] = "----";
+                waypointsCell[cellIter] = "----";
             }
             i++;
+            cellIter++;
         }
-        if (i < iMax) {
-            waypointsCell[i] = "--END--";
+        if (cellIter < iMax) {
+            waypointsCell[cellIter] = "--END--";
         }
         let insertLabel = "";
         let insertLine = "";
