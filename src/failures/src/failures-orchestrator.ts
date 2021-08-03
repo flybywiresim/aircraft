@@ -1,4 +1,5 @@
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
+import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 
 export class FailuresOrchestrator {
     private failures: Record<number, Failure> = {};
@@ -8,8 +9,8 @@ export class FailuresOrchestrator {
     private deactivateFailureQueue: QueuedSimVarWriter;
 
     constructor(simVarPrefix: string) {
-        this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(`L:${simVarPrefix}_FAILURE_ACTIVATE`));
-        this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(`L:${simVarPrefix}_FAILURE_DEACTIVATE`));
+        this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)));
+        this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)));
     }
 
     add(identifier: number, name: string) {
@@ -56,8 +57,8 @@ export class FailuresOrchestrator {
         return this.getFailure(identifier).isChanging === true;
     }
 
-    getFailures(): Readonly<Record<number, Readonly<Failure>>> {
-        return this.failures;
+    getFailures(): Readonly<Failure>[] {
+        return Object.values(this.failures);
     }
 
     private getFailure(identifier: number) {

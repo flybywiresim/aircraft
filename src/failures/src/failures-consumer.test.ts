@@ -1,4 +1,5 @@
 import { FailuresConsumer } from './failures-consumer';
+import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 
 test('can register identifier with callback', () => {
     const c = consumer();
@@ -22,7 +23,7 @@ test('callback is called when failure activated', async () => {
     const callback = jest.fn();
     c.register(1, callback);
 
-    await SimVar.SetSimVarValue(activateFailure, 'number', 1);
+    await SimVar.SetSimVarValue(activateSimVarName, 'number', 1);
     c.update();
 
     expect(callback).toHaveBeenCalled();
@@ -34,7 +35,7 @@ test('callback is called when failure deactivated', async () => {
     const callback = jest.fn();
     c.register(1, callback);
 
-    await SimVar.SetSimVarValue(deactivateFailure, 'number', 1);
+    await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 1);
     c.update();
 
     expect(callback).toHaveBeenCalled();
@@ -45,7 +46,7 @@ test('failure is active when activated', async () => {
     const c = consumer();
     c.register(1, (_) => {});
 
-    await SimVar.SetSimVarValue(activateFailure, 'number', 1);
+    await SimVar.SetSimVarValue(activateSimVarName, 'number', 1);
     c.update();
 
     expect(c.isActive(1)).toBe(true);
@@ -64,18 +65,18 @@ test('failure is inactive when deactivated', async () => {
     const c = consumer();
     c.register(1, (_) => {});
 
-    await SimVar.SetSimVarValue(activateFailure, 'number', 1);
+    await SimVar.SetSimVarValue(activateSimVarName, 'number', 1);
     c.update();
 
-    await SimVar.SetSimVarValue(deactivateFailure, 'number', 1);
+    await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 1);
     c.update();
 
     expect(c.isActive(1)).toBe(false);
 });
 
-const prefix = 'PREFIX_';
-const activateFailure = `${prefix}FAILURE_ACTIVATE`;
-const deactivateFailure = `${prefix}FAILURE_DEACTIVATE`;
+const prefix = 'PREFIX';
+const activateSimVarName = getActivateFailureSimVarName(prefix);
+const deactivateSimVarName = getDeactivateFailureSimVarName(prefix);
 
 function consumer() {
     return new FailuresConsumer(prefix);
