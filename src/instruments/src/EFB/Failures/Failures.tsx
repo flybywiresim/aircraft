@@ -8,6 +8,7 @@ export const Failures = () => {
     return (
         <div className="w-full">
             <h1 className="text-3xl pt-6 text-white">Failures</h1>
+            <h2 className="text-2xl pt-6 text-white">Full simulation of the failures below isn't yet guaranteed.</h2>
             <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav mr-3 w-full">
                 {orchestrator.getFailures().map((failure) => (
                     <FailureButton
