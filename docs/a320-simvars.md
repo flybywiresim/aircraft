@@ -969,6 +969,14 @@
       0 | inactive
       1 | active
 
+- A32NX_MFD_MASK_OPACITY
+    - Number
+    - Current LCD mask opacity for MFDs, used for driving LCD display pixels effect
+
+- A32NX_MCDU_MASK_OPACITY
+    - Number
+    - Current LCD mask opacity for MCDU, used for driving MCDU display pixels effect
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
