@@ -535,6 +535,7 @@ class FlightPlanManager {
             this._directToTarget.icao = flightPlanData.directToTarget.icao;
             this._directToTarget.infos.icao = this._directToTarget.icao;
             this._directToTarget.ident = flightPlanData.directToTarget.ident;
+            this._directToTarget.additionalData.overfly = flightPlanData.directToTarget.additionalData.overfly;
             if (!this._directToTarget.ident) {
                 this._directToTarget.ident = this._directToTarget.icao.substr(7);
             }
