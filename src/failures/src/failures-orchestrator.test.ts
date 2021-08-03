@@ -14,7 +14,7 @@ test('added failures can be retrieved', () => {
     });
 });
 
-test('failure which hasn\'t been activated is inactive', async () => {
+test("failure which hasn't been activated is inactive", async () => {
     const o = orchestrator();
     expect(o.isActive(identifier)).toBe(false);
 });

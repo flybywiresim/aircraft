@@ -16,7 +16,7 @@ test('when empty, writes a value without update', async () => {
     expect(await consumeSimVarValue(1)).toBe(true);
 });
 
-test('doesn\'t overwrite a value waiting for consumption', async () => {
+test("doesn't overwrite a value waiting for consumption", async () => {
     const w = writer();
     w.write(1);
     w.write(2);

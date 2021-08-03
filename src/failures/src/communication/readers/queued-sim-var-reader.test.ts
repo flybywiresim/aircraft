@@ -15,7 +15,7 @@ test('reads a value that is in the collection', async () => {
     });
 });
 
-test('doesn\'t read the same value multiple times', async () => {
+test("doesn't read the same value multiple times", async () => {
     await expectToBeCalledTimes(1, async (r) => {
         await SimVar.SetSimVarValue(simVarName, 'number', inCollectionIdentifier);
         r.update();
