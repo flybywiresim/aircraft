@@ -54,10 +54,7 @@ const identifier = 123;
 const name = 'test';
 
 function orchestrator() {
-    const o = new FailuresOrchestrator(prefix);
-    o.add(identifier, name);
-
-    return o;
+    return new FailuresOrchestrator(prefix, [[identifier, name]]);
 }
 
 function activateFailure(o: FailuresOrchestrator) {

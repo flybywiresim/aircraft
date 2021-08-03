@@ -1,6 +1,11 @@
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 
+/**
+ * Orchestrates the activation and deactivation of failures.
+ *
+ * Only a single instance of the orchestrator should exist within the whole application.
+ */
 export class FailuresOrchestrator {
     private failures: Record<number, Failure> = {};
 
@@ -8,18 +13,18 @@ export class FailuresOrchestrator {
 
     private deactivateFailureQueue: QueuedSimVarWriter;
 
-    constructor(simVarPrefix: string) {
+    constructor(simVarPrefix: string, failures: [number, string][]) {
         this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)));
         this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)));
-    }
-
-    add(identifier: number, name: string) {
-        this.failures[identifier] = {
-            identifier,
-            name,
+        this.failures = failures.map((failure) => ({
+            identifier: failure[0],
+            name: failure[1],
             isActive: false,
             isChanging: false,
-        };
+        })).reduce((acc, failure) => {
+            acc[failure.identifier] = failure;
+            return acc;
+        }, {});
     }
 
     update() {
@@ -49,10 +54,17 @@ export class FailuresOrchestrator {
         failure.isActive = false;
     }
 
+    /**
+     * Determines whether or not the failure with the given identifier is active.
+     */
     isActive(identifier: number): boolean {
         return this.getFailure(identifier).isActive === true;
     }
 
+    /**
+     * Determines whether or not the failure with the given identifier is currently
+     * changing its state between active and inactive.
+     */
     isChanging(identifier: number): boolean {
         return this.getFailure(identifier).isChanging === true;
     }
