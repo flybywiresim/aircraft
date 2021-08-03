@@ -3,7 +3,11 @@
 module.exports = {
     root: true,
     env: { browser: true },
-    extends: '@flybywiresim/eslint-config',
+    extends: [
+        '@flybywiresim/eslint-config',
+        'plugin:jest/recommended',
+        'plugin:jest/style',
+    ],
     plugins: ['@typescript-eslint'],
     parser: '@typescript-eslint/parser',
     parserOptions: {
@@ -23,20 +27,6 @@ module.exports = {
         {
             files: ['*.mjs', '*.ts', '*.d.ts'],
             parserOptions: { sourceType: 'module' },
-        },
-        {
-            files: [
-                '**/*.test.js', '**/*.test.ts',
-            ],
-            env: { jest: true },
-            plugins: ['jest'],
-            rules: {
-                'jest/no-disabled-tests': 'warn',
-                'jest/no-focused-tests': 'error',
-                'jest/no-identical-title': 'error',
-                'jest/prefer-to-have-length': 'warn',
-                'jest/valid-expect': 'error',
-            },
         },
     ],
     // overrides airbnb, use sparingly

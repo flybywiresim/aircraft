@@ -24,7 +24,7 @@ test('when a value is read, the registered callback is called', async () => {
     r.update();
 
     await flushPromises();
-    expect(callback).toBeCalled();
+    expect(callback).toHaveBeenCalled();
 });
 
 const failuresSimVar = 'L:FAILURES_TO_ORCHESTRATOR_ACTIVATE';
