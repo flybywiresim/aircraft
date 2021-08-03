@@ -1,4 +1,4 @@
-//#![cfg(any(target_arch = "wasm32", doc))]
+#![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
@@ -21,18 +21,20 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let mut simulation = Simulation::new(|electricity| A320::new(electricity));
-    let mut msfs_simulation_handler = MsfsSimulationHandler::new(vec![
-        Box::new(create_electrical_buses()),
-        Box::new(MsfsAuxiliaryPowerUnit::new(
-            "OVHD_APU_START_PB_IS_AVAILABLE",
-            8,
-        )?),
-        Box::new(Brakes::new(&mut sim_connect.as_mut())?),
-        Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
-        Box::new(create_aircraft_variable_reader()?),
-        Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
-        Box::new(create_failures("A32NX_FAILURE_ACTIVATE")),
-    ]);
+    let mut msfs_simulation_handler = MsfsSimulationHandler::new(
+        vec![
+            Box::new(create_electrical_buses()),
+            Box::new(MsfsAuxiliaryPowerUnit::new(
+                "OVHD_APU_START_PB_IS_AVAILABLE",
+                8,
+            )?),
+            Box::new(Brakes::new(&mut sim_connect.as_mut())?),
+            Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
+            Box::new(create_aircraft_variable_reader()?),
+            Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
+        ],
+        create_failures(),
+    );
 
     while let Some(event) = gauge.next_event().await {
         msfs_simulation_handler.handle(event, &mut simulation, &mut sim_connect.as_mut())?;
@@ -139,8 +141,11 @@ fn create_electrical_buses() -> MsfsElectricalBuses {
     buses
 }
 
-fn create_failures(activate_sim_var: &'static str) -> Failures {
-    let mut failures = Failures::new(activate_sim_var);
+fn create_failures() -> Failures {
+    let mut failures = Failures::new(
+        NamedVariable::from("A32NX_FAILURE_ACTIVATE"),
+        NamedVariable::from("A32NX_FAILURE_DEACTIVATE"),
+    );
 
     failures.add(24_000, FailureType::TransformerRectifier(1));
     failures.add(24_001, FailureType::TransformerRectifier(2));

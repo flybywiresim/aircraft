@@ -185,7 +185,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     fn fail(&mut self, failure_type: FailureType) {
-        self.simulation.fail(failure_type);
+        self.simulation.activate_failure(failure_type);
     }
 
     fn aircraft(&self) -> &T {

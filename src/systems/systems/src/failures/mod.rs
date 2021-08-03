@@ -22,9 +22,9 @@ impl Failure {
     }
 }
 impl SimulationElement for Failure {
-    fn fail(&mut self, failure_type: FailureType) {
+    fn receive_failure(&mut self, failure_type: FailureType, is_active: bool) {
         if failure_type == self.failure_type {
-            self.is_active = true;
+            self.is_active = is_active;
         }
     }
 }

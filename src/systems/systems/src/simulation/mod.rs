@@ -36,10 +36,6 @@ pub trait SimulatorReaderWriter {
     fn write(&mut self, name: &str, value: f64);
 }
 
-pub trait FailureReader {
-    fn read_activate(&mut self) -> Option<FailureType>;
-}
-
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].
 ///
 /// [`Aircraft`]: trait.Aircraft.html
@@ -184,7 +180,8 @@ pub trait SimulationElement {
     {
     }
 
-    fn fail(&mut self, _failure_type: FailureType) {}
+    /// Receives a failure in order to activate or deactivate it.
+    fn receive_failure(&mut self, _failure_type: FailureType, _is_active: bool) {}
 }
 
 /// Trait for visitors that visit the aircraft's system simulation to call
@@ -290,9 +287,20 @@ impl<T: Aircraft> Simulation<T> {
         self.aircraft.accept(&mut visitor);
     }
 
-    pub fn fail(&mut self, failure_type: FailureType) {
+    pub fn activate_failure(&mut self, failure_type: FailureType) {
+        self.handle_failure(failure_type, true);
+    }
+
+    pub fn deactivate_failure(&mut self, failure_type: FailureType) {
+        self.handle_failure(failure_type, false);
+    }
+
+    fn handle_failure(&mut self, failure_type: FailureType, is_active: bool) {
         self.aircraft
-            .accept(&mut FailSimulationElementVisitor::new(failure_type));
+            .accept(&mut FailureSimulationElementVisitor::new(
+                failure_type,
+                is_active,
+            ));
     }
 
     fn electricity(&self) -> &Electricity {
@@ -315,17 +323,21 @@ impl<T: Aircraft> Simulation<T> {
     }
 }
 
-struct FailSimulationElementVisitor {
+struct FailureSimulationElementVisitor {
     failure_type: FailureType,
+    is_active: bool,
 }
-impl FailSimulationElementVisitor {
-    fn new(failure_type: FailureType) -> Self {
-        Self { failure_type }
+impl FailureSimulationElementVisitor {
+    fn new(failure_type: FailureType, is_active: bool) -> Self {
+        Self {
+            failure_type,
+            is_active,
+        }
     }
 }
-impl SimulationElementVisitor for FailSimulationElementVisitor {
+impl SimulationElementVisitor for FailureSimulationElementVisitor {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.fail(self.failure_type);
+        visited.receive_failure(self.failure_type, self.is_active);
     }
 }
 
