@@ -3,6 +3,14 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+## 0.6.2
+1. [FLIGHT MODEL] Force usage of modern flight model - @aguther (Andreas Guther)
+1. [TEXTURE] Corrected fire panel - @ImenesFBW (Imenes)
+1. [MODEL] Fixed artifacting of pedestal and push buttons - @tyler58546 (tyler58546)
+1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
+1. [MISC] Fixed flight plan entry and broken lights for SU5 @Saschl (saschl#9432), @Taz5150 (TazX [Z+2]#0405)
+1. [TERR] Fixed terrain radar for SU5 - @2hwk (2Cas#1022)
+1. [MISC] Change back to airliner hud in external view for SU5 - @donstim (donbikes#4084)
 
 ## 0.6.1
 1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
