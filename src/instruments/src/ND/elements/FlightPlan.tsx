@@ -102,6 +102,22 @@ const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, 
     if (leg instanceof TFLeg || leg instanceof RFLeg) {
         [x, y] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
     } else if (leg instanceof VMLeg) {
+        // TODO: Find a more elegant fix for drawing waypoint (of next leg) after manual
+        if (nextLeg instanceof TFLeg) {
+            [x, y] = mapParams.coordinatesToXYy(nextLeg.from.infos.coordinates);
+            return (
+                <WaypointMarker
+                    ident={nextLeg.from.ident}
+                    position={[x, y]}
+                    altitudeConstraint={nextLeg.initialAltitudeConstraint}
+                    speedConstraint={nextLeg.initialSpeedConstraint}
+                    index={index}
+                    isActive={isActive}
+                    constraints={constraints}
+                    debug={debug}
+                />
+            );
+        }
         return null;
     } else {
         throw new Error(`Invalid leg type for leg '${leg}'.`);
