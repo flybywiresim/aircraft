@@ -21,7 +21,7 @@ jobs:
       - name: lint-rust.sh
         run: |
           ./scripts/dev-env/run.sh scripts/lint-rust.sh
-  test:
+  test-rust:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
@@ -30,6 +30,14 @@ jobs:
       - name: test-rust.sh
         run: |
           ./scripts/dev-env/run.sh scripts/test-rust.sh
+  test-js:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: test-js.sh
+        run: |
           ./scripts/dev-env/run.sh scripts/test-js.sh
   build:
     runs-on: ubuntu-latest
