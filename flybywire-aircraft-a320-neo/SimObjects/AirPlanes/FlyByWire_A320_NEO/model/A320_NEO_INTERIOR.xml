@@ -504,8 +504,8 @@
                     <POTENTIOMETER>88</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD1</PART_ID>
                     <CAMERA_TITLE>PFD</CAMERA_TITLE>
-                    <!-- Pixelated screens needs more light -->
-                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -605,17 +605,17 @@
                     <POTENTIOMETER>89</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
-                    <!-- Pixelated screens needs more light -->
-                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_L</NODE_ID>
-                    <!-- Pixelated screens needs more light -->
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
-                            2 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
+                            8 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -649,8 +649,8 @@
                     <NODE_ID>SCREEN_PFD_R</NODE_ID>
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
-                    <!-- Pixelated screens needs more light -->
-                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND SCREEN -->
@@ -666,8 +666,8 @@
                     <NODE_ID>SCREEN_MFD_R</NODE_ID>
                     <POTENTIOMETER>91</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD2</PART_ID>
-                    <!-- Pixelated screens needs more light -->
-                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O WX SCREEN -->
@@ -682,10 +682,10 @@
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_R</NODE_ID>
-                    <!-- Pixelated screens needs more light -->
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
-                            2 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
+                            8 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -794,8 +794,8 @@
                 <!-- SAI/ISIS & CLOCK SCREENS -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
-                    <!-- Pixelated screens needs more light -->
-                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
@@ -880,8 +880,8 @@
                     <POTENTIOMETER>92</POTENTIOMETER>
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
-                    <!-- Pixelated screens needs more light -->
-                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
@@ -897,8 +897,8 @@
                     <POTENTIOMETER>93</POTENTIOMETER>
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
-                    <!-- Pixelated screens needs more light -->
-                    <EMISSIVE_CODE>2</EMISSIVE_CODE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
@@ -1321,6 +1321,7 @@
 
                 <UseTemplate Name="A32NX_GT_Switch_Dummy">
                     <NODE_ID>SWITCH_OVHD_INTLT_ANNLT</NODE_ID>
+                    <PART_ID>SWITCH_OVHD_INTLT_ANNLT</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_ANNLT</ANIM_NAME>
                     <NUM_STATES>3</NUM_STATES>
                     <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>

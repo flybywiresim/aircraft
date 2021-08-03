@@ -252,6 +252,8 @@ class FlyByWireInterface {
 
   bool updateFlapsSpoilers(double sampleTime);
 
+  bool updateAltimeterSetting(double sampleTime);
+
   double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 
   double getHeadingAngleError(double u1, double u2);

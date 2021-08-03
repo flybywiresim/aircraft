@@ -139,6 +139,7 @@
 1. [FCU] Fix FCU DISPLAY AC1 BUS power. - @bouveng (Johan Bouveng)
 1. [HYD] Fixed autobrake inputs response for rotating knob type controllers - @Crocket63 (crocket)
 1. [ECAM] Autoswitch ECAM pages use proper FWC phase logic - @2hwk (2Cas#1022)
+1. [HYD] Added basic LGCIU implementation with per wheel weight on wheels sensors - @Crocket63 (crocket)
 1. [MISC] Improved logic for chronometer operations - @sidnov (Sid)
 1. [DISPLAYS] Fix Self-Test no longer triggers when spawning from an in-flight state i.e. cruise/landing/takeoff on runway - @2hwk (2Cas#1022)
 1. [SOUND] Improved engine startup, idle sounds, and cabin wind - @hotshotp (Boris)
@@ -155,6 +156,12 @@
 1. [ADIRS] Wind, TAS, and GS indications depend on availability of IR and ADR data - @davidwalschots (David Walschots)
 1. [ADIRS] SAT, TAT, and ISA indications depend on the selected ADR (1 or 3) - @davidwalschots (David Walschots)
 1. [PRESS] First implementation of automatic pressurization system - @MJuhe (Miquel)
+1. [MISC] Added annunciator lights to interactive checklist - @oim1 (oim)
+1. [MISC] Workaround for altitude issues of MSFS - @aguther (Andreas Guther)
+1. [DISPLAYS] Improved pixelated screens, only appears when camera is close to displays - @2hwk (2Cas#1022)
+1. [MISC] Change back to airliner hud in external view for SU5 - @donstim (donbikes#4084)
+1. [TEXTURE] Improved cockpit textures and screen reflections - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
+1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
