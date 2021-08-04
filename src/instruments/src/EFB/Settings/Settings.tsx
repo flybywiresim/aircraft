@@ -347,7 +347,7 @@ const SoundPage = () => {
 
     return (
         <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
-            <div className="py-4 flex flex-row justify-between items-center">
+            <div className="py-8 flex flex-row justify-between items-center">
                 <span>
                     <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>
                     <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
@@ -409,7 +409,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
             <div className="w-full">
                 { showNavbar
                 && (
-                    <div className="flex flex-row flex-wrap items-center space-x-10">
+                    <div className="flex flex-row flex-wrap items-center space-x-10 mb-2">
                         <TabButton onClick={() => setSelectedTabIndex(0)} title="Aircraft Configuration" selected={selectedTabIndex === 0} />
                         <TabButton onClick={() => setSelectedTabIndex(1)} title="ATSU/AOC" selected={selectedTabIndex === 1} />
                         <TabButton onClick={() => setSelectedTabIndex(2)} title="Sounds" selected={selectedTabIndex === 2} />
