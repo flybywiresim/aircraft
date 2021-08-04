@@ -122,7 +122,7 @@ class CDUFlightPlanPage {
             if (waypointsAndMarkers[winI].wp) {
                 // Waypoint
 
-                if (waypointsAndMarkers[winI].fpIndex === 0 && offset == 0) {
+                if (waypointsAndMarkers[winI].fpIndex === (fpm.getActiveWaypointIndex() - 1) && offset == 0) {
                     showFrom = true;
                 }
 
