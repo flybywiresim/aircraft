@@ -5429,7 +5429,7 @@
 										<Value>30</Value>
 									</ValueList>
 								</Property>
-								<Property Name="RadiusMax" Type="Real64" Value="36"/>
+								<Property Name="RadiusMax" Type="Real64" Value="4"/>
 							</PropertyList>
 							<CurveUsageInfoList>
 								<VolumeDryUsage>
@@ -5441,30 +5441,19 @@
 											<PointList>
 												<Point>
 													<XPos>0</XPos>
-													<YPos>-200</YPos>
+													<YPos>-0</YPos>
 													<Flags>5</Flags>
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>27.02822</XPos>
-													<YPos>-0.95214</YPos>
+													<XPos>3.52978</XPos>
+													<YPos>-0</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>29.05956</XPos>
-													<YPos>-0</YPos>
-													<Flags>0</Flags>
-													<SegmentShape>Exp3</SegmentShape>
-												</Point>
-												<Point>
-													<XPos>31.42946</XPos>
-													<YPos>-1.00527</YPos>
-													<Flags>0</Flags>
-												</Point>
-												<Point>
-													<XPos>36</XPos>
-													<YPos>-7.18722</YPos>
+													<XPos>4</XPos>
+													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
 											</PointList>
@@ -5488,19 +5477,19 @@
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>1.48572</XPos>
+													<XPos>0.16508</XPos>
 													<YPos>-0.00061</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>15.87276</XPos>
+													<XPos>1.76364</XPos>
 													<YPos>0</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>36</XPos>
+													<XPos>4</XPos>
 													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5521,7 +5510,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>36</XPos>
+													<XPos>4</XPos>
 													<YPos>4</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5545,7 +5534,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>36</XPos>
+													<XPos>4</XPos>
 													<YPos>0</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5566,7 +5555,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>36</XPos>
+													<XPos>4</XPos>
 													<YPos>0</YPos>
 													<Flags>37</Flags>
 												</Point>

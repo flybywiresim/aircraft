@@ -444,10 +444,11 @@
         <Component ID="#NODE_ID_SCREEN#" Node="#NODE_ID_SCREEN#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
+                <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                 <EMISSIVE_CODE>
                     #DISPLAY_POWERED# sp0
                     l0 if{
-                        (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number)
+                        8 (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number) *
                     } els{
                         0
                     }

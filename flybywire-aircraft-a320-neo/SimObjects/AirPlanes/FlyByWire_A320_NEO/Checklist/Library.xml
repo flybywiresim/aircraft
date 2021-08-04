@@ -274,6 +274,10 @@
             </TestValue>
          </Test>
       </Checkpoint>
+      <Checkpoint Id="A320_CPREP1_ANNUNCIATOR_LIGHTS">
+           <CheckpointDesc SubjectTT="TT:Annunciator Lights" ExpectationTT="TT:CHECK/AS REQUIRED" />
+           <Instrument Id="SWITCH_OVHD_INTLT_ANNLT"/>
+       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_LANDING_ELEVATION">
          <CheckpointDesc SubjectTT="TT:Landing Elevation" ExpectationTT="TT:AUTO" />
          <Instrument Id="KNOB_OVHD_CABINPRESS_LDGELEV" />

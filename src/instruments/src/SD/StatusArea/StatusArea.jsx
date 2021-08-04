@@ -1,3 +1,11 @@
+/**
+ * WARNING
+ *
+ * CODE IN THIS FILE IS OLD. THIS STATUS AREA WAS UNUSED AND THE ORIGINAL ASOBO
+ * STATUS AREA WAS EXTENDED FURTHER. WHEN STARTING TO USE THIS COMPONENT. PLEASE
+ * PORT ANY FUNCTIONALITY FOUND ON THE ORIGINAL STATUS AREA.
+ */
+
 import './StatusArea.scss';
 import { Text } from '../Text/Text.jsx';
 import { useGlobalVar, getSimVar } from '../../util.js';
