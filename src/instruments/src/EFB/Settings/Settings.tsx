@@ -386,7 +386,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
 
     function currentPage(): JSX.Element[] {
         switch (selectedTabIndex) {
-        case 0: return [<AircraftConfigurationPage />, <div />];
+        case 0: return [<AircraftConfigurationPage />];
         case 1: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
         case 2: return [<AudioPage />];
         case 3: return [<FlyPadPage />];
