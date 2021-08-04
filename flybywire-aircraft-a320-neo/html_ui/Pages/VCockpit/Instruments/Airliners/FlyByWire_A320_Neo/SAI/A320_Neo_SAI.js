@@ -1283,8 +1283,6 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
     init() {
         this.selfTestElement = this.gps.getChildById("SelfTest");
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
-        const interval = 5;
-        this.getFrameCounter = A32NX_Util.createFrameCounter(interval);
         const coldDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
         this.state = A32NX_Util.createMachine(sai_state_machine);
 
@@ -1305,18 +1303,9 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
     }
 
     checkShutdown() {
-        if (this.isPowered()) {
-            return;
-        } else {
-            const _updateF = this.getFrameCounter();
-            // Airspeed > 50 knots, check every 10th frame
-            if (_updateF === 0) {
-                const airspeed = Simplane.getTrueSpeed();
-                if (airspeed < 50.0) {
-                    this.selfTestElement.offDisplay();
-                    this.state.action("reset");
-                }
-            }
+        if (!this.isPowered()) {
+            this.selfTestElement.offDisplay();
+            this.state.action("reset");
         }
     }
     onUpdate(deltaTime) {
