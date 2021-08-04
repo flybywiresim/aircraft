@@ -233,6 +233,9 @@ declare global {
         function getIndicatedSpeed(): Knots;
         function getVerticalSpeed(): FeetPerMinute | null;
         function getGroundSpeed(): Knots | null;
+        /**
+         * @deprecated due to custom ADIRS implementation. Use ADIRS.getMachSpeed instead.
+         */
         function getMachSpeed(): Mach | null;
 
         /**

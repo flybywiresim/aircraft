@@ -359,7 +359,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     }
 
     getCurrentMach() {
-        return this.clampMach(Math.round(Simplane.getMachSpeed() * 100) / 100);
+        const mach = ADIRS.getMachSpeed();
+        if (Number.isNaN(mach)) {
+            return this.MIN_MACH;
+        }
+        return this.clampMach(Math.round(mach * 100) / 100);
     }
 
     onRotate() {

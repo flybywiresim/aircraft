@@ -67,10 +67,26 @@ class ADIRS {
         // In the real aircraft, FMGC 1 is supplied by ADIRU 1, and FMGC 2 by ADIRU 2. When any is unavailable
         // the FMGC switches to ADIRU 3. If only one ADIRU is available, both FMGCs use the same ADIRU.
         // As we don't have a split FMGC, we'll just use the following code for now.
-        for (let adiruNumber = 1; adiruNumber <= 3; adiruNumber++) {
-            const longitude = ADIRS.getValue(`L:A32NX_ADIRS_IR_${adiruNumber}_${type.toUpperCase()}`, `degree ${type}`);
-            if (!Number.isNaN(longitude)) {
-                return longitude;
+        return ADIRS.getFromAnyIr(type.toUpperCase(), `degree ${type}`);
+    }
+
+    static getMachSpeed() {
+        return ADIRS.getFromAnyAdr('MACH', 'Mach');
+    }
+
+    static getFromAnyAdr(name, type) {
+        return ADIRS.getFromAny((number) => ADIRS.getValue(`L:A32NX_ADIRS_ADR_${number}_${name}`, type));
+    }
+
+    static getFromAnyIr(name, type) {
+        return ADIRS.getFromAny((number) => ADIRS.getValue(`L:A32NX_ADIRS_IR_${number}_${name}`, type));
+    }
+
+    static getFromAny(getterFn) {
+        for (let number = 1; number <= 3; number++) {
+            const value = getterFn(number);
+            if (!Number.isNaN(value)) {
+                return value;
             }
         }
 
