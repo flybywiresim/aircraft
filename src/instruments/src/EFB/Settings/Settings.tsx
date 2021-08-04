@@ -420,7 +420,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                     <div className="mx-auto w-min mb-4 flex flex-row space-x-10 items-center justify-center mt-5 align-baseline">
                         <div
                             className={`p-3 rounded-full duration-200
-                            ${subPageIndex === 0 ? 'bg-navy-lighter text-gray-600' : 'bg-teal-light-contrast hover:bg-white hover:text-teal-light-contrast text-white'}`}
+                            ${subPageIndex === 0 ? 'bg-navy-lighter text-gray-700' : 'bg-teal-light-contrast hover:bg-white hover:text-teal-light-contrast text-white'}`}
                             onClick={() => {
                                 if (subPageIndex > 0) {
                                     setSubPageIndex(subPageIndex - 1);
@@ -431,7 +431,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                         </div>
                         <div
                             className={`p-3 rounded-full duration-200
-                            ${subPageIndex === currentPage().length - 1 ? 'bg-navy-lighter text-gray-600' : 'bg-teal-light-contrast hover:bg-white hover:text-teal-light-contrast text-white'}`}
+                            ${subPageIndex === currentPage().length - 1 ? 'bg-navy-lighter text-gray-700' : 'bg-teal-light-contrast hover:bg-white hover:text-teal-light-contrast text-white'}`}
                             onClick={() => {
                                 if (subPageIndex < currentPage().length - 1) {
                                     setSubPageIndex(subPageIndex + 1);
