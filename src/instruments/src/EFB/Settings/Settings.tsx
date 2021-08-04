@@ -1,11 +1,13 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
+import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
+import { Navbar } from '../Components/Navbar';
 
 type ButtonType = {
     name: string,
@@ -37,19 +39,6 @@ const ControlSettings = ({ setShowSettings }) => (
             <span className="text-lg text-gray-300">Detents</span>
             <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
         </div>
-    </div>
-);
-
-type tabButtonProps = {
-    onClick: () => void,
-    title: string,
-    selected: boolean
-}
-
-const TabButton = (props: tabButtonProps) => (
-    <div className="w-min" onClick={props.onClick}>
-        <div className={`${props.selected && 'scale-x-100'} scale-x-0 h-1 bg-teal transform duration-150`} />
-        <p className={`${props.selected ? 'text-teal' : 'text-white'} px-5 py-2 text-2xl mx-auto duration-150 whitespace-nowrap`}>{props.title}</p>
     </div>
 );
 
@@ -339,7 +328,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
     );
 };
 
-const SoundPage = () => {
+const AudioPage = () => {
     const [ptuAudible, setPtuAudible] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool', 'SOUND_PTU_AUDIBLE_COCKPIT');
     const [exteriorVolume, setExteriorVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_EXTERIOR_MASTER', 'number', 'SOUND_EXTERIOR_MASTER');
     const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
@@ -392,15 +381,16 @@ const SettingsNavbarContext = React.createContext<SettingsNavbarContextInterface
 
 const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+    const [subPageIndex, setSubPageIndex] = useState(0);
     const [showNavbar, setShowNavbar] = useState(true);
 
-    function currentPage() {
+    function currentPage(): JSX.Element[] {
         switch (selectedTabIndex) {
-        case 0: return <AircraftConfigurationPage />;
-        case 1: return <ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />;
-        case 2: return <SoundPage />;
-        case 3: return <FlyPadPage />;
-        default: return <AircraftConfigurationPage />;
+        case 0: return [<AircraftConfigurationPage />, <div />];
+        case 1: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
+        case 2: return [<AudioPage />];
+        case 3: return [<FlyPadPage />];
+        default: return [<AircraftConfigurationPage />];
         }
     }
 
@@ -410,13 +400,46 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                 { showNavbar
                 && (
                     <div className="flex flex-row flex-wrap items-center space-x-10 mb-2">
-                        <TabButton onClick={() => setSelectedTabIndex(0)} title="Aircraft Configuration" selected={selectedTabIndex === 0} />
-                        <TabButton onClick={() => setSelectedTabIndex(1)} title="ATSU/AOC" selected={selectedTabIndex === 1} />
-                        <TabButton onClick={() => setSelectedTabIndex(2)} title="Sounds" selected={selectedTabIndex === 2} />
-                        <TabButton onClick={() => setSelectedTabIndex(3)} title="flyPad" selected={selectedTabIndex === 3} />
+                        <Navbar
+                            tabs={[
+                                'Aircraft Configuration',
+                                'ATSU/AOC',
+                                'Audio',
+                                'flyPad',
+                            ]}
+                            onSelected={(indexNumber) => {
+                                setSelectedTabIndex(indexNumber);
+                                setSubPageIndex(0);
+                            }}
+                        />
                     </div>
                 )}
-                {currentPage()}
+                {currentPage()[subPageIndex]}
+                {showNavbar
+                && (
+                    <div className="mx-auto w-min mb-4 flex flex-row space-x-10 items-center justify-center mt-5 align-baseline">
+                        <div
+                            className={`p-3 rounded-full bg-teal-light-contrast text-white ${subPageIndex === 0 && 'bg-navy-lighter text-gray-600'}`}
+                            onClick={() => {
+                                if (subPageIndex > 0) {
+                                    setSubPageIndex(subPageIndex - 1);
+                                }
+                            }}
+                        >
+                            <IconArrowLeft size={32} className="text-current" />
+                        </div>
+                        <div
+                            className={`p-3 rounded-full bg-teal-light-contrast text-white ${subPageIndex === currentPage().length - 1 && 'bg-navy-lighter text-gray-600'}`}
+                            onClick={() => {
+                                if (subPageIndex < currentPage().length - 1) {
+                                    setSubPageIndex(subPageIndex + 1);
+                                }
+                            }}
+                        >
+                            <IconArrowRight size={32} className="text-current" />
+                        </div>
+                    </div>
+                )}
             </div>
         </SettingsNavbarContext.Provider>
     );
