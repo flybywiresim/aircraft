@@ -744,8 +744,8 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
      * @returns {number} The corresponding track in degrees.
      */
     calculateTrackForHeading(_heading) {
-        const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
-        if (trueAirspeed < 50) {
+        const trueAirspeed = ADIRS.getTrueSpeed();
+        if (Number.isNaN(trueAirspeed) || trueAirspeed < 50) {
             return _heading;
         }
 
@@ -764,8 +764,8 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
      * @returns {number} The corresponding heading in degrees.
      */
     calculateHeadingForTrack(_track) {
-        const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
-        if (trueAirspeed < 50) {
+        const trueAirspeed = ADIRS.getTrueSpeed();
+        if (Number.isNaN(trueAirspeed) || trueAirspeed < 50) {
             return _track;
         }
 

@@ -74,6 +74,14 @@ class ADIRS {
         return ADIRS.getFromAnyAdr('MACH', 'Mach');
     }
 
+    static getTrueSpeed() {
+        return ADIRS.getFromAnyAdr('TRUE_AIRSPEED', 'Knots');
+    }
+
+    static fromKnotsToMetersPerSecond(value) {
+        return value * 0.514444;
+    }
+
     static getFromAnyAdr(name, type) {
         return ADIRS.getFromAny((number) => ADIRS.getValue(`L:A32NX_ADIRS_ADR_${number}_${name}`, type));
     }

@@ -106,7 +106,7 @@ class A32NX_BrakeTemp {
         const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
 
         const ambientTemperature = Simplane.getAmbientTemperature();
-        const airspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Meters per second");
+        const airspeedMetersPerSecond = ADIRS.fromKnotsToMetersPerSecond(ADIRS.getTrueSpeed());
 
         const wheelSet1Rpm = SimVar.GetSimVarValue("WHEEL RPM:1", "number");
         const wheelSet2Rpm = SimVar.GetSimVarValue("WHEEL RPM:2", "number");
@@ -149,25 +149,25 @@ class A32NX_BrakeTemp {
         // Apply cool down for each temperature
         if (Math.abs(deltaTemp0) > MIN_TEMP_DELTA) {
             const deltaTempFactor0 = 1 + Math.pow(deltaTemp0, 2) * BASE_HEAT_DIFFERENTIAL_FACTOR * fanDifferentialFactor;
-            const brakeCoolDown0 = _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp0, airspeed, GearLeftExtended, deltaTempFactor0, fanMultiplier);
+            const brakeCoolDown0 = _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp0, airspeedMetersPerSecond, GearLeftExtended, deltaTempFactor0, fanMultiplier);
             currentBrakeTemps[0] -= brakeCoolDown0;
             currentReportedBrakeTemps[0] -= brakeCoolDown0;
         }
         if (Math.abs(deltaTemp1) > MIN_TEMP_DELTA) {
             const deltaTempFactor1 = 1 + Math.pow(deltaTemp1, 2) * BASE_HEAT_DIFFERENTIAL_FACTOR * fanDifferentialFactor;
-            const brakeCoolDown1 = _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp1, airspeed, GearLeftExtended, deltaTempFactor1, fanMultiplier);
+            const brakeCoolDown1 = _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp1, airspeedMetersPerSecond, GearLeftExtended, deltaTempFactor1, fanMultiplier);
             currentBrakeTemps[1] -= brakeCoolDown1;
             currentReportedBrakeTemps[1] -= brakeCoolDown1;
         }
         if (Math.abs(deltaTemp2) > MIN_TEMP_DELTA) {
             const deltaTempFactor2 = 1 + Math.pow(deltaTemp2, 2) * BASE_HEAT_DIFFERENTIAL_FACTOR * fanDifferentialFactor;
-            const brakeCoolDown2 = _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp2, airspeed, GearRightExtended, deltaTempFactor2, fanMultiplier);
+            const brakeCoolDown2 = _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp2, airspeedMetersPerSecond, GearRightExtended, deltaTempFactor2, fanMultiplier);
             currentBrakeTemps[2] -= brakeCoolDown2;
             currentReportedBrakeTemps[2] -= brakeCoolDown2;
         }
         if (Math.abs(deltaTemp3) > MIN_TEMP_DELTA) {
             const deltaTempFactor3 = 1 + Math.pow(deltaTemp3, 2) * BASE_HEAT_DIFFERENTIAL_FACTOR * fanDifferentialFactor;
-            const brakeCoolDown3 = _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp3, airspeed, GearRightExtended, deltaTempFactor3, fanMultiplier);
+            const brakeCoolDown3 = _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp3, airspeedMetersPerSecond, GearRightExtended, deltaTempFactor3, fanMultiplier);
             currentBrakeTemps[3] -= brakeCoolDown3;
             currentReportedBrakeTemps[3] -= brakeCoolDown3;
         }
