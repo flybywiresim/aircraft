@@ -145,7 +145,6 @@ impl ControllerSignal<PneumaticValveSignal> for HPValveController {
         // Mechanically closed
         if self.upstream_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI)
             || self.upstream_pressure > Pressure::new::<psi>(Self::CLOSING_PRESSURE_PSI)
-            || !self.is_prv_open
         {
             return Some(PneumaticValveSignal::close());
         }
@@ -249,10 +248,10 @@ struct EngineStarterValveController {
 }
 impl ControllerSignal<PneumaticValveSignal> for EngineStarterValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
-        if self.engine_master_switched_on {
-            Some(PneumaticValveSignal::open())
-        } else if self.engine_master_switched_off || self.engine_n2_reached_50_percent {
+        if self.engine_master_switched_off || self.engine_n2_reached_50_percent {
             Some(PneumaticValveSignal::close())
+        } else if self.engine_master_switched_on {
+            Some(PneumaticValveSignal::open())
         } else {
             None
         }
@@ -847,12 +846,15 @@ mod tests {
     // Just a way for me to plot some graphs
     #[test]
     fn test() {
+        let alt = Length::new::<foot>(0.);
+
         let mut test_bed = test_bed_with()
-            .mach_number(MachNumber(0.))
-            .in_isa_atmosphere(Length::new::<foot>(0.))
+            .mach_number(MachNumber(0.0))
+            .in_isa_atmosphere(alt)
             .idle_eng1()
             .idle_eng2();
 
+        let mut ts = Vec::new();
         let mut hps = Vec::new();
         let mut ips = Vec::new();
         let mut c2s = Vec::new();
@@ -860,12 +862,14 @@ mod tests {
         let mut hpv_open = Vec::new();
         let mut prv_open = Vec::new();
         let mut ipv_open = Vec::new();
+        let mut esv_open = Vec::new();
 
-        for i in 1..100 {
-            test_bed.run_with_delta(Duration::from_millis(100));
+        for i in 1..500 {
+            test_bed.run_with_delta(Duration::from_millis(20));
+            ts.push(i as f64 * 20.);
 
-            if i == 50 {
-                test_bed = test_bed.corrected_n1(Ratio::new::<ratio>(0.2)).n2(20.);
+            if i == 250 {
+                test_bed = test_bed.corrected_n1(Ratio::new::<ratio>(0.8)).n2(80.);
             }
 
             hps.push(test_bed.query(|aircraft| {
@@ -919,10 +923,20 @@ mod tests {
                     .get::<ratio>()
                     * 10.
             }));
+
+            esv_open.push(test_bed.query(|aircraft| {
+                aircraft.pneumatic.engine_systems[0]
+                    .engine_starter_valve
+                    .open_amount()
+                    .get::<ratio>()
+                    * 10.
+            }));
         }
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
-        let data = vec![hps, ips, c2s, c1s, hpv_open, prv_open, ipv_open];
+        let data = vec![
+            ts, hps, ips, c2s, c1s, hpv_open, prv_open, ipv_open, esv_open,
+        ];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
 
         use std::io::Write;
@@ -948,6 +962,8 @@ mod tests {
         println!("{:?}", pressures);
 
         test_bed.run_with_delta(Duration::from_secs(50));
+        test_bed.run();
+
         test_bed.for_both_engine_systems_with_capture(
             |sys, pressures| {
                 println!("{:?}", sys.ip_compression_chamber.pressure());
@@ -1043,34 +1059,6 @@ mod tests {
             assert!(sys.ip_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
             assert!(sys.hp_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
             assert!(sys.hp_compression_chamber.pressure() > sys.ip_compression_chamber.pressure())
-        });
-    }
-
-    #[test]
-    fn ipv_closes_when_hpv_opens() {
-        let altitude = Length::new::<foot>(0.);
-
-        // Set takeoff thrust
-        let mut test_bed = test_bed_with()
-            .mach_number(MachNumber(0.))
-            .corrected_n1(Ratio::new::<ratio>(1.))
-            .n2(100.)
-            .in_isa_atmosphere(altitude);
-
-        test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs(50));
-
-        test_bed.for_both_engine_systems(|sys| {
-            assert!(sys.hp_compression_chamber.pressure() > sys.ip_compression_chamber.pressure());
-            assert!(sys.ip_valve.is_open());
-            assert!(!sys.hp_valve.is_open());
-        });
-
-        test_bed = test_bed.idle_eng1().idle_eng2();
-        test_bed.run_with_delta(Duration::from_secs(50));
-        test_bed.for_both_engine_systems(|sys| {
-            assert!(!sys.ip_valve.is_open());
-            assert!(sys.hp_valve.is_open());
         });
     }
 

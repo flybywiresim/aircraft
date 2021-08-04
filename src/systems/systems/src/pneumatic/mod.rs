@@ -106,7 +106,7 @@ impl PneumaticValve for DefaultValve {
 }
 impl DefaultValve {
     const GAMMA: f64 = 1.4;
-    const TRANSFER_SPEED: f64 = 10.;
+    const TRANSFER_SPEED: f64 = 3.;
 
     pub fn new(open_amount: Ratio) -> Self {
         Self { open_amount }
@@ -138,16 +138,15 @@ impl DefaultValve {
     ) {
         // Assumes adiabatic compression/expansion, linearized to first order
         let equalization_volume = (from.pressure() - to.pressure()) * from.volume() * to.volume()
-            / Self::GAMMA
-            / (from.pressure() * to.volume() + to.pressure() * from.volume());
+            / Pressure::new::<pascal>(142000.)
+            / (from.volume() + to.volume());
 
         self.move_volume(
             from,
             to,
             self.open_amount
                 * equalization_volume
-                * Self::TRANSFER_SPEED
-                * context.delta_as_secs_f64(),
+                * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
         );
     }
 
@@ -345,7 +344,9 @@ impl DefaultConsumer {
 
     pub fn update(&mut self, controller: &impl ControllerSignal<PneumaticConsumptionSignal>) {
         if let Some(signal) = controller.signal() {
-            self.change_volume(-signal.consumed_volume);
+            let max_consumption = self.pressure() * self.volume() / self.pipe.fluid().bulk_mod();
+
+            self.change_volume(-signal.consumed_volume.min(max_consumption));
         }
     }
 }
@@ -516,8 +517,8 @@ mod tests {
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
         valve.update_move_fluid(&context, &mut from, &mut to);
 
-        assert_eq!(from.pressure(), Pressure::new::<pascal>(14.));
-        assert_eq!(to.pressure(), Pressure::new::<pascal>(14.));
+        assert_eq!(from.pressure(), Pressure::new::<psi>(14.));
+        assert_eq!(to.pressure(), Pressure::new::<psi>(14.));
     }
 
     #[test]
@@ -538,8 +539,47 @@ mod tests {
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
         valve.update_move_fluid(&context, &mut from, &mut to);
 
-        assert!(from.pressure() < Pressure::new::<pascal>(28.));
-        assert!(to.pressure() > Pressure::new::<pascal>(14.));
+        assert!(from.pressure() < Pressure::new::<psi>(28.));
+        assert!(to.pressure() > Pressure::new::<psi>(14.));
+    }
+
+    #[test]
+    fn valve_two_small_updates_equal_one_big_update() {
+        let valve = DefaultValve::new(Ratio::new::<percent>(100.));
+
+        let mut from = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(28.),
+        );
+        let mut to = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(14.),
+        );
+
+        let context1 = context(Duration::from_millis(200), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context1, &mut from, &mut to);
+        valve.update_move_fluid(&context1, &mut from, &mut to);
+
+        let mut from2 = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(28.),
+        );
+        let mut to2 = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(14.),
+        );
+
+        let context2 = context(Duration::from_millis(400), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context2, &mut from2, &mut to2);
+
+        println!("{:?}", from.pressure());
+
+        assert!((from.pressure() - from2.pressure()).abs() < Pressure::new::<pascal>(100.));
+        assert!((to.pressure() - to2.pressure()).abs() < Pressure::new::<pascal>(100.));
     }
 
     #[test]
