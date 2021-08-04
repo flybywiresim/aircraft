@@ -448,6 +448,16 @@ class CDUFlightPlanPage {
         ]);
         const allowScroll = waypointsWithDiscontinuities.length > 4;
         if (allowScroll) {//scroll only if there are more than 5 points
+            mcdu.onAirport = () => {
+                const departureAirportOffset = 0;
+                const arrivalAirportOffset = waypointsWithDiscontinuities.length - 1;
+                if (offset === departureAirportOffset) {
+                    offset = arrivalAirportOffset;
+                } else if (offset === arrivalAirportOffset) {
+                    offset = departureAirportOffset;
+                }
+                CDUFlightPlanPage.ShowPage(mcdu, offset);
+            };
             mcdu.onDown = () => {//on page down decrement the page offset.
                 if (offset > 0) { // if page not on top
                     offset--;
