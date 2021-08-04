@@ -78,6 +78,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         vertical
                         baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
                         completed={(props.throttlePosition + 1) / 2 * 100}
+                        completionValue={props.throttlePosition}
+                        greenBarsWhenInRange
                     />
                 </div>
             ) }
@@ -88,7 +90,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                     <div className="flex flex-col w-full">
                         <Input
                             key={props.index}
-                            label="Range"
+                            label="Deadband +/-"
                             className=" w-52 dark-option mb-4"
                             value={deadZone}
                             onChange={(deadZone) => {
@@ -170,6 +172,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         vertical
                         baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
                         completed={(props.throttlePosition + 1) / 2 * 100}
+                        completionValue={props.throttlePosition}
+                        greenBarsWhenInRange
                     />
                 </div>
             )}
