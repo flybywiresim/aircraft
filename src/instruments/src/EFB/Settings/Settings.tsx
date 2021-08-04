@@ -34,7 +34,7 @@ const OtherSettings = () => {
 };
 
 const ControlSettings = ({ setShowSettings }) => (
-    <div className="bg-navy-lighter divide-y my-2 divide-gray-700 flex flex-col rounded-xl p-6 shadow-lg">
+    <div className="bg-navy-lighter divide-y my-4 divide-gray-700 flex flex-col rounded-xl p-6 shadow-lg">
         <div className="flex flex-row justify-between items-center">
             <span className="text-lg text-gray-300">Detents</span>
             <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
@@ -386,7 +386,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
 
     function currentPage(): JSX.Element[] {
         switch (selectedTabIndex) {
-        case 0: return [<AircraftConfigurationPage />, <div />];
+        case 0: return [<AircraftConfigurationPage />];
         case 1: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
         case 2: return [<AudioPage />];
         case 3: return [<FlyPadPage />];
@@ -419,7 +419,8 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                 && (
                     <div className="mx-auto w-min mb-4 flex flex-row space-x-10 items-center justify-center mt-5 align-baseline">
                         <div
-                            className={`p-3 rounded-full bg-teal-light-contrast text-white ${subPageIndex === 0 && 'bg-navy-lighter text-gray-600'}`}
+                            className={`p-3 rounded-full bg-teal-light-contrast hover:bg-white hover:text-teal-light-contrast text-white
+                            ${subPageIndex === 0 && 'bg-navy-lighter text-gray-600'}`}
                             onClick={() => {
                                 if (subPageIndex > 0) {
                                     setSubPageIndex(subPageIndex - 1);
@@ -429,7 +430,8 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                             <IconArrowLeft size={32} className="text-current" />
                         </div>
                         <div
-                            className={`p-3 rounded-full bg-teal-light-contrast text-white ${subPageIndex === currentPage().length - 1 && 'bg-navy-lighter text-gray-600'}`}
+                            className={`p-3 rounded-full bg-teal-light-contrast hover:bg-white hover:text-teal-light-contrast text-white
+                            ${subPageIndex === currentPage().length - 1 && 'bg-navy-lighter text-gray-600'}`}
                             onClick={() => {
                                 if (subPageIndex < currentPage().length - 1) {
                                     setSubPageIndex(subPageIndex + 1);
