@@ -1,11 +1,5 @@
 @import "../Common/definitions";
 
-/* pixels for screen */
-@import "../Common/pixels";
-.LcdOverlayDcdu {
-  @include pixels;
-}
-
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
