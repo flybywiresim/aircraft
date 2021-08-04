@@ -37,9 +37,25 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     }, 2_000);
 
     if (geometry) {
-        const legs = Array.from(geometry.legs.values());
+        let legs = Array.from(geometry.legs.values());
 
         const origin = flightPlan.originAirfield;
+        const destination = flightPlan.destinationAirfield;
+
+        let destinationActive = false;
+        let destinationIdent = '';
+        if (destination) {
+            destinationIdent = destination.ident;
+            destinationActive = legs.length < 2;
+            const approachRunway = flightPlanManager.getApproachRunway();
+            if (approachRunway) {
+                destinationIdent += Avionics.Utils.formatRunway(approachRunway.designation);
+            }
+
+            if (legs[0] instanceof TFLeg && legs[0].to.type === 'A') {
+                legs = legs.slice(1);
+            }
+        }
 
         return (
             <Layer x={x} y={y}>
@@ -49,6 +65,16 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                         ident={origin.ident}
                         position={mapParams.coordinatesToXYy(origin.infos.coordinates)}
                         index={-1}
+                        constraints={constraints}
+                        debug={debug}
+                    />
+                )}
+                {destination && (
+                    <WaypointMarker
+                        ident={destinationIdent}
+                        position={mapParams.coordinatesToXYy(destination.infos.coordinates)}
+                        index={9999}
+                        isActive={destinationActive}
                         constraints={constraints}
                         debug={debug}
                     />
@@ -101,6 +127,22 @@ const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, 
     let y;
     if (leg instanceof TFLeg || leg instanceof RFLeg) {
         [x, y] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
+        // TODO: Find a more elegant fix for drawing waypoint (of next leg) after discontinuity
+        if (nextLeg instanceof TFLeg && leg.to.endsInDiscontinuity) {
+            [x, y] = mapParams.coordinatesToXYy(nextLeg.from.infos.coordinates);
+            return (
+                <WaypointMarker
+                    ident={nextLeg.from.ident}
+                    position={[x, y]}
+                    altitudeConstraint={nextLeg.initialAltitudeConstraint}
+                    speedConstraint={nextLeg.initialSpeedConstraint}
+                    index={index}
+                    isActive={isActive}
+                    constraints={constraints}
+                    debug={debug}
+                />
+            );
+        }
     } else if (leg instanceof VMLeg) {
         // TODO: Find a more elegant fix for drawing waypoint (of next leg) after manual
         if (nextLeg instanceof TFLeg) {

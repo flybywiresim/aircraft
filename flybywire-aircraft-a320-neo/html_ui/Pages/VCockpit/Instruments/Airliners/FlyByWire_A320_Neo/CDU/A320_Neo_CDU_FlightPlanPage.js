@@ -134,16 +134,18 @@ class CDUFlightPlanPage {
 
                 // Time
                 let time;
-                let timeCell = "----";
-                if (isFlying) {
-                    if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveUTCTo) || isFinite(waypointsAndMarkers[winI].wp.waypointReachedAt)) {
-                        time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).etaFromPpos : waypointsAndMarkers[winI].wp.waypointReachedAt;
-                        timeCell = `${FMCMainDisplay.secondsToUTC(time)}[s-text]`;
-                    }
-                } else {
-                    if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveETATo)) {
-                        time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).timeFromPpos : 0;
-                        timeCell = `${FMCMainDisplay.secondsTohhmm(time)}[s-text]`;
+                let timeCell = "----[s-text]";
+                if (ident !== "MANUAL") {
+                    if (isFlying) {
+                        if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveUTCTo) || isFinite(waypointsAndMarkers[winI].wp.waypointReachedAt)) {
+                            time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).etaFromPpos : waypointsAndMarkers[winI].wp.waypointReachedAt;
+                            timeCell = `${FMCMainDisplay.secondsToUTC(time)}[s-text]`;
+                        }
+                    } else {
+                        if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveETATo)) {
+                            time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).timeFromPpos : 0;
+                            timeCell = `${FMCMainDisplay.secondsTohhmm(time)}[s-text]`;
+                        }
                     }
                 }
 
@@ -247,7 +249,7 @@ class CDUFlightPlanPage {
                 }
 
                 let speedConstraint = "---";
-                if (waypointsAndMarkers[winI].wp.speedConstraint > 10) {
+                if (waypointsAndMarkers[winI].wp.speedConstraint > 10 && ident !== "MANUAL") {
                     speedConstraint = `{magenta}*{end}${waypointsAndMarkers[winI].wp.speedConstraint.toFixed(0)}`;
                 }
 
@@ -257,7 +259,7 @@ class CDUFlightPlanPage {
 
                 // Altitude
 
-                let altitudeConstraint = "-----\xa0";
+                let altitudeConstraint = "-----";
                 let altPrefix = "\xa0";
 
                 if (waypointsAndMarkers[winI].wp === fpm.getDestination()) {
@@ -266,8 +268,9 @@ class CDUFlightPlanPage {
                     spdColor = "white";
                     const [rwTxt, rwAlt] = getRunwayInfo(fpm.getApproachRunway());
                     if (rwTxt && rwAlt) {
+                        altPrefix = "{magenta}*{end}";
                         ident += rwTxt;
-                        altitudeConstraint = rwAlt;
+                        altitudeConstraint = (Math.round((parseInt(rwAlt) + 50) / 10) * 10).toString();
                         altColor = color;
                     }
                     altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
@@ -280,7 +283,7 @@ class CDUFlightPlanPage {
                         altColor = color;
                     }
                     altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
-                } else {
+                } else if (ident !== "MANUAL") {
                     const firstRouteIndex = 1 + fpm.getDepartureWaypointsCount();
                     const lastRouteIndex = fpm.getLastIndexBeforeApproach();
                     //const departureWp = firstRouteIndex > 1 && fpm.getDepartureWaypoints().indexOf(waypointsAndMarkers[winI].wp) !== -1;
@@ -308,7 +311,7 @@ class CDUFlightPlanPage {
                         */
                     } else if ((waypointsAndMarkers[winI].fpIndex === firstRouteIndex - 1) || (waypointsAndMarkers[winI].fpIndex === lastRouteIndex + 1)) {
                         if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
-                            altitudeConstraint = "-----\xa0";
+                            altitudeConstraint = "-----";
                             altPrefix = "";
                         } else {
                             altitudeConstraint = `FL${mcdu.cruiseFlightLevel.toString().padStart(3,"0")}`;
@@ -317,14 +320,14 @@ class CDUFlightPlanPage {
                         // Waypoint is in between on the route
                     } else if (waypointsAndMarkers[winI].fpIndex <= lastRouteIndex && waypointsAndMarkers[winI].fpIndex >= firstRouteIndex) {
                         if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
-                            altitudeConstraint = "-----\xa0";
+                            altitudeConstraint = "-----";
                             altPrefix = "";
                         } else {
                             altitudeConstraint = `FL${mcdu.cruiseFlightLevel.toString().padStart(3,"0")}`;
                         }
                         // Waypoint with no alt constraint
                     } else if (!waypointsAndMarkers[winI].wp.legAltitude1 && !waypointsAndMarkers[winI].wp.legAltitudeDescription) {
-                        altitudeConstraint = "-----\xa0";
+                        altitudeConstraint = "-----";
                         altPrefix = "";
                     }
                 }
@@ -333,7 +336,7 @@ class CDUFlightPlanPage {
                     spdColor = "white";
                 }
 
-                if (altitudeConstraint === "-----\xa0") {
+                if (altitudeConstraint === "-----") {
                     altColor = "white";
                 }
 
@@ -475,7 +478,7 @@ class CDUFlightPlanPage {
                         spdRepeat = true;
                     }
 
-                    if (currRow.altitudeConstraint.alt !== "-----\xa0" &&
+                    if (currRow.altitudeConstraint.alt !== "-----" &&
                         currRow.altitudeConstraint.alt === prevRow.altitudeConstraint.alt &&
                         currRow.altitudeConstraint.altPrefix === prevRow.altitudeConstraint.altPrefix) {
                         altRepeat = true;
