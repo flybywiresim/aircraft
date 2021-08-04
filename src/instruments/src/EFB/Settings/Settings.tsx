@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '../../Common/simVars';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
