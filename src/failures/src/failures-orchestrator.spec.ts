@@ -1,49 +1,53 @@
-// import { FailuresOrchestrator } from './failures-orchestrator';
-
 import { FailuresOrchestrator } from '.';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 import { flushPromises } from './test-functions';
 
-test('added failures can be retrieved', () => {
-    const o = orchestrator();
+describe('FailuresOrchestrator', () => {
+    test('stores configured failures', () => {
+        const o = orchestrator();
 
-    expect(o.getFailures().size).toBe(1);
-    expect(o.getFailures().values().next().value).toMatchObject({
-        identifier,
-        name,
+        expect(o.getFailures().size).toBe(1);
+        expect(o.getFailures().values().next().value).toMatchObject({
+            identifier,
+            name,
+        });
     });
-});
 
-test("failure which hasn't been activated is inactive", async () => {
-    const o = orchestrator();
-    expect(o.isActive(identifier)).toBe(false);
-});
+    describe('indicates a failure is', () => {
+        test('inactive when never activated', () => {
+            const o = orchestrator();
+            expect(o.isActive(identifier)).toBe(false);
+        });
 
-test('activates failures', async () => {
-    const o = orchestrator();
+        test('active when activated', async () => {
+            const o = orchestrator();
 
-    await activateFailure(o);
+            await activateFailure(o);
 
-    expect(o.isActive(identifier)).toBe(true);
-});
+            expect(o.isActive(identifier)).toBe(true);
+        });
 
-test('deactivates failures', async () => {
-    const o = orchestrator();
-    // First activate the failure to ensure we're not just observing
-    // the lack of any change.
-    await activateFailure(o);
+        test('inactive when deactivated', async () => {
+            const o = orchestrator();
+            // First activate the failure to ensure we're not just observing
+            // the lack of any change.
+            await activateFailure(o);
 
-    await deactivateFailure(o);
+            await deactivateFailure(o);
 
-    expect(o.isActive(identifier)).toBe(false);
-});
+            expect(o.isActive(identifier)).toBe(false);
+        });
 
-test('is changing while failure is activating', async () => {
-    isChangingOn((o) => o.activate(identifier));
-});
+        describe('changing', () => {
+            test('while failure is activating', async () => {
+                isChangingOn((o) => o.activate(identifier));
+            });
 
-test('is changing while failure is deactivating', async () => {
-    isChangingOn((o) => o.deactivate(identifier));
+            test('while failure is deactivating', async () => {
+                isChangingOn((o) => o.deactivate(identifier));
+            });
+        });
+    });
 });
 
 const prefix = 'PREFIX';

@@ -1,55 +1,57 @@
 import { TransactionWriter } from './transaction-writer';
 import { SimVarReaderWriter, Updatable, Writer, QueuedSimVarWriter } from '..';
-import { flushPromises, updateWriter } from '../../test-functions';
+import { flushPromises } from '../../test-functions';
 
-test('waits for receival confirmation', async () => {
-    const failureIdentifier = 1;
-    const w = writer();
+describe('TransationWriter', () => {
+    test('waits for receival confirmation', async () => {
+        const failureIdentifier = 1;
+        const w = writer();
 
-    const write = await writeAndConsumeValue(w, failureIdentifier);
-    const callback = jest.fn();
-    write.innerPromise.then(callback);
+        const write = await writeAndConsumeValue(w, failureIdentifier);
+        const callback = jest.fn();
+        write.innerPromise.then(callback);
 
-    updateWriter(w, retryAfterNumberOfUpdates - 1);
+        updateWriter(w, retryAfterNumberOfUpdates - 1);
 
-    await flushPromises();
-    expect(callback).not.toHaveBeenCalled();
+        await flushPromises();
+        expect(callback).not.toHaveBeenCalled();
 
-    await confirmReceival(w, failureIdentifier);
+        await confirmReceival(w, failureIdentifier);
 
-    await flushPromises();
-    expect(callback).toHaveBeenCalled();
-});
+        await flushPromises();
+        expect(callback).toHaveBeenCalled();
+    });
 
-test('clears the receival confirmation', async () => {
-    const failureIdentifier = 1;
-    const w = writer();
+    test('clears the receival confirmation', async () => {
+        const failureIdentifier = 1;
+        const w = writer();
 
-    const write = await writeAndConsumeValue(w, failureIdentifier);
-    await confirmReceival(w, failureIdentifier);
+        const write = await writeAndConsumeValue(w, failureIdentifier);
+        await confirmReceival(w, failureIdentifier);
 
-    await write.innerPromise;
-    expect(receivalConfirmationSimVar()).toBe(0);
-});
+        await write.innerPromise;
+        expect(receivalConfirmationSimVar()).toBe(0);
+    });
 
-test('retries when receival not confirmed', async () => {
-    const failureIdentifier = 1;
-    const w = writer();
+    test('retries when receival not confirmed', async () => {
+        const failureIdentifier = 1;
+        const w = writer();
 
-    const write = await writeAndConsumeValue(w, failureIdentifier);
-    const callback = jest.fn();
-    const promise = write.innerPromise.then(callback);
+        const write = await writeAndConsumeValue(w, failureIdentifier);
+        const callback = jest.fn();
+        const promise = write.innerPromise.then(callback);
 
-    updateWriter(w, retryAfterNumberOfUpdates);
+        updateWriter(w, retryAfterNumberOfUpdates);
 
-    await flushPromises();
-    expect(callback).not.toHaveBeenCalled();
-    expect(await waitForWriteAndConsumeValue(w, failureIdentifier)).toBe(true);
+        await flushPromises();
+        expect(callback).not.toHaveBeenCalled();
+        expect(await waitForWriteAndConsumeValue(w, failureIdentifier)).toBe(true);
 
-    await confirmReceival(w, failureIdentifier);
+        await confirmReceival(w, failureIdentifier);
 
-    await promise;
-    expect(callback).toHaveBeenCalled();
+        await promise;
+        expect(callback).toHaveBeenCalled();
+    });
 });
 
 const simVarName = 'L:SIMVAR';
@@ -108,4 +110,10 @@ async function confirmReceival(writer: Writer & Updatable, failureIdentifier: nu
 
 function receivalConfirmationSimVar() {
     return SimVar.GetSimVarValue(transactionSimVarName, 'number');
+}
+
+function updateWriter(writer: Writer & Updatable, times: number) {
+    for (let i = 0; i < times; i++) {
+        writer.update();
+    }
 }
