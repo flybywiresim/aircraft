@@ -40,11 +40,37 @@ describe('FailuresOrchestrator', () => {
 
         describe('changing', () => {
             test('while failure is activating', async () => {
-                isChangingOn((o) => o.activate(identifier));
+                const o = orchestrator();
+
+                expect(o.isChanging(identifier)).toBe(false);
+
+                const promise = o.activate(identifier);
+
+                expect(o.isChanging(identifier)).toBe(true);
+
+                await flushPromises();
+                await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 0);
+                o.update();
+                await promise;
+
+                expect(o.isChanging(identifier)).toBe(false);
             });
 
             test('while failure is deactivating', async () => {
-                isChangingOn((o) => o.deactivate(identifier));
+                const o = orchestrator();
+
+                expect(o.isChanging(identifier)).toBe(false);
+
+                const promise = o.deactivate(identifier);
+
+                expect(o.isChanging(identifier)).toBe(true);
+
+                await flushPromises();
+                await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 0);
+                o.update();
+                await promise;
+
+                expect(o.isChanging(identifier)).toBe(false);
             });
         });
     });
@@ -76,18 +102,4 @@ async function activateOrDeactivateFailure(o: FailuresOrchestrator, activate: bo
     o.update();
 
     await promise;
-}
-
-async function isChangingOn(actionFn: (o: FailuresOrchestrator) => Promise<void>) {
-    const o = orchestrator();
-    expect(o.isChanging(identifier)).toBe(false);
-
-    const promise = actionFn(o);
-    expect(o.isChanging(identifier)).toBe(true);
-    await flushPromises();
-    await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 0);
-    o.update();
-
-    await promise;
-    expect(o.isChanging(identifier)).toBe(false);
 }

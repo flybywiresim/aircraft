@@ -10,8 +10,8 @@ describe('TransactionReader', () => {
 
         await SimVar.SetSimVarValue(failuresSimVar, 'number', failureIdentifier);
         r.update();
-
         await flushPromises();
+
         expect(SimVar.GetSimVarValue(transactionSimVar, 'number')).toBe(failureIdentifier);
     });
 
@@ -23,8 +23,8 @@ describe('TransactionReader', () => {
 
         await SimVar.SetSimVarValue(failuresSimVar, 'number', failureIdentifier);
         r.update();
-
         await flushPromises();
+
         expect(callback).toHaveBeenCalled();
     });
 });

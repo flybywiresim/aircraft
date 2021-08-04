@@ -16,25 +16,34 @@ describe('SimVarReaderWriter', () => {
     });
 
     test("does't read values which aren't in the collection", async () => {
-        await expectToBeCalledTimes(0, async (r) => {
+        const callback = jest.fn();
+        await registerAndExecute(callback, async (r) => {
             await SimVar.SetSimVarValue(simVarName, 'number', notInCollectionIdentifier);
             r.update();
         });
+
+        expect(callback).not.toHaveBeenCalled();
     });
 
     test('reads values that are in the collection', async () => {
-        await expectToBeCalledTimes(1, async (r) => {
+        const callback = jest.fn();
+        await registerAndExecute(callback, async (r) => {
             await SimVar.SetSimVarValue(simVarName, 'number', inCollectionIdentifier);
             r.update();
         });
+
+        expect(callback).toHaveBeenCalledTimes(1);
     });
 
     test('reads the same value multiple times', async () => {
-        await expectToBeCalledTimes(2, async (r) => {
+        const callback = jest.fn();
+        await registerAndExecute(callback, async (r) => {
             await SimVar.SetSimVarValue(simVarName, 'number', inCollectionIdentifier);
             r.update();
             r.update();
         });
+
+        expect(callback).toHaveBeenCalledTimes(2);
     });
 });
 
@@ -46,12 +55,9 @@ function readerWriter(): SimVarReaderWriter {
     return new SimVarReaderWriter(simVarName);
 }
 
-async function expectToBeCalledTimes(length: number, act: (r: CallbackReader) => Promise<void>) {
-    const callback = jest.fn();
+async function registerAndExecute(callback: () => void, act: (r: CallbackReader) => Promise<void>) {
     const r = readerWriter();
     r.register(inCollectionIdentifier, callback);
 
     await act(r);
-
-    expect(callback).toHaveBeenCalledTimes(length);
 }

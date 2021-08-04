@@ -17,8 +17,8 @@ describe('TransationWriter', () => {
         expect(callback).not.toHaveBeenCalled();
 
         await confirmReceival(w, failureIdentifier);
-
         await flushPromises();
+
         expect(callback).toHaveBeenCalled();
     });
 
@@ -28,8 +28,8 @@ describe('TransationWriter', () => {
 
         const write = await writeAndConsumeValue(w, failureIdentifier);
         await confirmReceival(w, failureIdentifier);
-
         await write.innerPromise;
+
         expect(receivalConfirmationSimVar()).toBe(0);
     });
 
@@ -48,8 +48,8 @@ describe('TransationWriter', () => {
         expect(await waitForWriteAndConsumeValue(w, failureIdentifier)).toBe(true);
 
         await confirmReceival(w, failureIdentifier);
-
         await promise;
+
         expect(callback).toHaveBeenCalled();
     });
 });
