@@ -337,7 +337,6 @@ export class ManagedFlightPlan {
             this.reflowDistances();
         } else if (mappedWaypoint.type === 'A' && index === undefined) {
             this.destinationAirfield = mappedWaypoint;
-
             this.procedureDetails.arrivalIndex = -1;
             this.procedureDetails.arrivalRunwayIndex = -1;
             this.procedureDetails.arrivalTransitionIndex = -1;
@@ -943,12 +942,20 @@ export class ManagedFlightPlan {
                     this.addWaypoint(runwayExtensionWaypoint);
                 }
 
-                const runwayWaypoint = procedure.buildWaypoint(`RW${selectedRunwayOutput}`, runway.beginningCoordinates);
-                runwayWaypoint.legAltitudeDescription = 1;
-                runwayWaypoint.legAltitude1 = (runway.elevation * 3.28084) + 50;
-                runwayWaypoint.isRunway = true;
+                // When adding approach, edit destination waypoint
+                this.destinationAirfield.infos.coordinates = runway.beginningCoordinates;
+                this.destinationAirfield.legAltitudeDescription = 1;
+                this.destinationAirfield.legAltitude1 = Math.round((runway.elevation * 3.28084 + 50) / 10) * 10;
+                this.destinationAirfield.isRunway = true;
 
-                this.addWaypoint(runwayWaypoint);
+                // Clear discontinuity before destination, if any
+                const wpBeforeDestIdx = this.waypoints.indexOf(this.destinationAirfield) - 1;
+                if (wpBeforeDestIdx >= 0) {
+                    const wpBeforeDest = this.getWaypoint(wpBeforeDestIdx);
+                    if (wpBeforeDest.endsInDiscontinuity && wpBeforeDest.discontinuityCanBeCleared) {
+                        wpBeforeDest.endsInDiscontinuity = false;
+                    }
+                }
             }
         }
     }
