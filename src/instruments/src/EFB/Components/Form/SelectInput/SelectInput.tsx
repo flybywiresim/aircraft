@@ -62,8 +62,8 @@ const SelectInput = (props: SelectInputProps) => {
                     <IconChevronDown className="text-white absolute right-4 top-2.5" size={20} />
                 </div>
                 {showDropdown && (
-                    <div className={`p-3 text-lg w-full border-none bg-navy-medium rounded-lg z-10 absolute transform ${
-                        props.dropdownOnTop ? 'top-0 -translate-y-full' : 'bottom-0 translate-y-full'}`}
+                    <div className={`p-3 text-lg w-full border-none bg-navy-medium rounded-lg z-10 absolute transform
+                    ${props.dropdownOnTop ? ' top-0 -translate-y-full' : 'bottom-0 translate-y-full'}`}
                     >
                         { dropdownElements() }
                     </div>
