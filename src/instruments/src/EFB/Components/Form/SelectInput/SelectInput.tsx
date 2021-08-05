@@ -63,7 +63,7 @@ const SelectInput = (props: SelectInputProps) => {
                 </div>
                 {showDropdown && (
                     <div className={`p-3 text-lg w-full border-none bg-navy-medium rounded-lg z-10 absolute transform
-                    ${props.dropdownOnTop ? 'top-0 -translate-y-full' : 'bottom-0 translate-y-full'}`}
+                    ${' '}${props.dropdownOnTop ? 'top-0 -translate-y-full' : 'bottom-0 translate-y-full'}`}
                     >
                         { dropdownElements() }
                     </div>
