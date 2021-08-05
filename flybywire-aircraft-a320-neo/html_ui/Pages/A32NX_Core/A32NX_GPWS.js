@@ -67,7 +67,7 @@ class A32NX_GPWS {
             const FlapPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
             const FlapsInLandingConfig = FlapPushButton ? (FlapPosition === 3) : (FlapPosition === 4);
             const vSpeed = Simplane.getVerticalSpeed();
-            const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
+            const computedAirspeed = ADIRS.getComputedSpeed();
             const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 0.9;
 
             this.update_maxRA(radioAlt, onGround, phase);
@@ -75,8 +75,8 @@ class A32NX_GPWS {
             this.GPWSMode1(radioAlt, vSpeed);
             //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
             //this.GPWSMode2(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
-            this.GPWSMode3(radioAlt, phase, FlapsInLandingConfig);
-            this.GPWSMode4(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended, phase);
+            this.GPWSMode3(radioAlt, phase);
+            this.GPWSMode4(radioAlt, computedAirspeed, FlapsInLandingConfig, gearExtended, phase);
             this.GPWSMode5(radioAlt);
 
         } else {
@@ -320,7 +320,7 @@ class A32NX_GPWS {
      * @param FlapsInLandingConfig - If flaps is in landing config
      * @constructor
      */
-    GPWSMode3(radioAlt, phase, FlapsInLandingConfig) {
+    GPWSMode3(radioAlt, phase) {
         if (!(phase === FmgcFlightPhases.TAKEOFF || phase === FmgcFlightPhases.GOAROUND) || radioAlt > 1500 || radioAlt < 10) {
             this.Mode3MaxBaroAlt = NaN;
             this.Mode3Code = 0;
@@ -344,13 +344,13 @@ class A32NX_GPWS {
     /**
      * Compute the GPWS Mode 4 state.
      * @param radioAlt - Radio altitude in feet
-     * @param speed - Airspeed in knots.
+     * @param computedAirspeed - Airspeed in knots.
      * @param FlapsInLandingConfig - If flaps is in landing config
      * @param gearExtended - If the gear is extended
      * @param phase - Flight phase index
      * @constructor
      */
-    GPWSMode4(radioAlt, speed, FlapsInLandingConfig, gearExtended, phase) {
+    GPWSMode4(radioAlt, computedAirspeed, FlapsInLandingConfig, gearExtended, phase) {
         if (radioAlt < 30 || radioAlt > 1000) {
             this.Mode4Code = 0;
             return;
@@ -359,24 +359,24 @@ class A32NX_GPWS {
 
         // Mode 4 A and B logic
         if (!gearExtended && phase === FmgcFlightPhases.APPROACH) {
-            if (speed < 190 && radioAlt < 500) {
+            if (computedAirspeed < 190 && radioAlt < 500) {
                 this.Mode4Code = 1;
-            } else if (speed >= 190) {
-                const maxWarnAlt = 8.333 * speed - 1083.333;
+            } else if (computedAirspeed >= 190) {
+                const maxWarnAlt = 8.333 * computedAirspeed - 1083.333;
                 this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
             }
         } else if (!FlapsInLandingConfig && !FlapModeOff && phase === FmgcFlightPhases.APPROACH) {
-            if (speed < 159 && radioAlt < 245) {
+            if (computedAirspeed < 159 && radioAlt < 245) {
                 this.Mode4Code = 2;
-            } else if (speed >= 159) {
-                const maxWarnAlt = 8.2967 * speed - 1074.18;
+            } else if (computedAirspeed >= 159) {
+                const maxWarnAlt = 8.2967 * computedAirspeed - 1074.18;
                 this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
             }
         } else {
             this.Mode4Code = 0;
         }
         if (!FlapsInLandingConfig || !gearExtended) {
-            const maxWarnAltSpeed = Math.max(Math.min(8.3333 * speed - 1083.33, 1000), 500);
+            const maxWarnAltSpeed = Math.max(Math.min(8.3333 * computedAirspeed - 1083.33, 1000), 500);
             const maxWarnAlt = 0.750751 * this.Mode4MaxRAAlt - 0.750751;
 
             if (this.Mode4MaxRAAlt > 100 && radioAlt < maxWarnAltSpeed && radioAlt < maxWarnAlt) {

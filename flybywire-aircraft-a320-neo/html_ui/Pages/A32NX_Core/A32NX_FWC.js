@@ -133,8 +133,8 @@ class A32NX_FWC {
         const ground = this.gndMemo.write(groundImmediate, _deltaTime);
 
         // ESLD 1.0.73
-        const ias = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
-        const acSpeedAbove80kts = this.speedAbove80KtsMemo.write(ias > 83, ias < 77);
+        const cas = ADIRS.getComputedSpeed();
+        const acSpeedAbove80kts = this.speedAbove80KtsMemo.write(cas > 83, Number.isNaN(cas) || cas < 77);
 
         // ESLD 1.0.90
         const hAbv1500 = radioHeight > 1500;

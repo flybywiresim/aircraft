@@ -370,7 +370,7 @@ var A320_Neo_UpperECAM;
                                 level: 3,
                                 landASAP: true,
                                 isActive: () => {
-                                    return ((this.engineShutdown(1) || this.engineFailed(1)) && (this.engineShutdown(2) || this.engineFailed(2)) && this.getCachedSimVar("AIRSPEED INDICATED", "knots") > 80);
+                                    return ((this.engineShutdown(1) || this.engineFailed(1)) && (this.engineShutdown(2) || this.engineFailed(2)) && ADIRS.getComputedSpeed() > 80);
                                 },
                                 inopSystems: [
                                     "G_HYD",

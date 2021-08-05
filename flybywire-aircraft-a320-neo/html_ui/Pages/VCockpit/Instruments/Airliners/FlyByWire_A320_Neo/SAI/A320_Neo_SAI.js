@@ -1346,7 +1346,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
 
     isPowered() {
         return SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
-            (SimVar.GetSimVarValue("A:AIRSPEED INDICATED", "Knots") >= 50 && SimVar.GetSimVarValue("L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED", "Bool"));
+            (IntegratedStandbyInstrumentSystemADIRU.getComputedSpeed() >= 50 && SimVar.GetSimVarValue("L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED", "Bool"));
     }
 }
 
