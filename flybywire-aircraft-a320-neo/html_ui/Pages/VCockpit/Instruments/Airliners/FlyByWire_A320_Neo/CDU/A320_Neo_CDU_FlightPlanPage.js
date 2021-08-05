@@ -122,7 +122,7 @@ class CDUFlightPlanPage {
             if (waypointsAndMarkers[winI].wp) {
                 // Waypoint
 
-                if (waypointsAndMarkers[winI].fpIndex === (fpm.getActiveWaypointIndex() - 1) && offset == 0) {
+                if (waypointsAndMarkers[winI].fpIndex === (fpm.getActiveWaypointIndex() - 1) && offset === 0) {
                     showFrom = true;
                 }
 
@@ -161,6 +161,7 @@ class CDUFlightPlanPage {
                 // Fix Header
 
                 let fixAnnotation;
+                const currentApproach = fpm.getApproach();
                 if (winI > 0 &&
                     fpm.getDepartureRunway() &&
                     waypointsAndMarkers[winI - 1].wp &&
@@ -172,6 +173,23 @@ class CDUFlightPlanPage {
                 } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
                     const arrival = fpm.getArrival();
                     fixAnnotation = arrival ? arrival.name : undefined;
+                } else if (currentApproach !== undefined) {
+                    const finalLegs = currentApproach.finalLegs;
+                    if (finalLegs.length > 0) {
+                        const finalLegIdents = finalLegs.map(fl => fl.fixIcao.substring(7, 12).trim());
+                        const validFinalWaypoints = fpm.getApproachWaypoints().filter(wp => finalLegIdents.includes(wp.ident));
+                        if (validFinalWaypoints.length > 0) {
+                            if (validFinalWaypoints[0] === waypointsAndMarkers[winI].wp) {
+                                fixAnnotation = Avionics.Utils.formatRunway(currentApproach.name.replace(/\s+/g, ''));
+                            } else if (fpm.getArrivalProcIndex() !== -1
+                                    && !validFinalWaypoints.some(fix => fix === waypointsAndMarkers[winI].wp)
+                                    && fpm.getApproachWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)
+                            ) {
+                                const arrival = fpm.getArrival();
+                                fixAnnotation = arrival ? arrival.name : undefined;
+                            }
+                        }
+                    }
                 } else {
                     // Show airway
                     let airwayName = "";
@@ -211,6 +229,14 @@ class CDUFlightPlanPage {
                             fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                     }
+                }
+
+                const prevWp = waypointsAndMarkers[winI - 1];
+                if (!fixAnnotation && prevWp && waypointsAndMarkers[winI].wp.ident !== fpm.getDestination().ident) {
+                    const magVar = Facilities.getMagVar(prevWp.wp.infos.coordinates);
+                    const courseBetween = Avionics.Utils.computeGreatCircleHeading(prevWp.wp.infos.coordinates, waypointsAndMarkers[winI].wp.infos.coordinates);
+                    const course = A32NX_Util.trueToMagnetic(courseBetween, magVar);
+                    fixAnnotation = `C${course.toFixed(0).padStart(3,"0")}\u00b0`;
                 }
 
                 // Bearing/Track
@@ -488,6 +514,7 @@ class CDUFlightPlanPage {
                         nmCount--;
                     };
                     currRow.distance = "";
+                    // TODO: investigate if this line should be removed to show fix annotation on first waypoint?
                     currRow.fixAnnotation = "";
                 }
             }
