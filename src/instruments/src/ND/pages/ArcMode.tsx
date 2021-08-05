@@ -30,6 +30,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
+    const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -43,6 +44,20 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
     }, [ppos.lat, ppos.long, magHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
+        let tmpFplan;
+        if (showTmpFplan) {
+            tmpFplan = (
+                <FlightPlan
+                    x={384}
+                    y={620}
+                    flightPlanManager={flightPlanManager}
+                    mapParams={mapParams}
+                    constraints={efisOption === EfisOption.Constraints}
+                    debug={false}
+                    temp
+                />
+            );
+        }
         return (
             <>
                 <g id="map" clipPath="url(#arc-mode-map-clip)">
@@ -53,7 +68,9 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
                         mapParams={mapParams}
                         constraints={efisOption === EfisOption.Constraints}
                         debug={false}
+                        temp={false}
                     />
+                    {tmpFplan}
                     <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
                     <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
                 </g>

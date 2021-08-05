@@ -38,6 +38,21 @@ export const useCurrentFlightPlan = (): ManagedFlightPlan => {
     return currentFlightPlan;
 };
 
+export const useTemporaryFlightPlan = (): ManagedFlightPlan => {
+    const flightPlanManager = useFlightPlanManager();
+
+    const flightPlanVersion = useFlightPlanVersion();
+    const [tmpFlightPlan, setTmpFlightPlan] = useState<ManagedFlightPlan>(() => flightPlanManager.getFlightPlan(1));
+
+    useEffect(() => {
+        flightPlanManager.updateFlightPlan(() => {
+            setTmpFlightPlan(flightPlanManager.getFlightPlan(1));
+        });
+    }, [flightPlanVersion]);
+
+    return tmpFlightPlan;
+};
+
 export type ApproachNameComponents = {
     // the approach type, e.g. ILS or RNAV
     type: string,
