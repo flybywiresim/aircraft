@@ -305,10 +305,10 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         this.centerSVG.appendChild(this.small_bugs[2]);
         this.centerSVG.appendChild(this.small_bugs[3]);
     }
-    update(dTime) {
-        const indicatedSpeed = Simplane.getIndicatedSpeed();
-        this.updateArcScrolling(indicatedSpeed);
-        this.updateGraduationScrolling(indicatedSpeed);
+    update() {
+        const computedSpeed = IntegratedStandbyInstrumentSystemADIRU.getComputedSpeed();
+        this.updateArcScrolling(computedSpeed);
+        this.updateGraduationScrolling(computedSpeed);
     }
     arcToSVG(_value) {
         const pixels = (_value * this.graduationSpacing * (this.nbSecondaryGraduations + 1)) / 10;
@@ -322,14 +322,14 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         this.small_bugs[3].setAttribute("y","-100");
         this.bugs = bugs;
     }
-    updateGraduationScrolling(_speed) {
+    updateGraduationScrolling(computedSpeed) {
 
         if (this.graduations) {
             if (this.bugs.length > 0) {
                 this.bugs.forEach((spd_bug, i) => {
-                    if (_speed < (spd_bug + 60) && _speed > (spd_bug - 60)) {
+                    if (computedSpeed < (spd_bug + 60) && computedSpeed > (spd_bug - 60)) {
                         this.small_bugs[i].setAttribute("x", "42");
-                        this.small_bugs[i].setAttribute("y", String(124 - (spd_bug - _speed) / 5 * 8.8));
+                        this.small_bugs[i].setAttribute("y", String(124 - (spd_bug - computedSpeed) / 5 * 8.8));
                         this.small_bugs[i].setAttribute("width", "7");
                         this.small_bugs[i].setAttribute("height", "2");
                         this.small_bugs[i].setAttribute("fill", "cyan");
@@ -337,10 +337,10 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
                 });
             }
 
-            if (_speed < this.graduationMinValue) {
-                _speed = this.graduationMinValue;
+            if (computedSpeed < this.graduationMinValue) {
+                computedSpeed = this.graduationMinValue;
             }
-            this.graduationScroller.scroll(_speed);
+            this.graduationScroller.scroll(computedSpeed);
             let currentVal = this.graduationScroller.firstValue;
             let currentY = this.graduationScrollPosY + this.graduationScroller.offsetY * this.graduationSpacing * (this.nbSecondaryGraduations + 1);
             for (let i = 0; i < this.totalGraduations; i++) {
@@ -369,9 +369,9 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
             }
         }
     }
-    updateArcScrolling(_speed) {
+    updateArcScrolling(computedSpeed) {
         if (this.arcs) {
-            const offset = this.arcToSVG(_speed);
+            const offset = this.arcToSVG(computedSpeed);
             for (let i = 0; i < this.arcs.length; i++) {
                 this.arcs[i].setAttribute("transform", "translate(0 " + offset.toString() + ")");
             }
@@ -2229,6 +2229,16 @@ class A320_Neo_SAI_LandingSysIndicator extends HTMLElement {
     construct() {
         Utils.RemoveAllChildren(this);
 
+    }
+}
+
+/**
+ * The ISIS contains its own ADIRU-like device, the data of which is accessed through this type.
+ */
+class IntegratedStandbyInstrumentSystemADIRU {
+    static getComputedSpeed() {
+        // As the ISIS ADR hasn't been implemented yet, for now directly access the sim's indicated speed.
+        return Simplane.getIndicatedSpeed();
     }
 }
 
