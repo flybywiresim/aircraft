@@ -40,11 +40,11 @@ export class GuidanceManager {
     }
 
     getActiveLeg(): RFLeg | TFLeg | VMLeg | null {
-        const activeIndex = this.flightPlanManager.getActiveWaypointIndex();
+        const activeIndex = this.flightPlanManager.getActiveWaypointIndex(false, false, 0);
 
-        const from = this.flightPlanManager.getWaypoint(activeIndex - 1);
-        const to = this.flightPlanManager.getWaypoint(activeIndex);
-        const segment = this.flightPlanManager.getSegmentFromWaypoint(to).type;
+        const from = this.flightPlanManager.getWaypoint(activeIndex - 1, 0);
+        const to = this.flightPlanManager.getWaypoint(activeIndex, 0);
+        const segment = this.flightPlanManager.getSegmentFromWaypoint(to, 0).type;
 
         if (!from || !to) {
             return null;
@@ -66,11 +66,11 @@ export class GuidanceManager {
     }
 
     getNextLeg(): RFLeg | TFLeg | VMLeg | null {
-        const activeIndex = this.flightPlanManager.getActiveWaypointIndex();
+        const activeIndex = this.flightPlanManager.getActiveWaypointIndex(false, false, 0);
 
-        const from = this.flightPlanManager.getWaypoint(activeIndex);
-        const to = this.flightPlanManager.getWaypoint(activeIndex + 1);
-        const segment = this.flightPlanManager.getSegmentFromWaypoint(to).type;
+        const from = this.flightPlanManager.getWaypoint(activeIndex, 0);
+        const to = this.flightPlanManager.getWaypoint(activeIndex + 1, 0);
+        const segment = this.flightPlanManager.getSegmentFromWaypoint(to, 0).type;
 
         if (!from || !to) {
             return null;
