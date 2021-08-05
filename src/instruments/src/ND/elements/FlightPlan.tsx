@@ -13,7 +13,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { AltitudeConstraint, Leg, SpeedConstraint } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { Xy } from '@fmgc/flightplanning/data/geo';
-import { useCurrentFlightPlan } from '@instruments/common/flightplan';
+import { useCurrentFlightPlan, useTemporaryFlightPlan } from '@instruments/common/flightplan';
 import { MapParameters } from '../utils/MapParameters';
 
 export type FlightPathProps = {
@@ -23,17 +23,27 @@ export type FlightPathProps = {
     mapParams: MapParameters,
     constraints: boolean,
     debug: boolean,
+    temp: boolean,
 }
 
-export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, constraints, debug = false }) => {
+export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, constraints, debug = false, temp = false }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
+    const [tempGeometry, setTempGeometry] = useState(() => guidanceManager.getMultipleLegGeometry(true));
+    const [activeGeometry, setActiveGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
+    const temporaryFlightPlan = useTemporaryFlightPlan();
+    const currentFlightPlan = useCurrentFlightPlan();
 
-    const [geometry, setGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
-
-    const flightPlan = useCurrentFlightPlan();
+    const [geometry, setGeometry] = temp
+        ? [tempGeometry, setTempGeometry]
+        : [activeGeometry, setActiveGeometry];
+    const flightPlan = temp ? temporaryFlightPlan : currentFlightPlan;
 
     useInterval(() => {
-        setGeometry(guidanceManager.getMultipleLegGeometry());
+        if (temp) {
+            setGeometry(guidanceManager.getMultipleLegGeometry(true));
+        } else {
+            setGeometry(guidanceManager.getMultipleLegGeometry());
+        }
     }, 2_000);
 
     if (geometry) {
@@ -47,7 +57,9 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
         if (destination) {
             destinationIdent = destination.ident;
             destinationActive = legs.length < 2;
-            const approachRunway = flightPlanManager.getApproachRunway();
+            const approachRunway = temp
+                ? flightPlanManager.getApproachRunway(1)
+                : flightPlanManager.getApproachRunway();
             if (approachRunway) {
                 destinationIdent += Avionics.Utils.formatRunway(approachRunway.designation);
             }
@@ -57,9 +69,17 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
             }
         }
 
+        let flightPath;
+
+        if (temp) {
+            flightPath = <path d={makePathFromGeometry(geometry, mapParams)} className="Yellow" strokeWidth={3} fill="none" strokeDasharray="15 10" />;
+        } else {
+            flightPath = <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" />;
+        }
+
         return (
             <Layer x={x} y={y}>
-                <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" />
+                {flightPath}
                 {origin && (
                     <WaypointMarker
                         ident={origin.ident}
@@ -125,22 +145,36 @@ interface LegWaypointMarkersProps {
 const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, mapParams, constraints, isActive, debug }) => {
     let x;
     let y;
+    let fx;
+    let fy;
     if (leg instanceof TFLeg || leg instanceof RFLeg) {
         [x, y] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
         // TODO: Find a more elegant fix for drawing waypoint (of next leg) after discontinuity
-        if (nextLeg instanceof TFLeg && leg.to.endsInDiscontinuity) {
-            [x, y] = mapParams.coordinatesToXYy(nextLeg.from.infos.coordinates);
+        if (nextLeg instanceof TFLeg && leg.to.endsInDiscontinuity && leg.to.ident !== nextLeg.from.ident) {
+            [fx, fy] = mapParams.coordinatesToXYy(nextLeg.from.infos.coordinates);
             return (
-                <WaypointMarker
-                    ident={nextLeg.from.ident}
-                    position={[x, y]}
-                    altitudeConstraint={nextLeg.initialAltitudeConstraint}
-                    speedConstraint={nextLeg.initialSpeedConstraint}
-                    index={index}
-                    isActive={isActive}
-                    constraints={constraints}
-                    debug={debug}
-                />
+                <>
+                    <WaypointMarker
+                        ident={leg.to.ident}
+                        position={[x, y]}
+                        altitudeConstraint={leg.altitudeConstraint}
+                        speedConstraint={leg.speedConstraint}
+                        index={index}
+                        isActive={isActive}
+                        constraints={constraints}
+                        debug={debug}
+                    />
+                    <WaypointMarker
+                        ident={nextLeg.from.ident}
+                        position={[fx, fy]}
+                        altitudeConstraint={nextLeg.initialAltitudeConstraint}
+                        speedConstraint={nextLeg.initialSpeedConstraint}
+                        index={index}
+                        isActive={false}
+                        constraints={constraints}
+                        debug={debug}
+                    />
+                </>
             );
         }
     } else if (leg instanceof VMLeg) {
