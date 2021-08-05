@@ -109,10 +109,10 @@ struct IPValveController {
 }
 impl ControllerSignal<PneumaticValveSignal> for IPValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
-        if self.upstream_pressure > self.downstream_pressure {
-            Some(PneumaticValveSignal::open())
-        } else {
+        if self.upstream_pressure < self.downstream_pressure {
             Some(PneumaticValveSignal::close())
+        } else {
+            Some(PneumaticValveSignal::open())
         }
     }
 }
@@ -470,7 +470,7 @@ impl EngineBleedSystem {
             ),
             ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
-            ip_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
+            ip_valve: DefaultValve::new(Ratio::new::<percent>(100.)),
             hp_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
             pr_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
             ip_valve_controller: IPValveController::new(number),
@@ -753,6 +753,7 @@ mod tests {
         fn stop_eng1(mut self) -> Self {
             self.write("GENERAL ENG STARTER ACTIVE:1", false);
             self.write("ENGINE_N2:1", 0.);
+            self.write("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.));
 
             self
         }
@@ -760,6 +761,7 @@ mod tests {
         fn stop_eng2(mut self) -> Self {
             self.write("GENERAL ENG STARTER ACTIVE:2", false);
             self.write("ENGINE_N2:2", 0.);
+            self.write("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.));
 
             self
         }
@@ -841,6 +843,10 @@ mod tests {
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
         )
+    }
+
+    fn pressure_tolerance() -> Pressure {
+        Pressure::new::<pascal>(100.)
     }
 
     // Just a way for me to plot some graphs
@@ -970,7 +976,7 @@ mod tests {
 
                 assert!(
                     (sys.ip_compression_chamber.pressure() - pressures[sys.number - 1]).abs()
-                        < Pressure::new::<pascal>(100.)
+                        < pressure_tolerance()
                 )
             },
             &mut pressures,
@@ -1002,7 +1008,7 @@ mod tests {
             |sys, pressures| {
                 assert!(
                     (sys.hp_compression_chamber.pressure() - pressures[sys.number - 1]).abs()
-                        < Pressure::new::<pascal>(100.)
+                        < pressure_tolerance()
                 )
             },
             &mut pressures,
@@ -1011,13 +1017,49 @@ mod tests {
 
     #[test]
     fn cold_dark_valves_closed() {
+        let altitude = Length::new::<foot>(0.);
         let mut test_bed = test_bed_with()
             .stop_eng1()
             .stop_eng2()
-            .in_isa_atmosphere(Length::new::<foot>(0.));
+            .in_isa_atmosphere(altitude)
+            .mach_number(MachNumber(0.));
+
+        test_bed.run();
+        let ambient_pressure = ISA::pressure_at_altitude(altitude);
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(
+                (sys.ip_compression_chamber.pressure() - ambient_pressure).abs()
+                    < pressure_tolerance()
+            )
+        });
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(
+                (sys.hp_compression_chamber.pressure() - ambient_pressure).abs()
+                    < pressure_tolerance()
+            )
+        });
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(
+                (sys.transfer_pressure_pipe.pressure() - ambient_pressure).abs()
+                    < pressure_tolerance()
+            )
+        });
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(
+                (sys.regulated_pressure_pipe.pressure() - ambient_pressure).abs()
+                    < pressure_tolerance()
+            )
+        });
+
+        test_bed.for_both_engine_systems(|sys| assert!(sys.ip_valve.is_open()));
+        test_bed.for_both_engine_systems(|sys| assert!(sys.ip_valve.is_open()));
+
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.hp_valve.is_open()));
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.hp_valve.is_open()));
 
         test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.hp_valve.is_open()));
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
     }
 
     #[test]

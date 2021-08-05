@@ -244,10 +244,14 @@ impl EngineCompressionChamberController {
                     * n1
                     * self.n2_contribution_factor
                     * n2);
-        let total_pressure =
-            (1. + (Self::GAMMA * corrected_mach) / 2.) * context.ambient_pressure();
 
-        self.target_pressure = self.compression_factor * total_pressure;
+        // Static pressure + compressionfactor * dynamic pressure
+        // Dynamic pressure from here: https://en.wikipedia.org/wiki/Mach_number
+        let total_pressure = (1.
+            + (self.compression_factor * Self::GAMMA * corrected_mach.powi(2)) / 2.)
+            * context.ambient_pressure();
+
+        self.target_pressure = total_pressure;
     }
 }
 
@@ -608,7 +612,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_pressure_cold_and_dark() {
         let engine = TestEngine::cold_dark();
-        let mut compression_chamber = EngineCompressionChamberController::new(0., 0., 1.);
+        let mut compression_chamber = EngineCompressionChamberController::new(0.5, 0.5, 2.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber.update(&context, &engine);
