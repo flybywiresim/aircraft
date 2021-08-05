@@ -32,6 +32,7 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
+    const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -45,18 +46,36 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
+        let tmpFplan;
+        if (showTmpFplan) {
+            tmpFplan = (
+                <FlightPlan
+                    x={384}
+                    y={384}
+                    flightPlanManager={flightPlanManager}
+                    mapParams={mapParams}
+                    constraints={efisOption === EfisOption.Constraints}
+                    debug={false}
+                    temp
+                />
+            );
+        }
         return (
             <>
                 <g id="map" clipPath="url(#rose-mode-map-clip)">
                     { mode === Mode.ROSE_NAV && (
-                        <FlightPlan
-                            x={384}
-                            y={384}
-                            flightPlanManager={flightPlanManager}
-                            mapParams={mapParams}
-                            constraints={efisOption === EfisOption.Constraints}
-                            debug={false}
-                        />
+                        <>
+                            <FlightPlan
+                                x={384}
+                                y={384}
+                                flightPlanManager={flightPlanManager}
+                                mapParams={mapParams}
+                                constraints={efisOption === EfisOption.Constraints}
+                                debug={false}
+                                temp={false}
+                            />
+                            {tmpFplan}
+                        </>
                     )}
                     <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
                     <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
