@@ -464,10 +464,8 @@ impl EngineBleedSystem {
     fn new(number: usize) -> Self {
         Self {
             number,
-            ip_compression_chamber_controller: EngineCompressionChamberController::new(0.8, 0., 2.),
-            hp_compression_chamber_controller: EngineCompressionChamberController::new(
-                0.5, 0.5, 6.,
-            ),
+            ip_compression_chamber_controller: EngineCompressionChamberController::new(5., 0., 2.),
+            hp_compression_chamber_controller: EngineCompressionChamberController::new(5., 0.5, 6.),
             ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             ip_valve: DefaultValve::new(Ratio::new::<percent>(100.)),
@@ -611,11 +609,6 @@ impl SimulationElement for A320PneumaticOverheadPanel {
         visitor.visit(self);
     }
 }
-
-// Crossbleed valve controller
-//  - Update with overhead panel and BMC
-//      - If Shut or open on overhead panel, do that
-//      - Otherwise, open if and only if APU bleed valve is open
 
 #[cfg(test)]
 mod tests {
@@ -802,6 +795,10 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems.iter().for_each(|sys| func(sys)));
         }
 
+        fn for_engine<T: Fn(&EngineBleedSystem) -> ()>(&self, number: usize, func: T) {
+            self.query(|a| func(&a.pneumatic.engine_systems[number - 1]))
+        }
+
         fn for_both_engine_systems_with_capture<T: Fn(&EngineBleedSystem, &mut U) -> (), U>(
             &self,
             func: T,
@@ -857,8 +854,7 @@ mod tests {
         let mut test_bed = test_bed_with()
             .mach_number(MachNumber(0.0))
             .in_isa_atmosphere(alt)
-            .idle_eng1()
-            .idle_eng2();
+            .stop_eng1();
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
@@ -870,12 +866,12 @@ mod tests {
         let mut ipv_open = Vec::new();
         let mut esv_open = Vec::new();
 
-        for i in 1..500 {
-            test_bed.run_with_delta(Duration::from_millis(20));
-            ts.push(i as f64 * 20.);
+        for i in 1..10 {
+            test_bed.run_with_delta(Duration::from_millis(1000));
+            ts.push(i as f64 * 1000.);
 
-            if i == 250 {
-                test_bed = test_bed.corrected_n1(Ratio::new::<ratio>(0.8)).n2(80.);
+            if i == 2 {
+                test_bed = test_bed.idle_eng1();
             }
 
             hps.push(test_bed.query(|aircraft| {
@@ -911,7 +907,7 @@ mod tests {
                     .hp_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
+                    * 1.
             }));
 
             prv_open.push(test_bed.query(|aircraft| {
@@ -919,7 +915,7 @@ mod tests {
                     .pr_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
+                    * 1.
             }));
 
             ipv_open.push(test_bed.query(|aircraft| {
@@ -927,7 +923,7 @@ mod tests {
                     .ip_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
+                    * 1.
             }));
 
             esv_open.push(test_bed.query(|aircraft| {
@@ -935,7 +931,7 @@ mod tests {
                     .engine_starter_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
+                    * 1.
             }));
         }
 
@@ -1060,6 +1056,76 @@ mod tests {
 
         test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
         test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
+
+        assert!(!test_bed.cross_bleed_valve_is_open())
+    }
+
+    #[test]
+    fn single_engine_idle() {
+        let altitude = Length::new::<foot>(0.);
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .stop_eng2()
+            .in_isa_atmosphere(altitude)
+            .mach_number(MachNumber(0.));
+
+        let ambient_pressure = ISA::pressure_at_altitude(altitude);
+
+        // Three updates for now until propagation logic is fixed
+        test_bed.run_with_delta(Duration::from_secs(5));
+        test_bed.run_with_delta(Duration::from_secs(5));
+        test_bed.run_with_delta(Duration::from_secs(5));
+
+        test_bed.for_engine(1, |sys| {
+            assert!(sys.ip_compression_chamber.pressure() - ambient_pressure > pressure_tolerance())
+        });
+        test_bed.for_engine(2, |sys| {
+            assert!(
+                (sys.ip_compression_chamber.pressure() - ambient_pressure).abs()
+                    < pressure_tolerance()
+            )
+        });
+
+        test_bed.for_engine(1, |sys| {
+            assert!(sys.hp_compression_chamber.pressure() - ambient_pressure > pressure_tolerance())
+        });
+        test_bed.for_engine(2, |sys| {
+            assert!(
+                (sys.hp_compression_chamber.pressure() - ambient_pressure).abs()
+                    < pressure_tolerance()
+            )
+        });
+
+        test_bed.for_engine(1, |sys| {
+            assert!(sys.transfer_pressure_pipe.pressure() - ambient_pressure > pressure_tolerance())
+        });
+        test_bed.for_engine(2, |sys| {
+            assert!(
+                (sys.transfer_pressure_pipe.pressure() - ambient_pressure).abs()
+                    < pressure_tolerance()
+            )
+        });
+
+        test_bed.for_engine(1, |sys| {
+            assert!(
+                sys.regulated_pressure_pipe.pressure() - ambient_pressure > pressure_tolerance()
+            )
+        });
+        test_bed.for_engine(2, |sys| {
+            assert!(
+                (sys.regulated_pressure_pipe.pressure() - ambient_pressure).abs()
+                    < pressure_tolerance()
+            )
+        });
+
+        test_bed.for_engine(1, |sys| assert!(!sys.ip_valve.is_open()));
+        test_bed.for_engine(2, |sys| assert!(sys.ip_valve.is_open()));
+
+        test_bed.for_engine(1, |sys| assert!(sys.hp_valve.is_open()));
+        test_bed.for_engine(2, |sys| assert!(!sys.hp_valve.is_open()));
+
+        test_bed.for_engine(1, |sys| assert!(sys.pr_valve.is_open()));
+        test_bed.for_engine(2, |sys| assert!(!sys.pr_valve.is_open()));
     }
 
     #[test]
