@@ -200,7 +200,7 @@ var A320_Neo_LowerECAM_PRESS;
             }
             const inletValvePosition = SimVar.GetSimVarValue("L:VENT_INLET_VALVE", "Percent");
             const outletValvePosition = SimVar.GetSimVarValue("L:VENT_OUTLET_VALVE", "Percent");
-            const safetyValvePosition = (SimVar.GetSimVarValue("L:SAFETY_VALVE_1", "Bool") || SimVar.GetSimVarValue("L:SAFETY_VALVE_2", "Bool"));
+            const safetyValvePosition = (SimVar.GetSimVarValue("L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE", "Percent") / 100);
             const activeSystem = SimVar.GetSimVarValue("L:A32NX_PRESS_ACTIVE_CPC_SYS", "Number");
 
             const cabinVSValue = fastToFixed(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_VS", "Feet per minute"), 0);

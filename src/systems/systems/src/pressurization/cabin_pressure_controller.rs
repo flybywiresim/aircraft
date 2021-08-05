@@ -1,6 +1,11 @@
-use crate::{shared::EngineCorrectedN1, simulation::UpdateContext};
+use crate::{
+    shared::{ControllerSignal, EngineCorrectedN1},
+    simulation::UpdateContext,
+};
 
-use super::{PressureValve, PressureValveActuator, PressurizationOverheadPanel};
+use super::{
+    PressureValve, PressureValveActuator, PressureValveSignal, PressurizationOverheadPanel,
+};
 
 use std::time::Duration;
 use uom::si::{
@@ -23,6 +28,7 @@ pub(super) struct CabinPressureController {
     cabin_target_vs: Velocity,
     cabin_vs: Velocity,
     outflow_valve_open_amount: Ratio,
+    safety_valve_open_amount: Ratio,
     cabin_flow_in: VolumeRate,
     cabin_flow_out: VolumeRate,
 }
@@ -39,7 +45,8 @@ impl CabinPressureController {
     const RHO: f64 = 1.225; // Cabin air density - Kg/m3
     const AREA_LEAKAGE: f64 = 0.0003; // m2
     const CABIN_VOLUME: f64 = 400.; // m3
-    const OFV_SIZE: f64 = 0.06; // m2
+    const OFV_SIZE: f64 = 0.03; // m2
+    const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
     const C: f64 = 1.; // Flow coefficient
 
     pub fn new() -> Self {
@@ -53,6 +60,7 @@ impl CabinPressureController {
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
             cabin_vs: Velocity::new::<meter_per_second>(0.),
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
+            safety_valve_open_amount: Ratio::new::<percent>(0.),
             cabin_flow_in: VolumeRate::new::<cubic_meter_per_second>(0.),
             cabin_flow_out: VolumeRate::new::<cubic_meter_per_second>(0.),
         }
@@ -77,7 +85,6 @@ impl CabinPressureController {
         self.landing_elev = landing_elevation;
         self.cabin_target_vs = self.calculate_cabin_vs(context);
         self.cabin_vs = self.set_cabin_vs(context);
-        // println!("Target vs: {}, Cabin vs: {}, Cabin alt: {}", self.cabin_target_vs.get::<foot_per_minute>(), self.cabin_vs.get::<foot_per_minute>(), self.cabin_alt.get::<foot>());
         self.cabin_flow_in = self.calculate_cabin_flow_in(packs_are_on, context);
         self.cabin_flow_out = self.calculate_cabin_flow_out();
     }
@@ -263,7 +270,6 @@ impl CabinPressureController {
             && self.outflow_valve_open_amount >= equilibrium_ratio)
             || equilibrium_ratio > Ratio::new::<percent>(100.)
         {
-            // println!("Gets to the first loop.");
             // let rate_of_change_for_delta = INTERNAL_VS_RATE_CHANGE * context.delta_as_secs_f64();
             context.vertical_speed()
             // if self.cabin_vs < context.vertical_speed() {
@@ -280,7 +286,6 @@ impl CabinPressureController {
             //     context.vertical_speed()
             // }
         } else {
-            // println!("Exterior pressure: {}, Cabin pressure: {}, OFV open amount: {}, equilibrium: {}", self.exterior_pressure.get::<hectopascal>(), self.cabin_pressure.get::<hectopascal>(), self.outflow_valve_open_amount.get::<percent>(), equilibrium_ratio.get::<percent>());
             let z = self.calculate_z();
             let vertical_speed = (self.outflow_valve_open_amount.get::<ratio>()
                 * CabinPressureController::OFV_SIZE
@@ -298,7 +303,6 @@ impl CabinPressureController {
                     * CabinPressureController::G
                     * CabinPressureController::CABIN_VOLUME)
                     / (CabinPressureController::R * CabinPressureController::T_0));
-            // println!("Gets to second loop. Z: {}, Wl: {}, Cabin Pressure: {}", z, self.cabin_flow_out.get::<cubic_meter_per_second>(), self.cabin_pressure.get::<pascal>());
             Velocity::new::<meter_per_second>(vertical_speed)
         }
     }
@@ -341,9 +345,12 @@ impl CabinPressureController {
 
     fn calculate_cabin_flow_out(&self) -> VolumeRate {
         let z = self.calculate_z();
+        let area_leakage = CabinPressureController::AREA_LEAKAGE
+            + CabinPressureController::SAFETY_VALVE_SIZE
+                * self.safety_valve_open_amount.get::<ratio>();
         let w_leakage = VolumeRate::new::<cubic_meter_per_second>(
             CabinPressureController::C
-                * CabinPressureController::AREA_LEAKAGE
+                * area_leakage
                 * ((2.
                     * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
                     * CabinPressureController::RHO
@@ -386,6 +393,10 @@ impl CabinPressureController {
 
     pub fn update_outflow_valve_state(&mut self, outflow_valve: &PressureValve) {
         self.outflow_valve_open_amount = outflow_valve.open_amount();
+    }
+
+    pub fn update_safety_valve_state(&mut self, safety_valve: &PressureValve) {
+        self.safety_valve_open_amount = safety_valve.open_amount();
     }
 
     pub fn cabin_altitude(&self) -> Length {
@@ -460,6 +471,20 @@ impl PressureValveActuator for CabinPressureController {
             Ratio::new::<percent>(100.)
         } else {
             ofv_open_ratio
+        }
+    }
+}
+
+impl ControllerSignal<PressureValveSignal> for CabinPressureController {
+    fn signal(&self) -> Option<PressureValveSignal> {
+        if self.cabin_delta_p() > Pressure::new::<psi>(8.6)
+            || self.cabin_delta_p() < Pressure::new::<psi>(-1.)
+        {
+            Some(PressureValveSignal::Open)
+        } else if self.outflow_valve_open_amount > Ratio::new::<percent>(0.) {
+            Some(PressureValveSignal::Close)
+        } else {
+            Some(PressureValveSignal::Neutral)
         }
     }
 }
@@ -825,7 +850,7 @@ mod pressure_schedule_manager_tests {
         fn new() -> Self {
             let mut test_aircraft = Self {
                 cpc: CabinPressureController::new(),
-                outflow_valve: PressureValve::new(),
+                outflow_valve: PressureValve::new_open(),
                 press_overhead: PressurizationOverheadPanel::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
@@ -892,8 +917,7 @@ mod pressure_schedule_manager_tests {
                 true,
                 false,
             );
-            self.outflow_valve
-                .update(context, &self.cpc, &self.press_overhead);
+            self.outflow_valve.update(context, &self.press_overhead);
             self.cpc.update_outflow_valve_state(&self.outflow_valve);
         }
     }

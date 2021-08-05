@@ -1,6 +1,6 @@
 use self::{
     cabin_pressure_controller::CabinPressureController,
-    pressure_valve::{OutflowValveManualSignal, PressureValve},
+    pressure_valve::{PressureValve, PressureValveSignal},
 };
 use crate::{
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
@@ -24,6 +24,7 @@ trait PressureValveActuator {
 pub struct Pressurization {
     cpc: [CabinPressureController; 2],
     outflow_valve: PressureValve,
+    safety_valve: PressureValve,
     active_system: usize,
     landing_elevation: Length,
     sea_level_pressure: Pressure,
@@ -43,7 +44,8 @@ impl Pressurization {
 
         Self {
             cpc: [CabinPressureController::new(); 2],
-            outflow_valve: PressureValve::new(),
+            outflow_valve: PressureValve::new_open(),
+            safety_valve: PressureValve::new_closed(),
             active_system: active,
             landing_elevation: Length::new::<foot>(0.),
             sea_level_pressure: Pressure::new::<hectopascal>(1013.25),
@@ -75,8 +77,11 @@ impl Pressurization {
                 self.is_in_man_mode,
             );
             self.outflow_valve
-                .update(context, controller, press_overhead);
+                .calculate_outflow_valve_position(controller, press_overhead);
+            self.outflow_valve.update(context, press_overhead);
             controller.update_outflow_valve_state(&self.outflow_valve);
+            self.safety_valve.update(context, controller);
+            controller.update_safety_valve_state(&self.safety_valve);
         }
 
         if self.is_in_man_mode && press_overhead.mode_sel.is_man() {
@@ -129,6 +134,10 @@ impl SimulationElement for Pressurization {
         writer.write(
             "PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE",
             self.outflow_valve.open_amount(),
+        );
+        writer.write(
+            "PRESS_SAFETY_VALVE_OPEN_PERCENTAGE",
+            self.safety_valve.open_amount(),
         );
     }
 
@@ -197,15 +206,15 @@ impl Default for PressurizationOverheadPanel {
     }
 }
 
-impl ControllerSignal<OutflowValveManualSignal> for PressurizationOverheadPanel {
-    fn signal(&self) -> Option<OutflowValveManualSignal> {
+impl ControllerSignal<PressureValveSignal> for PressurizationOverheadPanel {
+    fn signal(&self) -> Option<PressureValveSignal> {
         if !self.is_in_man_mode() {
             None
         } else {
             match self.man_vs_switch_position() {
-                0 => Some(OutflowValveManualSignal::Open),
-                2 => Some(OutflowValveManualSignal::Close),
-                _ => None,
+                0 => Some(PressureValveSignal::Open),
+                2 => Some(PressureValveSignal::Close),
+                _ => Some(PressureValveSignal::Neutral),
             }
         }
     }
@@ -250,7 +259,7 @@ mod tests {
     pub fn test_bed_in_cruise() -> PressurizationTestBed {
         let mut test_bed = test_bed();
         test_bed.set_indicated_altitude(Length::new::<foot>(34000.));
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(250.));
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(850.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
         test_bed.run_with_delta(Duration::from_secs(31));
         test_bed
@@ -411,6 +420,10 @@ mod tests {
 
         fn outflow_valve_open_amount(&self) -> Ratio {
             self.query(|a| a.pressurization.outflow_valve.open_amount())
+        }
+
+        fn safety_valve_open_amount(&self) -> Ratio {
+            self.query(|a| a.pressurization.safety_valve.open_amount())
         }
 
         fn iterate(mut self, delta: usize) -> Self {
@@ -931,7 +944,7 @@ mod tests {
     fn outflow_valve_position_affects_cabin_vs_when_in_man_mode() {
         let mut test_bed = test_bed();
 
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(300.));
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(600.));
         test_bed = test_bed.iterate(10);
         test_bed = test_bed.command_mode_sel_pb_man();
         test_bed.run();
@@ -996,10 +1009,73 @@ mod tests {
         test_bed.run();
 
         test_bed = test_bed.command_man_vs_switch_position(0);
-        test_bed = test_bed.iterate(60);
+        test_bed = test_bed.iterate(100);
         assert!(
             (test_bed.cabin_pressure() - Pressure::new::<hectopascal>(465.63)).abs()
-                < Pressure::new::<hectopascal>(1.)
+                < Pressure::new::<hectopascal>(10.)
+        );
+    }
+
+    #[test]
+    fn safety_valve_stays_closed_when_delta_p_is_less_than_8_6_psi() {
+        let mut test_bed = test_bed();
+
+        //Equivalent to SL - 8.6 PSI
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(421.));
+        test_bed.run();
+        assert_eq!(
+            test_bed.safety_valve_open_amount(),
+            Ratio::new::<percent>(0.)
+        );
+    }
+
+    #[test]
+    fn safety_valve_stays_closed_when_delta_p_is_less_than_minus_1_psi() {
+        let mut test_bed = test_bed();
+
+        //Equivalent to SL + 1 PSI
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1080.));
+        test_bed.run();
+        assert_eq!(
+            test_bed.safety_valve_open_amount(),
+            Ratio::new::<percent>(0.)
+        );
+    }
+
+    #[test]
+    fn safety_valve_opens_when_delta_p_above_8_6_psi() {
+        let mut test_bed = test_bed();
+
+        //Equivalent to SL - 8.7 PSI
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(413.));
+        test_bed.run();
+        assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
+    }
+
+    #[test]
+    fn safety_valve_opens_when_delta_p_below_minus_1_psi() {
+        let mut test_bed = test_bed();
+
+        //Equivalent to SL + 1.1 PSI
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1089.));
+        test_bed.run();
+        assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
+    }
+
+    #[test]
+    fn safety_valve_closes_when_condition_is_not_met() {
+        let mut test_bed = test_bed();
+
+        //Equivalent to SL + 1.1 PSI
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1089.));
+        test_bed.run();
+        assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
+
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1020.));
+        test_bed.run();
+        assert_eq!(
+            test_bed.safety_valve_open_amount(),
+            Ratio::new::<percent>(0.)
         );
     }
 }

@@ -1711,6 +1711,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Ratio
     - Percent open of the cabin pressure outflow valve
 
+- A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE
+    - Ratio
+    - Percent open of the cabin pressure safety valves
+
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered

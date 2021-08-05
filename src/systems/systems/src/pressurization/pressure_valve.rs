@@ -5,9 +5,10 @@ use super::{PressureValveActuator, PressurizationOverheadPanel};
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
 
-pub(super) enum OutflowValveManualSignal {
+pub(super) enum PressureValveSignal {
     Open,
     Close,
+    Neutral,
 }
 
 pub(super) struct PressureValve {
@@ -18,7 +19,7 @@ pub(super) struct PressureValve {
 }
 
 impl PressureValve {
-    pub fn new() -> Self {
+    pub fn new_open() -> Self {
         Self {
             open_amount: Ratio::new::<percent>(100.),
             target_open: Ratio::new::<percent>(100.),
@@ -27,46 +28,60 @@ impl PressureValve {
         }
     }
 
-    pub fn update<T: PressureValveActuator>(
+    pub fn new_closed() -> Self {
+        Self {
+            open_amount: Ratio::new::<percent>(0.),
+            target_open: Ratio::new::<percent>(0.),
+            full_travel_time: Duration::from_secs(1),
+            manual_travel_time: Duration::from_secs(1),
+        }
+    }
+
+    pub fn update(
         &mut self,
         context: &UpdateContext,
-        actuator: &T,
-        press_overhead: &PressurizationOverheadPanel,
+        signal: &impl ControllerSignal<PressureValveSignal>,
     ) {
-        if press_overhead.is_in_man_mode() {
-            match press_overhead.signal() {
-                Some(OutflowValveManualSignal::Open)
-                    if { self.open_amount < Ratio::new::<percent>(100.) } =>
-                {
+        match signal.signal() {
+            Some(PressureValveSignal::Open) => {
+                if self.open_amount < Ratio::new::<percent>(100.) {
                     self.open_amount += Ratio::new::<percent>(
                         self.get_manual_change_for_delta(context)
                             .min(100. - self.open_amount.get::<percent>()),
                     );
                 }
-                Some(OutflowValveManualSignal::Close)
-                    if { self.open_amount > Ratio::new::<percent>(0.) } =>
-                {
+            }
+            Some(PressureValveSignal::Close) => {
+                if self.open_amount > Ratio::new::<percent>(0.) {
                     self.open_amount -= Ratio::new::<percent>(
                         self.get_manual_change_for_delta(context)
                             .min(self.open_amount.get::<percent>()),
                     );
                 }
-                _ => (),
             }
-        } else {
-            self.target_open = actuator.target_valve_position(press_overhead);
-            if self.open_amount < self.target_open {
-                self.open_amount += Ratio::new::<percent>(
-                    self.get_valve_change_for_delta(context)
-                        .min(self.target_open.get::<percent>() - self.open_amount.get::<percent>()),
-                );
-            } else if self.open_amount > self.target_open {
-                self.open_amount -= Ratio::new::<percent>(
-                    self.get_valve_change_for_delta(context)
-                        .min(self.open_amount.get::<percent>() - self.target_open.get::<percent>()),
-                );
+            Some(PressureValveSignal::Neutral) => (),
+            _ => {
+                if self.open_amount < self.target_open {
+                    self.open_amount +=
+                        Ratio::new::<percent>(self.get_valve_change_for_delta(context).min(
+                            self.target_open.get::<percent>() - self.open_amount.get::<percent>(),
+                        ));
+                } else if self.open_amount > self.target_open {
+                    self.open_amount -=
+                        Ratio::new::<percent>(self.get_valve_change_for_delta(context).min(
+                            self.open_amount.get::<percent>() - self.target_open.get::<percent>(),
+                        ));
+                }
             }
         }
+    }
+
+    pub fn calculate_outflow_valve_position<T: PressureValveActuator>(
+        &mut self,
+        actuator: &T,
+        press_overhead: &PressurizationOverheadPanel,
+    ) {
+        self.target_open = actuator.target_valve_position(press_overhead);
     }
 
     fn get_valve_change_for_delta(&self, context: &UpdateContext) -> f64 {
@@ -91,14 +106,12 @@ mod pressure_valve_tests {
     struct TestAircraft {
         valve: PressureValve,
         actuator: TestValveActuator,
-        pressurization_overhead: PressurizationOverheadPanel,
     }
     impl TestAircraft {
         fn new() -> Self {
             Self {
-                valve: PressureValve::new(),
+                valve: PressureValve::new_open(),
                 actuator: TestValveActuator::new(),
-                pressurization_overhead: PressurizationOverheadPanel::new(),
             }
         }
 
@@ -120,8 +133,7 @@ mod pressure_valve_tests {
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.valve
-                .update(context, &self.actuator, &self.pressurization_overhead);
+            self.valve.update(context, &self.actuator);
         }
     }
     impl SimulationElement for TestAircraft {}
@@ -142,9 +154,11 @@ mod pressure_valve_tests {
 
         fn open(&mut self) {
             self.should_open = true;
+            self.should_close = false;
         }
 
         fn close(&mut self) {
+            self.should_open = false;
             self.should_close = true;
         }
 
@@ -155,6 +169,17 @@ mod pressure_valve_tests {
     impl PressureValveActuator for TestValveActuator {
         fn target_valve_position(&self, _press_overhead: &PressurizationOverheadPanel) -> Ratio {
             self.target_valve_position
+        }
+    }
+    impl ControllerSignal<PressureValveSignal> for TestValveActuator {
+        fn signal(&self) -> Option<PressureValveSignal> {
+            if self.should_open {
+                Some(PressureValveSignal::Open)
+            } else if self.should_close {
+                Some(PressureValveSignal::Close)
+            } else {
+                None
+            }
         }
     }
 
@@ -218,9 +243,7 @@ mod pressure_valve_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.command(|a| a.command_valve_close());
-        test_bed.command(|a| a.command_valve_open_amount(Ratio::new::<percent>(0.)));
         test_bed.run_with_delta(Duration::from_secs(1_000));
-
         test_bed.command(|a| a.command_valve_close());
         test_bed.run();
 
