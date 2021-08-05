@@ -641,10 +641,11 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.GOAROUND: {
+                const computedSpeed = ADIRS.getComputedSpeed();
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Number.isNaN(computedSpeed) ? 0 : computedSpeed);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
                 //delete override logic when we have valid nav data -aka goaround path- after goaround!
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
@@ -940,7 +941,7 @@ class FMCMainDisplay extends BaseAirliners {
                         pathAngle -= 360;
                     }
                     const absPathAngle = 180 - Math.abs(pathAngle);
-                    const airspeed = Simplane.getIndicatedSpeed();
+                    const airspeed = ADIRS.getComputedSpeed();
                     if (airspeed < 400) {
                         const turnRadius = airspeed * 360 / (1091 * 0.36 / airspeed) / 3600 / 2 / Math.PI;
                         const activateDistance = Math.pow(90 / absPathAngle, 1.6) * turnRadius * 1.2;

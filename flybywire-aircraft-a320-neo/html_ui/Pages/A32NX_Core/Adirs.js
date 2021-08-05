@@ -78,6 +78,10 @@ class ADIRS {
         return ADIRS.getFromAnyAdr('TRUE_AIRSPEED', 'Knots');
     }
 
+    static getComputedSpeed() {
+        return ADIRS.getFromAnyAdr('COMPUTED_AIRSPEED', 'Knots');
+    }
+
     static fromKnotsToMetersPerSecond(value) {
         return value * 0.514444;
     }

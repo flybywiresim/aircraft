@@ -355,7 +355,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     }
 
     getCurrentSpeed() {
-        return this.clampSpeed(Math.round(Simplane.getIndicatedSpeed()));
+        const computedSpeed = ADIRS.getComputedSpeed();
+        if (Number.isNaN(computedSpeed)) {
+            return this.MIN_SPEED;
+        }
+        return this.clampSpeed(Math.round(computedSpeed));
     }
 
     getCurrentMach() {
