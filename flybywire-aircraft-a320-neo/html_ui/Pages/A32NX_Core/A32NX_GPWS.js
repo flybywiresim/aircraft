@@ -66,13 +66,13 @@ class A32NX_GPWS {
             const FlapPushButton = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool");
             const FlapPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
             const FlapsInLandingConfig = FlapPushButton ? (FlapPosition === 3) : (FlapPosition === 4);
-            const vSpeed = Simplane.getVerticalSpeed();
+            const verticalSpeed = ADIRS.getInertialVerticalSpeed();
             const computedAirspeed = ADIRS.getComputedSpeed();
             const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 0.9;
 
             this.update_maxRA(radioAlt, onGround, phase);
 
-            this.GPWSMode1(radioAlt, vSpeed);
+            this.GPWSMode1(radioAlt, verticalSpeed);
             //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
             //this.GPWSMode2(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
             this.GPWSMode3(radioAlt, phase);
@@ -239,10 +239,10 @@ class A32NX_GPWS {
     /**
      * Compute the GPWS Mode 1 state.
      * @param radioAlt - Radio altitude in feet
-     * @param vSpeed - Vertical speed, in feet/min, should be inertial vertical speed, not sure if simconnect provides that
+     * @param verticalSpeed - Vertical speed, in feet/min, should be inertial vertical speed, not sure if simconnect provides that
      */
-    GPWSMode1(radioAlt, vSpeed) {
-        const sinkrate = -vSpeed;
+    GPWSMode1(radioAlt, verticalSpeed) {
+        const sinkrate = -verticalSpeed;
 
         if (sinkrate <= 1000) {
             this.Mode1Code = 0;

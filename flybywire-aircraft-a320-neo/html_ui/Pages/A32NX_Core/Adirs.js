@@ -82,6 +82,25 @@ class ADIRS {
         return ADIRS.getFromAnyAdr('COMPUTED_AIRSPEED', 'Knots');
     }
 
+    /**
+     * Gets the vertical speed according to the inertial system when available,
+     * barometric vertical speed otherwise.
+     */
+    static getVerticalSpeed() {
+        const irVerticalSpeed = ADIRS.getInertialVerticalSpeed();
+        return !Number.isNaN(irVerticalSpeed)
+            ? irVerticalSpeed
+            : ADIRS.getBarometricVerticalSpeed();
+    }
+
+    static getInertialVerticalSpeed() {
+        return ADIRS.getFromAnyIr('VERTICAL_SPEED', 'Feet per minute');
+    }
+
+    static getBarometricVerticalSpeed() {
+        return ADIRS.getFromAnyAdr('BAROMETRIC_VERTICAL_SPEED', 'Feet per minute');
+    }
+
     static fromKnotsToMetersPerSecond(value) {
         return value * 0.514444;
     }

@@ -229,16 +229,23 @@ declare global {
 
     namespace Simplane {
         function getDesignSpeeds(): DesignSpeeds;
+
         /**
          * @deprecated due to custom ADIRS implementation. Use ADIRS.getTrueSpeed instead.
          */
         function getTrueSpeed(): Knots;
+
         /**
          * @deprecated due to custom ADIRS implementation. Use ADIRS.getComputedSpeed instead.
          */
         function getIndicatedSpeed(): Knots;
+
+        /**
+         * @deprecated due to custom ADIRS implementation. Use ADIRS.getVerticalSpeed, ADIRS.getInertialVerticalSpeed, or ADIRS.getBarometricVerticalSpeed instead.
+         */
         function getVerticalSpeed(): FeetPerMinute | null;
         function getGroundSpeed(): Knots | null;
+
         /**
          * @deprecated due to custom ADIRS implementation. Use ADIRS.getMachSpeed instead.
          */

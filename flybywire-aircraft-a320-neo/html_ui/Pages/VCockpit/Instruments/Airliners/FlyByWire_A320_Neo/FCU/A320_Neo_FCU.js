@@ -1020,14 +1020,19 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     }
 
     getCurrentFlightPathAngle() {
-        return this.calculateAngleForVerticalSpeed(Simplane.getVerticalSpeed());
+        return this.calculateAngleForVerticalSpeed(ADIRS.getVerticalSpeed());
     }
 
     getCurrentVerticalSpeed() {
-        return Utils.Clamp(Math.round(Simplane.getVerticalSpeed() / 100) * 100, -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
+        const verticalSpeed = ADIRS.getVerticalSpeed();
+        if (Number.isNaN(verticalSpeed)) {
+            return 0;
+        }
+
+        return Utils.Clamp(Math.round(verticalSpeed / 100) * 100, -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
     }
 
-    _enterIdleState(idleVSpeed) {
+    _enterIdleState() {
         this.selectedVs = 0;
         this.selectedFpa = 0;
         this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
@@ -1195,7 +1200,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
      * @returns {number} The corresponding flight path angle in degrees.
      */
     calculateAngleForVerticalSpeed(verticalSpeed) {
-        if (Math.abs(verticalSpeed) < 10) {
+        if (Number.isNaN(verticalSpeed) || Math.abs(verticalSpeed) < 10) {
             return 0;
         }
         const _groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
