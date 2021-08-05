@@ -124,19 +124,34 @@ export class GuidanceManager {
      * The full leg path geometry, used for the ND and predictions on the F-PLN page.
      */
     // TODO Extract leg and transition building
-    getMultipleLegGeometry(): Geometry | null {
-        const activeIdx = this.flightPlanManager.getCurrentFlightPlan().activeWaypointIndex;
+    getMultipleLegGeometry(temp? : boolean): Geometry | null {
+        if (temp) {
+            if (this.flightPlanManager.getFlightPlan(1) === undefined) {
+                return undefined;
+            }
+        }
+        const activeIdx = temp
+            ? this.flightPlanManager.getFlightPlan(1).activeWaypointIndex
+            : this.flightPlanManager.getCurrentFlightPlan().activeWaypointIndex;
         const legs = new Map<number, Leg>();
         const transitions = new Map<number, Transition>();
 
         // We go in reverse order here, since transitions often need info about the next leg
-        const wpCount = this.flightPlanManager.getCurrentFlightPlan().length;
+        const wpCount = temp
+            ? this.flightPlanManager.getFlightPlan(1).length
+            : this.flightPlanManager.getCurrentFlightPlan().length;
         for (let i = wpCount - 1; (i >= activeIdx - 1); i--) {
             const nextLeg = legs.get(i + 1);
 
-            const from = this.flightPlanManager.getWaypoint(i - 1);
-            const to = this.flightPlanManager.getWaypoint(i);
-            const segment = this.flightPlanManager.getSegmentFromWaypoint(to).type;
+            const from = temp
+                ? this.flightPlanManager.getWaypoint(i - 1, 1)
+                : this.flightPlanManager.getWaypoint(i - 1);
+            const to = temp
+                ? this.flightPlanManager.getWaypoint(i, 1)
+                : this.flightPlanManager.getWaypoint(i);
+            const segment = temp
+                ? this.flightPlanManager.getSegmentFromWaypoint(to, 1).type
+                : this.flightPlanManager.getSegmentFromWaypoint(to).type;
 
             // Reached the end or start of the flight plan
             if (!from || !to) {

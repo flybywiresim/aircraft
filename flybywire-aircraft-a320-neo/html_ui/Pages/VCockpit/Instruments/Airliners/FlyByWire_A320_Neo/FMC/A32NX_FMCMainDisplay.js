@@ -1702,6 +1702,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setApproachTransitionIndex(transitionIndex, callback = EmptyCallback.Boolean) {
+        // console.log("FMCMainDisplay: setApproachTransitionIndex = ", transitionIndex);
         const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachTransitionIndex(transitionIndex, () => {
@@ -1713,6 +1714,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setArrivalProcIndex(arrivalIndex, callback = EmptyCallback.Boolean) {
+        // console.log("FMCMainDisplay: setArrivalProcIndex = ", arrivalIndex);
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setArrivalProcIndex(arrivalIndex, () => {
                 callback(true);
@@ -1721,6 +1723,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setArrivalIndex(arrivalIndex, transitionIndex, callback = EmptyCallback.Boolean) {
+        // console.log("FMCMainDisplay: setArrivalIndex: arrivalIndex=", arrivalIndex, " transitionIndex=", transitionIndex);
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setArrivalEnRouteTransitionIndex(transitionIndex, () => {
                 this.flightPlanManager.setArrivalProcIndex(arrivalIndex, () => {
@@ -1731,6 +1734,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setApproachIndex(approachIndex, callback = EmptyCallback.Boolean) {
+        // console.log("FMCMainDisplay: setApproachIndex = ", approachIndex);
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
                 const approach = this.flightPlanManager.getApproach();
