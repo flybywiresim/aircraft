@@ -59,7 +59,8 @@ export class FlightPlanManager {
      * The current stored flight plan data.
      * @type ManagedFlightPlan[]
      */
-    private _flightPlans: ManagedFlightPlan[] = [];
+    // TODO: change back to private
+    public _flightPlans: ManagedFlightPlan[] = [];
 
     /**
      * Constructs an instance of the FlightPlanManager with the provided
@@ -596,9 +597,13 @@ export class FlightPlanManager {
      * Gets the flight plan segment for a flight plan waypoint.
      * @param waypoint The waypoint we want to find the segment for.
      */
-    public getSegmentFromWaypoint(waypoint: WayPoint | undefined): FlightPlanSegment {
+    public getSegmentFromWaypoint(waypoint: WayPoint | undefined, flightPlanIndex = NaN): FlightPlanSegment {
+        if (isNaN(flightPlanIndex)) {
+            flightPlanIndex = this._currentFlightPlanIndex;
+        }
+
         const index = waypoint === undefined ? this.getActiveWaypointIndex() : this.indexOfWaypoint(waypoint);
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         return currentFlightPlan.findSegmentByWaypointIndex(index);
     }
 
@@ -1119,7 +1124,7 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
         if (currentFlightPlan.procedureDetails.arrivalIndex !== index) {
-            // console.log(`setArrivalProcIndex: SET STAR -  ${currentFlightPlan.destinationAirfield.infos.arrivals[index].name}`);
+            // console.log('FPM: setArrivalProcIndex: SET STAR ', currentFlightPlan.destinationAirfield.infos.arrivals[index].name);
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = -1;
             currentFlightPlan.procedureDetails.arrivalIndex = index;
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
@@ -1171,8 +1176,8 @@ export class FlightPlanManager {
      */
     public async setArrivalEnRouteTransitionIndex(index, callback = () => { }): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        // console.log(`setArrivalEnRouteTransitionIndex: SET TRANSITION - ARRIVAL
-        // ${currentFlightPlan.destinationAirfield.infos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex].enRouteTransitions[index].name}`);
+        // console.log('FPM: setArrivalEnRouteTransitionIndex: SET TRANSITION - ARRIVAL',
+        //     currentFlightPlan.destinationAirfield.infos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex].enRouteTransitions[index].name);
 
         if (currentFlightPlan.procedureDetails.arrivalTransitionIndex !== index) {
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = index;
@@ -1249,7 +1254,7 @@ export class FlightPlanManager {
         // console.log(currentFlightPlan);
 
         if (currentFlightPlan.procedureDetails.approachIndex !== index) {
-            // console.log(`setApproachIndex - APPROACH ${currentFlightPlan.destinationAirfield.infos.approaches[index].name}`);
+            // console.log('FPM: setApproachIndex - APPROACH', currentFlightPlan.destinationAirfield.infos.approaches[index].name);
             currentFlightPlan.procedureDetails.approachIndex = index;
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
             currentFlightPlan.procedureDetails.arrivalIndex = -1;
@@ -1371,8 +1376,12 @@ export class FlightPlanManager {
     /**
      * Gets the approach runway from the current flight plan.
      */
-    public getApproachRunway(): OneWayRunway {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    public getApproachRunway(flightPlanIndex = NaN): OneWayRunway {
+        if (isNaN(flightPlanIndex)) {
+            flightPlanIndex = this._currentFlightPlanIndex;
+        }
+
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
 
         if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex !== -1) {
             const destination = currentFlightPlan.waypoints[currentFlightPlan.waypoints.length - 1];

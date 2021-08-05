@@ -18,6 +18,7 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption }) 
     const flightPlanManager = useFlightPlanManager();
 
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
+    const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
     const [selectedWaypoint, setSelectedWaypoint] = useState<WayPoint>();
 
     useEffect(() => {
@@ -37,6 +38,21 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption }) 
         }
     }, [selectedWaypoint?.infos.coordinates.lat, selectedWaypoint?.infos.coordinates.long, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
+    let tmpFplan;
+    if (showTmpFplan) {
+        tmpFplan = (
+            <FlightPlan
+                x={384}
+                y={384}
+                flightPlanManager={flightPlanManager}
+                mapParams={mapParams}
+                constraints={efisOption === EfisOption.Constraints}
+                debug={false}
+                temp
+            />
+        );
+    }
+
     return (
         <>
             <g id="map" clipPath="url(#plan-mode-map-clip)">
@@ -47,7 +63,9 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption }) 
                     mapParams={mapParams}
                     constraints={efisOption === EfisOption.Constraints}
                     debug={false}
+                    temp={false}
                 />
+                {tmpFplan}
             </g>
 
             <Overlay rangeSetting={rangeSetting} />
