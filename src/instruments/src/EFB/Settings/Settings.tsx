@@ -18,21 +18,6 @@ type AdirsButton = {
     simVarValue: number,
 }
 
-const OtherSettings = () => {
-    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
-
-    return (
-        <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
-            <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Brightness</span>
-                <div className="flex flex-row items-center py-1.5">
-                    <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const ControlSettings = ({ setShowSettings }) => (
     <div className="bg-navy-lighter divide-y my-4 divide-gray-700 flex flex-col rounded-xl p-6 shadow-lg">
         <div className="flex flex-row justify-between items-center">
@@ -368,9 +353,20 @@ const AudioPage = () => {
     );
 };
 
-const FlyPadPage = () => (
-    <OtherSettings />
-);
+const FlyPadPage = () => {
+    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
+
+    return (
+        <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Brightness</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                </div>
+            </div>
+        </div>
+    );
+};
 
 interface SettingsNavbarContextInterface {
     showNavbar: boolean,
