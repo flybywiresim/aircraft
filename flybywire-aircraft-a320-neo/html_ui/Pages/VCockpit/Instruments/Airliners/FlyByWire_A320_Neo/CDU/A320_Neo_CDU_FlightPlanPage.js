@@ -449,13 +449,15 @@ class CDUFlightPlanPage {
         const allowScroll = waypointsWithDiscontinuities.length > 4;
         if (allowScroll) {//scroll only if there are more than 5 points
             mcdu.onAirport = () => {
-                const departureAirportOffset = 0;
-                const arrivalAirportOffset = waypointsWithDiscontinuities.length - 1;
-                if (offset === departureAirportOffset) {
-                    offset = arrivalAirportOffset;
-                } else if (offset === arrivalAirportOffset) {
-                    offset = departureAirportOffset;
+                const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
+                const destinationAirportOffset = waypointsWithDiscontinuities.length - 4;
+                const allowCycleToOriginAirport = mcdu.currentFlightPhase === FmgcFlightPhases.PREFLIGHT;
+                if (offset === destinationAirportOffset && allowCycleToOriginAirport && isOnFlightPlanPage) {
+                    offset = 0; // Offset flight plan to show origin airport.
+                } else {
+                    offset = destinationAirportOffset;
                 }
+                // Displays the flight plan, offset to show the currently cycled airport.
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             };
             mcdu.onDown = () => {//on page down decrement the page offset.

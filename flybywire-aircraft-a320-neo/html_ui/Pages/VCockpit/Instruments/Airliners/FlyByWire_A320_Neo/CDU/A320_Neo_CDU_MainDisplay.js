@@ -277,6 +277,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }, this.getDelaySwitchPage());
         };
+        this.onAirport = () => {
+            CDUFlightPlanPage.ShowPage(this);
+            this.onAirport();
+        };
 
         CDUMenuPage.ShowPage(this);
 
