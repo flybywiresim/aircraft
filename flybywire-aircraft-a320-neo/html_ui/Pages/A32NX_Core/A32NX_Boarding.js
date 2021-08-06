@@ -39,8 +39,8 @@ class A32NX_Boarding {
                 seatsRange: [37, 78],
                 simVar: "A32NX_PAX_TOTAL_ROWS_7_13"
             },
-            rows14_20: {
-                name: 'ECONOMY ROWS 14-20',
+            rows14_21: {
+                name: 'ECONOMY ROWS 14-21',
                 seats: 48,
                 weight: 4032,
                 pax: 0,
@@ -48,10 +48,10 @@ class A32NX_Boarding {
                 stationIndex: 4 + 1,
                 position: -15.34,
                 seatsRange: [79, 126],
-                simVar: "A32NX_PAX_TOTAL_ROWS_14_20"
+                simVar: "A32NX_PAX_TOTAL_ROWS_14_21"
             },
-            rows21_27: {
-                name: 'ECONOMY ROWS 21-27',
+            rows22_29: {
+                name: 'ECONOMY ROWS 22-29',
                 seats: 48,
                 weight: 4032,
                 pax: 0,
@@ -59,7 +59,7 @@ class A32NX_Boarding {
                 stationIndex: 5 + 1,
                 position: -32.81,
                 seatsRange: [127, 174],
-                simVar: "A32NX_PAX_TOTAL_ROWS_21_27"
+                simVar: "A32NX_PAX_TOTAL_ROWS_22_29"
             },
         };
 
@@ -126,8 +126,8 @@ class A32NX_Boarding {
             paxRemaining -= pax;
         }
 
-        await fillStation(this.paxStations['rows21_27'], paxRemaining);
-        await fillStation(this.paxStations['rows14_20'], paxRemaining);
+        await fillStation(this.paxStations['rows22_29'], paxRemaining);
+        await fillStation(this.paxStations['rows14_21'], paxRemaining);
 
         const remainingByTwo = Math.trunc(paxRemaining / 2);
         await fillStation(this.paxStations['rows1_6'], remainingByTwo);

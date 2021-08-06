@@ -444,18 +444,18 @@ class FMCMainDisplay extends BaseAirliners {
                 stationIndex: 3 + 1,
                 position: 2.86,
             },
-            rows14_20: {
-                name: "ECONOMY ROWS 14-20",
-                seats: 42,
-                weight: 3530,
+            rows14_21: {
+                name: "ECONOMY ROWS 14-21",
+                seats: 48,
+                weight: 4032,
                 pax: 0,
                 stationIndex: 4 + 1,
                 position: -15.34,
             },
-            rows21_27: {
-                name: "ECONOMY ROWS 21-27",
-                seats: 42,
-                weight: 3530,
+            rows22_29: {
+                name: "ECONOMY ROWS 22-29",
+                seats: 48,
+                weight: 4032,
                 pax: 0,
                 stationIndex: 5 + 1,
                 position: -32.81,

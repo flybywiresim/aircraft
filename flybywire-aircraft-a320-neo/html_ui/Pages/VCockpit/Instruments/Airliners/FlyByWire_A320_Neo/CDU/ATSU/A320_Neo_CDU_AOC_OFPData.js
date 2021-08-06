@@ -246,8 +246,8 @@ class CDUAocOfpData {
                 paxRemaining -= pax;
             }
 
-            await fillStation(paxStations['rows21_27'], paxRemaining);
-            await fillStation(paxStations['rows14_20'], paxRemaining);
+            await fillStation(paxStations['rows22_29'], paxRemaining);
+            await fillStation(paxStations['rows14_21'], paxRemaining);
 
             const remainingByTwo = Math.trunc(paxRemaining / 2);
             await fillStation(paxStations['rows1_6'], remainingByTwo);
@@ -294,10 +294,10 @@ class CDUAocOfpData {
             [buildStationValue(paxStations.rows1_6), `${Math.round(getZfw())}[color]green`],
             [paxStations.rows7_13.name, "ZFW CG"],
             [buildStationValue(paxStations.rows7_13), zfwcg],
-            [paxStations.rows14_20.name, "CARGO"],
-            [buildStationValue(paxStations.rows14_20), `${Math.round(getTotalCargo())} >[color]inop`],
-            [paxStations.rows21_27.name, "OFP REQUEST"],
-            [buildStationValue(paxStations.rows21_27), requestButton],
+            [paxStations.rows14_21.name, "CARGO"],
+            [buildStationValue(paxStations.rows14_21), `${Math.round(getTotalCargo())} >[color]inop`],
+            [paxStations.rows22_29.name, "OFP REQUEST"],
+            [buildStationValue(paxStations.rows22_29), requestButton],
             ["", "BOARDING"],
             ["<AOC MENU", loadButton]
         ];
@@ -388,23 +388,23 @@ const paxStations = {
         seatsRange: [37, 78],
         simVar: "L:A32NX_PAX_TOTAL_ROWS_7_13",
     },
-    rows14_20: {
-        name: 'ROWS [14-20]',
+    rows14_21: {
+        name: 'ROWS [14-21]',
         seats: 48,
         weight: 4032,
         stationIndex: 4 + 1,
         position: -15.34,
         seatsRange: [79, 126],
-        simVar: "L:A32NX_PAX_TOTAL_ROWS_14_20",
+        simVar: "L:A32NX_PAX_TOTAL_ROWS_14_21",
     },
-    rows21_27: {
-        name: 'ROWS [21-27]',
+    rows22_29: {
+        name: 'ROWS [22-29]',
         seats: 48,
         weight: 4032,
         stationIndex: 5 + 1,
         position: -32.81,
         seatsRange: [127, 174],
-        simVar: "L:A32NX_PAX_TOTAL_ROWS_21_27",
+        simVar: "L:A32NX_PAX_TOTAL_ROWS_22_29",
     },
 };
 
@@ -459,7 +459,7 @@ const cargoStations = {
     },
 };
 
-const MAX_SEAT_AVAILABLE = 162;
+const MAX_SEAT_AVAILABLE = 174;
 const PAX_WEIGHT = 84;
 const BAG_WEIGHT = 20;
 
