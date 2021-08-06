@@ -1,5 +1,5 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
-import { Mode, RangeSetting } from '../../index';
+import React, { FC } from 'react';
+import { Mode } from '../../index';
 
 export interface NavigationDisplayMessagesProps {
     adirsAlign: boolean,
@@ -21,7 +21,7 @@ export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ 
                 className="Green"
                 textAnchor="middle"
                 fontSize={31}
-                visibility={(modeChangeShown && modeValidForGeneralMessages) ? 'visible' : 'hidden'}
+                visibility={(modeChangeShown && !rangeChangeShown && modeValidForGeneralMessages) ? 'visible' : 'hidden'}
             >
                 MODE CHANGE
             </text>
