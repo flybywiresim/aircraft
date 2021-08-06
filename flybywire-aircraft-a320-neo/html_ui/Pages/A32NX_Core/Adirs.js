@@ -109,6 +109,10 @@ class ADIRS {
         return ADIRS.getFromAnyIr('ROLL', 'Degrees');
     }
 
+    static getHeading() {
+        return ADIRS.getFromAnyIr('HEADING', 'Degrees');
+    }
+
     static fromKnotsToMetersPerSecond(value) {
         return value * 0.514444;
     }

@@ -588,7 +588,12 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
 
     getCurrentHeading() {
-        return ((Math.round(SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree")) % 360) + 360) % 360;
+        const heading = ADIRS.getHeading();
+        if (Number.isNaN(heading)) {
+            return 0;
+        }
+
+        return ((Math.round(heading) % 360) + 360) % 360;
     }
 
     getCurrentTrack() {

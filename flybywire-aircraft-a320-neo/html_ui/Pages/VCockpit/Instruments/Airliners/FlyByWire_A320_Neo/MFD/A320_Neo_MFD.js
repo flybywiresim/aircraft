@@ -599,7 +599,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         }
 
         // When the plane is turning, update map faster.
-        const heading = Simplane.getHeadingMagnetic();
+        const heading = ADIRS.getHeading();
         if (Math.abs(heading - this.lastHeading) > this.headingDiffForceUpdateThreshold) {
             forceUpdate = true;
         }

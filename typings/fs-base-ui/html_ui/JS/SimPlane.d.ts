@@ -397,6 +397,10 @@ declare global {
         function getAltitude(): Feet | null;
         function getGroundReference(): Feet | null;
         function getTurnRate(): RadiansPerSecond | null;
+
+        /**
+         * @deprecated due to custom ADIRS implementation. For inertial heading, use `ADIRS.getHeading` instead.
+         */
         function getHeadingMagnetic(): Heading | null;
 
         /**

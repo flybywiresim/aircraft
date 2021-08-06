@@ -663,8 +663,10 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
                 }
 
-                const currentHeading = Simplane.getHeadingMagnetic();
-                Coherent.call("HEADING_BUG_SET", 1, currentHeading);
+                const heading = ADIRS.getHeading();
+                if (!Number.isNaN(heading)) {
+                    Coherent.call("HEADING_BUG_SET", 1, heading);
+                }
 
                 if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
