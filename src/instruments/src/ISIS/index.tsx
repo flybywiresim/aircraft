@@ -11,6 +11,7 @@ import { AutoBrightness } from './AutoBrightness';
 import './style.scss';
 
 export const ISISDisplay: React.FC = () => {
+    // The ISIS calculates its airspeed independently from ADIRS, thus we still use the sim's variable for now.
     const [ias] = useSimVar('AIRSPEED INDICATED', 'knots', 200);
     const [bugsActive, setBugsActive] = useInteractionSimVar('L:A32NX_ISIS_BUGS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_BUGS_PRESSED');
     const isBrightnessUpPressed = useRef(false);

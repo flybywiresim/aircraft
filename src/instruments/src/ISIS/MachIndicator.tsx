@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 export const MachIndicator: React.FC = () => {
     const [visible, setVisible] = useState(false);
+    // The ISIS calculates its mach independently from ADIRS, thus we still use the sim's variable for now.
     const [mach] = useSimVar('AIRSPEED MACH', 'mach');
 
     useEffect(() => {
