@@ -977,6 +977,48 @@
     - Number
     - Current LCD mask opacity for MCDU, used for driving MCDU display pixels effect
 
+- A32NX_ISIS_LS_ACTIVE
+	- Bool
+	- Indicates whether LS scales are shown on the ISIS
+	- Toggled by `H:A32NX_ISIS_LS_PRESSED`
+
+- A32NX_ISIS_BUGS_ACTIVE
+	- Bool
+	- Indicates whether bugs page is shown on the ISIS
+	- Toggled by `H:A32NX_ISIS_BUGS_PRESSED`
+
+- A32NX_ISIS_BUGS_ALT_VALUE:{number}
+	- Number (feet)
+	- Altitude of altitude bug set on ISIS bugs page
+    - {number}
+        - 0
+        - 1
+
+- A32NX_ISIS_BUGS_ALT_ACTIVE:{number}
+	- Bool
+	- Indicates whether altitude bug is shown on the altitude tape of the ISIS
+    - {number}
+        - 0
+        - 1
+
+- A32NX_ISIS_BUGS_SPD_VALUE:{number}
+	- Number (knots)
+	- Speed of speed bug set on ISIS bugs page
+    - {number}
+        - 0
+        - 1
+        - 2
+        - 3
+
+- A32NX_ISIS_BUGS_SPD_ACTIVE:{number}
+	- Bool
+	- Indicates whether speed bug is shown on the speed tape of the ISIS
+    - {number}
+        - 0
+        - 1
+        - 2
+        - 3
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
