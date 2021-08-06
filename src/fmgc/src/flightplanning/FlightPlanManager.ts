@@ -1131,7 +1131,7 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
         if (currentFlightPlan.procedureDetails.arrivalIndex !== index) {
-            console.log('FPM: setArrivalProcIndex: SET STAR ', currentFlightPlan.destinationAirfield.infos.arrivals[index].name);
+            // console.log('FPM: setArrivalProcIndex: SET STAR ', currentFlightPlan.destinationAirfield.infos.arrivals[index].name);
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = -1;
             currentFlightPlan.procedureDetails.arrivalIndex = index;
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
@@ -1183,8 +1183,8 @@ export class FlightPlanManager {
      */
     public async setArrivalEnRouteTransitionIndex(index, callback = () => { }): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        console.log('FPM: setArrivalEnRouteTransitionIndex: SET TRANSITION - ARRIVAL',
-            currentFlightPlan.destinationAirfield.infos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex].enRouteTransitions[index].name);
+        // console.log('FPM: setArrivalEnRouteTransitionIndex: SET TRANSITION - ARRIVAL',
+            // currentFlightPlan.destinationAirfield.infos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex].enRouteTransitions[index].name);
 
         if (currentFlightPlan.procedureDetails.arrivalTransitionIndex !== index) {
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = index;
@@ -1228,7 +1228,7 @@ export class FlightPlanManager {
      */
     public async setDestinationRunwayIndex(index: number, runwayExtension = -1, callback: () => void = () => { }): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        console.log('setDestinationRunwayIndex - APPROACH');
+        // console.log('setDestinationRunwayIndex - APPROACH');
 
         if (currentFlightPlan.procedureDetails.destinationRunwayIndex !== index
             || currentFlightPlan.procedureDetails.destinationRunwayExtension !== runwayExtension) {
@@ -1261,7 +1261,7 @@ export class FlightPlanManager {
         // console.log(currentFlightPlan);
 
         if (currentFlightPlan.procedureDetails.approachIndex !== index) {
-            console.log('FPM: setApproachIndex - APPROACH', currentFlightPlan.destinationAirfield.infos.approaches[index].name);
+            // console.log('FPM: setApproachIndex - APPROACH', currentFlightPlan.destinationAirfield.infos.approaches[index].name);
             currentFlightPlan.procedureDetails.approachIndex = index;
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
             currentFlightPlan.procedureDetails.arrivalIndex = -1;
@@ -1415,10 +1415,10 @@ export class FlightPlanManager {
      */
     public async setApproachTransitionIndex(index: number, callback = () => { }): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        console.log('setApproachTransitionIndex - APPROACH');
+        // console.log('setApproachTransitionIndex - APPROACH');
 
         if (currentFlightPlan.procedureDetails.approachTransitionIndex !== index) {
-            console.log(`setApproachIndex: APPR TRANS ${currentFlightPlan.destinationAirfield.infos.approaches[currentFlightPlan.procedureDetails.approachIndex].transitions[index].name}`);
+            // console.log(`setApproachIndex: APPR TRANS ${currentFlightPlan.destinationAirfield.infos.approaches[currentFlightPlan.procedureDetails.approachIndex].transitions[index].name}`);
             currentFlightPlan.procedureDetails.approachTransitionIndex = index;
             await currentFlightPlan.buildApproach();
 
@@ -1434,7 +1434,7 @@ export class FlightPlanManager {
      */
     public async removeArrival(callback = () => { }): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        console.log('remove arrival - ARRIVAL');
+        // console.log('remove arrival - ARRIVAL');
 
         currentFlightPlan.procedureDetails.arrivalIndex = -1;
         currentFlightPlan.procedureDetails.arrivalRunwayIndex = -1;
