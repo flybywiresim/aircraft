@@ -48,6 +48,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
 
     if (geometry) {
         let legs = Array.from(geometry.legs.values());
+        const unslicedLegs = legs;
 
         const origin = flightPlan.originAirfield;
         const destination = flightPlan.destinationAirfield;
@@ -103,8 +104,9 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                     <LegWaypointMarkers
                         leg={leg}
                         nextLeg={legs[index - 1]}
+                        // nextLeg={unslicedLegs[index - 1]}
                         index={index}
-                        isActive={index == legs.length - 1}
+                        isActive={index === legs.length - 1}
                         constraints={constraints}
                         mapParams={mapParams}
                         debug={debug}
@@ -151,6 +153,7 @@ const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, 
         [x, y] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
         // TODO: Find a more elegant fix for drawing waypoint (of next leg) after discontinuity
         if (nextLeg instanceof TFLeg && leg.to.endsInDiscontinuity && leg.to.ident !== nextLeg.from.ident) {
+            console.log('drawing waypoint after discontinuity. First leg: ', leg, ' Second leg: ', nextLeg);
             [fx, fy] = mapParams.coordinatesToXYy(nextLeg.from.infos.coordinates);
             return (
                 <>
