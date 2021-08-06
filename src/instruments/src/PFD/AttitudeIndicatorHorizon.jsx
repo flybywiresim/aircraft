@@ -134,20 +134,18 @@ export const Horizon = ({ pitch, roll, heading, computedAirspeed, isOnGround, ra
             && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={DisplayRange} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing} heading={heading} />}
             {!isAttExcessive
             && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}
-            <FlightPathVector />
+            <FlightPathVector pitch={pitch} roll={roll} />
             {!isAttExcessive
-            && <FlightPathDirector FDActive={FDActive} />}
+            && <FlightPathDirector FDActive={FDActive} pitch={pitch} roll={roll} />}
         </g>
     );
 };
 
-const FlightPathVector = () => {
+const FlightPathVector = ({ pitch, roll }) => {
     if (!getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
         return null;
     }
 
-    const roll = getSimVar('PLANE BANK DEGREES', 'degrees');
-    const pitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
     const AOA = getSimVar('INCIDENCE ALPHA', 'degrees');
     const FPA = pitch - (Math.cos(roll * Math.PI / 180) * AOA);
     const DA = getSmallestAngle(getSimVar('GPS GROUND TRUE TRACK', 'degrees'), getSimVar('GPS GROUND TRUE HEADING', 'degrees'));
@@ -169,7 +167,7 @@ const FlightPathVector = () => {
     );
 };
 
-const FlightPathDirector = ({ FDActive }) => {
+const FlightPathDirector = ({ FDActive, pitch, roll }) => {
     if (!FDActive || !getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
         return null;
     }
@@ -184,7 +182,6 @@ const FlightPathDirector = ({ FDActive }) => {
     }
 
     const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
-    const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
     const FDRollOffset = -FDRollOrder * 0.77;
 
     const DA = getSmallestAngle(getSimVar('GPS GROUND TRUE TRACK', 'degrees'), getSimVar('GPS GROUND TRUE HEADING', 'degrees'));
@@ -192,11 +189,10 @@ const FlightPathDirector = ({ FDActive }) => {
     const xOffset = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
 
     const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
-    const currentPitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
     const AOA = getSimVar('INCIDENCE ALPHA', 'degrees');
-    const FPA = currentPitch - (Math.cos(currentRoll * Math.PI / 180) * AOA);
+    const FPA = pitch - (Math.cos(roll * Math.PI / 180) * AOA);
 
-    const yOffset = calculateHorizonOffsetFromPitch(currentPitch) - calculateHorizonOffsetFromPitch(FPA) + (FDPitchOrder + currentPitch) * 0.44;
+    const yOffset = calculateHorizonOffsetFromPitch(pitch) - calculateHorizonOffsetFromPitch(FPA) + (FDPitchOrder + pitch) * 0.44;
 
     return (
         <g transform={`translate(${xOffset} ${yOffset})`}>

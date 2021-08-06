@@ -101,6 +101,14 @@ class ADIRS {
         return ADIRS.getFromAnyAdr('BAROMETRIC_VERTICAL_SPEED', 'Feet per minute');
     }
 
+    static getPitch() {
+        return ADIRS.getFromAnyIr('PITCH', 'Degrees');
+    }
+
+    static getRoll() {
+        return ADIRS.getFromAnyIr('ROLL', 'Degrees');
+    }
+
     static fromKnotsToMetersPerSecond(value) {
         return value * 0.514444;
     }

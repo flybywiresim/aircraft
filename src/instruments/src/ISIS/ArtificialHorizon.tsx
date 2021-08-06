@@ -6,6 +6,7 @@ import { RollIndex } from './RollIndex';
 import { Att10sFlag } from './Att10sFlag';
 
 export const ArtificialHorizon: React.FC = () => {
+    // The ISIS has gyros which are independent from ADIRS, thus we still use the sim's variables for now.
     const [pitch] = useSimVar('PLANE PITCH DEGREES', 'degrees', 200);
     const [roll] = useSimVar('PLANE BANK DEGREES', 'degrees', 200);
 

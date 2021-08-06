@@ -231,23 +231,23 @@ declare global {
         function getDesignSpeeds(): DesignSpeeds;
 
         /**
-         * @deprecated due to custom ADIRS implementation. Use ADIRS.getTrueSpeed instead.
+         * @deprecated due to custom ADIRS implementation. Use `ADIRS.getTrueSpeed` instead.
          */
         function getTrueSpeed(): Knots;
 
         /**
-         * @deprecated due to custom ADIRS implementation. Use ADIRS.getComputedSpeed instead.
+         * @deprecated due to custom ADIRS implementation. Use `ADIRS.getComputedSpeed` instead.
          */
         function getIndicatedSpeed(): Knots;
 
         /**
-         * @deprecated due to custom ADIRS implementation. Use ADIRS.getVerticalSpeed, ADIRS.getInertialVerticalSpeed, or ADIRS.getBarometricVerticalSpeed instead.
+         * @deprecated due to custom ADIRS implementation. Use `ADIRS.getVerticalSpeed`, `ADIRS.getInertialVerticalSpeed`, or `ADIRS.getBarometricVerticalSpeed` instead.
          */
         function getVerticalSpeed(): FeetPerMinute | null;
         function getGroundSpeed(): Knots | null;
 
         /**
-         * @deprecated due to custom ADIRS implementation. Use ADIRS.getMachSpeed instead.
+         * @deprecated due to custom ADIRS implementation. Use `ADIRS.getMachSpeed` instead.
          */
         function getMachSpeed(): Mach | null;
 
@@ -398,8 +398,17 @@ declare global {
         function getGroundReference(): Feet | null;
         function getTurnRate(): RadiansPerSecond | null;
         function getHeadingMagnetic(): Heading | null;
+
+        /**
+         * @deprecated due to custom ADIRS implementation. Use `ADIRS.getPitch` instead.
+         */
         function getPitch(): Degrees | null;
+
+        /**
+         * @deprecated due to custom ADIRS implementation. Use `ADIRS.getRoll` instead.
+         */
         function getBank(): Degrees | null;
+
         function getFlightDirectorPitch(): Degrees | null;
         function getFlightDirectorBank(): Degrees | null;
         function getIsGrounded(): boolean;

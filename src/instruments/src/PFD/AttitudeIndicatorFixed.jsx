@@ -46,7 +46,7 @@ export const AttitudeIndicatorFixedCenter = ({ pitch, roll, isOnGround, FDActive
             {!isAttExcessive && (
                 <>
                     <FDYawBar FDActive={FDActive} />
-                    <FlightDirector FDActive={FDActive} />
+                    <FlightDirector FDActive={FDActive} pitch={pitch} roll={roll} />
                 </>
             )}
             <path className="NormalOutline" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
@@ -78,7 +78,7 @@ const FDYawBar = ({ FDActive }) => {
     );
 };
 
-const FlightDirector = ({ FDActive }) => {
+const FlightDirector = ({ FDActive, pitch, roll }) => {
     if (!FDActive || getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
         return null;
     }
@@ -90,18 +90,15 @@ const FlightDirector = ({ FDActive }) => {
     const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
 
     let FDRollOffset;
-    let FDPitchOffset;
-
     if (showLateralFD) {
         const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
-        const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
-        FDRollOffset = Math.min(Math.max(currentRoll - FDRollOrder, -45), 45) * 0.44;
+        FDRollOffset = Math.min(Math.max(roll - FDRollOrder, -45), 45) * 0.44;
     }
 
+    let FDPitchOffset;
     if (showVerticalFD) {
         const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
-        const currentPitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
-        FDPitchOffset = Math.min(Math.max(FDPitchOrder + currentPitch, -22.5), 22.5) * 0.89;
+        FDPitchOffset = Math.min(Math.max(FDPitchOrder + pitch, -22.5), 22.5) * 0.89;
     }
 
     return (
