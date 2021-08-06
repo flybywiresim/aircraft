@@ -3758,7 +3758,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * computes minutes when given hour and minutes
-     * @param {string} hhmm - string used ot make the conversion
+     * @param {string} hhmm - string used to make the conversion
      * @returns {number} numbers in minutes form
      */
     //TODO: can this be util?
