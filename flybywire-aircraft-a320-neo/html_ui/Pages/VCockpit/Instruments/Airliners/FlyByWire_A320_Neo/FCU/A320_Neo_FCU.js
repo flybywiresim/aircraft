@@ -30,8 +30,17 @@ class A320_Neo_FCU extends BaseAirliners {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
-        this.electricity.style.display = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
+        const newStyle = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
             SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
+        if (newStyle === "block" && newStyle !== this.electricity.style.display) {
+            if (!SimVar.GetSimVarValue("AUTOPILOT FLIGHT DIRECTOR ACTIVE:1", "bool")) {
+                SimVar.SetSimVarValue("K:TOGGLE_FLIGHT_DIRECTOR", "number", 1);
+            }
+            if (!SimVar.GetSimVarValue("AUTOPILOT FLIGHT DIRECTOR ACTIVE:2", "bool")) {
+                SimVar.SetSimVarValue("K:TOGGLE_FLIGHT_DIRECTOR", "number", 2);
+            }
+        }
+        this.electricity.style.display = newStyle;
     }
     onEvent(_event) {
     }
@@ -161,6 +170,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this._rotaryEncoderTimeout = 300;
         this._rotaryEncoderIncrement = 0.15;
         this._rotaryEncoderPreviousTimestamp = 0;
+
+        this.onPull();
     }
 
     init() {
@@ -177,6 +188,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         Coherent.call("AP_SPD_VAR_SET", 0, this.MIN_SPEED);
         SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
         this.onPull();
+    }
+
+    onFlightStart() {
+        super.onFlightStart();
+        this.init();
     }
 
     update(_deltaTime) {
@@ -236,12 +252,13 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             showSelectedSpeed,
             isMachActive,
             this.selectedValue,
-            SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool")
+            SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0
         );
     }
 
     shouldEngageManagedSpeed() {
-        const isValidV2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots") > 100;
+        const managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots");
+        const isValidV2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots") >= 90;
         const isVerticalModeSRS = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "enum") === 40;
 
         // V2 is entered into MCDU (was not set -> set)
@@ -252,7 +269,10 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
 
         // store state
-        this.isValidV2 = isValidV2;
+        if (!isValidV2 || managedSpeedTarget >= 90) {
+            // store V2 state only if managed speed target is valid (to debounce)
+            this.isValidV2 = isValidV2;
+        }
         this.isVerticalModeSRS = isVerticalModeSRS;
 
         return shouldEngage;
@@ -260,10 +280,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
 
     isManagedSpeedAvailable() {
         // managed speed is available when flight director or autopilot is engaged, or in approach phase (FMGC flight phase)
-        return Simplane.getAutoPilotFlightDirectorActive(1)
+        return (Simplane.getAutoPilotFlightDirectorActive(1)
                 || Simplane.getAutoPilotFlightDirectorActive(2)
                 || SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "number") === 1
-                || SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === 5;
+                || SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === 5)
+            && SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots") >= 90;
     }
 
     refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _lightsTest, _force = false) {
@@ -282,6 +303,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 console.warn("reset due to _isManaged == true");
             }
             this.isManaged = _isManaged;
+            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED_DOT", "boolean", this.isManaged);
             if (_showSelectedSpeed !== this.showSelectedSpeed && !_showSelectedSpeed) {
                 this.inSelection = false;
                 this.isSelectedValueActive = false;
@@ -289,6 +311,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 console.warn("reset due to _showSelectedSpeed == false");
             }
             this.showSelectedSpeed = _showSelectedSpeed;
+            SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED_DASHES", "boolean", this.isManaged && !this.showSelectedSpeed);
             this.currentValue = _machActive ? _value * 100 : _value;
             this.isMachActive = _machActive;
             this.setTextElementActive(this.textSPD, !_machActive);
@@ -398,6 +421,22 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
     }
 
+    onPreSelSpeed(isMach) {
+        clearTimeout(this._resetSelectionTimeout);
+        SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+        this.inSelection = false;
+        this.isSelectedValueActive = false;
+        this.isTargetManaged = false;
+        this.isMachActive = isMach;
+        if (isMach) {
+            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_MachPreselVal", "mach");
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
+        } else {
+            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_SpeedPreselVal", "knots");
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
+        }
+    }
+
     getRotationSpeed() {
         if (this._rotaryEncoderCurrentSpeed < 1
             || (Date.now() - this._rotaryEncoderPreviousTimestamp) > this._rotaryEncoderTimeout) {
@@ -441,6 +480,10 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.onRotate();
         } else if (_event === "SPEED_TOGGLE_SPEED_MACH") {
             this.onSwitchSpeedMach();
+        } else if (_event === "USE_PRE_SEL_SPEED") {
+            this.onPreSelSpeed(false);
+        } else if (_event === "USE_PRE_SEL_MACH") {
+            this.onPreSelSpeed(true);
         }
     }
 }
@@ -489,15 +532,17 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.textTRK = this.getTextElement("TRK");
         this.textLAT = this.getTextElement("LAT");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(true, false, false, false, true, 0, false, true);
-        this.selectedValue = -1;
-        this.isSelectedValueActive = false;
+        this.currentValue = -1;
+        this.selectedValue = Simplane.getAltitudeAboveGround() > 1000 ? this.getCurrentHeading() : 0;
+        this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
+        this.refresh(true, false, false, false, true, 0, false, true);
         this.onPull();
     }
 
     onFlightStart() {
         super.onFlightStart();
+        this.init();
     }
 
     onRotate() {
@@ -571,7 +616,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
         const lateralArmed = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_ARMED", "Number");
         const isTRKMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
-        const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
+        const lightsTest = SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0;
         const isManagedActive = this.isManagedModeActive(lateralMode);
         const isManagedArmed = this.isManagedModeArmed(lateralArmed);
         const showSelectedValue = (this.isSelectedValueActive || this.inSelection || this.isPreselectionModeActive);
@@ -599,6 +644,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 this.selectedValue = _value;
                 this.isSelectedValueActive = false;
                 this.isPreselectionModeActive = false;
+                SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 2);
             }
             if (_isManagedActive !== this.isManagedActive) {
                 if (_isManagedActive) {
@@ -649,6 +695,18 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 var value = Math.round(Math.max(this.currentValue, 0)) % 360;
                 this.textValueContent = value.toString().padStart(3, "0");
             }
+
+            SimVar.SetSimVarValue(
+                "L:A32NX_FCU_HDG_MANAGED_DASHES",
+                "boolean",
+                (this.isManagedArmed || this.isManagedActive) && !this.showSelectedHeading
+            );
+            SimVar.SetSimVarValue(
+                "L:A32NX_FCU_HDG_MANAGED_DOT",
+                "boolean",
+                this.isManagedArmed || this.isManagedActive
+            );
+
             this.setElementVisibility(this.illuminator, this.isManagedArmed || this.isManagedActive);
         }
     }
@@ -766,7 +824,7 @@ class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
             SimVar.SetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool", 0);
         }
         const _isTRKFPADisplayMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
-        this.refresh(_isTRKFPADisplayMode, SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
+        this.refresh(_isTRKFPADisplayMode, SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0);
     }
     refresh(_isTRKFPADisplayMode, _lightsTest, _force = false) {
         if ((_isTRKFPADisplayMode != this.isTRKFPADisplayMode) || (_lightsTest !== this.lightsTest) || _force) {
@@ -793,18 +851,23 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         this.isActive = false;
         this.isManaged = false;
         this.currentValue = 0;
-        let initValue = Simplane.getAltitude();
-        if (initValue <= 5000) {
-            initValue = 5000;
-        } else {
-            initValue = Math.round(initValue / 100) * 100;
+        let initValue = 100;
+        if (Simplane.getAltitudeAboveGround() > 1000) {
+            initValue = Math.min(49000, Math.max(100, Math.round(Simplane.getAltitude() / 100) * 100));
         }
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, initValue, true);
+        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 3, initValue, true);
         this.refresh(false, false, initValue, 0, true);
     }
+
+    onFlightStart() {
+        super.onFlightStart();
+        this.init();
+    }
+
     reboot() {
         this.init();
     }
+
     isManagedModeActiveOrArmed(_mode, _armed) {
         return (
             (_mode >= 20 && _mode <= 34)
@@ -815,13 +878,15 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             )
         );
     }
+
     update(_deltaTime) {
         const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
         const verticalArmed = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_ARMED", "Number");
         const isManaged = this.isManagedModeActiveOrArmed(verticalMode, verticalArmed);
 
-        this.refresh(Simplane.getAutoPilotActive(), isManaged, Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
+        this.refresh(Simplane.getAutoPilotActive(), isManaged, Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()), SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0);
     }
+
     refresh(_isActive, _isManaged, _value, _lightsTest, _force = false) {
         if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.isActive = _isActive;
@@ -836,8 +901,10 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             const value = Math.floor(Math.max(this.currentValue, 100));
             this.textValueContent = value.toString().padStart(5, "0");
             this.setElementVisibility(this.illuminator, this.isManaged);
+            SimVar.SetSimVarValue("L:A32NX_FCU_ALT_MANAGED", "boolean", this.isManaged);
         }
     }
+
     onEvent(_event) {
         if (_event === "ALT_PUSH") {
             SimVar.SetSimVarValue("K:A32NX.FCU_ALT_PUSH", "number", 0);
@@ -886,9 +953,14 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
 
     onFlightStart() {
         super.onFlightStart();
+        this.init();
     }
 
     onPush() {
+        const mode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
+        if (mode >= 32 && _mode <= 34) {
+            return;
+        }
         clearTimeout(this._resetSelectionTimeout);
         this.forceUpdate = true;
 
@@ -955,7 +1027,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     }
 
     update(_deltaTime) {
-        const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
+        const lightsTest = SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0;
         const isFPAMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
         const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
 
@@ -1045,8 +1117,10 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                         this.textValueContent = sign + (Math.floor(value * 0.01).toString().padStart(2, "0")) + "oo";
                     }
                 }
+                SimVar.SetSimVarValue("L:A32NX_FCU_VS_MANAGED", "boolean", false);
             } else {
                 this.textValueContent = "~----";
+                SimVar.SetSimVarValue("L:A32NX_FCU_VS_MANAGED", "boolean", true);
             }
         }
     }
@@ -1191,7 +1265,7 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
     update(_deltaTime) {
         const units = Simplane.getPressureSelectedUnits();
         const mode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
-        this.refresh(mode, (units != "millibar"), Simplane.getPressureValue(units), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
+        this.refresh(mode, (units != "millibar"), Simplane.getPressureValue(units), SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") == 0);
     }
     refresh(_mode, _isHGUnit, _value, _lightsTest, _force = false) {
         if ((_mode != this.currentMode) || (_isHGUnit != this.isHGUnit) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {

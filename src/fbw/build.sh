@@ -18,11 +18,13 @@ clang \
   -Wno-implicit-function-declaration \
   --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
+  -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
@@ -52,11 +54,13 @@ clang++ \
   -Wno-macro-redefined \
   --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
+  -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
@@ -93,6 +97,7 @@ clang++ \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${DIR}/src/zlib" \
   "${DIR}/src/zlib/zfstream.cc" \
+  "${DIR}/src/AnimationAileronHandler.cpp" \
   "${DIR}/src/ElevatorTrimHandler.cpp" \
   "${DIR}/src/FlapsHandler.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \

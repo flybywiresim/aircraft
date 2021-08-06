@@ -3,15 +3,23 @@ use self::{
     electronic_control_box::ElectronicControlBox,
 };
 use crate::{
-    electrical::{Potential, PotentialSource, PotentialTarget, ProvideFrequency, ProvidePotential},
+    electrical::{
+        ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
+        ElectricitySource, Potential, ProvideFrequency, ProvidePotential,
+    },
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
-    pneumatic::{BleedAirValve, BleedAirValveState, Valve},
-    shared::{ApuStartContactorsController, AuxiliaryPowerUnitElectrical},
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
+    pneumatic::{BleedAirValve, BleedAirValveState},
+    shared::{
+        ApuAvailable, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal,
+        ControllerSignal, ElectricalBusType, PneumaticValve,
+    },
+    simulation::{
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    },
 };
 #[cfg(test)]
 use std::time::Duration;
-use uom::si::{f64::*, ratio::percent, thermodynamic_temperature::degree_celsius};
+use uom::si::f64::*;
 
 mod air_intake_flap;
 mod aps3200;
@@ -22,16 +30,24 @@ pub struct AuxiliaryPowerUnitFactory {}
 impl AuxiliaryPowerUnitFactory {
     pub fn new_aps3200(
         number: usize,
+        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+        start_motor_powered_by: ElectricalBusType,
+        electronic_control_box_powered_by: ElectricalBusType,
+        air_intake_flap_powered_by: ElectricalBusType,
     ) -> AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor> {
         AuxiliaryPowerUnit::new(
             Box::new(ShutdownAps3200Turbine::new()),
-            Aps3200ApuGenerator::new(number),
-            Aps3200StartMotor::new(),
+            Aps3200ApuGenerator::new(number, identifier_provider),
+            Aps3200StartMotor::new(start_motor_powered_by),
+            electronic_control_box_powered_by,
+            air_intake_flap_powered_by,
         )
     }
 }
 
-pub trait ApuStartMotor: PotentialTarget + PotentialSource + SimulationElement {}
+pub trait ApuStartMotor: SimulationElement {
+    fn is_powered(&self) -> bool;
+}
 
 /// Komp: There is a pressure switch between the fuel valve and the APU.
 /// It switches from 0 to 1 when the pressure is >=17 PSI and the signal is received by the ECB
@@ -57,15 +73,9 @@ impl FuelPressureSwitch {
     }
 }
 
-/// Signals to the APU air intake flap what position it should move towards.
-pub trait AirIntakeFlapController {
-    fn should_open_air_intake_flap(&self) -> bool;
-}
-
-/// Signals to the APU turbine whether it should start or stop.
-pub trait TurbineController {
-    fn should_start(&self) -> bool;
-    fn should_stop(&self) -> bool;
+pub enum TurbineSignal {
+    StartOrContinue,
+    Stop,
 }
 
 pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor> {
@@ -78,13 +88,19 @@ pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor> {
     fuel_pressure_switch: FuelPressureSwitch,
 }
 impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
-    pub fn new(turbine: Box<dyn Turbine>, generator: T, start_motor: U) -> Self {
+    pub fn new(
+        turbine: Box<dyn Turbine>,
+        generator: T,
+        start_motor: U,
+        electronic_control_box_powered_by: ElectricalBusType,
+        air_intake_flap_powered_by: ElectricalBusType,
+    ) -> Self {
         AuxiliaryPowerUnit {
             turbine: Some(turbine),
             generator,
-            ecb: ElectronicControlBox::new(),
+            ecb: ElectronicControlBox::new(electronic_control_box_powered_by),
             start_motor,
-            air_intake_flap: AirIntakeFlap::new(),
+            air_intake_flap: AirIntakeFlap::new(air_intake_flap_powered_by),
             bleed_air_valve: BleedAirValve::new(),
             fuel_pressure_switch: FuelPressureSwitch::new(),
         }
@@ -111,31 +127,27 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
         self.ecb.update_air_intake_flap_state(&self.air_intake_flap);
 
         if let Some(turbine) = self.turbine.take() {
-            let mut updated_turbine = turbine.update(
+            let updated_turbine = turbine.update(
                 context,
                 self.bleed_air_valve.is_open(),
                 apu_gen_is_used,
                 &self.ecb,
             );
 
-            self.ecb.update(context, updated_turbine.as_mut());
+            self.ecb.update(context, updated_turbine.as_ref());
 
             self.turbine = Some(updated_turbine);
         }
 
         self.generator
-            .update(self.n(), self.is_emergency_shutdown());
+            .update(self.ecb.n(), self.is_emergency_shutdown());
     }
 
-    pub fn update_after_electrical(&mut self) {
+    pub fn update_after_power_distribution(&mut self) {
         self.ecb.update_start_motor_state(&self.start_motor);
     }
 
-    pub fn n(&self) -> Ratio {
-        self.ecb.n()
-    }
-
-    pub fn is_available(&self) -> bool {
+    fn is_available(&self) -> bool {
         self.ecb.is_available()
     }
 
@@ -151,69 +163,71 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
         self.ecb.is_starting()
     }
 
+    fn electronic_control_box_is_on(&self) -> bool {
+        self.ecb.is_on()
+    }
+
     #[cfg(test)]
     fn set_turbine(&mut self, turbine: Option<Box<dyn Turbine>>) {
         self.turbine = turbine;
     }
 
     #[cfg(test)]
-    fn set_air_intake_flap_opening_delay(&mut self, duration: Duration) {
-        self.air_intake_flap.set_delay(duration);
+    fn set_air_intake_flap_travel_time(&mut self, duration: Duration) {
+        self.air_intake_flap.set_travel_time(duration);
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnitElectrical for AuxiliaryPowerUnit<T, U> {
-    fn start_motor_powered_by(&mut self, source: Potential) {
-        self.start_motor.powered_by(&source);
-    }
-
-    fn is_available(&self) -> bool {
-        self.ecb.is_available()
-    }
-
     fn output_within_normal_parameters(&self) -> bool {
         self.generator.output_within_normal_parameters()
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> ApuStartContactorsController for AuxiliaryPowerUnit<T, U> {
-    fn should_close_start_contactors(&self) -> bool {
-        self.ecb.should_close_start_contactors()
+impl<T: ApuGenerator, U: ApuStartMotor> ApuAvailable for AuxiliaryPowerUnit<T, U> {
+    fn is_available(&self) -> bool {
+        self.ecb.is_available()
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> PotentialSource for AuxiliaryPowerUnit<T, U> {
-    fn output(&self) -> Potential {
-        self.generator.output()
+impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ContactorSignal>
+    for AuxiliaryPowerUnit<T, U>
+{
+    fn signal(&self) -> Option<ContactorSignal> {
+        self.ecb.signal()
+    }
+}
+impl<T: ApuGenerator, U: ApuStartMotor> ElectricitySource for AuxiliaryPowerUnit<T, U> {
+    fn output_potential(&self) -> Potential {
+        self.generator.output_potential()
+    }
+}
+impl<T: ApuGenerator, U: ApuStartMotor> ElectricalElement for AuxiliaryPowerUnit<T, U> {
+    fn input_identifier(&self) -> ElectricalElementIdentifier {
+        self.generator.input_identifier()
+    }
+
+    fn output_identifier(&self) -> crate::electrical::ElectricalElementIdentifier {
+        self.generator.output_identifier()
+    }
+
+    fn is_conductive(&self) -> bool {
+        self.generator.is_conductive()
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit<T, U> {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.generator.accept(visitor);
         self.start_motor.accept(visitor);
+        self.air_intake_flap.accept(visitor);
+        self.ecb.accept(visitor);
+
         visitor.visit(self);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(
+        writer.write(
             "APU_FLAP_OPEN_PERCENTAGE",
-            self.air_intake_flap.open_amount().get::<percent>(),
+            self.air_intake_flap.open_amount(),
         );
-        writer.write_bool("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
-        writer.write_f64(
-            "APU_EGT_CAUTION",
-            self.ecb.egt_caution_temperature().get::<degree_celsius>(),
-        );
-        writer.write_f64("APU_EGT", self.ecb.egt().get::<degree_celsius>());
-        writer.write_bool("ECAM_INOP_SYS_APU", self.ecb.is_inoperable());
-        writer.write_bool("APU_IS_AUTO_SHUTDOWN", self.ecb.is_auto_shutdown());
-        writer.write_bool("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
-        writer.write_bool(
-            "APU_LOW_FUEL_PRESSURE_FAULT",
-            self.ecb.has_fuel_low_pressure_fault(),
-        );
-        writer.write_f64("APU_N", self.n().get::<percent>());
-        writer.write_f64(
-            "APU_EGT_WARNING",
-            self.ecb.egt_warning_temperature().get::<degree_celsius>(),
-        );
+        writer.write("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> BleedAirValveState for AuxiliaryPowerUnit<T, U> {
@@ -228,7 +242,7 @@ pub trait Turbine {
         context: &UpdateContext,
         apu_bleed_is_used: bool,
         apu_gen_is_used: bool,
-        controller: &dyn TurbineController,
+        controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine>;
     fn n(&self) -> Ratio;
     fn egt(&self) -> ThermodynamicTemperature;
@@ -244,7 +258,7 @@ pub enum TurbineState {
 }
 
 pub trait ApuGenerator:
-    PotentialSource + SimulationElement + ProvidePotential + ProvideFrequency
+    SimulationElement + ProvidePotential + ProvideFrequency + ElectricalElement + ElectricitySource
 {
     fn update(&mut self, n: Ratio, is_emergency_shutdown: bool);
     fn output_within_normal_parameters(&self) -> bool;
@@ -297,19 +311,22 @@ impl AuxiliaryPowerUnitOverheadPanel {
         if self.start_is_on()
             && (apu.is_available()
                 || apu.has_fault()
-                || (!self.master_is_on() && !apu.is_starting()))
+                || !apu.electronic_control_box_is_on()
+                || (!self.master_sw_is_on() && !apu.is_starting()))
         {
             self.start.turn_off();
         }
 
         self.master.set_fault(apu.has_fault());
     }
-
-    pub fn master_is_on(&self) -> bool {
+}
+impl ApuMaster for AuxiliaryPowerUnitOverheadPanel {
+    fn master_sw_is_on(&self) -> bool {
         self.master.is_on()
     }
-
-    pub fn start_is_on(&self) -> bool {
+}
+impl ApuStart for AuxiliaryPowerUnitOverheadPanel {
+    fn start_is_on(&self) -> bool {
         self.start.is_on()
     }
 }
@@ -331,17 +348,19 @@ impl Default for AuxiliaryPowerUnitOverheadPanel {
 pub mod tests {
     use crate::{
         electrical::{
-            consumption::{PowerConsumer, SuppliedPower},
-            ElectricalBusType, PotentialOrigin,
+            consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus, Electricity,
         },
-        simulation::{test::SimulationTestBed, Aircraft},
+        shared::{ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
+        simulation::{
+            test::{SimulationTestBed, TestBed},
+            Aircraft, Read,
+        },
     };
 
     use super::*;
     use std::time::Duration;
     use uom::si::{
-        electric_potential::volt, frequency::hertz, length::foot, power::watt, ratio::percent,
-        thermodynamic_temperature::degree_celsius,
+        length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
     };
 
     pub fn test_bed_with() -> AuxiliaryPowerUnitTestBed {
@@ -366,7 +385,7 @@ pub mod tests {
             _: &UpdateContext,
             _: bool,
             _: bool,
-            _: &dyn TurbineController,
+            _: &dyn ControllerSignal<TurbineSignal>,
         ) -> Box<dyn Turbine> {
             self
         }
@@ -384,7 +403,11 @@ pub mod tests {
         }
     }
 
-    struct AuxiliaryPowerUnitTestAircraft {
+    pub struct AuxiliaryPowerUnitTestAircraft {
+        dc_bat_bus_electricity_source: TestElectricitySource,
+        dc_bat_bus: ElectricalBus,
+        ac_1_bus: ElectricalBus,
+        apu_start_motor_bus: ElectricalBus,
         apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
         apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
         apu_overhead: AuxiliaryPowerUnitOverheadPanel,
@@ -398,23 +421,31 @@ pub mod tests {
             bool,
     }
     impl AuxiliaryPowerUnitTestAircraft {
-        fn new() -> Self {
+        const START_MOTOR_POWERED_BY: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
+        const ECB_AND_AIR_INTAKE_FLAP_POWERED_BY: ElectricalBusType =
+            ElectricalBusType::DirectCurrentBattery;
+
+        fn new(electricity: &mut Electricity) -> Self {
             Self {
-                apu: AuxiliaryPowerUnitFactory::new_aps3200(1),
+                dc_bat_bus_electricity_source: TestElectricitySource::powered(PotentialOrigin::TransformerRectifier(1), electricity),
+                dc_bat_bus: ElectricalBus::new(Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY, electricity),
+                ac_1_bus: ElectricalBus::new(ElectricalBusType::AlternatingCurrent(1), electricity),
+                power_consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
+                apu_start_motor_bus: ElectricalBus::new(Self::START_MOTOR_POWERED_BY, electricity),
+                apu: AuxiliaryPowerUnitFactory::new_aps3200(1, electricity, Self::START_MOTOR_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY),
                 apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
                 apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
                 apu_bleed: OnOffFaultPushButton::new_on("APU_BLEED"),
                 apu_gen_is_used: true,
                 has_fuel_remaining: true,
-                power_consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
                 cut_start_motor_power: false,
                 power_consumption: Power::new::<watt>(0.),
                 apu_generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }
 
-        fn set_air_intake_flap_opening_delay(&mut self, duration: Duration) {
-            self.apu.set_air_intake_flap_opening_delay(duration);
+        fn set_air_intake_flap_travel_time(&mut self, duration: Duration) {
+            self.apu.set_air_intake_flap_travel_time(duration);
         }
 
         fn set_apu_gen_is_used(&mut self, value: bool) {
@@ -430,20 +461,28 @@ pub mod tests {
                 .set_turbine(Some(Box::new(InfinitelyAtNTestTurbine::new(n))));
         }
 
-        pub fn generator_output(&self) -> Potential {
-            self.apu.output()
+        pub fn generator_is_unpowered(&self, electricity: &Electricity) -> bool {
+            electricity.output_of(&self.apu).is_unpowered()
         }
 
         fn set_power_demand(&mut self, power: Power) {
             self.power_consumer.demand(power);
         }
 
-        fn should_close_start_contactors_commanded(&self) -> bool {
-            self.apu.should_close_start_contactors()
+        fn close_start_contactors_signal(&self) -> Option<ContactorSignal> {
+            self.apu.signal()
         }
 
         fn cut_start_motor_power(&mut self) {
             self.cut_start_motor_power = true;
+        }
+
+        fn unpower_dc_bat_bus(&mut self) {
+            self.dc_bat_bus_electricity_source.unpower();
+        }
+
+        fn power_dc_bat_bus(&mut self) {
+            self.dc_bat_bus_electricity_source.power();
         }
 
         fn apu_generator_output_within_normal_parameters_after_processing_power_consumption_report(
@@ -463,7 +502,11 @@ pub mod tests {
         }
     }
     impl Aircraft for AuxiliaryPowerUnitTestAircraft {
-        fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+        fn update_before_power_distribution(
+            &mut self,
+            context: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
             self.apu.update_before_electrical(
                 context,
                 &self.apu_overhead,
@@ -473,36 +516,23 @@ pub mod tests {
                 self.has_fuel_remaining,
             );
 
-            self.apu.start_motor_powered_by(
-                if self.apu.should_close_start_contactors() && !self.cut_start_motor_power {
-                    Potential::single(
-                        PotentialOrigin::External,
-                        ElectricPotential::new::<volt>(115.),
-                    )
-                } else {
-                    Potential::none()
-                },
-            );
-
-            self.apu.update_after_electrical();
-            self.apu_overhead.update_after_apu(&self.apu);
-
             self.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report = self.apu.output_within_normal_parameters();
-        }
 
-        fn get_supplied_power(&mut self) -> SuppliedPower {
-            let mut supplied_power = SuppliedPower::new();
-            if self.apu.is_powered() {
-                supplied_power.add(
-                    ElectricalBusType::AlternatingCurrent(1),
-                    Potential::single(
-                        PotentialOrigin::ApuGenerator(1),
-                        ElectricPotential::new::<volt>(115.),
-                    ),
-                );
+            electricity.supplied_by(&self.apu);
+            electricity.supplied_by(&self.dc_bat_bus_electricity_source);
+            electricity.flow(&self.dc_bat_bus_electricity_source, &self.dc_bat_bus);
+            if matches!(self.apu.signal(), Some(ContactorSignal::Close))
+                && !self.cut_start_motor_power
+            {
+                electricity.flow(&self.dc_bat_bus, &self.apu_start_motor_bus);
             }
 
-            supplied_power
+            electricity.flow(&self.apu, &self.ac_1_bus);
+        }
+
+        fn update_after_power_distribution(&mut self, _: &UpdateContext) {
+            self.apu.update_after_power_distribution();
+            self.apu_overhead.update_after_apu(&self.apu);
         }
     }
     impl SimulationElement for AuxiliaryPowerUnitTestAircraft {
@@ -516,77 +546,70 @@ pub mod tests {
             visitor.visit(self);
         }
 
-        fn process_power_consumption_report<
-            T: crate::electrical::consumption::PowerConsumptionReport,
-        >(
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
             &mut self,
+            _: &UpdateContext,
             report: &T,
         ) where
             Self: Sized,
         {
-            self.power_consumption = report.total_consumption_of(PotentialOrigin::External);
+            self.power_consumption =
+                report.total_consumption_of(PotentialOrigin::TransformerRectifier(1));
         }
     }
 
     pub struct AuxiliaryPowerUnitTestBed {
-        aircraft: AuxiliaryPowerUnitTestAircraft,
         ambient_temperature: ThermodynamicTemperature,
         indicated_altitude: Length,
-        simulation_test_bed: SimulationTestBed,
+        test_bed: SimulationTestBed<AuxiliaryPowerUnitTestAircraft>,
     }
     impl AuxiliaryPowerUnitTestBed {
         fn new() -> Self {
             let mut apu_test_bed = Self {
-                aircraft: AuxiliaryPowerUnitTestAircraft::new(),
                 ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
                 indicated_altitude: Length::new::<foot>(5000.),
-                simulation_test_bed: SimulationTestBed::new(),
+                test_bed: SimulationTestBed::new(|electricity| {
+                    AuxiliaryPowerUnitTestAircraft::new(electricity)
+                }),
             };
 
-            apu_test_bed
-                .simulation_test_bed
-                .write_bool("OVHD_APU_BLEED_PB_IS_ON", true);
+            apu_test_bed.write("OVHD_APU_BLEED_PB_IS_ON", true);
 
             apu_test_bed
         }
 
         fn air_intake_flap_that_opens_in(mut self, duration: Duration) -> Self {
-            self.aircraft.set_air_intake_flap_opening_delay(duration);
+            self.command(|a| a.set_air_intake_flap_travel_time(duration));
             self
         }
 
         pub fn power_demand(mut self, power: Power) -> Self {
-            self.aircraft.set_power_demand(power);
+            self.command(|a| a.set_power_demand(power));
             self
         }
 
         fn master_on(mut self) -> Self {
-            self.simulation_test_bed
-                .write_bool("OVHD_APU_MASTER_SW_PB_IS_ON", true);
+            self.write("OVHD_APU_MASTER_SW_PB_IS_ON", true);
             self
         }
 
         fn master_off(mut self) -> Self {
-            self.simulation_test_bed
-                .write_bool("OVHD_APU_MASTER_SW_PB_IS_ON", false);
+            self.write("OVHD_APU_MASTER_SW_PB_IS_ON", false);
             self
         }
 
         fn start_on(mut self) -> Self {
-            self.simulation_test_bed
-                .write_bool("OVHD_APU_START_PB_IS_ON", true);
+            self.write("OVHD_APU_START_PB_IS_ON", true);
             self
         }
 
         fn start_off(mut self) -> Self {
-            self.simulation_test_bed
-                .write_bool("OVHD_APU_START_PB_IS_ON", false);
+            self.write("OVHD_APU_START_PB_IS_ON", false);
             self
         }
 
         fn bleed_air_off(mut self) -> Self {
-            self.simulation_test_bed
-                .write_bool("OVHD_APU_BLEED_PB_IS_ON", false);
+            self.write("OVHD_APU_BLEED_PB_IS_ON", false);
             self
         }
 
@@ -602,17 +625,17 @@ pub mod tests {
         }
 
         fn apu_gen_not_used(mut self) -> Self {
-            self.aircraft.set_apu_gen_is_used(false);
+            self.command(|a| a.set_apu_gen_is_used(false));
             self
         }
 
         fn no_fuel_available(mut self) -> Self {
-            self.aircraft.set_has_fuel_remaining(false);
+            self.command(|a| a.set_has_fuel_remaining(false));
             self
         }
 
         pub fn released_apu_fire_pb(mut self) -> Self {
-            self.simulation_test_bed.write_bool("FIRE_BUTTON_APU", true);
+            self.write("FIRE_BUTTON_APU", true);
             self
         }
 
@@ -635,7 +658,7 @@ pub mod tests {
         }
 
         fn turbine_infinitely_running_at(mut self, n: Ratio) -> Self {
-            self.aircraft.set_turbine_infinitely_running_at(n);
+            self.command(|a| a.set_turbine_infinitely_running_at(n));
             self
         }
 
@@ -645,7 +668,7 @@ pub mod tests {
             loop {
                 self = self.run(Duration::from_secs(1));
 
-                if self.n().get::<percent>() == 0. {
+                if self.turbine_is_shutdown() {
                     break;
                 }
             }
@@ -659,8 +682,7 @@ pub mod tests {
             loop {
                 self = self.run(Duration::from_secs(1));
 
-                if (self.air_intake_flap_open_amount().get::<percent>() - 100.).abs() < f64::EPSILON
-                {
+                if self.is_air_intake_flap_fully_open() {
                     break;
                 }
             }
@@ -669,14 +691,12 @@ pub mod tests {
         }
 
         fn running_apu_with_bleed_air(mut self) -> Self {
-            self.simulation_test_bed
-                .write_bool("OVHD_APU_BLEED_PB_IS_ON", true);
+            self.write("OVHD_APU_BLEED_PB_IS_ON", true);
             self.running_apu()
         }
 
         fn running_apu_without_bleed_air(mut self) -> Self {
-            self.simulation_test_bed
-                .write_bool("OVHD_APU_BLEED_PB_IS_ON", false);
+            self.write("OVHD_APU_BLEED_PB_IS_ON", false);
             self.running_apu()
         }
 
@@ -691,7 +711,17 @@ pub mod tests {
         }
 
         fn unpowered_start_motor(mut self) -> Self {
-            self.aircraft.cut_start_motor_power();
+            self.command(|a| a.cut_start_motor_power());
+            self
+        }
+
+        fn unpowered_dc_bat_bus(mut self) -> Self {
+            self.command(|a| a.unpower_dc_bat_bus());
+            self
+        }
+
+        fn powered_dc_bat_bus(mut self) -> Self {
+            self.command(|a| a.power_dc_bat_bus());
             self
         }
 
@@ -704,24 +734,39 @@ pub mod tests {
         }
 
         pub fn run(mut self, delta: Duration) -> Self {
-            self.simulation_test_bed.set_delta(delta);
-            self.simulation_test_bed
-                .set_ambient_temperature(self.ambient_temperature);
-            self.simulation_test_bed
-                .set_indicated_altitude(self.indicated_altitude);
+            self.set_ambient_temperature(self.ambient_temperature);
+            self.set_indicated_altitude(self.indicated_altitude);
 
-            self.simulation_test_bed.run_aircraft(&mut self.aircraft);
+            // As the APU update executes before power is distributed throughout
+            // the aircraft, not all elements have received power yet if only one run
+            // is performed. Thus we execute two runs, one without any time passing.
+            self.run_with_delta(Duration::from_secs(0));
+            self.run_with_delta(delta);
 
             self
         }
 
-        pub fn cut_out_start_between(mut self, start: Ratio, end: Ratio) -> Self {
+        fn unpower_start_motor_between(mut self, start: Ratio, end: Ratio) -> Self {
             loop {
                 self = self.run(Duration::from_millis(50));
                 let n = self.n();
 
                 if start < n && n < end {
                     self = self.then_continue_with().unpowered_start_motor();
+                    break;
+                }
+            }
+
+            self
+        }
+
+        fn unpower_dc_bat_bus_between(mut self, start: Ratio, end: Ratio) -> Self {
+            loop {
+                self = self.run(Duration::from_millis(50));
+                let n = self.n();
+
+                if start < n && n < end {
+                    self = self.then_continue_with().unpowered_dc_bat_bus();
                     break;
                 }
             }
@@ -746,7 +791,11 @@ pub mod tests {
         }
 
         fn is_air_intake_flap_fully_open(&mut self) -> bool {
-            (self.air_intake_flap_open_amount().get::<percent>() - 100.).abs() < f64::EPSILON
+            self.read("APU_FLAP_FULLY_OPEN")
+        }
+
+        fn air_intake_flap_fully_open_raw(&mut self) -> f64 {
+            self.read("APU_FLAP_FULLY_OPEN")
         }
 
         fn is_air_intake_flap_fully_closed(&mut self) -> bool {
@@ -754,32 +803,27 @@ pub mod tests {
         }
 
         fn air_intake_flap_open_amount(&mut self) -> Ratio {
-            Ratio::new::<percent>(
-                self.simulation_test_bed
-                    .read_f64("APU_FLAP_OPEN_PERCENTAGE"),
-            )
+            self.read("APU_FLAP_OPEN_PERCENTAGE")
         }
 
         pub fn n(&mut self) -> Ratio {
-            Ratio::new::<percent>(self.simulation_test_bed.read_f64("APU_N"))
+            self.read("APU_N")
+        }
+
+        fn turbine_is_shutdown(&mut self) -> bool {
+            self.n().get::<percent>() <= 0.
         }
 
         fn egt(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(
-                self.simulation_test_bed.read_f64("APU_EGT"),
-            )
+            self.read("APU_EGT")
         }
 
         fn egt_warning_temperature(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(
-                self.simulation_test_bed.read_f64("APU_EGT_WARNING"),
-            )
+            self.read("APU_EGT_WARNING")
         }
 
         fn egt_caution_temperature(&mut self) -> ThermodynamicTemperature {
-            ThermodynamicTemperature::new::<degree_celsius>(
-                self.simulation_test_bed.read_f64("APU_EGT_CAUTION"),
-            )
+            self.read("APU_EGT_CAUTION")
         }
 
         fn apu_is_available(&mut self) -> bool {
@@ -787,96 +831,103 @@ pub mod tests {
         }
 
         fn start_is_on(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("OVHD_APU_START_PB_IS_ON")
+            self.read("OVHD_APU_START_PB_IS_ON")
         }
 
         fn start_shows_available(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("OVHD_APU_START_PB_IS_AVAILABLE")
+            self.read("OVHD_APU_START_PB_IS_AVAILABLE")
         }
 
         fn master_has_fault(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("OVHD_APU_MASTER_SW_PB_HAS_FAULT")
+            self.read("OVHD_APU_MASTER_SW_PB_HAS_FAULT")
         }
 
-        pub fn generator_output(&self) -> Potential {
-            self.aircraft.generator_output()
+        pub fn generator_is_unpowered(&self) -> bool {
+            self.query_elec(|a, elec| a.generator_is_unpowered(elec))
         }
 
         pub fn potential(&mut self) -> ElectricPotential {
-            ElectricPotential::new::<volt>(
-                self.simulation_test_bed
-                    .read_f64("ELEC_APU_GEN_1_POTENTIAL"),
-            )
+            self.read("ELEC_APU_GEN_1_POTENTIAL")
         }
 
         pub fn potential_within_normal_range(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("ELEC_APU_GEN_1_POTENTIAL_NORMAL")
+            self.read("ELEC_APU_GEN_1_POTENTIAL_NORMAL")
         }
 
         pub fn frequency(&mut self) -> Frequency {
-            Frequency::new::<hertz>(
-                self.simulation_test_bed
-                    .read_f64("ELEC_APU_GEN_1_FREQUENCY"),
-            )
+            self.read("ELEC_APU_GEN_1_FREQUENCY")
         }
 
         pub fn frequency_within_normal_range(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("ELEC_APU_GEN_1_FREQUENCY_NORMAL")
+            self.read("ELEC_APU_GEN_1_FREQUENCY_NORMAL")
         }
 
         pub fn load(&mut self) -> Ratio {
-            Ratio::new::<percent>(self.simulation_test_bed.read_f64("ELEC_APU_GEN_1_LOAD"))
+            self.read("ELEC_APU_GEN_1_LOAD")
         }
 
         pub fn load_within_normal_range(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("ELEC_APU_GEN_1_LOAD_NORMAL")
+            self.read("ELEC_APU_GEN_1_LOAD_NORMAL")
         }
 
         fn should_close_start_contactors_commanded(&self) -> bool {
-            self.aircraft.should_close_start_contactors_commanded()
+            matches!(
+                self.query(|a| a.close_start_contactors_signal()),
+                Some(ContactorSignal::Close)
+            )
+        }
+
+        fn close_start_contactors_signal(&self) -> Option<ContactorSignal> {
+            self.query(|a| a.close_start_contactors_signal())
         }
 
         fn has_fuel_low_pressure_fault(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("APU_LOW_FUEL_PRESSURE_FAULT")
+            self.read("APU_LOW_FUEL_PRESSURE_FAULT")
+        }
+
+        fn fuel_low_pressure_fault_raw(&mut self) -> f64 {
+            self.read("APU_LOW_FUEL_PRESSURE_FAULT")
         }
 
         fn is_auto_shutdown(&mut self) -> bool {
-            self.simulation_test_bed.read_bool("APU_IS_AUTO_SHUTDOWN")
+            self.read("APU_IS_AUTO_SHUTDOWN")
         }
 
         fn is_emergency_shutdown(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("APU_IS_EMERGENCY_SHUTDOWN")
+            self.read("APU_IS_EMERGENCY_SHUTDOWN")
         }
 
         fn is_inoperable(&mut self) -> bool {
-            self.simulation_test_bed.read_bool("ECAM_INOP_SYS_APU")
+            self.read("ECAM_INOP_SYS_APU")
         }
 
         fn bleed_air_valve_is_open(&mut self) -> bool {
-            self.simulation_test_bed
-                .read_bool("APU_BLEED_AIR_VALVE_OPEN")
+            self.read("APU_BLEED_AIR_VALVE_OPEN")
         }
 
         fn apu_generator_output_within_normal_parameters(&self) -> bool {
-            self.aircraft.apu_generator_output_within_normal_parameters_after_processing_power_consumption_report()
+            self.query(|a| a.apu_generator_output_within_normal_parameters_after_processing_power_consumption_report())
         }
 
         fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
             &self,
         ) -> bool {
-            self.aircraft.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report()
+            self.query(|a| a.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report())
         }
 
         fn power_consumption(&self) -> Power {
-            self.aircraft.power_consumption()
+            self.query(|a| a.power_consumption())
+        }
+    }
+    impl TestBed for AuxiliaryPowerUnitTestBed {
+        type Aircraft = AuxiliaryPowerUnitTestAircraft;
+
+        fn test_bed(&self) -> &SimulationTestBed<AuxiliaryPowerUnitTestAircraft> {
+            &self.test_bed
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<AuxiliaryPowerUnitTestAircraft> {
+            &mut self.test_bed
         }
     }
 
@@ -884,7 +935,7 @@ pub mod tests {
     mod apu_tests {
         use super::*;
         use ntest::{assert_about_eq, timeout};
-        use uom::si::power::watt;
+        use uom::si::{power::watt, thermodynamic_temperature::kelvin};
 
         const APPROXIMATE_STARTUP_TIME: u64 = 49;
 
@@ -1186,7 +1237,7 @@ pub mod tests {
             loop {
                 test_bed = test_bed.run(Duration::from_secs(1));
 
-                if test_bed.n().get::<percent>() == 0. {
+                if test_bed.turbine_is_shutdown() {
                     break;
                 }
             }
@@ -1218,8 +1269,8 @@ pub mod tests {
             let mut test_bed = test_bed_with()
                 .running_apu()
                 .ambient_temperature(ambient)
-                .and()
-                .master_off();
+                .cooling_down_apu()
+                .master_on();
 
             while test_bed.egt() != ambient {
                 test_bed = test_bed.run(Duration::from_secs(1));
@@ -1230,6 +1281,8 @@ pub mod tests {
         fn shutdown_apu_warms_up_as_ambient_temperature_increases() {
             let starting_temperature = ThermodynamicTemperature::new::<degree_celsius>(0.);
             let mut test_bed = test_bed_with()
+                .master_on()
+                .and()
                 .ambient_temperature(starting_temperature)
                 .run(Duration::from_secs(1_000));
 
@@ -1339,7 +1392,11 @@ pub mod tests {
         #[test]
         fn restarting_apu_which_is_cooling_down_does_not_suddenly_reduce_egt_to_ambient_temperature(
         ) {
-            let mut test_bed = test_bed_with().cooling_down_apu();
+            let mut test_bed = test_bed_with()
+                .cooling_down_apu()
+                .and()
+                .master_on()
+                .run(Duration::from_secs(0));
 
             assert!(test_bed.egt().get::<degree_celsius>() > 100.);
 
@@ -1354,7 +1411,10 @@ pub mod tests {
         #[test]
         fn restarting_apu_which_is_cooling_down_does_reduce_towards_ambient_until_startup_egt_above_current_egt(
         ) {
-            let mut test_bed = test_bed_with().cooling_down_apu();
+            let mut test_bed = test_bed_with()
+                .cooling_down_apu()
+                .master_on()
+                .run(Duration::from_secs(0));
 
             let initial_egt = test_bed.egt();
 
@@ -1436,7 +1496,7 @@ pub mod tests {
                 test_bed = test_bed.run(Duration::from_millis(50));
                 assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
 
-                if test_bed.n().get::<percent>() == 0. {
+                if test_bed.turbine_is_shutdown() {
                     break;
                 }
             }
@@ -1448,6 +1508,16 @@ pub mod tests {
                 .running_apu()
                 .run(Duration::from_secs(1_000));
             assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
+        }
+
+        #[test]
+        fn start_contactors_signal_is_none_when_ecb_unpowered() {
+            let test_bed = test_bed_with()
+                .starting_apu()
+                .and()
+                .unpowered_dc_bat_bus()
+                .run(Duration::from_secs(1));
+            assert!(matches!(test_bed.close_start_contactors_signal(), None));
         }
 
         #[test]
@@ -1525,7 +1595,7 @@ pub mod tests {
                 test_bed = test_bed.run(Duration::from_millis(50));
                 assert!(!test_bed.master_has_fault());
 
-                if test_bed.n().get::<percent>() == 0. {
+                if test_bed.turbine_is_shutdown() {
                     break;
                 }
             }
@@ -1565,9 +1635,10 @@ pub mod tests {
         #[test]
         #[timeout(500)]
         fn starting_apu_shuts_down_with_fault_when_starter_motor_unpowered_below_n_55() {
-            let mut test_bed = test_bed_with()
-                .starting_apu()
-                .cut_out_start_between(Ratio::new::<percent>(20.), Ratio::new::<percent>(55.));
+            let mut test_bed = test_bed_with().starting_apu().unpower_start_motor_between(
+                Ratio::new::<percent>(20.),
+                Ratio::new::<percent>(55.),
+            );
 
             for _ in 0..10 {
                 test_bed = test_bed.run(Duration::from_secs(10));
@@ -1579,13 +1650,65 @@ pub mod tests {
         }
 
         #[test]
+        fn starting_apu_shuts_down_without_fault_when_dc_bat_bus_unpowered_at_or_below_n_70() {
+            let mut test_bed = test_bed_with()
+                .starting_apu()
+                .unpower_dc_bat_bus_between(Ratio::new::<percent>(55.), Ratio::new::<percent>(70.));
+
+            for _ in 0..10 {
+                test_bed = test_bed.run(Duration::from_secs(10));
+            }
+
+            assert!(!test_bed.apu_is_available());
+            // As the ECB determines if the FAULT light is illuminated and
+            // given that it is unpowered, no FAULT light will illuminate.
+            assert!(!test_bed.master_has_fault());
+            assert!(!test_bed.start_is_on());
+        }
+
+        #[test]
+        fn an_apu_start_aborted_due_to_unpowered_dc_bat_bus_does_not_indicate_fault_when_powered_again(
+        ) {
+            let mut test_bed = test_bed_with()
+                .starting_apu()
+                .unpower_dc_bat_bus_between(Ratio::new::<percent>(55.), Ratio::new::<percent>(70.));
+
+            for _ in 0..10 {
+                test_bed = test_bed.run(Duration::from_secs(10));
+            }
+
+            test_bed = test_bed
+                .then_continue_with()
+                .powered_dc_bat_bus()
+                .run(Duration::from_secs(1));
+
+            assert!(!test_bed.master_has_fault());
+        }
+
+        #[test]
+        fn apu_continues_starting_when_dc_bat_bus_unpowered_while_above_n_70() {
+            let mut test_bed = test_bed_with()
+                .starting_apu()
+                .unpower_dc_bat_bus_between(Ratio::new::<percent>(70.), Ratio::new::<percent>(90.));
+
+            for _ in 0..10 {
+                test_bed = test_bed.run(Duration::from_secs(10));
+            }
+
+            assert!(test_bed.apu_is_available());
+        }
+
+        #[test]
         #[timeout(500)]
         fn starting_apu_shutting_down_early_doesnt_decrease_egt_below_ambient() {
             let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.);
             let mut test_bed = test_bed_with()
                 .ambient_temperature(ambient_temperature)
                 .starting_apu()
-                .cut_out_start_between(Ratio::new::<percent>(10.), Ratio::new::<percent>(20.));
+                .unpower_start_motor_between(
+                    Ratio::new::<percent>(10.),
+                    Ratio::new::<percent>(20.),
+                );
 
             for _ in 0..20 {
                 test_bed = test_bed.run(Duration::from_secs(5));
@@ -1674,7 +1797,7 @@ pub mod tests {
                 .released_apu_fire_pb()
                 .run(Duration::from_secs(1));
 
-            assert!(test_bed.is_inoperable(), true);
+            assert_eq!(test_bed.is_inoperable(), true);
         }
 
         #[test]
@@ -1768,6 +1891,111 @@ pub mod tests {
             }
 
             assert!(maximum_power < Power::new::<watt>(10000.));
+        }
+
+        #[test]
+        fn ecb_has_no_power_consumption_when_off() {
+            let test_bed = test_bed_with().master_off().run(Duration::from_secs(1));
+
+            assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
+        }
+
+        #[test]
+        fn ecb_doesnt_write_some_variables_when_off() {
+            let mut test_bed = test_bed_with().master_off().run(Duration::from_secs(1));
+
+            assert!(test_bed.n().get::<percent>() < 0.);
+            assert!(test_bed.egt() < ThermodynamicTemperature::new::<kelvin>(0.));
+            assert!(
+                test_bed.egt_caution_temperature() < ThermodynamicTemperature::new::<kelvin>(0.)
+            );
+            assert!(
+                test_bed.egt_warning_temperature() < ThermodynamicTemperature::new::<kelvin>(0.)
+            );
+            assert!(test_bed.fuel_low_pressure_fault_raw() < 0.);
+            assert!(test_bed.air_intake_flap_fully_open_raw() < 0.);
+        }
+
+        #[test]
+        /// The start motor is disconnected at 55% N. However, the APU itself only starts powering the ECB
+        /// on passing 70% N. In between those moments there should still be power usage by the ECB.
+        /// Of course the ECB also uses power below 55% N. It is however hard to measure that individually, as
+        /// the start motor is using a lot of power at that time.
+        fn ecb_uses_power_during_start_when_on_and_apu_turbine_above_55_and_at_or_below_70_n() {
+            let mut test_bed = test_bed_with().starting_apu();
+
+            loop {
+                test_bed = test_bed.run(Duration::from_millis(50));
+                let n = test_bed.n().get::<percent>();
+
+                if n > 55. && n <= 70. {
+                    assert!(test_bed.power_consumption() > Power::new::<watt>(0.));
+                }
+
+                if (n - 100.).abs() < f64::EPSILON {
+                    break;
+                }
+            }
+        }
+
+        #[test]
+        /// The APU's ECB is powered by the APU itself after passing 70% N.
+        fn ecb_does_not_use_power_when_on_and_apu_turbine_above_n_70() {
+            let mut test_bed = test_bed_with().starting_apu();
+
+            loop {
+                test_bed = test_bed.run(Duration::from_millis(50));
+                let n = test_bed.n().get::<percent>();
+
+                if n > 70. {
+                    assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
+                }
+
+                if (n - 100.).abs() < f64::EPSILON {
+                    break;
+                }
+            }
+        }
+
+        #[test]
+        fn ecb_uses_power_during_apu_shutdown_from_n_70_until_air_intake_flap_is_closed_and_turbine_is_shut_down(
+        ) {
+            let mut test_bed = test_bed_with().running_apu().and().master_off();
+
+            loop {
+                test_bed = test_bed.run(Duration::from_millis(50));
+
+                if test_bed.is_air_intake_flap_fully_closed() && test_bed.turbine_is_shutdown() {
+                    break;
+                } else if test_bed.n().get::<percent>() <= 70. {
+                    assert!(test_bed.power_consumption() > Power::new::<watt>(0.));
+                } else {
+                    assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
+                }
+            }
+
+            assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
+        }
+
+        #[test]
+        fn during_start_once_apu_output_normal_remains_normal() {
+            // Test for a bug where the frequency dipped above and then below the minimum normal range
+            // very briefly during the startup sequence, thus sometimes (depending on the frame rate and sheer luck)
+            // triggering the powering and unpowering of buses. This then triggered sounds to play again.
+
+            let mut test_bed = test_bed_with().starting_apu();
+
+            while test_bed.n().get::<percent>() < Aps3200ApuGenerator::APU_GEN_POWERED_N {
+                test_bed.run_with_delta(Duration::from_millis(50));
+            }
+
+            let mut powered: bool = test_bed.apu_generator_output_within_normal_parameters();
+            while test_bed.n().get::<percent>() < 100. {
+                let still_powered: bool = test_bed.apu_generator_output_within_normal_parameters();
+                assert!(!powered || (powered && still_powered));
+                powered = still_powered;
+                test_bed.run_with_delta(Duration::from_millis(1));
+            }
         }
     }
 }

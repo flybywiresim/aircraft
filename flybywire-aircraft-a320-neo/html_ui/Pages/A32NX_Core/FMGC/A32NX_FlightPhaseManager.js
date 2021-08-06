@@ -17,12 +17,12 @@ function canInitiateTO(_fmc) {
     );
 }
 
-function canInitiateDes(_fmc, _ignoreAlt = false) {
+function canInitiateDes(_fmc) {
     const fl = Math.round(Simplane.getAltitude() / 100);
     const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
     const dest = _fmc.flightPlanManager.getDestination();
     // Can initiate descent? OR Can initiate early descent?
-    return ((!!dest && dest.liveDistanceTo < 200 || !dest) && (fcuSelFl < _fmc.cruiseFlightLevel || (_ignoreAlt && fcuSelFl < fl)))
+    return (((!!dest && dest.liveDistanceTo < 200) || !dest || fl < 200) && fcuSelFl < _fmc.cruiseFlightLevel && fcuSelFl < fl)
         || (!!dest && dest.liveDistanceTo >= 200 && fl > 200 && fcuSelFl <= 200);
 }
 
@@ -96,11 +96,14 @@ class A32NX_FlightPhaseManager {
             [FmgcFlightPhases.DONE]: new A32NX_FlightPhase_Done()
         };
 
-        this.activeFlightPhase = this.flightPhases[FmgcFlightPhases.PREFLIGHT];
+        this.activeFlightPhase = this.flightPhases[this.fmc.currentFlightPhase];
 
-        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", FmgcFlightPhases.PREFLIGHT);
+        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", this.fmc.currentFlightPhase);
+    }
 
-        this.activeFlightPhase.init(_fmc);
+    init() {
+        console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase);
+        this.activeFlightPhase.init(this.fmc);
     }
 
     checkFlightPhase(_deltaTime) {
@@ -124,7 +127,9 @@ class A32NX_FlightPhaseManager {
     handleFcuAltKnobTurn() {
         if (this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) {
             const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
-            if (canInitiateDes(this.fmc, true) && (activeVerticalMode === 13 || activeVerticalMode === 14 || activeVerticalMode === 15 || activeVerticalMode === 23)) {
+            const VS = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
+            const FPA = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degrees');
+            if ((activeVerticalMode === 13 || (activeVerticalMode === 14 && VS < 0) || (activeVerticalMode === 15 && FPA < 0) || activeVerticalMode === 23) && canInitiateDes(this.fmc)) {
                 this.fmc.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.DESCENT);
             }
         }
@@ -136,8 +141,9 @@ class A32NX_FlightPhaseManager {
             setTimeout(() => {
                 const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
                 const VS = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
-                if (activeVerticalMode === 14 && VS < 0) {
-                    if (canInitiateDes(this.fmc, true)) {
+                const FPA = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degrees');
+                if ((activeVerticalMode === 14 && VS < 0) || (activeVerticalMode === 15 && FPA < 0)) {
+                    if (canInitiateDes(this.fmc)) {
                         this.changeFlightPhase(FmgcFlightPhases.DESCENT);
                     } else {
                         this.fmc._onStepClimbDescent();
@@ -172,7 +178,6 @@ class A32NX_FlightPhase_PreFlight {
     }
 
     init(_fmc) {
-        _fmc.climbTransitionGroundAltitude = null;
     }
 
     check(_deltaTime, _fmc) {
@@ -185,6 +190,7 @@ class A32NX_FlightPhase_TakeOff {
     }
 
     init(_fmc) {
+        SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", false);
         this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
         this.accelerationAltitudeMsl = (_fmc.accelerationAltitude || _fmc.thrustReductionAltitude);
         this.accelerationAltitudeMslEo = _fmc.engineOutAccelerationAltitude;
@@ -358,7 +364,12 @@ class A32NX_FlightPhase_Done {
     }
 
     init(_fmc) {
-        SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
+        CDUIdentPage.ShowPage(_fmc);
+        _fmc.flightPlanManager.clearFlightPlan();
+        _fmc.initVariables();
+        _fmc.initMcduVariables();
+        _fmc.forceClearScratchpad();
+        SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", true);
         CDUIdentPage.ShowPage(_fmc);
     }
 

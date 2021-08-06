@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { NXDataStore } from '@shared/persistence';
 import { useSimVar } from './simVars';
 import { useUpdate } from './hooks';
+
 import './common.scss';
-import { NXDataStore } from './persistence';
+import './pixels.scss';
 
 type DisplayUnitProps = {
     electricitySimvar: string
@@ -17,11 +19,13 @@ enum DisplayUnitState {
 }
 
 export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
-    const [state, setState] = useState(DisplayUnitState.Off);
+    const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
+    const [state, setState] = useState((coldDark) ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const [timer, setTimer] = useState<number | null>(null);
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
+    const [opacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 200);
 
     useUpdate((deltaTime) => {
         if (timer !== null) {
@@ -46,7 +50,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
             setTimer(null);
         } else if (state === DisplayUnitState.Off && (potentiometer !== 0 && electricityState !== 0)) {
             setState(DisplayUnitState.Selftest);
-            setTimer(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15'));
+            setTimer(NXDataStore.get<number>('CONFIG_SELF_TEST_TIME', 15));
         } else if (state === DisplayUnitState.Selftest && (potentiometer === 0 || electricityState === 0)) {
             setState(DisplayUnitState.Off);
             setTimer(null);
@@ -55,24 +59,28 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
 
     if (state === DisplayUnitState.Selftest) {
         return (
-            <svg className="SelfTest" viewBox="0 0 600 600">
-                <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
+            <>
+                <div className="LcdOverlay" style={{ opacity }} />
+                <div className="BacklightBleed" />
+                <svg className="SelfTest" viewBox="0 0 600 600">
+                    <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
-                <text
-                    className="SelfTestText"
-                    x="50%"
-                    y="50%"
-                >
-                    SELF TEST IN PROGRESS
-                </text>
-                <text
-                    className="SelfTestText"
-                    x="50%"
-                    y="56%"
-                >
-                    (MAX 40 SECONDS)
-                </text>
-            </svg>
+                    <text
+                        className="SelfTestText"
+                        x="50%"
+                        y="50%"
+                    >
+                        SELF TEST IN PROGRESS
+                    </text>
+                    <text
+                        className="SelfTestText"
+                        x="50%"
+                        y="56%"
+                    >
+                        (MAX 40 SECONDS)
+                    </text>
+                </svg>
+            </>
         );
     } if (state === DisplayUnitState.Off) {
         return (
@@ -80,6 +88,10 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
         );
     }
     return (
-        <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
+        <>
+            <div className="LcdOverlay" style={{ opacity }} />
+            <div className="BacklightBleed" />
+            <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
+        </>
     );
 };

@@ -3,6 +3,7 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
+#include "AnimationAileronHandler.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
@@ -116,6 +117,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
   std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
   std::unique_ptr<LocalVariable> idFmaApproachCapability;
+  std::unique_ptr<LocalVariable> idFmaTripleClick;
+  std::unique_ptr<LocalVariable> idFmaModeReversion;
 
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
@@ -177,6 +180,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningFlex;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningToga;
+  std::unique_ptr<LocalVariable> idAutothrustDisconnect;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_1;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_2;
   InterpolatingLookupTable idThrottlePositionLookupTable3d;
@@ -184,8 +190,20 @@ class FlyByWireInterface {
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   EngineData engineData = {};
+  std::unique_ptr<LocalVariable> engineEngine1N2;
+  std::unique_ptr<LocalVariable> engineEngine2N2;
+  std::unique_ptr<LocalVariable> engineEngine1N1;
+  std::unique_ptr<LocalVariable> engineEngine2N1;
+  std::unique_ptr<LocalVariable> engineEngineIdleN1;
+  std::unique_ptr<LocalVariable> engineEngineIdleN2;
+  std::unique_ptr<LocalVariable> engineEngineIdleFF;
+  std::unique_ptr<LocalVariable> engineEngineIdleEGT;
   std::unique_ptr<LocalVariable> engineEngine1EGT;
   std::unique_ptr<LocalVariable> engineEngine2EGT;
+  std::unique_ptr<LocalVariable> engineEngine1Oil;
+  std::unique_ptr<LocalVariable> engineEngine2Oil;
+  std::unique_ptr<LocalVariable> engineEngine1TotalOil;
+  std::unique_ptr<LocalVariable> engineEngine2TotalOil;
   std::unique_ptr<LocalVariable> engineEngine1FF;
   std::unique_ptr<LocalVariable> engineEngine2FF;
   std::unique_ptr<LocalVariable> engineEngine1PreFF;
@@ -199,6 +217,10 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> engineFuelAuxRightPre;
   std::unique_ptr<LocalVariable> engineFuelCenterPre;
   std::unique_ptr<LocalVariable> engineEngineCycleTime;
+  std::unique_ptr<LocalVariable> engineEngine1State;
+  std::unique_ptr<LocalVariable> engineEngine2State;
+  std::unique_ptr<LocalVariable> engineEngine1Timer;
+  std::unique_ptr<LocalVariable> engineEngine2Timer;
 
   std::unique_ptr<LocalVariable> idFlapsHandleIndex;
   std::unique_ptr<LocalVariable> idFlapsHandlePercent;
@@ -206,10 +228,15 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
+  std::unique_ptr<LocalVariable> idSpoilersGroundSpoilersActive;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
   std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
+
+  std::unique_ptr<LocalVariable> idAileronPositionLeft;
+  std::unique_ptr<LocalVariable> idAileronPositionRight;
+  std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
 
   void loadConfiguration();
   void setupLocalVariables();
@@ -224,6 +251,8 @@ class FlyByWireInterface {
   bool updateAutothrust(double sampleTime);
 
   bool updateFlapsSpoilers(double sampleTime);
+
+  bool updateAltimeterSetting(double sampleTime);
 
   double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 

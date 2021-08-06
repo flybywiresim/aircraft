@@ -100,7 +100,7 @@
         <DefaultTemplateParameters>
             <DEFAULT_NAME>Expedite</DEFAULT_NAME>
             <PLANE_PREFIX></PLANE_PREFIX>
-            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+            <TOOLTIPID>Expedite</TOOLTIPID>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
@@ -208,7 +208,7 @@
 
     <Template Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
         <UseTemplate Name="FBW_Push_Held">
-            <HOLD_SIMVAR>K:AUTO_THROTTLE_DISCONNECT</HOLD_SIMVAR>
+            <HOLD_SIMVAR>L:A32NX_AUTOTHRUST_DISCONNECT</HOLD_SIMVAR>
             <TOOLTIPID>Disc. A/THR</TOOLTIPID>
         </UseTemplate>
     </Template>

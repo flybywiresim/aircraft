@@ -1,5 +1,11 @@
 var A320_Neo_ECAM_Common;
 (function (A320_Neo_ECAM_Common) {
+    const absoluteZeroThermodynamicTemperature = -273.15;
+
+    function hasThermodynamicTemperatureValue(value) {
+        return value >= absoluteZeroThermodynamicTemperature;
+    }
+
     function isEngineDisplayActive(_index) {
         return ((SimVar.GetSimVarValue("ENG N1 RPM:" + _index, "percent") >= 0.05) || (SimVar.GetSimVarValue("ENG N2 RPM:" + _index, "percent") >= 0.05));
     }
@@ -24,6 +30,7 @@ var A320_Neo_ECAM_Common;
             this.outerIndicatorFunction = null;
             this.outerDynamicArcFunction = null;
             this.extraMessageFunction = null;
+            this.extraMessageStyleFunction = null;
             this.outerDynamicMarkerFunction = null;
             this.dangerMinDynamicFunction = null;
             this.outerMarkerValue = null;
@@ -42,6 +49,7 @@ var A320_Neo_ECAM_Common;
             this.outerDynamicArcCurrentValues = [0, 0];
             this.outerDynamicArcTargetValues = [0, 0];
             this.extraMessageString = "";
+            this.extraMessageStyle = "";
             this.isActive = true;
             this.extraMessagePosXMultiplier = 0;
             this.extraMessagePosYMultiplier = 0;
@@ -144,6 +152,7 @@ var A320_Neo_ECAM_Common;
             this.outerIndicatorFunction = _gaugeDefinition.outerIndicatorFunction;
             this.outerDynamicArcFunction = _gaugeDefinition.outerDynamicArcFunction;
             this.extraMessageFunction = _gaugeDefinition.extraMessageFunction;
+            this.extraMessageStyleFunction = _gaugeDefinition.extraMessageStyleFunction;
             this.roundDisplayValueToNearest = _gaugeDefinition.roundDisplayValueToNearest;
             this.extraMessagePosXMultiplier = 0.025;
             this.extraMessagePosYMultiplier = 0.025;
@@ -173,7 +182,10 @@ var A320_Neo_ECAM_Common;
             if (this.minRedValue != this.maxRedValue) {
                 this.redArc = document.createElementNS(Avionics.SVG.NS, "path");
                 this.redArc.id = "RedArc";
-                this.redArc.setAttribute("d", this.calculateRedArcD());
+
+                const d = hasThermodynamicTemperatureValue(this.minRedValue) ? this.calculateRedArcD() : "";
+                this.redArc.setAttribute("d", d);
+
                 this.rootSVG.appendChild(this.redArc);
             }
             this.graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -377,8 +389,11 @@ var A320_Neo_ECAM_Common;
             }
             if ((this.extraMessageFunction != null) && (this.extraMessageText != null) && (this.extraMessageBorder != null)) {
                 const extraMessage = this.isActive ? this.extraMessageFunction().toString() : "";
+                const extraMessageStyle = this.extraMessageStyleFunction().toString();
+
                 let style = "";
-                if (extraMessage != this.extraMessageString) {
+
+                if (extraMessage != this.extraMessageString || extraMessageStyle != this.extraMessageStyle) {
                     if (this.extraMessageFunction().toString() == "AVAIL") {
                         this.extraMessagePosXMultiplier = 0.198;
                         this.extraMessagePosYMultiplier = 0.025;
@@ -403,7 +418,9 @@ var A320_Neo_ECAM_Common;
                     this.extraMessageText.setAttribute("y", this.extraMessagePosY.toString());
                     this.extraMessageText.setAttribute("alignment-baseline", "central");
                     this.extraMessageString = extraMessage;
+                    this.extraMessageStyle = extraMessageStyle;
                     style += (this.extraMessageString.length > 0) ? "active" : "inactive";
+                    style += extraMessageStyle;
                     this.extraMessageBorder.setAttribute("class", style);
                     this.extraMessageText.setAttribute("class", style);
                     this.extraMessageText.textContent = this.extraMessageString;
@@ -412,7 +429,9 @@ var A320_Neo_ECAM_Common;
         }
         refreshRedArc() {
             if (this.redArc) {
-                this.redArc.setAttribute("d", this.calculateRedArcD());
+                const d = hasThermodynamicTemperatureValue(this.minRedValue) ? this.calculateRedArcD() : "";
+                this.redArc.setAttribute("d", d);
+
                 this.previousUpdateMinRedValue = this.minRedValue;
             }
         }
@@ -436,14 +455,18 @@ var A320_Neo_ECAM_Common;
         refreshOuterMarkerFunction(_value, _force = false) {
             if (_value[1] != this.outerMarkerValue) {
                 this.outerMarkerValue = _value[1];
-                const dir = this.valueToDir(_value[1]);
-                const start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
-                const end = new Vec2(this.center.x + (dir.x * this.graduationOuterLineEndOffset), this.center.y + (dir.y * this.graduationOuterLineEndOffset));
                 const marker = document.getElementById(_value[0]);
-                marker.setAttribute("x1", start.x.toString());
-                marker.setAttribute("y1", start.y.toString());
-                marker.setAttribute("x2", end.x.toString());
-                marker.setAttribute("y2", end.y.toString());
+                marker.style.display = hasThermodynamicTemperatureValue(this.outerMarkerValue) ? "block" : "none";
+
+                if (marker.style.display === "block") {
+                    const dir = this.valueToDir(_value[1]);
+                    const start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
+                    const end = new Vec2(this.center.x + (dir.x * this.graduationOuterLineEndOffset), this.center.y + (dir.y * this.graduationOuterLineEndOffset));
+                    marker.setAttribute("x1", start.x.toString());
+                    marker.setAttribute("y1", start.y.toString());
+                    marker.setAttribute("x2", end.x.toString());
+                    marker.setAttribute("y2", end.y.toString());
+                }
             }
         }
         refreshDangerMinFunction(_value, _force = false) {

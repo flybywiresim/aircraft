@@ -20,7 +20,6 @@
         <!-- Alternatively we could script the angles for the wingflex -->
         <!-- Just define some nodes/bones to move for now (this configuration will likely change at some point) -->
         <!-- 	order	:	node 															-->
-        <!-- 	--------------------------------------------------------------------------- -->
         <!-- 	0	:	the left wing bone closest to the center 							-->
         <!-- 	1	:	in between 															-->
         <!-- 	2	:	in between 															-->
@@ -47,9 +46,10 @@
         <Node>Engine_PIVOT_RIGHT_2</Node> <!-- the right wing engine pivot node furthest from the center -->
     </NodeAnimation>
     <Behaviors>
+        <Include ModelBehaviorFile="A32NX\Exterior\A32NX_Exterior_Includes.xml"/>
         <Include ModelBehaviorFile="Asobo\Exterior.xml"/>
         <Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
-        <Include Path="A32NX\A32NX_Exterior.xml"/>
+        <Include Path="A32NX\generated\A32NX_Exterior.xml"/>
         <Component ID="LIGHTING">
             <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
                 <LIGHT_TYPE>LANDING</LIGHT_TYPE>
@@ -74,7 +74,7 @@
                 <TRIM_ONLY>True</TRIM_ONLY>
                 <ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Aileron_Template">
+            <UseTemplate Name="FBW_HANDLING_Aileron_Template">
                 <ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
             </UseTemplate>
@@ -175,11 +175,11 @@
                 <BLURRED_NODE_ID>PROP_BLURRED_RIGHT</BLURRED_NODE_ID>
                 <BLURRED_SPINNER_NODE_ID>PROP_BLURRED_CONE_RIGHT</BLURRED_SPINNER_NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
+            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
                 <ID>1</ID>
                 <ANIM_NAME>thrust_rev_1</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
+            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
                 <ID>2</ID>
                 <ANIM_NAME>thrust_rev_2</ANIM_NAME>
             </UseTemplate>
@@ -206,46 +206,152 @@
                 <NODE_ID>GROUND_GPUPIPE</NODE_ID>
             </UseTemplate>
         </Component>
-        <Component ID="FX_TIRE_CONTACT">
-            <DefaultTemplateParameters>
-                <FX_DURATION>5</FX_DURATION>
-                <FX_OFFSET_X>0</FX_OFFSET_X>
-                <FX_OFFSET_Y>0</FX_OFFSET_Y>
-                <FX_OFFSET_Z>0</FX_OFFSET_Z>
-                <FX_GUID>{7E68323C-E75D-4F5B-988E-65DD4956F6BA}</FX_GUID>
-                <FX_NAME>SMOKE_ON_TIRE_CONTACT</FX_NAME>
-            </DefaultTemplateParameters>
-            <Component ID="FX_TIRE_CONTACT_left_in" Node="fx_tire_contactPoint_left_in">
-                <UseTemplate Name="ASOBO_GT_FX">
-                    <FX_CODE>(A:GEAR IS SKIDDING:1, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="FX_TIRE_CONTACT_left_out" Node="fx_tire_contactPoint_left_out">
-                <UseTemplate Name="ASOBO_GT_FX">
-                    <FX_CODE>(A:GEAR IS SKIDDING:1, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="FX_TIRE_CONTACT_right_in" Node="fx_tire_contactPoint_right_in">
-                <UseTemplate Name="ASOBO_GT_FX">
-                    <FX_CODE>(A:GEAR IS SKIDDING:2, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="FX_TIRE_CONTACT_right_out" Node="fx_tire_contactPoint_right_out">
-                <UseTemplate Name="ASOBO_GT_FX">
-                    <FX_CODE>(A:GEAR IS SKIDDING:2, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="FX_TIRE_CONTACT_center_left" Node="fx_tire_contactPoint_center_left">
-                <UseTemplate Name="ASOBO_GT_FX">
-                    <FX_CODE>(A:GEAR IS SKIDDING:0, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="FX_TIRE_CONTACT_center_right" Node="fx_tire_contactPoint_center_right">
-                <UseTemplate Name="ASOBO_GT_FX">
-                    <FX_CODE>(A:GEAR IS SKIDDING:0, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
-                </UseTemplate>
-            </Component>
-        </Component>
+        <Component ID="LANDING_FX">
+			<UseTemplate Name="ASOBO_WET_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WET_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WET_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WET_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WET_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WET_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SMOKE_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SMOKE_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SMOKE_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SMOKE_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SMOKE_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SMOKE_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DUST_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DUST_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DUST_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DUST_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DUST_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DUST_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GRASS_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GRASS_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GRASS_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GRASS_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GRASS_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GRASS_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SNOW_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SNOW_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SNOW_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SNOW_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SNOW_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_SNOW_LG_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WATER_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WATER_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>0</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_center_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WATER_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WATER_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>1</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_left_out</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WATER_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_in</FX_NODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_WATER_GR_LANDING_FX">
+				<FX_CONTACT_POINT_ID>2</FX_CONTACT_POINT_ID>
+				<FX_NODE>fx_tire_contactPoint_right_out</FX_NODE>
+			</UseTemplate>
+		</Component>
         <Component ID="FX_CONTRAIL_QUAD">
             <OverrideTemplateParameters>
                 <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Keyframe) 0 &gt;</FX_CODE>

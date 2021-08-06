@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom';
 import { PageTitle } from '../../Common/PageTitle';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { EcamPage } from '../../Common/EcamPage';
+import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Elec.scss';
 
@@ -144,7 +146,7 @@ export const ElecPage = () => {
     );
 };
 
-export const Battery = ({ x, y, number }) => {
+const Battery = ({ x, y, number }) => {
     const [isAuto] = useSimVar(`L:A32NX_OVHD_ELEC_BAT_${number}_PB_IS_AUTO`, 'Bool', maxStaleness);
 
     const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${number}_POTENTIAL`, 'Volts', maxStaleness);
@@ -218,14 +220,6 @@ const BatteryToBatBusWire = ({ x, y, number }) => {
     );
 };
 
-const EcamPage = ({ name, children }) => (
-    <svg id={name} version="1.1" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-        {children}
-    </svg>
-);
-
-const SvgGroup = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
-
 const ElectricalProperty = ({ x, y, value, unit, isWithinNormalRange }) => (
     <SvgGroup x={x} y={y}>
         <text className={`Right ${isWithinNormalRange ? 'Green' : 'Amber'}`}>{Math.round(value)}</text>
@@ -246,6 +240,7 @@ interface BusProps {
     isNormal: boolean
     isShed?: boolean
 }
+
 const Bus = ({ x, y, width, name, number, isNormal, isShed } : BusProps) => {
     const busHeight = 26.25;
     return (
@@ -400,6 +395,7 @@ interface TransformerRectifierProps {
     number: number,
     titleOnly?: boolean,
 }
+
 const TransformerRectifier = ({ x, y, number, titleOnly }: TransformerRectifierProps) => {
     const [potential] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL`, 'Volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
@@ -495,6 +491,7 @@ interface ArrowProps {
     amber?: boolean,
     description?: string,
 }
+
 const Arrow = ({ x, y, direction, green, amber }: ArrowProps) => {
     const classes = classNames({ Green: green }, { Amber: amber });
     switch (direction) {
@@ -509,6 +506,7 @@ const Arrow = ({ x, y, direction, green, amber }: ArrowProps) => {
         return <path className={classes} d={`M${x} ${y}v-${arrowSize} l-8.99325 6.8685z`} />;
     }
 };
+
 const arrowSize = 13.737375;
 
 interface WireProps {
@@ -516,6 +514,7 @@ interface WireProps {
     amber?: boolean,
     description?: string,
 }
+
 const Wire = ({ d, amber }: WireProps) => {
     const classes = classNames({ Green: !amber }, { Amber: amber });
     return <path className={classes} d={d} />;

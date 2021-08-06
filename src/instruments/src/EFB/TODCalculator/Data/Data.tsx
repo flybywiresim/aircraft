@@ -140,8 +140,6 @@ const Data = ({
                         value={calculationInput ? Math.abs(calculationInput) : ''}
                         disabled={calculationInputSyncEnabled}
                     />
-
-                    <span className="w-full inline-block text-center mb-2 last:hidden">OR</span>
                 </>
             ))}
         </Card>

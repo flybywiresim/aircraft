@@ -1,120 +1,131 @@
-use std::time::Duration;
-
-use super::{PotentialSource, ProvideCurrent};
-use crate::{
-    shared::DelayedTrueLogicGate,
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+use super::{
+    AlternatingCurrentElectricalSystem, BatteryPushButtons, ElectricalElement, Electricity,
+    ElectricitySource, EmergencyElectrical, ProvideCurrent, ProvidePotential,
 };
+use crate::{
+    shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearRealPosition},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+};
+use std::time::Duration;
 use uom::si::{electric_current::ampere, electric_potential::volt, f64::*, velocity::knot};
 
-pub struct BatteryChargeLimiterArguments {
-    ac_buses_unpowered: bool,
-    battery_potential: ElectricPotential,
-    battery_current: ElectricCurrent,
-    battery_bus_potential: ElectricPotential,
-    apu_master_sw_pb_on: bool,
-    apu_start_sw_pb_on: bool,
-    apu_available: bool,
-    battery_push_button_is_auto: bool,
-    landing_gear_is_up_and_locked: bool,
-    emergency_generator_available: bool,
+enum State {
+    Off(Off),
+    Open(Open),
+    Closed(Closed),
 }
-impl BatteryChargeLimiterArguments {
+impl State {
+    fn new() -> Self {
+        // We start in an open state, because electrical tests assume this to be the starting state.
+        // This state might not be correct for all starting situations (*.flt files) in the simulator.
+        // When an initialisation phase is added to the system code we can overwrite this starting state
+        // with the appropriate one for the given starting situation.
+        State::Open(Open::for_initial_bcl_state())
+    }
+
     #[allow(clippy::too_many_arguments)]
-    pub fn new<TBat: PotentialSource + ProvideCurrent, TBatBus: PotentialSource>(
-        ac_buses_unpowered: bool,
-        battery: &TBat,
-        battery_bus: &TBatBus,
-        apu_master_sw_pb_on: bool,
-        apu_start_sw_pb_on: bool,
-        apu_available: bool,
-        battery_push_button_is_auto: bool,
-        landing_gear_is_up_and_locked: bool,
-        emergency_generator_available: bool,
-    ) -> Self {
-        Self {
-            ac_buses_unpowered,
-            battery_potential: battery.output().raw(),
-            battery_current: battery.current(),
-            battery_bus_potential: battery_bus.output().raw(),
-            apu_master_sw_pb_on,
-            apu_start_sw_pb_on,
-            apu_available,
-            battery_push_button_is_auto,
-            landing_gear_is_up_and_locked,
-            emergency_generator_available,
+    fn update(
+        self,
+        context: &UpdateContext,
+        electricity: &Electricity,
+        battery_number: usize,
+        emergency_elec: &EmergencyElectrical,
+        emergency_generator: &impl ElectricitySource,
+        battery: &(impl ProvidePotential + ProvideCurrent),
+        battery_bus: &impl ElectricalElement,
+        landing_gear: &impl LandingGearRealPosition,
+        battery_push_buttons: &impl BatteryPushButtons,
+        apu: &impl ApuAvailable,
+        apu_overhead: &(impl ApuMaster + ApuStart),
+        ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+    ) -> State {
+        match self {
+            State::Off(observer) => observer.update(context, battery_number, battery_push_buttons),
+            State::Open(observer) => observer.update(
+                context,
+                electricity,
+                battery_number,
+                emergency_elec,
+                emergency_generator,
+                battery,
+                battery_bus,
+                landing_gear,
+                battery_push_buttons,
+                apu,
+                apu_overhead,
+                ac_electrical_system,
+            ),
+            State::Closed(observer) => observer.update(
+                context,
+                electricity,
+                battery_number,
+                emergency_elec,
+                battery,
+                landing_gear,
+                battery_push_buttons,
+                apu,
+                apu_overhead,
+                ac_electrical_system,
+            ),
         }
     }
 
-    fn ac_buses_unpowered(&self) -> bool {
-        self.ac_buses_unpowered
-    }
-
-    fn battery_potential(&self) -> ElectricPotential {
-        self.battery_potential
-    }
-
-    fn battery_current(&self) -> ElectricCurrent {
-        self.battery_current
-    }
-
-    fn battery_bus_potential(&self) -> ElectricPotential {
-        self.battery_bus_potential
-    }
-
-    fn apu_master_sw_pb_on(&self) -> bool {
-        self.apu_master_sw_pb_on
-    }
-
-    fn apu_start_sw_pb_on(&self) -> bool {
-        self.apu_start_sw_pb_on
-    }
-
-    fn apu_available(&self) -> bool {
-        self.apu_available
-    }
-
-    fn battery_push_button_is_auto(&self) -> bool {
-        self.battery_push_button_is_auto
-    }
-
-    fn landing_gear_is_up_and_locked(&self) -> bool {
-        self.landing_gear_is_up_and_locked
-    }
-
-    fn emergency_generator_available(&self) -> bool {
-        self.emergency_generator_available
+    fn should_close_contactor(&self) -> bool {
+        matches!(self, State::Closed(_))
     }
 }
 
 pub struct BatteryChargeLimiter {
+    number: usize,
     should_show_arrow_when_contactor_closed_id: String,
     arrow: ArrowBetweenBatteryAndBatBus,
-    observer: Option<Box<dyn BatteryStateObserver>>,
+    observer: Option<State>,
 }
 impl BatteryChargeLimiter {
-    const CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS: u64 = 15;
-
-    pub fn new(contactor_id: &str) -> Self {
+    pub fn new(number: usize, contactor_id: &str) -> Self {
         Self {
+            number,
             should_show_arrow_when_contactor_closed_id: format!(
                 "ELEC_CONTACTOR_{}_SHOW_ARROW_WHEN_CLOSED",
                 contactor_id
             ),
             arrow: ArrowBetweenBatteryAndBatBus::new(),
-            // We start in an open state, because electrical tests assume this to be the starting state.
-            // This state might not be correct for all starting situations (*.flt files) in the simulator.
-            // When an initialisation phase is added to the system code we can overwrite this starting state
-            // with the appropriate one for the given starting situation.
-            observer: Some(Box::new(OpenContactorObserver::for_initial_bcl_state())),
+            observer: Some(State::new()),
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, arguments: &BatteryChargeLimiterArguments) {
-        self.arrow.update(context, arguments);
+    #[allow(clippy::too_many_arguments)]
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        electricity: &Electricity,
+        emergency_elec: &EmergencyElectrical,
+        emergency_generator: &impl ElectricitySource,
+        battery: &(impl ProvidePotential + ProvideCurrent),
+        battery_bus: &impl ElectricalElement,
+        landing_gear: &impl LandingGearRealPosition,
+        battery_push_buttons: &impl BatteryPushButtons,
+        apu: &impl ApuAvailable,
+        apu_overhead: &(impl ApuMaster + ApuStart),
+        ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+    ) {
+        self.arrow.update(context, battery);
 
         if let Some(observer) = self.observer.take() {
-            self.observer = Some(observer.update(context, arguments));
+            self.observer = Some(observer.update(
+                context,
+                electricity,
+                self.number,
+                emergency_elec,
+                emergency_generator,
+                battery,
+                battery_bus,
+                landing_gear,
+                battery_push_buttons,
+                apu,
+                apu_overhead,
+                ac_electrical_system,
+            ));
         }
     }
 
@@ -124,31 +135,20 @@ impl BatteryChargeLimiter {
 }
 impl SimulationElement for BatteryChargeLimiter {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(
+        writer.write(
             &self.should_show_arrow_when_contactor_closed_id,
             self.arrow.should_show_when_contactor_closed(),
         );
     }
 }
 
-/// Observes the battery, battery contactor and related systems
-/// to determine if the battery contactor should open or close.
-trait BatteryStateObserver {
-    fn should_close_contactor(&self) -> bool;
-    fn update(
-        self: Box<Self>,
-        context: &UpdateContext,
-        arguments: &BatteryChargeLimiterArguments,
-    ) -> Box<dyn BatteryStateObserver>;
-}
-
 /// The BCL is not powered when the BAT push button is in the OFF
 /// position. This observer simply watches for the BAT push button to
 /// move to the AUTO position.
-struct OffPushButtonObserver {
+struct Off {
     bcl_startup_delay: DelayedTrueLogicGate,
 }
-impl OffPushButtonObserver {
+impl Off {
     const STARTUP_DELAY_IN_SECONDS: u64 = 1;
 
     fn new() -> Self {
@@ -158,208 +158,247 @@ impl OffPushButtonObserver {
             )),
         }
     }
-}
-impl BatteryStateObserver for OffPushButtonObserver {
-    fn should_close_contactor(&self) -> bool {
-        false
-    }
 
     fn update(
-        mut self: Box<Self>,
+        mut self,
         context: &UpdateContext,
-        arguments: &BatteryChargeLimiterArguments,
-    ) -> Box<dyn BatteryStateObserver> {
+        battery_number: usize,
+        battery_push_buttons: &impl BatteryPushButtons,
+    ) -> State {
         self.bcl_startup_delay
-            .update(context, arguments.battery_push_button_is_auto());
+            .update(context, battery_push_buttons.bat_is_auto(battery_number));
 
         if self.bcl_startup_delay.output() {
-            Box::new(ClosedContactorObserver::from_off())
+            State::Closed(Closed::from_off())
         } else {
-            self
+            State::Off(self)
         }
     }
 }
 
 /// Observes the open battery contactor and related systems
 /// to determine if the battery contactor should be closed.
-struct OpenContactorObserver {
+struct Open {
     begin_charging_cycle_delay: DelayedTrueLogicGate,
     open_due_to_discharge_protection: bool,
     open_due_to_exceeding_emergency_elec_closing_time_allowance: bool,
-    emergency_elec: EmergencyElec,
 }
-impl OpenContactorObserver {
+impl Open {
     const CHARGE_BATTERY_BELOW_VOLTAGE: f64 = 26.5;
     const BATTERY_BUS_BELOW_CHARGING_VOLTAGE: f64 = 27.;
     const BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS: u64 = 225;
+    const APU_START_INHIBIT_DELAY_SECONDS: u64 = 45;
 
     fn new(
-        emergency_elec: EmergencyElec,
         open_due_to_discharge_protection: bool,
         open_due_to_exceeding_emergency_elec_closing_time_allowance: bool,
     ) -> Self {
         Self {
             begin_charging_cycle_delay: DelayedTrueLogicGate::new(Duration::from_millis(
-                OpenContactorObserver::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
+                Open::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
             )),
-            emergency_elec,
             open_due_to_discharge_protection,
             open_due_to_exceeding_emergency_elec_closing_time_allowance,
         }
     }
 
     fn for_initial_bcl_state() -> Self {
-        Self::new(EmergencyElec::new(), false, false)
+        Self::new(false, false)
     }
 
-    fn from_closed(emergency_elec: EmergencyElec) -> Self {
-        Self::new(emergency_elec, false, false)
+    fn from_closed() -> Self {
+        Self::new(false, false)
     }
 
-    fn with_discharge_protection(emergency_elec: EmergencyElec) -> Self {
-        Self::new(emergency_elec, true, false)
+    fn due_to_discharge_protection() -> Self {
+        Self::new(true, false)
     }
 
-    fn after_exceeding_emergency_elec_closing_time_allowance(
-        emergency_elec: EmergencyElec,
-    ) -> Self {
-        Self::new(emergency_elec, false, true)
+    fn due_to_exceeding_emergency_elec_closing_time_allowance() -> Self {
+        Self::new(false, true)
     }
 
-    fn update_state(&mut self, context: &UpdateContext, arguments: &BatteryChargeLimiterArguments) {
-        self.emergency_elec.update(context, arguments);
-        self.update_begin_charging_cycle_delay(context, arguments);
+    fn update_state(
+        &mut self,
+        context: &UpdateContext,
+        electricity: &Electricity,
+        battery: &impl ProvidePotential,
+        battery_bus: &impl ElectricalElement,
+        apu_overhead: &impl ApuMaster,
+    ) {
+        self.update_begin_charging_cycle_delay(context, electricity, battery, battery_bus);
 
         if self.open_due_to_exceeding_emergency_elec_closing_time_allowance
-            && !arguments.apu_master_sw_pb_on()
+            && !apu_overhead.master_sw_is_on()
         {
             self.open_due_to_exceeding_emergency_elec_closing_time_allowance = false;
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn should_close(
         &self,
         context: &UpdateContext,
-        arguments: &BatteryChargeLimiterArguments,
+        electricity: &Electricity,
+        emergency_elec: &EmergencyElectrical,
+        emergency_generator: &impl ElectricitySource,
+        landing_gear: &impl LandingGearRealPosition,
+        apu: &impl ApuAvailable,
+        apu_overhead: &impl ApuMaster,
+        ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
     ) -> bool {
         !self.open_due_to_exceeding_emergency_elec_closing_time_allowance
-            && !self.emergency_elec_inhibited(arguments)
+            && !self.emergency_elec_inhibited(
+                electricity,
+                emergency_elec,
+                emergency_generator,
+                landing_gear,
+            )
             && !self.open_due_to_discharge_protection
-            && (self.should_get_ready_for_apu_start(arguments)
-                || on_ground_at_low_speed_with_unpowered_ac_buses(context, arguments)
+            && (self.should_get_ready_for_apu_start(apu, apu_overhead)
+                || on_ground_at_low_speed_with_unpowered_ac_buses(
+                    context,
+                    electricity,
+                    ac_electrical_system,
+                )
                 || self.should_charge_battery())
     }
 
-    fn should_get_ready_for_apu_start(&self, arguments: &BatteryChargeLimiterArguments) -> bool {
-        arguments.apu_master_sw_pb_on() && !arguments.apu_available()
+    fn should_get_ready_for_apu_start(
+        &self,
+        apu: &impl ApuAvailable,
+        apu_overhead: &impl ApuMaster,
+    ) -> bool {
+        apu_overhead.master_sw_is_on() && !apu.is_available()
     }
 
     fn should_charge_battery(&self) -> bool {
         self.begin_charging_cycle_delay.output()
     }
 
-    fn emergency_elec_inhibited(&self, arguments: &BatteryChargeLimiterArguments) -> bool {
-        self.emergency_elec.is_active()
-            && (!arguments.landing_gear_is_up_and_locked()
-                || (!arguments.emergency_generator_available()
-                    && self.emergency_elec.apu_start_inhibited()))
+    fn emergency_elec_inhibited(
+        &self,
+        electricity: &Electricity,
+        emergency_elec: &EmergencyElectrical,
+        emergency_generator: &impl ElectricitySource,
+        landing_gear: &impl LandingGearRealPosition,
+    ) -> bool {
+        emergency_elec.is_active()
+            && (!landing_gear.is_up_and_locked()
+                || (!electricity.is_powered(emergency_generator)
+                    && emergency_elec.active_duration()
+                        < Duration::from_secs(Self::APU_START_INHIBIT_DELAY_SECONDS)))
     }
 
     fn update_begin_charging_cycle_delay(
         &mut self,
         context: &UpdateContext,
-        arguments: &BatteryChargeLimiterArguments,
+        electricity: &Electricity,
+        battery: &impl ProvidePotential,
+        battery_bus: &impl ElectricalElement,
     ) {
         self.begin_charging_cycle_delay.update(
             context,
-            arguments.battery_potential()
-                < ElectricPotential::new::<volt>(
-                    OpenContactorObserver::CHARGE_BATTERY_BELOW_VOLTAGE,
-                )
-                && arguments.battery_bus_potential()
-                    > ElectricPotential::new::<volt>(
-                        OpenContactorObserver::BATTERY_BUS_BELOW_CHARGING_VOLTAGE,
-                    ),
+            battery.potential()
+                < ElectricPotential::new::<volt>(Open::CHARGE_BATTERY_BELOW_VOLTAGE)
+                && electricity.output_of(battery_bus).raw()
+                    > ElectricPotential::new::<volt>(Open::BATTERY_BUS_BELOW_CHARGING_VOLTAGE),
         );
     }
-}
-impl BatteryStateObserver for OpenContactorObserver {
-    fn should_close_contactor(&self) -> bool {
-        false
-    }
 
+    #[allow(clippy::too_many_arguments)]
     fn update(
-        mut self: Box<Self>,
+        mut self,
         context: &UpdateContext,
-        arguments: &BatteryChargeLimiterArguments,
-    ) -> Box<dyn BatteryStateObserver> {
-        self.update_state(context, arguments);
+        electricity: &Electricity,
+        battery_number: usize,
+        emergency_elec: &EmergencyElectrical,
+        emergency_generator: &impl ElectricitySource,
+        battery: &impl ProvidePotential,
+        battery_bus: &impl ElectricalElement,
+        landing_gear: &impl LandingGearRealPosition,
+        battery_push_buttons: &impl BatteryPushButtons,
+        apu: &impl ApuAvailable,
+        apu_overhead: &impl ApuMaster,
+        ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+    ) -> State {
+        self.update_state(context, electricity, battery, battery_bus, apu_overhead);
 
-        if !arguments.battery_push_button_is_auto() {
-            Box::new(OffPushButtonObserver::new())
-        } else if self.should_close(context, arguments) {
-            Box::new(ClosedContactorObserver::from_open(self.emergency_elec))
+        if !battery_push_buttons.bat_is_auto(battery_number) {
+            State::Off(Off::new())
+        } else if self.should_close(
+            context,
+            electricity,
+            emergency_elec,
+            emergency_generator,
+            landing_gear,
+            apu,
+            apu_overhead,
+            ac_electrical_system,
+        ) {
+            State::Closed(Closed::from_open(emergency_elec.is_active()))
         } else {
-            self
+            State::Open(self)
         }
     }
 }
 
 /// Observes the closed battery contactor and related systems
 /// to determine if the battery contactor should be opened.
-struct ClosedContactorObserver {
+struct Closed {
     below_4_ampere_charging_duration: Duration,
     below_23_volt_duration: Duration,
     apu_master_sw_pb_on_duration: Duration,
-    emergency_elec: EmergencyElec,
     had_apu_start: bool,
     entered_in_emergency_elec: bool,
 }
-impl ClosedContactorObserver {
+impl Closed {
     const BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS: u64 = 10;
     const BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS: u64 = 1800;
     const BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS: u64 = 15;
     const EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS: u64 = 180;
 
-    fn new(emergency_elec: EmergencyElec) -> Self {
+    fn new(entered_in_emergency_elec: bool) -> Self {
         Self {
             below_4_ampere_charging_duration: Duration::from_secs(0),
             below_23_volt_duration: Duration::from_secs(0),
             apu_master_sw_pb_on_duration: Duration::from_secs(0),
-            entered_in_emergency_elec: emergency_elec.is_active(),
-            emergency_elec,
+            entered_in_emergency_elec,
             had_apu_start: false,
         }
     }
 
-    fn from_open(emergency_elec: EmergencyElec) -> Self {
-        Self::new(emergency_elec)
+    fn from_open(entered_in_emergency_elec: bool) -> Self {
+        Self::new(entered_in_emergency_elec)
     }
 
     fn from_off() -> Self {
-        Self::new(EmergencyElec::new())
+        Self::new(false)
     }
 
-    fn update_state(&mut self, context: &UpdateContext, arguments: &BatteryChargeLimiterArguments) {
-        self.emergency_elec.update(context, arguments);
-
-        if arguments.apu_start_sw_pb_on() {
+    fn update_state(
+        &mut self,
+        context: &UpdateContext,
+        battery: &(impl ProvidePotential + ProvideCurrent),
+        apu_overhead: &(impl ApuMaster + ApuStart),
+    ) {
+        if apu_overhead.start_is_on() {
             self.had_apu_start = true;
         }
 
-        if arguments.battery_current() < ElectricCurrent::new::<ampere>(4.) {
+        if battery.current() < ElectricCurrent::new::<ampere>(4.) {
             self.below_4_ampere_charging_duration += context.delta();
         } else {
             self.below_4_ampere_charging_duration = Duration::from_secs(0);
         }
 
-        if arguments.battery_potential() < ElectricPotential::new::<volt>(23.) {
+        if battery.potential() < ElectricPotential::new::<volt>(23.) {
             self.below_23_volt_duration += context.delta();
         } else {
             self.below_23_volt_duration = Duration::from_secs(0);
         }
 
-        if arguments.apu_master_sw_pb_on() {
+        if apu_overhead.master_sw_is_on() {
             self.apu_master_sw_pb_on_duration += context.delta();
         } else {
             self.apu_master_sw_pb_on_duration = Duration::from_secs(0);
@@ -369,52 +408,59 @@ impl ClosedContactorObserver {
     fn should_open_due_to_discharge_protection(&self, context: &UpdateContext) -> bool {
         context.is_on_ground()
             && self.below_23_volt_duration
-                >= Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
-                )
+                >= Duration::from_secs(Closed::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS)
     }
 
-    fn should_open_due_to_exceeding_emergency_elec_closed_time_allowance(&self) -> bool {
-        self.emergency_elec.is_active() && self.beyond_emergency_elec_closed_time_allowance()
+    fn should_open_due_to_exceeding_emergency_elec_closed_time_allowance(
+        &self,
+        emergency_elec: &EmergencyElectrical,
+    ) -> bool {
+        emergency_elec.is_active() && self.beyond_emergency_elec_closed_time_allowance()
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn should_open(
         &self,
         context: &UpdateContext,
-        arguments: &BatteryChargeLimiterArguments,
+        electricity: &Electricity,
+        emergency_elec: &EmergencyElectrical,
+        landing_gear: &impl LandingGearRealPosition,
+        apu: &impl ApuAvailable,
+        apu_overhead: &impl ApuMaster,
+        ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
     ) -> bool {
-        if self.emergency_elec.is_active() {
-            !arguments.apu_master_sw_pb_on() || self.emergency_elec_inhibited(arguments)
+        if emergency_elec.is_active() {
+            !apu_overhead.master_sw_is_on() || self.emergency_elec_inhibited(landing_gear)
         } else {
-            !self.awaiting_apu_start(arguments)
-                && !on_ground_at_low_speed_with_unpowered_ac_buses(context, arguments)
+            !self.awaiting_apu_start(apu, apu_overhead)
+                && !on_ground_at_low_speed_with_unpowered_ac_buses(
+                    context,
+                    electricity,
+                    ac_electrical_system,
+                )
                 && (self.beyond_charge_duration_on_ground_without_apu_start(context)
                     || self
                         .beyond_charge_duration_above_100_knots_or_after_apu_start_attempt(context))
         }
     }
 
-    fn emergency_elec_inhibited(&self, arguments: &BatteryChargeLimiterArguments) -> bool {
-        !self.entered_in_emergency_elec || !arguments.landing_gear_is_up_and_locked()
+    fn emergency_elec_inhibited(&self, landing_gear: &impl LandingGearRealPosition) -> bool {
+        !self.entered_in_emergency_elec || !landing_gear.is_up_and_locked()
     }
 
     fn beyond_emergency_elec_closed_time_allowance(&self) -> bool {
         self.apu_master_sw_pb_on_duration
-            >= Duration::from_secs(
-                ClosedContactorObserver::EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS,
-            )
+            >= Duration::from_secs(Closed::EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS)
     }
 
-    fn awaiting_apu_start(&self, arguments: &BatteryChargeLimiterArguments) -> bool {
-        arguments.apu_master_sw_pb_on() && !arguments.apu_available()
+    fn awaiting_apu_start(&self, apu: &impl ApuAvailable, apu_overhead: &impl ApuMaster) -> bool {
+        apu_overhead.master_sw_is_on() && !apu.is_available()
     }
 
     fn beyond_charge_duration_on_ground_without_apu_start(&self, context: &UpdateContext) -> bool {
         (!self.had_apu_start && context.is_on_ground())
             && self.below_4_ampere_charging_duration
-                >= Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS,
-                )
+                >= Duration::from_secs(Closed::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS)
     }
 
     fn beyond_charge_duration_above_100_knots_or_after_apu_start_attempt(
@@ -424,81 +470,58 @@ impl ClosedContactorObserver {
         (context.indicated_airspeed() >= Velocity::new::<knot>(100.) || self.had_apu_start)
             && self.below_4_ampere_charging_duration
                 >= Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
+                    Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
                 )
     }
-}
-impl BatteryStateObserver for ClosedContactorObserver {
-    fn should_close_contactor(&self) -> bool {
-        true
-    }
 
+    #[allow(clippy::too_many_arguments)]
     fn update(
-        mut self: Box<Self>,
+        mut self,
         context: &UpdateContext,
-        arguments: &BatteryChargeLimiterArguments,
-    ) -> Box<dyn BatteryStateObserver> {
-        self.update_state(context, arguments);
+        electricity: &Electricity,
+        battery_number: usize,
+        emergency_elec: &EmergencyElectrical,
+        battery: &(impl ProvidePotential + ProvideCurrent),
+        landing_gear: &impl LandingGearRealPosition,
+        battery_push_buttons: &impl BatteryPushButtons,
+        apu: &impl ApuAvailable,
+        apu_overhead: &(impl ApuMaster + ApuStart),
+        ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
+    ) -> State {
+        self.update_state(context, battery, apu_overhead);
 
-        if !arguments.battery_push_button_is_auto() {
-            Box::new(OffPushButtonObserver::new())
+        if !battery_push_buttons.bat_is_auto(battery_number) {
+            State::Off(Off::new())
         } else if self.should_open_due_to_discharge_protection(context) {
-            Box::new(OpenContactorObserver::with_discharge_protection(
-                self.emergency_elec,
-            ))
-        } else if self.should_open_due_to_exceeding_emergency_elec_closed_time_allowance() {
-            Box::new(
-                OpenContactorObserver::after_exceeding_emergency_elec_closing_time_allowance(
-                    self.emergency_elec,
-                ),
-            )
-        } else if self.should_open(context, arguments) {
-            Box::new(OpenContactorObserver::from_closed(self.emergency_elec))
+            State::Open(Open::due_to_discharge_protection())
+        } else if self
+            .should_open_due_to_exceeding_emergency_elec_closed_time_allowance(emergency_elec)
+        {
+            State::Open(Open::due_to_exceeding_emergency_elec_closing_time_allowance())
+        } else if self.should_open(
+            context,
+            electricity,
+            emergency_elec,
+            landing_gear,
+            apu,
+            apu_overhead,
+            ac_electrical_system,
+        ) {
+            State::Open(Open::from_closed())
         } else {
-            self
+            State::Closed(self)
         }
     }
 }
 
 fn on_ground_at_low_speed_with_unpowered_ac_buses(
     context: &UpdateContext,
-    arguments: &BatteryChargeLimiterArguments,
+    electricity: &Electricity,
+    ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
 ) -> bool {
-    arguments.ac_buses_unpowered()
+    !ac_electrical_system.any_non_essential_bus_powered(electricity)
         && context.is_on_ground()
         && context.indicated_airspeed() < Velocity::new::<knot>(100.)
-}
-
-struct EmergencyElec {
-    is_active_for_duration: Duration,
-}
-impl EmergencyElec {
-    const APU_START_INHIBIT_DELAY_SECONDS: u64 = 45;
-
-    fn new() -> Self {
-        Self {
-            is_active_for_duration: Duration::from_secs(0),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext, arguments: &BatteryChargeLimiterArguments) {
-        if arguments.ac_buses_unpowered()
-            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
-        {
-            self.is_active_for_duration += context.delta();
-        } else {
-            self.is_active_for_duration = Duration::from_secs(0)
-        }
-    }
-
-    fn is_active(&self) -> bool {
-        self.is_active_for_duration > Duration::from_secs(0)
-    }
-
-    fn apu_start_inhibited(&self) -> bool {
-        self.is_active_for_duration
-            < Duration::from_secs(EmergencyElec::APU_START_INHIBIT_DELAY_SECONDS)
-    }
 }
 
 struct ArrowBetweenBatteryAndBatBus {
@@ -506,25 +529,27 @@ struct ArrowBetweenBatteryAndBatBus {
     charging_above_1_ampere_beyond_time: DelayedTrueLogicGate,
 }
 impl ArrowBetweenBatteryAndBatBus {
+    const CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS: u64 = 15;
+
     fn new() -> Self {
         Self {
             discharging_above_1_ampere_beyond_time: DelayedTrueLogicGate::new(Duration::from_secs(
-                BatteryChargeLimiter::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
+                Self::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
             )),
             charging_above_1_ampere_beyond_time: DelayedTrueLogicGate::new(Duration::from_secs(
-                BatteryChargeLimiter::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
+                Self::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
             )),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, arguments: &BatteryChargeLimiterArguments) {
+    fn update(&mut self, context: &UpdateContext, battery: &impl ProvideCurrent) {
         self.discharging_above_1_ampere_beyond_time.update(
             context,
-            arguments.battery_current() < ElectricCurrent::new::<ampere>(-1.),
+            battery.current() < ElectricCurrent::new::<ampere>(-1.),
         );
         self.charging_above_1_ampere_beyond_time.update(
             context,
-            arguments.battery_current() > ElectricCurrent::new::<ampere>(1.),
+            battery.current() > ElectricCurrent::new::<ampere>(1.),
         );
     }
 
@@ -543,67 +568,65 @@ mod tests {
         use super::*;
         use crate::{
             electrical::{
-                battery::Battery,
-                consumption::{PowerConsumer, SuppliedPower},
-                Contactor, ElectricalBus, ElectricalBusType, Potential, PotentialOrigin,
-                PotentialTarget,
+                battery::Battery, consumption::PowerConsumer, test::TestElectricitySource,
+                Contactor, ElectricalBus, ElectricalBusType, ElectricalElement,
+                ElectricalElementIdentifier, ElectricalElementIdentifierProvider, Electricity,
+                Potential, PotentialOrigin,
             },
-            simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
+            simulation::{
+                test::{SimulationTestBed, TestBed},
+                Aircraft, Read, SimulationElementVisitor,
+            },
         };
         use std::time::Duration;
         use uom::si::{length::foot, power::watt};
 
         struct BatteryChargeLimiterTestBed {
-            test_bed: SimulationTestBed,
-            aircraft: TestAircraft,
+            test_bed: SimulationTestBed<TestAircraft>,
         }
         impl BatteryChargeLimiterTestBed {
             fn new() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(),
-                    aircraft: TestAircraft::new(Battery::half(1)),
+                    test_bed: SimulationTestBed::new(|electricity| {
+                        TestAircraft::new(Battery::half(1, electricity), electricity)
+                    }),
                 }
             }
 
             fn on_the_ground(mut self) -> Self {
-                self.test_bed.set_on_ground(true);
-                self.test_bed
-                    .set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_on_ground(true);
+                self.set_indicated_altitude(Length::new::<foot>(0.));
 
                 self
             }
 
             fn indicated_airspeed_of(mut self, indicated_airspeed: Velocity) -> Self {
-                self.test_bed.set_indicated_airspeed(indicated_airspeed);
+                self.set_indicated_airspeed(indicated_airspeed);
                 self
             }
 
             fn run(mut self, delta: Duration) -> Self {
                 // The battery's current is updated after the BCL, thus we need two ticks.
-                self.test_bed.set_delta(Duration::from_secs(0));
-                self.test_bed.run_aircraft(&mut self.aircraft);
-
-                self.test_bed.set_delta(delta);
-                self.test_bed.run_aircraft(&mut self.aircraft);
+                self.run_with_delta(Duration::from_secs(0));
+                self.run_with_delta(delta);
 
                 // Run once more to detect programming errors where the state goes from
                 // open to closed (or vice versa) and then back to the other state within
                 // the next tick while this shouldn't happen.
-                self.test_bed.set_delta(Duration::from_secs(0));
-                self.test_bed.run_aircraft(&mut self.aircraft);
+                self.run_with_delta(Duration::from_secs(0));
 
                 self
             }
 
             fn wait_for_closed_contactor(mut self, assert_is_closed: bool) -> Self {
-                self.aircraft.set_battery_bus_at_minimum_charging_voltage();
+                self.command(|a| a.set_battery_bus_at_minimum_charging_voltage());
                 self = self.run(Duration::from_millis(
-                    OpenContactorObserver::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
+                    Open::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
                 ));
 
                 if assert_is_closed {
                     assert!(
-                        self.aircraft.battery_contactor_is_closed(),
+                        self.query(|a| a.battery_contactor_is_closed()),
                         "Battery contactor didn't close within the expected time frame.
                             Is the battery bus at a high enough voltage and the battery not full?"
                     );
@@ -617,9 +640,9 @@ mod tests {
             }
 
             fn wait_for_emergency_elec_apu_no_longer_inhibited(mut self) -> Self {
-                self = self.emergency_elec().run(Duration::from_secs(
-                    EmergencyElec::APU_START_INHIBIT_DELAY_SECONDS,
-                ));
+                self = self
+                    .emergency_elec()
+                    .run(Duration::from_secs(Open::APU_START_INHIBIT_DELAY_SECONDS));
 
                 self
             }
@@ -658,41 +681,41 @@ mod tests {
             }
 
             fn battery_push_button_off(mut self) -> Self {
-                self.aircraft.set_battery_push_button_off();
+                self.command(|a| a.set_battery_push_button_off());
                 self = self.run(Duration::from_secs(0));
 
                 self
             }
 
             fn battery_push_button_auto(mut self) -> Self {
-                self.aircraft.set_battery_push_button_auto();
+                self.command(|a| a.set_battery_push_button_auto());
                 self = self.run(Duration::from_secs(0));
 
                 self
             }
 
             fn available_emergency_generator(mut self) -> Self {
-                self.aircraft.set_emergency_generator_available();
+                self.command(|a| a.set_emergency_generator_available());
                 self
             }
 
             fn started_apu(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_on();
-                self.aircraft.set_apu_start_pb_on();
+                self.command(|a| a.set_apu_master_sw_pb_on());
+                self.command(|a| a.set_apu_start_pb_on());
 
                 self = self.run(Duration::from_secs(0));
 
-                self.aircraft.set_apu_available();
-                self.aircraft.set_apu_start_pb_off();
+                self.command(|a| a.set_apu_available());
+                self.command(|a| a.set_apu_start_pb_off());
 
                 self
             }
 
             fn stopped_apu(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_off();
+                self.command(|a| a.set_apu_master_sw_pb_off());
                 self = self.run(Duration::from_secs(0));
 
-                self.aircraft.set_apu_unavailable();
+                self.command(|a| a.set_apu_unavailable());
 
                 self
             }
@@ -706,106 +729,249 @@ mod tests {
             }
 
             fn full_battery_charge(mut self) -> Self {
-                self.aircraft.set_full_battery_charge();
+                self.command(|a| a.set_full_battery_charge());
                 self
             }
 
             fn nearly_empty_battery_charge(mut self) -> Self {
-                self.aircraft.set_nearly_empty_battery_charge();
+                self.command(|a| a.set_nearly_empty_battery_charge());
                 self
             }
 
             fn no_power_outside_of_battery(mut self) -> Self {
-                self.aircraft.set_battery_bus_unpowered();
-                self.aircraft.set_both_ac_buses_unpowered();
+                self.command(|a| a.set_battery_bus_unpowered());
+                self.command(|a| a.set_both_ac_buses_unpowered());
                 self
             }
 
             fn power_demand_of(mut self, power: Power) -> Self {
-                self.aircraft.set_power_demand(power);
+                self.command(|a| a.set_power_demand(power));
                 self
             }
 
             fn battery_bus_at_minimum_charging_voltage(mut self) -> Self {
-                self.aircraft.set_battery_bus_at_minimum_charging_voltage();
+                self.command(|a| a.set_battery_bus_at_minimum_charging_voltage());
                 self
             }
 
             fn battery_bus_below_minimum_charging_voltage(mut self) -> Self {
-                self.aircraft
-                    .set_battery_bus_below_minimum_charging_voltage();
+                self.command(|a| a.set_battery_bus_below_minimum_charging_voltage());
                 self
             }
 
             fn current(&mut self) -> ElectricCurrent {
-                ElectricCurrent::new::<ampere>(
-                    self.test_bed.read_f64(&format!("ELEC_BAT_{}_CURRENT", 1)),
-                )
+                self.read(&format!("ELEC_BAT_{}_CURRENT", 1))
             }
 
             fn battery_contactor_is_closed(&self) -> bool {
-                self.aircraft.battery_contactor_is_closed()
+                self.query(|a| a.battery_contactor_is_closed())
             }
 
             fn apu_master_sw_pb_on(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_on();
+                self.command(|a| a.set_apu_master_sw_pb_on());
                 self
             }
 
             fn apu_master_sw_pb_off(mut self) -> Self {
-                self.aircraft.set_apu_master_sw_pb_off();
+                self.command(|a| a.set_apu_master_sw_pb_off());
                 self
             }
 
             fn should_show_arrow_when_contactor_closed(&mut self) -> bool {
-                self.test_bed
-                    .read_bool("ELEC_CONTACTOR_TEST_SHOW_ARROW_WHEN_CLOSED")
+                self.read("ELEC_CONTACTOR_TEST_SHOW_ARROW_WHEN_CLOSED")
             }
 
             fn emergency_elec(mut self) -> Self {
                 self = self.no_power_outside_of_battery();
-                self.test_bed
-                    .set_indicated_airspeed(Velocity::new::<knot>(101.));
+                self.set_indicated_airspeed(Velocity::new::<knot>(101.));
 
                 self
             }
 
             fn gear_down(mut self) -> Self {
-                self.aircraft.set_gear_down();
+                self.command(|a| a.set_gear_down());
 
                 self
             }
         }
+        impl TestBed for BatteryChargeLimiterTestBed {
+            type Aircraft = TestAircraft;
+
+            fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
+                &self.test_bed
+            }
+
+            fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
+                &mut self.test_bed
+            }
+        }
+
+        struct TestAlternatingCurrentElectricalSystem {
+            any_non_essential_bus_powered: bool,
+        }
+        impl TestAlternatingCurrentElectricalSystem {
+            fn new(any_non_essential_bus_powered: bool) -> Self {
+                Self {
+                    any_non_essential_bus_powered,
+                }
+            }
+        }
+        impl AlternatingCurrentElectricalSystem for TestAlternatingCurrentElectricalSystem {
+            fn any_non_essential_bus_powered(&self, _: &Electricity) -> bool {
+                self.any_non_essential_bus_powered
+            }
+        }
+
+        struct TestLandingGear {
+            is_down: bool,
+        }
+        impl TestLandingGear {
+            fn new(is_down: bool) -> Self {
+                Self { is_down }
+            }
+        }
+        impl LandingGearRealPosition for TestLandingGear {
+            fn is_up_and_locked(&self) -> bool {
+                !self.is_down
+            }
+
+            fn is_down_and_locked(&self) -> bool {
+                self.is_down
+            }
+        }
+
+        struct TestEmergencyGenerator {
+            identifier: ElectricalElementIdentifier,
+            is_available: bool,
+        }
+        impl TestEmergencyGenerator {
+            fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+                Self {
+                    identifier: identifier_provider.next(),
+                    is_available: false,
+                }
+            }
+
+            fn set_available(&mut self) {
+                self.is_available = true;
+            }
+        }
+        impl ElectricalElement for TestEmergencyGenerator {
+            fn input_identifier(&self) -> crate::electrical::ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn output_identifier(&self) -> crate::electrical::ElectricalElementIdentifier {
+                self.identifier
+            }
+
+            fn is_conductive(&self) -> bool {
+                true
+            }
+        }
+        impl ElectricitySource for TestEmergencyGenerator {
+            fn output_potential(&self) -> Potential {
+                if self.is_available {
+                    Potential::new(
+                        PotentialOrigin::EmergencyGenerator,
+                        ElectricPotential::new::<volt>(115.),
+                    )
+                } else {
+                    Potential::none()
+                }
+            }
+        }
+
+        struct TestElectricalOverheadPanel {
+            bat_is_auto: bool,
+        }
+        impl TestElectricalOverheadPanel {
+            fn new(bat_is_auto: bool) -> Self {
+                Self { bat_is_auto }
+            }
+        }
+        impl BatteryPushButtons for TestElectricalOverheadPanel {
+            fn bat_is_auto(&self, _: usize) -> bool {
+                self.bat_is_auto
+            }
+        }
+
+        struct TestApu {
+            is_available: bool,
+        }
+        impl TestApu {
+            fn new(is_available: bool) -> Self {
+                Self { is_available }
+            }
+        }
+        impl ApuAvailable for TestApu {
+            fn is_available(&self) -> bool {
+                self.is_available
+            }
+        }
+
+        struct TestApuOverheadPanel {
+            master_sw_is_on: bool,
+            start_is_on: bool,
+        }
+        impl TestApuOverheadPanel {
+            fn new(master_sw_is_on: bool, start_is_on: bool) -> Self {
+                Self {
+                    master_sw_is_on,
+                    start_is_on,
+                }
+            }
+        }
+        impl ApuMaster for TestApuOverheadPanel {
+            fn master_sw_is_on(&self) -> bool {
+                self.master_sw_is_on
+            }
+        }
+        impl ApuStart for TestApuOverheadPanel {
+            fn start_is_on(&self) -> bool {
+                self.start_is_on
+            }
+        }
 
         struct TestAircraft {
+            battery_bus_electricity_source: TestElectricitySource,
             battery: Battery,
             battery_charge_limiter: BatteryChargeLimiter,
             battery_bus: ElectricalBus,
             battery_contactor: Contactor,
+            emergency_generator: TestEmergencyGenerator,
             consumer: PowerConsumer,
-            both_ac_buses_unpowered: bool,
             apu_master_sw_pb_on: bool,
             apu_start_pb_on: bool,
             apu_available: bool,
             battery_push_button_auto: bool,
-            gear_is_down: bool,
-            emergency_generator_available: bool,
+            landing_gear_is_down: bool,
+            emergency_elec: EmergencyElectrical,
+            any_non_essential_bus_powered: bool,
         }
         impl TestAircraft {
-            fn new(battery: Battery) -> Self {
+            fn new(battery: Battery, electricity: &mut Electricity) -> Self {
                 Self {
+                    battery_bus_electricity_source: TestElectricitySource::powered(
+                        PotentialOrigin::TransformerRectifier(1),
+                        electricity,
+                    ),
                     battery,
-                    battery_charge_limiter: BatteryChargeLimiter::new("TEST"),
-                    battery_bus: ElectricalBus::new(ElectricalBusType::DirectCurrentBattery),
-                    battery_contactor: Contactor::new("TEST"),
+                    battery_charge_limiter: BatteryChargeLimiter::new(1, "TEST"),
+                    battery_bus: ElectricalBus::new(
+                        ElectricalBusType::DirectCurrentBattery,
+                        electricity,
+                    ),
+                    battery_contactor: Contactor::new("TEST", electricity),
+                    emergency_generator: TestEmergencyGenerator::new(electricity),
                     consumer: PowerConsumer::from(ElectricalBusType::DirectCurrentBattery),
-                    both_ac_buses_unpowered: false,
                     apu_master_sw_pb_on: false,
                     apu_start_pb_on: false,
                     apu_available: false,
                     battery_push_button_auto: true,
-                    gear_is_down: false,
-                    emergency_generator_available: false,
+                    landing_gear_is_down: false,
+                    emergency_elec: EmergencyElectrical::new(),
+                    any_non_essential_bus_powered: true,
                 }
             }
 
@@ -818,29 +984,25 @@ mod tests {
             }
 
             fn set_battery_bus_at_minimum_charging_voltage(&mut self) {
-                self.battery_bus.powered_by(&Potential::single(
-                    PotentialOrigin::TransformerRectifier(1),
-                    ElectricPotential::new::<volt>(
-                        OpenContactorObserver::BATTERY_BUS_BELOW_CHARGING_VOLTAGE + 0.000001,
-                    ),
-                ));
+                self.battery_bus_electricity_source
+                    .set_potential(ElectricPotential::new::<volt>(
+                        Open::BATTERY_BUS_BELOW_CHARGING_VOLTAGE + 0.000001,
+                    ));
             }
 
             fn set_battery_bus_below_minimum_charging_voltage(&mut self) {
-                self.battery_bus.powered_by(&Potential::single(
-                    PotentialOrigin::TransformerRectifier(1),
-                    ElectricPotential::new::<volt>(
-                        OpenContactorObserver::BATTERY_BUS_BELOW_CHARGING_VOLTAGE,
-                    ),
-                ));
+                self.battery_bus_electricity_source
+                    .set_potential(ElectricPotential::new::<volt>(
+                        Open::BATTERY_BUS_BELOW_CHARGING_VOLTAGE,
+                    ));
             }
 
             fn set_battery_bus_unpowered(&mut self) {
-                self.battery_bus.powered_by(&Potential::none());
+                self.battery_bus_electricity_source.unpower();
             }
 
             fn set_both_ac_buses_unpowered(&mut self) {
-                self.both_ac_buses_unpowered = true;
+                self.any_non_essential_bus_powered = false;
             }
 
             fn set_apu_master_sw_pb_on(&mut self) {
@@ -884,47 +1046,53 @@ mod tests {
             }
 
             fn set_gear_down(&mut self) {
-                self.gear_is_down = true;
+                self.landing_gear_is_down = true;
             }
 
             fn set_emergency_generator_available(&mut self) {
-                self.emergency_generator_available = true;
+                self.emergency_generator.set_available()
             }
         }
         impl Aircraft for TestAircraft {
-            fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+            fn update_before_power_distribution(
+                &mut self,
+                context: &UpdateContext,
+                electricity: &mut Electricity,
+            ) {
+                self.emergency_elec.update(
+                    context,
+                    electricity,
+                    &TestAlternatingCurrentElectricalSystem::new(
+                        self.any_non_essential_bus_powered,
+                    ),
+                );
+
+                electricity.supplied_by(&self.battery);
+                electricity.supplied_by(&self.emergency_generator);
+                electricity.supplied_by(&self.battery_bus_electricity_source);
+                electricity.flow(&self.battery_bus_electricity_source, &self.battery_bus);
+
                 self.battery_charge_limiter.update(
                     context,
-                    &BatteryChargeLimiterArguments::new(
-                        self.both_ac_buses_unpowered,
-                        &self.battery,
-                        &self.battery_bus,
-                        self.apu_master_sw_pb_on,
-                        self.apu_start_pb_on,
-                        self.apu_available,
-                        self.battery_push_button_auto,
-                        !self.gear_is_down,
-                        self.emergency_generator_available,
+                    electricity,
+                    &self.emergency_elec,
+                    &self.emergency_generator,
+                    &self.battery,
+                    &self.battery_bus,
+                    &TestLandingGear::new(self.landing_gear_is_down),
+                    &TestElectricalOverheadPanel::new(self.battery_push_button_auto),
+                    &TestApu::new(self.apu_available),
+                    &TestApuOverheadPanel::new(self.apu_master_sw_pb_on, self.apu_start_pb_on),
+                    &TestAlternatingCurrentElectricalSystem::new(
+                        self.any_non_essential_bus_powered,
                     ),
                 );
 
                 self.battery_contactor
                     .close_when(self.battery_charge_limiter.should_close_contactor());
 
-                self.battery_contactor.powered_by(&self.battery_bus);
-                self.battery.powered_by(&self.battery_contactor);
-                self.battery_contactor.or_powered_by(&self.battery);
-                self.battery_bus.or_powered_by(&self.battery_contactor);
-            }
-
-            fn get_supplied_power(&mut self) -> SuppliedPower {
-                let mut supplied_power = SuppliedPower::new();
-                supplied_power.add(
-                    ElectricalBusType::DirectCurrentBattery,
-                    self.battery_bus.output(),
-                );
-
-                supplied_power
+                electricity.flow(&self.battery_bus, &self.battery_contactor);
+                electricity.flow(&self.battery_contactor, &self.battery);
             }
         }
         impl SimulationElement for TestAircraft {
@@ -953,7 +1121,7 @@ mod tests {
             let mut test_bed = test_bed()
                 .wait_for_closed_contactor(true)
                 .run(Duration::from_secs(
-                    BatteryChargeLimiter::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
+                    ArrowBetweenBatteryAndBatBus::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
                 ));
 
             assert!(test_bed.should_show_arrow_when_contactor_closed())
@@ -964,7 +1132,7 @@ mod tests {
         ) {
             let mut test_bed = test_bed().wait_for_closed_contactor(true).run(
                 Duration::from_secs(
-                    BatteryChargeLimiter::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
+                    ArrowBetweenBatteryAndBatBus::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
                 ) - Duration::from_millis(1),
             );
 
@@ -978,7 +1146,7 @@ mod tests {
                 .then_continue_with()
                 .full_battery_charge()
                 .run(Duration::from_secs(
-                    BatteryChargeLimiter::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
+                    ArrowBetweenBatteryAndBatBus::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
                 ));
 
             assert!(!test_bed.should_show_arrow_when_contactor_closed())
@@ -994,7 +1162,7 @@ mod tests {
                 .and()
                 .apu_master_sw_pb_on()
                 .run(Duration::from_secs(
-                    BatteryChargeLimiter::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
+                    ArrowBetweenBatteryAndBatBus::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
                 ));
 
             assert!(test_bed.should_show_arrow_when_contactor_closed())
@@ -1011,7 +1179,7 @@ mod tests {
                 .power_demand_of(Power::new::<watt>(30.))
                 .run(
                     Duration::from_secs(
-                        BatteryChargeLimiter::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
+                        ArrowBetweenBatteryAndBatBus::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
                     ) - Duration::from_millis(1),
                 );
 
@@ -1027,7 +1195,7 @@ mod tests {
                 .and()
                 .power_demand_of(Power::new::<watt>(1.))
                 .run(Duration::from_secs(
-                    BatteryChargeLimiter::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
+                    ArrowBetweenBatteryAndBatBus::CHARGE_DISCHARGE_ARROW_DISPLAYED_AFTER_SECONDS,
                 ));
 
             assert!(!test_bed.should_show_arrow_when_contactor_closed())
@@ -1039,7 +1207,7 @@ mod tests {
             let test_bed = test_bed_with()
                 .battery_bus_at_minimum_charging_voltage()
                 .run(Duration::from_millis(
-                    OpenContactorObserver::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
+                    Open::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
                 ));
 
             assert!(test_bed.battery_contactor_is_closed());
@@ -1053,7 +1221,7 @@ mod tests {
                 .and()
                 .battery_push_button_off()
                 .run(Duration::from_millis(
-                    OpenContactorObserver::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
+                    Open::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
                 ));
 
             assert!(!test_bed.battery_contactor_is_closed());
@@ -1065,9 +1233,8 @@ mod tests {
             let test_bed = test_bed_with()
                 .battery_bus_at_minimum_charging_voltage()
                 .run(
-                    Duration::from_millis(
-                        OpenContactorObserver::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
-                    ) - Duration::from_millis(1),
+                    Duration::from_millis(Open::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS)
+                        - Duration::from_millis(1),
                 );
 
             assert!(!test_bed.battery_contactor_is_closed());
@@ -1106,9 +1273,7 @@ mod tests {
 
             test_bed = test_bed
                 .battery_push_button_auto()
-                .run(Duration::from_secs(
-                    OffPushButtonObserver::STARTUP_DELAY_IN_SECONDS,
-                ))
+                .run(Duration::from_secs(Off::STARTUP_DELAY_IN_SECONDS))
                 .run(Duration::from_secs(0));
 
             assert!(test_bed.battery_contactor_is_closed());
@@ -1130,7 +1295,7 @@ mod tests {
                 .then_continue_with()
                 .battery_push_button_auto()
                 .run(Duration::from_secs_f64(
-                    OffPushButtonObserver::STARTUP_DELAY_IN_SECONDS as f64 - 0.0001,
+                    Off::STARTUP_DELAY_IN_SECONDS as f64 - 0.0001,
                 ))
                 .run(Duration::from_secs(0));
 
@@ -1189,7 +1354,7 @@ mod tests {
                     .then_continue_with()
                     .full_battery_charge()
                     .run(Duration::from_secs(
-                        ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS,
+                        Closed::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS,
                     ));
 
             assert!(!test_bed.battery_contactor_is_closed());
@@ -1207,9 +1372,8 @@ mod tests {
             assert!(test_bed.current() >= ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
 
             test_bed = test_bed.then_continue_with().full_battery_charge().run(
-                Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS,
-                ) - Duration::from_millis(1),
+                Duration::from_secs(Closed::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS)
+                    - Duration::from_millis(1),
             );
 
             assert!(test_bed.battery_contactor_is_closed());
@@ -1229,7 +1393,7 @@ mod tests {
                 .then_continue_with()
                 .no_power_outside_of_battery()
                 .run(Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS,
+                    Closed::BATTERY_CHARGING_OPEN_DELAY_ON_GROUND_SECONDS,
                 ));
 
             assert!(test_bed.battery_contactor_is_closed());
@@ -1246,7 +1410,7 @@ mod tests {
                     .then_continue_with()
                     .full_battery_charge()
                     .run(Duration::from_secs(
-                        ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
+                        Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
                     ));
 
             assert!(!test_bed.battery_contactor_is_closed());
@@ -1259,13 +1423,11 @@ mod tests {
 
             assert!(test_bed.current() >= ElectricCurrent::new::<ampere>(4.), "The test assumes that charging current is equal to or greater than 4 at this point.");
 
-            test_bed =
-                test_bed
-                    .then_continue_with()
-                    .full_battery_charge()
-                    .run(Duration::from_secs(
-                        ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS
-                    ) - Duration::from_millis(1));
+            test_bed = test_bed.then_continue_with().full_battery_charge().run(
+                Duration::from_secs(
+                    Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
+                ) - Duration::from_millis(1),
+            );
 
             assert!(test_bed.battery_contactor_is_closed());
         }
@@ -1281,7 +1443,7 @@ mod tests {
                 .then_continue_with()
                 .stopped_apu()
                 .run(Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
+                    Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
                 ));
 
             assert!(!test_bed.battery_contactor_is_closed());
@@ -1291,16 +1453,18 @@ mod tests {
         fn when_apu_started_the_charging_cycle_does_not_end_within_30_minutes_before_below_4_ampere(
         ) {
             let test_bed = test_bed_with()
-            .full_battery_charge()
-            .on_the_ground()
-            .indicated_airspeed_of(Velocity::new::<knot>(0.))
-            .and()
-            .started_apu()
-            .then_continue_with()
-            .stopped_apu()
-            .run(Duration::from_secs(
-                ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS
-            ) - Duration::from_millis(1));
+                .full_battery_charge()
+                .on_the_ground()
+                .indicated_airspeed_of(Velocity::new::<knot>(0.))
+                .and()
+                .started_apu()
+                .then_continue_with()
+                .stopped_apu()
+                .run(
+                    Duration::from_secs(
+                        Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
+                    ) - Duration::from_millis(1),
+                );
 
             assert!(test_bed.battery_contactor_is_closed());
         }
@@ -1308,9 +1472,12 @@ mod tests {
         #[test]
         fn when_apu_started_the_charging_cycle_ends_30_minutes_after_below_4_ampere_even_when_apu_still_available(
         ) {
-            let test_bed = test_bed_with().full_battery_charge().and().started_apu()
+            let test_bed = test_bed_with()
+                .full_battery_charge()
+                .and()
+                .started_apu()
                 .run(Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
+                    Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
                 ));
 
             assert!(!test_bed.battery_contactor_is_closed());
@@ -1324,7 +1491,7 @@ mod tests {
                 .and()
                 .started_apu()
                 .run(Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
+                    Closed::BATTERY_CHARGING_OPEN_DELAY_100_KNOTS_OR_AFTER_APU_START_SECONDS,
                 ))
                 .then_continue_with()
                 .apu_master_sw_pb_on()
@@ -1340,7 +1507,7 @@ mod tests {
                 test_bed_with()
                     .pre_discharge_protection_state()
                     .run(Duration::from_secs(
-                        ClosedContactorObserver::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
+                        Closed::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
                     ));
 
             assert!(!test_bed.battery_contactor_is_closed());
@@ -1352,7 +1519,7 @@ mod tests {
                 test_bed_with()
                     .pre_discharge_protection_state()
                     .run(Duration::from_secs(
-                        ClosedContactorObserver::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
+                        Closed::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
                     ));
 
             assert!(
@@ -1373,9 +1540,8 @@ mod tests {
         #[test]
         fn complete_discharge_protection_doesnt_trigger_too_early() {
             let test_bed = test_bed_with().pre_discharge_protection_state().run(
-                Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
-                ) - Duration::from_millis(1),
+                Duration::from_secs(Closed::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS)
+                    - Duration::from_millis(1),
             );
 
             assert!(test_bed.battery_contactor_is_closed());
@@ -1388,7 +1554,7 @@ mod tests {
                 .then_continue_with()
                 .nearly_empty_battery_charge()
                 .run(Duration::from_secs(
-                    ClosedContactorObserver::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
+                    Closed::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
                 ));
 
             assert!(test_bed.battery_contactor_is_closed());
@@ -1400,7 +1566,7 @@ mod tests {
                 test_bed_with()
                     .pre_discharge_protection_state()
                     .run(Duration::from_secs(
-                        ClosedContactorObserver::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
+                        Closed::BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS,
                     ));
 
             assert!(
@@ -1488,7 +1654,7 @@ mod tests {
                 .and()
                 .apu_master_sw_pb_on()
                 .run(
-                    Duration::from_secs(EmergencyElec::APU_START_INHIBIT_DELAY_SECONDS)
+                    Duration::from_secs(Open::APU_START_INHIBIT_DELAY_SECONDS)
                         - Duration::from_millis(1),
                 );
 
@@ -1502,9 +1668,7 @@ mod tests {
                 .emergency_elec()
                 .and()
                 .apu_master_sw_pb_on()
-                .run(Duration::from_secs(
-                    EmergencyElec::APU_START_INHIBIT_DELAY_SECONDS,
-                ));
+                .run(Duration::from_secs(Open::APU_START_INHIBIT_DELAY_SECONDS));
 
             assert!(test_bed.battery_contactor_is_closed());
         }
@@ -1517,7 +1681,7 @@ mod tests {
                 .and()
                 .apu_master_sw_pb_on()
                 .run(
-                    Duration::from_secs(EmergencyElec::APU_START_INHIBIT_DELAY_SECONDS)
+                    Duration::from_secs(Open::APU_START_INHIBIT_DELAY_SECONDS)
                         - Duration::from_millis(1),
                 );
 
@@ -1549,9 +1713,8 @@ mod tests {
                 .and()
                 .apu_master_sw_pb_on()
                 .run(
-                    Duration::from_secs(
-                        ClosedContactorObserver::EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS,
-                    ) - Duration::from_millis(1),
+                    Duration::from_secs(Closed::EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS)
+                        - Duration::from_millis(1),
                 );
 
             assert!(test_bed.battery_contactor_is_closed());
@@ -1565,7 +1728,7 @@ mod tests {
                 .and()
                 .apu_master_sw_pb_on()
                 .run(Duration::from_secs(
-                    ClosedContactorObserver::EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS,
+                    Closed::EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS,
                 ));
 
             assert!(!test_bed.battery_contactor_is_closed());
@@ -1599,9 +1762,7 @@ mod tests {
                 .emergency_elec()
                 .and()
                 .apu_master_sw_pb_on()
-                .run(Duration::from_secs(
-                    EmergencyElec::APU_START_INHIBIT_DELAY_SECONDS,
-                ));
+                .run(Duration::from_secs(Open::APU_START_INHIBIT_DELAY_SECONDS));
 
             assert!(
                 test_bed.battery_contactor_is_closed(),

@@ -1,3 +1,5 @@
+#![allow(clippy::suspicious_operation_groupings)]
+
 mod electrical;
 mod fuel;
 mod hydraulic;
@@ -6,23 +8,31 @@ mod power_consumption;
 
 use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
 use electrical::{
-    A320Electrical, A320ElectricalOverheadPanel, A320ElectricalUpdateArguments,
-    A320EmergencyElectricalOverheadPanel,
+    A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
+    APU_START_MOTOR_BUS_TYPE,
 };
-use hydraulic::A320Hydraulic;
+use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use power_consumption::A320PowerConsumption;
 use systems::{
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
-    electrical::{consumption::SuppliedPower, ElectricalSystem, ExternalPowerSource},
-    engine::Engine,
-    landing_gear::LandingGear,
+    electrical::{Electricity, ElectricitySource, ExternalPowerSource},
+    engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+    hydraulic::brake_circuit::AutobrakePanel,
+    landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
+    navigation::adirs::{
+        AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
+    },
+    pressurization::Pressurization,
+    shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 pub struct A320 {
+    adirs: AirDataInertialReferenceSystem,
+    adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
@@ -30,41 +40,60 @@ pub struct A320 {
     electrical_overhead: A320ElectricalOverheadPanel,
     emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
     fuel: A320Fuel,
-    engine_1: Engine,
-    engine_2: Engine,
+    engine_1: LeapEngine,
+    engine_2: LeapEngine,
+    engine_fire_overhead: EngineFireOverheadPanel,
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
+    lgciu1: LandingGearControlInterfaceUnit,
+    lgciu2: LandingGearControlInterfaceUnit,
     hydraulic: A320Hydraulic,
+    hydraulic_overhead: A320HydraulicOverheadPanel,
+    autobrake_panel: AutobrakePanel,
     landing_gear: LandingGear,
+    pressurization: Pressurization,
 }
 impl A320 {
-    pub fn new() -> A320 {
+    pub fn new(electricity: &mut Electricity) -> A320 {
         A320 {
-            apu: AuxiliaryPowerUnitFactory::new_aps3200(1),
+            adirs: AirDataInertialReferenceSystem::new(),
+            adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(),
+            apu: AuxiliaryPowerUnitFactory::new_aps3200(
+                1,
+                electricity,
+                APU_START_MOTOR_BUS_TYPE,
+                ElectricalBusType::DirectCurrentBattery,
+                ElectricalBusType::DirectCurrentBattery,
+            ),
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(),
             electrical_overhead: A320ElectricalOverheadPanel::new(),
             emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(),
             fuel: A320Fuel::new(),
-            engine_1: Engine::new(1),
-            engine_2: Engine::new(2),
-            electrical: A320Electrical::new(),
+            engine_1: LeapEngine::new(1),
+            engine_2: LeapEngine::new(2),
+            engine_fire_overhead: EngineFireOverheadPanel::new(),
+            electrical: A320Electrical::new(electricity),
             power_consumption: A320PowerConsumption::new(),
-            ext_pwr: ExternalPowerSource::new(),
+            ext_pwr: ExternalPowerSource::new(electricity),
+            lgciu1: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrentEssential),
+            lgciu2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2)),
             hydraulic: A320Hydraulic::new(),
+            hydraulic_overhead: A320HydraulicOverheadPanel::new(),
+            autobrake_panel: AutobrakePanel::new(),
             landing_gear: LandingGear::new(),
+            pressurization: Pressurization::new(),
         }
     }
 }
-impl Default for A320 {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 impl Aircraft for A320 {
-    fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+    fn update_before_power_distribution(
+        &mut self,
+        context: &UpdateContext,
+        electricity: &mut Electricity,
+    ) {
         self.apu.update_before_electrical(
             context,
             &self.apu_overhead,
@@ -81,43 +110,64 @@ impl Aircraft for A320 {
 
         self.electrical.update(
             context,
+            electricity,
             &self.ext_pwr,
             &self.electrical_overhead,
             &self.emergency_electrical_overhead,
-            &mut A320ElectricalUpdateArguments::new(
-                [self.engine_1.corrected_n2(), self.engine_2.corrected_n2()],
-                [
-                    self.electrical_overhead.idg_1_push_button_released(),
-                    self.electrical_overhead.idg_2_push_button_released(),
-                ],
-                &mut self.apu,
-                self.hydraulic.is_blue_pressurised(),
-                self.apu_overhead.master_is_on(),
-                self.apu_overhead.start_is_on(),
-                self.landing_gear.is_up_and_locked(),
-            ),
+            &mut self.apu,
+            &self.apu_overhead,
+            &self.engine_fire_overhead,
+            [&self.engine_1, &self.engine_2],
+            &self.hydraulic,
+            &self.landing_gear,
         );
 
-        self.apu.update_after_electrical();
-
         self.electrical_overhead
-            .update_after_electrical(&self.electrical);
+            .update_after_electrical(&self.electrical, electricity);
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
-        self.apu_overhead.update_after_apu(&self.apu);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-        self.hydraulic.update(context);
-        self.power_consumption.update(context);
-    }
+        self.apu.update_after_power_distribution();
+        self.apu_overhead.update_after_apu(&self.apu);
 
-    fn get_supplied_power(&mut self) -> SuppliedPower {
-        self.electrical.get_supplied_power()
+        self.lgciu1.update(
+            &self.landing_gear,
+            self.ext_pwr.output_potential().is_powered(),
+        );
+        self.lgciu2.update(
+            &self.landing_gear,
+            self.ext_pwr.output_potential().is_powered(),
+        );
+        self.pressurization
+            .update(context, [&self.engine_1, &self.engine_2]);
+
+        self.hydraulic.update(
+            context,
+            &self.engine_1,
+            &self.engine_2,
+            &self.hydraulic_overhead,
+            &self.autobrake_panel,
+            &self.engine_fire_overhead,
+            &self.lgciu1,
+            &self.lgciu2,
+            &self.emergency_electrical_overhead,
+            &self.electrical,
+        );
+
+        self.hydraulic_overhead.update(&self.hydraulic);
+
+        self.adirs.update(context, &self.adirs_overhead);
+        self.adirs_overhead.update(context, &self.adirs);
+
+        self.power_consumption.update(context);
     }
 }
 impl SimulationElement for A320 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.adirs.accept(visitor);
+        self.adirs_overhead.accept(visitor);
         self.apu.accept(visitor);
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);
@@ -127,10 +177,17 @@ impl SimulationElement for A320 {
         self.pneumatic_overhead.accept(visitor);
         self.engine_1.accept(visitor);
         self.engine_2.accept(visitor);
+        self.engine_fire_overhead.accept(visitor);
         self.electrical.accept(visitor);
         self.power_consumption.accept(visitor);
         self.ext_pwr.accept(visitor);
+        self.lgciu1.accept(visitor);
+        self.lgciu2.accept(visitor);
+        self.autobrake_panel.accept(visitor);
+        self.hydraulic.accept(visitor);
+        self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
+        self.pressurization.accept(visitor);
 
         visitor.visit(self);
     }

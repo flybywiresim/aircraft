@@ -35,7 +35,7 @@ class MapInstrument extends ISvgMapRootElement {
         this.smallCityMaxRange = 100;
         this.medCityMaxRange = 200;
         this.largeCityMaxRange = 1500;
-        this.npcAirplaneMaxRange = 60;
+        this.npcAirplaneMaxIndex = 5;
         this.showRoads = true;
         this.showAirspaces = true;
         this.showAirways = true;
@@ -681,7 +681,7 @@ class MapInstrument extends ISvgMapRootElement {
                     this.navMap.mapElements.push(this.roadNetwork);
                 }
                 if (this.showTraffic) {
-                    if (this.getDeclutteredRange() < this.npcAirplaneMaxRange) {
+                    if (this.getDeclutteredIndex() <= this.npcAirplaneMaxIndex) {
                         this.navMap.mapElements.push(...this.TCASManager.TrafficAircraft);
                     }
                 }
@@ -877,12 +877,7 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.eBingMode !== EBingMode.HORIZON) {
             const setConfig = () => {
                 if (this.navMap.configLoaded) {
-                    for (let i = 0; i < 3; i++) {
-                        const conf = this.navMap.config.generateBing(i);
-                        if (conf) {
-                            this.bingMap.addConfig(conf);
-                        }
-                    }
+                    this.navMap.config.generateBingMap(this.bingMap);
                     this.bingMap.setConfig(this.bingMapConfigId);
                 } else {
                     setTimeout(setConfig, 1000);
@@ -1250,8 +1245,11 @@ class MapInstrument extends ISvgMapRootElement {
     getDisplayRange() {
         return this._ranges[this.rangeIndex];
     }
+    getDeclutteredIndex() {
+        return this.rangeIndex + this._declutterLevel;
+    }
     getDeclutteredRange() {
-        return this._ranges[this.rangeIndex + this._declutterLevel];
+        return this._ranges[this.getDeclutteredIndex()];
     }
     getWeatherRange() {
         return this.getDisplayRange();

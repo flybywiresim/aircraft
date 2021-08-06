@@ -48,11 +48,17 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
 }
 
 void ThrottleAxisMapping::setInFlight() {
-  inFlight = true;
+  if (!inFlight) {
+    inFlight = true;
+    setCurrentValue(currentValue);
+  }
 }
 
 void ThrottleAxisMapping::setOnGround() {
-  inFlight = false;
+  if (inFlight) {
+    inFlight = false;
+    setCurrentValue(currentValue);
+  }
 }
 
 double ThrottleAxisMapping::getValue() {
@@ -249,17 +255,17 @@ void ThrottleAxisMapping::decreaseThrottleBy(double value) {
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration() {
   return {
-      false,  // use reverse on axis
+      true,  // use reverse on axis
       -1.00,  // reverse low
       -0.95,  // reverse high
-      -0.20,  // reverse idle low
-      -0.15,  // reverse idle high
-      -1.00,  // idle low
-      -0.95,  // idle high
-      +0.60,  // climb low
-      +0.65,  // climb high
-      +0.85,  // flex/mct low
-      +0.90,  // flex/mct high
+      -0.72,  // reverse idle low
+      -0.62,  // reverse idle high
+      -0.50,  // idle low
+      -0.40,  // idle high
+      -0.03,  // climb low
+      -0.07,  // climb high
+      +0.42,  // flex/mct low
+      +0.52,  // flex/mct high
       +0.95,  // toga low
       +1.00   // toga high
   };

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 
-export const renderTarget = document.getElementById('A32NX_REACT_MOUNT');
+export const renderTarget = document.getElementById('MSFS_REACT_MOUNT');
 export const customElement = renderTarget.parentElement;
 
 // @param {() => void} handler
@@ -51,7 +51,6 @@ const SIMVAR_TYPES = {
     'L:A32NX_COLD_AND_DARK_SPAWN': 'Bool',
     'TOTAL AIR TEMPERATURE': 'Celsius',
     'AMBIENT TEMPERATURE': 'Celsius',
-    'L:A320_Neo_ADIRS_STATE': 'Enum',
 };
 
 const SIMVAR_CACHE = new Map();

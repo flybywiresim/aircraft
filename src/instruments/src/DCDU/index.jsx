@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
+
 import {
     renderTarget,
     useInteractionEvent,
@@ -60,9 +61,9 @@ function Idle() {
         </>
     );
 }
-
 function DCDU() {
     const [state, setState] = useState('DEFAULT');
+    const [opacity, setOpacity] = useState('0');
 
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
@@ -72,6 +73,7 @@ function DCDU() {
         } else if (!powerAvailable()) {
             setState('OFF');
         }
+        setOpacity(getSimVar('L:A32NX_MFD_MASK_OPACITY', 'number'));
     });
 
     switch (state) {
@@ -91,16 +93,35 @@ function DCDU() {
                 setState('WAITING');
             }
         }, 8000);
-        return <SelfTest />;
+        return (
+            <>
+                <div className="BacklightBleed" />
+                <div className="LcdOverlayDcdu" style={{ opacity }} />
+                <SelfTest />
+            </>
+        );
+
     case 'WAITING':
         setTimeout(() => {
             if (powerAvailable()) {
                 setState('IDLE');
             }
         }, 12000);
-        return <WaitingForData />;
+        return (
+            <>
+                <div className="BacklightBleed" />
+                <div className="LcdOverlayDcdu" style={{ opacity }} />
+                <WaitingForData />
+            </>
+        );
     case 'IDLE':
-        return <Idle />;
+        return (
+            <>
+                <div className="BacklightBleed" />
+                <div className="LcdOverlayDcdu" style={{ opacity }} />
+                <Idle />
+            </>
+        );
     default:
         throw new RangeError();
     }

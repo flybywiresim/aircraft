@@ -1,213 +1,544 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
-use msfs::{
-    legacy::{execute_calculator_code, AircraftVariable, NamedVariable},
-    MSFSEvent,
+use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
+use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
+use std::{
+    pin::Pin,
+    time::{Duration, Instant},
 };
-use std::collections::HashMap;
-use systems::simulation::{Simulation, SimulatorReaderWriter};
+use systems::simulation::Simulation;
+use systems_wasm::{
+    electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader,
+    MsfsNamedVariableReaderWriter, MsfsSimulationHandler, SimulatorAspect,
+};
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
-    let mut reader_writer = A320SimulatorReaderWriter::new()?;
-    let mut a320 = A320::new();
-    let mut simulation = Simulation::new(&mut a320, &mut reader_writer);
+    let mut sim_connect = gauge.open_simconnect("systems")?;
+
+    let mut simulation = Simulation::new(|electricity| A320::new(electricity));
+    let mut msfs_simulation_handler = MsfsSimulationHandler::new(vec![
+        Box::new(create_electrical_buses()),
+        Box::new(MsfsAuxiliaryPowerUnit::new(
+            "OVHD_APU_START_PB_IS_AVAILABLE",
+            8,
+        )?),
+        Box::new(Brakes::new(&mut sim_connect.as_mut())?),
+        Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
+        Box::new(create_aircraft_variable_reader()?),
+        Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
+    ]);
 
     while let Some(event) = gauge.next_event().await {
-        if let MSFSEvent::PreDraw(d) = event {
-            simulation.tick(d.delta_time());
-        }
+        msfs_simulation_handler.handle(event, &mut simulation, &mut sim_connect.as_mut())?;
     }
 
     Ok(())
 }
 
-struct A320SimulatorReaderWriter {
-    dynamic_named_variables: HashMap<String, NamedVariable>,
-    electrical_bus_connections: ElectricalBusConnections,
+fn create_aircraft_variable_reader(
+) -> Result<MsfsAircraftVariableReader, Box<dyn std::error::Error>> {
+    let mut reader = MsfsAircraftVariableReader::new();
+    reader.add("AMBIENT TEMPERATURE", "celsius", 0)?;
+    reader.add("TOTAL AIR TEMPERATURE", "celsius", 0)?;
+    reader.add_with_additional_names(
+        "EXTERNAL POWER AVAILABLE",
+        "Bool",
+        1,
+        &vec!["OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"],
+    )?;
+    reader.add("GEAR CENTER POSITION", "Percent", 0)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 0)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 1)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 2)?;
+    reader.add("GEAR HANDLE POSITION", "Bool", 0)?;
+    reader.add("TURB ENG CORRECTED N1", "Percent", 1)?;
+    reader.add("TURB ENG CORRECTED N1", "Percent", 2)?;
+    reader.add("TURB ENG CORRECTED N2", "Percent", 1)?;
+    reader.add("TURB ENG CORRECTED N2", "Percent", 2)?;
+    reader.add("AIRSPEED INDICATED", "Knots", 0)?;
+    reader.add("INDICATED ALTITUDE", "Feet", 0)?;
+    reader.add("AIRSPEED MACH", "Mach", 0)?;
+    reader.add("AIRSPEED TRUE", "Knots", 0)?;
+    reader.add("VELOCITY WORLD Y", "feet per minute", 0)?;
+    reader.add("AMBIENT WIND DIRECTION", "Degrees", 0)?;
+    reader.add("AMBIENT WIND VELOCITY", "Knots", 0)?;
+    reader.add("GPS GROUND SPEED", "Knots", 0)?;
+    reader.add("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?;
+    reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
+    reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
+    reader.add("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?;
+    reader.add("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?;
+    reader.add("UNLIMITED FUEL", "Bool", 0)?;
+    reader.add("INDICATED ALTITUDE", "Feet", 0)?;
+    reader.add("AMBIENT PRESSURE", "inHg", 0)?;
+    reader.add("SEA LEVEL PRESSURE", "Millibars", 0)?;
+    reader.add("SIM ON GROUND", "Bool", 0)?;
+    reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 1)?;
+    reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 2)?;
+    reader.add("EXIT OPEN", "Percent", 5)?;
+    // TODO It is the catering door for now.
+    reader.add("EXIT OPEN", "Percent", 3)?;
+    reader.add("PUSHBACK ANGLE", "Radian", 0)?;
+    reader.add("PUSHBACK STATE", "Enum", 0)?;
+    reader.add("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
+    reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
 
-    ambient_temperature: AircraftVariable,
-    apu_generator_pb_on: AircraftVariable,
-    external_power_available: AircraftVariable,
-    external_power_pb_on: AircraftVariable,
-    engine_generator_1_pb_on: AircraftVariable,
-    engine_generator_2_pb_on: AircraftVariable,
-    gear_center_position: AircraftVariable,
-    turb_eng_corrected_n2_1: AircraftVariable,
-    turb_eng_corrected_n2_2: AircraftVariable,
-    airspeed_indicated: AircraftVariable,
-    indicated_altitude: AircraftVariable,
-    fuel_tank_left_main_quantity: AircraftVariable,
-    sim_on_ground: AircraftVariable,
-    unlimited_fuel: AircraftVariable,
+    reader.add_with_additional_names(
+        "APU GENERATOR SWITCH",
+        "Bool",
+        0,
+        &vec!["OVHD_ELEC_APU_GEN_PB_IS_ON"],
+    )?;
+    reader.add_with_additional_names(
+        "EXTERNAL POWER ON",
+        "Bool",
+        1,
+        &vec!["OVHD_ELEC_EXT_PWR_PB_IS_ON"],
+    )?;
+    reader.add_with_additional_names(
+        "GENERAL ENG MASTER ALTERNATOR",
+        "Bool",
+        1,
+        &vec!["OVHD_ELEC_ENG_GEN_1_PB_IS_ON"],
+    );
+    reader.add_with_additional_names(
+        "GENERAL ENG MASTER ALTERNATOR",
+        "Bool",
+        2,
+        &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
+    );
+    reader.add("PLANE LATITUDE", "degree latitude", 0)?;
+    reader.add("PLANE LONGITUDE", "degree longitude", 0)?;
+    reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
+    reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
+
+    Ok(reader)
 }
-impl A320SimulatorReaderWriter {
-    fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        Ok(A320SimulatorReaderWriter {
-            dynamic_named_variables: HashMap::new(),
-            electrical_bus_connections: ElectricalBusConnections::new(),
 
-            ambient_temperature: AircraftVariable::from("AMBIENT TEMPERATURE", "celsius", 0)?,
-            apu_generator_pb_on: AircraftVariable::from("APU GENERATOR SWITCH", "Bool", 0)?,
-            external_power_available: AircraftVariable::from(
-                "EXTERNAL POWER AVAILABLE",
-                "Bool",
-                1,
-            )?,
-            external_power_pb_on: AircraftVariable::from("EXTERNAL POWER ON", "Bool", 1)?,
-            engine_generator_1_pb_on: AircraftVariable::from(
-                "GENERAL ENG MASTER ALTERNATOR",
-                "Bool",
-                1,
-            )?,
-            engine_generator_2_pb_on: AircraftVariable::from(
-                "GENERAL ENG MASTER ALTERNATOR",
-                "Bool",
-                2,
-            )?,
-            gear_center_position: AircraftVariable::from("GEAR CENTER POSITION", "Percent", 0)?,
-            turb_eng_corrected_n2_1: AircraftVariable::from("TURB ENG CORRECTED N2", "Percent", 1)?,
-            turb_eng_corrected_n2_2: AircraftVariable::from("TURB ENG CORRECTED N2", "Percent", 2)?,
-            airspeed_indicated: AircraftVariable::from("AIRSPEED INDICATED", "Knots", 0)?,
-            indicated_altitude: AircraftVariable::from("INDICATED ALTITUDE", "Feet", 0)?,
-            fuel_tank_left_main_quantity: AircraftVariable::from(
-                "FUEL TANK LEFT MAIN QUANTITY",
-                "Pounds",
-                0,
-            )?,
-            sim_on_ground: AircraftVariable::from("SIM ON GROUND", "Bool", 0)?,
-            unlimited_fuel: AircraftVariable::from("UNLIMITED FUEL", "Bool", 0)?,
+fn create_electrical_buses() -> MsfsElectricalBuses {
+    let mut buses = MsfsElectricalBuses::new();
+    // The numbers used here are those defined for buses in the systems.cfg [ELECTRICAL] section.
+    buses.add("AC_1", 1, 2);
+    buses.add("AC_2", 1, 3);
+    buses.add("AC_ESS", 1, 4);
+    buses.add("AC_ESS_SHED", 1, 5);
+    buses.add("AC_STAT_INV", 1, 6);
+    buses.add("AC_GND_FLT_SVC", 1, 14);
+    buses.add("DC_1", 1, 7);
+    buses.add("DC_2", 1, 8);
+    buses.add("DC_ESS", 1, 9);
+    buses.add("DC_ESS_SHED", 1, 10);
+    buses.add("DC_BAT", 1, 11);
+    buses.add("DC_HOT_1", 1, 12);
+    buses.add("DC_HOT_2", 1, 13);
+    buses.add("DC_GND_FLT_SVC", 1, 15);
+
+    buses
+}
+
+struct Autobrakes {
+    id_mode_max: sys::DWORD,
+    id_mode_med: sys::DWORD,
+    id_mode_low: sys::DWORD,
+    id_disarm: sys::DWORD,
+
+    low_mode_panel_pushbutton: NamedVariable,
+    med_mode_panel_pushbutton: NamedVariable,
+    max_mode_panel_pushbutton: NamedVariable,
+
+    low_mode_requested: bool,
+    med_mode_requested: bool,
+    max_mode_requested: bool,
+    disarm_requested: bool,
+
+    last_button_press: Instant,
+}
+impl Autobrakes {
+    // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
+    // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
+    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(650);
+
+    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self {
+            // SimConnect inputs masking
+            id_mode_max: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_HI_SET", false)?,
+            id_mode_med: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_MED_SET", false)?,
+            id_mode_low: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_LO_SET", false)?,
+            id_disarm: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_DISARM", false)?,
+
+            low_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
+            med_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
+            max_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
+
+            low_mode_requested: false,
+            med_mode_requested: false,
+            max_mode_requested: false,
+            disarm_requested: false,
+
+            last_button_press: Instant::now(),
         })
     }
+
+    fn synchronise_with_sim(&mut self) {
+        if self.low_mode_panel_pushbutton.get_value() {
+            self.set_mode_low();
+        }
+        if self.med_mode_panel_pushbutton.get_value() {
+            self.set_mode_med();
+        }
+        if self.max_mode_panel_pushbutton.get_value() {
+            self.set_mode_max();
+        }
+    }
+
+    fn reset_events(&mut self) {
+        if self.last_button_press.elapsed() > Self::DEFAULT_REARMING_DURATION {
+            self.max_mode_requested = false;
+            self.med_mode_requested = false;
+            self.low_mode_requested = false;
+        }
+        self.disarm_requested = false;
+    }
+
+    fn on_receive_pushbutton_event(&mut self) {
+        self.last_button_press = Instant::now();
+    }
+
+    fn set_mode_max(&mut self) {
+        self.max_mode_requested = true;
+        self.med_mode_requested = false;
+        self.low_mode_requested = false;
+        self.on_receive_pushbutton_event();
+    }
+
+    fn set_mode_med(&mut self) {
+        self.med_mode_requested = true;
+        self.max_mode_requested = false;
+        self.low_mode_requested = false;
+        self.on_receive_pushbutton_event();
+    }
+
+    fn set_mode_low(&mut self) {
+        self.low_mode_requested = true;
+        self.med_mode_requested = false;
+        self.max_mode_requested = false;
+        self.on_receive_pushbutton_event();
+    }
+
+    fn set_disarm(&mut self) {
+        self.disarm_requested = true;
+    }
 }
-impl SimulatorReaderWriter for A320SimulatorReaderWriter {
-    fn read(&mut self, name: &str) -> f64 {
+impl SimulatorAspect for Autobrakes {
+    fn read(&mut self, name: &str) -> Option<f64> {
         match name {
-            "OVHD_ELEC_APU_GEN_PB_IS_ON" => self.apu_generator_pb_on.get(),
-            "OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE" => self.external_power_available.get(),
-            "OVHD_ELEC_EXT_PWR_PB_IS_ON" => self.external_power_pb_on.get(),
-            "OVHD_ELEC_ENG_GEN_1_PB_IS_ON" => self.engine_generator_1_pb_on.get(),
-            "OVHD_ELEC_ENG_GEN_2_PB_IS_ON" => self.engine_generator_2_pb_on.get(),
-            "AMBIENT TEMPERATURE" => self.ambient_temperature.get(),
-            "EXTERNAL POWER AVAILABLE:1" => self.external_power_available.get(),
-            "GEAR CENTER POSITION" => self.gear_center_position.get(),
-            "TURB ENG CORRECTED N2:1" => self.turb_eng_corrected_n2_1.get(),
-            "TURB ENG CORRECTED N2:2" => self.turb_eng_corrected_n2_2.get(),
-            "FUEL TANK LEFT MAIN QUANTITY" => self.fuel_tank_left_main_quantity.get(),
-            "UNLIMITED FUEL" => self.unlimited_fuel.get(),
-            "AIRSPEED INDICATED" => self.airspeed_indicated.get(),
-            "INDICATED ALTITUDE" => self.indicated_altitude.get(),
-            "SIM ON GROUND" => self.sim_on_ground.get(),
-            _ => {
-                lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name).get_value()
+            "AUTOBRAKE_DISARM" => Some(self.disarm_requested as u8 as f64),
+            "OVHD_AUTOBRK_LOW_ON_IS_PRESSED" => Some(self.low_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MED_ON_IS_PRESSED" => Some(self.med_mode_requested as u8 as f64),
+            "OVHD_AUTOBRK_MAX_ON_IS_PRESSED" => Some(self.max_mode_requested as u8 as f64),
+            _ => None,
+        }
+    }
+
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        match message {
+            SimConnectRecv::Event(e) => {
+                if e.id() == self.id_mode_low {
+                    self.set_mode_low();
+                    true
+                } else if e.id() == self.id_mode_med {
+                    self.set_mode_med();
+                    true
+                } else if e.id() == self.id_mode_max {
+                    self.set_mode_max();
+                    true
+                } else if e.id() == self.id_disarm {
+                    self.set_disarm();
+                    true
+                } else {
+                    false
+                }
             }
+            _ => false,
         }
     }
 
-    fn write(&mut self, name: &str, value: f64) {
-        if name.starts_with("ELEC_") && name.ends_with("_BUS_IS_POWERED") {
-            self.electrical_bus_connections.update(name, value);
-        }
+    fn pre_tick(&mut self, _: Duration) {
+        self.synchronise_with_sim();
+    }
 
-        let named_variable =
-            lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name);
+    fn post_tick(
+        &mut self,
+        _: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.reset_events();
 
-        named_variable.set_value(value);
+        Ok(())
     }
 }
 
-fn lookup_named_variable<'a>(
-    collection: &'a mut HashMap<String, NamedVariable>,
-    key_prefix: &str,
-    key: &str,
-) -> &'a mut NamedVariable {
-    let key = format!("{}{}", key_prefix, key);
+struct Brakes {
+    park_brake_lever_masked_input: NamedVariable,
+    left_pedal_brake_masked_input: NamedVariable,
+    right_pedal_brake_masked_input: NamedVariable,
 
-    collection
-        .entry(key.clone())
-        .or_insert_with(|| NamedVariable::from(&key))
-}
+    id_brake_left: sys::DWORD,
+    id_brake_right: sys::DWORD,
+    id_brake_keyboard: sys::DWORD,
+    id_brake_left_keyboard: sys::DWORD,
+    id_brake_right_keyboard: sys::DWORD,
+    id_parking_brake: sys::DWORD,
+    id_parking_brake_set: sys::DWORD,
 
-struct ElectricalBusConnections {
-    ac_bus_1: ElectricalBusConnection,
-    ac_bus_2: ElectricalBusConnection,
-    ac_ess_bus: ElectricalBusConnection,
-    ac_ess_shed_bus: ElectricalBusConnection,
-    ac_stat_inv_bus: ElectricalBusConnection,
-    ac_gnd_flt_svc_bus: ElectricalBusConnection,
-    dc_bus_1: ElectricalBusConnection,
-    dc_bus_2: ElectricalBusConnection,
-    dc_ess_bus: ElectricalBusConnection,
-    dc_ess_shed_bus: ElectricalBusConnection,
-    dc_bat_bus: ElectricalBusConnection,
-    dc_hot_bus_1: ElectricalBusConnection,
-    dc_hot_bus_2: ElectricalBusConnection,
-    dc_gnd_flt_svc_bus: ElectricalBusConnection,
+    brake_left_sim_input: f64,
+    brake_right_sim_input: f64,
+    brake_left_sim_input_keyboard: f64,
+    brake_right_sim_input_keyboard: f64,
+    left_key_pressed: bool,
+    right_key_pressed: bool,
+
+    brake_left_output_to_sim: f64,
+    brake_right_output_to_sim: f64,
+
+    parking_brake_lever_is_set: bool,
+    last_transmitted_park_brake_lever_position: f64,
 }
-impl ElectricalBusConnections {
-    fn new() -> Self {
-        Self {
-            // The numbers used here are those defined for buses in the systems.cfg [ELECTRICAL] section.
-            ac_bus_1: ElectricalBusConnection::new(1, 2),
-            ac_bus_2: ElectricalBusConnection::new(1, 3),
-            ac_ess_bus: ElectricalBusConnection::new(1, 4),
-            ac_ess_shed_bus: ElectricalBusConnection::new(1, 5),
-            ac_stat_inv_bus: ElectricalBusConnection::new(1, 6),
-            ac_gnd_flt_svc_bus: ElectricalBusConnection::new(1, 14),
-            dc_bus_1: ElectricalBusConnection::new(1, 7),
-            dc_bus_2: ElectricalBusConnection::new(1, 8),
-            dc_ess_bus: ElectricalBusConnection::new(1, 9),
-            dc_ess_shed_bus: ElectricalBusConnection::new(1, 10),
-            dc_bat_bus: ElectricalBusConnection::new(1, 11),
-            dc_hot_bus_1: ElectricalBusConnection::new(1, 12),
-            dc_hot_bus_2: ElectricalBusConnection::new(1, 13),
-            dc_gnd_flt_svc_bus: ElectricalBusConnection::new(1, 15),
+impl Brakes {
+    const KEYBOARD_PRESS_SPEED: f64 = 0.6;
+    const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
+
+    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self {
+            park_brake_lever_masked_input: NamedVariable::from("A32NX_PARK_BRAKE_LEVER_POS"),
+            left_pedal_brake_masked_input: NamedVariable::from("A32NX_LEFT_BRAKE_PEDAL_INPUT"),
+            right_pedal_brake_masked_input: NamedVariable::from("A32NX_RIGHT_BRAKE_PEDAL_INPUT"),
+
+            // SimConnect inputs masking
+            id_brake_left: sim_connect
+                .map_client_event_to_sim_event("AXIS_LEFT_BRAKE_SET", true)?,
+            id_brake_right: sim_connect
+                .map_client_event_to_sim_event("AXIS_RIGHT_BRAKE_SET", true)?,
+
+            id_brake_keyboard: sim_connect.map_client_event_to_sim_event("BRAKES", true)?,
+            id_brake_left_keyboard: sim_connect
+                .map_client_event_to_sim_event("BRAKES_LEFT", true)?,
+            id_brake_right_keyboard: sim_connect
+                .map_client_event_to_sim_event("BRAKES_RIGHT", true)?,
+
+            id_parking_brake: sim_connect.map_client_event_to_sim_event("PARKING_BRAKES", true)?,
+            id_parking_brake_set: sim_connect
+                .map_client_event_to_sim_event("PARKING_BRAKE_SET", true)?,
+
+            brake_left_sim_input: 0.,
+            brake_right_sim_input: 0.,
+            brake_left_sim_input_keyboard: 0.,
+            brake_right_sim_input_keyboard: 0.,
+            left_key_pressed: false,
+            right_key_pressed: false,
+
+            brake_left_output_to_sim: 0.,
+            brake_right_output_to_sim: 0.,
+
+            parking_brake_lever_is_set: true,
+
+            last_transmitted_park_brake_lever_position: 1.,
+        })
+    }
+
+    fn set_brake_left(&mut self, simconnect_value: u32) {
+        self.brake_left_sim_input = sim_connect_32k_pos_to_f64(simconnect_value);
+    }
+
+    fn set_brake_left_key_pressed(&mut self) {
+        self.left_key_pressed = true;
+    }
+
+    fn set_brake_right_key_pressed(&mut self) {
+        self.right_key_pressed = true;
+    }
+
+    fn synchronise_with_sim(&mut self) {
+        // Synchronising WASM park brake state with simulator park brake lever variable
+        let current_in_sim_park_brake: f64 = self.park_brake_lever_masked_input.get_value();
+
+        if current_in_sim_park_brake != self.last_transmitted_park_brake_lever_position {
+            self.receive_a_park_brake_set_event(current_in_sim_park_brake as u32);
         }
     }
 
-    fn update(&mut self, name: &str, value: f64) {
+    fn update_keyboard_inputs(&mut self, delta: Duration) {
+        if self.left_key_pressed {
+            self.brake_left_sim_input_keyboard += delta.as_secs_f64() * Self::KEYBOARD_PRESS_SPEED;
+        } else {
+            self.brake_left_sim_input_keyboard -=
+                delta.as_secs_f64() * Self::KEYBOARD_RELEASE_SPEED;
+        }
+
+        if self.right_key_pressed {
+            self.brake_right_sim_input_keyboard += delta.as_secs_f64() * Self::KEYBOARD_PRESS_SPEED;
+        } else {
+            self.brake_right_sim_input_keyboard -=
+                delta.as_secs_f64() * Self::KEYBOARD_RELEASE_SPEED;
+        }
+
+        self.brake_right_sim_input_keyboard = self.brake_right_sim_input_keyboard.min(1.).max(0.);
+        self.brake_left_sim_input_keyboard = self.brake_left_sim_input_keyboard.min(1.).max(0.);
+    }
+
+    fn reset_keyboard_events(&mut self) {
+        self.left_key_pressed = false;
+        self.right_key_pressed = false;
+    }
+
+    fn transmit_masked_inputs(&mut self) {
+        let park_is_set = self.parking_brake_lever_is_set as u32 as f64;
+        self.last_transmitted_park_brake_lever_position = park_is_set;
+        self.park_brake_lever_masked_input.set_value(park_is_set);
+
+        let brake_right = self.brake_right() * 100.;
+        let brake_left = self.brake_left() * 100.;
+        self.right_pedal_brake_masked_input.set_value(brake_right);
+        self.left_pedal_brake_masked_input.set_value(brake_left);
+    }
+
+    fn transmit_client_events(
+        &mut self,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        // We want to send our brake commands once per refresh event, thus doing it after a draw event
+        sim_connect.transmit_client_event(
+            SIMCONNECT_OBJECT_ID_USER,
+            self.id_brake_left,
+            self.get_brake_left_output_converted_in_simconnect_format(),
+        )?;
+
+        sim_connect.transmit_client_event(
+            SIMCONNECT_OBJECT_ID_USER,
+            self.id_brake_right,
+            self.get_brake_right_output_converted_in_simconnect_format(),
+        )?;
+
+        Ok(())
+    }
+
+    fn set_brake_right(&mut self, simconnect_value: u32) {
+        self.brake_right_sim_input = sim_connect_32k_pos_to_f64(simconnect_value);
+    }
+
+    fn brake_left(&mut self) -> f64 {
+        self.brake_left_sim_input
+            .max(self.brake_left_sim_input_keyboard)
+    }
+
+    fn brake_right(&mut self) -> f64 {
+        self.brake_right_sim_input
+            .max(self.brake_right_sim_input_keyboard)
+    }
+
+    fn set_brake_right_output(&mut self, brake_force_factor: f64) {
+        self.brake_right_output_to_sim = brake_force_factor;
+    }
+
+    fn set_brake_left_output(&mut self, brake_force_factor: f64) {
+        self.brake_left_output_to_sim = brake_force_factor;
+    }
+
+    fn receive_a_park_brake_event(&mut self) {
+        self.parking_brake_lever_is_set = !self.parking_brake_lever_is_set;
+    }
+
+    fn receive_a_park_brake_set_event(&mut self, data: u32) {
+        self.parking_brake_lever_is_set = data == 1;
+    }
+
+    fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> u32 {
+        f64_to_sim_connect_32k_pos(self.brake_right_output_to_sim)
+    }
+
+    fn get_brake_left_output_converted_in_simconnect_format(&mut self) -> u32 {
+        f64_to_sim_connect_32k_pos(self.brake_left_output_to_sim)
+    }
+
+    fn is_park_brake_set(&self) -> f64 {
+        if self.parking_brake_lever_is_set {
+            1.
+        } else {
+            0.
+        }
+    }
+}
+impl SimulatorAspect for Brakes {
+    fn read(&mut self, name: &str) -> Option<f64> {
         match name {
-            "ELEC_AC_1_BUS_IS_POWERED" => self.ac_bus_1.update(value),
-            "ELEC_AC_2_BUS_IS_POWERED" => self.ac_bus_2.update(value),
-            "ELEC_AC_ESS_BUS_IS_POWERED" => self.ac_ess_bus.update(value),
-            "ELEC_AC_ESS_SHED_BUS_IS_POWERED" => self.ac_ess_shed_bus.update(value),
-            "ELEC_AC_STAT_INV_BUS_IS_POWERED" => self.ac_stat_inv_bus.update(value),
-            "ELEC_AC_GND_FLT_SVC_BUS_IS_POWERED" => self.ac_gnd_flt_svc_bus.update(value),
-            "ELEC_DC_1_BUS_IS_POWERED" => self.dc_bus_1.update(value),
-            "ELEC_DC_2_BUS_IS_POWERED" => self.dc_bus_2.update(value),
-            "ELEC_DC_ESS_BUS_IS_POWERED" => self.dc_ess_bus.update(value),
-            "ELEC_DC_ESS_SHED_BUS_IS_POWERED" => self.dc_ess_shed_bus.update(value),
-            "ELEC_DC_BAT_BUS_IS_POWERED" => self.dc_bat_bus.update(value),
-            "ELEC_DC_HOT_1_BUS_IS_POWERED" => self.dc_hot_bus_1.update(value),
-            "ELEC_DC_HOT_2_BUS_IS_POWERED" => self.dc_hot_bus_2.update(value),
-            "ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED" => self.dc_gnd_flt_svc_bus.update(value),
-            _ => panic!("No known connection for electrical bus '{}'.", name),
-        }
-    }
-}
-
-struct ElectricalBusConnection {
-    connected: bool,
-    from: usize,
-    to: usize,
-}
-impl ElectricalBusConnection {
-    fn new(from: usize, to: usize) -> Self {
-        Self {
-            connected: true,
-            from,
-            to,
+            "PARK_BRAKE_LEVER_POS" => Some(self.is_park_brake_set()),
+            "LEFT_BRAKE_PEDAL_INPUT" => Some(self.brake_left()),
+            "RIGHT_BRAKE_PEDAL_INPUT" => Some(self.brake_right()),
+            _ => None,
         }
     }
 
-    fn update(&mut self, value: f64) {
-        let should_be_connected = (value - 1.).abs() < f64::EPSILON;
-        if should_be_connected != self.connected {
-            execute_calculator_code::<()>(&format!(
-                "{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)",
-                self.from, self.to
-            ));
-            self.connected = !self.connected;
+    fn write(&mut self, name: &str, value: f64) -> bool {
+        match name {
+            "BRAKE LEFT FORCE FACTOR" => {
+                self.set_brake_left_output(value);
+                true
+            }
+            "BRAKE RIGHT FORCE FACTOR" => {
+                self.set_brake_right_output(value);
+                true
+            }
+            _ => false,
         }
+    }
+
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        match message {
+            SimConnectRecv::Event(e) => {
+                if e.id() == self.id_brake_left {
+                    self.set_brake_left(e.data());
+                    true
+                } else if e.id() == self.id_brake_right {
+                    self.set_brake_right(e.data());
+                    true
+                } else if e.id() == self.id_parking_brake {
+                    self.receive_a_park_brake_event();
+                    true
+                } else if e.id() == self.id_parking_brake_set {
+                    self.receive_a_park_brake_set_event(e.data());
+                    true
+                } else if e.id() == self.id_brake_keyboard {
+                    self.set_brake_left_key_pressed();
+                    self.set_brake_right_key_pressed();
+                    true
+                } else if e.id() == self.id_brake_left_keyboard {
+                    self.set_brake_left_key_pressed();
+                    true
+                } else if e.id() == self.id_brake_right_keyboard {
+                    self.set_brake_right_key_pressed();
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+
+    fn pre_tick(&mut self, delta: Duration) {
+        self.synchronise_with_sim();
+        self.update_keyboard_inputs(delta);
+    }
+
+    fn post_tick(
+        &mut self,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.reset_keyboard_events();
+        self.transmit_client_events(sim_connect)?;
+        self.transmit_masked_inputs();
+
+        Ok(())
     }
 }

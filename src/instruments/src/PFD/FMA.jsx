@@ -338,13 +338,16 @@ const B1Cell = () => {
         return null;
     }
 
+    const inSpeedProtection = inProtection && (activeVerticalMode === 14 || activeVerticalMode === 15);
+    const inModeReversion = getSimVar('L:A32NX_FMA_MODE_REVERSION', 'bool');
+
     return (
         <g>
             <ShowForSeconds timer={10} id={activeVerticalMode}>
-                <path className="NormalStroke White" d="m34.656 1.8143h29.918v6.0476h-29.918z" />
+                <path className={`${(inSpeedProtection || inModeReversion) ? 'NormalStroke None' : 'NormalStroke White'}`} d="m34.656 1.8143h29.918v6.0476h-29.918z" />
             </ShowForSeconds>
-            {inProtection && (activeVerticalMode === 14 || activeVerticalMode === 15)
-            && <path className="NormalStroke Amber BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
+            {inSpeedProtection && <path className="NormalStroke Amber BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
+            {inModeReversion && <path className="NormalStroke White BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
             <text className="FontMedium MiddleAlign Green" x="49.498924" y="6.8785663" xmlSpace="preserve">{text}</text>
         </g>
     );

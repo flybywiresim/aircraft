@@ -1,27 +1,81 @@
-use uom::si::{f64::*, ratio::percent};
+use uom::si::f64::*;
 
-use crate::simulation::{SimulationElement, SimulatorReader, UpdateContext};
+use crate::{
+    overhead::FirePushButton,
+    shared::{EngineCorrectedN2, EngineFirePushButtons, EngineUncorrectedN2},
+    simulation::{SimulationElement, SimulationElementVisitor},
+};
 
-pub struct Engine {
-    corrected_n2_id: String,
-    corrected_n2: Ratio,
+pub mod leap_engine;
+
+pub trait Engine: EngineCorrectedN2 + EngineUncorrectedN2 {
+    fn hydraulic_pump_output_speed(&self) -> AngularVelocity;
+    fn oil_pressure(&self) -> Pressure;
+    fn is_above_minimum_idle(&self) -> bool;
 }
-impl Engine {
-    pub fn new(number: usize) -> Engine {
-        Engine {
-            corrected_n2_id: format!("TURB ENG CORRECTED N2:{}", number),
-            corrected_n2: Ratio::new::<percent>(0.),
+
+pub struct EngineFireOverheadPanel {
+    // TODO: Once const generics are available in the dev-env rustc version, we can replace
+    // this with an array sized by the const.
+    engine_fire_push_buttons: [FirePushButton; 2],
+}
+impl EngineFireOverheadPanel {
+    pub fn new() -> Self {
+        Self {
+            engine_fire_push_buttons: [FirePushButton::new("ENG1"), FirePushButton::new("ENG2")],
         }
     }
+}
+impl EngineFirePushButtons for EngineFireOverheadPanel {
+    fn is_released(&self, engine_number: usize) -> bool {
+        self.engine_fire_push_buttons[engine_number - 1].is_released()
+    }
+}
+impl SimulationElement for EngineFireOverheadPanel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.engine_fire_push_buttons, visitor);
 
-    pub fn corrected_n2(&self) -> Ratio {
-        self.corrected_n2
+        visitor.visit(self);
+    }
+}
+impl Default for EngineFireOverheadPanel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+mod engine_fire_overhead_panel_tests {
+    use crate::simulation::{
+        test::{SimulationTestBed, TestBed},
+        Write,
+    };
+
+    use super::*;
+
+    #[test]
+    fn after_construction_fire_push_buttons_are_not_released() {
+        let panel = EngineFireOverheadPanel::new();
+
+        assert_eq!(panel.is_released(1), false);
+        assert_eq!(panel.is_released(2), false);
     }
 
-    pub fn update(&mut self, _: &UpdateContext) {}
-}
-impl SimulationElement for Engine {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.corrected_n2 = Ratio::new::<percent>(reader.read_f64(&self.corrected_n2_id));
+    #[test]
+    fn fire_push_button_is_released_returns_false_when_not_released() {
+        let mut test_bed = SimulationTestBed::from(EngineFireOverheadPanel::new());
+        test_bed.write("FIRE_BUTTON_ENG1", false);
+        test_bed.run();
+
+        assert_eq!(test_bed.query_element(|e| e.is_released(1)), false);
+    }
+
+    #[test]
+    fn fire_push_button_is_released_returns_true_when_released() {
+        let mut test_bed = SimulationTestBed::from(EngineFireOverheadPanel::new());
+        test_bed.write("FIRE_BUTTON_ENG1", true);
+        test_bed.run();
+
+        assert_eq!(test_bed.query_element(|e| e.is_released(1)), true);
     }
 }

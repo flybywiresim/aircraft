@@ -37,6 +37,7 @@ struct SimData {
   double gear_animation_pos_1;
   double gear_animation_pos_2;
   double flaps_handle_index;
+  double flaps_position;
   double spoilers_handle_position;
   double spoilers_left_pos;
   double spoilers_right_pos;
@@ -114,6 +115,8 @@ struct SimData {
   double fuelTankQuantityCenter;
   double fuelTankQuantityTotal;
   double fuelWeightPerGallon;
+  unsigned long long kohlsmanSettingStd_3;
+  double cameraState;
 };
 
 struct SimInput {
@@ -140,6 +143,7 @@ struct SimInputAutopilot {
 struct SimInputThrottles {
   double ATHR_push;
   double ATHR_disconnect;
+  double ATHR_reset_disable;
 };
 
 struct SimOutput {
@@ -180,6 +184,10 @@ struct SimOutputSpoilers {
   double spoilersHandlePosition;
 };
 
+struct SimOutputAltimeter {
+  unsigned long long kohlsmanSettingStd_3;
+};
+
 struct ClientDataAutopilotStateMachine {
   unsigned long long enabled_AP1;
   unsigned long long enabled_AP2;
@@ -192,6 +200,8 @@ struct ClientDataAutopilotStateMachine {
   double mode_reversion_lateral;
   double mode_reversion_vertical;
   double mode_reversion_TRK_FPA;
+  double mode_reversion_triple_click;
+  double mode_reversion_fma;
   double speed_protection_mode;
   double autothrust_mode;
   double Psi_c_deg;
@@ -244,6 +254,7 @@ struct ClientDataLocalVariables {
   double V2;
   double V_APP;
   double V_LS;
+  double V_MAX;
   double flightPlanAvailable;
   double altitudeConstraint;
   double thrustReductionAltitude;

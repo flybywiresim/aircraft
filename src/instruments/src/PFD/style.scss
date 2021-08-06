@@ -13,9 +13,7 @@
   position: absolute;
   width: 1280px;
   height: 1280px;
-
   background: $display-background;
-
   font-family: "Ecam", monospace !important;
 }
 
@@ -135,6 +133,11 @@ text.Cyan {
 }
 tspan.Cyan {
   fill: $display-cyan;
+  stroke: none;
+}
+
+.None {
+  fill: none;
   stroke: none;
 }
 

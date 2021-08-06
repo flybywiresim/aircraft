@@ -99,7 +99,7 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
          <Test>
             <TestValue>
-               <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
          </Test>
@@ -213,15 +213,15 @@
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Code="(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Code="(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Code="(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                </Operator>
@@ -256,7 +256,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)"/>
+                  <Val Code="(A:CABIN SEATBELTS ALERT SWITCH)"/>
                   <Val Value="1"/>
                </Operator>
             </TestValue>
@@ -274,6 +274,10 @@
             </TestValue>
          </Test>
       </Checkpoint>
+      <Checkpoint Id="A320_CPREP1_ANNUNCIATOR_LIGHTS">
+           <CheckpointDesc SubjectTT="TT:Annunciator Lights" ExpectationTT="TT:CHECK/AS REQUIRED" />
+           <Instrument Id="SWITCH_OVHD_INTLT_ANNLT"/>
+       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_LANDING_ELEVATION">
          <CheckpointDesc SubjectTT="TT:Landing Elevation" ExpectationTT="TT:AUTO" />
          <Instrument Id="KNOB_OVHD_CABINPRESS_LDGELEV" />
@@ -688,7 +692,7 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
          <Test>
             <TestValue>
-               <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
          </Test>
@@ -944,7 +948,7 @@
          <Test>
             <TestValue>
                <Operator OpType="NOT">
-                  <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+                  <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
                </Operator>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
@@ -963,11 +967,11 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val Code="(L:XMLVAR_Autobrakes_Level)"/>
+                  <Val Code="(L:A32NX_AUTOBRAKES_ARMED_MODE)"/>
                   <Val Value="3"/>
                </Operator>
             </TestValue>
-            <!--<Action Copilot="True" Condition="TestValueFalse" Once="true" Code="(&gt;L:XMLVAR_Autobrakes_Level)" />-->
+            <!--<Action Copilot="True" Condition="TestValueFalse" Once="true" Code="(&gt;L:A32NX_AUTOBRAKES_ARMED_MODE)" />-->
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_ATC_CLEARANCE">
@@ -1523,7 +1527,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)"/>
+                  <Val Code="(A:CABIN SEATBELTS ALERT SWITCH)"/>
                   <Val Value="1"/>
                </Operator>
             </TestValue>
@@ -1736,7 +1740,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)"/>
+                  <Val Code="(A:CABIN SEATBELTS ALERT SWITCH)"/>
                   <Val Value="1"/>
                </Operator>
             </TestValue>
@@ -2032,7 +2036,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val Code="(L:XMLVAR_Autobrakes_Level)"/>
+                  <Val Code="(L:A32NX_AUTOBRAKES_ARMED_MODE)"/>
                   <Val Value="0"/>
                </Operator>
             </TestValue>
@@ -2122,7 +2126,7 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
          <Test>
             <TestValue>
-               <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
          </Test>
@@ -2231,7 +2235,7 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
          <Test>
             <TestValue>
-               <Val SimVarName="BRAKE PARKING POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_PARK_BRAKE_LEVER_POS" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="PARKING_BRAKES"/>
          </Test>
@@ -2247,15 +2251,15 @@
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Code="(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Code="(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A32NX_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Code="(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                </Operator>

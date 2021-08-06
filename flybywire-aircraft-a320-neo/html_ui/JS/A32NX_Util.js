@@ -79,15 +79,24 @@ A32NX_Util.latLonToSpherical = (ll) => {
 };
 
 /**
+ * Takes a vector of spherical co-ordinates and returns a LatLong
+ * @param {[x: number, y: number, z: number]} s
+ * @returns {LatLong}
+ */
+A32NX_Util.sphericalToLatLon = (s) => {
+    return new LatLong(Math.asin(s[2]) * Avionics.Utils.RAD2DEG, Math.atan2(s[1], s[0]) * Avionics.Utils.RAD2DEG);
+};
+
+/**
  * Computes the intersection point of two (true) bearings on a great circle
  * @param {(LatLong | LatLongAlt)} latlon1
  * @param {number} brg1
  * @param {(LatLong | LatLongAlt)} latlon2
  * @param {number} brg2
+ * @returns {LatLong}
  */
 A32NX_Util.greatCircleIntersection = (latlon1, brg1, latlon2, brg2) => {
     // c.f. https://blog.mbedded.ninja/mathematics/geometry/spherical-geometry/finding-the-intersection-of-two-arcs-that-lie-on-a-sphere/
-
     const Pa11 = A32NX_Util.latLonToSpherical(latlon1);
     const latlon12 = Avionics.Utils.bearingDistanceToCoordinates(brg1 % 360, 100, latlon1.lat, latlon1.long);
     const Pa12 = A32NX_Util.latLonToSpherical(latlon12);
@@ -104,8 +113,8 @@ A32NX_Util.greatCircleIntersection = (latlon1, brg1, latlon2, brg2) => {
     const I1 = math.divide(L, l);
     const I2 = math.multiply(I1, -1);
 
-    const s1 = new LatLongAlt(90 - Math.acos(I1[2]) * Avionics.Utils.RAD2DEG, 180 + Math.atan(I1[1] / I1[0]) * Avionics.Utils.RAD2DEG);
-    const s2 = new LatLongAlt(90 - Math.acos(I2[2]) * Avionics.Utils.RAD2DEG, 180 + Math.atan(I2[1] / I2[0]) * Avionics.Utils.RAD2DEG);
+    const s1 = A32NX_Util.sphericalToLatLon(I1);
+    const s2 = A32NX_Util.sphericalToLatLon(I2);
 
     const brgTos1 = Avionics.Utils.computeGreatCircleHeading(latlon1, s1);
     const brgTos2 = Avionics.Utils.computeGreatCircleHeading(latlon1, s2);
@@ -114,6 +123,24 @@ A32NX_Util.greatCircleIntersection = (latlon1, brg1, latlon2, brg2) => {
     const delta2 = Math.abs(brg1 - brgTos2);
 
     return delta1 < delta2 ? s1 : s2;
+};
+
+/**
+ * Returns the ISA temperature for a given altitude
+ * @param alt {number} altitude in ft
+ * @returns {number} ISA temp in C°
+ */
+A32NX_Util.getIsaTemp = (alt = Simplane.getAltitude()) => {
+    return Math.min(alt, 36089) * -0.0019812 + 15;
+};
+
+/**
+ * Returns the deviation from ISA temperature and OAT at given altitude
+ * @param alt {number} altitude in ft
+ * @returns {number} ISA temp deviation from OAT in C°
+ */
+A32NX_Util.getIsaTempDeviation = (alt = Simplane.getAltitude(), sat = Simplane.getAmbientTemperature()) => {
+    return sat - A32NX_Util.getIsaTemp(alt);
 };
 
 /**
@@ -158,3 +185,7 @@ class UpdateThrottler {
         }
     }
 }
+
+A32NX_Util.meterToFeet = (meterValue) => {
+    return meterValue * 3.28084;
+};

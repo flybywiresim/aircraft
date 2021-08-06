@@ -560,7 +560,7 @@
     "extensionsUsed": ["ASOBO_asset_optimized", "ASOBO_material_invisible"],
     "materials": [
         {
-            "name": "glTFValidator_Added_Default_Material",
+            "name": "SOUND_NODE_INVISIBLE",
             "extensions": { "ASOBO_material_invisible": {} }
         }
     ],

@@ -1,19 +1,22 @@
 import { ExecTask, TaskOfTasks } from '@flybywiresim/igniter';
+import { getInstrumentsIgniterTasks } from './src/instruments/buildSrc/igniter/tasks.mjs';
 
 export default new TaskOfTasks('a32nx', [
     new TaskOfTasks('build', [
-        new ExecTask('instruments','npm run build:instruments', ['src/instruments', 'flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/generated']),
+        new TaskOfTasks('instruments', getInstrumentsIgniterTasks(), true),
         new ExecTask('behavior','node src/behavior/build.js', ['src/behavior', 'flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated']),
         new ExecTask('model','node src/model/build.js', ['src/model', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model']),
         new ExecTask('systems', [
             'cargo build --target wasm32-wasi --release',
-            'cp -u target/wasm32-wasi/release/systems.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/'
+            'wasm-opt -O3 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm target/wasm32-wasi/release/systems.wasm',
         ], ['src/systems', 'Cargo.lock', 'Cargo.toml', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm']),
         new ExecTask('systems-autopilot', [
-            'src/fbw/build.sh'
+            'src/fbw/build.sh',
+            'wasm-opt -O1 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm'
         ], ['src/fbw', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm']),
         new ExecTask('systems-fadec', [
-            'src/fadec/build.sh'
+            'src/fadec/build.sh',
+            'wasm-opt -O1 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm'
         ], ['src/fadec', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm']),
     ], true),
 

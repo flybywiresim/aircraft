@@ -1,16 +1,18 @@
 import { useState } from 'react/cjs/react.production.min.js';
 import { getSimVar, useInteractionEvent } from '../util.js';
-import { EngPage } from './Pages/Eng.jsx';
+import { EngPage } from './Pages/Eng/Eng.tsx';
 import { BleedPage } from './Pages/Bleed.jsx';
 import { PressPage } from './Pages/Press.jsx';
 import { ElecPage } from './Pages/Elec/Elec.tsx';
-import { HydPage } from './Pages/Hyd.jsx';
+import { HydPage } from './Pages/Hyd/Hyd.tsx';
 import { FuelPage } from './Pages/Fuel.jsx';
 import { ApuPage } from './Pages/Apu.jsx';
 import { CondPage } from './Pages/Cond/Cond.tsx';
 import { DoorPage } from './Pages/Door/Door.tsx';
-import { WheelPage } from './Pages/Wheel.jsx';
+import { WheelPage } from './Pages/Wheel/Wheel.tsx';
 import { FctlPage } from './Pages/Fctl/Fctl.tsx';
+import { StatusPage } from './Pages/Status.jsx';
+import { CrzPage } from './Pages/Crz/Crz.tsx';
 
 export const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState(0);
@@ -29,6 +31,8 @@ export const PagesContainer = () => {
         8: <DoorPage />,
         9: <WheelPage />,
         10: <FctlPage />,
+        11: <StatusPage />,
+        12: <CrzPage />,
     };
 
     return pages[currentPage] || <text x={300} y={300} fill="white" fontSize={18} textAnchor="middle">invalid page</text>;
