@@ -59,10 +59,10 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
 
             { (leftMessage) && (
                 <text
-                    x={440 / 4}
+                    x={8}
                     y={25}
-                    className={`${leftMessage.color} MiddleAlign`}
-                    textAnchor="middle"
+                    className={`${leftMessage.color}`}
+                    textAnchor="start"
                     fontSize={25}
                 >
                     {leftMessage.text}
@@ -71,10 +71,10 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
 
             { (rightMessage) && (
                 <text
-                    x={3 * 440 / 4}
+                    x={425}
                     y={25}
-                    className={`${rightMessage.color} MiddleAlign`}
-                    textAnchor="middle"
+                    className={`${rightMessage.color}`}
+                    textAnchor="end"
                     fontSize={25}
                 >
                     {rightMessage.text}
