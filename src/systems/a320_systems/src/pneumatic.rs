@@ -23,6 +23,8 @@ use systems::{
     simulation::{Read, SimulationElement, SimulationElementVisitor, SimulatorReader},
 };
 
+use pid::Pid;
+
 pub struct A320Pneumatic {
     bmcs: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedSystem; 2],
@@ -109,7 +111,9 @@ struct IPValveController {
 }
 impl ControllerSignal<PneumaticValveSignal> for IPValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
-        if self.upstream_pressure < self.downstream_pressure {
+        if (self.downstream_pressure - self.upstream_pressure)
+            > Pressure::new::<pascal>(Self::REVERSE_PRESSURE_THRESHOLD_PASCAL)
+        {
             Some(PneumaticValveSignal::close())
         } else {
             Some(PneumaticValveSignal::open())
@@ -117,6 +121,8 @@ impl ControllerSignal<PneumaticValveSignal> for IPValveController {
     }
 }
 impl IPValveController {
+    const REVERSE_PRESSURE_THRESHOLD_PASCAL: f64 = 100.;
+
     fn new(number: usize) -> Self {
         Self {
             number,
@@ -135,25 +141,17 @@ struct HPValveController {
     // Engine number
     number: usize,
     upstream_pressure: Pressure,
-    previous_downstream_pressure: Pressure,
-    relative_downstream_pressure_change_rate: Ratio,
-    current_open_amount: Ratio,
-    is_prv_open: bool,
+    target_open_amount: Ratio,
+    pid: Pid<f64>,
 }
 impl ControllerSignal<PneumaticValveSignal> for HPValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
         // Mechanically closed
-        if self.upstream_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI)
-            || self.upstream_pressure > Pressure::new::<psi>(Self::CLOSING_PRESSURE_PSI)
-        {
+        if self.upstream_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI) {
             return Some(PneumaticValveSignal::close());
         }
 
-        Some(PneumaticValveSignal::new(
-            self.calculate_open_amount_from_pressure_change()
-                .max(Ratio::new::<percent>(0.))
-                .min(Ratio::new::<percent>(100.)),
-        ))
+        Some(PneumaticValveSignal::new(self.target_open_amount))
     }
 }
 impl HPValveController {
@@ -165,31 +163,27 @@ impl HPValveController {
         Self {
             number,
             upstream_pressure: Pressure::new::<psi>(0.),
-            previous_downstream_pressure: Pressure::new::<psi>(0.),
-            relative_downstream_pressure_change_rate: Ratio::new::<percent>(0.),
-            current_open_amount: Ratio::new::<percent>(0.),
-            is_prv_open: false,
+            pid: Pid::new(0.05, 0., 0., 1., 1., 1., 1., 65.),
+            target_open_amount: Ratio::new::<ratio>(0.),
         }
     }
 
-    fn calculate_open_amount_from_pressure_change(&self) -> Ratio {
+    fn calculate_open_amount_from_pressure_change(
+        &mut self,
+        downstream_pressure: Pressure,
+    ) -> Ratio {
         // TODO: Tune this
-        let pressure_change_response: f64 = -0.5;
+        let output = self
+            .pid
+            .next_control_output(downstream_pressure.get::<psi>());
 
-        self.current_open_amount
-            + pressure_change_response * self.relative_downstream_pressure_change_rate
+        Ratio::new::<ratio>(output.output.min(1.).max(0.))
     }
 
     fn update(&mut self, context: &UpdateContext, engine_data: &impl EngineBleedDataProvider) {
         self.upstream_pressure = engine_data.hp_pressure();
-        self.relative_downstream_pressure_change_rate = (engine_data.transfer_pressure()
-            - self.previous_downstream_pressure)
-            / self.previous_downstream_pressure
-            / context.delta_as_secs_f64();
-        self.previous_downstream_pressure = engine_data.transfer_pressure();
-
-        self.current_open_amount = engine_data.hpv_open_amount();
-        self.is_prv_open = engine_data.is_prv_open();
+        self.target_open_amount =
+            self.calculate_open_amount_from_pressure_change(engine_data.transfer_pressure());
     }
 }
 
@@ -198,20 +192,18 @@ struct PRValveController {
     number: usize,
     transfer_pressure: Pressure,
     regulated_pressure: Pressure,
+    target_open_amount: Ratio,
+    pid: Pid<f64>,
 }
 impl ControllerSignal<PneumaticValveSignal> for PRValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
         // TODO: Use some more sophisticated regulation
 
         if self.transfer_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI) {
-            Some(PneumaticValveSignal::close())
-        } else if self.regulated_pressure > Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI) {
-            Some(PneumaticValveSignal::close())
-        } else if self.regulated_pressure < Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI) {
-            Some(PneumaticValveSignal::open())
-        } else {
-            Some(PneumaticValveSignal::close())
+            return Some(PneumaticValveSignal::close());
         }
+
+        Some(PneumaticValveSignal::new(self.target_open_amount))
     }
 }
 impl PRValveController {
@@ -226,12 +218,20 @@ impl PRValveController {
             number,
             transfer_pressure: Pressure::new::<psi>(0.),
             regulated_pressure: Pressure::new::<psi>(0.),
+            pid: Pid::new(0., 0.01, 0., 1., 1., 1., 1., Self::TARGET_PRESSURE_PSI),
+            target_open_amount: Ratio::new::<ratio>(0.),
         }
     }
 
     fn update(&mut self, context: &UpdateContext, engine_data: &impl EngineBleedDataProvider) {
         self.transfer_pressure = engine_data.transfer_pressure();
         self.regulated_pressure = engine_data.regulated_pressure();
+
+        let output = self
+            .pid
+            .next_control_output(self.regulated_pressure.get::<psi>());
+
+        self.target_open_amount = Ratio::new::<ratio>(output.output.min(1.).max(0.));
     }
 }
 
@@ -277,7 +277,7 @@ impl EngineStarterValveController {
             engine_master_switched_off: false,
             engine_n2_reached_50_percent: false,
             engine_master_switch_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", number),
-            engine_n2_id: format!("ENGINE_N2:{}", number),
+            engine_n2_id: format!("TURB ENG CORRECTED N2:{}", number),
         }
     }
 }
@@ -464,8 +464,10 @@ impl EngineBleedSystem {
     fn new(number: usize) -> Self {
         Self {
             number,
-            ip_compression_chamber_controller: EngineCompressionChamberController::new(5., 0., 2.),
-            hp_compression_chamber_controller: EngineCompressionChamberController::new(5., 0.5, 6.),
+            ip_compression_chamber_controller: EngineCompressionChamberController::new(3., 0., 2.),
+            hp_compression_chamber_controller: EngineCompressionChamberController::new(
+                1.5, 2.5, 4.,
+            ),
             ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             ip_valve: DefaultValve::new(Ratio::new::<percent>(100.)),
@@ -729,7 +731,7 @@ mod tests {
 
         fn idle_eng1(mut self) -> Self {
             self.write("GENERAL ENG STARTER ACTIVE:1", true);
-            self.write("ENGINE_N2:1", 55.);
+            self.write("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.55));
             self.write("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.2));
 
             self
@@ -737,7 +739,7 @@ mod tests {
 
         fn idle_eng2(mut self) -> Self {
             self.write("GENERAL ENG STARTER ACTIVE:2", true);
-            self.write("ENGINE_N2:2", 55.);
+            self.write("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.55));
             self.write("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.2));
 
             self
@@ -745,7 +747,7 @@ mod tests {
 
         fn stop_eng1(mut self) -> Self {
             self.write("GENERAL ENG STARTER ACTIVE:1", false);
-            self.write("ENGINE_N2:1", 0.);
+            self.write("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.));
             self.write("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.));
 
             self
@@ -753,7 +755,7 @@ mod tests {
 
         fn stop_eng2(mut self) -> Self {
             self.write("GENERAL ENG STARTER ACTIVE:2", false);
-            self.write("ENGINE_N2:2", 0.);
+            self.write("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.));
             self.write("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.));
 
             self
@@ -778,9 +780,9 @@ mod tests {
             self
         }
 
-        fn n2(mut self, n2: f64) -> Self {
-            self.write("ENGINE_N2:1", n2);
-            self.write("ENGINE_N2:2", n2);
+        fn corrected_n2(mut self, corrected_n2: Ratio) -> Self {
+            self.write("TURB ENG CORRECTED N2:1", corrected_n2);
+            self.write("TURB ENG CORRECTED N2:2", corrected_n2);
 
             self
         }
@@ -854,7 +856,8 @@ mod tests {
         let mut test_bed = test_bed_with()
             .mach_number(MachNumber(0.0))
             .in_isa_atmosphere(alt)
-            .stop_eng1();
+            .idle_eng1()
+            .idle_eng2();
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
@@ -867,12 +870,19 @@ mod tests {
         let mut esv_open = Vec::new();
 
         for i in 1..10 {
-            test_bed.run_with_delta(Duration::from_millis(1000));
-            ts.push(i as f64 * 1000.);
+            ts.push(i as f64 * 5000.);
 
-            if i == 2 {
-                test_bed = test_bed.idle_eng1();
-            }
+            // if i > 100 {
+            //     let new_n1 = 0.2 + ((i as f64) - 100.) / 120.;
+            //     let new_n2 = 0.5 + ((i as f64) - 100.) / 200.;
+
+            //     println!("n1: {}", new_n1);
+            //     println!("n2: {}", new_n2);
+
+            //     test_bed = test_bed
+            //         .corrected_n1(Ratio::new::<ratio>(new_n1))
+            //         .corrected_n2(Ratio::new::<ratio>(new_n2));
+            // }
 
             hps.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
@@ -907,7 +917,7 @@ mod tests {
                     .hp_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 1.
+                    * 10.
             }));
 
             prv_open.push(test_bed.query(|aircraft| {
@@ -915,7 +925,7 @@ mod tests {
                     .pr_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 1.
+                    * 10.
             }));
 
             ipv_open.push(test_bed.query(|aircraft| {
@@ -923,7 +933,7 @@ mod tests {
                     .ip_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 1.
+                    * 10.
             }));
 
             esv_open.push(test_bed.query(|aircraft| {
@@ -931,8 +941,10 @@ mod tests {
                     .engine_starter_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 1.
+                    * 10.
             }));
+
+            test_bed.run_with_delta(Duration::from_millis(5000));
         }
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
@@ -1126,6 +1138,9 @@ mod tests {
 
         test_bed.for_engine(1, |sys| assert!(sys.pr_valve.is_open()));
         test_bed.for_engine(2, |sys| assert!(!sys.pr_valve.is_open()));
+
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.engine_starter_valve.is_open()));
+        assert!(!test_bed.cross_bleed_valve_is_open());
     }
 
     #[test]
@@ -1209,7 +1224,7 @@ mod tests {
             assert!(sys.engine_starter_valve.is_open());
         });
 
-        test_bed = test_bed.n2(60.);
+        test_bed = test_bed.corrected_n2(Ratio::new::<ratio>(0.6));
         test_bed.run();
 
         test_bed.for_both_engine_systems(|sys| {
