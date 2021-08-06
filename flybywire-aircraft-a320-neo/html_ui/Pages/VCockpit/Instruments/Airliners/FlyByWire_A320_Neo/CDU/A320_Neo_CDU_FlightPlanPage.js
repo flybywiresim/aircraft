@@ -193,6 +193,7 @@ class CDUFlightPlanPage {
                     }
                 } else {
                     // Show airway
+                    // TODO: NOT WORKING FOR SOME REASON
                     let airwayName = "";
                     if (wpPrev && waypointsAndMarkers[winI].wp) {
                         let airway = undefined;
