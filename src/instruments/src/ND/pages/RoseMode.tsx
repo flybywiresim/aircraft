@@ -19,9 +19,10 @@ export interface RoseModeProps {
     side: EfisSide,
     ppos: LatLongData,
     efisOption: EfisOption,
+    mapHidden: boolean,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, side, ppos, efisOption }) => {
+export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, side, ppos, efisOption, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -64,7 +65,7 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
             <>
                 <g id="map" clipPath="url(#rose-mode-map-clip)">
                     { mode === Mode.ROSE_NAV && (
-                        <>
+                        <g visibility={mapHidden ? "hidden" : "visible"}>
                             <FlightPlan
                                 x={384}
                                 y={384}
@@ -75,7 +76,7 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
                                 temp={false}
                             />
                             {tmpFplan}
-                        </>
+                        </g>
                     )}
                     <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
                     <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
