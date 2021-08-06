@@ -8,7 +8,7 @@ export const FMMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
     const [messages, setMessages] = useState<FMMessage[]>([]);
 
     useCoherentEvent(FMMessageTriggers.SEND_TO_EFIS, (message) => {
-        setMessages((messages) => [...messages, message]);
+        setMessages((messages) => [...(messages.filter(({ id: mId }) => mId !== message.id)), message]);
     });
 
     useCoherentEvent(FMMessageTriggers.RECALL_FROM_EFIS_WITH_ID, (id) => {
