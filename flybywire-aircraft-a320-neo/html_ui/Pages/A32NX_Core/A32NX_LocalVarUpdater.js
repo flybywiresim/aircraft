@@ -263,7 +263,7 @@ class A32NX_LocalVarUpdater {
             // y-axis - away from screen >> +ve
             const yTarget = (zoomLevel + 423.33) / 333.33;
             const yDelta = yTarget - camXyz.y;
-            // opacity: 0 < [4zΔ + 0.5] < 1
+            // opacity: 0 < [4yΔ + 0.5] < 1
             this.opacityMcdu = Math.max(0, Math.min(1, 4 * (yDelta) + 0.5));
 
             this.camY = camXyz.y;
