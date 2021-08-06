@@ -233,7 +233,7 @@ class CDUFlightPlanPage {
                 }
 
                 const prevWp = waypointsAndMarkers[winI - 1];
-                if (!fixAnnotation && prevWp && waypointsAndMarkers[winI].wp.ident !== fpm.getDestination().ident) {
+                if (!fixAnnotation && prevWp && prevWp.wp && waypointsAndMarkers[winI].wp.ident !== fpm.getDestination().ident) {
                     const magVar = Facilities.getMagVar(prevWp.wp.infos.coordinates);
                     const courseBetween = Avionics.Utils.computeGreatCircleHeading(prevWp.wp.infos.coordinates, waypointsAndMarkers[winI].wp.infos.coordinates);
                     const course = A32NX_Util.trueToMagnetic(courseBetween, magVar);
