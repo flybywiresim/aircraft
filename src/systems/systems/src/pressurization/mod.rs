@@ -12,8 +12,13 @@ use crate::{
 };
 
 use std::time::Duration;
-use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::foot_per_minute};
-
+use uom::si::{
+    f64::*,
+    length::foot,
+    pressure::hectopascal,
+    ratio::percent,
+    velocity::{foot_per_minute, knot},
+};
 mod cabin_pressure_controller;
 mod pressure_valve;
 
@@ -25,6 +30,7 @@ pub struct Pressurization {
     cpc: [CabinPressureController; 2],
     outflow_valve: PressureValve,
     safety_valve: PressureValve,
+    residual_pressure_controller: ResidualPressureController,
     active_system: usize,
     landing_elevation: Length,
     sea_level_pressure: Pressure,
@@ -46,6 +52,7 @@ impl Pressurization {
             cpc: [CabinPressureController::new(); 2],
             outflow_valve: PressureValve::new_open(),
             safety_valve: PressureValve::new_closed(),
+            residual_pressure_controller: ResidualPressureController::new(),
             active_system: active,
             landing_elevation: Length::new::<foot>(0.),
             sea_level_pressure: Pressure::new::<hectopascal>(1013.25),
@@ -66,6 +73,13 @@ impl Pressurization {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob.value())
         }
 
+        self.residual_pressure_controller.update(
+            context,
+            engines,
+            self.outflow_valve.open_amount(),
+            self.is_in_man_mode,
+        );
+
         for controller in self.cpc.iter_mut() {
             controller.update(
                 context,
@@ -74,11 +88,15 @@ impl Pressurization {
                 self.sea_level_pressure,
                 self.destination_qnh,
                 self.packs_are_on,
-                self.is_in_man_mode,
             );
             self.outflow_valve
                 .calculate_outflow_valve_position(controller, press_overhead);
-            self.outflow_valve.update(context, press_overhead);
+            if matches!(self.residual_pressure_controller.signal(), Some(_)) {
+                self.outflow_valve
+                    .update(context, &self.residual_pressure_controller);
+            } else {
+                self.outflow_valve.update(context, press_overhead);
+            }
             controller.update_outflow_valve_state(&self.outflow_valve);
             self.safety_valve.update(context, controller);
             controller.update_safety_valve_state(&self.safety_valve);
@@ -216,6 +234,45 @@ impl ControllerSignal<PressureValveSignal> for PressurizationOverheadPanel {
                 2 => Some(PressureValveSignal::Close),
                 _ => Some(PressureValveSignal::Neutral),
             }
+        }
+    }
+}
+
+struct ResidualPressureController {
+    should_open_outflow_valve: bool,
+}
+
+impl ResidualPressureController {
+    fn new() -> Self {
+        Self {
+            should_open_outflow_valve: false,
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        engines: [&impl EngineCorrectedN1; 2],
+        //Add airspeed from ADIRS
+        outflow_valve_open_amount: Ratio,
+        is_in_man_mode: bool,
+    ) {
+        self.should_open_outflow_valve = outflow_valve_open_amount < Ratio::new::<percent>(100.)
+            && is_in_man_mode
+            && context.is_on_ground()
+            && (!(engines
+                .iter()
+                .any(|&x| x.corrected_n1() > Ratio::new::<percent>(15.)))
+                || context.indicated_airspeed() < Velocity::new::<knot>(70.))
+    }
+}
+
+impl ControllerSignal<PressureValveSignal> for ResidualPressureController {
+    fn signal(&self) -> Option<PressureValveSignal> {
+        if self.should_open_outflow_valve {
+            Some(PressureValveSignal::Open)
+        } else {
+            None
         }
     }
 }
@@ -627,6 +684,85 @@ mod tests {
         assert!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
                 < Ratio::new::<percent>(1.)
+        );
+    }
+
+    #[test]
+    fn fifty_five_seconds_after_landing_outflow_valve_doesnt_open_if_mode_sel_man() {
+        let mut test_bed = test_bed();
+
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                > Ratio::new::<percent>(0.)
+        );
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                < Ratio::new::<percent>(99.)
+        );
+
+        let initial_position = test_bed.query(|a| a.pressurization.outflow_valve.open_amount());
+        test_bed = test_bed.command_mode_sel_pb_man();
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        // Descent
+
+        test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
+        test_bed.set_on_ground(true);
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
+        test_bed.run();
+
+        // Ground
+
+        test_bed.run_with_delta(Duration::from_secs_f64(53.));
+        test_bed.run();
+
+        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run();
+        assert_eq!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount()),
+            initial_position
+        );
+    }
+
+    #[test]
+    fn rpcu_opens_ofv_even_if_mode_sel_man() {
+        let mut test_bed = test_bed();
+
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                > Ratio::new::<percent>(0.)
+        );
+        assert!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
+                < Ratio::new::<percent>(99.)
+        );
+
+        test_bed = test_bed.command_mode_sel_pb_man();
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed.run();
+
+        // Descent
+
+        test_bed.set_indicated_airspeed(Velocity::new::<knot>(69.));
+        test_bed.set_on_ground(true);
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
+        test_bed.run();
+
+        // Ground
+
+        test_bed = test_bed.iterate(10);
+        assert_eq!(
+            test_bed.query(|a| a.pressurization.outflow_valve.open_amount()),
+            Ratio::new::<percent>(100.)
         );
     }
 

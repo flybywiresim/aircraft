@@ -75,7 +75,6 @@ impl CabinPressureController {
         sea_level_pressure: Pressure,
         destination_qnh: Pressure,
         packs_are_on: bool,
-        _is_in_man_mode: bool,
     ) {
         self.pressure_schedule_manager = self.pressure_schedule_manager.update(context, engines);
         self.exterior_pressure = context.ambient_pressure();
@@ -915,7 +914,6 @@ mod pressure_schedule_manager_tests {
                 Pressure::new::<hectopascal>(1013.),
                 Pressure::new::<hectopascal>(1013.),
                 true,
-                false,
             );
             self.outflow_valve.update(context, &self.press_overhead);
             self.cpc.update_outflow_valve_state(&self.outflow_valve);
