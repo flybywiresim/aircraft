@@ -24,11 +24,13 @@ export const FMMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
     }
 
     return (
-        <Layer x={149} y={713}>
-            <rect x={0} y={0} width={470} height={30} className="White BackgroundFill" strokeWidth={1.75} />
+        <Layer x={164} y={713}>
+            <rect x={0} y={0} width={440} height={30} className="White BackgroundFill" strokeWidth={1.75} />
 
+            { /* the text message is offset from centre on the real one...
+                 guess by the width of the multiple message arrow... */ }
             <text
-                x={470 / 2}
+                x={420 / 2}
                 y={25}
                 className={`${messages[messages.length - 1].color} MiddleAlign`}
                 textAnchor="middle"
@@ -38,7 +40,7 @@ export const FMMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
             </text>
 
             { messages.length > 1 && (
-                <path d="M448,2 L448,20 L444,20 L450,28 L456,20 L452,20 L452,2 L448,2" className="Green Fill" />
+                <path d="M428,2 L428,20 L424,20 L430,28 L436,20 L432,20 L432,2 L428,2" className="Green Fill" />
             )}
         </Layer>
     );
