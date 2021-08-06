@@ -17,9 +17,10 @@ export interface ArcModeProps {
     side: EfisSide,
     ppos: LatLongData,
     efisOption: EfisOption,
+    mapHidden: boolean,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side, ppos, efisOption }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side, ppos, efisOption, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -61,16 +62,18 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
         return (
             <>
                 <g id="map" clipPath="url(#arc-mode-map-clip)">
-                    <FlightPlan
-                        x={384}
-                        y={620}
-                        flightPlanManager={flightPlanManager}
-                        mapParams={mapParams}
-                        constraints={efisOption === EfisOption.Constraints}
-                        debug={false}
-                        temp={false}
-                    />
-                    {tmpFplan}
+                    <g visibility={mapHidden ? "hidden" : "visible"}>
+                        <FlightPlan
+                            x={384}
+                            y={620}
+                            flightPlanManager={flightPlanManager}
+                            mapParams={mapParams}
+                            constraints={efisOption === EfisOption.Constraints}
+                            debug={false}
+                            temp={false}
+                        />
+                        {tmpFplan}
+                    </g>
                     <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
                     <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
                 </g>
