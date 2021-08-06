@@ -82,22 +82,15 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
             <Layer x={x} y={y}>
                 {flightPath}
                 {origin && (
-                    <WaypointMarker
-                        ident={origin.ident}
-                        position={mapParams.coordinatesToXYy(origin.infos.coordinates)}
-                        index={-1}
-                        constraints={constraints}
-                        debug={debug}
+                    <DepartureAirportMarkers
+                        flightPlanManager={flightPlanManager}
+                        mapParams={mapParams}
                     />
                 )}
                 {destination && (
-                    <WaypointMarker
-                        ident={destinationIdent}
-                        position={mapParams.coordinatesToXYy(destination.infos.coordinates)}
-                        index={9999}
-                        isActive={destinationActive}
-                        constraints={constraints}
-                        debug={debug}
+                    <ArrivalAirportMarkers
+                        flightPlanManager={flightPlanManager}
+                        mapParams={mapParams}
                     />
                 )}
                 {legs.map((leg, index) => (
@@ -133,6 +126,82 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
 
     return null;
 };
+
+interface DepartureAirportMarkersProps {
+    mapParams: MapParameters,
+    flightPlanManager: FlightPlanManager,
+}
+
+const DepartureAirportMarkers: FC<DepartureAirportMarkersProps> = ({ flightPlanManager, mapParams }) => {
+    const depRunway = flightPlanManager.getDepartureRunway();
+    const depAirfield = flightPlanManager.getOrigin();
+
+    let adx;
+    let ady;
+
+    [adx, ady] = mapParams.coordinatesToXYy(depAirfield.infos.coordinates);
+
+    // Draw Runway, Star Symbol, or Block of Origin Airport
+    if (depRunway) {
+        let rdx;
+        let rdy;
+
+        [rdx, rdy] = mapParams.coordinatesToXYy(depRunway.beginningCoordinates);
+
+        return (
+            <RunwayMarker
+                position={[rdx, rdy]}
+                direction={depRunway.direction}
+                length={depRunway.length}
+                mapParams={mapParams}
+            />
+        );
+    }
+
+    return (
+        <AirportMarker
+            position={[adx, ady]}
+        />
+    );
+}
+
+interface ArrivalAirportMarkersProps {
+    mapParams: MapParameters,
+    flightPlanManager: FlightPlanManager,
+}
+
+const ArrivalAirportMarkers: FC<ArrivalAirportMarkersProps> = ({ flightPlanManager, mapParams }) => {
+    const arrRunway = flightPlanManager.getApproachRunway();
+    const arrAirfield = flightPlanManager.getDestination();
+
+    let aax;
+    let aay;
+
+    [aax, aay] = mapParams.coordinatesToXYy(arrAirfield.infos.coordinates);
+
+    // Draw Runway, Star Symbol, or Block of Origin Airport
+    if (arrRunway) {
+        let rax;
+        let ray;
+
+        [rax, ray] = mapParams.coordinatesToXYy(arrRunway.beginningCoordinates);
+
+        return (
+            <RunwayMarker
+                position={[rax, ray]}
+                direction={arrRunway.direction}
+                length={arrRunway.length}
+                mapParams={mapParams}
+            />
+        );
+    }
+
+    return (
+        <AirportMarker
+            position={[aax, aay]}
+        />
+    );
+}
 
 interface LegWaypointMarkersProps {
     leg: Leg,
@@ -216,6 +285,87 @@ const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, 
     );
 };
 
+interface RunwayMarkerProps {
+    position: Xy,
+    direction: number,
+    length: number,
+    mapParams: MapParameters,
+}
+
+const RunwayMarker: FC<RunwayMarkerProps> = ({ position, direction, length, mapParams }) => {
+    return(
+        <Layer x={position[0]} y={position[1]}>
+            <g transform={`rotate(${mapParams.rotation(direction)})`}>
+                <line x1={-4.25} x2={-4.25} y1={length / 2 * mapParams.mToPx} y2={-length / 2 * mapParams.mToPx} className="White" strokeWidth={2} />
+                <line x1={4.25} x2={4.25} y1={length / 2 * mapParams.mToPx} y2={-length / 2 * mapParams.mToPx} className="White" strokeWidth={2} />
+            </g>
+        </Layer>
+    )
+}
+
+interface RunwayMarkerBlockProps {
+    position: Xy,
+    direction: number,
+    mapParams: MapParameters,
+}
+
+const RunwayMarkerBlock: FC<RunwayMarkerBlockProps> = ({ position, direction, mapParams }) => {
+    return(
+        <Layer x={position[0]} y={position[1]}>
+            <rect width="250" height="55" className="White Fill" />
+        </Layer>
+    )
+}
+
+interface AirportMarkerProps {
+    position: Xy,
+}
+
+const AirportMarker: FC<AirportMarkerProps> = ({ position }) => {
+    return(
+        <Layer x={position[0]} y={position[1]}>
+            <path
+                d="M60.326 5.096V55.13L24.947 19.752l-5.195 5.195 35.379 35.38H5.098v7.347H55.13l-35.379 35.379 5.195 5.195 35.38-35.379v50.035h7.347V72.87l35.379 35.379 5.195-5.195-35.379-35.38h50.033v-7.347H72.87l35.38-35.379-5.196-5.195-35.38 35.379V5.096zm0-1.832a1.833 1.833 0 00-1.832 1.832v45.61l-32.25-32.25a1.833 1.833 0 00-2.594 0l-5.195 5.194a1.833 1.833 0 000 2.594l32.25 32.25H5.098a1.833 1.833 0 00-1.832 1.832v7.348a1.833 1.833 0 001.832 1.832h45.607l-32.25 32.25a1.833 1.833 0 000 2.594l5.195 5.195a1.833 1.833 0 002.594 0l32.25-32.25v45.61a1.833 1.833 0 001.832 1.831h7.348a1.833 1.833 0 001.832-1.832v-45.61l32.25 32.25a1.833 1.833 0 002.594 0l5.195-5.194a1.833 1.833 0 000-2.594l-32.25-32.25h45.607a1.833 1.833 0 001.832-1.832v-7.348a1.833 1.833 0 00-1.832-1.832H77.295l32.25-32.25a1.833 1.833 0 000-2.594l-5.195-5.195a1.833 1.833 0 00-2.594 0l-32.25 32.25V5.095a1.833 1.833 0 00-1.832-1.831zm1.832 3.664h3.684V55.13a1.833 1.833 0 003.129 1.297l34.082-34.084 2.601 2.603L71.572 59.03a1.833 1.833 0 001.297 3.13h48.201v3.683h-48.2a1.833 1.833 0 00-1.298 3.129l34.082 34.082-2.601 2.601L68.97 71.572a1.833 1.833 0 00-3.13 1.297v48.203h-3.683V72.87a1.833 1.833 0 00-3.129-1.297l-34.082 34.082-2.603-2.601L56.428 68.97a1.833 1.833 0 00-1.297-3.13H6.93v-3.683h48.2a1.833 1.833 0 001.298-3.129L22.346 24.947l2.601-2.601L59.03 56.428a1.833 1.833 0 003.13-1.297z"
+                style={{
+                    lineHeight: "normal",
+                    fontVariantLigatures: "normal",
+                    fontVariantPosition: "normal",
+                    fontVariantCaps: "normal",
+                    fontVariantNumeric: "normal",
+                    fontVariantAlternates: "normal",
+                    fontVariantEastAsian: "normal",
+                    fontFeatureSettings: "normal",
+                    fontVariationSettings: "normal",
+                    textIndent: 0,
+                    textAlign: "start",
+                    textDecorationLine: "none",
+                    textDecorationStyle: "solid",
+                    textDecorationColor: "#fff",
+                    textTransform: "none",
+                    textOrientation: "mixed",
+                    whiteSpace: "normal",
+                    shapePadding: 0,
+                    shapeMargin: 0,
+                    inlineSize: 0,
+                    isolation: "auto",
+                    mixBlendMode: "normal",
+                    solidColor: "#000",
+                    solidOpacity: 1,
+                }}
+                className="White Fill"
+                fontWeight={400}
+                fontFamily="sans-serif"
+                overflow="visible"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                paintOrder="markers stroke fill"
+                transform="scale(.26459)"
+            />
+        </Layer>
+    )
+}
+
 interface WaypointMarkerProps {
     ident: string,
     position: Xy,
@@ -224,7 +374,7 @@ interface WaypointMarkerProps {
     index: number,
     isActive?: boolean,
     constraints: boolean,
-    debug: boolean
+    debug: boolean,
 }
 
 const WaypointMarker: FC<WaypointMarkerProps> = ({ ident, position, altitudeConstraint, speedConstraint, index, isActive, constraints = false, debug = false }) => {
