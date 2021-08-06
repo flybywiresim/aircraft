@@ -189,7 +189,7 @@ class PFD extends Component {
                 potentiometerIndex={this.isCaptainSide() ? 88 : 90}
             >
                 <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
-                    <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} isAttExcessive={this.isAttExcessive} deltaTime={this.deltaTime} />
+                    <Horizon pitch={pitch} roll={roll} heading={heading} computedAirspeed={computedAirspeed} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} isAttExcessive={this.isAttExcessive} deltaTime={this.deltaTime} />
                     <path
                         id="Mask1"
                         className="BackgroundFill"

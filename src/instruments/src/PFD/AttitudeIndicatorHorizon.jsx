@@ -25,7 +25,7 @@ const HeadingBug = (offset) => (
     </g>
 );
 
-export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive, deltaTime }) => {
+export const Horizon = ({ pitch, roll, heading, computedAirspeed, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive, deltaTime }) => {
     if (Number.isNaN(pitch) || Number.isNaN(roll)) {
         return null;
     }
@@ -98,7 +98,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
                 <path d="m61.401-13.177h-4.0414l11.547 20 11.547-20h-4.0414l-7.5056 13z" className="NormalStroke Red" />
                 <path d="m68.906-26.177-9.5-9.5h6.5v-3.5h-15l18 18 18-18h-15v3.5h6.5z" className="NormalStroke Red" />
 
-                <TailstrikeIndicator />
+                <TailstrikeIndicator computedAirspeed={computedAirspeed} />
 
                 <path d="m23.906 80.823h90h0" className="NormalOutline" />
                 <path d="m23.906 80.823h90h0" className="NormalStroke White" />
@@ -210,11 +210,11 @@ const FlightPathDirector = ({ FDActive }) => {
     );
 };
 
-const TailstrikeIndicator = () => {
+const TailstrikeIndicator = ({ computedAirspeed }) => {
     // should also not be displayed when thrust levers are at or above FLX/MCT, but I don't know if there is a simvar
     // for that
     if (getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet') > 400
-        || getSimVar('AIRSPEED INDICATED', 'knots') < 50
+        || computedAirspeed < 50
         || getSimVar('L:A32NX_AUTOTHRUST_TLA:1', 'number') >= 35
         || getSimVar('L:A32NX_AUTOTHRUST_TLA:2', 'number') >= 35) {
         return null;

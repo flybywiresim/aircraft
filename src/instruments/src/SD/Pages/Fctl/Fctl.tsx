@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
+import { useComputedSpeed } from '../../../Common/adirs';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
@@ -110,13 +111,14 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
     const rudderAngle = -rudderDeflectionState * 25;
 
     // Rudder limits
-    const [indicatedAirspeedState] = useSimVar('AIRSPEED INDICATED', 'knots', 500);
+    const cas = useComputedSpeed();
+
     let maxAngleNorm = 1;
-    if (indicatedAirspeedState > 380) {
+    if (cas > 380) {
         maxAngleNorm = 3.4 / 25;
-    } else if (indicatedAirspeedState > 160) {
-        maxAngleNorm = (69.2667 - 0.351818 * indicatedAirspeedState
-            + 0.00047 * indicatedAirspeedState ** 2) / 25;
+    } else if (cas > 160) {
+        maxAngleNorm = (69.2667 - 0.351818 * cas
+            + 0.00047 * cas ** 2) / 25;
     }
 
     // Rudder trim
@@ -139,13 +141,19 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
             <path id="rudderRightBorder" className="MainShape" d="m94 118 1 4 -7 3 -2 -4" />
             <path id="rudderLeftBorder" className="MainShape" d="m6 118 -1 4 7 3 2 -4" />
 
-            <g id="rudderLeftMaxAngle" transform={`rotate(${-26.4 * (1 - maxAngleNorm)} 50 29)`}>
-                <path className="GreenShape" d="m5 117 -6 13 4 2" />
-            </g>
+            { !Number.isNaN(cas)
+                ? (
+                    <g id="rudderLeftMaxAngle" transform={`rotate(${-26.4 * (1 - maxAngleNorm)} 50 29)`}>
+                        <path className="GreenShape" d="m5 117 -6 13 4 2" />
+                    </g>
+                ) : null }
 
-            <g id="rudderRightMaxAngle" transform={`rotate(${26.4 * (1 - maxAngleNorm)} 50 29)`}>
-                <path className="GreenShape" d="m95 117 6 13 -4 2" />
-            </g>
+            { !Number.isNaN(cas)
+                ? (
+                    <g id="rudderRightMaxAngle" transform={`rotate(${26.4 * (1 - maxAngleNorm)} 50 29)`}>
+                        <path className="GreenShape" d="m95 117 6 13 -4 2" />
+                    </g>
+                ) : null }
 
             <g id="rudderCursor" transform={`rotate(${rudderAngle} 50 24)`}>
                 <path id="rudderCircle" className={hydraulicAvailableClass} d="M 42 78 A 8 8 0 0 1 58 78" />
