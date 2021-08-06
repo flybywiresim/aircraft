@@ -162,6 +162,7 @@
 1. [MISC] Change back to airliner hud in external view for SU5 - @donstim (donbikes#4084)
 1. [TEXTURE] Improved cockpit textures and screen reflections - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
 1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
+1. [MODEL] Removed unused material to fix potential crash to desktop - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
