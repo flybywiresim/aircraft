@@ -3,51 +3,12 @@ import { Mode, RangeSetting } from '../../index';
 
 export interface NavigationDisplayMessagesProps {
     adirsAlign: boolean,
-    rangeSetting: RangeSetting,
     mode: Mode,
+    modeChangeShown: boolean,
+    rangeChangeShown: boolean,
 }
 
-export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ adirsAlign, rangeSetting, mode }) => {
-    const [modeChangeShown, setModeChangeShown] = useState(false);
-    const [rangeChangeShown, setRangeChangeShown] = useState(false);
-
-    const firstModeUpdate = useRef(true);
-    const firstRangeUpdate = useRef(true);
-
-    useEffect(() => {
-        console.log(mode);
-        if (firstModeUpdate.current) {
-            firstModeUpdate.current = false;
-            return () => {};
-        }
-
-        setModeChangeShown(true);
-
-        const timeout = setTimeout(() => {
-            setModeChangeShown(false);
-        }, 2_500);
-
-        return () => clearTimeout(timeout);
-    }, [mode]);
-
-    useEffect(() => {
-        if (firstRangeUpdate.current) {
-            firstRangeUpdate.current = false;
-            return () => {};
-        }
-
-        // RANGE CHANGE has priority over MODE CHANGE
-        if (modeChangeShown) {
-            setModeChangeShown(false);
-        }
-        setRangeChangeShown(true);
-
-        const timeout = setTimeout(() => {
-            setRangeChangeShown(false);
-        }, 2_500);
-
-        return () => clearTimeout(timeout);
-    }, [rangeSetting]);
+export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ adirsAlign, mode, modeChangeShown, rangeChangeShown }) => {
 
     // Do not show general messages in ROSE VOR/ILS or ANF (latter is not in neo)
     const modeValidForGeneralMessages = (mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS) && (adirsAlign || mode === Mode.PLAN);
