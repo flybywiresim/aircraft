@@ -12,9 +12,10 @@ export interface PlanModeProps {
     rangeSetting: number,
     ppos: LatLongData,
     efisOption: EfisOption,
+    mapHidden: boolean,
 }
 
-export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption }) => {
+export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
@@ -55,7 +56,7 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption }) 
 
     return (
         <>
-            <g id="map" clipPath="url(#plan-mode-map-clip)">
+            <g id="map" clipPath="url(#plan-mode-map-clip)" visibility={mapHidden ? "hidden" : "visible"}>
                 <FlightPlan
                     x={384}
                     y={384}
