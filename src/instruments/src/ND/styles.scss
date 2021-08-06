@@ -20,9 +20,7 @@
   position: absolute;
   width: 1280px;
   height: 1280px;
-
   background: $display-background;
-
   font-family: "Ecam", monospace !important;
 }
 
@@ -38,6 +36,7 @@
   fill: none;
   stroke: $display-magenta;
 }
+
 text.Magenta {
   fill: $display-magenta;
   stroke: none;
@@ -47,10 +46,12 @@ text.Magenta {
   fill: none;
   stroke: $display-cyan;
 }
+
 text.Cyan {
   fill: $display-cyan;
   stroke: none;
 }
+
 tspan.Cyan {
   fill: $display-cyan;
   stroke: none;
@@ -60,10 +61,12 @@ tspan.Cyan {
   fill: none;
   stroke: $display-white;
 }
+
 .White.Fill {
   fill: $display-white;
   stroke: none;
 }
+
 text.White {
   fill: $display-white;
   stroke: none;
@@ -73,10 +76,12 @@ text.White {
   stroke: $display-green;
   fill: none;
 }
+
 .Green.Fill {
   fill: $display-green;
   stroke: none;
 }
+
 text.Green {
   fill: $display-green;
   stroke: none;
@@ -86,6 +91,7 @@ text.Green {
   stroke: $display-amber;
   fill: none;
 }
+
 text.Amber {
   fill: $display-amber;
   stroke: none;
@@ -95,10 +101,12 @@ text.Amber {
   stroke: $display-yellow;
   fill: none;
 }
+
 .Yellow.Fill {
   fill: $display-yellow;
   stroke: none;
 }
+
 text.Yellow {
   fill: $display-yellow;
   stroke: none;
@@ -108,10 +116,12 @@ text.Yellow {
   stroke: $display-red;
   fill: none;
 }
+
 .Red.Fill {
   fill: $display-red;
   stroke: none;
 }
+
 text.Red {
   fill: $display-red;
   stroke: none;
