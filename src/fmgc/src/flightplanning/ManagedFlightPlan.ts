@@ -171,7 +171,7 @@ export class ManagedFlightPlan {
 
         const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
-        // console.log(`BRUHEGG: ${utcTime}, BRUHHH #2: ${eta}`);
+        // // console.log(`BRUHEGG: ${utcTime}, BRUHHH #2: ${eta}`);
 
         return eta + utcTime;
     }
@@ -829,19 +829,19 @@ export class ManagedFlightPlan {
             const transition = destinationInfo.arrivals[arrivalIndex].enRouteTransitions[arrivalTransitionIndex];
             if (transition !== undefined) {
                 legs.push(...transition.legs);
-                console.log('MFP: buildArrival - pushing transition legs ->', legs);
+                // console.log('MFP: buildArrival - pushing transition legs ->', legs);
             }
         }
 
         if (arrivalIndex !== -1) {
             legs.push(...destinationInfo.arrivals[arrivalIndex].commonLegs);
-            console.log('MFP: buildArrival - pushing STAR legs ->', legs);
+            // console.log('MFP: buildArrival - pushing STAR legs ->', legs);
         }
 
         if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1) {
             const runwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
             legs.push(...runwayTransition.legs);
-            console.log('MFP: buildArrival - pushing VIA legs ->', legs);
+            // console.log('MFP: buildArrival - pushing VIA legs ->', legs);
         }
 
         let { _startIndex, segment } = this.truncateSegment(SegmentType.Arrival);
@@ -855,13 +855,13 @@ export class ManagedFlightPlan {
             const procedure = new LegsProcedure(legs, this.getWaypoint(segment.offset - 1), this._parentInstrument);
 
             let waypointIndex = segment.offset;
-            console.log('MFP: buildArrival - ADDING WAYPOINTS ------------------------');
+            // console.log('MFP: buildArrival - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
                 const waypoint = await procedure.getNext();
 
                 if (waypoint !== undefined) {
-                    console.log('  ---- MFP: buildArrival: added waypoint ', waypoint.ident, ' to segment ', segment);
+                    // console.log('  ---- MFP: buildArrival: added waypoint ', waypoint.ident, ' to segment ', segment);
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
             }
@@ -885,12 +885,12 @@ export class ManagedFlightPlan {
         if (approachIndex !== -1 && approachTransitionIndex !== -1) {
             const transition = destinationInfo.approaches[approachIndex].transitions[approachTransitionIndex];
             legs.push(...transition.legs);
-            console.log('MFP: buildApproach - pushing approachTransition legs ->', legs);
+            // console.log('MFP: buildApproach - pushing approachTransition legs ->', legs);
         }
 
         if (approachIndex !== -1) {
             legs.push(...destinationInfo.approaches[approachIndex].finalLegs);
-            console.log('MFP: buildApproach - pushing final legs ->', legs);
+            // console.log('MFP: buildApproach - pushing final legs ->', legs);
         }
 
         let { _startIndex, segment } = this.truncateSegment(SegmentType.Approach);
@@ -913,13 +913,13 @@ export class ManagedFlightPlan {
             const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
 
             let waypointIndex = _startIndex;
-            console.log('MFP: buildApproach - ADDING WAYPOINTS ------------------------');
+            // console.log('MFP: buildApproach - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
                 const waypoint = await procedure.getNext();
 
                 if (waypoint !== undefined) {
-                    console.log('  ---- MFP: buildApproach: added waypoint', waypoint.ident, ' to segment ', segment);
+                    // console.log('  ---- MFP: buildApproach: added waypoint', waypoint.ident, ' to segment ', segment);
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
             }
@@ -987,7 +987,7 @@ export class ManagedFlightPlan {
             const finalIndex = segment.offset + segment.waypoints.length;
             if (startIndex < finalIndex) {
                 for (let i = startIndex; i < finalIndex; i++) {
-                    console.log(' MFP ---> truncateSegment: removing waypoint ', this.getWaypoint(startIndex).ident);
+                    // console.log(' MFP ---> truncateSegment: removing waypoint ', this.getWaypoint(startIndex).ident);
                     this.removeWaypoint(startIndex);
                 }
             }
@@ -1106,7 +1106,7 @@ export class ManagedFlightPlan {
         const index = this.waypoints.findIndex((wp) => wp.ident === waypoint.ident);
 
         if (index !== -1 && (index === waypointIndex - 1 || index === waypointIndex + 1)) {
-            console.log('  -------> MFP: addWaypointAvoidingDuplicates: removing duplicate waypoint ', this.getWaypoint(index).ident);
+            // console.log('  -------> MFP: addWaypointAvoidingDuplicates: removing duplicate waypoint ', this.getWaypoint(index).ident);
             this.removeWaypoint(index);
         }
         this.addWaypoint(waypoint, waypointIndex, segment.type);
