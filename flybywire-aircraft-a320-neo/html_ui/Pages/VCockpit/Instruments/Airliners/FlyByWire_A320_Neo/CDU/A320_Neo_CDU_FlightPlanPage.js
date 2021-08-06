@@ -173,7 +173,7 @@ class CDUFlightPlanPage {
                 } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
                     const arrival = fpm.getArrival();
                     fixAnnotation = arrival ? arrival.name : undefined;
-                } else if (currentApproach !== undefined) {
+                } else if (currentApproach !== undefined && fpm.getApproachWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
                     const finalLegs = currentApproach.finalLegs;
                     if (finalLegs.length > 0) {
                         const finalLegIdents = finalLegs.map(fl => fl.fixIcao.substring(7, 12).trim());
@@ -182,9 +182,7 @@ class CDUFlightPlanPage {
                             if (validFinalWaypoints[0] === waypointsAndMarkers[winI].wp) {
                                 fixAnnotation = Avionics.Utils.formatRunway(currentApproach.name.replace(/\s+/g, ''));
                             } else if (fpm.getArrivalProcIndex() !== -1
-                                    && !validFinalWaypoints.some(fix => fix === waypointsAndMarkers[winI].wp)
-                                    && fpm.getApproachWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)
-                            ) {
+                                    && !validFinalWaypoints.some(fix => fix === waypointsAndMarkers[winI].wp)) {
                                 const arrival = fpm.getArrival();
                                 fixAnnotation = arrival ? arrival.name : undefined;
                             }
@@ -192,7 +190,6 @@ class CDUFlightPlanPage {
                     }
                 } else {
                     // Show airway
-                    // TODO: NOT WORKING FOR SOME REASON
                     let airwayName = "";
                     if (wpPrev && waypointsAndMarkers[winI].wp) {
                         let airway = undefined;
@@ -202,7 +199,7 @@ class CDUFlightPlanPage {
                             airway = {name: waypointsAndMarkers[winI].wp.infos.airwayIn };
                         }
                         if (airway) {
-                            airwayName = `\xa0${airway.name}`;
+                            airwayName = airway.name;
                         }
                     }
                     fixAnnotation = airwayName;
@@ -339,23 +336,20 @@ class CDUFlightPlanPage {
                     } else if ((waypointsAndMarkers[winI].fpIndex === firstRouteIndex - 1) || (waypointsAndMarkers[winI].fpIndex === lastRouteIndex + 1)) {
                         if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
                             altitudeConstraint = "-----";
-                            altPrefix = "";
                         } else {
                             altitudeConstraint = `FL${mcdu.cruiseFlightLevel.toString().padStart(3,"0")}`;
                         }
 
-                        // Waypoint is in between on the route
+                    // Waypoint is in between on the route
                     } else if (waypointsAndMarkers[winI].fpIndex <= lastRouteIndex && waypointsAndMarkers[winI].fpIndex >= firstRouteIndex) {
                         if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
                             altitudeConstraint = "-----";
-                            altPrefix = "";
                         } else {
                             altitudeConstraint = `FL${mcdu.cruiseFlightLevel.toString().padStart(3,"0")}`;
                         }
-                        // Waypoint with no alt constraint
+                    // Waypoint with no alt constraint
                     } else if (!waypointsAndMarkers[winI].wp.legAltitude1 && !waypointsAndMarkers[winI].wp.legAltitudeDescription) {
                         altitudeConstraint = "-----";
-                        altPrefix = "";
                     }
                 }
 
@@ -466,7 +460,10 @@ class CDUFlightPlanPage {
         }
 
         // Pass current waypoint data to ND
-        if (scrollWindow[0]) {
+        if (scrollWindow[1]) {
+            mcdu.currentFlightPlanWaypointIndex = scrollWindow[1].fpIndex;
+            SimVar.SetSimVarValue("L:A32NX_SELECTED_WAYPOINT", "number", scrollWindow[1].fpIndex);
+        } else if (scrollWindow[0]) {
             mcdu.currentFlightPlanWaypointIndex = scrollWindow[0].fpIndex;
             SimVar.SetSimVarValue("L:A32NX_SELECTED_WAYPOINT", "number", scrollWindow[0].fpIndex);
         } else {
