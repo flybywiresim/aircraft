@@ -49,17 +49,17 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
     const y = (modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_ILS) ? 713 : 684;
 
     return (
-        <Layer x={149} y={y}>
+        <Layer x={164} y={y}>
             { /* we fill/mask the map under both message boxes, per IRL refs */ }
             { (modeIndex === Mode.ARC || modeIndex === Mode.ROSE_NAV) && (
-                <rect x={0} y={0} width={470} height={59} className="BackgroundFill" stroke="none" />
+                <rect x={0} y={0} width={440} height={59} className="BackgroundFill" stroke="none" />
             )}
 
-            <rect x={0} y={0} width={470} height={30} className="White BackgroundFill" strokeWidth={1.75} />
+            <rect x={0} y={0} width={440} height={30} className="White BackgroundFill" strokeWidth={1.75} />
 
             { (leftMessage) && (
                 <text
-                    x={470 / 4}
+                    x={440 / 4}
                     y={25}
                     className={`${leftMessage.color} MiddleAlign`}
                     textAnchor="middle"
@@ -71,7 +71,7 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
 
             { (rightMessage) && (
                 <text
-                    x={3 * 470 / 4}
+                    x={3 * 440 / 4}
                     y={25}
                     className={`${rightMessage.color} MiddleAlign`}
                     textAnchor="middle"
