@@ -296,8 +296,8 @@ const RunwayMarker: FC<RunwayMarkerProps> = ({ position, direction, length, mapP
     return(
         <Layer x={position[0]} y={position[1]}>
             <g transform={`rotate(${mapParams.rotation(direction)})`}>
-                <line x1={-4.25} x2={-4.25} y1={length / 2 * mapParams.mToPx} y2={-length / 2 * mapParams.mToPx} className="White" strokeWidth={2} />
-                <line x1={4.25} x2={4.25} y1={length / 2 * mapParams.mToPx} y2={-length / 2 * mapParams.mToPx} className="White" strokeWidth={2} />
+                <line x1={-4.25} x2={-4.25} y1={0} y2={-length * mapParams.mToPx} className="White" strokeWidth={2} />
+                <line x1={4.25} x2={4.25} y1={0} y2={-length * mapParams.mToPx} className="White" strokeWidth={2} />
             </g>
         </Layer>
     )
