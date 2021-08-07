@@ -116,6 +116,10 @@ impl DefaultValve {
         Self::new(Ratio::new::<ratio>(0.))
     }
 
+    pub fn new_open() -> Self {
+        Self::new(Ratio::new::<ratio>(1.))
+    }
+
     pub fn update_open_amount(
         &mut self,
         context: &UpdateContext,
@@ -136,7 +140,6 @@ impl DefaultValve {
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
     ) {
-        // Assumes adiabatic compression/expansion, linearized to first order
         let equalization_volume = (from.pressure() - to.pressure()) * from.volume() * to.volume()
             / Pressure::new::<pascal>(142000.)
             / (from.volume() + to.volume());
@@ -144,7 +147,7 @@ impl DefaultValve {
         self.move_volume(
             from,
             to,
-            self.open_amount
+            self.open_amount()
                 * equalization_volume
                 * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
         );
@@ -479,6 +482,10 @@ mod tests {
         )
     }
 
+    fn pressure_tolerance() -> Pressure {
+        Pressure::new::<pascal>(100.)
+    }
+
     #[test]
     fn valve_open_command() {
         let mut valve = DefaultValve::new(Ratio::new::<percent>(0.));
@@ -548,6 +555,36 @@ mod tests {
     }
 
     #[test]
+    fn valve_moves_fluid_based_on_open_amount() {
+        let mut valve = DefaultValve::new(Ratio::new::<percent>(0.));
+
+        let mut from = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(28.),
+        );
+        let mut to = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(14.),
+        );
+
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context, &mut from, &mut to);
+
+        assert_eq!(from.pressure(), Pressure::new::<psi>(28.));
+        assert_eq!(to.pressure(), Pressure::new::<psi>(14.));
+
+        // This should never be modified directly, but it's fine to do here
+        valve.open_amount = Ratio::new::<ratio>(0.5);
+
+        valve.update_move_fluid(&context, &mut from, &mut to);
+
+        assert!(from.pressure() < Pressure::new::<psi>(28.));
+        assert!(to.pressure() > Pressure::new::<psi>(14.));
+    }
+
+    #[test]
     fn valve_two_small_updates_equal_one_big_update() {
         let valve = DefaultValve::new(Ratio::new::<percent>(100.));
 
@@ -587,6 +624,27 @@ mod tests {
     }
 
     #[test]
+    fn valve_equalizes_pressure_between_containers() {
+        let valve = DefaultValve::new_open();
+
+        let mut from = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(28.),
+        );
+        let mut to = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(14.),
+        );
+
+        let context = context(Duration::from_secs(5), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context, &mut from, &mut to);
+
+        assert!((from.pressure() - to.pressure()).abs() < pressure_tolerance());
+    }
+
+    #[test]
     fn constant_compression_chamber_signal() {
         let compression_chamber_controller =
             ConstantPressureController::new(Pressure::new::<psi>(30.));
@@ -607,6 +665,72 @@ mod tests {
 
         compression_chamber.update(&compression_chamber_controller);
         assert_eq!(compression_chamber.pressure(), target_pressure);
+    }
+
+    #[test]
+    fn engine_compression_chamber_signal_n1_dependence() {
+        let mut compression_chamber_controller =
+            EngineCompressionChamberController::new(1., 0., 1.);
+        let engine = TestEngine::new(Ratio::new::<ratio>(0.2), Ratio::new::<ratio>(0.));
+
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+        let ambient_pressure = ISA::pressure_at_altitude(Length::new::<foot>(0.));
+
+        compression_chamber_controller.update(&context, &engine);
+
+        if let Some(signal) = compression_chamber_controller.signal() {
+            assert!(signal.target_pressure > ambient_pressure);
+        } else {
+            assert!(false);
+        }
+    }
+
+    #[test]
+    fn engine_compression_chamber_signal_n2_dependence() {
+        let mut compression_chamber_controller =
+            EngineCompressionChamberController::new(0., 1., 1.);
+        let engine = TestEngine::new(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(0.2));
+
+        let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
+        let ambient_pressure = ISA::pressure_at_altitude(Length::new::<foot>(0.));
+
+        compression_chamber_controller.update(&context, &engine);
+
+        if let Some(signal) = compression_chamber_controller.signal() {
+            assert!(signal.target_pressure > ambient_pressure);
+        } else {
+            assert!(false);
+        }
+    }
+
+    #[test]
+    fn compression_chamber_maintain_pressure_with_consumer() {
+        let target_pressure = Pressure::new::<psi>(30.);
+
+        let mut compression_chamber_controller =
+            ConstantPressureController::new(Pressure::new::<psi>(30.));
+        let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(5.));
+
+        let valve = DefaultValve::new_open();
+
+        let mut consumer_controller =
+            ConstantConsumerController::new(VolumeRate::new::<cubic_meter_per_second>(1.));
+        let mut consumer = DefaultConsumer::new(Volume::new::<cubic_meter>(1.));
+
+        let context = context(Duration::from_millis(100), Length::new::<foot>(0.));
+
+        compression_chamber.update(&compression_chamber_controller);
+
+        consumer_controller.update(&context);
+        consumer.update(&consumer_controller);
+
+        valve.update_move_fluid(&context, &mut compression_chamber, &mut consumer);
+
+        // Make sure pressure drops after consumer uses some
+        assert!((compression_chamber.pressure() - target_pressure).abs() > pressure_tolerance());
+
+        compression_chamber.update(&compression_chamber_controller);
+        assert!((compression_chamber.pressure() - target_pressure).abs() < pressure_tolerance());
     }
 
     #[test]
@@ -705,6 +829,25 @@ mod tests {
         consumer.update(&consumer_controller);
 
         assert!(consumer.pressure() < initial_pressure);
+    }
+
+    #[test]
+    fn consumer_pressure_stays_above_zero() {
+        let consumption_rate = VolumeRate::new::<cubic_meter_per_second>(1.);
+
+        // This is what consumer should be initialized to automatically.
+        let initial_pressure = Pressure::new::<psi>(14.7);
+
+        let mut consumer_controller = ConstantConsumerController::new(consumption_rate);
+        let mut consumer = DefaultConsumer::new(Volume::new::<cubic_meter>(1.));
+
+        let context = context(Duration::from_secs(100), Length::new::<foot>(0.));
+
+        consumer_controller.update(&context);
+        consumer.update(&consumer_controller);
+
+        assert!(consumer.pressure() >= Pressure::new::<psi>(0.));
+        assert!(consumer.pressure() < pressure_tolerance());
     }
 
     mod cross_bleed_selector_knob {
