@@ -20,7 +20,9 @@ use systems::{
         ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, PneumaticValve,
         PneumaticValveSignal,
     },
-    simulation::{Read, SimulationElement, SimulationElementVisitor, SimulatorReader},
+    simulation::{
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
+    },
 };
 
 use pid::Pid;
@@ -100,6 +102,10 @@ impl SimulationElement for A320Pneumatic {
         }
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write("PNEU_XBLEED_VALVE_OPEN", self.cross_bleed_valve.is_open());
     }
 }
 
@@ -523,6 +529,7 @@ impl EngineBleedSystem {
             .update(&self.engine_starter_consumer_controller);
 
         // Update valves (open amount)
+        // This is more like inject_signal()
         self.ip_valve
             .update_open_amount(context, &self.ip_valve_controller);
         self.hp_valve
@@ -565,6 +572,38 @@ impl SimulationElement for EngineBleedSystem {
         self.engine_starter_valve_controller.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &format!("PNEU_ENG_{}_IP_PRESSURE", self.number),
+            self.ip_compression_chamber.pressure(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_HP_PRESSURE", self.number),
+            self.hp_compression_chamber.pressure(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_PRECOOLER_INLET_PRESSURE", self.number),
+            self.regulated_pressure_pipe.pressure(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_IP_VALVE_OPEN", self.number),
+            self.ip_valve.is_open(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_HP_VALVE_OPEN", self.number),
+            self.hp_valve.is_open(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_PR_VALVE_OPEN", self.number),
+            self.pr_valve.is_open(),
+        );
     }
 }
 impl PneumaticContainer for EngineBleedSystem {
@@ -625,7 +664,7 @@ mod tests {
         shared::{MachNumber, ISA},
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElement, Write,
+            Aircraft, Reader, SimulationElement, Write,
         },
     };
 
@@ -1271,5 +1310,34 @@ mod tests {
         test_bed.run();
 
         assert!(!test_bed.cross_bleed_valve_is_open());
+    }
+
+    #[test]
+    fn simvars_initialized_properly() {
+        let mut test_bed = test_bed_with().in_isa_atmosphere(Length::new::<foot>(0.));
+        test_bed.run();
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_IP_PRESSURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_IP_PRESSURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_HP_PRESSURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_HP_PRESSURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_INLET_PRESSURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_INLET_PRESSURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_IP_PRESSURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_IP_PRESSURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_IP_VALVE_OPEN"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_IP_VALVE_OPEN"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_HP_VALVE_OPEN"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_HP_VALVE_OPEN"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_PR_VALVE_OPEN"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_PR_VALVE_OPEN"));
+
+        assert!(test_bed.contains_key("PNEU_XBLEED_VALVE_OPEN"));
     }
 }

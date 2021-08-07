@@ -10,6 +10,7 @@
 1. [Throttle Mapping System](#throttle-mapping-system)
 1. [Engine and FADEC System](#engine-and-fadec-system)
 1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
+1. [Pneumatic](#pneumatic)
 
 ## Uncategorized
 
@@ -1706,3 +1707,51 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
+
+## Pneumatic
+
+- A32NX_PNEU_ENG_{number}_IP_PRESSURE:
+    - Pressure in intermediate pressure compression chamber
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_HP_PRESSURE:
+    - Pressure in high pressure compression chamber
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_PRESSURE:
+    - Pressure at precooler inlet for engine bleed system
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_IP_VALVE_OPEN:
+    - Indicates whether the intermediate pressure bleed air valve is open
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_HP_VALVE_OPEN:
+    - Indicates whether the high pressure bleed air valve is open
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PR_VALVE_OPEN:
+    - Indicates whether the pressure regulating valve is open
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_XBLEED_VALVE_OPEN:
+    - Indicates whether the cross bleed air valve is open
+    - Bool
