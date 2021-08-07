@@ -114,6 +114,20 @@ fn create_aircraft_variable_reader(
     reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
     reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
 
+    reader.add_with_additional_names(
+        "BLEED AIR ENGINE",
+        "Bool",
+        1,
+        &vec!["OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"],
+    );
+
+    reader.add_with_additional_names(
+        "BLEED AIR ENGINE",
+        "Bool",
+        2,
+        &vec!["OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"],
+    );
+
     Ok(reader)
 }
 

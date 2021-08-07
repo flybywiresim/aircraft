@@ -625,12 +625,16 @@ impl PneumaticContainer for EngineBleedSystem {
 pub struct A320PneumaticOverheadPanel {
     apu_bleed: OnOffFaultPushButton,
     cross_bleed: CrossBleedValveSelectorKnob,
+    engine_1_bleed: AutoOffFaultPushButton,
+    engine_2_bleed: AutoOffFaultPushButton,
 }
 impl A320PneumaticOverheadPanel {
     pub fn new() -> Self {
         A320PneumaticOverheadPanel {
             apu_bleed: OnOffFaultPushButton::new_on("PNEU_APU_BLEED"),
             cross_bleed: CrossBleedValveSelectorKnob::new_auto(),
+            engine_1_bleed: AutoOffFaultPushButton::new_auto("PNEU_ENG_1_BLEED"),
+            engine_2_bleed: AutoOffFaultPushButton::new_auto("PNEU_ENG_2_BLEED"),
         }
     }
 
@@ -641,11 +645,29 @@ impl A320PneumaticOverheadPanel {
     pub fn cross_bleed_mode(&self) -> CrossBleedValveSelectorMode {
         self.cross_bleed.mode()
     }
+
+    pub fn engine_1_bleed_is_auto(&self) -> bool {
+        self.engine_1_bleed.is_auto()
+    }
+
+    pub fn engine_2_bleed_is_auto(&self) -> bool {
+        self.engine_2_bleed.is_auto()
+    }
+
+    pub fn engine_1_bleed_has_fault(&self) -> bool {
+        self.engine_1_bleed.has_fault()
+    }
+
+    pub fn engine_2_bleed_has_fault(&self) -> bool {
+        self.engine_2_bleed.has_fault()
+    }
 }
 impl SimulationElement for A320PneumaticOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.apu_bleed.accept(visitor);
         self.cross_bleed.accept(visitor);
+        self.engine_1_bleed.accept(visitor);
+        self.engine_2_bleed.accept(visitor);
 
         visitor.visit(self);
     }
@@ -728,6 +750,7 @@ mod tests {
             self.pneumatic.accept(visitor);
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
+            self.overhead_panel.accept(visitor);
 
             visitor.visit(self);
         }
@@ -826,7 +849,7 @@ mod tests {
             self
         }
 
-        fn cross_bleed_valve(mut self, mode: CrossBleedValveSelectorMode) -> Self {
+        fn cross_bleed_valve_selector_knob(mut self, mode: CrossBleedValveSelectorMode) -> Self {
             self.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", mode);
 
             self
@@ -838,6 +861,31 @@ mod tests {
 
         fn for_engine<T: Fn(&EngineBleedSystem) -> ()>(&self, number: usize, func: T) {
             self.query(|a| func(&a.pneumatic.engine_systems[number - 1]))
+        }
+
+        fn set_engine_bleed_push_button_off(mut self, number: usize) -> Self {
+            self.write(&format!("OVHD_PNEU_ENG_{}_BLEED_PB_IS_AUTO", number), false);
+
+            self
+        }
+
+        fn set_engine_bleed_push_button_has_fault(
+            mut self,
+            number: usize,
+            has_fault: bool,
+        ) -> Self {
+            self.write(
+                &format!("OVHD_PNEU_ENG_{}_BLEED_PB_HAS_FAULT", number),
+                has_fault,
+            );
+
+            self
+        }
+
+        fn set_apu_bleed_valve(mut self, is_open: bool) -> Self {
+            self.command(|a| a.apu.bleed_air_valve_is_open = is_open);
+
+            self
         }
 
         fn for_both_engine_systems_with_capture<T: Fn(&EngineBleedSystem, &mut U) -> (), U>(
@@ -853,14 +901,28 @@ mod tests {
             });
         }
 
-        fn set_apu_bleed_valve(mut self, is_open: bool) -> Self {
-            self.command(|a| a.apu.bleed_air_valve_is_open = is_open);
-
-            self
-        }
-
         fn cross_bleed_valve_is_open(&self) -> bool {
             self.query(|a| a.pneumatic.cross_bleed_valve.is_open())
+        }
+
+        fn cross_bleed_valve_selector(&self) -> CrossBleedValveSelectorMode {
+            self.query(|a| a.overhead_panel.cross_bleed_mode())
+        }
+
+        fn engine_bleed_push_button_is_auto(&self, number: usize) -> bool {
+            match number {
+                1 => self.query(|a| a.overhead_panel.engine_1_bleed_is_auto()),
+                2 => self.query(|a| a.overhead_panel.engine_2_bleed_is_auto()),
+                _ => false,
+            }
+        }
+
+        fn engine_bleed_push_button_has_fault(&self, number: usize) -> bool {
+            match number {
+                1 => self.query(|a| a.overhead_panel.engine_1_bleed_has_fault()),
+                2 => self.query(|a| a.overhead_panel.engine_2_bleed_has_fault()),
+                _ => false,
+            }
         }
     }
 
@@ -1274,7 +1336,7 @@ mod tests {
     #[test]
     fn cross_bleed_valve_opens_when_apu_bleed_valve_opens() {
         let mut test_bed = test_bed_with()
-            .cross_bleed_valve(CrossBleedValveSelectorMode::Auto)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .set_apu_bleed_valve(true);
 
         test_bed.run();
@@ -1285,7 +1347,7 @@ mod tests {
     #[test]
     fn cross_bleed_valve_closes_when_apu_bleed_valve_closes() {
         let mut test_bed = test_bed_with()
-            .cross_bleed_valve(CrossBleedValveSelectorMode::Auto)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .set_apu_bleed_valve(false);
 
         test_bed.run();
@@ -1296,7 +1358,7 @@ mod tests {
     #[test]
     fn cross_bleed_valve_manual_overrides_everything() {
         let mut test_bed = test_bed_with()
-            .cross_bleed_valve(CrossBleedValveSelectorMode::Shut)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
             .set_apu_bleed_valve(true);
 
         test_bed.run();
@@ -1304,7 +1366,7 @@ mod tests {
         assert!(test_bed.cross_bleed_valve_is_open());
 
         test_bed = test_bed
-            .cross_bleed_valve(CrossBleedValveSelectorMode::Open)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             .set_apu_bleed_valve(false);
 
         test_bed.run();
@@ -1338,6 +1400,78 @@ mod tests {
         assert!(test_bed.contains_key("PNEU_ENG_1_PR_VALVE_OPEN"));
         assert!(test_bed.contains_key("PNEU_ENG_2_PR_VALVE_OPEN"));
 
+        assert!(test_bed.contains_key("OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT"));
+        assert!(test_bed.contains_key("OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT"));
+
+        assert!(test_bed.contains_key("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"));
+        assert!(test_bed.contains_key("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"));
+
         assert!(test_bed.contains_key("PNEU_XBLEED_VALVE_OPEN"));
+    }
+
+    #[test]
+    fn ovhd_engine_bleed_push_buttons() {
+        let mut test_bed = test_bed();
+
+        test_bed.run();
+
+        assert!(test_bed.engine_bleed_push_button_is_auto(1));
+        assert!(test_bed.engine_bleed_push_button_is_auto(2));
+
+        test_bed = test_bed
+            .set_engine_bleed_push_button_off(1)
+            .set_engine_bleed_push_button_off(2);
+
+        test_bed.run();
+
+        assert!(!test_bed.engine_bleed_push_button_is_auto(1));
+        assert!(!test_bed.engine_bleed_push_button_is_auto(2));
+    }
+
+    #[test]
+    fn ovhd_engine_bleed_push_buttons_fault_lights() {
+        let mut test_bed = test_bed();
+
+        test_bed.run();
+
+        assert!(!test_bed.engine_bleed_push_button_has_fault(1));
+        assert!(!test_bed.engine_bleed_push_button_has_fault(2));
+
+        test_bed = test_bed
+            .set_engine_bleed_push_button_has_fault(1, true)
+            .set_engine_bleed_push_button_has_fault(2, true);
+
+        test_bed.run();
+
+        assert!(test_bed.engine_bleed_push_button_has_fault(1));
+        assert!(test_bed.engine_bleed_push_button_has_fault(2));
+    }
+
+    #[test]
+    fn ovhd_cross_bleed_valve_mode_selector() {
+        let mut test_bed = test_bed();
+
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.cross_bleed_valve_selector(),
+            CrossBleedValveSelectorMode::Auto
+        );
+
+        test_bed = test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open);
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.cross_bleed_valve_selector(),
+            CrossBleedValveSelectorMode::Open
+        );
+
+        test_bed = test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+        test_bed.run();
+
+        assert_eq!(
+            test_bed.cross_bleed_valve_selector(),
+            CrossBleedValveSelectorMode::Shut
+        );
     }
 }

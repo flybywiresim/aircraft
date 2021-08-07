@@ -1755,3 +1755,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PNEU_XBLEED_VALVE_OPEN:
     - Indicates whether the cross bleed air valve is open
     - Bool
+
+- A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_IS_AUTO:
+    - Indicates whether the engine bleed air is on
+    - Is aliased from aircraft variable A:BLEED AIR ENGINE
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_HAS_FAULT:
+    - Indicates whether the fault light is on for the engine bleed push button
+    - Bool
+    - {number}
+        - 1
+        - 2
