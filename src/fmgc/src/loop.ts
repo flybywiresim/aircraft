@@ -2,7 +2,7 @@ import { FmgcComponent } from '@fmgc/lib/FmgcComponent';
 import { FmsMessages } from '@fmgc/components/FmsMessages';
 
 const components: FmgcComponent[] = [
-    new FmsMessages(),
+    FmsMessages.instance,
 ];
 
 export function initFmgcLoop(): void {
