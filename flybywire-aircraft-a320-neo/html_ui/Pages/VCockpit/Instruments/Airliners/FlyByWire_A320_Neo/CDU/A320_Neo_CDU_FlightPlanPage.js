@@ -121,7 +121,6 @@ class CDUFlightPlanPage {
 
             if (waypointsAndMarkers[winI].wp) {
                 // Waypoint
-
                 if (waypointsAndMarkers[winI].fpIndex === (fpm.getActiveWaypointIndex() - 1) && offset === 0) {
                     showFrom = true;
                 }
@@ -150,7 +149,6 @@ class CDUFlightPlanPage {
                 }
 
                 // Color
-
                 let color = "green";
                 if (fpm.getCurrentFlightPlanIndex() === 1) {
                     color = "yellow";
@@ -159,7 +157,6 @@ class CDUFlightPlanPage {
                 }
 
                 // Fix Header
-
                 let fixAnnotation;
                 const currentApproach = fpm.getApproach();
                 if (winI > 0 &&
@@ -168,8 +165,8 @@ class CDUFlightPlanPage {
                     waypointsAndMarkers[winI - 1].wp === fpm.getOrigin()) {
                     fixAnnotation = `${waypointsAndMarkers[winI - 1].wp.ident.substring(0,3)}${fpm.getDepartureRunway().direction.toFixed(0)}`;
                 } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
-                    const departure = fpm.getDeparture();
-                    fixAnnotation = departure ? departure.name : undefined;
+                    const departureName = fpm.getDepartureName();
+                    fixAnnotation = departureName ? departureName : undefined;
                 } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
                     const arrival = fpm.getArrival();
                     fixAnnotation = arrival ? arrival.name : undefined;
@@ -238,7 +235,6 @@ class CDUFlightPlanPage {
                 }
 
                 // Bearing/Track
-
                 let bearingTrack = "";
                 if (waypointsAndMarkers[winI] &&
                     waypointsAndMarkers[winI].wp &&
@@ -282,10 +278,8 @@ class CDUFlightPlanPage {
                 let timeColor = color;
 
                 // Altitude
-
                 let altitudeConstraint = "-----";
                 let altPrefix = "\xa0";
-
                 if (waypointsAndMarkers[winI].wp === fpm.getDestination()) {
                     // Only for destination waypoint, show runway elevation.
                     altColor = "white";
