@@ -63,6 +63,22 @@
     fill: $display-amber;
   }
 
+  .GreenLine {
+    stroke: $display-green;
+    stroke-width: 2;
+  }
+
+  .AmberLine {
+    stroke: $display-amber;
+    stroke-width: 2;
+  }
+
+  .WhiteLine {
+    stroke: $display-white;
+    stroke-width: 2;
+  }
+
+
   #APU {
     stroke: $display-white;
 
