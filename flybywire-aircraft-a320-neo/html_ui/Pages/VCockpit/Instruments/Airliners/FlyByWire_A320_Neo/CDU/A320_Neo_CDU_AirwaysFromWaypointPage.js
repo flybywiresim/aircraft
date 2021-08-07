@@ -48,6 +48,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         if (value.length > 0) {
                             fmc.insertWaypoint(value, fmc.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, () => {
                                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(fmc, mcdu, waypoint, offset);
+                                mcdu.requestOffsideUpdate();
                             });
                         }
                     };
@@ -57,6 +58,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                 const airway = await this._getAirway(mcdu, value);
                                 if (airway) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(fmc, mcdu, waypoint, offset, airway);
+                                    mcdu.requestOffsideUpdate();
                                 } else {
                                     mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
                                 }
@@ -73,6 +75,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                 fmc.insertWaypointsAlongAirway(value, fmc.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
                                     if (result) {
                                         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(fmc, mcdu, waypoint, offset);
+                                        mcdu.requestOffsideUpdate();
                                     } else {
                                         mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
                                     }
@@ -94,6 +97,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                                 const airway = await this._getAirway(fmc, value);
                                                 if (airway) {
                                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(fmc, mcdu, waypoint, offset, airway);
+                                                    mcdu.requestOffsideUpdate();
                                                 } else {
                                                     mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
                                                 }

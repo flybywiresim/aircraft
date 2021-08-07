@@ -3,13 +3,14 @@ class A320_Neo_CDU_Display {
     constructor(fmc, side) {
         this.fmc = fmc;
         this.side = side;
-        this.animationIndex = this.side === "R" ? 2 : 1;
 
         this._title = undefined;
         this._pageCurrent = undefined;
         this._pageCount = undefined;
         this.pageRedrawCallback = null;
         this.updateRequest = false;
+        this.minPageUpdateThrottler = new UpdateThrottler(100);
+        this.pageRefreshThrottler = new UpdateThrottler(1000);
         this._delayedPageSwitch = null;
         this._labels = [];
         this._lines = [];
@@ -33,9 +34,6 @@ class A320_Neo_CDU_Display {
     }
 
     Init() {
-        this.minPageUpdateThrottler = new UpdateThrottler(100);
-        this.pageRefreshThrottler = new UpdateThrottler(1000);
-
         this.initKeyboardScratchpad();
         this._titleLeftElement = this.root.querySelector("#title-left");
         this._titleElement = this.root.querySelector("#title");
@@ -126,7 +124,6 @@ class A320_Neo_CDU_Display {
             }
         };
         this.onLeftFunction = (f) => {
-            console.log(this.side, 'LEFT', f);
             if (isFinite(f)) {
                 if (this.onLeftInput[f]) {
                     const value = this.clearUserInput();
@@ -198,7 +195,7 @@ class A320_Neo_CDU_Display {
     onUpdate(_deltaTime) {
         if (this._delayedPageSwitch) {
             this._delayedPageSwitch.timeRemaining -= _deltaTime;
-            if (this._delayedPageSwitch.timeRemaining < 0) {
+            if (this._delayedPageSwitch.timeRemaining <= 0) {
                 this.updateRequest = false;
                 this._delayedPageSwitch.callback(this.fmc, this, this._delayedPageSwitch.args);
                 this._delayedPageSwitch = null;
@@ -214,9 +211,7 @@ class A320_Neo_CDU_Display {
         if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
             this.updateRequest = false;
             if (this.pageRedrawCallback) {
-                const delayedPageSwitch = this._delayedPageSwitch;
                 this.pageRedrawCallback();
-                this._delayedPageSwitch = delayedPageSwitch;
             }
         }
     }
@@ -233,8 +228,7 @@ class A320_Neo_CDU_Display {
      * Updates both MCDU displays
      */
     requestUpdate() {
-        this.requestOnsideUpdate();
-        this.requestOffsideUpdate();
+        this.fmc.requestUpdate();
     }
 
     requestOnsideUpdate() {
@@ -253,7 +247,6 @@ class A320_Neo_CDU_Display {
         if (activeSystem) {
             this.activeSystem = activeSystem;
         }
-        this._delayedPageSwitch = null;
         this.clearDisplay();
         this.pageRedrawCallback = redrawCallback;
     }
@@ -721,7 +714,6 @@ class A320_Neo_CDU_Display {
         }
     }
 
-    // TODO handle side properly
     initKeyboardScratchpad() {
         window.document.addEventListener('click', (ev) => {
             const leftMcduClicked = ev.clientX < (window.document.body.clientWidth / 2);
@@ -845,7 +837,7 @@ class A320_Neo_CDU_Display {
                 }
 
                 if (setAnimation) {
-                    SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${this.animationIndex}_${setAnimation}`, "Number", 1);
+                    SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${this.side === "R" ? 2 : 1}_${setAnimation}`, "Number", 1);
                 }
             }
         });
