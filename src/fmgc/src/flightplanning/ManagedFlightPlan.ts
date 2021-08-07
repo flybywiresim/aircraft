@@ -39,6 +39,9 @@ export class ManagedFlightPlan {
     /** Whether or not the flight plan has an origin airfield. */
     public originAirfield?: WayPoint;
 
+    // This is the same as originAirfield, but is not cleared when a direct-to occurs
+    public persistentOriginAirfield?: WayPoint;
+
     /** Whether or not the flight plan has a destination airfield. */
     public destinationAirfield?: WayPoint;
 
@@ -273,6 +276,7 @@ export class ManagedFlightPlan {
      */
     public async clearPlan(): Promise<void> {
         this.originAirfield = undefined;
+        this.persistentOriginAirfield = undefined;
         this.destinationAirfield = undefined;
 
         this.cruiseAltitude = 0;
@@ -327,6 +331,7 @@ export class ManagedFlightPlan {
 
         if (mappedWaypoint.type === 'A' && index === 0) {
             this.originAirfield = mappedWaypoint;
+            this.persistentOriginAirfield = mappedWaypoint;
 
             this.procedureDetails.departureIndex = -1;
             this.procedureDetails.departureRunwayIndex = -1;
@@ -425,10 +430,12 @@ export class ManagedFlightPlan {
         } else {
             const segment = this.findSegmentByWaypointIndex(index);
             if (segment) {
+                // console.log("--> REMOVING WAYPOINT ", this.getWaypoint(index), ", FROM SEGMENT ", segment);
                 const spliced = segment.waypoints.splice(index - segment.offset, 1);
                 removed = spliced[0];
 
                 if (segment.waypoints.length === 0 && segment.type !== SegmentType.Enroute) {
+                    // console.log("SEGMENT LENGTH is 0, REMOVING...");
                     this.removeSegment(segment.type);
                 }
 
@@ -641,6 +648,7 @@ export class ManagedFlightPlan {
         planCopy.activeWaypointIndex = this.activeWaypointIndex;
         planCopy.destinationAirfield = this.destinationAirfield && copyAirfield(this.destinationAirfield);
         planCopy.originAirfield = this.originAirfield && copyAirfield(this.originAirfield);
+        // planCopy.persistentOriginAirfield = this.persistentOriginAirfield && copyAirfield(this.persistentOriginAirfield);
 
         planCopy.procedureDetails = { ...this.procedureDetails };
         planCopy.directTo = { ...this.directTo };

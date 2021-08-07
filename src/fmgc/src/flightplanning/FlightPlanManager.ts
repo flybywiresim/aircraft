@@ -260,9 +260,21 @@ export class FlightPlanManager {
     /**
      * Gets the origin of the currently active flight plan.
      */
-    public getOrigin(): WayPoint | undefined {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    public getOrigin(flightPlanIndex = NaN): WayPoint | undefined {
+        if (isNaN(flightPlanIndex)) {
+            flightPlanIndex = this._currentFlightPlanIndex;
+        }
+
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         return currentFlightPlan.originAirfield;
+    }
+
+    /**
+     * Gets the origin of the currently active flight plan, even after it has been cleared for a direct-to.
+     */
+    public getPersistentOrigin(): WayPoint | undefined {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        return currentFlightPlan.persistentOriginAirfield;
     }
 
     /**
@@ -438,8 +450,12 @@ export class FlightPlanManager {
     /**
      * Gets the destination airfield of the current flight plan, if any.
      */
-    public getDestination(): WayPoint | undefined {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    public getDestination(flightPlanIndex = NaN): WayPoint | undefined {
+        if (isNaN(flightPlanIndex)) {
+            flightPlanIndex = this._currentFlightPlanIndex;
+        }
+
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         return currentFlightPlan.destinationAirfield;
     }
 
@@ -454,6 +470,23 @@ export class FlightPlanManager {
             const originInfos = origin.infos as AirportInfo;
             if (originInfos.departures !== undefined && currentFlightPlan.procedureDetails.departureIndex !== -1) {
                 return originInfos.departures[currentFlightPlan.procedureDetails.departureIndex];
+            }
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Gets the currently selected departure information for the current flight plan, even after a direct-to.
+     */
+    public getDepartureName(): string | undefined {
+        const origin = this.getPersistentOrigin();
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+
+        if (origin) {
+            const originInfos = origin.infos as AirportInfo;
+            if (originInfos.departures !== undefined && currentFlightPlan.procedureDetails.departureIndex !== -1) {
+                return originInfos.departures[currentFlightPlan.procedureDetails.departureIndex].name;
             }
         }
 
@@ -931,8 +964,12 @@ export class FlightPlanManager {
     /**
      * Gets the string value of the departure runway in the current flight plan.
      */
-    public getDepartureRunway(): OneWayRunway {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    public getDepartureRunway(flightPlanIndex = NaN): OneWayRunway {
+        if (isNaN(flightPlanIndex)) {
+            flightPlanIndex = this._currentFlightPlanIndex;
+        }
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
+
         if (currentFlightPlan.hasOrigin
             && currentFlightPlan.procedureDetails.departureRunwayIndex !== -1
             && currentFlightPlan.procedureDetails.departureIndex !== -1
@@ -1184,7 +1221,7 @@ export class FlightPlanManager {
     public async setArrivalEnRouteTransitionIndex(index, callback = () => { }): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         // console.log('FPM: setArrivalEnRouteTransitionIndex: SET TRANSITION - ARRIVAL',
-            // currentFlightPlan.destinationAirfield.infos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex].enRouteTransitions[index].name);
+        //     currentFlightPlan.destinationAirfield.infos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex].enRouteTransitions[index].name);
 
         if (currentFlightPlan.procedureDetails.arrivalTransitionIndex !== index) {
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = index;
