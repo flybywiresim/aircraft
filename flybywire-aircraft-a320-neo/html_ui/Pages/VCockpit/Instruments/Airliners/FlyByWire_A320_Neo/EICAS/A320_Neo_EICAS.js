@@ -59,7 +59,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
 
     createLowerScreenPages() {
-        this.createLowerScreenPage("ENG", "BottomScreen", "a320-neo-lower-ecam-engine");
+        this.createLowerScreenPage("ENG", "BottomScreen", "a32nx-eng-page-element");
         this.createLowerScreenPage("BLEED", "BottomScreen", "a320-neo-lower-ecam-bleed");
         this.createLowerScreenPage("PRESS", "BottomScreen", "a320-neo-lower-ecam-press");
         this.createLowerScreenPage("ELEC", "BottomScreen", "a32nx-elec-page-element");

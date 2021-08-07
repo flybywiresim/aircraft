@@ -21,6 +21,8 @@ class A32NX_LocalVarUpdater {
         const camXyz = SimVar.GetGameVarValue('CAMERA POS IN PLANE', 'xyz');
         this.camZ = camXyz.z;
         this.camY = camXyz.y;
+        this.opacityMfd = 0;
+        this.opacityMcdu = 0;
 
         this.updaters = [
             {
@@ -244,11 +246,12 @@ class A32NX_LocalVarUpdater {
             // zΔ: Diff between current zPos and zTarget
             const zDelta = camXyz.z - zTarget;
             // opacity: 0 < [4zΔ + 0.5] < 0.5
-            SimVar.SetSimVarValue('L:A32NX_MFD_MASK_OPACITY', 'number', Math.max(0, Math.min(0.5, 4 * (zDelta) + 0.5)));
+            this.opacityMfd = Math.max(0, Math.min(0.5, 4 * (zDelta) + 0.5));
 
             this.camZ = camXyz.z;
             this.zoomLevel = zoomLevel;
         }
+        return this.opacityMfd;
     }
 
     _mcduLcdEffectSelector() {
@@ -260,12 +263,13 @@ class A32NX_LocalVarUpdater {
             // y-axis - away from screen >> +ve
             const yTarget = (zoomLevel + 423.33) / 333.33;
             const yDelta = yTarget - camXyz.y;
-            // opacity: 0 < [4zΔ + 0.5] < 1
-            SimVar.SetSimVarValue('L:A32NX_MCDU_MASK_OPACITY', 'number', Math.max(0, Math.min(1, 4 * (yDelta) + 0.5)));
+            // opacity: 0 < [4yΔ + 0.5] < 1
+            this.opacityMcdu = Math.max(0, Math.min(1, 4 * (yDelta) + 0.5));
 
             this.camY = camXyz.y;
             this.zoomLevel = zoomLevel;
         }
+        return this.opacityMcdu;
     }
 
     // New selectors go here...
