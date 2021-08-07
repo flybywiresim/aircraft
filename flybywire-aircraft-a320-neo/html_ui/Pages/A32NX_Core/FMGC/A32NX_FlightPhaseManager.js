@@ -264,7 +264,7 @@ class A32NX_FlightPhase_Cruise {
         // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
         if (_fmc.cruiseFlightLevel !== _fmc._cruiseFlightLevel) {
             _fmc._cruiseFlightLevel = _fmc.cruiseFlightLevel;
-            _fmc.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_fmc._cruiseFlightLevel * 100));
+            _fmc.addNewMessage(NXSystemMessages.newCrzAlt.modifyMessage(_fmc._cruiseFlightLevel * 100));
         }
         _fmc.updateManagedSpeed();
     }
