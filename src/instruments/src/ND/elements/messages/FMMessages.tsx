@@ -1,25 +1,36 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Layer } from '@instruments/common/utils';
-import { FMMessage, FMMessageTriggers } from '@shared/FmMessages';
-import { useCoherentEvent } from 'react-msfs';
 import { Mode } from '../../index';
+import { useSimVar } from '@instruments/common/simVars';
+import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
 
-export const FMMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
-    const [messages, setMessages] = useState<FMMessage[]>([]);
 
-    useCoherentEvent(FMMessageTriggers.SEND_TO_EFIS, (message) => {
-        setMessages((messages) => [...(messages.filter(({ id: mId }) => mId !== message.id)), message]);
-    });
+export const FMMessages: FC<{ modeIndex: Mode, side: 'L' | 'R' }> = ({ modeIndex, side }) => {
+    const [activeMessages, setActiveMessages] = useState<FMMessage[]>([]);
 
-    useCoherentEvent(FMMessageTriggers.RECALL_FROM_EFIS_WITH_ID, (id) => {
-        setMessages((messages) => messages.filter(({ id: mId }) => mId !== id));
-    });
+    // TODO check FM failure and get messages from other FM
+    const [messageFlags] = useSimVar(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', 500);
 
-    useCoherentEvent(FMMessageTriggers.POP_FROM_STACK, () => {
-        setMessages((messages) => messages.filter((_, index) => index !== messages.length - 1));
-    });
+    useEffect(() => {
+        const newActiveMessages = activeMessages.slice();
+        // the list must be ordered by priority, and LIFO for equal priority
+        for (const message of Object.values(FMMessageTypes)) {
+            if (((message.ndFlag ?? 0) & messageFlags) > 0) {
+                if (newActiveMessages.findIndex(({ ndFlag }) => ndFlag === message.ndFlag) === -1) {
+                    newActiveMessages.push(message);
+                    newActiveMessages.sort((a, b) => (b.ndPriority ?? 0) - (a.ndPriority ?? 0));
+                }
+            } if ((message.ndFlag ?? 0) > 0) {
+                const idx = newActiveMessages.findIndex(({ ndFlag }) => ndFlag === message.ndFlag);
+                if (idx !== -1) {
+                    newActiveMessages.splice(idx, 1);
+                }
+            }
+        }
+        setActiveMessages(newActiveMessages);
+    }, [messageFlags]);
 
-    if (modeIndex !== Mode.ARC && modeIndex !== Mode.PLAN && modeIndex !== Mode.ROSE_NAV || !messages?.[messages.length - 1]) {
+    if (modeIndex !== Mode.ARC && modeIndex !== Mode.PLAN && modeIndex !== Mode.ROSE_NAV || activeMessages.length < 1) {
         return null;
     }
 
@@ -32,27 +43,16 @@ export const FMMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
             <text
                 x={420 / 2}
                 y={25}
-                className={`${messages[messages.length - 1].color} MiddleAlign`}
+                className={`${activeMessages[activeMessages.length - 1].color} MiddleAlign`}
                 textAnchor="middle"
                 fontSize={25}
             >
-                {`${messages[messages.length - 1].efisText ?? messages[messages.length - 1].text}`}
+                {`${activeMessages[activeMessages.length - 1].text}`}
             </text>
 
-            { messages.length > 1 && (
+            { activeMessages.length > 1 && (
                 <path d="M428,2 L428,20 L424,20 L430,28 L436,20 L432,20 L432,2 L428,2" className="Green Fill" />
             )}
         </Layer>
     );
 };
-
-// const DmcMessages: FMMessage[] = [
-//     { text: 'MAP PARTLY DISPLAYED', color: 'Amber' },
-//     { text: 'SET OFFSIDE RNG/MODE', color: 'Amber' },
-//     { text: 'OFFSIDE FM CONTROL', color: 'Amber' },
-//     { text: 'OFFSIDE FM/WXR CONTROL', color: 'Amber' },
-//     { text: 'OFFSIDE WXR CONTROL', color: 'Amber' },
-//     { text: 'GPS PRIMARY LOST', color: 'Amber' },
-//     { text: 'RTA MISSED', color: 'Amber' },
-//     { text: 'BACK UP NAV', color: 'Amber' },
-// ];
