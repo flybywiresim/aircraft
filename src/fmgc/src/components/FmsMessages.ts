@@ -1,11 +1,11 @@
 import { FmgcComponent } from '@fmgc/lib/FmgcComponent';
-import { FMMessage, FMMessageEfisTarget, FMMessageTriggers } from '@shared/FmMessages';
+import { FMMessage, FMMessageTriggers, FMMessageTypes } from '@shared/FmMessages';
 import { ConfirmationNode, Trigger } from '@shared/logic';
 
 /**
  * This class manages Type II messages sent from the FMGC.
  *
- * Since many of those are also sent to the EFIS, this class calls the relevant Coherent triggers for sending commands to the DMC.
+ * Since many of those are also sent to the EFIS, this class sets a bitfield signalling the active messages to the DMCs
  *
  * At the moment, other Type II messages which are not displayed on the EFIS are declared in the old JavaScript CDU/"FMC".
  *
@@ -15,18 +15,38 @@ import { ConfirmationNode, Trigger } from '@shared/logic';
  * -Benjamin
  */
 export class FmsMessages implements FmgcComponent {
-    listener = RegisterViewListener('JS_LISTENER_SIMVARS');
+    private static _instance?: FmsMessages;
 
-    messageSelectors: FMMessageSelector[] = [
+    private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
+
+    private ndMessageFlags: Record<'L' | 'R', number> = {
+        'L': 0,
+        'R': 0,
+    };
+
+    private messageSelectors: FMMessageSelector[] = [
         new GpsPrimary(),
         new GpsPrimaryLost(),
     ]
+
+    // singleton
+    private constructor() {
+
+    }
+
+    public static get instance(): FmsMessages {
+        if (!this._instance) {
+            this._instance = new FmsMessages();
+        }
+        return this._instance;
+    }
 
     init(): void {
 
     }
 
     update(_deltaTime: number): void {
+        let didMutateNd = false;
         for (const selector of this.messageSelectors) {
             const newState = selector.process(_deltaTime);
             const message = selector.message;
@@ -35,21 +55,32 @@ export class FmsMessages implements FmgcComponent {
             case FMMessageUpdate.SEND:
                 this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
 
-                if (message.efisTarget) {
-                    this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_EFIS, message);
+                if (message.ndFlag > 0) {
+                    for (const side in this.ndMessageFlags) {
+                        this.ndMessageFlags[side] |= message.ndFlag;
+                    }
+                    didMutateNd = true;
                 }
                 break;
             case FMMessageUpdate.RECALL:
-                this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text);
+                this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
 
-                if (message.efisTarget) {
-                    this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_EFIS_WITH_ID, message.id);
+                if (message.ndFlag > 0) {
+                    for (const side in this.ndMessageFlags) {
+                        this.ndMessageFlags[side] &= ~message.ndFlag;
+                    }
+                    didMutateNd = true;
                 }
                 break;
             case FMMessageUpdate.NO_ACTION:
                 break;
             default:
                 throw new Error('Invalid FM message update state');
+            }
+        }
+        if (didMutateNd) {
+            for (const side in this.ndMessageFlags) {
+                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
             }
         }
     }
@@ -59,18 +90,37 @@ export class FmsMessages implements FmgcComponent {
 
         this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
 
-        if (message.efisTarget) {
-            this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_EFIS, message);
+        if (message.ndFlag) {
+            for (const side in this.ndMessageFlags) {
+                this.ndMessageFlags[side] |= message.ndFlag;
+                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+            }
         }
     }
 
     public recall(messageClass: { new(): FMMessageSelector }): void {
         const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
 
-        this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.id);
+        this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
 
-        if (message.efisTarget) {
-            this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_EFIS_WITH_ID, message.id);
+        if (message.ndFlag) {
+            for (const side in this.ndMessageFlags) {
+                this.ndMessageFlags[side] &= ~message.ndFlag;
+                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+            }
+        }
+    }
+
+    public recallId(id: number) {
+        const message = this.messageSelectors.find((it) => it.message.id === id).message;
+
+        this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+
+        if (message.ndFlag) {
+            for (const side in this.ndMessageFlags) {
+                this.ndMessageFlags[side] &= ~message.ndFlag;
+                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+            }
         }
     }
 }
@@ -115,12 +165,7 @@ abstract class FMMessageSelector {
 }
 
 class GpsPrimary implements FMMessageSelector {
-    message: FMMessage = {
-        id: 0,
-        text: 'GPS PRIMARY',
-        efisTarget: FMMessageEfisTarget.ND,
-        color: 'White',
-    };
+    message: FMMessage = FMMessageTypes.GpsPrimary;
 
     lastState = false;
 
@@ -142,12 +187,7 @@ class GpsPrimary implements FMMessageSelector {
  * first-frame value, as the ADIRS module might not have run yet.
  */
 class GpsPrimaryLost implements FMMessageSelector {
-    message: FMMessage = {
-        id: 1,
-        text: 'GPS PRIMARY LOST',
-        efisTarget: FMMessageEfisTarget.ND,
-        color: 'Amber',
-    };
+    message: FMMessage = FMMessageTypes.GpsPrimaryLost;
 
     confLost = new ConfirmationNode(1_000);
 
