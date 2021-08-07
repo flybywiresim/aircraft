@@ -85,7 +85,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   if (simConnectInterface.getSimData().slew_on) {
     wasInSlew = true;
     return result;
-  } else if (pauseDetected) {
+  } else if (pauseDetected || simConnectInterface.getSimData().cameraState >= 10.0) {
     return result;
   }
 
