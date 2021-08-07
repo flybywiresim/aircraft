@@ -30,6 +30,11 @@ export interface FMMessage {
      * Display color for both MCDU and EFIS
      */
     color: FMMessageColor,
+
+    /**
+     * Can the message be cleared by the MCDU CLR key?
+     */
+    clearable?: boolean,
 }
 
 /** See a320-coherent-triggers.md */
@@ -109,6 +114,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'GPS PRIMARY',
         color: 'White',
         ndPriority: 1,
+        clearable: true,
     },
     MapPartlyDisplayed: {
         id: 8,
