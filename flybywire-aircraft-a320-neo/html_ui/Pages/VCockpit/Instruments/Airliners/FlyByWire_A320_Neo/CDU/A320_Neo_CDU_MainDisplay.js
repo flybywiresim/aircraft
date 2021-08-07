@@ -1,8 +1,8 @@
 class A320_Neo_CDU_Display {
-    /* side = l | r */
-    constructor(fmc, side) {
+    constructor(fmc, side, elecBus) {
         this.fmc = fmc;
         this.side = side;
+        this.elecBus = elecBus;
 
         this._title = undefined;
         this._pageCurrent = undefined;
@@ -24,17 +24,21 @@ class A320_Neo_CDU_Display {
         this.isDisplayingTypeTwoMessage = false;
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
-        this.inFocus = false;
+        this.hasKeyboardFocus = false;
         this.lastInput = 0;
         this.clrStop = false;
         this.allSelected = false;
 
         this.root = document.createElement("div");
         this.root.id = "mcdu-" + this.side.toLowerCase();
+        this.root.className = "mcdu-display";
+    }
+
+    get isPowered() {
+        return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.elecBus}_BUS_IS_POWERED`, "Number") > 0;
     }
 
     Init() {
-        this.initKeyboardScratchpad();
         this._titleLeftElement = this.root.querySelector("#title-left");
         this._titleElement = this.root.querySelector("#title");
         this._pageCurrentElement = this.root.querySelector("#page-current");
@@ -236,11 +240,7 @@ class A320_Neo_CDU_Display {
     }
 
     requestOffsideUpdate() {
-        if (this.side === "L") {
-            this.fmc.requestRightUpdate();
-        } else {
-            this.fmc.requestLeftUpdate();
-        }
+        this.fmc.requestUpdate(this);
     }
 
     setCurrentPage(redrawCallback, activeSystem) {
@@ -703,155 +703,36 @@ class A320_Neo_CDU_Display {
         this.inOut = data;
     }
 
-    clearFocus() {
-        this.inFocus = false;
+    setKeyboardFocus(timeout) {
+        if (this.hasKeyboardFocus) {
+            return;
+        }
+        this.hasKeyboardFocus = true;
+        this.root.querySelector("#header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
+        this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
+        Coherent.trigger('FOCUS_INPUT_FIELD');
+        this.lastInput = new Date();
+        if (timeout) {
+            this.checkFocus = setInterval(() => {
+                if (Math.abs(new Date() - this.lastInput) / 1000 >= timeout) {
+                    this.clearKeyboardFocus();
+                }
+            }, Math.min(timeout * 1000 / 2, 1000));
+        }
+    }
+
+    clearKeyboardFocus() {
+        if (!this.hasKeyboardFocus) {
+            return;
+        }
+        this.hasKeyboardFocus = false;
         this.allSelected = false;
         Coherent.trigger('UNFOCUS_INPUT_FIELD');
         this._inOutElement.style = null;
         this.root.querySelector("#header").style = null;
-        if (this.check_focus) {
-            clearInterval(this.check_focus);
+        if (this.checkFocus) {
+            clearInterval(this.checkFocus);
         }
-    }
-
-    initKeyboardScratchpad() {
-        window.document.addEventListener('click', (ev) => {
-            const leftMcduClicked = ev.clientX < (window.document.body.clientWidth / 2);
-            if ((!leftMcduClicked && this.side === 'L') || (leftMcduClicked && this.side === 'R')) {
-                return;
-            }
-
-            const mcduInput = NXDataStore.get("MCDU_KB_INPUT", "DISABLED");
-            const mcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
-            const isPowered = this.side === 'L' ? SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number") : SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Number");
-
-            if (mcduInput === "ENABLED") {
-                this.inFocus = !this.inFocus;
-                if (this.inFocus && isPowered) {
-                    if (leftMcduClicked) {
-                        this.fmc.clearFocusRight();
-                    } else {
-                        this.fmc.clearFocusLeft();
-                    }
-                    this.root.querySelector("#header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
-                    this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
-                    Coherent.trigger('FOCUS_INPUT_FIELD');
-                    this.lastInput = new Date();
-                    if (mcduTimeout) {
-                        this.check_focus = setInterval(() => {
-                            if (Math.abs(new Date() - this.lastInput) / 1000 >= mcduTimeout) {
-                                this.clearFocus();
-                            }
-                        }, Math.min(mcduTimeout * 1000 / 2, 1000));
-                    }
-                } else {
-                    this.clearFocus();
-                }
-            } else {
-                this.clearFocus();
-            }
-        });
-        window.document.addEventListener('keydown', (e) => {
-            if (this.inFocus) {
-                let keycode = e.keyCode;
-                this.lastInput = new Date();
-                if (keycode >= KeyCode.KEY_NUMPAD0 && keycode <= KeyCode.KEY_NUMPAD9) {
-                    keycode -= 48; // numpad support
-                }
-                // Note: tried using H-events, worse performance. Reverted to direct input.
-                // Preventing repeated input also similarly felt awful and defeated the point.
-                // Clr hold functionality pointless as scratchpad will be cleared (repeated input).
-
-                let setAnimation;
-                if (e.altKey || (e.ctrlKey && keycode === KeyCode.KEY_Z)) {
-                    this.clearFocus();
-                } else if (e.ctrlKey && keycode === KeyCode.KEY_A) {
-                    this.allSelected = !this.allSelected;
-                    this._inOutElement.style = `display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`;
-                } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
-                    this.forceClearScratchpad();
-                } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
-                    let wordFlag = this.inOut.includes(' ') ? false : true;
-                    for (let i = this.inOut.length; i > 0; i--) {
-                        if (this.inOut.slice(-1) === ' ') {
-                            if (!wordFlag) {
-                                this.onClr();
-                            } else {
-                                wordFlag = true;
-                                break;
-                            }
-                        }
-                        if (this.inOut.slice(-1) !== ' ') {
-                            if (!wordFlag) {
-                                wordFlag = true;
-                            } else {
-                                this.onClr();
-                            }
-                        }
-                    }
-                } else if (e.shiftKey && keycode === KeyCode.KEY_BACK_SPACE) {
-                    if (!this.check_clr) {
-                        this.onClr();
-                        this.check_clr = setTimeout(() => {
-                            this.onClrHeld();
-                        }, 2000);
-                    }
-                    setAnimation = "CLR";
-                } else if (keycode >= KeyCode.KEY_0 && keycode <= KeyCode.KEY_9 || keycode >= KeyCode.KEY_A && keycode <= KeyCode.KEY_Z) {
-                    const letter = String.fromCharCode(keycode);
-                    this.onLetterInput(letter);
-                    setAnimation = letter.toUpperCase();
-                } else if (keycode === KeyCode.KEY_PERIOD || keycode === KeyCode.KEY_DECIMAL) {
-                    this.onDot();
-                    setAnimation = "DOT";
-                } else if (keycode === KeyCode.KEY_SLASH || keycode === KeyCode.KEY_BACK_SLASH || keycode === KeyCode.KEY_DIVIDE || keycode === 226) {
-                    this.onDiv();
-                    setAnimation = "SLASH";
-                } else if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
-                    if (this.allSelected) {
-                        this.forceClearScratchpad();
-                    } else if (!this.clrStop) {
-                        this.onClr();
-                        setAnimation = "CLR";
-                        if (this.inOut === "" || this.inOut === FMCMainDisplay.clrValue || this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
-                            this.clrStop = true;
-                        }
-                    }
-                } else if (keycode === KeyCode.KEY_SPACE) {
-                    this.onSp();
-                    setAnimation = "SP";
-                } else if (keycode === 189 || keycode === KeyCode.KEY_SUBTRACT) {
-                    this.onPlusMinus("-");
-                    setAnimation = "PLUSMINUS";
-                } else if (keycode === 187 || keycode === KeyCode.KEY_ADD) {
-                    this.onPlusMinus("+");
-                    setAnimation = "PLUSMINUS";
-                } else if (keycode >= KeyCode.KEY_F1 && keycode <= KeyCode.KEY_F6) {
-                    const func_num = keycode - KeyCode.KEY_F1;
-                    this.onLeftFunction(func_num);
-                    setAnimation = "L" + (func_num + 1);
-                } else if (keycode >= KeyCode.KEY_F7 && keycode <= KeyCode.KEY_F12) {
-                    const func_num = keycode - KeyCode.KEY_F7;
-                    this.onRightFunction(func_num);
-                    setAnimation = "R" + (func_num + 1);
-                }
-
-                if (setAnimation) {
-                    SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${this.side === "R" ? 2 : 1}_${setAnimation}`, "Number", 1);
-                }
-            }
-        });
-        window.document.addEventListener('keyup', (e) => {
-            this.lastInput = new Date();
-            const keycode = e.keyCode;
-            if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
-                this.clrStop = false;
-            }
-            if (this.check_clr) {
-                clearTimeout(this.check_clr);
-                this.check_clr = undefined;
-            }
-        });
     }
 
     /* END OF MCDU SCRATCHPAD */
@@ -871,25 +752,11 @@ class A320_Neo_CDU_Display {
             if (!isResolved()) {
                 this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
                 if (propagate) {
-                    this.sendMessageOffside(message, isResolved, onClear);
+                    this.fmc.addNewOffsideMessage(this, message, isResolved, onClear);
                 }
             }
         } else {
             this._showTypeOneMessage(message.text, message.isAmber);
-        }
-    }
-
-    /**
-     * Send a scratchpad message to the offside MCDU
-     * @param message {{text, isAmber, isTypeTwo}} Message Object
-     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
-     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
-     */
-    sendMessageOffside(message, isResolved, onClear) {
-        if (this.side === "L") {
-            this.fmc.addNewMessageRight(message, isResolved, onClear);
-        } else {
-            this.fmc.addNewMessageLeft(message, isResolved, onClear);
         }
     }
 
@@ -1155,6 +1022,95 @@ class A320_Neo_CDU_Display {
         return false;
     }
 
+    onKeyboardKeyDown(keycode, altKey, ctrlKey, shiftKey) {
+        this.lastInput = new Date();
+        let setAnimation;
+        if (altKey || (ctrlKey && keycode === KeyCode.KEY_Z)) {
+            this.clearKeyboardFocus();
+        } else if (ctrlKey && keycode === KeyCode.KEY_A) {
+            this.allSelected = !this.allSelected;
+            this._inOutElement.style = `display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`;
+        } else if (shiftKey && ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
+            this.forceClearScratchpad();
+        } else if (ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
+            let wordFlag = this.inOut.includes(' ') ? false : true;
+            for (let i = this.inOut.length; i > 0; i--) {
+                if (this.inOut.slice(-1) === ' ') {
+                    if (!wordFlag) {
+                        this.onClr();
+                    } else {
+                        wordFlag = true;
+                        break;
+                    }
+                }
+                if (this.inOut.slice(-1) !== ' ') {
+                    if (!wordFlag) {
+                        wordFlag = true;
+                    } else {
+                        this.onClr();
+                    }
+                }
+            }
+        } else if (shiftKey && keycode === KeyCode.KEY_BACK_SPACE) {
+            if (!this.checkClr) {
+                this.onClr();
+                this.checkClr = setTimeout(() => {
+                    this.onClrHeld();
+                }, 2000);
+            }
+            setAnimation = "CLR";
+        } else if (keycode >= KeyCode.KEY_0 && keycode <= KeyCode.KEY_9 || keycode >= KeyCode.KEY_A && keycode <= KeyCode.KEY_Z) {
+            const letter = String.fromCharCode(keycode);
+            this.onLetterInput(letter);
+            setAnimation = letter.toUpperCase();
+        } else if (keycode === KeyCode.KEY_PERIOD || keycode === KeyCode.KEY_DECIMAL) {
+            this.onDot();
+            setAnimation = "DOT";
+        } else if (keycode === KeyCode.KEY_SLASH || keycode === KeyCode.KEY_BACK_SLASH || keycode === KeyCode.KEY_DIVIDE || keycode === 226) {
+            this.onDiv();
+            setAnimation = "SLASH";
+        } else if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
+            if (this.allSelected) {
+                this.forceClearScratchpad();
+            } else if (!this.clrStop) {
+                this.onClr();
+                setAnimation = "CLR";
+                if (this.inOut === "" || this.inOut === FMCMainDisplay.clrValue || this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
+                    this.clrStop = true;
+                }
+            }
+        } else if (keycode === KeyCode.KEY_SPACE) {
+            this.onSp();
+            setAnimation = "SP";
+        } else if (keycode === 189 || keycode === KeyCode.KEY_SUBTRACT) {
+            this.onPlusMinus("-");
+            setAnimation = "PLUSMINUS";
+        } else if (keycode === 187 || keycode === KeyCode.KEY_ADD) {
+            this.onPlusMinus("+");
+            setAnimation = "PLUSMINUS";
+        } else if (keycode >= KeyCode.KEY_F1 && keycode <= KeyCode.KEY_F6) {
+            const func_num = keycode - KeyCode.KEY_F1;
+            this.onLeftFunction(func_num);
+            setAnimation = "L" + (func_num + 1);
+        } else if (keycode >= KeyCode.KEY_F7 && keycode <= KeyCode.KEY_F12) {
+            const func_num = keycode - KeyCode.KEY_F7;
+            this.onRightFunction(func_num);
+            setAnimation = "R" + (func_num + 1);
+        }
+        return setAnimation;
+    }
+
+    onKeyboardKeyUp(keycode) {
+        this.lastInput = new Date();
+        if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
+            this.clrStop = false;
+        }
+        if (this.checkClr) {
+            clearTimeout(this.checkClr);
+            this.checkClr = undefined;
+        }
+    }
+
     /* END OF MCDU EVENTS */
     /* MCDU DELAY SIMULATION */
 
@@ -1226,6 +1182,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     constructor() {
         super(...arguments);
         this._registered = false;
+        this.mcdus = [];
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -1250,16 +1207,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.lcdOverlay = document.querySelector("#LcdOverlay");
 
-        this.mcduLeft = new A320_Neo_CDU_Display(this, "L");
-        this.mcduLeft.generateHTMLLayout();
-        this.mcduRight = new A320_Neo_CDU_Display(this, "R");
-        this.mcduRight.generateHTMLLayout();
         const mainframe = this.getChildById("Mainframe");
-        mainframe.appendChild(this.mcduLeft.root);
-        mainframe.appendChild(this.mcduRight.root);
 
-        this.mcduLeft.Init();
-        this.mcduRight.Init();
+        const mcduConfigs = [
+            {
+                side: 'L',
+                elecBus: 'AC_ESS_SHED',
+            },
+            {
+                side: 'R',
+                elecBus: 'AC_2',
+            },
+        ];
+
+        mcduConfigs.forEach((config) => {
+            const mcdu = new A320_Neo_CDU_Display(this, config.side, config.elecBus);
+            mcdu.generateHTMLLayout();
+            mainframe.appendChild(mcdu.root);
+            this.mcdus.push(mcdu);
+            mcdu.Init();
+        });
 
         this.aocAirportList = new CDUAocAirportList; // TODO kill this ugliness
 
@@ -1268,48 +1235,43 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (onlineFeaturesStatus === "UNKNOWN") {
             CDU_OPTIONS_TELEX.ShowPage(this.fmc, this);
         }
+
+        this.initKeyboardScratchpad();
     }
 
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
-        this.mcduLeft.onUpdate(_deltaTime);
-        this.mcduRight.onUpdate(_deltaTime);
+        this.mcdus.forEach((mcdu) => mcdu.onUpdate(_deltaTime));
 
         this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
     }
 
     initMcduVariables() {
-        this.mcduLeft.clearMessageQueue();
-        this.mcduRight.clearMessageQueue();
+        this.mcdus.forEach((mcdu) => mcdu.clearMessageQueue());
         this.aocAirportList.init();
     }
 
     /**
-     * Updates both MCDU displays
+     * Updates all MCDU displays, with optional exclude
      */
-    requestUpdate() {
-        this.requestLeftUpdate();
-        this.requestRightUpdate();
-    }
-
-    requestLeftUpdate() {
-        this.mcduLeft.requestOnsideUpdate();
-    }
-
-    requestRightUpdate() {
-        this.mcduRight.requestOnsideUpdate();
+    requestUpdate(excludeMcdu) {
+        this.mcdus.forEach((mcdu) => {
+            if (mcdu !== excludeMcdu) {
+                mcdu.requestOnsideUpdate()
+            }
+        });
     }
 
     onEvent(_event) {
         super.onEvent(_event);
-        console.log(_event);
-        if (_event.indexOf("1_BTN_") !== -1) {
-            const input = _event.replace("1_BTN_", "");
-            this.mcduLeft.onEvent(input);
-        } else if (_event.indexOf("2_BTN_") !== -1) {
-            const input = _event.replace("2_BTN_", "");
-            this.mcduRight.onEvent(input);
+        const match = _event.match(/^([0-9])_BTN_(.+)$/);
+        if (match !== null) {
+            const mcduIndex = parseInt(match[1]) - 1;
+            const event = match[2];
+            if (mcduIndex >= 0 && mcduIndex < this.mcdus.length) {
+                this.mcdus[mcduIndex].onEvent(event);
+            }
         }
     }
 
@@ -1318,7 +1280,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
-     * Add a new scratchpad message to both MCDUs
+     * Add a new scratchpad message to all MCDUs (should be type II)
      * @param message {{text, isAmber, isTypeTwo}} Message Object
      * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
      * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
@@ -1326,28 +1288,23 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     addNewMessage(message, isResolved = () => {
         return false;
     }, onClear = () => {}) {
-        this.addNewMessageLeft(message, isResolved, onClear, false);
-        this.addNewMessageRight(message, isResolved, onClear, false);
+        this.mcdus.forEach((mcdu) => mcdu.addNewMessage(message, isResolved, onClear, false));
     }
 
     /**
-     * Adds a scratchpad message to the left MCDU (unless you're the other MCDU you probably don't want this!)
+     * Add a new scratchpad message to other MCDUs (should be type II, and should only be called by the MCDUs!)
      * @param message {{text, isAmber, isTypeTwo}} Message Object
      * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
      * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    addNewMessageLeft(message, isResolved, onClear) {
-        this.mcduLeft.addNewMessage(message, isResolved, onClear, false);
-    }
-
-    /**
-     * Adds a scratchpad message to the right MCDU (unless you're the other MCDU you probably don't want this!)
-     * @param message {{text, isAmber, isTypeTwo}} Message Object
-     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
-     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
-     */
-    addNewMessageRight(message, isResolved, onClear) {
-        this.mcduRight.addNewMessage(message, isResolved, onClear, false);
+    addNewOffsideMessage(onsideMcdu, message, isResolved = () => {
+        return false;
+    }, onClear = () => {}) {
+        this.mcdus.forEach((mcdu) => {
+            if (mcdu !== onsideMcdu) {
+                mcdu.addNewMessage(message, isResolved, onClear, false);
+            }
+        });
     }
 
     /**
@@ -1355,16 +1312,72 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param {string} msg
      */
     tryRemoveMessage(msg) {
-        this.mcduLeft.tryRemoveMessage(msg);
-        this.mcduRight.tryRemoveMessage(msg);
+        this.mcdus.forEach((mcdu) => mcdu.tryRemoveMessage(msg));
     }
 
-    clearFocusLeft() {
-        this.mcduLeft.clearFocus();
+    clearKeyboardFocus(excludeMcdu) {
+        this.mcdus.forEach((mcdu) => {
+            if (mcdu !== excludeMcdu) {
+                mcdu.clearKeyboardFocus()
+            }
+        });
     }
 
-    clearFocusRight() {
-        this.mcduRight.clearFocus();
+    initKeyboardScratchpad() {
+        window.document.addEventListener('click', (ev) => {
+            // the MCDU "texture" is split in a split * split grid, indexed from left to right, top to bottom
+            const split = Math.ceil(Math.sqrt(this.mcdus.length));
+            const splitPx = window.document.body.clientWidth / split;
+            const splitPy = window.document.body.clientHeight / split;
+            const clickIndexX = Math.floor(ev.clientX / splitPx);
+            const clickIndexY = Math.floor(ev.clientY / splitPy);
+            const mcduIndex = clickIndexY * split + clickIndexX;
+
+            if (mcduIndex >= 0 && mcduIndex < this.mcdus.length) {
+                const mcdu = this.mcdus[mcduIndex];
+                const kbInputEnabled = NXDataStore.get("MCDU_KB_INPUT", "DISABLED") === "ENABLED";
+                const mcduTimeout = parseInt(NXDataStore.get("CONFIG_MCDU_KB_TIMEOUT", "60"));
+
+                if (kbInputEnabled) {
+                    if (mcdu.isPowered && !mcdu.hasKeyboardFocus) {
+                        this.clearKeyboardFocus(mcdu);
+                        mcdu.setKeyboardFocus(mcduTimeout);
+                    } else {
+                        mcdu.clearKeyboardFocus();
+                    }
+                } else {
+                    this.clearKeyboardFocus();
+                }
+            }
+        });
+        window.document.addEventListener('keydown', (e) => {
+            const mcduIndex = this.mcdus.findIndex((mcdu) => mcdu.hasKeyboardFocus);
+
+            if (mcduIndex >= 0) {
+                const mcdu = this.mcdus[mcduIndex];
+
+                let keycode = e.keyCode;
+
+                if (keycode >= KeyCode.KEY_NUMPAD0 && keycode <= KeyCode.KEY_NUMPAD9) {
+                    keycode -= 48; // numpad support
+                }
+                // Note: tried using H-events, worse performance. Reverted to direct input.
+                // Preventing repeated input also similarly felt awful and defeated the point.
+                // Clr hold functionality pointless as scratchpad will be cleared (repeated input).
+
+                const setAnimation = mcdu.onKeyboardKeyDown(keycode, e.altKey, e.ctrlKey, e.shiftKey);
+
+                if (setAnimation) {
+                    SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${mcduIndex + 1}_${setAnimation}`, "Number", 1);
+                }
+            }
+        });
+        window.document.addEventListener('keyup', (e) => {
+            const mcdu = this.mcdus.find((mcdu) => mcdu.hasKeyboardFocus);
+            if (mcdu !== undefined) {
+                mcdu.onKeyboardKeyUp(e.keyCode);
+            }
+        });
     }
 }
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);

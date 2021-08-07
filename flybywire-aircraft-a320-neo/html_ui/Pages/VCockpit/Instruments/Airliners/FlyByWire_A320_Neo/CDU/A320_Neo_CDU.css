@@ -80,17 +80,17 @@ a320-neo-cdu-main-display text {
   font-family: "HoneywellMCDU" !important;
 }
 
-a320-neo-cdu-main-display #mcdu-l {
+a320-neo-cdu-main-display .mcdu-display {
   position: absolute;
   width: 50%;
   height: 50%;
+}
+
+a320-neo-cdu-main-display #mcdu-l {
   left: 0%;
 }
 
 a320-neo-cdu-main-display #mcdu-r {
-  position: absolute;
-  width: 50%;
-  height: 50%;
   left: 50%;
 }
 
