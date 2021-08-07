@@ -25,14 +25,15 @@ export const FuelPage = () => {
     const [tankRightInner] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'gallons', 500);
     const [tankRightOuter] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'gallons', 500);
 
-    const [pump1] = useSimVar('FUELSYSTEM VALVE OPEN:1', 'bool', 500);
-    const [pump2] = useSimVar('FUELSYSTEM VALVE OPEN:2', 'bool', 500);
-    const [pump3] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'bool', 500);
-    const [pump5] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
-    const [pump7] = useSimVar('FUELSYSTEM VALVE OPEN:7', 'bool', 500);
-    const [pump4] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
-    const [pump6] = useSimVar('FUELSYSTEM VALVE OPEN:6', 'bool', 500);
-
+    const [pump1] = useSimVar('FUEL TRANSFER PUMP ON:1', 'bool', 500);
+    const [pump2] = useSimVar('FUEL TRANSFER PUMP ON:2', 'bool', 500);
+    const [pump3] = useSimVar('FUEL TRANSFER PUMP ON:3', 'bool', 500);
+    const [pump5] = useSimVar('FUEL TRANSFER PUMP ON:5', 'bool', 500);
+    const [pump7] = useSimVar('FUEL TRANSFER PUMP ON:7', 'bool', 500);
+    const [pump4] = useSimVar('FUEL TRANSFER PUMP ON:4', 'bool', 500);
+    const [pump6] = useSimVar('FUEL TRANSFER PUMP ON:6', 'bool', 500);
+    const [pump8] = useSimVar('FUEL TRANSFER PUMP ON:8', 'bool', 500);
+    const [pump9] = useSimVar('FUEL TRANSFER PUMP ON:9', 'bool', 500);
     useEffect(() => {
         console.log(`pump1 valve is ${pump1}`);
         console.log(`pump2 valve is ${pump2}`);
@@ -41,8 +42,10 @@ export const FuelPage = () => {
         console.log(`pump7 valve is ${pump7}`);
         console.log(`pump4 valve is ${pump4}`);
         console.log(`pump6 valve is ${pump6}`);
+        console.log(`pump8 valve is ${pump8}`);
+        console.log(`pump9 valve is ${pump9}`);
         console.log(' ----------- ');
-    }, [pump5, pump7, pump4, pump6]);
+    }, [pump1, pump2, pump3, pump5, pump7, pump4, pump6, pump8, pump9]);
 
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT');
 
