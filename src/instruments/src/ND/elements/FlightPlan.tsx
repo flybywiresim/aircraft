@@ -66,7 +66,8 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
             }
 
             if (legs[0] instanceof TFLeg && legs[0].to.type === 'A') {
-                legs = legs.slice(1);
+                // console.log('Removing leg: ', legs[0]);
+                // legs = legs.slice(1);
             }
         }
 
@@ -85,12 +86,14 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                     <DepartureAirportMarkers
                         flightPlanManager={flightPlanManager}
                         mapParams={mapParams}
+                        temp={temp}
                     />
                 )}
                 {destination && (
                     <ArrivalAirportMarkers
                         flightPlanManager={flightPlanManager}
                         mapParams={mapParams}
+                        temp={temp}
                     />
                 )}
                 {legs.map((leg, index) => (
@@ -102,6 +105,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                         isActive={index === legs.length - 1}
                         constraints={constraints}
                         mapParams={mapParams}
+                        flightPlanManager={flightPlanManager}
                         debug={debug}
                     />
                 ))}
@@ -130,11 +134,12 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
 interface DepartureAirportMarkersProps {
     mapParams: MapParameters,
     flightPlanManager: FlightPlanManager,
+    temp: boolean,
 }
 
-const DepartureAirportMarkers: FC<DepartureAirportMarkersProps> = ({ flightPlanManager, mapParams }) => {
-    const depRunway = flightPlanManager.getDepartureRunway();
-    const depAirfield = flightPlanManager.getOrigin();
+const DepartureAirportMarkers: FC<DepartureAirportMarkersProps> = ({ flightPlanManager, mapParams, temp = false }) => {
+    const depRunway = temp ? flightPlanManager.getDepartureRunway(1) : flightPlanManager.getDepartureRunway();
+    const depAirfield = temp ? flightPlanManager.getOrigin(1) : flightPlanManager.getOrigin();
 
     let adx;
     let ady;
@@ -163,16 +168,17 @@ const DepartureAirportMarkers: FC<DepartureAirportMarkersProps> = ({ flightPlanM
             position={[adx, ady]}
         />
     );
-}
+};
 
 interface ArrivalAirportMarkersProps {
     mapParams: MapParameters,
     flightPlanManager: FlightPlanManager,
+    temp: boolean,
 }
 
-const ArrivalAirportMarkers: FC<ArrivalAirportMarkersProps> = ({ flightPlanManager, mapParams }) => {
-    const arrRunway = flightPlanManager.getApproachRunway();
-    const arrAirfield = flightPlanManager.getDestination();
+const ArrivalAirportMarkers: FC<ArrivalAirportMarkersProps> = ({ flightPlanManager, mapParams, temp = false }) => {
+    const arrRunway = temp ? flightPlanManager.getApproachRunway(1) : flightPlanManager.getApproachRunway();
+    const arrAirfield = temp ? flightPlanManager.getDestination(1) : flightPlanManager.getDestination();
 
     let aax;
     let aay;
@@ -201,7 +207,7 @@ const ArrivalAirportMarkers: FC<ArrivalAirportMarkersProps> = ({ flightPlanManag
             position={[aax, aay]}
         />
     );
-}
+};
 
 interface LegWaypointMarkersProps {
     leg: Leg,
@@ -210,19 +216,25 @@ interface LegWaypointMarkersProps {
     mapParams: MapParameters,
     constraints: boolean,
     isActive: boolean,
+    flightPlanManager: FlightPlanManager,
     debug: boolean,
 }
 
-const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, mapParams, constraints, isActive, debug }) => {
+const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, mapParams, constraints, isActive, flightPlanManager, debug }) => {
     let x;
     let y;
     let fx;
     let fy;
     if (leg instanceof TFLeg || leg instanceof RFLeg) {
         [x, y] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
+
+        if (leg.to === flightPlanManager.getDestination()) {
+            return null;
+        }
+
         // TODO: Find a more elegant fix for drawing waypoint (of next leg) after discontinuity
         if (nextLeg instanceof TFLeg && leg.to.endsInDiscontinuity && leg.to.ident !== nextLeg.from.ident) {
-            console.log('drawing waypoint after discontinuity. First leg: ', leg, ' Second leg: ', nextLeg);
+            // console.log('drawing waypoint after discontinuity. First leg: ', leg, ' Second leg: ', nextLeg);
             [fx, fy] = mapParams.coordinatesToXYy(nextLeg.from.infos.coordinates);
             return (
                 <>
@@ -292,16 +304,14 @@ interface RunwayMarkerProps {
     mapParams: MapParameters,
 }
 
-const RunwayMarker: FC<RunwayMarkerProps> = ({ position, direction, length, mapParams }) => {
-    return(
-        <Layer x={position[0]} y={position[1]}>
-            <g transform={`rotate(${mapParams.rotation(direction)})`}>
-                <line x1={-4.25} x2={-4.25} y1={0} y2={-length * mapParams.mToPx} className="White" strokeWidth={2} />
-                <line x1={4.25} x2={4.25} y1={0} y2={-length * mapParams.mToPx} className="White" strokeWidth={2} />
-            </g>
-        </Layer>
-    )
-}
+const RunwayMarker: FC<RunwayMarkerProps> = ({ position, direction, length, mapParams }) => (
+    <Layer x={position[0]} y={position[1]}>
+        <g transform={`rotate(${mapParams.rotation(direction)})`}>
+            <line x1={-4.25} x2={-4.25} y1={0} y2={-length * mapParams.mToPx} className="White" strokeWidth={2} />
+            <line x1={4.25} x2={4.25} y1={0} y2={-length * mapParams.mToPx} className="White" strokeWidth={2} />
+        </g>
+    </Layer>
+);
 
 interface RunwayMarkerBlockProps {
     position: Xy,
@@ -309,48 +319,44 @@ interface RunwayMarkerBlockProps {
     mapParams: MapParameters,
 }
 
-const RunwayMarkerBlock: FC<RunwayMarkerBlockProps> = ({ position, direction, mapParams }) => {
-    return(
-        <Layer x={position[0]} y={position[1]}>
-            <rect width="250" height="55" className="White Fill" />
-        </Layer>
-    )
-}
+const RunwayMarkerBlock: FC<RunwayMarkerBlockProps> = ({ position, direction, mapParams }) => (
+    <Layer x={position[0]} y={position[1]}>
+        <rect width="250" height="55" className="White Fill" />
+    </Layer>
+);
 
 interface AirportMarkerProps {
     position: Xy,
 }
 
-const AirportMarker: FC<AirportMarkerProps> = ({ position }) => {
-    return(
-        <Layer x={position[0]} y={position[1]}>
-            <path
-                d="M60.326 5.096V55.13L24.947 19.752l-5.195 5.195 35.379 35.38H5.098v7.347H55.13l-35.379 35.379 5.195
-                5.195 35.38-35.379v50.035h7.347V72.87l35.379 35.379 5.195-5.195-35.379-35.38h50.033v-7.347H72.87l35.38-35.379-5.196-5.195-35.38
-                35.379V5.096zm0-1.832a1.833 1.833 0 00-1.832 1.832v45.61l-32.25-32.25a1.833 1.833 0 00-2.594 0l-5.195 5.194a1.833 1.833 0 000 2.594l32.25
-                32.25H5.098a1.833 1.833 0 00-1.832 1.832v7.348a1.833 1.833 0 001.832 1.832h45.607l-32.25 32.25a1.833 1.833 0 000 2.594l5.195 5.195a1.833
-                1.833 0 002.594 0l32.25-32.25v45.61a1.833 1.833 0 001.832 1.831h7.348a1.833 1.833 0 001.832-1.832v-45.61l32.25 32.25a1.833 1.833 0
-                002.594 0l5.195-5.194a1.833 1.833 0 000-2.594l-32.25-32.25h45.607a1.833 1.833 0 001.832-1.832v-7.348a1.833 1.833 0
-                00-1.832-1.832H77.295l32.25-32.25a1.833 1.833 0 000-2.594l-5.195-5.195a1.833 1.833 0 00-2.594 0l-32.25 32.25V5.095a1.833 1.833 0
-                00-1.832-1.831zm1.832 3.664h3.684V55.13a1.833 1.833 0 003.129 1.297l34.082-34.084 2.601 2.603L71.572 59.03a1.833 1.833 0 001.297
-                3.13h48.201v3.683h-48.2a1.833 1.833 0 00-1.298 3.129l34.082 34.082-2.601 2.601L68.97 71.572a1.833 1.833 0 00-3.13 1.297v48.203h-3.683V72.87a1.833
-                1.833 0 00-3.129-1.297l-34.082 34.082-2.603-2.601L56.428 68.97a1.833 1.833 0 00-1.297-3.13H6.93v-3.683h48.2a1.833 1.833 0 001.298-3.129L22.346
-                24.947l2.601-2.601L59.03 56.428a1.833 1.833 0 003.13-1.297z"
-                color="#000"
-                fontWeight={400}
-                fontFamily="sans-serif"
-                overflow="visible"
-                className="White Fill"
-                stroke="#000"
-                strokeWidth={3.78}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                paintOrder="markers stroke fill"
-                transform="scale(.26459)"
-            />
-        </Layer>
-    )
-}
+const AirportMarker: FC<AirportMarkerProps> = ({ position }) => (
+    <Layer x={position[0]} y={position[1]}>
+        <path
+            d="M60.326 5.096V55.13L24.947 19.752l-5.195 5.195 35.379 35.38H5.098v7.347H55.13l-35.379 35.379 5.195
+            5.195 35.38-35.379v50.035h7.347V72.87l35.379 35.379 5.195-5.195-35.379-35.38h50.033v-7.347H72.87l35.38-35.379-5.196-5.195-35.38
+            35.379V5.096zm0-1.832a1.833 1.833 0 00-1.832 1.832v45.61l-32.25-32.25a1.833 1.833 0 00-2.594 0l-5.195 5.194a1.833 1.833 0 000 2.594l32.25
+            32.25H5.098a1.833 1.833 0 00-1.832 1.832v7.348a1.833 1.833 0 001.832 1.832h45.607l-32.25 32.25a1.833 1.833 0 000 2.594l5.195 5.195a1.833
+            1.833 0 002.594 0l32.25-32.25v45.61a1.833 1.833 0 001.832 1.831h7.348a1.833 1.833 0 001.832-1.832v-45.61l32.25 32.25a1.833 1.833 0
+            002.594 0l5.195-5.194a1.833 1.833 0 000-2.594l-32.25-32.25h45.607a1.833 1.833 0 001.832-1.832v-7.348a1.833 1.833 0
+            00-1.832-1.832H77.295l32.25-32.25a1.833 1.833 0 000-2.594l-5.195-5.195a1.833 1.833 0 00-2.594 0l-32.25 32.25V5.095a1.833 1.833 0
+            00-1.832-1.831zm1.832 3.664h3.684V55.13a1.833 1.833 0 003.129 1.297l34.082-34.084 2.601 2.603L71.572 59.03a1.833 1.833 0 001.297
+            3.13h48.201v3.683h-48.2a1.833 1.833 0 00-1.298 3.129l34.082 34.082-2.601 2.601L68.97 71.572a1.833 1.833 0 00-3.13 1.297v48.203h-3.683V72.87a1.833
+            1.833 0 00-3.129-1.297l-34.082 34.082-2.603-2.601L56.428 68.97a1.833 1.833 0 00-1.297-3.13H6.93v-3.683h48.2a1.833 1.833 0 001.298-3.129L22.346
+            24.947l2.601-2.601L59.03 56.428a1.833 1.833 0 003.13-1.297z"
+            color="#000"
+            fontWeight={400}
+            fontFamily="sans-serif"
+            overflow="visible"
+            className="White Fill"
+            stroke="#000"
+            strokeWidth={3.78}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            paintOrder="markers stroke fill"
+            transform="scale(.26459)"
+        />
+    </Layer>
+);
 
 interface WaypointMarkerProps {
     ident: string,
