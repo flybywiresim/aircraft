@@ -1258,7 +1258,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     requestUpdate(excludeMcdu) {
         this.mcdus.forEach((mcdu) => {
             if (mcdu !== excludeMcdu) {
-                mcdu.requestOnsideUpdate()
+                mcdu.requestOnsideUpdate();
             }
         });
     }
@@ -1318,7 +1318,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     clearKeyboardFocus(excludeMcdu) {
         this.mcdus.forEach((mcdu) => {
             if (mcdu !== excludeMcdu) {
-                mcdu.clearKeyboardFocus()
+                mcdu.clearKeyboardFocus();
             }
         });
     }
