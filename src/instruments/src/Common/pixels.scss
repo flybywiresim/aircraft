@@ -22,6 +22,16 @@
   @include pixels;
 }
 
+.BrightnessCompensation {
+  content: '';
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.35);
+  transition: opacity 0.5s;
+}
+
 .BacklightBleed {
   content: '';
   width: 100%;

@@ -107,6 +107,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         // LCD OVERLAY
         this.lcdOverlay = document.querySelector("#LcdOverlay");
+        this.brightnessCompensation = document.querySelector("#BrightnessCompensation");
 
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector("#MfdEngTest");
@@ -181,6 +182,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
 
         this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
+        this.brightnessCompensation.style.opacity = 1 - SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
 
         this.displayUnit.update(deltaTime);
 

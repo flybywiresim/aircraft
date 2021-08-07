@@ -139,6 +139,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         // LCD OVERLAY
         this.lcdOverlay = document.querySelector("#LcdOverlay");
+        this.brightnessCompensation = document.querySelector("#BrightnessCompensation");
     }
 
     onUpdate() {
@@ -152,6 +153,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             return;
         }
         this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
+        this.brightnessCompensation.style.opacity = 1 - SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
 
         this.displayUnit.update(deltaTime);
 

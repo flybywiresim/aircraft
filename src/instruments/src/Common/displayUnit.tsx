@@ -90,6 +90,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     return (
         <>
             <div className="LcdOverlay" style={{ opacity }} />
+            <div className="LcdOverlay2" style={{ opacity: 1 - opacity }} />
             <div className="BacklightBleed" />
             <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
         </>
