@@ -261,7 +261,7 @@ class CDUInitPage {
     }
 
     static ShowPage2(fmc, mcdu) {
-        if (this.fmc.timeSinceFirstEngineStart >= 15) {
+        if (fmc.timeSinceFirstEngineStart >= 15) {
             CDUFuelPredPage.ShowPage(fmc, mcdu);
             return;
         }

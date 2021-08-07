@@ -3585,7 +3585,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     trySetProgWaypoint(mcdu, s, callback = EmptyCallback.Boolean) {
         if (s === FMCMainDisplay.clrValue) {
-            this._progBrgDist[mcdu.side] = undefined;
+            delete this._progBrgDist[mcdu.side];
             return callback(true);
         }
 

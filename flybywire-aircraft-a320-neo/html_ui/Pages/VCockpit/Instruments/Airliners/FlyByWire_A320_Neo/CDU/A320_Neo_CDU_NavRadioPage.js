@@ -44,10 +44,11 @@ class CDUNavRadioPage {
                             fmc.vor1Frequency = navaids.infos.frequencyMHz;
                             fmc.radioNav.setVORActiveFrequency(1, fmc.vor1Frequency);
                             fmc.vor1Course = 0;
-                            mcdu.requestUpdate();
+                            mcdu.requestOffsideUpdate();
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
+                        CDUNavRadioPage.ShowPage(fmc, mcdu);
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
@@ -130,10 +131,11 @@ class CDUNavRadioPage {
                             fmc.adf1IdPilotValue = value;
                             fmc.adf1Frequency = navaids.infos.frequencyMHz;
                             fmc.radioNav.setADFActiveFrequency(1, fmc.adf1Frequency);
-                            mcdu.requestUpdate();
+                            mcdu.requestOffsideUpdate();
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
+                        CDUNavRadioPage.ShowPage(fmc, mcdu);
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
@@ -189,10 +191,11 @@ class CDUNavRadioPage {
                             fmc.vor2Frequency = navaids.infos.frequencyMHz;
                             fmc.radioNav.setVORActiveFrequency(2, fmc.vor2Frequency);
                             fmc.vor2Course = 0;
-                            mcdu.requestUpdate();
+                            mcdu.requestOffsideUpdate();
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
+                        CDUNavRadioPage.ShowPage(fmc, mcdu);
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
@@ -258,10 +261,11 @@ class CDUNavRadioPage {
                         if (navaids) {
                             fmc.adf2Frequency = navaids.infos.frequencyMHz;
                             fmc.radioNav.setADFActiveFrequency(2, fmc.adf2Frequency);
-                            mcdu.requestUpdate();
+                            mcdu.requestOffsideUpdate();
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
+                        CDUNavRadioPage.ShowPage(fmc, mcdu);
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {

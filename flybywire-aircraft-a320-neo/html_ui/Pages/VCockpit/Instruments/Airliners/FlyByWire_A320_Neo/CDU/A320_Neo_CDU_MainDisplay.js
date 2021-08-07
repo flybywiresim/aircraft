@@ -201,7 +201,7 @@ class A320_Neo_CDU_Display {
             this._delayedPageSwitch.timeRemaining -= _deltaTime;
             if (this._delayedPageSwitch.timeRemaining <= 0) {
                 this.updateRequest = false;
-                this._delayedPageSwitch.callback(this.fmc, this, this._delayedPageSwitch.args);
+                this._delayedPageSwitch.callback(this.fmc, this, ...this._delayedPageSwitch.args);
                 this._delayedPageSwitch = null;
             }
         }
