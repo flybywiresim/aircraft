@@ -80,11 +80,12 @@ class CDUProgressPage {
 
         let progBearingDist = "{small}\xa0---°\xa0/----.-{end}";
         let progWaypoint = "[\xa0\xa0\xa0\xa0\xa0]";
-        if (fmc.progWaypointIdent !== undefined) {
-            progWaypoint = fmc.progWaypointIdent.padEnd("7", "\xa0");
-            if (fmc.progBearing > 0 && fmc.progDistance > 0) {
-                const distDigits = fmc.progDistance > 9999 ? 0 : 1;
-                progBearingDist = `{small}{green}\xa0${fmc.progBearing.toFixed(0).padStart(3, "0")}°\xa0/${fmc.progDistance.toFixed(distDigits).padStart(3)}{end}{end}`;
+        if (fmc.getProgWaypointIdent(mcdu) !== undefined) {
+            progWaypoint = fmc.getProgWaypointIdent(mcdu).padEnd("7", "\xa0");
+            const [brg, dist] = fmc.getProgBearingDistance(mcdu);
+            if (brg > 0 && dist > 0) {
+                const distDigits = dist > 9999 ? 0 : 1;
+                progBearingDist = `{small}{green}\xa0${brg.toFixed(0).padStart(3, "0")}°\xa0/${dist.toFixed(distDigits).padStart(3)}{end}{end}`;
             }
         }
         mcdu.onRightInput[3] = (input) => {

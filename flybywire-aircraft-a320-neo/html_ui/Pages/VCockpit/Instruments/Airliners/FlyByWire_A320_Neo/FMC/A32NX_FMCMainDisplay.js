@@ -137,7 +137,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = undefined;
         this._activeCruiseFlightLevelDefaulToFcu = undefined;
-        this._progBrgDist = undefined;
+        this._progBrgDist = {};
         this.preSelectedClbSpeed = undefined;
         this.preSelectedCrzSpeed = undefined;
         this.preSelectedDesSpeed = undefined;
@@ -430,7 +430,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = 0;
         this._activeCruiseFlightLevelDefaulToFcu = false;
-        this._progBrgDist = undefined;
+        this._progBrgDist = {};
         this.preSelectedClbSpeed = undefined;
         this.preSelectedCrzSpeed = undefined;
         this.preSelectedDesSpeed = undefined;
@@ -3555,19 +3555,19 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Set the progress page bearing/dist location
+     * @param {A320_Neo_CDU_Display} mcdu The MCDU calling
      * @param {string} ident ident of the waypoint or runway, will be replaced by "ENTRY" if brg/dist offset are specified
      * @param {LatLongAlt} coordinates co-ordinates of the waypoint/navaid/runway, without brg/dist offset
      * @param {(number|undefined)} brg undefined or (true) bearing for offset
      * @param {(number|undefined)} dist undefined or dist for offset
      */
-    _setProgLocation(ident, coordinates, brg, dist) {
-        console.log(`progLocation: ${ident} ${coordinates} ${brg} ${dist}`);
+    _setProgLocation(mcdu, ident, coordinates, brg, dist) {
         const displayIdent = (brg !== undefined && dist !== undefined) ? "ENTRY" : ident;
         let adjustedCoordinates = coordinates;
         if (brg !== undefined && dist !== undefined) {
             adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates(brg % 360, dist, coordinates.lat, coordinates.long);
         }
-        this._progBrgDist = {
+        this._progBrgDist[mcdu.side] = {
             ident: displayIdent,
             coordinates: adjustedCoordinates,
             bearing: -1,
@@ -3585,7 +3585,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     trySetProgWaypoint(mcdu, s, callback = EmptyCallback.Boolean) {
         if (s === FMCMainDisplay.clrValue) {
-            this._progBrgDist = undefined;
+            this._progBrgDist[mcdu.side] = undefined;
             return callback(true);
         }
 
@@ -3618,7 +3618,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             if (this.isPlaceFormat(place)) {
                 this.parsePlace(mcdu, place, (loc, magVar) => {
-                    this._setProgLocation(place, loc, brg ? A32NX_Util.magneticToTrue(brg, magVar) : undefined, dist);
+                    this._setProgLocation(mcdu, place, loc, brg ? A32NX_Util.magneticToTrue(brg, magVar) : undefined, dist);
                     return callback(true);
                 }, (err) => {
                     this.addNewMessage(err);
@@ -3635,7 +3635,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Recalculate the bearing and distance for progress page
      */
     updateProgDistance() {
-        if (!this._progBrgDist) {
+        if (!Object.keys(this._progBrgDist).length) {
             return;
         }
 
@@ -3643,27 +3643,27 @@ class FMCMainDisplay extends BaseAirliners {
         const longitude = ADIRS.getLongitude();
 
         if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
-            this._progBrgDist.distance = -1;
-            this._progBrgDist.bearing = -1;
+            for (const key in this._progBrgDist) {
+                this._progBrgDist[key].distance = -1;
+                this._progBrgDist[key].bearing = -1;
+            }
             return;
         }
 
         const planeLl = new LatLong(latitude, longitude);
-        this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLl, this._progBrgDist.coordinates);
-        this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLl, this._progBrgDist.coordinates));
+        for (const key in this._progBrgDist) {
+            this._progBrgDist[key].distance = Avionics.Utils.computeGreatCircleDistance(planeLl, this._progBrgDist[key].coordinates);
+            this._progBrgDist[key].bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLl, this._progBrgDist[key].coordinates));
+        }
         this.requestUpdate();
     }
 
-    get progBearing() {
-        return this._progBrgDist ? this._progBrgDist.bearing : -1;
+    getProgBearingDistance(mcdu) {
+        return this._progBrgDist[mcdu.side] ? [ this._progBrgDist[mcdu.side].bearing, this._progBrgDist[mcdu.side].distance] : [-1, -1];
     }
 
-    get progDistance() {
-        return this._progBrgDist ? this._progBrgDist.distance : -1;
-    }
-
-    get progWaypointIdent() {
-        return this._progBrgDist ? this._progBrgDist.ident : undefined;
+    getProgWaypointIdent(mcdu) {
+        return this._progBrgDist[mcdu.side] ? this._progBrgDist[mcdu.side].ident : undefined;
     }
 
     /* END OF MCDU GET/SET METHODS */
