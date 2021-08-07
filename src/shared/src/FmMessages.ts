@@ -72,6 +72,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'SELECT TRUE REF',
         color: 'Amber',
         ndPriority: 1,
+        clearable: true,
     },
     CheckNorthRef: {
         id: 2,
@@ -79,6 +80,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'CHECK NORTH REF',
         color: 'Amber',
         ndPriority: 1,
+        clearable: true,
     },
     NavAccuracyDowngrade: {
         id: 3,
@@ -86,6 +88,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'NAV ACCUR DOWNGRAD',
         color: 'Amber',
         ndPriority: 1,
+        clearable: true,
     },
     NavAccuracyUpgradeNoGps: {
         id: 4,
@@ -93,6 +96,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'NAV ACCUR UPGRAD',
         color: 'Amber',
         ndPriority: 1,
+        clearable: true,
     },
     SpecifiedVorDmeUnavailble: {
         id: 5,
@@ -100,6 +104,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'SPECIF VOR/D UNAVAIL',
         color: 'Amber',
         ndPriority: 1,
+        clearable: true,
     },
     NavAccuracyUpgradeGps: {
         id: 6,
@@ -107,6 +112,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'NAV ACCUR UPGRAD',
         color: 'White',
         ndPriority: 1,
+        clearable: true,
     },
     GpsPrimary: {
         id: 7,
