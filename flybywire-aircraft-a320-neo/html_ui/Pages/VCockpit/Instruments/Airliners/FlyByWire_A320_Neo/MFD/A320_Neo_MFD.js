@@ -105,10 +105,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
 
+        // LCD OVERLAY
+        this.lcdOverlay = document.querySelector("#LcdOverlay");
+
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector("#MfdEngTest");
         this.engMaintDiv = document.querySelector("#MfdMaintMode");
-
         //CHRONO
         SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
         this.chronoDiv = document.querySelector("#div_Chrono");
@@ -177,6 +179,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         if (deltaTime === -1) {
             return;
         }
+
+        this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
 
         this.displayUnit.update(deltaTime);
 

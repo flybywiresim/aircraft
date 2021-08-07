@@ -767,7 +767,8 @@
     "extensionsUsed": [
         "ASOBO_normal_map_convention",
         "MSFT_texture_dds",
-        "ASOBO_asset_optimized"
+        "ASOBO_asset_optimized",
+        "ASOBO_material_kitty_glass"
     ],
     "extensionsRequired": [
         "MSFT_texture_dds"
@@ -785,6 +786,11 @@
                 },
                 "baseColorTexture": {
                     "index": 0
+                }
+            },
+            "extensions": {
+                "ASOBO_material_kitty_glass": {
+                    "glassReflectionMaskFactor": 1
                 }
             }
         }
