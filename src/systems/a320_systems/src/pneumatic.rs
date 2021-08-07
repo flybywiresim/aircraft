@@ -17,8 +17,8 @@ use systems::{
         DefaultValve, EngineCompressionChamberController, PneumaticContainer,
     },
     shared::{
-        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, PneumaticValve,
-        PneumaticValveSignal,
+        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
+        PneumaticValve, PneumaticValveSignal,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
@@ -53,14 +53,18 @@ impl A320Pneumatic {
         engines: [&T; 2],
         apu_bleed_valve_is_open: bool,
         overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
     ) {
+        // TODO: Handling of the engine fire and engine bleed pushbuttons is too convoluted. I just need to get both signals to the respective controllers. Not sure if they should really be passed through the BMC.
+
         // Update BMC
         for bmc in self.bmcs.iter_mut() {
             bmc.update(
                 context,
                 &self.engine_systems,
                 apu_bleed_valve_is_open,
-                overhead_panel.cross_bleed_mode(),
+                overhead_panel,
+                engine_fire_push_buttons,
             );
         }
 
@@ -70,10 +74,10 @@ impl A320Pneumatic {
 
         // Update engine systems
         for engine_system in self.engine_systems.iter_mut() {
-            // TODO: This index shift is not the prettiest
             engine_system.update(
                 context,
                 bmc.engine_data(engine_system.number),
+                // TODO: This index shift is not the prettiest
                 engines[engine_system.number - 1],
             );
         }
@@ -199,13 +203,14 @@ struct PRValveController {
     transfer_pressure: Pressure,
     regulated_pressure: Pressure,
     target_open_amount: Ratio,
+    should_close_on_pilot_command: bool,
     pid: Pid<f64>,
 }
 impl ControllerSignal<PneumaticValveSignal> for PRValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
-        // TODO: Use some more sophisticated regulation
-
-        if self.transfer_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI) {
+        if self.should_close_on_pilot_command
+            || self.transfer_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI)
+        {
             return Some(PneumaticValveSignal::close());
         }
 
@@ -224,6 +229,7 @@ impl PRValveController {
             number,
             transfer_pressure: Pressure::new::<psi>(0.),
             regulated_pressure: Pressure::new::<psi>(0.),
+            should_close_on_pilot_command: false,
             pid: Pid::new(0., 0.01, 0., 1., 1., 1., 1., Self::TARGET_PRESSURE_PSI),
             target_open_amount: Ratio::new::<ratio>(0.),
         }
@@ -232,6 +238,9 @@ impl PRValveController {
     fn update(&mut self, context: &UpdateContext, engine_data: &impl EngineBleedDataProvider) {
         self.transfer_pressure = engine_data.transfer_pressure();
         self.regulated_pressure = engine_data.regulated_pressure();
+
+        self.should_close_on_pilot_command = engine_data.is_engine_fire_pushbutton_released()
+            || !engine_data.is_engine_bleed_pushbutton_auto();
 
         let output = self
             .pid
@@ -333,6 +342,9 @@ struct EngineBleedSystemData {
     ip_compressor_pressure: Pressure,
     // HP stage
     hp_compressor_pressure: Pressure,
+
+    is_engine_bleed_pushbutton_auto: bool,
+    is_engine_fire_pushbutton_released: bool,
 }
 impl EngineBleedSystemData {
     fn new(number: usize) -> Self {
@@ -344,10 +356,17 @@ impl EngineBleedSystemData {
             hpv_open_amount: Ratio::new::<percent>(0.),
             ip_compressor_pressure: Pressure::new::<psi>(0.),
             hp_compressor_pressure: Pressure::new::<psi>(0.),
+            is_engine_bleed_pushbutton_auto: true,
+            is_engine_fire_pushbutton_released: false,
         }
     }
 
-    fn update(&mut self, bleed_system: &EngineBleedSystem) {
+    fn update(
+        &mut self,
+        bleed_system: &EngineBleedSystem,
+        is_engine_bleed_pushbutton_auto: bool,
+        is_engine_fire_pushbutton_released: bool,
+    ) {
         self.ip_compressor_pressure = bleed_system.ip_compression_chamber.pressure();
         self.hp_compressor_pressure = bleed_system.hp_compression_chamber.pressure();
 
@@ -355,7 +374,10 @@ impl EngineBleedSystemData {
         self.regulated_pressure = bleed_system.regulated_pressure_pipe.pressure();
 
         self.is_prv_open = bleed_system.pr_valve.is_open();
-        self.hpv_open_amount = bleed_system.hp_valve.open_amount()
+        self.hpv_open_amount = bleed_system.hp_valve.open_amount();
+
+        self.is_engine_bleed_pushbutton_auto = is_engine_bleed_pushbutton_auto;
+        self.is_engine_fire_pushbutton_released = is_engine_fire_pushbutton_released;
     }
 }
 impl EngineBleedDataProvider for EngineBleedSystemData {
@@ -382,6 +404,14 @@ impl EngineBleedDataProvider for EngineBleedSystemData {
     fn hp_pressure(&self) -> Pressure {
         self.hp_compressor_pressure
     }
+
+    fn is_engine_bleed_pushbutton_auto(&self) -> bool {
+        self.is_engine_bleed_pushbutton_auto
+    }
+
+    fn is_engine_fire_pushbutton_released(&self) -> bool {
+        self.is_engine_fire_pushbutton_released
+    }
 }
 trait EngineBleedDataProvider {
     fn transfer_pressure(&self) -> Pressure;
@@ -390,6 +420,8 @@ trait EngineBleedDataProvider {
     fn hpv_open_amount(&self) -> Ratio;
     fn ip_pressure(&self) -> Pressure;
     fn hp_pressure(&self) -> Pressure;
+    fn is_engine_bleed_pushbutton_auto(&self) -> bool;
+    fn is_engine_fire_pushbutton_released(&self) -> bool;
 }
 
 struct BleedMonitoringComputer {
@@ -433,15 +465,22 @@ impl BleedMonitoringComputer {
         context: &UpdateContext,
         engine_bleed_systems: &[EngineBleedSystem; 2],
         apu_bleed_valve_is_open: bool,
-        cross_bleed_selector_mode: CrossBleedValveSelectorMode,
+        overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_pushbuttons: &impl EngineFirePushButtons,
     ) {
         for engine_bleed_system in engine_bleed_systems.iter() {
-            self.engine_bleed_systems_data[engine_bleed_system.number - 1]
-                .update(engine_bleed_system);
+            self.engine_bleed_systems_data[engine_bleed_system.number - 1].update(
+                engine_bleed_system,
+                match self.number {
+                    1 => overhead_panel.engine_1_bleed_is_auto(),
+                    _ => overhead_panel.engine_2_bleed_is_auto(),
+                },
+                engine_fire_pushbuttons.is_released(engine_bleed_system.number),
+            );
         }
 
         self.apu_bleed_valve_is_open = apu_bleed_valve_is_open;
-        self.cross_bleed_selector_mode = cross_bleed_selector_mode;
+        self.cross_bleed_selector_mode = overhead_panel.cross_bleed_mode();
     }
 }
 
@@ -714,12 +753,33 @@ mod tests {
         }
     }
 
+    struct TestEngineFirePushButtons {
+        is_released: [bool; 2],
+    }
+    impl TestEngineFirePushButtons {
+        fn new() -> Self {
+            Self {
+                is_released: [false, false],
+            }
+        }
+
+        fn release(&mut self, engine_number: usize) {
+            self.is_released[engine_number - 1] = true;
+        }
+    }
+    impl EngineFirePushButtons for TestEngineFirePushButtons {
+        fn is_released(&self, engine_number: usize) -> bool {
+            self.is_released[engine_number - 1]
+        }
+    }
+
     struct PneumaticTestAircraft {
         pneumatic: A320Pneumatic,
         apu: TestApu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
         overhead_panel: A320PneumaticOverheadPanel,
+        fire_pushbuttons: TestEngineFirePushButtons,
     }
     impl PneumaticTestAircraft {
         fn new() -> Self {
@@ -729,6 +789,7 @@ mod tests {
                 engine_1: LeapEngine::new(1),
                 engine_2: LeapEngine::new(2),
                 overhead_panel: A320PneumaticOverheadPanel::new(),
+                fire_pushbuttons: TestEngineFirePushButtons::new(),
             }
         }
     }
@@ -739,6 +800,7 @@ mod tests {
                 [&self.engine_1, &self.engine_2],
                 self.apu.bleed_air_valve_is_open(),
                 &self.overhead_panel,
+                &self.fire_pushbuttons,
             );
         }
     }
@@ -886,6 +948,16 @@ mod tests {
             self.command(|a| a.apu.bleed_air_valve_is_open = is_open);
 
             self
+        }
+
+        fn release_fire_pushbutton(mut self, number: usize) -> Self {
+            self.command(|a| a.fire_pushbuttons.release(number));
+
+            self
+        }
+
+        fn is_fire_pushbutton_released(&self, number: usize) -> bool {
+            self.query(|a| a.fire_pushbuttons.is_released(number))
         }
 
         fn for_both_engine_systems_with_capture<T: Fn(&EngineBleedSystem, &mut U) -> (), U>(
@@ -1473,5 +1545,50 @@ mod tests {
             test_bed.cross_bleed_valve_selector(),
             CrossBleedValveSelectorMode::Shut
         );
+    }
+
+    #[test]
+    fn prv_closes_with_ovhd_engine_bleed_off() {
+        let mut test_bed = test_bed()
+            .idle_eng1()
+            .idle_eng2()
+            .in_isa_atmosphere(Length::new::<foot>(0.));
+
+        // TODO: I shouldn't have to run this twice, but it just takes two updates for the pressure to propagate through the system.
+        test_bed.run_with_delta(Duration::from_secs(5));
+        test_bed.run_with_delta(Duration::from_secs(5));
+
+        test_bed.for_both_engine_systems(|a| assert!(a.pr_valve.is_open()));
+
+        test_bed = test_bed
+            .set_engine_bleed_push_button_off(1)
+            .set_engine_bleed_push_button_off(2);
+        test_bed.run();
+
+        test_bed.for_both_engine_systems(|a| assert!(!a.pr_valve.is_open()));
+    }
+
+    #[test]
+    fn prv_closes_with_ovhd_engine_fire_pushbutton_released() {
+        let mut test_bed = test_bed()
+            .idle_eng1()
+            .idle_eng2()
+            .in_isa_atmosphere(Length::new::<foot>(0.));
+
+        // TODO: I shouldn't have to run this twice, but it just takes two updates for the pressure to propagate through the system.
+        test_bed.run_with_delta(Duration::from_secs(5));
+        test_bed.run_with_delta(Duration::from_secs(5));
+
+        test_bed.for_both_engine_systems(|a| assert!(a.pr_valve.is_open()));
+
+        test_bed = test_bed
+            .release_fire_pushbutton(1)
+            .release_fire_pushbutton(2);
+        test_bed.run();
+
+        assert!(test_bed.is_fire_pushbutton_released(1));
+        assert!(test_bed.is_fire_pushbutton_released(2));
+
+        test_bed.for_both_engine_systems(|a| assert!(!a.pr_valve.is_open()));
     }
 }

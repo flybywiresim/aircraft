@@ -172,6 +172,7 @@ impl Aircraft for A320 {
             [&self.engine_1, &self.engine_2],
             self.apu.bleed_air_valve_is_open(),
             &self.pneumatic_overhead,
+            &self.engine_fire_overhead,
         )
     }
 }

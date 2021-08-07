@@ -8,8 +8,8 @@ use crate::{
         PneumaticValveSignal,
     },
     simulation::{
-        Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
-        Write, Writer,
+        Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, Write, Writer,
     },
 };
 
@@ -375,6 +375,10 @@ impl CrossBleedValveSelectorKnob {
     }
 }
 impl SimulationElement for CrossBleedValveSelectorKnob {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.mode_id, self.mode());
+    }
+
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.mode = reader.read(&self.mode_id)
     }
@@ -862,7 +866,7 @@ mod tests {
         }
 
         #[test]
-        fn represents_simvars() {
+        fn valve_modes_are_represented_as_simvar_integers() {
             let mut test_bed = SimulationTestBed::from(CrossBleedValveSelectorKnob::new_auto());
 
             test_bed.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", 0);
