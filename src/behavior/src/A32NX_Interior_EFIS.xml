@@ -17,7 +17,7 @@
                 (L:BTN_LS_#ID#_FILTER_ACTIVE, boolean)
             </INDICATOR_CODE>
             <BUTTON_CODE type="rnp">
-                (H:A320_Neo_PFD_BTN_LS_1, boolean) = true;
+                (H:A320_Neo_PFD_BTN_LS_#ID#, boolean) = true;
             </BUTTON_CODE>
         </UseTemplate>
     </Template>
@@ -97,10 +97,11 @@
             <Component ID="#INDICATOR_NODE_ID#" Node="#INDICATOR_NODE_ID#">
                 <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                     <EMISSIVE_CODE type="rnp" return="number">
+                        let indicatorActive = #INDICATOR_CODE, bool#;
                         let indicatorsPowered = #INDICATOR_POWERED, bool#;
                         alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                         let emissiveDim = if annunciatorLight == 2 { 0.1 } else { 1 };
-                        (if (#INDICATOR_CODE, boolean# or annunciatorLight == 0) and indicatorsPowered {
+                        (if (indicatorActive or annunciatorLight == 0) and indicatorsPowered {
                             1 * emissiveDim
                         } else {
                             0
