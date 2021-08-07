@@ -38,9 +38,9 @@ class CDUInitPage {
             requestButton = "REQUEST [color]amber";
         }
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+        if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
+                fromTo = mcdu.flightPlanManager.getPersistentOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
                 if (coRoute.includes("__________[color]amber")) {
                     coRoute = "";
                 }
@@ -48,7 +48,7 @@ class CDUInitPage {
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
                 if (mcdu.simbrief.sendStatus != "DONE" ||
-                    (mcdu.simbrief["originIcao"] === mcdu.flightPlanManager.getOrigin().ident && mcdu.simbrief["destinationIcao"] === mcdu.flightPlanManager.getDestination().ident)) {
+                    (mcdu.simbrief["originIcao"] === mcdu.flightPlanManager.getPersistentOrigin().ident && mcdu.simbrief["destinationIcao"] === mcdu.flightPlanManager.getDestination().ident)) {
                     requestEnable = false;
                     requestButtonLabel = "";
                     requestButton = "";
@@ -93,7 +93,7 @@ class CDUInitPage {
                     }
                 };
 
-                if (mcdu.flightPlanManager.getOrigin()) {
+                if (mcdu.flightPlanManager.getPersistentOrigin()) {
                     alignOption = "IRS INIT>";
                 }
 
@@ -164,7 +164,7 @@ class CDUInitPage {
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     }
                 });
-            } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+            } else if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
