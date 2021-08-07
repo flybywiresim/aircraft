@@ -157,7 +157,7 @@ const NavigationDisplay: React.FC = () => {
                         </>
                     )}
                     <TcasWxrMessages modeIndex={modeIndex} />
-                    <FMMessages modeIndex={modeIndex} />
+                    <FMMessages modeIndex={modeIndex} side={side} />
 
                 </svg>
             </FlightPlanProvider>
