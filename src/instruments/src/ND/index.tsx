@@ -80,7 +80,7 @@ const NavigationDisplay: React.FC = () => {
 
         const timeout = setTimeout(() => {
             setModeChangeShown(false);
-        }, 2_500);
+        }, 500); // TODO looks like this depends on range or number of symbols IRL
 
         return () => clearTimeout(timeout);
     }, [modeIndex]);
@@ -99,7 +99,7 @@ const NavigationDisplay: React.FC = () => {
 
         const timeout = setTimeout(() => {
             setRangeChangeShown(false);
-        }, 2_500);
+        }, 500); // TODO looks like this depends on range or number of symbols IRL
 
         return () => clearTimeout(timeout);
     }, [rangeIndex]);
