@@ -171,8 +171,10 @@ impl CabinPressureController {
 
         match self.pressure_schedule_manager {
             PressureScheduleManager::Ground(_) => {
-                if (self.cabin_pressure - context.ambient_pressure()).abs() > error_margin {
+                if (self.cabin_pressure - context.ambient_pressure()) > error_margin {
                     Velocity::new::<foot_per_minute>(DEPRESS_RATE)
+                } else if (self.cabin_pressure - context.ambient_pressure()) < -error_margin {
+                    Velocity::new::<foot_per_minute>(-DEPRESS_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }

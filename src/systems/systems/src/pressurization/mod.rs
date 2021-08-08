@@ -438,7 +438,7 @@ mod tests {
         }
 
         fn command_ldg_elev_knob_value(mut self, value: f64) -> Self {
-            self.write("OVHD_KNOB_PRESS_LDG_ELEV", value);
+            self.write("OVHD_PRESS_LDG_ELEV_KNOB", value);
             self
         }
 

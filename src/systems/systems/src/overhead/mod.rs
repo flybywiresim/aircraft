@@ -678,14 +678,14 @@ pub struct ValueKnob {
 impl ValueKnob {
     pub fn new(name: &str) -> Self {
         Self {
-            value_id: format!("OVHD_KNOB_{}", name),
+            value_id: format!("OVHD_{}_KNOB", name),
             value: 0.,
         }
     }
 
     pub fn new_with_value(name: &str, value: f64) -> Self {
         Self {
-            value_id: format!("OVHD_KNOB_{}", name),
+            value_id: format!("OVHD_{}_KNOB", name),
             value,
         }
     }
