@@ -149,7 +149,7 @@ impl LinearActuator {
         available_pressure: Pressure,
     ) {
         self.update_mode(requested_mode);
-        self.update_force(requested_mode, available_pressure);
+        self.update_force(available_pressure);
         connected_body.apply_control_arm_force(self.force);
     }
 
@@ -208,7 +208,7 @@ impl LinearActuator {
         self.volume_to_res_accumulator += Volume::new::<cubic_meter>(volume_to_reservoir);
     }
 
-    fn update_force(&mut self, current_mode: LinearActuatorMode, hydraulic_pressure: Pressure) {
+    fn update_force(&mut self, hydraulic_pressure: Pressure) {
         if self.mode == LinearActuatorMode::ClosedValves {
             let position_error = self.closed_valves_reference_position - self.position;
             self.force = position_error * self.fluid_compression_spring_constant
@@ -583,6 +583,56 @@ mod tests {
         }
     }
 
+    #[test]
+    fn linear_actuator_dampens_body_drop_when_damping_mode() {
+        let mut rigid_body = cargo_door_body(true);
+
+        let mut actuator = cargo_door_actuator(&rigid_body);
+
+        let dt = 0.05;
+
+        let mut time = 0.;
+
+        rigid_body.unlock();
+        actuator.set_position_target(1.0);
+        let mut requested_mode = LinearActuatorMode::PositionControl;
+        for _ in 0..700 {
+            actuator.update(&mut rigid_body, requested_mode, Pressure::new::<psi>(1500.));
+            rigid_body.update(&context(
+                Duration::from_secs_f64(dt),
+                Angle::new::<degree>(0.),
+                Angle::new::<degree>(0.),
+            ));
+            actuator.update_after_rigid_body(
+                &rigid_body,
+                &context(
+                    Duration::from_secs_f64(dt),
+                    Angle::new::<degree>(0.),
+                    Angle::new::<degree>(0.),
+                ),
+            );
+
+            if time > 25. && time < 25. + dt {
+                assert!(actuator.position > 0.9);
+                requested_mode = LinearActuatorMode::ClosedValves;
+            }
+
+            if time > 26. {
+                requested_mode = LinearActuatorMode::Damping;
+            }
+
+            println!(
+                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
+                rigid_body.position_normalized(),
+                actuator.position,
+                actuator.force,
+                time
+            );
+
+            time += dt;
+        }
+    }
+
     fn context(delta_time: Duration, pitch: Angle, bank: Angle) -> UpdateContext {
         UpdateContext::new(
             delta_time,
@@ -627,7 +677,7 @@ mod tests {
             VolumeRate::new::<gallon_per_second>(0.008),
             800000.,
             15000.,
-            500.,
+            10000.,
         )
     }
 }
