@@ -1808,6 +1808,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_PNEU_ENG_{number}_STARTER_VALVE_OPEN:
+    - Indicates whether the starter valve is open.
+    - Bool
+    - {number}
+        - 1
+        - 2
+
 - A32NX_PNEU_XBLEED_VALVE_OPEN:
     - Indicates whether the cross bleed air valve is open
     - Bool

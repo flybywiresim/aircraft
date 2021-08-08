@@ -613,6 +613,7 @@ impl SimulationElement for EngineBleedSystem {
         visitor.visit(self);
     }
 
+    // TODO: Possibly move these to their respective struct (e.g IP_PRESSURE to IPCompressionChamber or its controller)
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &format!("PNEU_ENG_{}_IP_PRESSURE", self.number),
@@ -642,6 +643,11 @@ impl SimulationElement for EngineBleedSystem {
         writer.write(
             &format!("PNEU_ENG_{}_PR_VALVE_OPEN", self.number),
             self.pr_valve.is_open(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_STARTER_VALVE_OPEN", self.number),
+            self.engine_starter_valve.is_open(),
         );
     }
 }
@@ -1471,6 +1477,9 @@ mod tests {
 
         assert!(test_bed.contains_key("PNEU_ENG_1_PR_VALVE_OPEN"));
         assert!(test_bed.contains_key("PNEU_ENG_2_PR_VALVE_OPEN"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_STARTER_VALVE_OPEN"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_STARTER_VALVE_OPEN"));
 
         assert!(test_bed.contains_key("OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT"));
         assert!(test_bed.contains_key("OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT"));
