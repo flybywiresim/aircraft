@@ -1228,7 +1228,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "STROBE LT OFF",
                         isActive: () => (
-                            this.isInFlightPhase(6, 7, 8) && !this.getCachedSimVar("LIGHT STROBE ON", "Bool")
+                            this.isInFlightPhase(6, 7, 8) && !this.getCachedSimVar("LIGHT STROBE OFF", "Bool")
                         ),
                     },
                     {
