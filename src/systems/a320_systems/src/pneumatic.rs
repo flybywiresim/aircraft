@@ -1435,7 +1435,7 @@ mod tests {
 
         test_bed.run();
 
-        assert!(test_bed.cross_bleed_valve_is_open());
+        assert!(!test_bed.cross_bleed_valve_is_open());
 
         test_bed = test_bed
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
@@ -1443,7 +1443,7 @@ mod tests {
 
         test_bed.run();
 
-        assert!(!test_bed.cross_bleed_valve_is_open());
+        assert!(test_bed.cross_bleed_valve_is_open());
     }
 
     #[test]
