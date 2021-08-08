@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import './Fuel.scss';
 import ReactDOM from 'react-dom';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
 import { usePersistentProperty } from '../../../Common/persistence';
