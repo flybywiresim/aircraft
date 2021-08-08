@@ -1561,7 +1561,12 @@ mod tests {
         test_bed.for_both_engine_systems(|a| assert!(a.pr_valve.is_open()));
 
         test_bed = test_bed.set_engine_bleed_push_button_off(1);
-        // .set_engine_bleed_push_button_off(2);
+        test_bed.run();
+
+        test_bed.for_engine(1, |a| assert!(!a.pr_valve.is_open()));
+        test_bed.for_engine(2, |a| assert!(a.pr_valve.is_open()));
+
+        test_bed = test_bed.set_engine_bleed_push_button_off(2);
         test_bed.run();
 
         test_bed.for_both_engine_systems(|a| assert!(!a.pr_valve.is_open()));
