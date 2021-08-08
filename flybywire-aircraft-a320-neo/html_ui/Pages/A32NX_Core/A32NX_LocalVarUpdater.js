@@ -80,7 +80,7 @@ class A32NX_LocalVarUpdater {
                 refreshInterval: 50,
             },
             {
-                varName: "L:32NX_PACKS_1_IS_SUPPLYING",
+                varName: "L:A32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this),
                 refreshInterval: 1000,
