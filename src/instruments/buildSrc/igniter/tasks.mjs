@@ -5,6 +5,10 @@ import { Directories } from '../directories.mjs';
 
 const ecamPages = [
     {
+        name: 'eng-page',
+        path: 'SD/Pages/Eng',
+    },
+    {
         name: 'door-page',
         path: 'SD/Pages/Door',
     },
