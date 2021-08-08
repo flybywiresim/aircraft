@@ -1,27 +1,28 @@
-import { Failure } from '@flybywiresim/failures';
 import React, { FC, MouseEventHandler } from 'react';
 
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 
 export interface FailureButtonProps {
-    failure: Readonly<Failure>,
+    name: string,
+    isActive: boolean,
+    isChanging: boolean,
     onClick: MouseEventHandler<HTMLButtonElement>
 }
 
-export const FailureButton: FC<FailureButtonProps> = ({ failure, onClick }) => {
+export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChanging, onClick }) => {
     let type: BUTTON_TYPE | undefined;
-    if (failure.isChanging) {
+    if (isChanging) {
         type = BUTTON_TYPE.NONE;
     } else {
-        type = failure.isActive ? BUTTON_TYPE.RED : BUTTON_TYPE.GREEN;
+        type = isActive ? BUTTON_TYPE.RED : BUTTON_TYPE.GREEN;
     }
     return (
         <Button
             onClick={onClick}
             type={type}
-            disabled={failure.isChanging}
+            disabled={isChanging}
         >
-            <span>{failure.name}</span>
+            <span>{name}</span>
         </Button>
     );
 };

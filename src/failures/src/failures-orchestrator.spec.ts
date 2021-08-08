@@ -6,8 +6,9 @@ describe('FailuresOrchestrator', () => {
     test('stores configured failures', () => {
         const o = orchestrator();
 
-        expect(o.getFailures().size).toBe(1);
-        expect(o.getFailures().values().next().value).toMatchObject({
+        const allFailures = o.getAllFailures();
+        expect(allFailures).toHaveLength(1);
+        expect(allFailures[0]).toMatchObject({
             identifier,
             name,
         });
@@ -49,7 +50,7 @@ describe('FailuresOrchestrator', () => {
                 expect(o.isChanging(identifier)).toBe(true);
 
                 await flushPromises();
-                await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 0);
+                await SimVar.SetSimVarValue(activateSimVarName, 'number', 0);
                 o.update();
                 await promise;
 

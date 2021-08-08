@@ -6,11 +6,13 @@ export const Failures = () => {
     const orchestrator = useFailuresOrchestrator();
 
     const buttons: JSX.Element[] = [];
-    orchestrator.getFailures().forEach((failure) => {
+    orchestrator.allFailures.forEach((failure) => {
         buttons.push(<FailureButton
-            failure={failure}
+            name={failure.name}
+            isActive={orchestrator.activeFailures.has(failure.identifier)}
+            isChanging={orchestrator.changingFailures.has(failure.identifier)}
             onClick={() => {
-                if (!failure.isActive) {
+                if (!orchestrator.activeFailures.has(failure.identifier)) {
                     orchestrator.activate(failure.identifier);
                 } else {
                     orchestrator.deactivate(failure.identifier);
