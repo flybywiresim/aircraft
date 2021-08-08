@@ -18,6 +18,8 @@ export const FuelPage = () => {
     const [tankCenter] = useSimVar('FUEL TANK CENTER QUANTITY', 'gallons', 500);
     const [tankRightInner] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'gallons', 500);
     const [tankRightOuter] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'gallons', 500);
+    const [leftOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
+    const [rightOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
 
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT');
 
@@ -26,9 +28,6 @@ export const FuelPage = () => {
 
     const leftFuelUsed = fuelForDisplay(leftConsumption, unit);
     const rightFuelUsed = fuelForDisplay(rightConsumption, unit);
-
-    const leftOuterFuelTransferInProgress = 0;
-    const rightOuterFuelTransferInProgress = 0;
 
     const [fuelWeightPerGallon] = useSimVar('FUEL WEIGHT PER GALLON', 'kilogram', 60_000);
 
@@ -80,7 +79,7 @@ export const FuelPage = () => {
                 <text className="TankQuantity" x={74} y={285}>{fuelInTanksForDisplay(tankLeftOuter, unit, fuelWeightPerGallon)}</text>
                 <text className="TankQuantity" x={190} y={285}>{fuelInTanksForDisplay(tankLeftInner, unit, fuelWeightPerGallon)}</text>
 
-                { leftOuterFuelTransferInProgress ? <Triangle x={77} y={319} colour="Green" fill={0} orientation={90} /> : null }
+                { leftOuterInnerValve ? <Triangle x={77} y={319} colour="Green" fill={0} orientation={90} /> : null }
 
                 <text className="UnitTemp" x="70" y="355">°C</text>
             </>
@@ -135,7 +134,7 @@ export const FuelPage = () => {
                 {/* Quantities */}
                 <text className="TankQuantity" x={472} y={285}>{fuelInTanksForDisplay(tankRightInner, unit, fuelWeightPerGallon)}</text>
                 <text className="TankQuantity" x={579} y={285}>{fuelInTanksForDisplay(tankRightOuter, unit, fuelWeightPerGallon)}</text>
-                { rightOuterFuelTransferInProgress ? <Triangle x={522} y={319} colour="Green" fill={0} orientation={-90} /> : null }
+                { rightOuterInnerValve ? <Triangle x={522} y={319} colour="Green" fill={0} orientation={-90} /> : null }
 
                 <text className="UnitTemp" x="510" y="355">°C</text>
             </>
