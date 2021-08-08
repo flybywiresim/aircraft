@@ -7,6 +7,10 @@
     stroke: red !important;
   }
 
+  .Hide {
+    display:none;
+  }
+
   .PageTitle {
     font-size: 24px;
     text-decoration: underline;
@@ -73,6 +77,10 @@
     stroke-width: 2;
   }
 
+  .FillAmber {
+    fill: $display-amber;
+  }
+
   .WhiteLine {
     stroke: $display-white;
     stroke-width: 2;
@@ -80,13 +88,6 @@
 
 
   #APU {
-    stroke: $display-white;
-
-    path {
-      stroke-width: 2.5;
-      stroke-linecap: round;
-    }
-
     text {
 
       font-size: $font-size-large;

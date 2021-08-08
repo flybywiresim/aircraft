@@ -151,17 +151,20 @@ export const FuelPage = () => {
 };
 
 const Apu = () => {
-    const apuN = useSimVar('L:A32NX_APU_N', 'percent', 500);
-    const apuEmergShutdown = useSimVar('L:A32NX_APU_IS_EMERGENCY_SHUTDOWN', 'boolean', 1000);
+    // Use as a surrogate for fire valve being open or closed.
+    const [apuN] = useSimVar('L:A32NX_APU_N', 'percent', 500);
+    const [apuFirePB] = useSimVar('L:A32NX_FIRE_BUTTON_APU', 'boolean', 1000);
     // APU fire P/B out = Amber APU only
     // White APU and triangle only if APU off
     // If APU on and powered green line and triangle
+    const color = apuFirePB ? 'Amber' : apuN <= 20 ? 'White' : 'Green';
+    const fill = apuFirePB ? 1 : 0;
 
     return (
         <g id="APU">
-            <text className="White" x="122" y="150" textAnchor="end" alignmentBaseline="central">APU</text>
-            <Triangle x={129} y={150} colour="Green" fill={0} orientation={-90} />
-            <path id="apuFuelLine" className="FlowShape" d="M147,150 l13,0" />
+            <text className={apuFirePB ? 'Amber' : 'White'} x="122" y="150" textAnchor="end" alignmentBaseline="central">APU</text>
+            {apuFirePB && apuN <= 20 ? null : <Triangle x={129} y={150} colour={color} fill={fill} orientation={-90} />}
+            <path id="apuFuelLine" className={`${color}Line ${apuN >= 20 ? '' : 'Hide'}`} d="M147,150 l13,0" />
         </g>
     );
 };
@@ -305,18 +308,14 @@ const CrossFeedValve = ({ x, y }) => {
 };
 
 const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }) => {
-    const [active] = useSimVar(`FUELSYSTEM PUMP ACTIVE:${pumpNumber}`, 'boolean', 500);
+    const [active] = useSimVar(`FUELSYSTEM PUMP ACTIVE:${pumpNumber}`, 'bool', 500);
     const [pushButtonPressed] = pumpNumber === 1 || pumpNumber === 4
         ? pumpNumber === 1
-            ? useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_LTKPUMPS1_Pressed', 'bool', 500)
-            : useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_LTKPUMPS2_Pressed', 'bool', 500)
+            ? useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_PUMP1_Pressed', 'bool', 500)
+            : useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_PUMP2_Pressed', 'bool', 500)
         : [null];
 
-    useEffect(() => {
-        console.log(`Push buytton pressed for ${pumpNumber} is ${pushButtonPressed}`);
-    }, [pushButtonPressed]);
-
-    const [busIsPowered] = useSimVar(`L:A32NX_ELEC_${onBus}_BUS_IS_POWERED`, 'Bool', 1000);
+    const [busIsPowered] = useSimVar(`L:A32NX_ELEC_${onBus}_BUS_IS_POWERED`, 'bool', 1000);
 
     return (
         <g className={(pumpNumber === 1 || pumpNumber === 4 ? pushButtonPressed && busIsPowered : active && busIsPowered) ? 'ThickShape PumpActive' : 'ThickShape PumpInactive'}>
