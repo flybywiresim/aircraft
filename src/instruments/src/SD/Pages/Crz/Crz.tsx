@@ -126,7 +126,7 @@ export const PressureComponent = () => {
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
-    const [landingElev] = useSimVar('L:A32NX_LANDING_ELEVATION', 'feet', 100);
+    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);

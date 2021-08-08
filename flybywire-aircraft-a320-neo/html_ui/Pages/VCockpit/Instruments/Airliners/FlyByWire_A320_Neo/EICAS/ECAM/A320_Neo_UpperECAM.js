@@ -719,7 +719,7 @@ var A320_Neo_UpperECAM;
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
                                 isActive: () => (
                                     !Simplane.getIsGrounded() &&
-                                    this.getCachedSimVar("PRESSURIZATION CABIN ALTITUDE", "feet") > 10000
+                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > 9550
                                 ),
                                 actions: [
                                     {
@@ -766,7 +766,51 @@ var A320_Neo_UpperECAM;
                                         action: "MAN ON"
                                     },
                                 ]
-                            }
+                            },
+                            {
+                                message: "EXCESS RESIDUAL PR",
+                                level: 2,
+                                flightPhasesInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                isActive: () => (
+                                    Simplane.getIsGrounded() &&
+                                    !this.isEngineRunning(1) && !this.isEngineRunning(2) &&
+                                    Math.abs(this.getCachedSimVar("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI")) > 0.01
+                                ),
+                                actions: [
+                                    {
+                                        style: "cyan",
+                                        message: "EXPECT HI CAB RATE",
+                                        action: "ON"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "A/C V/S",
+                                        action: "REDUCE",
+                                    },
+                                ]
+                            },
+                            {
+                                message: "LO DIFF PR",
+                                level: 2,
+                                flightPhasesInhib: [2, 3, 4, 5, 7, 8, 9, 10],
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI") < 1.45 &&
+                                    this.getCachedSimVar("VERTICAL SPEED", "feet per minute") < -500 &&
+                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > (this.getCachedSimVar("L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB", "feet") + 1500 || this.getCachedSimVar("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet") + 1500)
+                                ),
+                                actions: [
+                                    {
+                                        style: "remark",
+                                        message: "EXPECT HI CAB RATE",
+                                        action: "ON"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "A/C V/S",
+                                        action: "REDUCE",
+                                    },
+                                ]
+                            },
                         ]
                     },
                     {
@@ -1471,6 +1515,14 @@ var A320_Neo_UpperECAM;
                             return (
                                 (SimVar.GetSimVarValue("L:A32NX_ATT_HDG_SWITCHING_KNOB", "Enum") != 1) ||
                                 (SimVar.GetSimVarValue("L:A32NX_AIR_DATA_SWITCHING_KNOB", "Enum") != 1)
+                            );
+                        }
+                    },
+                    {
+                        message: "MAN LDG ELEV",
+                        isActive: () => {
+                            return (
+                                (SimVar.GetSimVarValue("L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV", "number") !== 0)
                             );
                         }
                     },
