@@ -7,8 +7,8 @@
 class AutopilotLawsModelClass {
  public:
   typedef struct {
-    uint8_T is_active_c3_sUPy3BXaP8VT23gJSge3dZD_ap_library;
-    uint8_T is_c3_sUPy3BXaP8VT23gJSge3dZD_ap_library;
+    uint8_T is_active_c8_sUPy3BXaP8VT23gJSge3dZD_ap_library;
+    uint8_T is_c8_sUPy3BXaP8VT23gJSge3dZD_ap_library;
   } rtDW_Chart_AutopilotLaws_T;
 
   typedef struct {
@@ -19,8 +19,8 @@ class AutopilotLawsModelClass {
   } rtDW_LagFilter_AutopilotLaws_T;
 
   typedef struct {
-    uint8_T is_active_c3_sQHqjOt6dG4nwhom4nTqEME_ap_library;
-    uint8_T is_c3_sQHqjOt6dG4nwhom4nTqEME_ap_library;
+    uint8_T is_active_c8_sQHqjOt6dG4nwhom4nTqEME_ap_library;
+    uint8_T is_c8_sQHqjOt6dG4nwhom4nTqEME_ap_library;
   } rtDW_Chart_AutopilotLaws_c_T;
 
   typedef struct {
@@ -54,6 +54,8 @@ class AutopilotLawsModelClass {
     real_T eventTime;
     real_T Tau;
     real_T H_bias;
+    real_T dH_offset;
+    real_T k;
     real_T limit;
     boolean_T Delay_DSTATE_l[100];
     boolean_T Delay_DSTATE_h5[100];
@@ -64,6 +66,8 @@ class AutopilotLawsModelClass {
     boolean_T eventTime_not_empty;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
+    boolean_T wasActive_g;
+    boolean_T wasActive_not_empty_d;
     boolean_T limit_not_empty;
     rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_g;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_n;
@@ -101,13 +105,13 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_BreakpointsForDimension1[5];
     real_T ScheduledGain3_BreakpointsForDimension1[4];
     real_T ScheduledGain1_BreakpointsForDimension1[4];
-    real_T ScheduledGain2_BreakpointsForDimension1[6];
+    real_T ScheduledGain2_BreakpointsForDimension1[7];
     real_T ScheduledGain_BreakpointsForDimension1_j[3];
-    real_T ScheduledGain_BreakpointsForDimension1_a[6];
-    real_T ScheduledGain_BreakpointsForDimension1_d[6];
-    real_T ScheduledGain2_BreakpointsForDimension1_k[6];
+    real_T ScheduledGain_BreakpointsForDimension1_a[7];
+    real_T ScheduledGain_BreakpointsForDimension1_d[7];
+    real_T ScheduledGain2_BreakpointsForDimension1_k[7];
     real_T ScheduledGain_BreakpointsForDimension1_e[5];
-    real_T ScheduledGain2_BreakpointsForDimension1_j[6];
+    real_T ScheduledGain2_BreakpointsForDimension1_j[7];
     real_T ScheduledGain_BreakpointsForDimension1_h[6];
     real_T LagFilter_C1;
     real_T LagFilter_C1_l;
@@ -142,13 +146,13 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_Table[5];
     real_T ScheduledGain3_Table[4];
     real_T ScheduledGain1_Table[4];
-    real_T ScheduledGain2_Table[6];
+    real_T ScheduledGain2_Table[7];
     real_T ScheduledGain_Table_p[3];
-    real_T ScheduledGain_Table_i[6];
-    real_T ScheduledGain_Table_h[6];
-    real_T ScheduledGain2_Table_g[6];
+    real_T ScheduledGain_Table_i[7];
+    real_T ScheduledGain_Table_h[7];
+    real_T ScheduledGain2_Table_g[7];
     real_T ScheduledGain_Table_pf[5];
-    real_T ScheduledGain2_Table_h[6];
+    real_T ScheduledGain2_Table_h[7];
     real_T ScheduledGain_Table_ir[6];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T Subsystem_Value;
@@ -161,6 +165,7 @@ class AutopilotLawsModelClass {
     real_T CompareToConstant5_const_e;
     real_T CompareToConstant_const_n;
     real_T CompareToConstant6_const;
+    real_T CompareToConstant1_const;
     real_T CompareToConstant2_const_e;
     real_T CompareToConstant7_const;
     real_T GammaTCorrection_gain;
@@ -322,8 +327,6 @@ class AutopilotLawsModelClass {
     real_T Gain1_Gain_nq;
     real_T Bias1_Bias;
     real_T Gain_Gain_p2b;
-    real_T Constant_Value_b;
-    real_T Gain_Gain_el;
     real_T ftmintoms_Gain_g;
     real_T kntoms_Gain_e;
     real_T Saturation_UpperSat_dn;
@@ -414,6 +417,7 @@ class AutopilotLawsModelClass {
     rtDW_WashoutFilter_AutopilotLaws_T *localDW);
   static void AutopilotLaws_SpeedProtectionMode(const ap_laws_output *rtu_in, real_T rtu_VS_FD, real_T rtu_VS_AP, real_T
     rtu_VLS_FD, real_T rtu_VLS_AP, real_T rtu_VMAX_FD, real_T rtu_VMAX_AP, real_T *rty_FD, real_T *rty_AP);
+  static void AutopilotLaws_VSLimiter(real_T rtu_u, real_T rtu_V_tas_kn, real_T *rty_y);
   static void AutopilotLaws_V_LSSpeedSelection(const ap_laws_output *rtu_in, real_T *rty_y);
   static void AutopilotLaws_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
 };
