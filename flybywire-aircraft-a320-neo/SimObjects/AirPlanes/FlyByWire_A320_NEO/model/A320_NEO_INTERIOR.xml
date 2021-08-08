@@ -1676,9 +1676,12 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool))%{if}Turn OFF door video%{else}Turn ON door video%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Push_Held">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
-                        <HOLD_SIMVAR>L:PUSH_DOORPANEL_VIDEO</HOLD_SIMVAR>
+                        <LEFT_SINGLE_CODE>(L:PUSH_DOORPANEL_VIDEO) ! (>L:PUSH_DOORPANEL_VIDEO)</LEFT_SINGLE_CODE>
+                        <MOMENTARY/>
+                        <NO_SEQ1 />
+                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <Component ID="ADIRS">
