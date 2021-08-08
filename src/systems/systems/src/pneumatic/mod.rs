@@ -365,7 +365,7 @@ pub struct CrossBleedValveSelectorKnob {
 impl CrossBleedValveSelectorKnob {
     pub fn new_auto() -> Self {
         Self {
-            mode_id: String::from("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position"),
+            mode_id: String::from("KNOB_OVHD_AIRCOND_XBLEED_Position"),
             mode: CrossBleedValveSelectorMode::Auto,
         }
     }
@@ -869,27 +869,27 @@ mod tests {
         fn valve_modes_are_represented_as_simvar_integers() {
             let mut test_bed = SimulationTestBed::from(CrossBleedValveSelectorKnob::new_auto());
 
-            test_bed.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", 0);
+            test_bed.write("KNOB_OVHD_AIRCOND_XBLEED_Position", 0);
             test_bed.run();
 
             let read_mode: CrossBleedValveSelectorMode =
-                test_bed.read("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position");
+                test_bed.read("KNOB_OVHD_AIRCOND_XBLEED_Position");
 
             assert_eq!(read_mode, CrossBleedValveSelectorMode::Shut);
 
-            test_bed.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", 1);
+            test_bed.write("KNOB_OVHD_AIRCOND_XBLEED_Position", 1);
             test_bed.run();
 
             let read_mode: CrossBleedValveSelectorMode =
-                test_bed.read("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position");
+                test_bed.read("KNOB_OVHD_AIRCOND_XBLEED_Position");
 
             assert_eq!(read_mode, CrossBleedValveSelectorMode::Auto);
 
-            test_bed.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", 2);
+            test_bed.write("KNOB_OVHD_AIRCOND_XBLEED_Position", 2);
             test_bed.run();
 
             let read_mode: CrossBleedValveSelectorMode =
-                test_bed.read("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position");
+                test_bed.read("KNOB_OVHD_AIRCOND_XBLEED_Position");
 
             assert_eq!(read_mode, CrossBleedValveSelectorMode::Open);
         }

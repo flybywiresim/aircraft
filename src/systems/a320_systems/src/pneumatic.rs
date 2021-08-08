@@ -471,7 +471,7 @@ impl BleedMonitoringComputer {
         for engine_bleed_system in engine_bleed_systems.iter() {
             self.engine_bleed_systems_data[engine_bleed_system.number - 1].update(
                 engine_bleed_system,
-                match self.number {
+                match engine_bleed_system.number {
                     1 => overhead_panel.engine_1_bleed_is_auto(),
                     _ => overhead_panel.engine_2_bleed_is_auto(),
                 },
@@ -912,7 +912,7 @@ mod tests {
         }
 
         fn cross_bleed_valve_selector_knob(mut self, mode: CrossBleedValveSelectorMode) -> Self {
-            self.write("A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", mode);
+            self.write("KNOB_OVHD_AIRCOND_XBLEED_Position", mode);
 
             self
         }
@@ -1560,9 +1560,8 @@ mod tests {
 
         test_bed.for_both_engine_systems(|a| assert!(a.pr_valve.is_open()));
 
-        test_bed = test_bed
-            .set_engine_bleed_push_button_off(1)
-            .set_engine_bleed_push_button_off(2);
+        test_bed = test_bed.set_engine_bleed_push_button_off(1);
+        // .set_engine_bleed_push_button_off(2);
         test_bed.run();
 
         test_bed.for_both_engine_systems(|a| assert!(!a.pr_valve.is_open()));
