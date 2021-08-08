@@ -108,11 +108,7 @@
         "ASOBO_normal_map_convention",
         "ASOBO_asset_optimized"
     ],
-    "materials": [
-        {
-            "name": "REGISTRATION_INVISIBLE"
-        }
-    ],
+    "materials": [],
     "meshes": [
         {
             "primitives": [
