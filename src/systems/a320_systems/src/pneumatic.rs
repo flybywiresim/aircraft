@@ -79,6 +79,8 @@ impl A320Pneumatic {
                 bmc.engine_data(engine_system.number),
                 // TODO: This index shift is not the prettiest
                 engines[engine_system.number - 1],
+                apu_bleed_valve_is_open,
+                overhead_panel.apu_bleed_is_on(),
             );
         }
 
@@ -204,12 +206,14 @@ struct PRValveController {
     regulated_pressure: Pressure,
     target_open_amount: Ratio,
     should_close_on_pilot_command: bool,
+    should_close_on_apu_command: bool,
     pid: Pid<f64>,
 }
 impl ControllerSignal<PneumaticValveSignal> for PRValveController {
     fn signal(&self) -> Option<PneumaticValveSignal> {
         if self.should_close_on_pilot_command
             || self.transfer_pressure < Pressure::new::<psi>(Self::OPENING_PRESSURE_PSI)
+            || self.should_close_on_apu_command
         {
             return Some(PneumaticValveSignal::close());
         }
@@ -230,17 +234,26 @@ impl PRValveController {
             transfer_pressure: Pressure::new::<psi>(0.),
             regulated_pressure: Pressure::new::<psi>(0.),
             should_close_on_pilot_command: false,
+            should_close_on_apu_command: false,
             pid: Pid::new(0., 0.01, 0., 1., 1., 1., 1., Self::TARGET_PRESSURE_PSI),
             target_open_amount: Ratio::new::<ratio>(0.),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, engine_data: &impl EngineBleedDataProvider) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        engine_data: &impl EngineBleedDataProvider,
+        apu_bleed_valve_is_open: bool,
+        apu_bleed_pb_is_on: bool,
+    ) {
         self.transfer_pressure = engine_data.transfer_pressure();
         self.regulated_pressure = engine_data.regulated_pressure();
 
         self.should_close_on_pilot_command = engine_data.is_engine_fire_pushbutton_released()
             || !engine_data.is_engine_bleed_pushbutton_auto();
+
+        self.should_close_on_apu_command = apu_bleed_valve_is_open && apu_bleed_pb_is_on;
 
         let output = self
             .pid
@@ -545,6 +558,8 @@ impl EngineBleedSystem {
         context: &UpdateContext,
         bleed_data: &impl EngineBleedDataProvider,
         engine: &T,
+        apu_bleed_valve_is_open: bool,
+        apu_bleed_pb_is_on: bool,
     ) {
         // Update engines
         self.ip_compression_chamber_controller
@@ -560,7 +575,12 @@ impl EngineBleedSystem {
         // Update controllers
         self.ip_valve_controller.update(context, bleed_data);
         self.hp_valve_controller.update(context, bleed_data);
-        self.pr_valve_controller.update(context, bleed_data);
+        self.pr_valve_controller.update(
+            context,
+            bleed_data,
+            apu_bleed_valve_is_open,
+            apu_bleed_pb_is_on,
+        );
         self.engine_starter_consumer_controller.update(context);
 
         // Update consumers
@@ -722,6 +742,9 @@ impl SimulationElement for A320PneumaticOverheadPanel {
 mod tests {
     use super::*;
     use systems::{
+        apu::{
+            Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
+        },
         engine::leap_engine::LeapEngine,
         hydraulic::Fluid,
         pneumatic::{
@@ -751,6 +774,10 @@ mod tests {
             Self {
                 bleed_air_valve_is_open: false,
             }
+        }
+
+        fn set_bleed_air_valve(&mut self, is_open: bool) {
+            self.bleed_air_valve_is_open = is_open;
         }
     }
     impl BleedAirValveState for TestApu {
@@ -951,7 +978,13 @@ mod tests {
         }
 
         fn set_apu_bleed_valve(mut self, is_open: bool) -> Self {
-            self.command(|a| a.apu.bleed_air_valve_is_open = is_open);
+            self.command(|a| a.apu.set_bleed_air_valve(is_open));
+
+            self
+        }
+
+        fn set_bleed_air_pb(mut self, is_on: bool) -> Self {
+            self.write("OVHD_APU_BLEED_PB_IS_ON", is_on);
 
             self
         }
@@ -1050,6 +1083,10 @@ mod tests {
 
         for i in 1..10 {
             ts.push(i as f64 * 5000.);
+
+            if i == 3 {
+                test_bed = test_bed.set_apu_bleed_valve(true).set_bleed_air_pb(false);
+            }
 
             // if i > 100 {
             //     let new_n1 = 0.2 + ((i as f64) - 100.) / 120.;
@@ -1603,5 +1640,19 @@ mod tests {
         assert!(test_bed.is_fire_pushbutton_released(2));
 
         test_bed.for_both_engine_systems(|a| assert!(!a.pr_valve.is_open()));
+    }
+
+    #[test]
+    fn prv_closes_with_apu_bleed_on() {
+        let mut test_bed = test_bed_with().idle_eng1().idle_eng2();
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(30));
+
+        test_bed.for_both_engine_systems(|sys| assert!(sys.pr_valve.is_open()));
+
+        test_bed = test_bed.set_apu_bleed_valve(true).set_bleed_air_pb(true);
+        test_bed.run();
+
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
     }
 }
