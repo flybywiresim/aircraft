@@ -540,7 +540,6 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
         this.refresh(true, false, false, false, true, 0, false, true);
-        this.onPull();
     }
 
     onFlightStart() {
