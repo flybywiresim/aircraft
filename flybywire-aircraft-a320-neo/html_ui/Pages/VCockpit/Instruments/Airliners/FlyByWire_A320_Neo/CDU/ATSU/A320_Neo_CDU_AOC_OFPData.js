@@ -231,12 +231,10 @@ class CDUAocOfpData {
         }
 
         async function setTargetPax(numberOfPax) {
-            console.log('setPax', numberOfPax);
 
             let paxRemaining = parseInt(numberOfPax);
 
             async function fillStation(station, paxToFill) {
-                console.log('fillStation', station.name, paxToFill);
 
                 const pax = Math.min(paxToFill, station.seats);
                 station.pax = pax;

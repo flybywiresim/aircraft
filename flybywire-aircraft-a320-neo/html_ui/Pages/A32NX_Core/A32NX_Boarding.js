@@ -92,8 +92,6 @@ class A32NX_Boarding {
     }
 
     async init() {
-        console.log('A32NX_Boarding init');
-        console.log('Setting default weights...');
 
         // Set default pax (0)
         await this.setPax(0);
@@ -102,7 +100,6 @@ class A32NX_Boarding {
     }
 
     async fillStation(station, paxToFill) {
-        console.log('fillStation', station.name, paxToFill);
 
         const pax = Math.min(paxToFill, station.seats);
         station.pax = pax;
@@ -111,12 +108,10 @@ class A32NX_Boarding {
     }
 
     async setPax(numberOfPax) {
-        console.log('setPax', numberOfPax);
 
         let paxRemaining = parseInt(numberOfPax);
 
         async function fillStation(station, paxToFill) {
-            console.log('fillStation', station.name, paxToFill);
 
             const pax = Math.min(paxToFill, station.seats);
             station.pax = pax;
@@ -137,7 +132,6 @@ class A32NX_Boarding {
     }
 
     async loadPayload() {
-        console.log('loadPayload');
 
         const MAX_SEAT_AVAILABLE = 174;
         const PAX_WEIGHT = 84;
@@ -153,7 +147,6 @@ class A32NX_Boarding {
     }
 
     async loadCargoZero() {
-        console.log('loadCargoZero');
 
         for (const station of Object.values(this.payloadStations)) {
             await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", 0);
@@ -163,7 +156,6 @@ class A32NX_Boarding {
     }
 
     async update(_deltaTime) {
-        // console.log('_deltaTime', this.time);
         this.time += _deltaTime;
 
         const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");
