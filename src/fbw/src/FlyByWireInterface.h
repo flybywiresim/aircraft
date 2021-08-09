@@ -180,6 +180,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
+  std::unique_ptr<LocalVariable> idAutothrustDisabled;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningFlex;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningToga;
   std::unique_ptr<LocalVariable> idAutothrustDisconnect;
