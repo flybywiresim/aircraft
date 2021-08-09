@@ -111,7 +111,7 @@ const NavigationDisplay: React.FC = () => {
         >
             <div className="BacklightBleed" />
             <div className="LcdOverlayDcdu" style={{ opacity }} />
-            <WeatherTerrainBackdrop side={side} range={rangeSettings[rangeIndex]} ppos={ppos} />
+            <WeatherTerrainBackdrop mode={modeIndex} side={side} range={rangeSettings[rangeIndex]} ppos={ppos} />
             <FlightPlanProvider>
                 <svg className="nd-svg" version="1.1" viewBox="0 0 768 768" style={{ position: 'absolute', zIndex: 100 }}>
                     <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
