@@ -482,50 +482,69 @@ pub trait WriteWhen<T> {
     fn write_when(&mut self, condition: bool, name: &str, value: T);
 }
 
-impl<T: Reader> Read<Velocity> for T {
-    fn convert(&mut self, value: f64) -> Velocity {
-        Velocity::new::<knot>(value)
-    }
+macro_rules! read_write_uom {
+    ($t: ty, $t2: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                <$t>::new::<$t2>(value)
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value.get::<$t2>()
+            }
+        }
+    };
 }
 
-impl<T: Writer> Write<Velocity> for T {
-    fn convert(&mut self, value: Velocity) -> f64 {
-        value.get::<knot>()
-    }
+macro_rules! read_write_as {
+    ($t: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                value as $t
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value as f64
+            }
+        }
+    };
 }
 
-impl<T: Reader> Read<Length> for T {
-    fn convert(&mut self, value: f64) -> Length {
-        Length::new::<foot>(value)
-    }
+macro_rules! read_write_no_conversion {
+    ($t: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                value
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value
+            }
+        }
+    };
 }
 
-impl<T: Writer> Write<Length> for T {
-    fn convert(&mut self, value: Length) -> f64 {
-        // Length is tricky, as we might have usage of nautical mile
-        // or other units later. We'll have to work around that problem
-        // when we get there.
-        value.get::<foot>()
-    }
-}
-
-impl<T: Reader> Read<Acceleration> for T {
-    fn convert(&mut self, value: f64) -> Acceleration {
-        Acceleration::new::<foot_per_second_squared>(value)
-    }
-}
-
-impl<T: Reader> Read<ThermodynamicTemperature> for T {
-    fn convert(&mut self, value: f64) -> ThermodynamicTemperature {
-        ThermodynamicTemperature::new::<degree_celsius>(value)
-    }
-}
-
-impl<T: Writer> Write<ThermodynamicTemperature> for T {
-    fn convert(&mut self, value: ThermodynamicTemperature) -> f64 {
-        value.get::<degree_celsius>()
-    }
-}
+read_write_uom!(Velocity, knot);
+read_write_uom!(Length, foot);
+read_write_uom!(Acceleration, foot_per_second_squared);
+read_write_uom!(ThermodynamicTemperature, degree_celsius);
+read_write_uom!(Ratio, percent);
+read_write_as!(usize);
+read_write_no_conversion!(f64);
+read_write_uom!(ElectricPotential, volt);
+read_write_uom!(ElectricCurrent, ampere);
+read_write_uom!(Frequency, hertz);
+read_write_uom!(Pressure, psi);
+read_write_uom!(Volume, gallon);
+read_write_uom!(VolumeRate, gallon_per_second);
+read_write_uom!(Mass, pound);
+read_write_uom!(Angle, degree);
 
 impl<T: Writer> WriteWhen<ThermodynamicTemperature> for T {
     fn write_when(&mut self, condition: bool, name: &str, value: ThermodynamicTemperature) {
@@ -537,18 +556,6 @@ impl<T: Writer> WriteWhen<ThermodynamicTemperature> for T {
                 ThermodynamicTemperature::new::<kelvin>(0.).get::<degree_celsius>() - 1.
             },
         );
-    }
-}
-
-impl<T: Reader> Read<Ratio> for T {
-    fn convert(&mut self, value: f64) -> Ratio {
-        Ratio::new::<percent>(value)
-    }
-}
-
-impl<T: Writer> Write<Ratio> for T {
-    fn convert(&mut self, value: Ratio) -> f64 {
-        value.get::<percent>()
     }
 }
 
@@ -580,108 +587,6 @@ impl<T: Writer> Write<bool> for T {
 impl<T: Writer> WriteWhen<bool> for T {
     fn write_when(&mut self, condition: bool, name: &str, value: bool) {
         self.write_f64(name, if condition { from_bool(value) } else { -1. });
-    }
-}
-
-impl<T: Writer> Write<usize> for T {
-    fn convert(&mut self, value: usize) -> f64 {
-        value as f64
-    }
-}
-
-impl<T: Reader> Read<f64> for T {
-    fn convert(&mut self, value: f64) -> f64 {
-        value
-    }
-}
-
-impl<T: Writer> Write<f64> for T {
-    fn convert(&mut self, value: f64) -> f64 {
-        value
-    }
-}
-
-impl<T: Reader> Read<ElectricPotential> for T {
-    fn convert(&mut self, value: f64) -> ElectricPotential {
-        ElectricPotential::new::<volt>(value)
-    }
-}
-
-impl<T: Writer> Write<ElectricPotential> for T {
-    fn convert(&mut self, value: ElectricPotential) -> f64 {
-        value.get::<volt>()
-    }
-}
-
-impl<T: Reader> Read<ElectricCurrent> for T {
-    fn convert(&mut self, value: f64) -> ElectricCurrent {
-        ElectricCurrent::new::<ampere>(value)
-    }
-}
-
-impl<T: Writer> Write<ElectricCurrent> for T {
-    fn convert(&mut self, value: ElectricCurrent) -> f64 {
-        value.get::<ampere>()
-    }
-}
-
-impl<T: Reader> Read<Frequency> for T {
-    fn convert(&mut self, value: f64) -> Frequency {
-        Frequency::new::<hertz>(value)
-    }
-}
-
-impl<T: Writer> Write<Frequency> for T {
-    fn convert(&mut self, value: Frequency) -> f64 {
-        value.get::<hertz>()
-    }
-}
-
-impl<T: Reader> Read<Pressure> for T {
-    fn convert(&mut self, value: f64) -> Pressure {
-        Pressure::new::<psi>(value)
-    }
-}
-
-impl<T: Writer> Write<Pressure> for T {
-    fn convert(&mut self, value: Pressure) -> f64 {
-        value.get::<psi>()
-    }
-}
-
-impl<T: Reader> Read<Volume> for T {
-    fn convert(&mut self, value: f64) -> Volume {
-        Volume::new::<gallon>(value)
-    }
-}
-
-impl<T: Writer> Write<Volume> for T {
-    fn convert(&mut self, value: Volume) -> f64 {
-        value.get::<gallon>()
-    }
-}
-
-impl<T: Writer> Write<VolumeRate> for T {
-    fn convert(&mut self, value: VolumeRate) -> f64 {
-        value.get::<gallon_per_second>()
-    }
-}
-
-impl<T: Reader> Read<Mass> for T {
-    fn convert(&mut self, value: f64) -> Mass {
-        Mass::new::<pound>(value)
-    }
-}
-
-impl<T: Reader> Read<Angle> for T {
-    fn convert(&mut self, value: f64) -> Angle {
-        Angle::new::<degree>(value)
-    }
-}
-
-impl<T: Writer> Write<Angle> for T {
-    fn convert(&mut self, value: Angle) -> f64 {
-        value.get::<degree>()
     }
 }
 
