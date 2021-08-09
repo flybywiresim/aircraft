@@ -160,7 +160,7 @@ impl SimulationElement for InertialReferenceModeSelector {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 enum AlignState {
     Off = 0,
     Aligning = 1,
@@ -416,7 +416,7 @@ impl<T: Copy + Default> AdirsData<T> {
         self.value = if should_set { value } else { self.no_value };
     }
 
-    fn write_to<U: Write<T>>(&self, writer: &mut U) {
+    fn write_to<U: Write<T> + Writer>(&self, writer: &mut U) {
         writer.write(&self.id, self.value);
     }
 }

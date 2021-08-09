@@ -3,7 +3,10 @@ use std::time::Duration;
 mod update_context;
 use crate::{
     electrical::Electricity,
-    shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
+    shared::{
+        arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
+        to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport,
+    },
 };
 use uom::si::{
     acceleration::foot_per_second_squared,
@@ -390,7 +393,7 @@ fn from_bool(value: bool) -> f64 {
     }
 }
 
-pub trait Read<T> {
+pub trait Read<T: Copy> {
     /// Reads a value from the simulator.
     /// # Examples
     /// ```rust
@@ -405,7 +408,23 @@ pub trait Read<T> {
     ///     }
     /// }
     /// ```
-    fn read(&mut self, name: &str) -> T;
+    fn read(&mut self, name: &str) -> T
+    where
+        Self: Sized + Reader,
+    {
+        let value = self.read_f64(name);
+        self.convert(value)
+    }
+
+    fn read_arinc429(&mut self, name: &str) -> Arinc429Word<T>
+    where
+        Self: Sized + Reader,
+    {
+        let value = from_arinc429(self.read_f64(name));
+        Arinc429Word::new(self.convert(value.0), value.1)
+    }
+
+    fn convert(&mut self, value: f64) -> T;
 }
 
 pub trait Write<T> {
@@ -423,7 +442,23 @@ pub trait Write<T> {
     ///     }
     /// }
     /// ```
-    fn write(&mut self, name: &str, value: T);
+    fn write(&mut self, name: &str, value: T)
+    where
+        Self: Sized + Writer,
+    {
+        let value = self.convert(value);
+        self.write_f64(name, value)
+    }
+
+    fn write_arinc429(&mut self, name: &str, value: T, ssm: SignStatus)
+    where
+        Self: Sized + Writer,
+    {
+        let value = self.convert(value);
+        self.write_f64(name, to_arinc429(value, ssm));
+    }
+
+    fn convert(&mut self, value: T) -> f64;
 }
 
 pub trait WriteWhen<T> {
@@ -448,50 +483,47 @@ pub trait WriteWhen<T> {
 }
 
 impl<T: Reader> Read<Velocity> for T {
-    fn read(&mut self, name: &str) -> Velocity {
-        Velocity::new::<knot>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Velocity {
+        Velocity::new::<knot>(value)
     }
 }
 
 impl<T: Writer> Write<Velocity> for T {
-    fn write(&mut self, name: &str, value: Velocity) {
-        self.write_f64(name, value.get::<knot>())
+    fn convert(&mut self, value: Velocity) -> f64 {
+        value.get::<knot>()
     }
 }
 
 impl<T: Reader> Read<Length> for T {
-    fn read(&mut self, name: &str) -> Length {
-        // Length is tricky, as we might have usage of nautical mile
-        // or other units later. We'll have to work around that problem
-        // when we get there.
-        Length::new::<foot>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Length {
+        Length::new::<foot>(value)
     }
 }
 
 impl<T: Writer> Write<Length> for T {
-    fn write(&mut self, name: &str, value: Length) {
+    fn convert(&mut self, value: Length) -> f64 {
         // Length is tricky, as we might have usage of nautical mile
         // or other units later. We'll have to work around that problem
         // when we get there.
-        self.write_f64(name, value.get::<foot>())
+        value.get::<foot>()
     }
 }
 
 impl<T: Reader> Read<Acceleration> for T {
-    fn read(&mut self, name: &str) -> Acceleration {
-        Acceleration::new::<foot_per_second_squared>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Acceleration {
+        Acceleration::new::<foot_per_second_squared>(value)
     }
 }
 
 impl<T: Reader> Read<ThermodynamicTemperature> for T {
-    fn read(&mut self, name: &str) -> ThermodynamicTemperature {
-        ThermodynamicTemperature::new::<degree_celsius>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> ThermodynamicTemperature {
+        ThermodynamicTemperature::new::<degree_celsius>(value)
     }
 }
 
 impl<T: Writer> Write<ThermodynamicTemperature> for T {
-    fn write(&mut self, name: &str, value: ThermodynamicTemperature) {
-        self.write_f64(name, value.get::<degree_celsius>())
+    fn convert(&mut self, value: ThermodynamicTemperature) -> f64 {
+        value.get::<degree_celsius>()
     }
 }
 
@@ -509,14 +541,14 @@ impl<T: Writer> WriteWhen<ThermodynamicTemperature> for T {
 }
 
 impl<T: Reader> Read<Ratio> for T {
-    fn read(&mut self, name: &str) -> Ratio {
-        Ratio::new::<percent>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Ratio {
+        Ratio::new::<percent>(value)
     }
 }
 
 impl<T: Writer> Write<Ratio> for T {
-    fn write(&mut self, name: &str, value: Ratio) {
-        self.write_f64(name, value.get::<percent>())
+    fn convert(&mut self, value: Ratio) -> f64 {
+        value.get::<percent>()
     }
 }
 
@@ -534,14 +566,14 @@ impl<T: Writer> WriteWhen<Ratio> for T {
 }
 
 impl<T: Reader> Read<bool> for T {
-    fn read(&mut self, name: &str) -> bool {
-        to_bool(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> bool {
+        to_bool(value)
     }
 }
 
 impl<T: Writer> Write<bool> for T {
-    fn write(&mut self, name: &str, value: bool) {
-        self.write_f64(name, from_bool(value));
+    fn convert(&mut self, value: bool) -> f64 {
+        from_bool(value)
     }
 }
 
@@ -552,127 +584,127 @@ impl<T: Writer> WriteWhen<bool> for T {
 }
 
 impl<T: Writer> Write<usize> for T {
-    fn write(&mut self, name: &str, value: usize) {
-        self.write_f64(name, value as f64)
+    fn convert(&mut self, value: usize) -> f64 {
+        value as f64
     }
 }
 
 impl<T: Reader> Read<f64> for T {
-    fn read(&mut self, name: &str) -> f64 {
-        self.read_f64(name)
+    fn convert(&mut self, value: f64) -> f64 {
+        value
     }
 }
 
 impl<T: Writer> Write<f64> for T {
-    fn write(&mut self, name: &str, value: f64) {
-        self.write_f64(name, value);
+    fn convert(&mut self, value: f64) -> f64 {
+        value
     }
 }
 
 impl<T: Reader> Read<ElectricPotential> for T {
-    fn read(&mut self, name: &str) -> ElectricPotential {
-        ElectricPotential::new::<volt>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> ElectricPotential {
+        ElectricPotential::new::<volt>(value)
     }
 }
 
 impl<T: Writer> Write<ElectricPotential> for T {
-    fn write(&mut self, name: &str, value: ElectricPotential) {
-        self.write_f64(name, value.get::<volt>());
+    fn convert(&mut self, value: ElectricPotential) -> f64 {
+        value.get::<volt>()
     }
 }
 
 impl<T: Reader> Read<ElectricCurrent> for T {
-    fn read(&mut self, name: &str) -> ElectricCurrent {
-        ElectricCurrent::new::<ampere>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> ElectricCurrent {
+        ElectricCurrent::new::<ampere>(value)
     }
 }
 
 impl<T: Writer> Write<ElectricCurrent> for T {
-    fn write(&mut self, name: &str, value: ElectricCurrent) {
-        self.write_f64(name, value.get::<ampere>());
+    fn convert(&mut self, value: ElectricCurrent) -> f64 {
+        value.get::<ampere>()
     }
 }
 
 impl<T: Reader> Read<Frequency> for T {
-    fn read(&mut self, name: &str) -> Frequency {
-        Frequency::new::<hertz>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Frequency {
+        Frequency::new::<hertz>(value)
     }
 }
 
 impl<T: Writer> Write<Frequency> for T {
-    fn write(&mut self, name: &str, value: Frequency) {
-        self.write_f64(name, value.get::<hertz>());
+    fn convert(&mut self, value: Frequency) -> f64 {
+        value.get::<hertz>()
     }
 }
 
 impl<T: Reader> Read<Pressure> for T {
-    fn read(&mut self, name: &str) -> Pressure {
-        Pressure::new::<psi>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Pressure {
+        Pressure::new::<psi>(value)
     }
 }
 
 impl<T: Writer> Write<Pressure> for T {
-    fn write(&mut self, name: &str, value: Pressure) {
-        self.write_f64(name, value.get::<psi>());
+    fn convert(&mut self, value: Pressure) -> f64 {
+        value.get::<psi>()
     }
 }
 
 impl<T: Reader> Read<Volume> for T {
-    fn read(&mut self, name: &str) -> Volume {
-        Volume::new::<gallon>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Volume {
+        Volume::new::<gallon>(value)
     }
 }
 
 impl<T: Writer> Write<Volume> for T {
-    fn write(&mut self, name: &str, value: Volume) {
-        self.write_f64(name, value.get::<gallon>());
+    fn convert(&mut self, value: Volume) -> f64 {
+        value.get::<gallon>()
     }
 }
 
 impl<T: Writer> Write<VolumeRate> for T {
-    fn write(&mut self, name: &str, value: VolumeRate) {
-        self.write_f64(name, value.get::<gallon_per_second>());
+    fn convert(&mut self, value: VolumeRate) -> f64 {
+        value.get::<gallon_per_second>()
     }
 }
 
 impl<T: Reader> Read<Mass> for T {
-    fn read(&mut self, name: &str) -> Mass {
-        Mass::new::<pound>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Mass {
+        Mass::new::<pound>(value)
     }
 }
 
 impl<T: Reader> Read<Angle> for T {
-    fn read(&mut self, name: &str) -> Angle {
-        Angle::new::<degree>(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Angle {
+        Angle::new::<degree>(value)
     }
 }
 
 impl<T: Writer> Write<Angle> for T {
-    fn write(&mut self, name: &str, value: Angle) {
-        self.write_f64(name, value.get::<degree>());
+    fn convert(&mut self, value: Angle) -> f64 {
+        value.get::<degree>()
     }
 }
 
 impl<T: Reader> Read<Duration> for T {
-    fn read(&mut self, name: &str) -> Duration {
-        Duration::from_secs_f64(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Duration {
+        Duration::from_secs_f64(value)
     }
 }
 
 impl<T: Writer> Write<Duration> for T {
-    fn write(&mut self, name: &str, value: Duration) {
-        self.write_f64(name, value.as_secs_f64());
+    fn convert(&mut self, value: Duration) -> f64 {
+        value.as_secs_f64()
     }
 }
 
 impl<T: Reader> Read<MachNumber> for T {
-    fn read(&mut self, name: &str) -> MachNumber {
-        MachNumber(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> MachNumber {
+        MachNumber(value)
     }
 }
 
 impl<T: Writer> Write<MachNumber> for T {
-    fn write(&mut self, name: &str, value: MachNumber) {
-        self.write_f64(name, value.0);
+    fn convert(&mut self, value: MachNumber) -> f64 {
+        value.0
     }
 }
