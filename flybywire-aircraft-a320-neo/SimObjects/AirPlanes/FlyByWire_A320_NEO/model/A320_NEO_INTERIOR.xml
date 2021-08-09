@@ -1279,7 +1279,7 @@
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
                     <!-- TODO: Figure out how to add custom TT in .locPak and .loc files. -->
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_ON</ANIMTIP_0>
-                    <ANIMTIP_1>Set "no smoke" prompt light to AUTO</ANIMTIP_1>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_OFF</ANIMTIP_2>
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
