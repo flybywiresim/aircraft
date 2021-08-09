@@ -312,6 +312,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             }
             this.showSelectedSpeed = _showSelectedSpeed;
             SimVar.SetSimVarValue("L:A32NX_FCU_SPD_MANAGED_DASHES", "boolean", this.isManaged && !this.showSelectedSpeed);
+            if (this.currentValue != _value) {
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_SPEED_SELECTED", "number", _value);
+            }
             this.currentValue = _machActive ? _value * 100 : _value;
             this.isMachActive = _machActive;
             this.setTextElementActive(this.textSPD, !_machActive);
@@ -537,7 +540,6 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
         this.refresh(true, false, false, false, true, 0, false, true);
-        this.onPull();
     }
 
     onFlightStart() {
@@ -1082,10 +1084,9 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             if (this.currentValue !== _value) {
                 if (_isFPAMode) {
                     SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", this.selectedFpa);
-                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_VS_SELECTED", "feet per minute", this.calculateVerticalSpeedForAngle(this.selectedFpa));
-
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_VS_SELECTED", "feet per minute", 0);
                 } else {
-                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", this.calculateAngleForVerticalSpeed(this.selectedVs));
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", 0);
                     SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_VS_SELECTED", "feet per minute", this.selectedVs);
                 }
             }

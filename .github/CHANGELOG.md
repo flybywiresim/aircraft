@@ -162,6 +162,9 @@
 1. [MISC] Change back to airliner hud in external view for SU5 - @donstim (donbikes#4084)
 1. [TEXTURE] Improved cockpit textures and screen reflections - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
 1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
+1. [FCU] Added LVAR for selected speed and only fill active LVAR for VS or FPA mode
+1. [MODEL] Removed unused material to fix potential crash to desktop - @aguther (Andreas Guther)
+1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
 1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
 1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 
