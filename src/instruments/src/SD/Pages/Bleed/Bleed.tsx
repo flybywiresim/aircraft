@@ -12,21 +12,23 @@ import './Bleed.scss';
 setIsEcamPage('bleed_page');
 
 export const BleedPage: FC = () => {
-    const mir = true;
+    const mir = false;
+    // TODO : Align Pack BOX!!
     return (
         <EcamPage name="main-bleed">
-            <PageTitle x={21} y={33} text="BLEED" />
+            <PageTitle x={8} y={18} text="BLEED" />
 
-            <EngineValves x={100} y={367} engNumber={1} mirrored={false} />
-            <EngineValves x={499.6} y={367} engNumber={2} mirrored />
+            <EngineValves x={100} y={375} engNumber={1} mirrored={false} />
+            <EngineValves x={499.6} y={375} engNumber={2} mirrored />
 
             <EngineBox x={100} y={317} engNumber={1} mirrored={false} />
             <EngineBox x={458} y={317} engNumber={2} mirrored />
 
-            <EngineNumber x={66} y={400} engNumber={1} />
-            <EngineNumber x={534} y={400} engNumber={2} />
+            <EngineNumber x={66} y={420} engNumber={1} />
+            <EngineNumber x={534} y={420} engNumber={2} />
 
-            <EngineConnection x={0} y={0} engNumber={1} mirrored={mir} />
+            <EngineConnection x={121} y={431} engNumber={1} mirrored={false} />
+            <EngineConnection x={480} y={431} engNumber={2} mirrored />
 
             <PackFlowIndicator x={87} y={134} />
             <PackFlowIndicator x={445} y={134} />
@@ -45,12 +47,12 @@ export const BleedPage: FC = () => {
     );
 };
 
-interface EngValveProps extends ComponentPositionProps {
+interface EngMirroredProps extends ComponentPositionProps {
     engNumber: number,
     mirrored: boolean
 }
 
-const EngineValves = ({ x, y, engNumber, mirrored }: EngValveProps) => {
+const EngineValves = ({ x, y, engNumber, mirrored }: EngMirroredProps) => {
     const [engBleedValve] = useSimVar(`L:A32NX_PNEU_ENG_${engNumber}_PR_VALVE_OPEN`, 'Bool', 500);
     const [engHPValve] = useSimVar(`L:A32NX_PNEU_ENG_${engNumber}_HP_VALVE_OPEN`, 'Bool', 500);
 
@@ -85,12 +87,7 @@ const EngineValves = ({ x, y, engNumber, mirrored }: EngValveProps) => {
     );
 };
 
-interface EngBoxProps extends ComponentPositionProps {
-    engNumber: number,
-    mirrored: boolean
-}
-
-const EngineBox = ({ x, y, engNumber, mirrored }: EngBoxProps) => {
+const EngineBox = ({ x, y, engNumber, mirrored }: EngMirroredProps) => {
     const [isEngProvideBleed] = useSimVar(`BLEED AIR ENGINE:${engNumber}`, 'Bool', 500);
     const [isOtherEngineProvideBleed] = engNumber === 1 ? useSimVar('BLEED AIR ENGINE:2', 'Bool', 500) : useSimVar('BLEED AIR ENGINE:1', 'Bool', 500);
     const [isEngRunning] = useSimVar(`L:A32NX_ENGINE_STATE:${engNumber}`, 'Number', 500);
@@ -156,18 +153,18 @@ const EngineBox = ({ x, y, engNumber, mirrored }: EngBoxProps) => {
             <rect className="st10 st12" x={0} y={0} width="42" height="49" />
             <text x={3} y={42} className={engTmpValue > 270 || engTmpValue < 150 ? 'warning st2 st6' : 'st7 st2 st6'}>{engTmpValue}</text>
             <text x={9} y={19} className={engPsiValue > 57 || engPsiValue < 4 ? 'warning st2 st6' : 'st7 st2 st6'}>{engPsiValue}</text>
-            <text x={mirrored ? -41 : 50} y={19} className="st8 st2 st6">PSI</text>
+            <text x={mirrored ? -41 : 50} y={19} className="st8 st2 st13">PSI</text>
             <text x={mirrored ? -29 : 62} y={42} className="st8 st2 st13">C</text>
             <text x={mirrored ? -21 : 54} y={42} className="st8 st2 st13">°</text>
         </SvgGroup>
     );
 };
 
-interface EngNumberProps extends ComponentPositionProps {
+interface EngProps extends ComponentPositionProps {
     engNumber: number
 }
 
-const EngineNumber = ({ x, y, engNumber }: EngNumberProps) => {
+const EngineNumber = ({ x, y, engNumber }: EngProps) => {
     const [fadecStatus] = useSimVar(`L:A32NX_FADEC_POWERED_ENG${engNumber}`, 'Bool', 500);
     const [engN2] = useSimVar(`L:A32NX_ENGINE_N2:${engNumber}`, 'Number', 500);
 
@@ -182,32 +179,21 @@ const EngineNumber = ({ x, y, engNumber }: EngNumberProps) => {
 
     return (
         <SvgGroup x={x} y={y}>
-            <text x={0} y={0} fontSize="22px" className={engN2BelowIdle && fadecStatus ? 'warning st1 st2 st6' : 'st1 st2 st6'}>{engNumber}</text>
+            <text x={0} y={0} className={engN2BelowIdle && fadecStatus ? 'warning st1 st2 st14' : 'st1 st2 st14'}>{engNumber}</text>
         </SvgGroup>
     );
 };
 
-// TODO : Make Mirrored
-interface EngConnectionProps extends ComponentPositionProps {
-    engNumber: number,
-    mirrored: boolean
-}
-
-const EngineConnection = ({ x, y, engNumber, mirrored }: EngConnectionProps) => {
-    const [isEng1Running] = useSimVar('L:A32NX_ENGINE_STATE:1', 'Number', 500);
-    const [isEng2Running] = useSimVar('L:A32NX_ENGINE_STATE:2', 'Number', 500);
+const EngineConnection = ({ x, y, engNumber, mirrored }: EngMirroredProps) => {
+    const [isEngRunning] = useSimVar(`L:A32NX_ENGINE_STATE:${engNumber}`, 'Number', 500);
     return (
-        <g>
-            {/* eng1 */}
-            <line id="left-engine-connection-obj1" className={isEng1Running ? 'st5' : 'warning st5'} x1="121" y1="468" x2="121" y2="423" />
-            <line id="left-engine-connection-obj2" className={isEng1Running ? 'st5' : 'warning st5'} x1="182" y1="452" x2="211" y2="452" />
-            <line id="left-engine-connection-obj3" className={isEng1Running ? 'st5' : 'warning st5'} x1="210" y1="452" x2="210" y2="468" />
-
-            {/* eng2 */}
-            <line id="right-engine-connection-obj1" className={isEng2Running ? 'st5' : 'warning st5'} x1="390" y1="452" x2="418" y2="452" />
-            <line id="right-engine-connection-obj2" className={isEng2Running ? 'st5' : 'warning st5'} x1="391" y1="468" x2="391" y2="452" />
-            <line id="right-engine-connection-obj3" className={isEng2Running ? 'st5' : 'warning st5'} x1="479" y1="468" x2="479" y2="424" />
-        </g>
+        <SvgGroup x={x} y={y}>
+            <g className={mirrored ? 'mirrored' : ''}>
+                <line className={isEngRunning ? 'st5' : 'warning st5'} x1={0} y1={45} x2={0} y2={0} />
+                <line className={isEngRunning ? 'st5' : 'warning st5'} x1={60} y1={29} x2={90} y2={29} />
+                <line className={isEngRunning ? 'st5' : 'warning st5'} x1={89} y1={29} x2={89} y2={45} />
+            </g>
+        </SvgGroup>
     );
 };
 
@@ -275,6 +261,7 @@ const RamAir = ({ x, y }: ComponentPositionProps) => {
     return (
         <SvgGroup x={x} y={y}>
             <circle className="st5" cx={18} cy={39} r={16} />
+            <line className="st5" x1={18} y1={78} x2={18} y2={55} />
             <text x={0} y={98} className="st1 st2 st6">RAM</text>
             <text x={0} y={117} className="st1 st2 st6">AIR</text>
 
@@ -312,10 +299,10 @@ const PackFlowIndicator = ({ x, y }: ComponentPositionProps) => {
     return (
         <SvgGroup x={x} y={y}>
             <g style={transformStyleInFlow}>
-                <line className="st5" strokeWidth="4.5px" strokeLinecap="round" x1={19} y1={84} x2={0} y2={72} />
+                <line className="st5" strokeWidth="5px" strokeLinecap="round" x1={19} y1={84} x2={0} y2={72} />
             </g>
             <g style={transformStyleOutFlow}>
-                <line className="st5" strokeWidth="4.5px" strokeLinecap="round" x1={34} y1={18} x2={0} y2={0} />
+                <line className="st5" strokeWidth="5px" strokeLinecap="round" x1={34} y1={18} x2={0} y2={0} />
             </g>
         </SvgGroup>
     );
@@ -345,7 +332,6 @@ const ShouldMoveOut = () => (
         {/* unused */}
         <line id="center-line-1" className="st5" x1="121" y1="317" x2="121" y2="243" />
         <line id="center-line-5" className="st5" x1="479" y1="317" x2="479" y2="243" />
-        <line id="center-line-6" className="st5" x1="300" y1="126" x2="300" y2="103" />
     </g>
 );
 
@@ -424,11 +410,11 @@ const Pack = () => {
     const pack2Fault = false;
 
     const eng1PackInTmp = 123;
-    const eng1PackOutTmp = 456;
+    const eng1PackOutTmp = 45;
     const eng2PackInTmp = 123;
-    const eng2PackOutTmp = 456;
+    const eng2PackOutTmp = 45;
     const apuPackInTmp = 123;
-    const apuPackOutTmp = 456;
+    const apuPackOutTmp = 45;
 
     let leftPackInTmp;
     let leftPackOutTmp;
