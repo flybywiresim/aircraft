@@ -29,7 +29,7 @@ const initialState: mcduState = {
 };
 
 // Shouldn't this be FMGC reducer?
-export const mcduReducer = (state = initialState, { payload }) => {
+export const mcduReducer = (state = initialState, payload) => {
     switch (payload.type) {
     case mcduActions.SET_ZFW:
         return setZFW(state, payload.zfw);

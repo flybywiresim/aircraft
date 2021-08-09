@@ -19,7 +19,7 @@ export type fieldProperties = {
 
 }
 
-type interactiveSplitLineTwoProps = {
+type InteractiveSplitFieldProps = {
     side: lineSides,
     slashColor: lineColors
     lsk: LINESELECT_KEYS,
@@ -32,7 +32,7 @@ type interactiveSplitLineTwoProps = {
 /**
  * Interactive Split line v2.0
  */
-const InteractiveSplitField: React.FC<interactiveSplitLineTwoProps> = (
+const InteractiveSplitField: React.FC<InteractiveSplitFieldProps> = (
     {
         selectedCallback,
         selectedValidation,

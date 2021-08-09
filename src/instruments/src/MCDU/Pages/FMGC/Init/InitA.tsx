@@ -29,7 +29,6 @@ const CoRouteLine: React.FC = () => (
 type fromToLineProps = {
     addMessage: (msg: scratchpadMessage) => void
 }
-// This is specifically not a split field line because of the operations of FROM/TO
 const FromToLine: React.FC<fromToLineProps> = ({ addMessage }) => {
     const setNewValue = (value: string | undefined) => {
         console.log(`Inserting FROM/TO ${value}`);
@@ -104,7 +103,6 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
 };
 
 type flightNoLineProps = {
-    clearScratchpad: () => void
     addMessage: (msg: scratchpadMessage) => void
 }
 const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
@@ -143,7 +141,7 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
             <LabelField lineSide={lineSides.left} value="FLT NBR" color={lineColors.white} />
             <StringInputField
                 lineSide={lineSides.left}
-                value={flightNo}
+                value={flightNo !== undefined ? flightNo : '_____'}
                 nullValue="________"
                 color={flightNo !== undefined ? lineColors.cyan : lineColors.amber}
                 size={lineSizes.regular}
@@ -178,7 +176,7 @@ const CostIndexLine: React.FC = () => {
             <LabelField lineSide={lineSides.left} value="COST INDEX" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.left}
-                value={costIndex !== undefined ? parseInt(costIndex).toFixed(0) : ''}
+                value={costIndex !== undefined ? parseInt(costIndex).toFixed(0) : undefined}
                 nullValue="___"
                 min={100}
                 max={999}
@@ -207,10 +205,10 @@ const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ scratchpad, addMessage }) =
     const [temp, setTemp] = useState<string>();
     const [cruiseEntered, setCruiseEntered] = useState(false);
     const properties: fieldProperties = {
-        lValue: flString === undefined ? '__._' : `FL${flString}`,
+        lValue: flString === undefined ? '-----\xa0' : `FL${flString}\xa0`,
         lColour: flString !== undefined ? lineColors.cyan : lineColors.amber,
         lSize: lineSizes.regular,
-        rValue: temp !== undefined ? temp : '__._',
+        rValue: temp !== undefined ? `${temp}°` : '---°',
         rColour: lineColors.inop,
         rSize: lineSizes.regular,
     };
@@ -381,7 +379,7 @@ type InitAPageProps = {
     addMessage: (msg: scratchpadMessage) => void
     scratchpad: scratchpadState
 }
-const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, clearScratchpad, addMessage }) => {
+const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, addMessage }) => {
     useEffect(() => {
         setTitlebarText('INIT');
     }, []);
@@ -397,7 +395,7 @@ const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, clea
                 <RequestLine />
             </div>
             <div className="row-holder">
-                <FlightNoLine clearScratchpad={clearScratchpad} addMessage={addMessage} />
+                <FlightNoLine addMessage={addMessage} />
                 <AlignOptionLine />
             </div>
             <div className="row-holder">

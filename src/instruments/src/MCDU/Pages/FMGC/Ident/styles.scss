@@ -1,6 +1,6 @@
 .row-holder {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, auto);
     grid-template-rows: 1fr;
 }
 

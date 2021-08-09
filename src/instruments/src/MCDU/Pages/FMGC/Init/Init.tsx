@@ -25,9 +25,10 @@ import InitAPage from './InitA';
 import InitBPage from './InitB';
 
 import { useInteractionEvent } from '../../../../Common/hooks';
-import { useMCDUDispatch } from '../../../redux/hooks';
+import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 
 const InitPage: React.FC = () => {
+    const scratchpad = useMCDUSelector((state) => state.scratchpad);
     const dispatch = useMCDUDispatch();
     const setTitlebarText = (msg: string) => {
         dispatch(titlebarActions.setTitleBarText(msg));
@@ -42,7 +43,7 @@ const InitPage: React.FC = () => {
     };
 
     const pages = {
-        A: <InitAPage clearScratchpad={clearScratchpad} addMessage={addMessage} setTitlebarText={setTitlebarText} />,
+        A: <InitAPage scratchpad={scratchpad} clearScratchpad={clearScratchpad} addMessage={addMessage} setTitlebarText={setTitlebarText} />,
         B: <InitBPage setTitlebarText={setTitlebarText} />,
     };
     const [currentPage, setCurrentPage] = useState('A');
