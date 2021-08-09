@@ -56,7 +56,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
             props.setInitialize(false);
         }
         setPreviousMode(props.expertMode);
-    });
+    }, [axisValue, props, setAxisValue, deadZone, setDeadZone]);
 
     return (
         <div className="mb-2 w-full h-96 justify-between items-center p-2 flex flex-row flex-shrink-0">
