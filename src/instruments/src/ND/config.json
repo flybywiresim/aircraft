@@ -1,5 +1,5 @@
 {
   "index": "./index.tsx",
   "isInteractive": false,
-  "additionalImports": ["/JS/fmgc/LzUtf8.js"]
+  "additionalImports": ["/JS/fmgc/LzUtf8.js", "/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"]
 }
