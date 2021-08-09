@@ -165,6 +165,7 @@
 1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
 1. [FCU] Added LVAR for selected speed and only fill active LVAR for VS or FPA mode
 1. [MODEL] Removed unused material to fix potential crash to desktop - @aguther (Andreas Guther)
+1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
