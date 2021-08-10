@@ -1,3 +1,4 @@
+# WIP! Due to a recent re-structure of components this README should be ignored
 # Multi-Function Control and Display Unit (MCDU)
 welcome to the MCDU React rewrite!
 
@@ -12,11 +13,11 @@ The MCDU Rewrite comes with several components similarly to the EFB that allows 
 to build MCDU pages as needed.
 
 ## Main Components
-The main components are `Content`, `RowHolder` and `LineHolder`. 
+The main components are `Content`, `RowHolder` and `LineHolder`.
 
 Firstly the `Content` component contains content of that MCDU page, excluding the title and scratchpad.
-The content component dynamically creates a total of 6 empty rows (`RowHolder`) based on the indexing provided by 
-`RowHolders`. The content 
+The content component dynamically creates a total of 6 empty rows (`RowHolder`) based on the indexing provided by
+`RowHolders`. The content
 will accept up to 6 RowHolder items.
 
 The RowHolder contains the content of that specific row, indexed by a number symbolising the position of the row from 1-6.
@@ -28,7 +29,7 @@ For example,
 ```
 
 Lastly, a `LineHolder` holds lines. The LineHolder component is a flex item with a fixed height, and only allows two lines
-inside, to conform with the main structure of the MCDU. Where each row contains two lines (per side), commonly the 
+inside, to conform with the main structure of the MCDU. Where each row contains two lines (per side), commonly the
 labels and data field (the 'label' field can be re-used for many differing scenarios and is not strictly a label).
 
 With this information, pages should be created in the resulting manner
@@ -46,28 +47,28 @@ With this information, pages should be created in the resulting manner
 **At the current moment the main components are not to be re-configured without reason.**
 
 ## Lines
-Currently, there are 4 types of lines, `EmptyLine`, `InteractiveSplitLine`, `Line` and `SplitLine`. 
+Currently, there are 4 types of lines, `EmptyLine`, `InteractiveSplitLine`, `Line` and `SplitLine`.
 
 **All lines require a side for the field values to properly orient them.**
 
 The `EmptyLine` component is pretty self-explanatory, it inserts an EmptyLine that contains the required height for each
-line in a `LineHolder`. Empty lines are usually used for when you wish to have text in a data field but would like the 
+line in a `LineHolder`. Empty lines are usually used for when you wish to have text in a data field but would like the
 label field empty or vice versa. Refer to Menu.tsx for an example.
 
 The `Line` component is your basic line where a large majority of your fields will be inserted (both interactive and
 non-interactive). It requires a side of which can also be found in Line.tsx exported as `lineSides`. An example usage of
-a line can be seen below 
+a line can be seen below
 ```jsx
-<Line 
-    side={lineSides.left} 
-    value={...} 
-/> 
+<Line
+    side={lineSides.left}
+    value={...}
+/>
 ```
 
 **It should be noted that currently the line component contains all the CSS modifiers for text including side, size and
 color, this is WIP until a moved to a more appropriate class.**
 
-The `SplitLine` component is very similar to the `Line` component however rather than a value prop, it accepts a 
+The `SplitLine` component is very similar to the `Line` component however rather than a value prop, it accepts a
 leftSide and rightSide prop. It also accepts a `slashColor` prop whose name is pretty self-explanatory. **The Split Line
 should only contain non-interactive split fields.**
 
@@ -86,13 +87,13 @@ Currently, there is `LineSelectField`, `StringInputField` and `NumberInputField`
 The former, `LineSelectField` is akin to a button on a webpage, it contains some text and listens out for the provided
 LSK (Line Select Key) and does a provided action. It's usage can be seen below:
 ```jsx
-<LineSelectField 
+<LineSelectField
     value={"TEST"}
-    size={lineSizes.regular} 
-    color={lineColors.white} 
-    lsk={lineSelectKeys.L1} 
+    size={lineSizes.regular}
+    color={lineColors.white}
+    lsk={lineSelectKeys.L1}
     selectedCallback={() => changePage()}
-/> 
+/>
 ```
 
 #### Split Interactive Fields
@@ -116,7 +117,7 @@ TODO
 
 # Titlebar
 TODO
- 
+
 
 # Contributing
 TODO
