@@ -321,6 +321,9 @@ impl SimulationElement for ElectronicControlBox {
             SignStatus::FailureWarning
         };
 
+        // For sound and effects.
+        writer.write("APU_N_RAW", self.n());
+
         writer.write_arinc429("APU_N", self.n(), ssm);
         writer.write_arinc429("APU_EGT", self.egt, ssm);
         writer.write_arinc429("APU_EGT_CAUTION", self.egt_caution_temperature(), ssm);

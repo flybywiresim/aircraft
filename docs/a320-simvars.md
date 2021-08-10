@@ -349,6 +349,11 @@
     - `Arinc429<Percent>`
     - The APU's rotations per minute in percentage of the maximum RPM
 
+- A32NX_APU_N_RAW
+    - Percent
+    - The APU's rotations per minute in percentage of the maximum RPM
+      This raw value should only be used for sounds and effects.
+
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open

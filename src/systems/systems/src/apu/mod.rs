@@ -808,6 +808,12 @@ pub mod tests {
             self.read_arinc429("APU_N")
         }
 
+        /// The raw value should only be used for sounds and effects and therefore
+        /// isn't wrapped in an Arinc 429 value.
+        fn n_raw(&mut self) -> Ratio {
+            self.read("APU_N_RAW")
+        }
+
         fn turbine_is_shutdown(&mut self) -> bool {
             let n = self.n();
             n.value().get::<percent>() <= 0.
@@ -1047,8 +1053,15 @@ pub mod tests {
                 test_bed = test_bed.run(Duration::from_secs(1));
 
                 assert_about_eq!(
-                    test_bed.egt_warning_temperature().value().get::<degree_celsius>(),
-                    test_bed.egt_caution_temperature().value().get::<degree_celsius>() + 33.
+                    test_bed
+                        .egt_warning_temperature()
+                        .value()
+                        .get::<degree_celsius>(),
+                    test_bed
+                        .egt_caution_temperature()
+                        .value()
+                        .get::<degree_celsius>()
+                        + 33.
                 );
             }
         }
@@ -1354,7 +1367,10 @@ pub mod tests {
                 .run(Duration::from_secs(1));
 
             assert_about_eq!(
-                test_bed.egt_warning_temperature().value().get::<degree_celsius>(),
+                test_bed
+                    .egt_warning_temperature()
+                    .value()
+                    .get::<degree_celsius>(),
                 900.
             );
         }
@@ -1368,7 +1384,10 @@ pub mod tests {
                 .run(Duration::from_secs(1));
 
             assert_about_eq!(
-                test_bed.egt_warning_temperature().value().get::<degree_celsius>(),
+                test_bed
+                    .egt_warning_temperature()
+                    .value()
+                    .get::<degree_celsius>(),
                 982.
             );
         }
@@ -1991,6 +2010,18 @@ pub mod tests {
                 powered = still_powered;
                 test_bed.run_with_delta(Duration::from_millis(1));
             }
+        }
+
+        #[test]
+        fn always_writes_a_raw_n_value_for_sound_and_effects() {
+            let mut test_bed = test_bed();
+            test_bed.run_without_delta();
+
+            assert_about_eq!(test_bed.n_raw().get::<percent>(), 0.);
+
+            test_bed = test_bed.then_continue_with().running_apu();
+
+            assert!(test_bed.n_raw().get::<percent>() >= 99.);
         }
     }
 }
