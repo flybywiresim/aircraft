@@ -359,9 +359,7 @@
     - Indicates if the APU bleed air valve is open
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
-    - `Arinc429<Number>`
-        - 0: The APU doesn't have an active LOW FUEL PRESSURE fault.
-        - 1: Indicates the APU has an active LOW FUEL PRESSURE fault.
+    - `Arinc429<Bool>`
 
 - A32NX_APU_IS_AUTO_SHUTDOWN
     - Bool
@@ -380,9 +378,7 @@
     - Indicates the percentage the APU air intake flap is open
 
 - A32NX_APU_FLAP_FULLY_OPEN
-    - `Arinc429<Number>`
-        - 0: The APU air intake flap isn't fully open.
-        - 1: The APU air intake flap is fully open.
+    - `Arinc429<Bool>`
 
 - A32NX_FIRE_BUTTON_APU
     - Bool

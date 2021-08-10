@@ -1,10 +1,9 @@
 class Arinc429Word {
     constructor(value) {
-        const buffer = new ArrayBuffer(8);
-        (new Float64Array(buffer))[0] = value;
+        Arinc429Word.f64View[0] = value;
 
-        this._ssm = new Uint32Array(buffer)[0];
-        this._value = new Float32Array(buffer)[1];
+        this._ssm = Arinc429Word.u32View[0];
+        this._value = Arinc429Word.f32View[1];
     }
 
     static empty() {
@@ -27,6 +26,10 @@ class Arinc429Word {
         return this._ssm === Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 }
+
+Arinc429Word.f64View = new Float64Array(1);
+Arinc429Word.u32View = new Uint32Array(Arinc429Word.f64View.buffer);
+Arinc429Word.f32View = new Float32Array(Arinc429Word.f64View.buffer);
 
 Arinc429Word.SignStatusMatrix = Object.freeze({
     FailureWarning: 0,
