@@ -158,7 +158,7 @@ struct Autobrakes {
 impl Autobrakes {
     // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
     // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
-    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(650);
+    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(1500);
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
