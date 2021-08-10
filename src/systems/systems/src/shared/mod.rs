@@ -380,6 +380,18 @@ impl Default for MachNumber {
     }
 }
 
+impl From<f64> for MachNumber {
+    fn from(value: f64) -> Self {
+        MachNumber(value)
+    }
+}
+
+impl From<MachNumber> for f64 {
+    fn from(value: MachNumber) -> Self {
+        value.0
+    }
+}
+
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;

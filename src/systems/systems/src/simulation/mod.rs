@@ -514,17 +514,17 @@ macro_rules! read_write_as {
     };
 }
 
-macro_rules! read_write_no_conversion {
+macro_rules! read_write_into {
     ($t: ty) => {
         impl<T: Reader> Read<$t> for T {
             fn convert(&mut self, value: f64) -> $t {
-                value
+                value.into()
             }
         }
 
         impl<T: Writer> Write<$t> for T {
             fn convert(&mut self, value: $t) -> f64 {
-                value
+                value.into()
             }
         }
     };
@@ -536,7 +536,6 @@ read_write_uom!(Acceleration, foot_per_second_squared);
 read_write_uom!(ThermodynamicTemperature, degree_celsius);
 read_write_uom!(Ratio, percent);
 read_write_as!(usize);
-read_write_no_conversion!(f64);
 read_write_uom!(ElectricPotential, volt);
 read_write_uom!(ElectricCurrent, ampere);
 read_write_uom!(Frequency, hertz);
@@ -545,6 +544,19 @@ read_write_uom!(Volume, gallon);
 read_write_uom!(VolumeRate, gallon_per_second);
 read_write_uom!(Mass, pound);
 read_write_uom!(Angle, degree);
+read_write_into!(MachNumber);
+
+impl<T: Reader> Read<f64> for T {
+    fn convert(&mut self, value: f64) -> f64 {
+        value
+    }
+}
+
+impl<T: Writer> Write<f64> for T {
+    fn convert(&mut self, value: f64) -> f64 {
+        value
+    }
+}
 
 impl<T: Writer> WriteWhen<ThermodynamicTemperature> for T {
     fn write_when(&mut self, condition: bool, name: &str, value: ThermodynamicTemperature) {
@@ -599,17 +611,5 @@ impl<T: Reader> Read<Duration> for T {
 impl<T: Writer> Write<Duration> for T {
     fn convert(&mut self, value: Duration) -> f64 {
         value.as_secs_f64()
-    }
-}
-
-impl<T: Reader> Read<MachNumber> for T {
-    fn convert(&mut self, value: f64) -> MachNumber {
-        MachNumber(value)
-    }
-}
-
-impl<T: Writer> Write<MachNumber> for T {
-    fn convert(&mut self, value: MachNumber) -> f64 {
-        value.0
     }
 }
