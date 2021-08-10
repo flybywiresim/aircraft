@@ -1384,6 +1384,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
       THRUST_IDLE | 2
       THRUST_CLB | 3
 
+- A32NX_AUTOPILOT_SPEED_SELECTED
+    - SPEED mode: 100 to 399 (knots)
+    - MACH mode: 0.10 to 0.99 (M)
+    - Indicates the selected speed on the FCU, instantly updated
+    - In case of managed speed mode, the value is -1
+
 - A32NX_AUTOPILOT_FPA_SELECTED
     - Number (Degrees)
     - Indicates the selected FPA on the FCU, instantly updated
@@ -1544,6 +1550,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       LVR_CLB | 3
       LVR_MCT | 4
       LVR_ASYM | 5
+
+- A32NX_AUTOTHRUST_DISABLED
+    - Bool
+    - Indicates if ATHR was disabled by pressing ATHR disconnect buttons longer than 15s
 
 - A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE
     - Enum

@@ -58,6 +58,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
       // failed to connect
       return false;
     }
+    // send initial event to FCU to force HDG mode
+    execute_calculator_code("(>H:A320_Neo_FCU_HDG_PULL)", nullptr, nullptr, nullptr);
     // success
     return true;
   }
@@ -270,6 +272,8 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INC, "A32NX.FCU_ALT_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_DEC, "A32NX.FCU_ALT_DEC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_SET, "A32NX.FCU_ALT_SET", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_TOGGLE, "A32NX.FCU_ALT_INCREMENT_TOGGLE", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_SET, "A32NX.FCU_ALT_INCREMENT_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PUSH, "A32NX.FCU_ALT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PULL, "A32NX.FCU_ALT_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_INC, "A32NX.FCU_VS_INC", false);
@@ -1210,6 +1214,26 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       stringStream << " (>K:3:AP_ALT_VAR_SET_ENGLISH)";
       execute_calculator_code(stringStream.str().c_str(), nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_ALT_SET: " << value << endl;
+      break;
+    }
+    case Events::A32NX_FCU_ALT_INCREMENT_TOGGLE: {
+      execute_calculator_code(
+          "(L:XMLVAR_Autopilot_Altitude_Increment, number) 100 == "
+          "if{ 1000 (>L:XMLVAR_Autopilot_Altitude_Increment) } "
+          "els{ 100 (>L:XMLVAR_Autopilot_Altitude_Increment) }",
+          nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_TOGGLE" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_ALT_INCREMENT_SET: {
+      long value = static_cast<long>(event->dwData);
+      if (value == 100 || value == 1000) {
+        ostringstream stringStream;
+        stringStream << value;
+        stringStream << " (>L:XMLVAR_Autopilot_Altitude_Increment)";
+        execute_calculator_code(stringStream.str().c_str(), nullptr, nullptr, nullptr);
+        cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_SET: " << value << endl;
+      }
       break;
     }
     case Events::A32NX_FCU_ALT_PUSH: {
