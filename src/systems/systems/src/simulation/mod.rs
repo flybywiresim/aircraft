@@ -416,6 +416,21 @@ pub trait Read<T: Copy> {
         self.convert(value)
     }
 
+    /// Reads an ARINC 429 value from the simulator.
+    /// # Examples
+    /// ```rust
+    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
+    /// #    SimulatorReader, SimulatorWriter, Read};
+    /// # use systems::shared::arinc429::Arinc429Word;
+    /// struct MySimulationElement {
+    ///     is_on: Arinc429Word<bool>,
+    /// }
+    /// impl SimulationElement for MySimulationElement {
+    ///     fn read(&mut self, reader: &mut SimulatorReader) {
+    ///         self.is_on = reader.read_arinc429("MY_SIMULATOR_ELEMENT_IS_ON");
+    ///     }
+    /// }
+    /// ```
     fn read_arinc429(&mut self, name: &str) -> Arinc429Word<T>
     where
         Self: Sized + Reader,
@@ -450,6 +465,23 @@ pub trait Write<T> {
         self.write_f64(name, value)
     }
 
+    /// Write an ARINC 429 value to the simulator.
+    ///
+    /// Note that the `f64` will be converted to a `f32` internally, thus reducing precision.
+    /// # Examples
+    /// ```rust
+    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
+    /// #    SimulatorReader, SimulatorWriter, Write};
+    /// # use systems::shared::arinc429::SignStatus;
+    /// struct MySimulationElement {
+    ///     n: f64,
+    /// }
+    /// impl SimulationElement for MySimulationElement {
+    ///     fn write(&self, writer: &mut SimulatorWriter) {
+    ///        writer.write_arinc429("MY_SIMULATOR_ELEMENT_N", self.n, SignStatus::NormalOperation);
+    ///     }
+    /// }
+    /// ```
     fn write_arinc429(&mut self, name: &str, value: T, ssm: SignStatus)
     where
         Self: Sized + Writer,

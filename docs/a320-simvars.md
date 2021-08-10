@@ -333,32 +333,28 @@
     - The selected flight path angle in the FCU
 
 - A32NX_APU_EGT_CAUTION
-    - Celsius
-    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit,
-      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
+    - `Arinc429<Celsius>`
+    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit
 
 - A32NX_APU_EGT_WARNING
-    - Celsius
-    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit,
-      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
+    - `Arinc429<Celsius>`
+    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit
 
 - A32NX_APU_EGT
-    - Celsius
+    - `Arinc429<Celsius>`
     - The APU's exhaust gas temperature,
       when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_N
-    - Percent
-    - The APU's rotations per minute in percentage of the maximum RPM,
-      when < 0 the ECB isn't supplying information, for example due to being unpowered.
+    - `Arinc429<Percent>`
+    - The APU's rotations per minute in percentage of the maximum RPM
 
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
-    - Number
-        - -1: The ECB isn't supplying information, for example due to being unpowered.
+    - `Arinc429<Number>`
         - 0: The APU doesn't have an active LOW FUEL PRESSURE fault.
         - 1: Indicates the APU has an active LOW FUEL PRESSURE fault.
 
@@ -379,8 +375,7 @@
     - Indicates the percentage the APU air intake flap is open
 
 - A32NX_APU_FLAP_FULLY_OPEN
-    - Number
-        - -1: The ECB isn't supplying information, for example due to being unpowered.
+    - `Arinc429<Number>`
         - 0: The APU air intake flap isn't fully open.
         - 1: The APU air intake flap is fully open.
 

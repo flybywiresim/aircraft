@@ -14,6 +14,10 @@ impl<T: Copy> Arinc429Word<T> {
     pub fn ssm(&self) -> SignStatus {
         self.ssm
     }
+
+    pub fn is_normal(&self) -> bool {
+        matches!(self.ssm, SignStatus::NormalOperation)
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
