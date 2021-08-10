@@ -104,13 +104,14 @@ type zfwLineProps = {
     fmgcZFWCG: number | undefined,
     setFMGCZFWCG: React.Dispatch<React.SetStateAction<number | undefined>>
     zeroFuelWeightZFWCGEntered: Boolean,
-    setZeroFuelWeightZFWCGEntered: React.Dispatch<React.SetStateAction<boolean>>
+    setZeroFuelWeightZFWCGEntered: React.Dispatch<React.SetStateAction<boolean>>,
+    lsk: LINESELECT_KEYS,
     // Redux
     setScratchpad: (msg: any) => any
     addMessage: (msg: scratchpadMessage) => any
     scratchpad: scratchpadState
 }
-const ZfwLine: React.FC<zfwLineProps> = (
+export const ZfwLine: React.FC<zfwLineProps> = (
     {
         zeroFuelWeightZFWCGEntered,
         setZeroFuelWeightZFWCGEntered,
@@ -121,6 +122,7 @@ const ZfwLine: React.FC<zfwLineProps> = (
         setFMGCZFW,
         fmgcZFWCG,
         setFMGCZFWCG,
+        lsk,
     },
 ) => {
     // TODO Move to util?
@@ -132,11 +134,11 @@ const ZfwLine: React.FC<zfwLineProps> = (
     const calcZFW = (totalWeight / 1000) - blockFuel;
 
     const properties: fieldProperties = {
-        lValue: fmgcZFW === undefined ? '__._' : fmgcZFW.toFixed(1),
+        lValue: fmgcZFW === undefined ? '___._' : fmgcZFW.toFixed(1),
         // lSide: fieldSides.left,
         lColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
         lSize: lineSizes.regular,
-        rValue: fmgcZFWCG === undefined ? '__._' : fmgcZFWCG.toFixed(1),
+        rValue: fmgcZFWCG === undefined ? '__._ ' : `${fmgcZFWCG.toFixed(1)} `,
         // rSide: fieldSides.right,
         rColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
         rSize: lineSizes.regular,
@@ -231,7 +233,7 @@ const ZfwLine: React.FC<zfwLineProps> = (
             <InteractiveSplitField
                 side={lineSides.right}
                 slashColor={fmgcZFW === undefined ? lineColors.amber : lineColors.cyan}
-                lsk={LINESELECT_KEYS.R3}
+                lsk={lsk}
                 properties={properties}
                 selectedValidation={(lVal, rVal) => validateEntry(lVal, rVal)}
                 selectedCallback={(lVal, rVal) => updateFMGC(lVal, rVal)}
@@ -512,6 +514,7 @@ const FuelPredPage: React.FC = () => {
                 <RowHolder index={3}>
                     <RteRsvLine />
                     <ZfwLine
+                        lsk={LINESELECT_KEYS.R3}
                         addMessage={addScratchpadMessage}
                         setScratchpad={setScratchpad}
                         fmgcZFW={mcduData.zfw}

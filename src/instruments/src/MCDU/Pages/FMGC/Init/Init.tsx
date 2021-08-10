@@ -15,12 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 import { SLEW_KEYS } from '../../../Components/Buttons';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
+import * as mcduActions from '../../../redux/actions/mcduActionCreators';
 import InitAPage from './InitA';
 import InitBPage from './InitB';
 
@@ -29,22 +30,48 @@ import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 
 const InitPage: React.FC = () => {
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
+    const mcduData = useMCDUSelector((state) => state.mcduData);
+
     const dispatch = useMCDUDispatch();
+    const setZFW = (msg: number | undefined) => {
+        dispatch(mcduActions.setZFW(msg));
+    };
+    const setZFWCG = (msg: number | undefined) => {
+        dispatch(mcduActions.setZFWCG(msg));
+    };
+    const setZFWCGEntered = (entered: boolean) => {
+        dispatch(mcduActions.setZFWCGEntered(entered));
+    };
     const setTitlebarText = (msg: string) => {
         dispatch(titlebarActions.setTitleBarText(msg));
     };
-
+    const setScratchpad = (msg: string) => {
+        dispatch(scratchpadActions.setScratchpad(msg));
+    };
     const clearScratchpad = () => {
         dispatch(scratchpadActions.clearScratchpad());
     };
-
     const addMessage = (msg: scratchpadMessage) => {
         dispatch(scratchpadActions.addScratchpadMessage(msg));
     };
 
     const pages = {
-        A: <InitAPage scratchpad={scratchpad} clearScratchpad={clearScratchpad} addMessage={addMessage} setTitlebarText={setTitlebarText} />,
-        B: <InitBPage setTitlebarText={setTitlebarText} />,
+        A: <InitAPage
+            scratchpad={scratchpad}
+            clearScratchpad={clearScratchpad}
+            addMessage={addMessage}
+            setTitlebarText={setTitlebarText}
+        />,
+        B: <InitBPage
+            addScratchpadMessage={addMessage}
+            setTitlebarText={setTitlebarText}
+            mcduData={mcduData}
+            setScratchpad={setScratchpad}
+            scratchpad={scratchpad}
+            setZFW={setZFW}
+            setZFWCG={setZFWCG}
+            setZFWCGEntered={setZFWCGEntered}
+        />,
     };
     const [currentPage, setCurrentPage] = useState('A');
 
@@ -54,10 +81,6 @@ const InitPage: React.FC = () => {
         }
         return 'A';
     }
-
-    useEffect(() => {
-        setTitlebarText('INIT');
-    }, []);
 
     useInteractionEvent(SLEW_KEYS.RARROW, () => setCurrentPage(determinePage()));
     useInteractionEvent(SLEW_KEYS.LARROW, () => setCurrentPage(determinePage()));

@@ -18,6 +18,9 @@ type SplitNumberFieldProps = {
     autoCalc? : () => any,
 }
 
+/**
+ * @deprecated
+ */
 const SplitNumberField : React.FC<SplitNumberFieldProps> = (
     {
         value,

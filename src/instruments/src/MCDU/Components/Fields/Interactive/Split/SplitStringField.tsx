@@ -16,6 +16,9 @@ type SplitStringFieldProps = {
     selectedValidation: (value: string) => boolean,
 }
 
+/**
+ * @deprecated
+ */
 const SplitStringField : React.FC<SplitStringFieldProps> = (
     {
         value,
