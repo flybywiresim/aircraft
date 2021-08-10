@@ -20,7 +20,9 @@ class A32NX_GPWS {
         this.prevRadioAlt2 = NaN;
 
         this.modes = [
+            // Mode 1
             {
+                // 0: no warning, 1: "sink rate", 2 "pull up"
                 current: 0,
                 previous: 0,
                 type: [
@@ -29,17 +31,23 @@ class A32NX_GPWS {
                     { gpwsLight: true, pullUp: true }
                 ]
             },
+            // Mode 2 is currently inactive.
             {
+                // 0: no warning, 1: "terrain", 2: "pull up"
                 current: 0,
                 previous: 0,
                 type: [{}, { gpwsLight: true }, { gpwsLight: true, pullUp: true }],
             },
+            // Mode 3
             {
+                // 0: no warning, 1: "don't sink"
                 current: 0,
                 previous: 0,
                 type: [{}, { sound: soundList.dont_sink, soundPeriod: 1.1, gpwsLight: true }]
             },
+            // Mode 4
             {
+                // 0: no warning, 1: "too low gear", 2: "too low flaps", 3: "too low terrain"
                 current: 0,
                 previous: 0,
                 type: [
@@ -49,7 +57,9 @@ class A32NX_GPWS {
                     { sound: soundList.too_low_terrain, soundPeriod: 1.1, gpwsLight: true }
                 ]
             },
+            // Mode 5, not all warnings are fully implemented
             {
+                // 0: no warning, 1: "glideslope", 2: "hard glideslope" (louder)
                 current: 0,
                 previous: 0,
                 type: [
