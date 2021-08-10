@@ -5,6 +5,8 @@
     <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
     <div id="Mainframe">
         <div id="Electricity" state="off">
+            <div id="LcdOverlay"></div>
+            <div id="BacklightBleed"></div>
             <div style="height: 0;">
                 <svg>
                     <defs>
@@ -43,7 +45,7 @@
 
             <div id="BottomScreen">
                 <a320-neo-lower-ecam-fuel id="FD" style="display:block"></a320-neo-lower-ecam-fuel>
-                <a320-neo-lower-ecam-engine style="display: none"></a320-neo-lower-ecam-engine>
+                <a32nx-eng-page-element style="display: none"></a32nx-eng-page-element>
                 <a32nx-elec-page-element style="display: none"></a32nx-elec-page-element>
                 <a320-neo-lower-ecam-apu style="display: none"></a320-neo-lower-ecam-apu>
                 <a32nx-cond-page-element style="display: none"></a32nx-cond-page-element>
@@ -95,6 +97,7 @@
 <script type="text/html" import-script="/Pages/A32NX_Utils/NXLogic.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_DMC.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/DisplayUnit.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/Adirs.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 
@@ -112,7 +115,7 @@
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/A32NX_BaseAirliners.js"></script>
 
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EICAS/EICAS_Common.html"></script>
-<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/A32NX/EcamPages/eng-page/template.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/A32NX/EcamPages/cond-page/template.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/A32NX/EcamPages/hyd-page/template.html"></script>

@@ -180,6 +180,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
+  std::unique_ptr<LocalVariable> idAutothrustDisabled;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningFlex;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningToga;
   std::unique_ptr<LocalVariable> idAutothrustDisconnect;
@@ -251,6 +252,8 @@ class FlyByWireInterface {
   bool updateAutothrust(double sampleTime);
 
   bool updateFlapsSpoilers(double sampleTime);
+
+  bool updateAltimeterSetting(double sampleTime);
 
   double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 

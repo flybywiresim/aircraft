@@ -170,6 +170,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
+        this.gpsPrimaryLostMessageAcknowledged = false;
+        this.gpsPrimaryMessageAcknowledged = false;
         this.activeWpIdx = undefined;
     }
 
@@ -486,7 +488,9 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
 
-        SimVar.SetSimVarValue("K:A32NX.ATHR_RESET_DISABLE", "number", 1);
+        if (SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_DISABLED", "number") === 1) {
+            SimVar.SetSimVarValue("K:A32NX.ATHR_RESET_DISABLE", "number", 1);
+        }
     }
 
     onUpdate(_deltaTime) {
@@ -985,27 +989,27 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateGPSMessage() {
-        if (!SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool")) {
-            if (SimVar.GetSimVarValue("L:GPSPrimary", "Bool")) {
-                SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
-                if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
-                    this.tryRemoveMessage(NXSystemMessages.gpsPrimaryLost.text);
-                    this.addNewMessage(NXSystemMessages.gpsPrimary, () => {
-                        SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
-                    });
-                }
-            } else {
-                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
-                if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
-                    SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    this.tryRemoveMessage(NXSystemMessages.gpsPrimary.text);
-                    this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {
-                        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    });
-                }
-            }
+        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool")) {
+            this.gpsPrimaryLostMessageAcknowledged = false;
+        } else {
+            this.gpsPrimaryMessageAcknowledged = false;
         }
+
+        this.addNewMessage(NXSystemMessages.gpsPrimary, () => {
+            return this.gpsPrimaryMessageAcknowledged ||
+                !SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
+        }, () => {
+            this.gpsPrimaryMessageAcknowledged = true;
+        });
+
+        this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {
+            return this.gpsPrimaryLostMessageAcknowledged ||
+                SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
+        }, () => {
+            this.gpsPrimaryLostMessageAcknowledged = true;
+        });
+
+        SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", this.gpsPrimaryMessageAcknowledged);
     }
 
     updateDisplayedConstraints(force = false) {
@@ -1168,11 +1172,9 @@ class FMCMainDisplay extends BaseAirliners {
     /* FMS CHECK ROUTINE */
 
     checkDestData() {
-        if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addNewMessage(NXSystemMessages.enterDestData, () => {
-                return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
-            });
-        }
+        this.addNewMessage(NXSystemMessages.enterDestData, () => {
+            return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
+        });
     }
 
     /* END OF FMS CHECK ROUTINE */
@@ -1613,6 +1615,13 @@ class FMCMainDisplay extends BaseAirliners {
     setApproachIndex(approachIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
+                const approach = this.flightPlanManager.getApproach();
+                if (approach) {
+                    const runway = this.flightPlanManager.getApproachRunway();
+                    if (runway) {
+                        SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", A32NX_Util.meterToFeet(runway.elevation));
+                    }
+                }
                 this.clearAutotunedIls();
                 callback(true);
             });
@@ -1923,9 +1932,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     vSpeedDisagreeCheck() {
-        if (!this.vSpeedsValid()) {
-            this.addNewMessage(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
-        }
+        this.addNewMessage(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
     }
 
     //Needs PR Merge #3082
@@ -2727,6 +2734,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (HPA_REGEX.test(s)) {
             if (value >= 745 && value <= 1050) {
                 this.perfApprQNH = value;
+                SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", this.perfApprQNH);
                 return true;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2735,9 +2743,11 @@ class FMCMainDisplay extends BaseAirliners {
         } else if (INHG_REGEX.test(s)) {
             if (value >= 2200 && value <= 3100) {
                 this.perfApprQNH = value / 100;
+                SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", this.perfApprQNH * 33.8639);
                 return true;
             } else if (value >= 22.0 && value <= 31.00) {
                 this.perfApprQNH = value;
+                SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", this.perfApprQNH * 33.8639);
                 return true;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -3295,14 +3305,14 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
                     this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
-                        return this._EfobBelowMinClr === false;
+                        return this._EfobBelowMinClr === true;
                     }, () => {
                         this._EfobBelowMinClr = true;
                     });
                 }, 180000);
             } else {
                 this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
-                    return this._EfobBelowMinClr === false;
+                    return this._EfobBelowMinClr === true;
                 }, () => {
                     this._EfobBelowMinClr = true;
                 });
@@ -3678,18 +3688,19 @@ class FMCMainDisplay extends BaseAirliners {
         if (!this._progBrgDist) {
             return;
         }
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
+
+        const latitude = ADIRS.getLatitude();
+        const longitude = ADIRS.getLongitude();
+
+        if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
             this._progBrgDist.distance = -1;
             this._progBrgDist.bearing = -1;
             return;
         }
-        const planeLla = new LatLongAlt(
-            SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
-            SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude")
-        );
-        const magVar = SimVar.GetSimVarValue("MAGVAR", "degree");
-        this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLla, this._progBrgDist.coordinates);
-        this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLla, this._progBrgDist.coordinates));
+
+        const planeLl = new LatLong(latitude, longitude);
+        this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLl, this._progBrgDist.coordinates);
+        this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLl, this._progBrgDist.coordinates));
     }
 
     get progBearing() {
@@ -3749,7 +3760,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * computes minutes when given hour and minutes
-     * @param {string} hhmm - string used ot make the conversion
+     * @param {string} hhmm - string used to make the conversion
      * @returns {number} numbers in minutes form
      */
     //TODO: can this be util?

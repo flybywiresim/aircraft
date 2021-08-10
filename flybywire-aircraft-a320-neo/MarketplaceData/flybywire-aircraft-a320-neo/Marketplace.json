@@ -4,9 +4,10 @@
       "creator": "FlyByWire Simulations",
       "title": "A32NX",
       "description": "The FlyByWire Simulations A32NX is a community-driven open source project to create an Airbus A320neo in Microsoft Flight Simulator that is not only as close to reality as possible, but free to fly for all.  \n\nThe A32NX project is in continuous development with support and feedback from real A320neo pilots and engineers. We have improved the systems' depth and functionality, textures, lighting, and more! We have also developed a myriad of features to help bring immersion and utility to pilots. \n\nFlight planning is streamlined using our SimBrief integration, allowing for “data requests” to populate the aircraft with route information and payloads.\n\nOur fully custom and highly accurate soundpack creates a realistic audio environment while on the flight deck, the cabin, and outside the aircraft. Pilots will experience audio cues on the flight deck such as dynamic packs, GPWS callouts, altitude alerts, and even electrical bus switching. \n\nWe’ve also introduced the flyPad electronic flight bag. Mounted to the left of the Captain’s seat, the flyPad provides pilots with useful at-a-glance information about the current flight. Additionally, it provides in-sim utility to support MSFS ground services and fueling. \n\nSince the release of MSFS the A32NX aircraft has been downloaded over 1 million times and we are happy to provide our project on the marketplace thanks to Microsoft and Asobo. We hope you enjoy your flight!\n",
+      "support-contact": "discord.gg\/flybywire",
       "tags": "AIRLINER,AIRBUS,A320,FLYBYWIRE",
-      "thumbnail_main": "MainContent1380x1302.jpg",
-      "thumbnail_secondary": "Secondary1856x485.jpg",
+      "thumbnail_main": "1380x1302.jpg",
+      "thumbnail_secondary": "1856x485.jpg",
       "categories": "TT:MARKETPLACE.CATEGORY.AIRCRAFT\/TT:MARKETPLACE.CATEGORY.AIRCRAFT.JET",
       "media-backgrounds": [
         "Not-Aligned.jpg,Not-Aligned.jpg",
