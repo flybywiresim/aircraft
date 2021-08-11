@@ -164,6 +164,8 @@
 1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
 1. [FCU] Added LVAR for selected speed and only fill active LVAR for VS or FPA mode
 1. [MODEL] Removed unused material to fix potential crash to desktop - @aguther (Andreas Guther)
+1. [ARCH] Failures are supported - @davidwalschots (David Walschots)
+1. [HYD] Updated fix for autobrake rotating knob type controllers - @Crocket63 (crocket)
 1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
 1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022)
 

@@ -9,6 +9,7 @@ import './pixels.scss';
 type DisplayUnitProps = {
     electricitySimvar: string
     potentiometerIndex: number
+    failed?: boolean
 }
 
 enum DisplayUnitState {
@@ -42,13 +43,15 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     });
 
     useEffect(() => {
-        if (state === DisplayUnitState.On && (potentiometer === 0 || electricityState === 0)) {
+        if (state !== DisplayUnitState.Off && props.failed) {
+            setState(DisplayUnitState.Off);
+        } else if (state === DisplayUnitState.On && (potentiometer === 0 || electricityState === 0)) {
             setState(DisplayUnitState.Standby);
             setTimer(10);
         } else if (state === DisplayUnitState.Standby && (potentiometer !== 0 && electricityState !== 0)) {
             setState(DisplayUnitState.On);
             setTimer(null);
-        } else if (state === DisplayUnitState.Off && (potentiometer !== 0 && electricityState !== 0)) {
+        } else if (state === DisplayUnitState.Off && (potentiometer !== 0 && electricityState !== 0 && !props.failed)) {
             setState(DisplayUnitState.Selftest);
             setTimer(NXDataStore.get<number>('CONFIG_SELF_TEST_TIME', 15));
         } else if (state === DisplayUnitState.Selftest && (potentiometer === 0 || electricityState === 0)) {

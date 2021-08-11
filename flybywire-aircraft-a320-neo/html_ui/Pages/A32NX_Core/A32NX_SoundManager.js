@@ -15,6 +15,10 @@ class A32NX_SoundManager {
     }
 
     addPeriodicSound(sound, period = NaN) {
+        if (!sound) {
+            return;
+        }
+
         let useLengthForPeriod = false;
         if (period < sound.length) {
             console.error("A32NXSoundManager ERROR: Sound period can't be smaller than sound length. Using sound length instead.");
@@ -34,6 +38,10 @@ class A32NX_SoundManager {
     }
 
     removePeriodicSound(sound) {
+        if (!sound) {
+            return;
+        }
+
         for (let i = 0; i < this.periodicList.length; i++) {
             if (this.periodicList[i].sound.name === sound.name) {
                 this.periodicList.splice(i, 1);
