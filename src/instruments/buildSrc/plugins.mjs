@@ -25,6 +25,7 @@ function babel() {
         plugins: [
             '@babel/plugin-proposal-class-properties',
             ['@babel/plugin-transform-runtime', { regenerator: true }],
+            ['module-resolver', { alias: { '@flybywiresim/failures': '../src/failures' } }],
         ],
         babelHelpers: 'runtime',
         compact: false,

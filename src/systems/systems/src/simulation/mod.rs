@@ -3,10 +3,9 @@ use std::time::Duration;
 mod update_context;
 use crate::{
     electrical::Electricity,
-    shared::{
-        arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
-        to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport,
-    },
+    failures::FailureType,
+    shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
+    shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 use uom::si::{
     acceleration::foot_per_second_squared,
@@ -181,6 +180,9 @@ pub trait SimulationElement {
         Self: Sized,
     {
     }
+
+    /// Receives a failure in order to activate or deactivate it.
+    fn receive_failure(&mut self, _failure_type: FailureType, _is_active: bool) {}
 }
 
 /// Trait for visitors that visit the aircraft's system simulation to call
@@ -260,14 +262,10 @@ impl<T: Aircraft> Simulation<T> {
     /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
     /// ```
     /// [`tick`]: #method.tick
-    pub fn tick(
-        &mut self,
-        delta: Duration,
-        simulator_reader_writer: &mut impl SimulatorReaderWriter,
-    ) {
+    pub fn tick(&mut self, delta: Duration, reader_writer: &mut impl SimulatorReaderWriter) {
         self.electricity.pre_tick();
 
-        let mut reader = SimulatorReader::new(simulator_reader_writer);
+        let mut reader = SimulatorReader::new(reader_writer);
         let context = UpdateContext::from_reader(&mut reader, delta);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
@@ -285,9 +283,25 @@ impl<T: Aircraft> Simulation<T> {
         self.aircraft
             .report_electricity_consumption(&context, &self.electricity);
 
-        let mut writer = SimulatorWriter::new(simulator_reader_writer);
+        let mut writer = SimulatorWriter::new(reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
         self.aircraft.accept(&mut visitor);
+    }
+
+    pub fn activate_failure(&mut self, failure_type: FailureType) {
+        self.handle_failure(failure_type, true);
+    }
+
+    pub fn deactivate_failure(&mut self, failure_type: FailureType) {
+        self.handle_failure(failure_type, false);
+    }
+
+    fn handle_failure(&mut self, failure_type: FailureType, is_active: bool) {
+        self.aircraft
+            .accept(&mut FailureSimulationElementVisitor::new(
+                failure_type,
+                is_active,
+            ));
     }
 
     fn electricity(&self) -> &Electricity {
@@ -307,6 +321,24 @@ impl<T: Aircraft> Simulation<T> {
         Self: Sized,
     {
         self.aircraft.accept(visitor);
+    }
+}
+
+struct FailureSimulationElementVisitor {
+    failure_type: FailureType,
+    is_active: bool,
+}
+impl FailureSimulationElementVisitor {
+    fn new(failure_type: FailureType, is_active: bool) -> Self {
+        Self {
+            failure_type,
+            is_active,
+        }
+    }
+}
+impl SimulationElementVisitor for FailureSimulationElementVisitor {
+    fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
+        visited.receive_failure(self.failure_type, self.is_active);
     }
 }
 
