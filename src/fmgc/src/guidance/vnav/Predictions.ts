@@ -140,6 +140,7 @@ export class Predictions {
         let mach = Common.CAStoMach(econCAS, delta);
 
         let tas;
+        // TODO: add usingMach?
         // If above crossover altitude, use econMach
         if (mach > econMach) {
             mach = econMach;
@@ -174,6 +175,19 @@ export class Predictions {
         return result;
     }
 
+    /**
+     * THIS IS DONE.
+     * @param initialAltitude altitude at beginning of step, in feet
+     * @param initialCAS airspeed at beginning of step
+     * @param finalCAS airspeed at end of step
+     * @param initialMach initial mach, above crossover altitude
+     * @param initialMach final mach, above crossover altitude
+     * @param commandedN1 N1% at CLB (or idle) setting, depending on flight phase
+     * @param zeroFuelWeight zero fuel weight of the aircraft (from INIT B)
+     * @param initialFuelWeight weight of fuel at the end of last step
+     * @param headwindAtInitialAltitude headwind component (in knots) at initialAltitude
+     * @param isaDev ISA deviation (in celsius)
+     */
     static speedChangeStep(
         initialAltitude: number,
         initialCAS: number,
@@ -189,28 +203,92 @@ export class Predictions {
         const theta = Common.getTheta(initialAltitude, isaDev);
         const delta = Common.getDelta(theta);
 
-        // todo: find better names for iMach and fMach
-        let iMach = Common.CAStoMach(initialCAS, delta);
-        let fMach = Common.CAStoMach(finalCAS, delta);
+        let actualInitialMach = Common.CAStoMach(initialCAS, delta);
+        let actualFinalMach = Common.CAStoMach(finalCAS, delta);
         let initialTas;
         let finalTas;
-        // If above crossover altitude, use econMach
-        if (mach > initialMach) {
-            mach = initialMach;
-            tas = Common.machToTAS(iMach, theta);
+        let initialEas;
+        let finalEas;
+
+        // If above crossover altitude, use mach
+        if (actualInitialMach > initialMach) {
+            actualInitialMach = initialMach;
+            initialTas = Common.machToTAS(actualInitialMach, theta);
+            initialEas = Common.machToEAS(actualInitialMach, delta);
         } else {
-            tas = Common.CAStoTAS(econCAS, theta, delta);
+            initialTas = Common.CAStoTAS(initialCAS, theta, delta);
+            initialEas = Common.CAStoEAS(initialCAS, delta);
         }
 
+        if (actualFinalMach > finalMach) {
+            actualFinalMach = finalMach;
+            finalTas = Common.machToTAS(actualFinalMach, theta);
+            finalEas = Common.machToEAS(actualFinalMach, delta);
+        } else {
+            finalTas = Common.CAStoTAS(initialCAS, theta, delta);
+            finalEas = Common.CAStoEAS(initialCAS, delta);
+        }
+
+        const averageMach = (actualInitialMach + actualFinalMach) / 2;
+        const averageEas = (initialEas + finalEas) / 2;
+        const averageTas = (initialTas + finalTas) / 2;
+
         // Engine model calculations
-        const theta2 = Common.getTheta2(theta, mach);
-        const delta2 = Common.getDelta2(delta, mach);
+        const theta2 = Common.getTheta2(theta, averageMach);
+        const delta2 = Common.getDelta2(delta, averageMach);
         const correctedN1 = EngineModel.getCorrectedN1(commandedN1, theta2);
-        const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, mach) * 2 * EngineModel.maxThrust;
-        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, initialAltitude) * 2;
+        const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, averageMach) * 2 * EngineModel.maxThrust;
+        const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, averageMach, initialAltitude) * 2;
         const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
         const fuelFlow = EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2); // in lbs/hour
 
-        const initialWeight = zeroFuelWeight + initialFuelWeight;
+        const weightEstimate = zeroFuelWeight + initialFuelWeight;
+
+        let pathAngle;
+        let verticalSpeed;
+        let stepTime;
+        let distanceTraveled;
+        let fuelBurned;
+        let finalAltitude;
+        let lift = weightEstimate;
+        let midStepWeight = weightEstimate;
+        let previousMidStepWeight = midStepWeight;
+        let iterations = 0;
+        do {
+            // Assume lift force is equal to weight as an initial approximation
+            const liftCoefficient = FlightModel.getLiftCoefficientFromEAS(lift, averageEas);
+            const dragCoefficient = FlightModel.getDragCoefficient(liftCoefficient);
+
+            const pathAngle = FlightModel.getSpeedChangePathAngleFromCoefficients(
+                thrust,
+                midStepWeight,
+                liftCoefficient,
+                dragCoefficient,
+            );
+
+            verticalSpeed = 101.268 * averageTas * Math.sin(pathAngle); // in feet per minute
+            // TODO: double-check if accel rate operates on TAS or CAS
+            stepTime = Math.abs(finalTas - initialTas) / FlightModel.requiredAccelRateKNS; // in minutes
+            finalAltitude = initialAltitude + (verticalSpeed * stepTime);
+            // TODO: now that we have final altitude, we could get accurate mid-step headwind instead of using initial headwind...
+            distanceTraveled = (averageTas - headwindAtInitialAltitude) * stepTime; // in NM
+            fuelBurned = (fuelFlow / 60) * stepTime;
+            // const endStepWeight = zeroFuelWeight + (initialFuelWeight - fuelBurned); <- not really needed
+
+            // Adjust variables for better accuracy next iteration
+            previousMidStepWeight = midStepWeight;
+            midStepWeight = zeroFuelWeight + (initialFuelWeight - (fuelBurned / 2));
+            lift = midStepWeight * Math.cos(pathAngle);
+            iterations++;
+        } while (iterations < 5 && Math.abs(previousMidStepWeight - midStepWeight) < 100);
+
+        let result: StepResults;
+        result.pathAngle = pathAngle;
+        result.verticalSpeed = verticalSpeed;
+        result.timeElapsed = stepTime;
+        result.distanceTraveled = distanceTraveled;
+        result.fuelBurned = fuelBurned;
+        result.finalAltitude = finalAltitude;
+        return result;
     }
 }
