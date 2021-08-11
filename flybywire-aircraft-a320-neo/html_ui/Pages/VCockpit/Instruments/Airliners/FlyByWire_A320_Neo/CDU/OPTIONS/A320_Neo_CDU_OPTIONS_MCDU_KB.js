@@ -34,10 +34,10 @@ class CDU_OPTIONS_MCDU_KB {
                 mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
                 const notif = new NXNotif();
                 const popup = new NXPopUp();
-                function show_notif() {
+                const showNotif = () => {
                     notif.showNotification({title: "RELOAD AIRCRAFT", theme: "GAMEPLAY", message:"Reload the aircraft to apply settings"});
                 };
-                popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Please reload the aircraft to apply your new settings.", style: "small"}, show_notif, show_notif);
+                popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Please reload the aircraft to apply your new settings.", style: "small"}, showNotif, showNotif);
                 CDU_OPTIONS_MCDU_KB.ShowPage(mcdu);
             }
         };

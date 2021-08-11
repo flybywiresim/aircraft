@@ -265,7 +265,6 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
         }, 15000);
-        NXEvents.createEvents();
     }
 
     initVariables() {

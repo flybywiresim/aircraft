@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
+import { Notification } from '@instruments/common/notification';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
@@ -31,6 +32,7 @@ const PlaneSettings = () => {
     const [accelerationOutAltSetting, setAccelerationOutAltSetting] = useState(accelerationOutAlt);
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
     const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const notification = new Notification();
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -248,7 +250,10 @@ const PlaneSettings = () => {
                         <SelectGroup>
                             {weightUnitButtons.map((button) => (
                                 <SelectItem
-                                    onSelect={() => setWeightUnit(button.setting)}
+                                    onSelect={() => {
+                                        setWeightUnit(button.setting);
+                                        notification.showNotification({ title: 'RELOAD AIRCRAFT', theme: 'GAMEPLAY', message: 'Reload the aircraft to apply settings.' });
+                                    }}
                                     selected={weightUnit === button.setting}
                                 >
                                     {button.name}

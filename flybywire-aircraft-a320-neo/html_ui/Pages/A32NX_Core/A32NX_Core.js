@@ -57,15 +57,15 @@ class A32NX_Core {
                 name: 'Speeds',
                 module: new A32NX_Speeds(),
                 updateInterval: 500,
-            },
+            }
         ];
-
         this.moduleThrottlers = {};
         for (const moduleDefinition of this.modules) {
             this.moduleThrottlers[moduleDefinition.name] = new UpdateThrottler(moduleDefinition.updateInterval);
         }
 
         this.soundManager = new A32NX_SoundManager();
+        this.tipsManager = new A32NX_TipsManager();
     }
 
     init(startTime) {

@@ -82,8 +82,8 @@ export class Notification {
 }
 
 /**
-To use:
-import { Notification } from '../Common/notification';
+Usage:
+import { Notification } from '@instruments/common/notification';
 
 const notification = new Notification();
 notification.showNotification({ message: 'Your notification here!' });

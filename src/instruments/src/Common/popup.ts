@@ -82,3 +82,11 @@ export class PopUp {
         }
     }
 }
+
+/**
+Usage:
+import { PopUp } from '@instruments/common/popup';
+
+const popup = new PopUp();
+popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Your message here", style: "small"}, yesFunc, noFunc);
+*/
