@@ -5,6 +5,10 @@ import { Directories } from '../directories.mjs';
 
 const ecamPages = [
     {
+        name: 'eng-page',
+        path: 'SD/Pages/Eng',
+    },
+    {
         name: 'door-page',
         path: 'SD/Pages/Door',
     },
@@ -38,7 +42,17 @@ const ecamPages = [
     },
 ];
 
-function getInputs() {
+export function getInputs() {
+    const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src'), { withFileTypes: true })
+        .filter((d) => d.isDirectory() && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
+
+    return [
+        ...baseInstruments.map(({ name }) => ({ path: name, name, isInstrument: true })),
+        ...ecamPages.map((def) => ({ ...def, isInstrument: false })),
+    ];
+}
+
+export function getInstrumentsIgniterTasks() {
     const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src'), { withFileTypes: true })
         .filter((d) => d.isDirectory() && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
 
@@ -55,5 +69,3 @@ function getInputs() {
         )),
     ];
 }
-
-export default getInputs();

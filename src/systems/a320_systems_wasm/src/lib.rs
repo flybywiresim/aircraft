@@ -6,11 +6,14 @@ use std::{
     pin::Pin,
     time::{Duration, Instant},
 };
+use systems::failures::FailureType;
 use systems::simulation::Simulation;
 use systems_wasm::{
     electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader,
-    MsfsNamedVariableReaderWriter, MsfsSimulationHandler, SimulatorAspect,
+    f64_to_sim_connect_32k_pos,
+    failures::Failures,
+    sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter,
+    MsfsSimulationHandler, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
@@ -18,17 +21,20 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let mut simulation = Simulation::new(|electricity| A320::new(electricity));
-    let mut msfs_simulation_handler = MsfsSimulationHandler::new(vec![
-        Box::new(create_electrical_buses()),
-        Box::new(MsfsAuxiliaryPowerUnit::new(
-            "OVHD_APU_START_PB_IS_AVAILABLE",
-            8,
-        )?),
-        Box::new(Brakes::new(&mut sim_connect.as_mut())?),
-        Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
-        Box::new(create_aircraft_variable_reader()?),
-        Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
-    ]);
+    let mut msfs_simulation_handler = MsfsSimulationHandler::new(
+        vec![
+            Box::new(create_electrical_buses()),
+            Box::new(MsfsAuxiliaryPowerUnit::new(
+                "OVHD_APU_START_PB_IS_AVAILABLE",
+                8,
+            )?),
+            Box::new(Brakes::new(&mut sim_connect.as_mut())?),
+            Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
+            Box::new(create_aircraft_variable_reader()?),
+            Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
+        ],
+        create_failures(),
+    );
 
     while let Some(event) = gauge.next_event().await {
         msfs_simulation_handler.handle(event, &mut simulation, &mut sim_connect.as_mut())?;
@@ -41,6 +47,7 @@ fn create_aircraft_variable_reader(
 ) -> Result<MsfsAircraftVariableReader, Box<dyn std::error::Error>> {
     let mut reader = MsfsAircraftVariableReader::new();
     reader.add("AMBIENT TEMPERATURE", "celsius", 0)?;
+    reader.add("TOTAL AIR TEMPERATURE", "celsius", 0)?;
     reader.add_with_additional_names(
         "EXTERNAL POWER AVAILABLE",
         "Bool",
@@ -48,13 +55,31 @@ fn create_aircraft_variable_reader(
         &vec!["OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"],
     )?;
     reader.add("GEAR CENTER POSITION", "Percent", 0)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 0)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 1)?;
+    reader.add("GEAR ANIMATION POSITION", "Percent", 2)?;
     reader.add("GEAR HANDLE POSITION", "Bool", 0)?;
+    reader.add("TURB ENG CORRECTED N1", "Percent", 1)?;
+    reader.add("TURB ENG CORRECTED N1", "Percent", 2)?;
     reader.add("TURB ENG CORRECTED N2", "Percent", 1)?;
     reader.add("TURB ENG CORRECTED N2", "Percent", 2)?;
     reader.add("AIRSPEED INDICATED", "Knots", 0)?;
+    reader.add("INDICATED ALTITUDE", "Feet", 0)?;
+    reader.add("AIRSPEED MACH", "Mach", 0)?;
+    reader.add("AIRSPEED TRUE", "Knots", 0)?;
+    reader.add("VELOCITY WORLD Y", "feet per minute", 0)?;
+    reader.add("AMBIENT WIND DIRECTION", "Degrees", 0)?;
+    reader.add("AMBIENT WIND VELOCITY", "Knots", 0)?;
+    reader.add("GPS GROUND SPEED", "Knots", 0)?;
+    reader.add("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?;
+    reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
+    reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
+    reader.add("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?;
     reader.add("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?;
     reader.add("UNLIMITED FUEL", "Bool", 0)?;
     reader.add("INDICATED ALTITUDE", "Feet", 0)?;
+    reader.add("AMBIENT PRESSURE", "inHg", 0)?;
+    reader.add("SEA LEVEL PRESSURE", "Millibars", 0)?;
     reader.add("SIM ON GROUND", "Bool", 0)?;
     reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 1)?;
     reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 2)?;
@@ -90,7 +115,8 @@ fn create_aircraft_variable_reader(
         2,
         &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
     );
-    reader.add("GPS POSITION LAT", "degree latitude", 0)?;
+    reader.add("PLANE LATITUDE", "degree latitude", 0)?;
+    reader.add("PLANE LONGITUDE", "degree longitude", 0)?;
     reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
     reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
 
@@ -118,6 +144,19 @@ fn create_electrical_buses() -> MsfsElectricalBuses {
     buses
 }
 
+fn create_failures() -> Failures {
+    let mut failures = Failures::new(
+        NamedVariable::from("A32NX_FAILURE_ACTIVATE"),
+        NamedVariable::from("A32NX_FAILURE_DEACTIVATE"),
+    );
+
+    failures.add(24_000, FailureType::TransformerRectifier(1));
+    failures.add(24_001, FailureType::TransformerRectifier(2));
+    failures.add(24_002, FailureType::TransformerRectifier(3));
+
+    failures
+}
+
 struct Autobrakes {
     id_mode_max: sys::DWORD,
     id_mode_med: sys::DWORD,
@@ -138,7 +177,7 @@ struct Autobrakes {
 impl Autobrakes {
     // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
     // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
-    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(650);
+    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(1500);
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {

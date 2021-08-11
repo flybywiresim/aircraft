@@ -85,9 +85,12 @@ bool FlyByWireInterface::update(double sampleTime) {
   if (simConnectInterface.getSimData().slew_on) {
     wasInSlew = true;
     return result;
-  } else if (pauseDetected) {
+  } else if (pauseDetected || simConnectInterface.getSimData().cameraState >= 10.0) {
     return result;
   }
+
+  // update altimeter setting
+  result &= updateAltimeterSetting(sampleTime);
 
   // update autopilot state machine
   result &= updateAutopilotStateMachine(sampleTime);
@@ -270,6 +273,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustStatus = make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
   idAutothrustMode = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
   idAutothrustModeMessage = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE_MESSAGE");
+  idAutothrustDisabled = make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISABLED");
   idAutothrustThrustLeverWarningFlex = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX");
   idAutothrustThrustLeverWarningToga = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA");
   idAutothrustDisconnect = make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISCONNECT");
@@ -1223,6 +1227,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     // get output from model ------------------------------------------------------------------------------------------
     autoThrustOutput = autoThrust.getExternalOutputs().out.output;
 
+    // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
+    idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
+
     // write output to sim --------------------------------------------------------------------------------------------
     SimOutputThrottles simOutputThrottles = {autoThrustOutput.sim_throttle_lever_1_pos, autoThrustOutput.sim_throttle_lever_2_pos,
                                              autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
@@ -1333,6 +1340,20 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   idSpoilersArmed->set(spoilersHandler->getIsArmed() ? 1 : 0);
   idSpoilersHandlePosition->set(spoilersHandler->getHandlePosition());
   idSpoilersGroundSpoilersActive->set(spoilersHandler->getIsGroundSpoilersActive() ? 1 : 0);
+
+  // result
+  return true;
+}
+
+bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // determine if change is needed
+  if (simData.kohlsmanSettingStd_3 == 0) {
+    SimOutputAltimeter out = {true};
+    simConnectInterface.sendData(out);
+  }
 
   // result
   return true;

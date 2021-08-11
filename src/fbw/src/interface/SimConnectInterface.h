@@ -70,6 +70,8 @@ class SimConnectInterface {
     A32NX_FCU_ALT_SET,
     A32NX_FCU_ALT_PUSH,
     A32NX_FCU_ALT_PULL,
+    A32NX_FCU_ALT_INCREMENT_TOGGLE,
+    A32NX_FCU_ALT_INCREMENT_SET,
     A32NX_FCU_VS_INC,
     A32NX_FCU_VS_DEC,
     A32NX_FCU_VS_SET,
@@ -192,6 +194,8 @@ class SimConnectInterface {
   bool sendData(SimOutputFlaps output);
 
   bool sendData(SimOutputSpoilers output);
+
+  bool sendData(SimOutputAltimeter output);
 
   bool sendEvent(Events eventId);
 

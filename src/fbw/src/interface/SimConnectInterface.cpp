@@ -58,6 +58,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
       // failed to connect
       return false;
     }
+    // send initial event to FCU to force HDG mode
+    execute_calculator_code("(>H:A320_Neo_FCU_HDG_PULL)", nullptr, nullptr, nullptr);
     // success
     return true;
   }
@@ -110,7 +112,8 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AIRSPEED TRUE", "KNOTS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AIRSPEED MACH", "MACH");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GROUND VELOCITY", "KNOTS");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PRESSURE ALTITUDE", "FEET");
+  // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE:3", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE ALT ABOVE GROUND MINUS CG", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "VELOCITY WORLD Y", "FEET PER MINUTE");
@@ -198,6 +201,8 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK CENTER QUANTITY", "GALLONS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TOTAL QUANTITY", "GALLONS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL WEIGHT PER GALLON", "POUNDS");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "CAMERA STATE", "NUMBER");
 
   return result;
 }
@@ -267,6 +272,8 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INC, "A32NX.FCU_ALT_INC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_DEC, "A32NX.FCU_ALT_DEC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_SET, "A32NX.FCU_ALT_SET", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_TOGGLE, "A32NX.FCU_ALT_INCREMENT_TOGGLE", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_INCREMENT_SET, "A32NX.FCU_ALT_INCREMENT_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PUSH, "A32NX.FCU_ALT_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_ALT_PULL, "A32NX.FCU_ALT_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_INC, "A32NX.FCU_VS_INC", false);
@@ -390,6 +397,8 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 5, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
 
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
+
+  result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
 
   return result;
 }
@@ -755,6 +764,11 @@ bool SimConnectInterface::sendData(SimOutputFlaps output) {
 bool SimConnectInterface::sendData(SimOutputSpoilers output) {
   // write data and return result
   return sendData(6, sizeof(output), &output);
+}
+
+bool SimConnectInterface::sendData(SimOutputAltimeter output) {
+  // write data and return result
+  return sendData(7, sizeof(output), &output);
 }
 
 bool SimConnectInterface::sendEvent(Events eventId) {
@@ -1200,6 +1214,26 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       stringStream << " (>K:3:AP_ALT_VAR_SET_ENGLISH)";
       execute_calculator_code(stringStream.str().c_str(), nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_ALT_SET: " << value << endl;
+      break;
+    }
+    case Events::A32NX_FCU_ALT_INCREMENT_TOGGLE: {
+      execute_calculator_code(
+          "(L:XMLVAR_Autopilot_Altitude_Increment, number) 100 == "
+          "if{ 1000 (>L:XMLVAR_Autopilot_Altitude_Increment) } "
+          "els{ 100 (>L:XMLVAR_Autopilot_Altitude_Increment) }",
+          nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_TOGGLE" << endl;
+      break;
+    }
+    case Events::A32NX_FCU_ALT_INCREMENT_SET: {
+      long value = static_cast<long>(event->dwData);
+      if (value == 100 || value == 1000) {
+        ostringstream stringStream;
+        stringStream << value;
+        stringStream << " (>L:XMLVAR_Autopilot_Altitude_Increment)";
+        execute_calculator_code(stringStream.str().c_str(), nullptr, nullptr, nullptr);
+        cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_SET: " << value << endl;
+      }
       break;
     }
     case Events::A32NX_FCU_ALT_PUSH: {
