@@ -79,7 +79,144 @@ fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
     )
 }
 
+struct FixedStepLoop {
+    lag_time_accumulator: Duration,
+    time_step: Duration,
+    number_of_loops_for_current_frame: u32,
+}
+impl FixedStepLoop {
+    fn new(time_step: Duration) -> Self {
+        Self {
+            lag_time_accumulator: Duration::from_millis(0),
+            time_step: time_step,
+            number_of_loops_for_current_frame: 0,
+        }
+    }
+
+    fn time_step(&self) -> Duration {
+        // println!("fixed::time_step: time{:.3}", self.time_step.as_secs_f64(),);
+        self.time_step
+    }
+
+    fn loop_number(&self) -> u32 {
+        self.number_of_loops_for_current_frame
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        // Time to catch up in our simulation = new delta + time not updated last iteration
+        let time_to_catch = context.delta() + self.lag_time_accumulator;
+
+        // Number of time steps (with floating part) to do according to required time step
+        let number_of_steps_floating_point =
+            time_to_catch.as_secs_f64() / self.time_step().as_secs_f64();
+
+        if number_of_steps_floating_point < 1.0 {
+            // Can't do a full time step
+            // we can decide either do an update with smaller step or wait next iteration
+            // for now we only update lag accumulator and chose a hard fixed step: if smaller
+            // than chosen time step we do nothing and wait next iteration
+
+            // Time lag is float part only of num of steps (because is < 1.0 here) * fixed time step to get a result in time
+            self.lag_time_accumulator = Duration::from_secs_f64(
+                number_of_steps_floating_point * self.time_step().as_secs_f64(),
+            );
+            self.number_of_loops_for_current_frame = 0;
+        } else {
+            // Int part is the actual number of loops to do
+            // rest of floating part goes into accumulator
+            self.number_of_loops_for_current_frame = number_of_steps_floating_point.floor() as u32;
+
+            self.lag_time_accumulator = Duration::from_secs_f64(
+                (number_of_steps_floating_point - (self.number_of_loops_for_current_frame as f64))
+                    * self.time_step().as_secs_f64(),
+            ); // Keep track of time left after all fixed loop are done
+        }
+
+        // println!(
+        //     "fixed::update: time{:.3} nloop {:.3} currentAcc {:.3}",
+        //     context.delta().as_secs_f64(),
+        //     self.number_of_loops_for_current_frame,
+        //     self.lag_time_accumulator.as_secs_f64()
+        // );
+    }
+}
+
+struct MaxStepLoop {
+    max_time_step: Duration,
+    num_of_max_step_loop: u32,
+    remaining_frame_duration: Option<Duration>,
+}
+impl MaxStepLoop {
+    fn new(max_time_step: Duration) -> Self {
+        Self {
+            max_time_step,
+            num_of_max_step_loop: 0,
+            remaining_frame_duration: None,
+        }
+    }
+    fn update(&mut self, context: &UpdateContext) {
+        let max_fixed_seconds = self.max_time_step.as_secs_f64();
+
+        let number_of_steps_floating_point = context.delta_as_secs_f64() / max_fixed_seconds;
+
+        self.num_of_max_step_loop = number_of_steps_floating_point.floor() as u32;
+
+        let remaining_time_step_update = Duration::from_secs_f64(
+            (number_of_steps_floating_point - (self.num_of_max_step_loop as f64))
+                * max_fixed_seconds,
+        );
+
+        if remaining_time_step_update > Duration::from_millis(1) {
+            self.remaining_frame_duration = Some(remaining_time_step_update);
+        } else {
+            self.remaining_frame_duration = None;
+        }
+
+        // if self.remaining_frame_duration.is_some() {
+        //     println!(
+        //         "Max::update: time{:.3} nloopMax {:.3} remainingstep {:.3}",
+        //         context.delta().as_secs_f64(),
+        //         self.num_of_max_step_loop,
+        //         self.remaining_frame_duration.unwrap().as_secs_f64()
+        //     );
+        // } else {
+        //     println!(
+        //         "Max::update: time{:.3} nloopMax {:.3} remainingstep NONE",
+        //         context.delta().as_secs_f64(),
+        //         self.num_of_max_step_loop,
+        //     );
+        // }
+    }
+
+    fn time_step(&mut self) -> Option<Duration> {
+        if self.num_of_max_step_loop > 0 {
+            self.num_of_max_step_loop -= 1;
+            // println!(
+            //     "Max::time_step: time{:.3} nloopMax {:.3}",
+            //     self.max_time_step.as_secs_f64(),
+            //     self.num_of_max_step_loop,
+            // );
+            Some(self.max_time_step)
+        } else if self.remaining_frame_duration.is_some() {
+            let last_frame_duration = self.remaining_frame_duration.unwrap();
+            self.remaining_frame_duration = None;
+            // println!(
+            //     "Max::time_step: time{:.3} nloopMax {:.3}",
+            //     self.max_time_step.as_secs_f64(),
+            //     self.num_of_max_step_loop,
+            // );
+            Some(last_frame_duration)
+        } else {
+            // println!("Max::time_step: NONE",);
+            None
+        }
+    }
+}
+
 pub(super) struct A320Hydraulic {
+    core_hydraulic_updater: FixedStepLoop,
+    physics_updater: MaxStepLoop,
+
     brake_computer: A320HydraulicBrakeComputerUnit,
 
     blue_loop: HydraulicLoop,
@@ -114,9 +251,6 @@ pub(super) struct A320Hydraulic {
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
-
-    total_sim_time_elapsed: Duration,
-    lag_time_accumulator: Duration,
 
     forward_cargo_door: Door,
     forward_cargo_door_controller: A320DoorController,
@@ -161,16 +295,17 @@ impl A320Hydraulic {
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
     // Refresh rate of hydraulic simulation
-    const HYDRAULIC_SIM_TIME_STEP_MILLISECONDS: u64 = 100;
+    const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(100);
     // Refresh rate of max fixed step loop
-    const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: u64 = 50;
-    // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update.
-    const ACTUATORS_SIM_TIME_STEP_MULTIPLIER: u32 = 2;
+    const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(50);
 
     pub(super) fn new() -> A320Hydraulic {
         let cargo_door_body = cargo_door_body(true);
         let cargo_actuator = cargo_door_actuator(&cargo_door_body);
         A320Hydraulic {
+            core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
+            physics_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
+
             brake_computer: A320HydraulicBrakeComputerUnit::new(),
 
             blue_loop: HydraulicLoop::new(
@@ -282,9 +417,6 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(),
 
-            total_sim_time_elapsed: Duration::new(0, 0),
-            lag_time_accumulator: Duration::new(0, 0),
-
             forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
             forward_cargo_door_controller: A320DoorController::new(Self::FORWARD_CARGO_DOOR_ID),
             forward_cargo_door_assembly: HydraulicActuatorAssembly::new(
@@ -315,17 +447,8 @@ impl A320Hydraulic {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
-        let min_hyd_loop_timestep =
-            Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
-
-        self.total_sim_time_elapsed += context.delta();
-
-        // Time to catch up in our simulation = new delta + time not updated last iteration
-        let time_to_catch = context.delta() + self.lag_time_accumulator;
-
-        // Number of time steps (with floating part) to do according to required time step
-        let number_of_steps_floating_point =
-            time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
+        self.core_hydraulic_updater.update(context);
+        self.physics_updater.update(context);
 
         // Here we update at the same rate as the sim or max time step if sim rate is too slow
         self.update_max_fixed_step(&context);
@@ -341,55 +464,15 @@ impl A320Hydraulic {
             lgciu2,
         );
 
-        if number_of_steps_floating_point < 1.0 {
-            // Can't do a full time step
-            // we can decide either do an update with smaller step or wait next iteration
-            // for now we only update lag accumulator and chose a hard fixed step: if smaller
-            // than chosen time step we do nothing and wait next iteration
-
-            // Time lag is float part only of num of steps (because is < 1.0 here) * fixed time step to get a result in time
-            self.lag_time_accumulator = Duration::from_secs_f64(
-                number_of_steps_floating_point * min_hyd_loop_timestep.as_secs_f64(),
-            );
-        } else {
-            // Int part is the actual number of loops to do
-            // rest of floating part goes into accumulator
-            let num_of_update_loops = number_of_steps_floating_point.floor() as u32;
-
-            self.lag_time_accumulator = Duration::from_secs_f64(
-                (number_of_steps_floating_point - (num_of_update_loops as f64))
-                    * min_hyd_loop_timestep.as_secs_f64(),
-            ); // Keep track of time left after all fixed loop are done
-
-            // Then run fixed update loop for main hydraulics
-            for _ in 0..num_of_update_loops {
-                // First update what is currently consumed and given back by each actuator
-                // Todo: might have to split the actuator volumes by expected number of loops
-                self.update_actuators_volume();
-
-                self.update_fixed_step(
-                    &context.with_delta(min_hyd_loop_timestep),
-                    engine1,
-                    engine2,
-                    overhead_panel,
-                    engine_fire_push_buttons,
-                    lgciu1,
-                    lgciu2,
-                );
-            }
-
-            // This is the "fast" update loop refreshing ACTUATORS_SIM_TIME_STEP_MULT times faster
-            // here put everything that needs higher simulation rates like physics solving
-            let num_of_actuators_update_loops =
-                num_of_update_loops * Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
-
-            // If X times faster we divide step by X
-            let delta_time_physics =
-                min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
-            for _ in 0..num_of_actuators_update_loops {
-                self.update_fast_rate(&context.with_delta(delta_time_physics));
-            }
-        }
+        self.update_fixed_step(
+            &context.with_delta(self.core_hydraulic_updater.time_step()),
+            engine1,
+            engine2,
+            overhead_panel,
+            engine_fire_push_buttons,
+            lgciu1,
+            lgciu2,
+        );
     }
 
     // Placeholder function to give an estimation of blue pump flow for sound purpose
@@ -488,33 +571,18 @@ impl A320Hydraulic {
     #[allow(clippy::too_many_arguments)]
     // Update with same refresh rate as the sim
     fn update_max_fixed_step(&mut self, context: &UpdateContext) {
-        let max_fixed_seconds =
-            Duration::from_millis(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS).as_secs_f64();
-
-        let number_of_steps_floating_point = context.delta_as_secs_f64() / max_fixed_seconds;
-
-        let num_of_update_loops = number_of_steps_floating_point.floor() as u32;
-
-        let remaining_time_step_update = Duration::from_secs_f64(
-            (number_of_steps_floating_point - (num_of_update_loops as f64)) * max_fixed_seconds,
-        );
-
-        for _ in 0..num_of_update_loops {
+        let mut time_step = self.physics_updater.time_step();
+        while time_step.is_some() {
             self.forward_cargo_door_assembly.update(
                 &self.forward_cargo_door_controller,
-                &context.with_delta(Duration::from_millis(
-                    Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS,
-                )),
+                &context.with_delta(time_step.unwrap()),
                 self.yellow_loop.pressure(),
             );
-        }
 
-        if remaining_time_step_update > Duration::from_millis(1) {
-            self.forward_cargo_door_assembly.update(
-                &self.forward_cargo_door_controller,
-                &context.with_delta(remaining_time_step_update),
-                self.yellow_loop.pressure(),
-            );
+            self.ram_air_turbine
+                .update_physics(&time_step.unwrap(), &context.indicated_airspeed());
+
+            time_step = self.physics_updater.time_step();
         }
     }
 
@@ -569,10 +637,10 @@ impl A320Hydraulic {
     }
 
     // All the higher frequency updates like physics
-    fn update_fast_rate(&mut self, context: &UpdateContext) {
-        self.ram_air_turbine
-            .update_physics(&context.delta(), &context.indicated_airspeed());
-    }
+    // fn update_fast_rate(&mut self, context: &UpdateContext) {
+    //     self.ram_air_turbine
+    //         .update_physics(&context.delta(), &context.indicated_airspeed());
+    // }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
     fn update_actuators_volume(&mut self) {
@@ -608,129 +676,136 @@ impl A320Hydraulic {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
-        self.brake_computer.send_brake_demands(
-            &mut self.braking_circuit_norm,
-            &mut self.braking_circuit_altn,
-        );
+        // Then run fixed update loop for main hydraulics
+        for _ in 0..self.core_hydraulic_updater.loop_number() {
+            // First update what is currently consumed and given back by each actuator
+            // Todo: might have to split the actuator volumes by expected number of loops
+            self.update_actuators_volume();
 
-        self.power_transfer_unit_controller.update(
-            context,
-            overhead_panel,
-            &self.forward_cargo_door_controller,
-            &self.aft_cargo_door_controller,
-            &self.pushback_tug,
-            lgciu2,
-        );
-        self.power_transfer_unit.update(
-            &self.green_loop,
-            &self.yellow_loop,
-            &self.power_transfer_unit_controller,
-        );
+            self.brake_computer.send_brake_demands(
+                &mut self.braking_circuit_norm,
+                &mut self.braking_circuit_altn,
+            );
 
-        self.engine_driven_pump_1_pressure_switch
-            .update(self.green_loop.pressure());
-        self.engine_driven_pump_1_controller.update(
-            overhead_panel,
-            engine_fire_push_buttons,
-            engine1.uncorrected_n2(),
-            engine1.oil_pressure(),
-            self.engine_driven_pump_1_pressure_switch.is_pressurised(),
-            lgciu1,
-        );
+            self.power_transfer_unit_controller.update(
+                context,
+                overhead_panel,
+                &self.forward_cargo_door_controller,
+                &self.aft_cargo_door_controller,
+                &self.pushback_tug,
+                lgciu2,
+            );
+            self.power_transfer_unit.update(
+                &self.green_loop,
+                &self.yellow_loop,
+                &self.power_transfer_unit_controller,
+            );
 
-        self.engine_driven_pump_1.update(
-            context,
-            &self.green_loop,
-            engine1
-                .hydraulic_pump_output_speed()
-                .get::<revolution_per_minute>(),
-            &self.engine_driven_pump_1_controller,
-        );
+            self.engine_driven_pump_1_pressure_switch
+                .update(self.green_loop.pressure());
+            self.engine_driven_pump_1_controller.update(
+                overhead_panel,
+                engine_fire_push_buttons,
+                engine1.uncorrected_n2(),
+                engine1.oil_pressure(),
+                self.engine_driven_pump_1_pressure_switch.is_pressurised(),
+                lgciu1,
+            );
 
-        self.engine_driven_pump_2_pressure_switch
-            .update(self.yellow_loop.pressure());
-        self.engine_driven_pump_2_controller.update(
-            overhead_panel,
-            engine_fire_push_buttons,
-            engine2.uncorrected_n2(),
-            engine2.oil_pressure(),
-            self.engine_driven_pump_2_pressure_switch.is_pressurised(),
-            lgciu2,
-        );
+            self.engine_driven_pump_1.update(
+                context,
+                &self.green_loop,
+                engine1
+                    .hydraulic_pump_output_speed()
+                    .get::<revolution_per_minute>(),
+                &self.engine_driven_pump_1_controller,
+            );
 
-        self.engine_driven_pump_2.update(
-            context,
-            &self.yellow_loop,
-            engine2
-                .hydraulic_pump_output_speed()
-                .get::<revolution_per_minute>(),
-            &self.engine_driven_pump_2_controller,
-        );
+            self.engine_driven_pump_2_pressure_switch
+                .update(self.yellow_loop.pressure());
+            self.engine_driven_pump_2_controller.update(
+                overhead_panel,
+                engine_fire_push_buttons,
+                engine2.uncorrected_n2(),
+                engine2.oil_pressure(),
+                self.engine_driven_pump_2_pressure_switch.is_pressurised(),
+                lgciu2,
+            );
 
-        self.blue_electric_pump_controller.update(
-            overhead_panel,
-            self.blue_loop.is_pressurised(),
-            engine1.oil_pressure(),
-            engine2.oil_pressure(),
-            engine1.is_above_minimum_idle(),
-            engine2.is_above_minimum_idle(),
-            lgciu1,
-            lgciu2,
-        );
-        self.blue_electric_pump.update(
-            context,
-            &self.blue_loop,
-            &self.blue_electric_pump_controller,
-        );
+            self.engine_driven_pump_2.update(
+                context,
+                &self.yellow_loop,
+                engine2
+                    .hydraulic_pump_output_speed()
+                    .get::<revolution_per_minute>(),
+                &self.engine_driven_pump_2_controller,
+            );
 
-        self.yellow_electric_pump_controller.update(
-            context,
-            overhead_panel,
-            &self.forward_cargo_door_controller,
-            &self.aft_cargo_door_controller,
-            self.yellow_loop.is_pressurised(),
-        );
-        self.yellow_electric_pump.update(
-            context,
-            &self.yellow_loop,
-            &self.yellow_electric_pump_controller,
-        );
+            self.blue_electric_pump_controller.update(
+                overhead_panel,
+                self.blue_loop.is_pressurised(),
+                engine1.oil_pressure(),
+                engine2.oil_pressure(),
+                engine1.is_above_minimum_idle(),
+                engine2.is_above_minimum_idle(),
+                lgciu1,
+                lgciu2,
+            );
+            self.blue_electric_pump.update(
+                context,
+                &self.blue_loop,
+                &self.blue_electric_pump_controller,
+            );
 
-        self.ram_air_turbine
-            .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
+            self.yellow_electric_pump_controller.update(
+                context,
+                overhead_panel,
+                &self.forward_cargo_door_controller,
+                &self.aft_cargo_door_controller,
+                self.yellow_loop.is_pressurised(),
+            );
+            self.yellow_electric_pump.update(
+                context,
+                &self.yellow_loop,
+                &self.yellow_electric_pump_controller,
+            );
 
-        self.green_loop_controller.update(engine_fire_push_buttons);
-        self.green_loop.update(
-            context,
-            Vec::new(),
-            vec![&self.engine_driven_pump_1],
-            Vec::new(),
-            vec![&self.power_transfer_unit],
-            &self.green_loop_controller,
-        );
+            self.ram_air_turbine
+                .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
 
-        self.yellow_loop_controller.update(engine_fire_push_buttons);
-        self.yellow_loop.update(
-            context,
-            vec![&self.yellow_electric_pump],
-            vec![&self.engine_driven_pump_2],
-            Vec::new(),
-            vec![&self.power_transfer_unit],
-            &self.yellow_loop_controller,
-        );
+            self.green_loop_controller.update(engine_fire_push_buttons);
+            self.green_loop.update(
+                context,
+                Vec::new(),
+                vec![&self.engine_driven_pump_1],
+                Vec::new(),
+                vec![&self.power_transfer_unit],
+                &self.green_loop_controller,
+            );
 
-        self.blue_loop_controller.update(engine_fire_push_buttons);
-        self.blue_loop.update(
-            context,
-            vec![&self.blue_electric_pump],
-            Vec::new(),
-            vec![&self.ram_air_turbine],
-            Vec::new(),
-            &self.blue_loop_controller,
-        );
+            self.yellow_loop_controller.update(engine_fire_push_buttons);
+            self.yellow_loop.update(
+                context,
+                vec![&self.yellow_electric_pump],
+                vec![&self.engine_driven_pump_2],
+                Vec::new(),
+                vec![&self.power_transfer_unit],
+                &self.yellow_loop_controller,
+            );
 
-        self.braking_circuit_norm.update(context, &self.green_loop);
-        self.braking_circuit_altn.update(context, &self.yellow_loop);
+            self.blue_loop_controller.update(engine_fire_push_buttons);
+            self.blue_loop.update(
+                context,
+                vec![&self.blue_electric_pump],
+                Vec::new(),
+                vec![&self.ram_air_turbine],
+                Vec::new(),
+                &self.blue_loop_controller,
+            );
+
+            self.braking_circuit_norm.update(context, &self.green_loop);
+            self.braking_circuit_altn.update(context, &self.yellow_loop);
+        }
     }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
@@ -2560,9 +2635,7 @@ mod tests {
             }
 
             fn run_one_tick(mut self) -> Self {
-                self.run_with_delta(Duration::from_millis(
-                    A320Hydraulic::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS,
-                ));
+                self.run_with_delta(A320Hydraulic::HYDRAULIC_SIM_TIME_STEP);
                 self
             }
 
