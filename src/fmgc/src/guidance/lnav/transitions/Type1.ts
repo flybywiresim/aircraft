@@ -29,19 +29,28 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
         const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
 
+        const courseChange = mod(nextLeg.bearing - previousLeg.bearing + 180, 360) - 180;
+
+        // Always at least 5 degrees turn
+        const minBankAngle = 5;
+
+        // Start with half the track change
+        const bankAngle = Math.abs(courseChange) / 2
+
         // Bank angle limits, always assume limit 2 for now @ 25 degrees between 150 and 300 knots
-        let bankAngleLimit = 25;
+        let maxBankAngle = 25;
         if (kts < 150) {
-            bankAngleLimit = 15 + Math.min(kts / 150, 1) * (25 - 15);
+            maxBankAngle = 15 + Math.min(kts / 150, 1) * (25 - 15);
         } else if (kts > 300) {
-            bankAngleLimit = 25 - Math.min((kts - 300) / 150, 1) * (25 - 19);
+            maxBankAngle = 25 - Math.min((kts - 300) / 150, 1) * (25 - 19);
         }
 
+        const finalBankAngle = Math.max(Math.min(bankAngle, maxBankAngle), minBankAngle);
+
         // Turn radius
-        this.radius = (kts ** 2 / (9.81 * Math.tan(bankAngleLimit * Avionics.Utils.DEG2RAD))) / 6080.2;
+        this.radius = (kts ** 2 / (9.81 * Math.tan(finalBankAngle * Avionics.Utils.DEG2RAD))) / 6080.2;
 
         // Turn direction
-        const courseChange = mod(nextLeg.bearing - previousLeg.bearing + 180, 360) - 180;
         this.clockwise = courseChange >= 0;
     }
 
