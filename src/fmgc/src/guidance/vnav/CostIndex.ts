@@ -103,7 +103,7 @@ export class CostIndex {
      */
     static costIndexToDescentCas(ci: number, flightLevel: number, weight: number): number {
         const weightInTons = Math.min(Math.max(Common.poundsToMetricTons(weight), 50), 77);
-        const airspeed = 202.5 + (0.13 * flightLevel) + (1.5 * ci) - (0.05 * (weightInTons - 50));
-        return Math.min(Math.max(airspeed, 250), 340);
+        const airspeed = 205 + (0.13 * flightLevel) + (1.5 * ci) - (0.05 * (weightInTons - 50));
+        return Math.min(Math.max(airspeed, 270), 340);
     }
 }
