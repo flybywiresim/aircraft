@@ -8,7 +8,7 @@ class A32NX_TipsManager {
         let once = false;
         let input = Math.round(SimVar.GetSimVarValue("L:A32NX_THROTTLE_MAPPING_INPUT:1", "Number") * 100) / 100;
 
-        const throttleConfig = SimVar.GetSimVarValue("L:A32NX_THROTTLE_MAPPING_LOADED_CONFIG:1", "Boolean") || SimVar.GetSimVarValue("L:A32NX_THROTTLE_MAPPING_LOADED_CONFIG:1", "Boolean");
+        const throttleConfig = SimVar.GetSimVarValue("L:A32NX_THROTTLE_MAPPING_LOADED_CONFIG:1", "Boolean");
 
         if (!throttleConfig) {
             const checkThrottle = setInterval(() => {
