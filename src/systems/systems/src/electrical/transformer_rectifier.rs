@@ -6,8 +6,9 @@ use super::{
     ProvidePotential,
 };
 use crate::{
+    failures::{Failure, FailureType},
     shared::{ConsumePower, PowerConsumptionReport},
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
 
@@ -16,7 +17,7 @@ pub struct TransformerRectifier {
     number: usize,
     input_identifier: ElectricalElementIdentifier,
     output_identifier: ElectricalElementIdentifier,
-    failed: bool,
+    failure: Failure,
     output_potential: ElectricPotential,
     output_current: ElectricCurrent,
 }
@@ -30,18 +31,14 @@ impl TransformerRectifier {
             number,
             input_identifier: identifier_provider.next(),
             output_identifier: identifier_provider.next(),
-            failed: false,
+            failure: Failure::new(FailureType::TransformerRectifier(number)),
             output_potential: ElectricPotential::new::<volt>(0.),
             output_current: ElectricCurrent::new::<ampere>(0.),
         }
     }
 
-    pub fn fail(&mut self) {
-        self.failed = true;
-    }
-
-    pub fn failed(&self) -> bool {
-        self.failed
+    pub fn has_failed(&self) -> bool {
+        self.failure.is_active()
     }
 }
 impl ProvideCurrent for TransformerRectifier {
@@ -69,7 +66,7 @@ impl ElectricalElement for TransformerRectifier {
 }
 impl ElectricityTransformer for TransformerRectifier {
     fn transform(&self, input: Ref<Potential>) -> Potential {
-        if !self.failed && input.is_powered() {
+        if !self.failure.is_active() && input.is_powered() {
             Potential::new(
                 PotentialOrigin::TransformerRectifier(self.number),
                 ElectricPotential::new::<volt>(28.),
@@ -80,6 +77,12 @@ impl ElectricityTransformer for TransformerRectifier {
     }
 }
 impl SimulationElement for TransformerRectifier {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_direct(self, writer);
     }
@@ -211,10 +214,6 @@ mod transformer_rectifier_tests {
             self
         }
 
-        fn fail_transformer_rectifier(&mut self) {
-            self.transformer_rectifier.fail();
-        }
-
         fn transformer_rectifier_is_powered(&self, electricity: &Electricity) -> bool {
             electricity.is_powered(&self.transformer_rectifier)
         }
@@ -278,8 +277,8 @@ mod transformer_rectifier_tests {
     #[test]
     fn when_powered_but_failed_has_no_output() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
+        test_bed.fail(FailureType::TransformerRectifier(1));
 
-        test_bed.command(|a| a.fail_transformer_rectifier());
         test_bed.run();
 
         assert!(!test_bed.transformer_rectifier_is_powered());

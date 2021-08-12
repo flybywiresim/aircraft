@@ -10,11 +10,14 @@ use std::{
     pin::Pin,
     time::{Duration, Instant},
 };
+use systems::failures::FailureType;
 use systems::simulation::Simulation;
 use systems_wasm::{
     electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader,
-    MsfsNamedVariableReaderWriter, MsfsSimulationHandler, SimulatorAspect,
+    f64_to_sim_connect_32k_pos,
+    failures::Failures,
+    sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter,
+    MsfsSimulationHandler, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
@@ -22,18 +25,21 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let mut simulation = Simulation::new(|electricity| A320::new(electricity));
-    let mut msfs_simulation_handler = MsfsSimulationHandler::new(vec![
-        Box::new(create_electrical_buses()),
-        Box::new(MsfsAuxiliaryPowerUnit::new(
-            "OVHD_APU_START_PB_IS_AVAILABLE",
-            8,
-        )?),
-        Box::new(Brakes::new(&mut sim_connect.as_mut())?),
-        Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
-        Box::new(CargoDoors::new(&mut sim_connect.as_mut())?),
-        Box::new(create_aircraft_variable_reader()?),
-        Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
-    ]);
+    let mut msfs_simulation_handler = MsfsSimulationHandler::new(
+        vec![
+            Box::new(create_electrical_buses()),
+            Box::new(MsfsAuxiliaryPowerUnit::new(
+                "OVHD_APU_START_PB_IS_AVAILABLE",
+                8,
+            )?),
+            Box::new(Brakes::new(&mut sim_connect.as_mut())?),
+            Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
+            Box::new(CargoDoors::new(&mut sim_connect.as_mut())?),
+            Box::new(create_aircraft_variable_reader()?),
+            Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
+        ],
+        create_failures(),
+    );
 
     while let Some(event) = gauge.next_event().await {
         msfs_simulation_handler.handle(event, &mut simulation, &mut sim_connect.as_mut())?;
@@ -149,6 +155,19 @@ fn create_electrical_buses() -> MsfsElectricalBuses {
     buses
 }
 
+fn create_failures() -> Failures {
+    let mut failures = Failures::new(
+        NamedVariable::from("A32NX_FAILURE_ACTIVATE"),
+        NamedVariable::from("A32NX_FAILURE_DEACTIVATE"),
+    );
+
+    failures.add(24_000, FailureType::TransformerRectifier(1));
+    failures.add(24_001, FailureType::TransformerRectifier(2));
+    failures.add(24_002, FailureType::TransformerRectifier(3));
+
+    failures
+}
+
 struct Autobrakes {
     id_mode_max: sys::DWORD,
     id_mode_med: sys::DWORD,
@@ -169,7 +188,7 @@ struct Autobrakes {
 impl Autobrakes {
     // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
     // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
-    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(650);
+    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(1500);
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
