@@ -128,7 +128,6 @@ pub(super) struct A320Hydraulic {
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
-    // Same id for aft door as a place holder until it gets animated
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
     const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
@@ -500,12 +499,6 @@ impl A320Hydraulic {
         self.forward_cargo_door
             .update(&self.forward_cargo_door_assembly);
     }
-
-    // All the higher frequency updates like physics
-    // fn update_fast_rate(&mut self, context: &UpdateContext) {
-    //     self.ram_air_turbine
-    //         .update_physics(&context.delta(), &context.indicated_airspeed());
-    // }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
     fn update_actuators_volume(&mut self) {
