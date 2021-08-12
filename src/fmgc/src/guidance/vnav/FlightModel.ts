@@ -1,3 +1,4 @@
+import { MathUtils } from '@shared/MathUtils';
 import { FlapConf } from './common';
 
 export class FlightModel {
@@ -12,6 +13,8 @@ export class FlightModel {
     static requiredAccelRateKNS = 1.33; // in knots/second
 
     static requiredAccelRateMS2 = 0.684; // in m/s^2
+
+    static gravityConstKNS = 19.069 // in knots/second
 
     static gravityConstMS2 = 9.81; // in m/s^2
 
@@ -102,12 +105,33 @@ export class FlightModel {
         return Math.asin(((thrust / weight) - (Cd / Cl)) / accelFactor);
     }
 
+    static getThrustFromConstantPathAngle(
+        fpa: number,
+        weight: number,
+        drag: number,
+        accelFactor: number,
+    ): number {
+        // fpa is in degrees
+        return weight * (accelFactor * Math.sin(fpa * MathUtils.DEEGREES_TO_RADIANS)) + drag;
+    }
+
+    static getThrustFromConstantPathAngleCoefficients(
+        fpa: number,
+        weight: number,
+        Cl: number,
+        Cd: number,
+        accelFactor: number,
+    ): number {
+        // fpa is in degrees
+        return weight * (accelFactor * Math.sin(fpa * MathUtils.DEEGREES_TO_RADIANS) + (Cd / Cl));
+    }
+
     static getSpeedChangePathAngle(
         thrust: number,
         weight: number,
         drag: number,
     ): number {
-        return Math.asin(((thrust - drag) / weight) - (1 / this.gravityConstMS2) * FlightModel.requiredAccelRateMS2);
+        return Math.asin(((thrust - drag) / weight) - (1 / FlightModel.gravityConstMS2) * FlightModel.requiredAccelRateMS2);
     }
 
     static getSpeedChangePathAngleFromCoefficients(
@@ -116,7 +140,30 @@ export class FlightModel {
         Cl: number,
         Cd: number,
     ): number {
-        return Math.asin(((thrust / weight) - (Cd / Cl)) - (1 / this.gravityConstMS2) * FlightModel.requiredAccelRateMS2);
+        return Math.asin(((thrust / weight) - (Cd / Cl)) - (1 / FlightModel.gravityConstMS2) * FlightModel.requiredAccelRateMS2);
+    }
+
+    static getAccelRateFromIdleGeoPath(
+        thrust: number,
+        weight: number,
+        drag: number,
+        fpaDeg: number,
+    ): number {
+        // fpa is in degrees
+        const fpaRad = fpaDeg * MathUtils.DEEGREES_TO_RADIANS;
+        return FlightModel.gravityConstKNS * ((thrust - drag) / weight - Math.sin(fpaRad));
+    }
+
+    static getAccelRateFromIdleGeoPathCoefficients(
+        thrust: number,
+        weight: number,
+        Cl: number,
+        Cd: number,
+        fpaDeg: number,
+    ): number {
+        // fpa is in degrees
+        const fpaRad = fpaDeg * MathUtils.DEEGREES_TO_RADIANS;
+        return FlightModel.gravityConstKNS * (((thrust / weight) - (Cd / Cl)) - Math.sin(fpaRad));
     }
 
     /**
