@@ -6,6 +6,8 @@
       "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
       "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
       "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Dimra ner vänster PFD",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Dimra upp vänster PFD",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Minska höger PFD ljusstyrka",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Öka höger PFD ljusstyrka",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Justera vald kurs åt vänster (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",

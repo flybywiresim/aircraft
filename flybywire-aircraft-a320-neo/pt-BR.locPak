@@ -10,6 +10,8 @@
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajustar a proa selecionada para a direita (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Ajustar a trilha selecionada para a direita (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Ajustar a trilha selecionada para a esquerda (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Reduzir brilho do PFD esquerdo",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Aumentar brilho do PFD esquerdo",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Reduzir brilho do PFD direito",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Aumentar brilho do PFD direito",
       "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Colocar a luz de aviso \"não fumar\" em AUTO",

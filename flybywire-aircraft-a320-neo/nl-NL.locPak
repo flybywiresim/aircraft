@@ -6,6 +6,8 @@
       "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
       "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
       "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Helderheid PFD links verlagen",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Helderheid PFD links verhogen",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Helderheid PFD rechts verlagen",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Helderheid PFD rechts verhogen",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "De geselecteerde koers naar links aanpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
