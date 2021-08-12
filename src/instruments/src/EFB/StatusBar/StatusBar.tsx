@@ -3,8 +3,6 @@ import { IconAccessPoint, IconBattery4 } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
 
-declare const SimVar;
-
 type StatusBarProps = {
     initTime: Date,
     updateTimeSinceStart: Function,
