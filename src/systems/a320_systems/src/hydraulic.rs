@@ -27,6 +27,7 @@ use systems::{
             LinearActuatorMode,
         },
         rigid_body::RigidBodyOnHingeAxis,
+        update_iterator::{FixedStepLoop, MaxStepLoop},
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
@@ -77,140 +78,6 @@ fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
         100.,
         is_locked,
     )
-}
-
-struct FixedStepLoop {
-    lag_time_accumulator: Duration,
-    time_step: Duration,
-    number_of_loops_for_current_frame: u32,
-}
-impl FixedStepLoop {
-    fn new(time_step: Duration) -> Self {
-        Self {
-            lag_time_accumulator: Duration::from_millis(0),
-            time_step: time_step,
-            number_of_loops_for_current_frame: 0,
-        }
-    }
-
-    fn time_step(&self) -> Duration {
-        // println!("fixed::time_step: time{:.3}", self.time_step.as_secs_f64(),);
-        self.time_step
-    }
-
-    fn loop_number(&self) -> u32 {
-        self.number_of_loops_for_current_frame
-    }
-
-    fn update(&mut self, context: &UpdateContext) {
-        // Time to catch up in our simulation = new delta + time not updated last iteration
-        let time_to_catch = context.delta() + self.lag_time_accumulator;
-
-        // Number of time steps (with floating part) to do according to required time step
-        let number_of_steps_floating_point =
-            time_to_catch.as_secs_f64() / self.time_step().as_secs_f64();
-
-        if number_of_steps_floating_point < 1.0 {
-            // Can't do a full time step
-            // we can decide either do an update with smaller step or wait next iteration
-            // for now we only update lag accumulator and chose a hard fixed step: if smaller
-            // than chosen time step we do nothing and wait next iteration
-
-            // Time lag is float part only of num of steps (because is < 1.0 here) * fixed time step to get a result in time
-            self.lag_time_accumulator = Duration::from_secs_f64(
-                number_of_steps_floating_point * self.time_step().as_secs_f64(),
-            );
-            self.number_of_loops_for_current_frame = 0;
-        } else {
-            // Int part is the actual number of loops to do
-            // rest of floating part goes into accumulator
-            self.number_of_loops_for_current_frame = number_of_steps_floating_point.floor() as u32;
-
-            self.lag_time_accumulator = Duration::from_secs_f64(
-                (number_of_steps_floating_point - (self.number_of_loops_for_current_frame as f64))
-                    * self.time_step().as_secs_f64(),
-            ); // Keep track of time left after all fixed loop are done
-        }
-
-        // println!(
-        //     "fixed::update: time{:.3} nloop {:.3} currentAcc {:.3}",
-        //     context.delta().as_secs_f64(),
-        //     self.number_of_loops_for_current_frame,
-        //     self.lag_time_accumulator.as_secs_f64()
-        // );
-    }
-}
-
-struct MaxStepLoop {
-    max_time_step: Duration,
-    num_of_max_step_loop: u32,
-    remaining_frame_duration: Option<Duration>,
-}
-impl MaxStepLoop {
-    fn new(max_time_step: Duration) -> Self {
-        Self {
-            max_time_step,
-            num_of_max_step_loop: 0,
-            remaining_frame_duration: None,
-        }
-    }
-    fn update(&mut self, context: &UpdateContext) {
-        let max_fixed_seconds = self.max_time_step.as_secs_f64();
-
-        let number_of_steps_floating_point = context.delta_as_secs_f64() / max_fixed_seconds;
-
-        self.num_of_max_step_loop = number_of_steps_floating_point.floor() as u32;
-
-        let remaining_time_step_update = Duration::from_secs_f64(
-            (number_of_steps_floating_point - (self.num_of_max_step_loop as f64))
-                * max_fixed_seconds,
-        );
-
-        if remaining_time_step_update > Duration::from_millis(1) {
-            self.remaining_frame_duration = Some(remaining_time_step_update);
-        } else {
-            self.remaining_frame_duration = None;
-        }
-
-        // if self.remaining_frame_duration.is_some() {
-        //     println!(
-        //         "Max::update: time{:.3} nloopMax {:.3} remainingstep {:.3}",
-        //         context.delta().as_secs_f64(),
-        //         self.num_of_max_step_loop,
-        //         self.remaining_frame_duration.unwrap().as_secs_f64()
-        //     );
-        // } else {
-        //     println!(
-        //         "Max::update: time{:.3} nloopMax {:.3} remainingstep NONE",
-        //         context.delta().as_secs_f64(),
-        //         self.num_of_max_step_loop,
-        //     );
-        // }
-    }
-
-    fn time_step(&mut self) -> Option<Duration> {
-        if self.num_of_max_step_loop > 0 {
-            self.num_of_max_step_loop -= 1;
-            // println!(
-            //     "Max::time_step: time{:.3} nloopMax {:.3}",
-            //     self.max_time_step.as_secs_f64(),
-            //     self.num_of_max_step_loop,
-            // );
-            Some(self.max_time_step)
-        } else if self.remaining_frame_duration.is_some() {
-            let last_frame_duration = self.remaining_frame_duration.unwrap();
-            self.remaining_frame_duration = None;
-            // println!(
-            //     "Max::time_step: time{:.3} nloopMax {:.3}",
-            //     self.max_time_step.as_secs_f64(),
-            //     self.num_of_max_step_loop,
-            // );
-            Some(last_frame_duration)
-        } else {
-            // println!("Max::time_step: NONE",);
-            None
-        }
-    }
 }
 
 pub(super) struct A320Hydraulic {
@@ -464,8 +331,9 @@ impl A320Hydraulic {
             lgciu2,
         );
 
+        // Here we update at a fixed rate only. Mainly core hydraulics
         self.update_fixed_step(
-            &context.with_delta(self.core_hydraulic_updater.time_step()),
+            &context,
             engine1,
             engine2,
             overhead_panel,
@@ -571,18 +439,15 @@ impl A320Hydraulic {
     #[allow(clippy::too_many_arguments)]
     // Update with same refresh rate as the sim
     fn update_max_fixed_step(&mut self, context: &UpdateContext) {
-        let mut time_step = self.physics_updater.time_step();
-        while time_step.is_some() {
+        while let Some(cur_time_step) = self.physics_updater.next() {
             self.forward_cargo_door_assembly.update(
                 &self.forward_cargo_door_controller,
-                &context.with_delta(time_step.unwrap()),
+                &context.with_delta(cur_time_step),
                 self.yellow_loop.pressure(),
             );
 
             self.ram_air_turbine
-                .update_physics(&time_step.unwrap(), &context.indicated_airspeed());
-
-            time_step = self.physics_updater.time_step();
+                .update_physics(&cur_time_step, &context.indicated_airspeed());
         }
     }
 
@@ -668,7 +533,7 @@ impl A320Hydraulic {
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
     fn update_fixed_step<T: Engine, U: EngineFirePushButtons>(
         &mut self,
-        context: &UpdateContext,
+        context_original: &UpdateContext,
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
@@ -677,7 +542,9 @@ impl A320Hydraulic {
         lgciu2: &impl LgciuInterface,
     ) {
         // Then run fixed update loop for main hydraulics
-        for _ in 0..self.core_hydraulic_updater.loop_number() {
+        while let Some(cur_time_step) = self.core_hydraulic_updater.next() {
+            let context = &context_original.with_delta(cur_time_step);
+
             // First update what is currently consumed and given back by each actuator
             // Todo: might have to split the actuator volumes by expected number of loops
             self.update_actuators_volume();

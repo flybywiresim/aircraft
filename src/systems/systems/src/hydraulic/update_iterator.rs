@@ -1,14 +1,14 @@
 use crate::simulation::UpdateContext;
 use std::{iter::Iterator, time::Duration};
 
-struct FixedStepLoop {
+pub struct FixedStepLoop {
     lag_time_accumulator: Duration,
     time_step: Duration,
     number_of_loops_this_iteration: u32,
     number_of_loops_remaining: u32,
 }
 impl FixedStepLoop {
-    fn new(time_step: Duration) -> Self {
+    pub fn new(time_step: Duration) -> Self {
         Self {
             lag_time_accumulator: Duration::from_millis(0),
             time_step: time_step,
@@ -22,11 +22,11 @@ impl FixedStepLoop {
         self.time_step
     }
 
-    fn loop_number(&self) -> u32 {
+    fn _loop_number(&self) -> u32 {
         self.number_of_loops_this_iteration
     }
 
-    fn update(&mut self, context: &UpdateContext) {
+    pub fn update(&mut self, context: &UpdateContext) {
         // Time to catch up in our simulation = new delta + time not updated last iteration
         let time_to_catch = context.delta() + self.lag_time_accumulator;
 
@@ -75,14 +75,14 @@ impl Iterator for FixedStepLoop {
     }
 }
 
-struct MaxStepLoop {
+pub struct MaxStepLoop {
     max_time_step: Duration,
     num_of_max_step_loop: u32,
     remaining_frame_duration: Option<Duration>,
     number_of_loops_this_iteration: u32,
 }
 impl MaxStepLoop {
-    fn new(max_time_step: Duration) -> Self {
+    pub fn new(max_time_step: Duration) -> Self {
         Self {
             max_time_step,
             num_of_max_step_loop: 0,
@@ -90,7 +90,8 @@ impl MaxStepLoop {
             number_of_loops_this_iteration: 0,
         }
     }
-    fn update(&mut self, context: &UpdateContext) {
+
+    pub fn update(&mut self, context: &UpdateContext) {
         let max_fixed_seconds = self.max_time_step.as_secs_f64();
 
         let number_of_steps_floating_point = context.delta_as_secs_f64() / max_fixed_seconds;
