@@ -576,15 +576,12 @@ impl SimulatorAspect for Brakes {
 struct CargoDoors {
     forward_cargo_door_position: NamedVariable,
     forward_cargo_door_sim_position_request: AircraftVariable,
-    // id_cargo_toggle: sys::DWORD,
-    // id_cargo_pos: sys::DWORD,
     fwd_position: f64,
     forward_cargo_door_open_req: f64,
 }
 impl CargoDoors {
     fn set_forward_door_postition(&mut self, value: f64) {
         self.fwd_position = value;
-        //println!("set_forward_door_postition {}", value);
     }
 
     fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
@@ -595,12 +592,6 @@ impl CargoDoors {
                 "Position",
                 5,
             )?,
-            //forward_cargo_door_position: AircraftVariable::from("INTERACTIVE POINT OPEN", "Position", 5),
-            // SimConnect inputs masking
-            // id_cargo_toggle: sim_connect
-            //    .map_client_event_to_sim_event("TOGGLE_AIRCRAFT_EXIT:5", false)?,
-            // id_cargo_pos: sim_connect
-            //     .map_client_event_to_sim_event("INTERACTIVE POINT OPEN:5", false)?,
             fwd_position: 0.,
             forward_cargo_door_open_req: 0.,
         })
@@ -619,7 +610,6 @@ impl SimulatorAspect for CargoDoors {
         match name {
             "FWD_DOOR_CARGO_POSITION" => {
                 self.set_forward_door_postition(value);
-                //println!("simaspect write {}", value);
                 true
             }
             _ => false,
@@ -634,29 +624,8 @@ impl SimulatorAspect for CargoDoors {
         }
     }
 
-    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
-        // match message {
-        //     SimConnectRecv::Event(e) => {
-        //         // if e.id() == self.id_cargo_toggle {
-        //         //     println!("id_cargo_toggle {}", e.data());
-        //         //     true
-        //         // }
-        //         // // else if e.id() == self.id_cargo_pos {
-        //         // //     println!("id_cargo_pos {}", e.data());
-        //         // //     true
-        //         // // }
-        //         // else {
-        //         //     false
-        //         // }
-        //     }
-        //     _ => false,
-        // }
-        false
-    }
-
     fn pre_tick(&mut self, delta: Duration) {
         let read_val = self.forward_cargo_door_sim_position_request.get();
-        println!("Read interactive point: {}", read_val);
         self.set_in_sim_position_request(read_val);
     }
 
@@ -664,7 +633,6 @@ impl SimulatorAspect for CargoDoors {
         &mut self,
         sim_connect: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        //println!("Sending final position {}", self.fwd_position * 100.);
         self.forward_cargo_door_position
             .set_value(self.fwd_position * 100.);
 
