@@ -1682,6 +1682,7 @@
                         <MOMENTARY/>
                         <NO_SEQ1 />
                         <NO_SEQ2 />
+                        <ROUND/>
                     </UseTemplate>
 
                     <Component ID="ADIRS">
@@ -1760,6 +1761,7 @@
                             <MOMENTARY/>
                             <NO_SEQ1 />
                             <NO_SEQ2 />
+                            <ROUND/>
                         </UseTemplate>
 
                         <!-- CAPT & PURS / CAPT -->
