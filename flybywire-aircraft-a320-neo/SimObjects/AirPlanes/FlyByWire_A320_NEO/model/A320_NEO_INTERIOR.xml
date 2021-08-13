@@ -1348,6 +1348,8 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_BEACON</NODE_ID>
                     <PART_ID>Beacon_Light_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_BEACON</ANIM_NAME>
+                    <!-- TODO Remove when fixed in Asobo base files -->
+                    <TT_DESCRIPTION_ID>COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_BEACON_ACTION_SET</TT_DESCRIPTION_ID>
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
 
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
@@ -1359,6 +1361,8 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_RWY</NODE_ID>
                     <PART_ID>EXTLT_RWY</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
+                    <!-- TODO Remove when fixed in Asobo base files -->
+                    <TT_DESCRIPTION_ID>COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_TAXI_ACTION_SET</TT_DESCRIPTION_ID>
                     <ID>1</ID>
                     <SIMVAR_INDEX>2</SIMVAR_INDEX>
                     <SIMVAR_INDEX_2>3</SIMVAR_INDEX_2>

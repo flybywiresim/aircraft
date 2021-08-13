@@ -5,7 +5,6 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
-
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
@@ -165,8 +164,12 @@
 1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
 1. [FCU] Added LVAR for selected speed and only fill active LVAR for VS or FPA mode
 1. [MODEL] Removed unused material to fix potential crash to desktop - @aguther (Andreas Guther)
+1. [ARCH] Failures are supported - @davidwalschots (David Walschots)
+1. [HYD] Updated fix for autobrake rotating knob type controllers - @Crocket63 (crocket)
 1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
 1. [MISC] Added JP, FI, SE, NO and NL language support for tooltips. - @kpotschi (MelodyConnor)
+1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
+
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
