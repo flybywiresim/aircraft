@@ -51,10 +51,14 @@ const SelectInput = (props: SelectInputProps) => {
         return optionElements;
     };
 
+    function handleToggleDropdown() {
+        setShowDropdown(!showDropdown);
+    }
+
     return (
         <div className={`flex ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
             <div className={`text-lg flex flex-grow m-2.5 items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
-            <div className="flex items-center cursor-pointer relative" onClick={() => setShowDropdown(!showDropdown)}>
+            <div className="flex items-center cursor-pointer relative" onClick={handleToggleDropdown}>
                 <div className={`relative flex px-5 py-1.5 text-lg text-white rounded-lg bg-navy-light border-2 border-navy-light
                         focus-within:outline-none focus-within:border-teal-light-contrast ${props.className}`}
                 >
