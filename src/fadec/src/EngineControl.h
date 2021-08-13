@@ -202,8 +202,18 @@ class EngineControl {
       }
     }
 
-    // Present State Starting
+    // Present State Starting. Fuel used reset to zero
     if (EngineState == 2) {
+      if (simOnGround == 1) {
+          switch (engine){
+            case 1:
+              simVars->setFuelUsedLeft(0);
+              break;
+            case 2:
+              simVars->setFuelUsedRight(0);
+              break;
+          }
+         }
       if (engineStarter == 1 && simN2 >= (idleN2 - 0.1)) {
         EngineState = 1;
         resetTimer = 1;
@@ -217,16 +227,6 @@ class EngineControl {
 
     // Present State Shutting
     if (EngineState == 3) {
-      if (simOnGround == 1) {
-          switch (engine){
-            case 1:
-              simVars->setFuelUsedLeft(0);
-              break;
-            case 2:
-              simVars->setFuelUsedRight(0);
-              break;
-          }
-         }
       if (engineIgniter == 2 && engineStarter == 1) {
         EngineState = 2;
       } else if (engineStarter == 0 && simN2 < 0.05) {
