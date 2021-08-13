@@ -129,7 +129,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
     const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const mouseDownHandler = (event) => {
+    const handleMouseDown = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
         position.current.left = ref.current ? ref.current.scrollLeft : 0;
@@ -159,7 +159,6 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
         if (currWidth === 2500) return false;
 
         chart.style.width = `${currWidth + 100}px`;
-        return console.log(chart.style.width);
     };
 
     const zoomout = () => {
@@ -168,7 +167,6 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
         if (currWidth === 100) return false;
 
         chart.style.width = `${currWidth - 100}px`;
-        return console.log(chart.style.width);
     };
 
     return (
@@ -177,7 +175,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
                 ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-full max-w-6xl mx-auto grabbable no-scrollbar'
                 : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3 max-w-3xl mx-auto grabbable no-scrollbar'}
             ref={ref}
-            onMouseDown={mouseDownHandler}
+            onMouseDown={handleMouseDown}
         >
             <div className="z-40 flex flex-col justify-end fixed top-40 right-12">
                 <div className="mb-2 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
@@ -423,7 +421,7 @@ const ChartsUi = (props: ChartsUiProps) => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const mouseDownHandler = (event) => {
+    const handleMouseDown = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
 
@@ -488,7 +486,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                 <div
                                     className="mt-5 h-124 space-y-4 rounded-lg overflow-x-hidden overflow-y-scroll grabbable scrollbar"
                                     ref={ref}
-                                    onMouseDown={mouseDownHandler}
+                                    onMouseDown={handleMouseDown}
                                 >
                                     {props.enableNavigraph
                                         ? (
