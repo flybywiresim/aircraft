@@ -132,7 +132,7 @@ class EngineControl {
       } else {
         engine = 2;
       }
-      // Obtain EGT imbalance (Max 20บC)
+      // Obtain EGT imbalance (Max 20ยบC)
       egt_imbalance = (rand() % 20) + 1;
 
       // Obtain FF imbalance (Max 36 Kg/h)
@@ -217,6 +217,16 @@ class EngineControl {
 
     // Present State Shutting
     if (EngineState == 3) {
+      if (simOnGround == 1) {
+          switch (engine){
+            case 1:
+              simVars->setFuelUsedLeft(0);
+              break;
+            case 2:
+              simVars->setFuelUsedRight(0);
+              break;
+          }
+         }
       if (engineIgniter == 2 && engineStarter == 1) {
         EngineState = 2;
       } else if (engineStarter == 0 && simN2 < 0.05) {
@@ -330,7 +340,7 @@ class EngineControl {
     }
   }
 
-  // FBW Exhaust Gas Temperature (in บ Celsius)
+  // FBW Exhaust Gas Temperature (in ยบ Celsius)
   // Updates EGT with realistic values visualized in the ECAM
   void updateEGT(int engine,
                  double Imbalance,
@@ -399,7 +409,7 @@ class EngineControl {
     return cflowNX;
   }
 
-  // FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and บ Celsius)
+  // FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and ยบ Celsius)
   // Updates Oil with realistic values visualized in the SD
   void updateOil(int engine, double Imbalance, double thrust, double simN2, double deltaTime) {
     if (engine == 1) {
