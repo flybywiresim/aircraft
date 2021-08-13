@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
 
 export const FMA = ({ isAttExcessive }) => {
@@ -9,7 +9,7 @@ export const FMA = ({ isAttExcessive }) => {
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
         || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message === 0 && engineMessage === 0;
 
-    let secondBorder;
+    let secondBorder: string;
     if (sharedModeActive && !isAttExcessive) {
         secondBorder = '';
     } else if (BC3Message !== 0) {
@@ -18,7 +18,7 @@ export const FMA = ({ isAttExcessive }) => {
         secondBorder = 'm66.241 0.33732v20.864';
     }
 
-    let firstBorder;
+    let firstBorder: string;
     if (AB3Message && !isAttExcessive) {
         firstBorder = 'm33.117 0.33732v15.766';
     } else {
@@ -81,7 +81,7 @@ const Row3 = ({ isAttExcessive }) => (
 const A1A2Cell = () => {
     const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
 
-    let text;
+    let text: string | undefined;
 
     switch (AThrMode) {
     case 1:
@@ -187,8 +187,8 @@ const A1A2Cell = () => {
 const A3Cell = () => {
     const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
 
-    let text;
-    let className;
+    let text: string;
+    let className: string;
     switch (engineMessage) {
     case 1:
         text = 'THR LK';
@@ -243,7 +243,7 @@ const AB3Cell = () => {
 const B1Cell = () => {
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
-    let text;
+    let text: string | JSX.Element;
     let inProtection = false;
 
     switch (activeVerticalMode) {
@@ -362,7 +362,7 @@ const B2Cell = () => {
     const desArmed = (armedVerticalBitmask >> 3) & 1;
     const gsArmed = (armedVerticalBitmask >> 4) & 1;
 
-    let text1;
+    let text1: string | null;
     let color1 = 'Cyan';
     if (clbArmed) {
         text1 = 'CLB';
@@ -403,7 +403,7 @@ const B2Cell = () => {
 const C1Cell = () => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
-    let text;
+    let text: string;
     switch (activeLateralMode) {
     case 50:
         text = 'GA TRK';
@@ -464,7 +464,7 @@ const C2Cell = () => {
     const navArmed = (armedLateralBitmask >> 0) & 1;
     const locArmed = (armedLateralBitmask >> 1) & 1;
 
-    let text;
+    let text: string;
     if (locArmed) {
         // case 1:
         //     text = 'LOC B/C';
@@ -490,7 +490,7 @@ const C2Cell = () => {
 const BC1Cell = () => {
     const SharedAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
-    let text;
+    let text: string;
     switch (SharedAPMode) {
     case 34:
         text = 'ROLL OUT';
@@ -521,8 +521,8 @@ const BC1Cell = () => {
 const D1D2Cell = () => {
     const approachCapability = getSimVar('L:A32NX_ApproachCapability', 'enum');
 
-    let text1;
-    let text2 = null;
+    let text1: string;
+    let text2: string | undefined;
     switch (approachCapability) {
     case 1:
         text1 = 'CAT1';
@@ -574,7 +574,7 @@ const D1D2Cell = () => {
 
 const D3Cell = () => {
     const MDA = getSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
-    let text = null;
+    let text: JSX.Element | string | null = null;
     let fontSize = 'FontSmallest';
     if (MDA !== 0) {
         const MDAText = Math.round(MDA).toString().padStart(6, ' ');
@@ -609,11 +609,13 @@ const E1Cell = () => {
     const AP1Engaged = getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool');
     const AP2Engaged = getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool');
 
-    let text;
-    let id = 0;
     if (!AP1Engaged && !AP2Engaged) {
         return null;
-    } if (AP1Engaged && !AP2Engaged) {
+    }
+
+    let text: string;
+    let id = 0;
+    if (AP1Engaged && !AP2Engaged) {
         text = 'AP1';
         id = 1;
     } else if (AP2Engaged && !AP1Engaged) {
@@ -651,7 +653,7 @@ const E2Cell = () => {
 const E3Cell = () => {
     const status = getSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum');
 
-    let color;
+    let color: string;
     let id = 0;
     switch (status) {
     case 1:
@@ -676,8 +678,21 @@ const E3Cell = () => {
     );
 };
 
-class ShowForSeconds extends Component {
-    constructor(props) {
+interface ShowForSecondsProps {
+    timer: number;
+    id: number;
+}
+
+class ShowForSeconds extends Component<ShowForSecondsProps> {
+    private Timer: number;
+
+    private PrevID: number;
+
+    private GetDeltaTime: () => number;
+
+    private Update: () => void;
+
+    constructor(props: ShowForSecondsProps) {
         super(props);
 
         this.Timer = this.props.timer || 10;
@@ -698,11 +713,13 @@ class ShowForSeconds extends Component {
         renderTarget.parentElement.addEventListener('update', this.Update);
     }
 
-    shouldComponentUpdate(nextProps, _nextState, _nextContext) {
+    shouldComponentUpdate(nextProps: ShowForSecondsProps) {
         if (this.PrevID !== nextProps.id) {
             this.PrevID = nextProps.id;
             this.Timer = nextProps.timer || 10;
         }
+
+        return false;
     }
 
     componentWillUnmount() {

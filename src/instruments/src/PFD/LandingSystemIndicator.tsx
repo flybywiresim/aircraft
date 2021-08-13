@@ -1,5 +1,6 @@
+import React from 'react';
 import { getSimVar } from '../util.js';
-import { LagFilter } from './PFDUtils.jsx';
+import { LagFilter } from './PFDUtils';
 
 const filterLocalizerIndicator = new LagFilter(1.5);
 const filterGlideslopeIndicator = new LagFilter(1.5);
@@ -8,7 +9,7 @@ export function LandingSystem({ LSButtonPressed, deltaTime }) {
     let showVDev = false;
 
     if (!LSButtonPressed) {
-        showVDev = Simplane.getAutoPilotApproachLoaded() && Simplane.getAutoPilotApproachType() === 10;
+        showVDev = !!Simplane.getAutoPilotApproachLoaded() && Simplane.getAutoPilotApproachType() === 10;
     }
 
     return (
@@ -82,7 +83,7 @@ const LandingSystemInfo = ({ displayed }) => {
 const LocalizerIndicator = ({ deltaTime }) => {
     const hasLoc = getSimVar('NAV HAS LOCALIZER:3', 'Bool');
 
-    let diamond = null;
+    let diamond: JSX.Element | null = null;
 
     if (hasLoc) {
         const deviation = filterLocalizerIndicator.step(getSimVar('NAV RADIAL ERROR:3', 'degrees'), deltaTime / 1000);
@@ -114,7 +115,7 @@ const LocalizerIndicator = ({ deltaTime }) => {
 const GlideslopeIndicator = ({ deltaTime }) => {
     const hasGlideslope = getSimVar('NAV HAS GLIDE SLOPE:3', 'Bool');
 
-    let diamond = null;
+    let diamond: JSX.Element | null = null;
 
     if (hasGlideslope) {
         const deviation = filterGlideslopeIndicator.step(getSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees'), deltaTime / 1000);
@@ -147,7 +148,7 @@ const VDevIndicator = () => {
     const deviation = getSimVar('GPS VERTICAL ERROR', 'feet');
     const dots = deviation / 100;
 
-    let diamond;
+    let diamond: JSX.Element;
 
     if (dots > 2) {
         diamond = <path id="VDevSymbolLower" className="NormalStroke Green" d="m107.19 111.06v2.0159h5.0368v-2.0159" />;
