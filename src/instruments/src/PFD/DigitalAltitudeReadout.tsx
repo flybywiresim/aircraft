@@ -1,5 +1,7 @@
-const TensDigits = (value, offset, color) => {
-    let text;
+import React from 'react';
+
+const TensDigits = (value: number, offset: number, color: string) => {
+    let text: string;
     if (value < 0) {
         text = (value + 100).toString();
     } else if (value >= 100) {
@@ -13,8 +15,8 @@ const TensDigits = (value, offset, color) => {
     );
 };
 
-const HundredsDigit = (value, offset, color) => {
-    let text;
+const HundredsDigit = (value: number, offset: number, color: string) => {
+    let text: string;
     if (value < 0) {
         text = (value + 1).toString();
     } else if (value >= 10) {
@@ -27,8 +29,8 @@ const HundredsDigit = (value, offset, color) => {
         <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="11.431" y="7.1">{text}</text>
     );
 };
-const ThousandsDigit = (value, offset, color) => {
-    let text;
+const ThousandsDigit = (value: number, offset: number, color: string) => {
+    let text: string;
     if (!Number.isNaN(value)) {
         text = (value % 10).toString();
     } else {
@@ -38,8 +40,8 @@ const ThousandsDigit = (value, offset, color) => {
         <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="6.98" y="7.1">{text}</text>
     );
 };
-const TenThousandsDigit = (value, offset, color) => {
-    let text;
+const TenThousandsDigit = (value: number, offset: number, color: string) => {
+    let text: string;
     if (!Number.isNaN(value)) {
         text = value.toString();
     } else {
@@ -119,7 +121,7 @@ const Drum = ({ displayRange, valueSpacing, distanceSpacing, position, value, co
         highestValue -= valueSpacing;
     }
 
-    const graduationElements = [];
+    const graduationElements: JSX.Element[] = [];
 
     for (let i = 0; i < numTicks; i++) {
         const elementPosition = highestPosition - i * valueSpacing;
