@@ -27,51 +27,13 @@ const ControlSettings = ({ setShowSettings }) => (
     </div>
 );
 
-const AircraftConfigurationPage = () => {
-    const [showThrottleSettings, setShowThrottleSettings] = useState(false);
-    const { setShowNavbar } = useContext(SettingsNavbarContext);
-
-    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
-    const [_, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
-    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
-
+const DefaultsPage = () => {
     const [thrustReductionAlt, setThrustReductionAlt] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
     const [thrustReductionAltSetting, setThrustReductionAltSetting] = useState(thrustReductionAlt);
     const [accelerationAlt, setAccelerationAlt] = usePersistentProperty('CONFIG_ACCEL_ALT', '1500');
     const [accelerationAltSetting, setAccelerationAltSetting] = useState(accelerationAlt);
     const [accelerationOutAlt, setAccelerationOutAlt] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
     const [accelerationOutAltSetting, setAccelerationOutAltSetting] = useState(accelerationOutAlt);
-    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
-    const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
-
-    const paxSignsButtons: ButtonType[] = [
-        { name: 'No Smoking', setting: '0' },
-        { name: 'No Portable Device', setting: '1' },
-    ];
-
-    const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
-        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
-        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
-        { name: 'Real', setting: 'REAL', simVarValue: 0 },
-    ];
-
-    const dmcSelfTestTimeButtons: ButtonType[] = [
-        { name: 'Instant', setting: '0' },
-        { name: 'Fast', setting: '5' },
-        { name: 'Real', setting: '12' },
-    ];
-
-    const defaultBaroButtons: ButtonType[] = [
-        { name: 'Auto', setting: 'AUTO' },
-        { name: 'in Hg', setting: 'IN HG' },
-        { name: 'hPa', setting: 'HPA' },
-    ];
-
-    const weightUnitButtons: ButtonType[] = [
-        { name: 'Kg', setting: '1' },
-        { name: 'lbs', setting: '0' },
-    ];
 
     const handleSetThrustReductionAlt = (value: string) => {
         setThrustReductionAltSetting(value);
@@ -102,6 +64,127 @@ const AircraftConfigurationPage = () => {
             setAccelerationOutAlt(value.trim());
         }
     };
+
+    return (
+        <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Thrust Reduction Altitude (ft)</span>
+                <div className="flex flex-row">
+                    <SimpleInput
+                        className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                        placeholder={thrustReductionAlt}
+                        noLabel
+                        value={thrustReductionAltSetting}
+                        onChange={(event) => handleSetThrustReductionAlt(event)}
+                    />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Acceleration Altitude (ft)</span>
+                <div className="flex flex-row">
+                    <SimpleInput
+                        className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                        placeholder={accelerationAlt}
+                        noLabel
+                        value={accelerationAltSetting}
+                        onChange={(event) => handleSetAccelerationAlt(event)}
+                    />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Acceleration Out Altitude (ft)</span>
+                <div className="flex flex-row">
+                    <SimpleInput
+                        className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                        placeholder={accelerationOutAlt}
+                        noLabel
+                        value={accelerationOutAltSetting}
+                        onChange={(event) => handleSetAccelerationOutAlt(event)}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AircraftConfigurationPage = () => {
+    const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+
+    const paxSignsButtons: ButtonType[] = [
+        { name: 'No Smoking', setting: '0' },
+        { name: 'No Portable Device', setting: '1' },
+    ];
+
+    const weightUnitButtons: ButtonType[] = [
+        { name: 'Kg', setting: '1' },
+        { name: 'lbs', setting: '0' },
+    ];
+
+    return (
+        <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
+            <div className="py-4 flex-grow flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300 mr-1">Weight Unit</span>
+                <SelectGroup>
+                    {weightUnitButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setWeightUnit(button.setting)}
+                            selected={weightUnit === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">PAX Signs</span>
+                <SelectGroup>
+                    {paxSignsButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setPaxSigns(button.setting)}
+                            selected={paxSigns === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+        </div>
+    );
+};
+
+const SimOptionsPage = () => {
+    const [showThrottleSettings, setShowThrottleSettings] = useState(false);
+    const { setShowNavbar } = useContext(SettingsNavbarContext);
+
+    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
+    const [_, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
+    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
+
+    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
+
+    const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
+        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
+        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
+        { name: 'Real', setting: 'REAL', simVarValue: 0 },
+    ];
+
+    const dmcSelfTestTimeButtons: ButtonType[] = [
+        { name: 'Instant', setting: '0' },
+        { name: 'Fast', setting: '5' },
+        { name: 'Real', setting: '12' },
+    ];
+
+    const defaultBaroButtons: ButtonType[] = [
+        { name: 'Auto', setting: 'AUTO' },
+        { name: 'in Hg', setting: 'IN HG' },
+        { name: 'hPa', setting: 'HPA' },
+    ];
 
     useEffect(() => {
         setShowNavbar(!showThrottleSettings);
@@ -145,79 +228,12 @@ const AircraftConfigurationPage = () => {
                     </div>
 
                     <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">Thrust Reduction Altitude (ft)</span>
-                        <div className="flex flex-row">
-                            <SimpleInput
-                                className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
-                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                                placeholder={thrustReductionAlt}
-                                noLabel
-                                value={thrustReductionAltSetting}
-                                onChange={(event) => handleSetThrustReductionAlt(event)}
-                            />
-                        </div>
-                    </div>
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">Acceleration Altitude (ft)</span>
-                        <div className="flex flex-row">
-                            <SimpleInput
-                                className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
-                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                                placeholder={accelerationAlt}
-                                noLabel
-                                value={accelerationAltSetting}
-                                onChange={(event) => handleSetAccelerationAlt(event)}
-                            />
-                        </div>
-                    </div>
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">Acceleration Out Altitude (ft)</span>
-                        <div className="flex flex-row">
-                            <SimpleInput
-                                className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
-                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                                placeholder={accelerationOutAlt}
-                                noLabel
-                                value={accelerationOutAltSetting}
-                                onChange={(event) => handleSetAccelerationOutAlt(event)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="py-4 flex flex-row justify-between items-center">
                         <span className="text-lg text-gray-300 mr-1">Default Baro</span>
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
                                 <SelectItem
                                     onSelect={() => setDefaultBaro(button.setting)}
                                     selected={defaultBaro === button.setting}
-                                >
-                                    {button.name}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </div>
-                    <div className="py-4 flex-grow flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300 mr-1">Weight Unit</span>
-                        <SelectGroup>
-                            {weightUnitButtons.map((button) => (
-                                <SelectItem
-                                    onSelect={() => setWeightUnit(button.setting)}
-                                    selected={weightUnit === button.setting}
-                                >
-                                    {button.name}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </div>
-
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">PAX Signs</span>
-                        <SelectGroup>
-                            {paxSignsButtons.map((button) => (
-                                <SelectItem
-                                    onSelect={() => setPaxSigns(button.setting)}
-                                    selected={paxSigns === button.setting}
                                 >
                                     {button.name}
                                 </SelectItem>
@@ -382,10 +398,12 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
 
     function currentPage(): JSX.Element[] {
         switch (selectedTabIndex) {
-        case 0: return [<AircraftConfigurationPage />];
-        case 1: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
-        case 2: return [<AudioPage />];
-        case 3: return [<FlyPadPage />];
+        case 0: return [<DefaultsPage />];
+        case 1: return [<AircraftConfigurationPage />];
+        case 2: return [<SimOptionsPage />];
+        case 3: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
+        case 4: return [<AudioPage />];
+        case 5: return [<FlyPadPage />];
         default: return [<AircraftConfigurationPage />];
         }
     }
@@ -398,7 +416,9 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
                     <div className="flex flex-row flex-wrap items-center space-x-10 mb-2">
                         <Navbar
                             tabs={[
+                                'Defaults',
                                 'Aircraft Configuration',
+                                'Sim Options',
                                 'ATSU/AOC',
                                 'Audio',
                                 'flyPad',
