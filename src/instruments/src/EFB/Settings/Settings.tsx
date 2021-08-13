@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
-import { Notification } from '@instruments/common/notification';
+import { Notification } from '@shared/notification';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';

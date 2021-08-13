@@ -1,9 +1,11 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-undef */
-/// <reference path="../../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
+/// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
+
+declare var g_NotificationsListener;
 
 /**
- * Notification utility class to create a notification event and element
+ * NotificationData container for notifications to package notification metadata
  */
 export type NotificationData = {
     id: string;
@@ -16,11 +18,24 @@ export type NotificationData = {
     time: number;
 }
 
+/**
+ * Notification utility class to create a notification event and element
+ *
+ * Usage:
+ * import { Notification } from '@shared/notification';
+ * ...
+ * const notification = new Notification();
+ * notification.showNotification({ message: 'Your notification here!' });
+*/
 export class Notification {
+
     time: number;
 
     params: NotificationData;
 
+    /**
+     * Creates a Notification
+     */
     constructor() {
         const title = 'A32NX ALERT';
         this.time = new Date().getTime();
@@ -36,6 +51,15 @@ export class Notification {
         };
     }
 
+    /**
+     * Modify the display data for this Notification
+     * @param {string} params.title Title for notification - will show as the message header
+     * @param {string} params.type Type of Notification - Valid types are MESSAGE|SUBTITLES
+     * @param {string} params.theme Theme of Notification. Valid types are TIPS|GAMEPLAY|SYSTEM
+     * @param {string} params.image Notification image. Valid types are IMAGE_NOTIFICATION|IMAGE_SCORE
+     * @param {string} params.message Notification message
+     * @param {number} params.timeout Time in ms before notification message will disappear
+     */
     setData(params: any = {}): void {
         if (params.title) {
             this.params.title = params.title;
@@ -80,11 +104,3 @@ export class Notification {
         }
     }
 }
-
-/**
-Usage:
-import { Notification } from '@instruments/common/notification';
-
-const notification = new Notification();
-notification.showNotification({ message: 'Your notification here!' });
- */

@@ -205,8 +205,6 @@ class NXPopUp {
     constructor() {
         this.params = new PopUpParams();
         this.popupListener;
-        //this.params.contentUrl = "/templates/Controls/PopUp_EditPreset/PopUp_EditPreset.html";
-        //this.params.contentTemplate = "popup-edit-preset";
         this.params.title = "A32NX POPUP";
         this.params.time = new Date().getTime();
         this.params.id = this.params.title + "_" + this.params.time;

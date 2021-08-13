@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-underscore-dangle */
-/// <reference path="../../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
+/// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
 
 /**
  * PopUpParams container for popups to package popup metadata
@@ -19,13 +19,22 @@ export type PopUpParams = {
 }
 
 /**
- * NXPopUp utility class to create a pop-up UI element
+ * PopUp utility class to create a pop-up UI element
+ *
+ * Usage:
+ * import { PopUp } from '@shared/popup';
+ * ...
+ * const popup = new PopUp();
+ * popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Your message here", style: "small"}, yesFunc, noFunc);
  */
 export class PopUp {
     params: PopUpParams;
 
     popupListener: any;
 
+    /**
+     * Creates a Popup
+     */
     constructor() {
         const title = 'A32NX POPUP';
         const time = new Date().getTime();
@@ -36,14 +45,18 @@ export class PopUp {
             style: 'normal',
             displayGlobalPopup: true,
             contentData: 'Default Message',
-            contentUrl: '', // "/templates/Controls/PopUp_EditPreset/PopUp_EditPreset.html";
-            contentTemplate: '', // "popup-edit-preset";
+            contentUrl: '', // i.e. "/templates/Controls/PopUp_EditPreset/PopUp_EditPreset.html";
+            contentTemplate: '', // i.e. "popup-edit-preset";
             id: `${title}_${time}`,
             title,
             time,
         };
     }
 
+    /**
+     * Pass Popup display data to Coherent
+     * @param params
+     */
     _showPopUp(params: any = {}): void {
         Coherent.trigger('SHOW_POP_UP', params);
     }
@@ -82,11 +95,3 @@ export class PopUp {
         }
     }
 }
-
-/**
-Usage:
-import { PopUp } from '@instruments/common/popup';
-
-const popup = new PopUp();
-popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Your message here", style: "small"}, yesFunc, noFunc);
-*/
