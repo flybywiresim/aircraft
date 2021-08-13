@@ -575,6 +575,174 @@
             [-0.91706, 0.0, 0.0, 0.39875]
           ]
         ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_ENG_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_ENG_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_BLEED_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_BLEED_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_PRESS_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_PRESS_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_ELEC_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_ELEC_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_HYD_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_HYD_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_FUEL_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_FUEL_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_APU_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_APU_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_COND_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_COND_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_DOOR_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_DOOR_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_WHEEL_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_WHEEL_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_FTCL_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_FTCL_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_CLR_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_CLR_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_STS_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_STS_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_ECAM_CLR2_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_ECAM_CLR2_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.621582, 0.958984],
+          [0.587402, 0.973633],
+          [0.587402, 0.958984],
+          [0.621582, 0.973633]
+        ]
       }
     ]
   },
