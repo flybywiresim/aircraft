@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 /// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
 
-declare var g_NotificationsListener;
+declare let g_NotificationsListener;
 
 /**
  * NotificationData container for notifications to package notification metadata
@@ -28,7 +28,6 @@ export type NotificationData = {
  * notification.showNotification({ message: 'Your notification here!' });
 */
 export class Notification {
-
     time: number;
 
     params: NotificationData;
