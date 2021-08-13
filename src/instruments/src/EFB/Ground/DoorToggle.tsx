@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSplitSimVar } from '../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 
-interface Props {
+type DoorToggleProps = {
     index: number,
     clickCallback,
     selectionCallback,
@@ -11,7 +11,8 @@ interface Props {
     tugActive: boolean,
     disabled?
 }
-export const DoorToggle = (props: Props) => {
+
+export const DoorToggle = (props: DoorToggleProps) => {
     const [doorState, setDoorState] = useSplitSimVar(`A:INTERACTIVE POINT OPEN:${props.index}`, 'Percent over 100', 'K:TOGGLE_AIRCRAFT_EXIT', 'Enum', 500);
     const [previousDoorState, setPreviousDoorState] = useState(doorState);
 
