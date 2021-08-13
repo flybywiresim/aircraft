@@ -28,40 +28,40 @@ const ControlSettings = ({ setShowSettings }) => (
 );
 
 const DefaultsPage = () => {
-    const [thrustReductionAlt, setThrustReductionAlt] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
-    const [thrustReductionAltSetting, setThrustReductionAltSetting] = useState(thrustReductionAlt);
-    const [accelerationAlt, setAccelerationAlt] = usePersistentProperty('CONFIG_ACCEL_ALT', '1500');
-    const [accelerationAltSetting, setAccelerationAltSetting] = useState(accelerationAlt);
-    const [accelerationOutAlt, setAccelerationOutAlt] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
-    const [accelerationOutAltSetting, setAccelerationOutAltSetting] = useState(accelerationOutAlt);
+    const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
+    const [thrustReductionHeightSetting, setThrustReductionHeightSetting] = useState(thrustReductionHeight);
+    const [accelerationHeight, setAccelerationHeight] = usePersistentProperty('CONFIG_ACCEL_ALT', '1500');
+    const [accelerationHeightSetting, setAccelerationHeightSetting] = useState(accelerationHeight);
+    const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
+    const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
 
     const handleSetThrustReductionAlt = (value: string) => {
-        setThrustReductionAltSetting(value);
+        setThrustReductionHeightSetting(value);
 
         const parsedValue = parseInt(value);
 
         if (parsedValue >= 400 && parsedValue <= 5000) {
-            setThrustReductionAlt(value.trim());
+            setThrustReductionHeight(value.trim());
         }
     };
 
     const handleSetAccelerationAlt = (value: string) => {
-        setAccelerationAltSetting(value);
+        setAccelerationHeightSetting(value);
 
         const parsedValue = parseInt(value);
 
         if (parsedValue >= 400 && parsedValue <= 10000) {
-            setAccelerationAlt(value.trim());
+            setAccelerationHeight(value.trim());
         }
     };
 
     const handleSetAccelerationOutAlt = (value: string) => {
-        setAccelerationOutAltSetting(value);
+        setAccelerationOutHeightSetting(value);
 
         const parsedValue = parseInt(value);
 
         if (parsedValue >= 400 && parsedValue <= 10000) {
-            setAccelerationOutAlt(value.trim());
+            setAccelerationOutHeight(value.trim());
         }
     };
 
@@ -69,40 +69,40 @@ const DefaultsPage = () => {
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
 
             <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Thrust Reduction Altitude (ft)</span>
+                <span className="text-lg text-gray-300">Thrust Reduction Height (ft)</span>
                 <div className="flex flex-row">
                     <SimpleInput
                         className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                        placeholder={thrustReductionAlt}
+                        placeholder={thrustReductionHeight}
                         noLabel
-                        value={thrustReductionAltSetting}
+                        value={thrustReductionHeightSetting}
                         onChange={(event) => handleSetThrustReductionAlt(event)}
                     />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Acceleration Altitude (ft)</span>
+                <span className="text-lg text-gray-300">Acceleration Height (ft)</span>
                 <div className="flex flex-row">
                     <SimpleInput
                         className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                        placeholder={accelerationAlt}
+                        placeholder={accelerationHeight}
                         noLabel
-                        value={accelerationAltSetting}
+                        value={accelerationHeightSetting}
                         onChange={(event) => handleSetAccelerationAlt(event)}
                     />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Acceleration Out Altitude (ft)</span>
+                <span className="text-lg text-gray-300">Engine-Out Acceleration Height (ft)</span>
                 <div className="flex flex-row">
                     <SimpleInput
                         className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                        placeholder={accelerationOutAlt}
+                        placeholder={accelerationOutHeight}
                         noLabel
-                        value={accelerationOutAltSetting}
+                        value={accelerationOutHeightSetting}
                         onChange={(event) => handleSetAccelerationOutAlt(event)}
                     />
                 </div>
