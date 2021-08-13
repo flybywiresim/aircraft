@@ -39,7 +39,7 @@ type NavigraphChartComponentProps = {
 type NavigraphChartSelectorProps = {
     selectedTab: OrganizedChartType,
     selectedChartId: string,
-    handleChartClick: CallableFunction,
+    onChartClick: CallableFunction,
 }
 
 type OrganizedChartType = {
@@ -284,7 +284,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                                 {item.charts.map((chart) => (
                                     <div
                                         className="flex flex-row bg-navy-medium"
-                                        onClick={() => props.handleChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
+                                        onClick={() => props.onChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                         key={(chart as NavigraphChart).id}
                                     >
                                         {(chart as NavigraphChart).id === props.selectedChartId
@@ -309,7 +309,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                         {props.selectedTab.charts.map((chart) => (
                             <div
                                 className="flex flex-row bg-navy-medium text-lg rounded-lg mr-4"
-                                onClick={() => props.handleChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
+                                onClick={() => props.onChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                 key={(chart as NavigraphChart).id}
                             >
                                 {(chart as NavigraphChart).id === props.selectedChartId
@@ -414,7 +414,7 @@ const ChartsUi = (props: ChartsUiProps) => {
         props.setIcao(newValue);
     };
 
-    const handleChartClick = (chartNameDay: string, chartNameNight: string, chartId: string) => {
+    const onChartClick = (chartNameDay: string, chartNameNight: string, chartId: string) => {
         setSelectedChartId(chartId);
 
         setSelectedChartName({ light: chartNameDay, dark: chartNameNight });
@@ -495,7 +495,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                             <NavigraphChartSelector
                                                 selectedTab={selectedTab}
                                                 selectedChartId={selectedChartId}
-                                                handleChartClick={handleChartClick}
+                                                onChartClick={onChartClick}
                                             />
                                         )
                                         : (
