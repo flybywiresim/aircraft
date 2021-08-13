@@ -487,7 +487,9 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
 
-        SimVar.SetSimVarValue("K:A32NX.ATHR_RESET_DISABLE", "number", 1);
+        if (SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_DISABLED", "number") === 1) {
+            SimVar.SetSimVarValue("K:A32NX.ATHR_RESET_DISABLE", "number", 1);
+        }
     }
 
     onUpdate(_deltaTime) {
@@ -3757,7 +3759,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * computes minutes when given hour and minutes
-     * @param {string} hhmm - string used ot make the conversion
+     * @param {string} hhmm - string used to make the conversion
      * @returns {number} numbers in minutes form
      */
     //TODO: can this be util?

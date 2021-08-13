@@ -116,6 +116,7 @@ struct SimData {
   double fuelTankQuantityTotal;
   double fuelWeightPerGallon;
   unsigned long long kohlsmanSettingStd_3;
+  double cameraState;
 };
 
 struct SimInput {
