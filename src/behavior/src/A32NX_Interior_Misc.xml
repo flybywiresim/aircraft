@@ -68,8 +68,8 @@
         <DefaultTemplateParameters>
             <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-            <WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
@@ -356,8 +356,8 @@
 
     <Template Name="FBW_Airbus_Sidestick_Priority">
         <DefaultTemplateParameters>
-            <WWISE_EVENT_1>yoke_push_button_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>firetestbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>firetestbutton</WWISE_EVENT_2>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <ID>1</ID>
         </DefaultTemplateParameters>
@@ -503,6 +503,8 @@
             <SEQ1_CODE>(L:A32NX_DCDU_ATC_MSG_WAITING, Bool)</SEQ1_CODE>
             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_DCDU_ATC_MSG_ACK, Bool)</LEFT_SINGLE_CODE>
             <NO_SEQ2/>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
         </UseTemplate>
     </Template>
 

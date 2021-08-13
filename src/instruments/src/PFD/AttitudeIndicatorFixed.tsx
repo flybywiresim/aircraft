@@ -1,3 +1,4 @@
+import React from 'react';
 import { getSimVar } from '../util.js';
 
 export const AttitudeIndicatorFixedUpper = ({ pitch, roll }) => {
@@ -89,8 +90,8 @@ const FlightDirector = ({ FDActive }) => {
     const showLateralFD = lateralAPMode !== 0 && lateralAPMode !== 34 && lateralAPMode !== 40;
     const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
 
-    let FDRollOffset;
-    let FDPitchOffset;
+    let FDRollOffset = 0;
+    let FDPitchOffset = 0;
 
     if (showLateralFD) {
         const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');

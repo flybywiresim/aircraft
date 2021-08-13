@@ -164,8 +164,11 @@
 1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
 1. [FCU] Added LVAR for selected speed and only fill active LVAR for VS or FPA mode
 1. [MODEL] Removed unused material to fix potential crash to desktop - @aguther (Andreas Guther)
+1. [ARCH] Failures are supported - @davidwalschots (David Walschots)
+1. [HYD] Updated fix for autobrake rotating knob type controllers - @Crocket63 (crocket)
 1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
 1. [ECAM] Rewrite fuel page for React - @Benjozork (Benjamin Dupont) and @RichardPilbery (tricky_dicky[Z+0]#3571)
+1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
