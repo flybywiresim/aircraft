@@ -16,7 +16,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                                   double keyChangeAileron,
                                   double keyChangeElevator,
-                                  double keyChangeRudder) {
+                                  double keyChangeRudder,
+                                  bool disableXboxCompatibilityRudderPlusMinus) {
   // info message
   cout << "WASM: Connecting..." << endl;
 
@@ -41,6 +42,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     flightControlsKeyChangeAileron = keyChangeAileron;
     flightControlsKeyChangeElevator = keyChangeElevator;
     flightControlsKeyChangeRudder = keyChangeRudder;
+    // store if XBOX compatibility should be disabled for rudder axis plus/minus
+    this->disableXboxCompatibilityRudderPlusMinus = disableXboxCompatibilityRudderPlusMinus;
     // register local variables
     idFcuEventSetSPEED = make_unique<LocalVariable>("A320_Neo_FCU_SPEED_SET_DATA");
     idFcuEventSetHDG = make_unique<LocalVariable>("A320_Neo_FCU_HDG_SET_DATA");
@@ -946,13 +949,27 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       simInput.inputs[AXIS_RUDDER_SET] = fmax(-1.0, simInput.inputs[AXIS_RUDDER_SET] - flightControlsKeyChangeRudder);
       break;
 
-    case Events::RUDDER_AXIS_MINUS:
-      simInput.inputs[AXIS_RUDDER_SET] = +1.0 * (static_cast<long>(event->dwData) / 16384.0);
+    case Events::RUDDER_AXIS_MINUS: {
+      if (this->disableXboxCompatibilityRudderPlusMinus) {
+        // normal axis
+        simInput.inputs[AXIS_RUDDER_SET] = +1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
+      } else {
+        // xbox controller
+        simInput.inputs[AXIS_RUDDER_SET] = +1.0 * (static_cast<long>(event->dwData) / 16384.0);
+      }
       break;
+    }
 
-    case Events::RUDDER_AXIS_PLUS:
-      simInput.inputs[AXIS_RUDDER_SET] = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
+    case Events::RUDDER_AXIS_PLUS: {
+      if (this->disableXboxCompatibilityRudderPlusMinus) {
+        // normal axis
+        simInput.inputs[AXIS_RUDDER_SET] = -1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
+      } else {
+        // xbox controller
+        simInput.inputs[AXIS_RUDDER_SET] = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
+      }
       break;
+    }
 
     case Events::RUDDER_TRIM_LEFT: {
       rudderTrimHandler->onEventRudderTrimLeft(sampleTime);
