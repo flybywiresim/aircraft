@@ -71,6 +71,8 @@ class FlyByWireInterface {
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
 
+  bool disableXboxCompatibilityRudderAxisPlusMinus = false;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
