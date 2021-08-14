@@ -294,6 +294,13 @@
                     <SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
                 </True>
             </Condition>
+
+            <Condition Check="ROUND">
+                <True>
+                    <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
+                </True>
+            </Condition>
         </UseTemplate>
     </Template>
 
@@ -384,8 +391,8 @@
     <Template Name="FBW_Push_Held">
         <DefaultTemplateParameters>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
             <CURSOR>Hand</CURSOR>
 
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
