@@ -16,7 +16,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                                   double keyChangeAileron,
                                   double keyChangeElevator,
-                                  double keyChangeRudder) {
+                                  double keyChangeRudder,
+                                  bool disableXboxCompatibilityRudderPlusMinus) {
   // info message
   cout << "WASM: Connecting..." << endl;
 
@@ -41,6 +42,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     flightControlsKeyChangeAileron = keyChangeAileron;
     flightControlsKeyChangeElevator = keyChangeElevator;
     flightControlsKeyChangeRudder = keyChangeRudder;
+    // store if XBOX compatibility should be disabled for rudder axis plus/minus
+    this->disableXboxCompatibilityRudderPlusMinus = disableXboxCompatibilityRudderPlusMinus;
     // register local variables
     idFcuEventSetSPEED = make_unique<LocalVariable>("A320_Neo_FCU_SPEED_SET_DATA");
     idFcuEventSetHDG = make_unique<LocalVariable>("A320_Neo_FCU_HDG_SET_DATA");
@@ -918,104 +921,139 @@ void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pDat
 void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* event) {
   // process depending on event id
   switch (event->uEventID) {
-    case Events::AXIS_ELEVATOR_SET:
+    case Events::AXIS_ELEVATOR_SET: {
       simInput.inputs[AXIS_ELEVATOR_SET] = static_cast<long>(event->dwData) / 16384.0;
       break;
+    }
 
-    case Events::AXIS_AILERONS_SET:
+    case Events::AXIS_AILERONS_SET: {
       simInput.inputs[AXIS_AILERONS_SET] = static_cast<long>(event->dwData) / 16384.0;
       break;
+    }
 
-    case Events::AXIS_RUDDER_SET:
+    case Events::AXIS_RUDDER_SET: {
       simInput.inputs[AXIS_RUDDER_SET] = static_cast<long>(event->dwData) / 16384.0;
       break;
+    }
 
-    case Events::RUDDER_SET:
+    case Events::RUDDER_SET: {
       simInput.inputs[AXIS_RUDDER_SET] = static_cast<long>(event->dwData) / 16384.0;
       break;
+    }
 
-    case Events::RUDDER_LEFT:
+    case Events::RUDDER_LEFT: {
       simInput.inputs[AXIS_RUDDER_SET] = fmin(1.0, simInput.inputs[AXIS_RUDDER_SET] + flightControlsKeyChangeRudder);
       break;
+    }
 
-    case Events::RUDDER_CENTER:
+    case Events::RUDDER_CENTER: {
       simInput.inputs[AXIS_RUDDER_SET] = 0.0;
       break;
+    }
 
-    case Events::RUDDER_RIGHT:
+    case Events::RUDDER_RIGHT: {
       simInput.inputs[AXIS_RUDDER_SET] = fmax(-1.0, simInput.inputs[AXIS_RUDDER_SET] - flightControlsKeyChangeRudder);
       break;
+    }
 
-    case Events::RUDDER_AXIS_MINUS:
-      simInput.inputs[AXIS_RUDDER_SET] = +1.0 * (static_cast<long>(event->dwData) / 16384.0);
+    case Events::RUDDER_AXIS_MINUS: {
+      if (this->disableXboxCompatibilityRudderPlusMinus) {
+        // normal axis
+        simInput.inputs[AXIS_RUDDER_SET] = +1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
+      } else {
+        // xbox controller
+        simInput.inputs[AXIS_RUDDER_SET] = +1.0 * (static_cast<long>(event->dwData) / 16384.0);
+      }
       break;
+    }
 
-    case Events::RUDDER_AXIS_PLUS:
-      simInput.inputs[AXIS_RUDDER_SET] = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
+    case Events::RUDDER_AXIS_PLUS: {
+      if (this->disableXboxCompatibilityRudderPlusMinus) {
+        // normal axis
+        simInput.inputs[AXIS_RUDDER_SET] = -1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
+      } else {
+        // xbox controller
+        simInput.inputs[AXIS_RUDDER_SET] = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
+      }
       break;
+    }
 
     case Events::RUDDER_TRIM_LEFT: {
       rudderTrimHandler->onEventRudderTrimLeft(sampleTime);
       break;
     }
+
     case Events::RUDDER_TRIM_RESET: {
       rudderTrimHandler->onEventRudderTrimReset();
       break;
     }
+
     case Events::RUDDER_TRIM_RIGHT: {
       rudderTrimHandler->onEventRudderTrimRight(sampleTime);
       break;
     }
+
     case Events::RUDDER_TRIM_SET: {
       rudderTrimHandler->onEventRudderTrimSet(static_cast<long>(event->dwData));
       break;
     }
+
     case Events::RUDDER_TRIM_SET_EX1: {
       rudderTrimHandler->onEventRudderTrimSet(static_cast<long>(event->dwData));
       break;
     }
 
-    case Events::AILERON_SET:
+    case Events::AILERON_SET: {
       simInput.inputs[AXIS_AILERONS_SET] = static_cast<long>(event->dwData) / 16384.0;
       break;
+    }
 
-    case Events::AILERONS_LEFT:
+    case Events::AILERONS_LEFT: {
       simInput.inputs[AXIS_AILERONS_SET] = fmin(1.0, simInput.inputs[AXIS_AILERONS_SET] + flightControlsKeyChangeAileron);
       break;
+    }
 
-    case Events::AILERONS_RIGHT:
+    case Events::AILERONS_RIGHT: {
       simInput.inputs[AXIS_AILERONS_SET] = fmax(-1.0, simInput.inputs[AXIS_AILERONS_SET] - flightControlsKeyChangeAileron);
       break;
+    }
 
-    case Events::CENTER_AILER_RUDDER:
+    case Events::CENTER_AILER_RUDDER: {
       simInput.inputs[AXIS_RUDDER_SET] = 0.0;
       simInput.inputs[AXIS_AILERONS_SET] = 0.0;
       break;
+    }
 
-    case Events::ELEVATOR_SET:
+    case Events::ELEVATOR_SET: {
       simInput.inputs[AXIS_ELEVATOR_SET] = static_cast<long>(event->dwData) / 16384.0;
       break;
+    }
 
-    case Events::ELEV_DOWN:
+    case Events::ELEV_DOWN: {
       simInput.inputs[AXIS_ELEVATOR_SET] = fmin(1.0, simInput.inputs[AXIS_ELEVATOR_SET] + flightControlsKeyChangeElevator);
       break;
+    }
 
-    case Events::ELEV_UP:
+    case Events::ELEV_UP: {
       simInput.inputs[AXIS_ELEVATOR_SET] = fmax(-1.0, simInput.inputs[AXIS_ELEVATOR_SET] - flightControlsKeyChangeElevator);
       break;
+    }
 
     case Events::ELEV_TRIM_DN: {
       elevatorTrimHandler->onEventElevatorTrimDown();
       break;
     }
+
     case Events::ELEV_TRIM_UP: {
       elevatorTrimHandler->onEventElevatorTrimUp();
       break;
     }
+
     case Events::ELEVATOR_TRIM_SET: {
       elevatorTrimHandler->onEventElevatorTrimSet(static_cast<long>(event->dwData));
       break;
     }
+
     case Events::AXIS_ELEV_TRIM_SET: {
       elevatorTrimHandler->onEventElevatorTrimAxisSet(static_cast<long>(event->dwData));
       break;
@@ -1085,27 +1123,32 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_SPD_INC" << endl;
       break;
     }
+
     case Events::A32NX_FCU_SPD_DEC: {
       execute_calculator_code("(>H:A320_Neo_FCU_SPEED_DEC)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_SPD_DEC" << endl;
       break;
     }
+
     case Events::A32NX_FCU_SPD_SET: {
       idFcuEventSetSPEED->set(static_cast<long>(event->dwData));
       execute_calculator_code("(>H:A320_Neo_FCU_SPEED_SET)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_SPD_SET: " << static_cast<long>(event->dwData) << endl;
       break;
     }
+
     case Events::A32NX_FCU_SPD_PUSH: {
       execute_calculator_code("(>H:A320_Neo_FCU_SPEED_PUSH)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_SPD_PUSH" << endl;
       break;
     }
+
     case Events::A32NX_FCU_SPD_PULL: {
       execute_calculator_code("(>H:A320_Neo_FCU_SPEED_PULL)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_SPD_PULL" << endl;
       break;
     }
+
     case Events::A32NX_FCU_SPD_MACH_TOGGLE_PUSH: {
       execute_calculator_code("(>H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_SPD_MACH_TOGGLE_PUSH" << endl;
@@ -1119,6 +1162,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_HDG_INC" << endl;
       break;
     }
+
     case Events::A32NX_FCU_HDG_DEC: {
       execute_calculator_code(
           "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_HDG_DEC_TRACK) } els{ (>H:A320_Neo_FCU_HDG_DEC_HEADING) }",
@@ -1126,22 +1170,26 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_HDG_DEC" << endl;
       break;
     }
+
     case Events::A32NX_FCU_HDG_SET: {
       idFcuEventSetHDG->set(static_cast<long>(event->dwData));
       execute_calculator_code("(>H:A320_Neo_FCU_HDG_SET)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_HDG_SET: " << static_cast<long>(event->dwData) << endl;
       break;
     }
+
     case Events::A32NX_FCU_HDG_PUSH: {
       execute_calculator_code("(>H:A320_Neo_FCU_HDG_PUSH)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_HDG_PUSH" << endl;
       break;
     }
+
     case Events::A32NX_FCU_HDG_PULL: {
       execute_calculator_code("(>H:A320_Neo_FCU_HDG_PULL)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_HDG_PULL" << endl;
       break;
     }
+
     case Events::A32NX_FCU_TRK_FPA_TOGGLE_PUSH: {
       execute_calculator_code("(L:A32NX_TRK_FPA_MODE_ACTIVE) ! (>L:A32NX_TRK_FPA_MODE_ACTIVE)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_TRK_FPA_TOGGLE_PUSH" << endl;
@@ -1153,6 +1201,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_TO_AP_HDG_PUSH" << endl;
       break;
     }
+
     case Events::A32NX_FCU_TO_AP_HDG_PULL: {
       simInputAutopilot.HDG_pull = 1;
       cout << "WASM: event triggered: A32NX_FCU_TO_AP_HDG_PULL" << endl;
@@ -1183,6 +1232,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_ALT_INC" << endl;
       break;
     }
+
     case Events::A32NX_FCU_ALT_DEC: {
       long increment = static_cast<long>(event->dwData);
       if (increment == 100) {
@@ -1207,6 +1257,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_ALT_INC" << endl;
       break;
     }
+
     case Events::A32NX_FCU_ALT_SET: {
       long value = 100 * (static_cast<long>(event->dwData) / 100);
       ostringstream stringStream;
@@ -1216,6 +1267,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_ALT_SET: " << value << endl;
       break;
     }
+
     case Events::A32NX_FCU_ALT_INCREMENT_TOGGLE: {
       execute_calculator_code(
           "(L:XMLVAR_Autopilot_Altitude_Increment, number) 100 == "
@@ -1225,6 +1277,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_ALT_INCREMENT_TOGGLE" << endl;
       break;
     }
+
     case Events::A32NX_FCU_ALT_INCREMENT_SET: {
       long value = static_cast<long>(event->dwData);
       if (value == 100 || value == 1000) {
@@ -1236,12 +1289,14 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       }
       break;
     }
+
     case Events::A32NX_FCU_ALT_PUSH: {
       simInputAutopilot.ALT_push = 1;
       execute_calculator_code("(>H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_ALT_PUSH" << endl;
       break;
     }
+
     case Events::A32NX_FCU_ALT_PULL: {
       simInputAutopilot.ALT_pull = 1;
       execute_calculator_code("(>H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)", nullptr, nullptr, nullptr);
@@ -1257,6 +1312,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_VS_INC" << endl;
       break;
     }
+
     case Events::A32NX_FCU_VS_DEC: {
       execute_calculator_code(
           "(L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{ (>H:A320_Neo_FCU_VS_DEC_FPA) } els{ (>H:A320_Neo_FCU_VS_DEC_VS) } "
@@ -1265,17 +1321,20 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       cout << "WASM: event triggered: A32NX_FCU_VS_DEC" << endl;
       break;
     }
+
     case Events::A32NX_FCU_VS_SET: {
       idFcuEventSetVS->set(static_cast<long>(event->dwData));
       execute_calculator_code("(>H:A320_Neo_FCU_VS_SET) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_VS_SET: " << static_cast<long>(event->dwData) << endl;
       break;
     }
+
     case Events::A32NX_FCU_VS_PUSH: {
       execute_calculator_code("(>H:A320_Neo_FCU_VS_PUSH) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_VS_PUSH" << endl;
       break;
     }
+
     case Events::A32NX_FCU_VS_PULL: {
       execute_calculator_code("(>H:A320_Neo_FCU_VS_PULL) (>H:A320_Neo_CDU_VS)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_VS_PULL" << endl;
@@ -1537,45 +1596,53 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
-    case Events::THROTTLE_20:
+    case Events::THROTTLE_20: {
       throttleAxis[0]->onEventThrottleSet_20();
       throttleAxis[1]->onEventThrottleSet_20();
       break;
+    }
 
-    case Events::THROTTLE_30:
+    case Events::THROTTLE_30: {
       throttleAxis[0]->onEventThrottleSet_30();
       throttleAxis[1]->onEventThrottleSet_30();
       break;
+    }
 
-    case Events::THROTTLE_40:
+    case Events::THROTTLE_40: {
       throttleAxis[0]->onEventThrottleSet_40();
       throttleAxis[1]->onEventThrottleSet_40();
       break;
+    }
 
-    case Events::THROTTLE_50:
+    case Events::THROTTLE_50: {
       throttleAxis[0]->onEventThrottleSet_50();
       throttleAxis[1]->onEventThrottleSet_50();
       break;
+    }
 
-    case Events::THROTTLE_60:
+    case Events::THROTTLE_60: {
       throttleAxis[0]->onEventThrottleSet_50();
       throttleAxis[1]->onEventThrottleSet_60();
       break;
+    }
 
-    case Events::THROTTLE_70:
+    case Events::THROTTLE_70: {
       throttleAxis[0]->onEventThrottleSet_70();
       throttleAxis[1]->onEventThrottleSet_70();
       break;
+    }
 
-    case Events::THROTTLE_80:
+    case Events::THROTTLE_80: {
       throttleAxis[0]->onEventThrottleSet_80();
       throttleAxis[1]->onEventThrottleSet_80();
       break;
+    }
 
-    case Events::THROTTLE_90:
+    case Events::THROTTLE_90: {
       throttleAxis[0]->onEventThrottleSet_90();
       throttleAxis[1]->onEventThrottleSet_90();
       break;
+    }
 
     case Events::THROTTLE1_FULL: {
       throttleAxis[0]->onEventThrottleFull();
