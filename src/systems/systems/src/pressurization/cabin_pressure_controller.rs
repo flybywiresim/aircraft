@@ -4,7 +4,7 @@ use crate::{
 };
 
 use super::{
-    PressureValve, PressureValveActuator, PressureValveSignal, PressurizationOverheadPanel,
+    OutflowValveActuator, PressureValve, PressureValveSignal, PressurizationOverheadPanel,
 };
 
 use std::time::Duration;
@@ -75,10 +75,13 @@ impl CabinPressureController {
         sea_level_pressure: Pressure,
         destination_qnh: Pressure,
         packs_are_on: bool,
+        lgciu_gear_compressed: bool,
     ) {
-        self.pressure_schedule_manager = self.pressure_schedule_manager.update(context, engines);
+        self.pressure_schedule_manager =
+            self.pressure_schedule_manager
+                .update(context, engines, lgciu_gear_compressed);
         self.exterior_pressure = context.ambient_pressure();
-        self.cabin_pressure = self.calculate_cabin_pressure(context);
+        self.cabin_pressure = self.calculate_cabin_pressure(context, lgciu_gear_compressed);
         self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
         self.departure_elev = self.calculate_departure_elev(context);
         self.landing_elev = landing_elevation;
@@ -88,8 +91,12 @@ impl CabinPressureController {
         self.cabin_flow_out = self.calculate_cabin_flow_out();
     }
 
-    fn calculate_cabin_pressure(&self, context: &UpdateContext) -> Pressure {
-        if self.is_ground() && !context.is_on_ground() {
+    fn calculate_cabin_pressure(
+        &self,
+        context: &UpdateContext,
+        lgciu_gear_compressed: bool,
+    ) -> Pressure {
+        if self.is_ground() && !lgciu_gear_compressed {
             // Formula to simulate pressure start state if starting in flight
             let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
             Pressure::new::<hectopascal>(
@@ -454,7 +461,7 @@ impl CabinPressureController {
     }
 }
 
-impl PressureValveActuator for CabinPressureController {
+impl OutflowValveActuator for CabinPressureController {
     fn target_valve_position(&self, press_overhead: &PressurizationOverheadPanel) -> Ratio {
         // Calculation extracted from:
         // F. Y. Kurokawa, C. Regina de Andrade and E. L. Zaparoli
@@ -529,14 +536,25 @@ impl PressureScheduleManager {
         PressureScheduleManager::Ground(PressureSchedule::with_open_outflow_valve())
     }
 
-    fn update(mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) -> Self {
+    fn update(
+        mut self,
+        context: &UpdateContext,
+        engines: [&impl EngineCorrectedN1; 2],
+        lgciu_gear_compressed: bool,
+    ) -> Self {
         self = match self {
-            PressureScheduleManager::Ground(val) => val.step(context, engines),
-            PressureScheduleManager::TakeOff(val) => val.step(context, engines),
+            PressureScheduleManager::Ground(val) => {
+                val.step(context, engines, lgciu_gear_compressed)
+            }
+            PressureScheduleManager::TakeOff(val) => {
+                val.step(context, engines, lgciu_gear_compressed)
+            }
             PressureScheduleManager::ClimbInternal(val) => val.step(context),
             PressureScheduleManager::Cruise(val) => val.step(context),
-            PressureScheduleManager::DescentInternal(val) => val.step(context),
-            PressureScheduleManager::Abort(val) => val.step(context),
+            PressureScheduleManager::DescentInternal(val) => {
+                val.step(context, lgciu_gear_compressed)
+            }
+            PressureScheduleManager::Abort(val) => val.step(context, lgciu_gear_compressed),
         };
         self
     }
@@ -586,7 +604,6 @@ macro_rules! transition_with_ctor {
 
 #[derive(Copy, Clone)]
 struct PressureSchedule<S> {
-    vertical_speed: Velocity, // Placeholder
     timer: Duration,
     pressure_schedule: S,
 }
@@ -602,9 +619,8 @@ impl<S> PressureSchedule<S> {
         self
     }
 
-    fn new<T, U: Fn() -> S>(from: PressureSchedule<T>, ctor_fn: U) -> Self {
+    fn new<T, U: Fn() -> S>(_from: PressureSchedule<T>, ctor_fn: U) -> Self {
         Self {
-            vertical_speed: from.vertical_speed,
             timer: Duration::from_secs(0),
             pressure_schedule: (ctor_fn)(),
         }
@@ -629,7 +645,6 @@ impl PressureSchedule<Ground> {
 
     fn with_open_outflow_valve() -> Self {
         Self {
-            vertical_speed: Velocity::new::<foot_per_minute>(0.),
             timer: Duration::from_secs(Self::OUTFLOW_VALVE_OPENS_AFTER_SECS),
             pressure_schedule: Ground {
                 cpc_switch_reset: false,
@@ -641,14 +656,15 @@ impl PressureSchedule<Ground> {
         self: PressureSchedule<Ground>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
+        lgciu_gear_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
             .iter()
             .all(|&x| x.corrected_n1() > Ratio::new::<percent>(70.))
-            && context.is_on_ground()
+            && lgciu_gear_compressed
         {
             PressureScheduleManager::TakeOff(self.into())
-        } else if !context.is_on_ground()
+        } else if !lgciu_gear_compressed
             && context.indicated_airspeed().get::<knot>() > 100.
             && context.ambient_pressure().get::<hectopascal>() > 0.
         {
@@ -683,14 +699,15 @@ impl PressureSchedule<TakeOff> {
         self: PressureSchedule<TakeOff>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
+        lgciu_gear_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
             .iter()
             .all(|&x| x.corrected_n1() < Ratio::new::<percent>(70.))
-            && context.is_on_ground()
+            && lgciu_gear_compressed
         {
             PressureScheduleManager::Ground(self.into())
-        } else if !context.is_on_ground()
+        } else if !lgciu_gear_compressed
             && context.indicated_airspeed().get::<knot>() > 100.
             && context.ambient_pressure().get::<hectopascal>() > 0.
         {
@@ -784,6 +801,7 @@ impl PressureSchedule<DescentInternal> {
     fn step(
         self: PressureSchedule<DescentInternal>,
         context: &UpdateContext,
+        lgciu_gear_compressed: bool,
     ) -> PressureScheduleManager {
         const DURATION_UNTIL_CLIMB: u64 = 60;
 
@@ -793,7 +811,7 @@ impl PressureSchedule<DescentInternal> {
             } else {
                 PressureScheduleManager::DescentInternal(self.increase_timer(context))
             }
-        } else if context.is_on_ground() && context.indicated_airspeed().get::<knot>() < 100. {
+        } else if lgciu_gear_compressed && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else {
             PressureScheduleManager::DescentInternal(self.reset_timer())
@@ -808,10 +826,14 @@ transition!(Cruise, DescentInternal);
 struct Abort;
 
 impl PressureSchedule<Abort> {
-    fn step(self: PressureSchedule<Abort>, context: &UpdateContext) -> PressureScheduleManager {
+    fn step(
+        self: PressureSchedule<Abort>,
+        context: &UpdateContext,
+        lgciu_gear_compressed: bool,
+    ) -> PressureScheduleManager {
         const DURATION_UNTIL_CLIMB: u64 = 60;
 
-        if context.is_on_ground() && context.indicated_airspeed().get::<knot>() < 100. {
+        if lgciu_gear_compressed && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else if context.vertical_speed() > Velocity::new::<foot_per_minute>(30.) {
             if self.timer > Duration::from_secs(DURATION_UNTIL_CLIMB) {
@@ -870,6 +892,7 @@ mod pressure_schedule_manager_tests {
         press_overhead: PressurizationOverheadPanel,
         engine_1: TestEngine,
         engine_2: TestEngine,
+        lgciu_gear_compressed: bool,
     }
     impl TestAircraft {
         fn new() -> Self {
@@ -879,6 +902,7 @@ mod pressure_schedule_manager_tests {
                 press_overhead: PressurizationOverheadPanel::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                lgciu_gear_compressed: false,
             };
             test_aircraft.cpc.outflow_valve_open_amount = Ratio::new::<percent>(50.);
             test_aircraft
@@ -930,6 +954,10 @@ mod pressure_schedule_manager_tests {
                 PressureScheduleManager::Abort(_)
             )
         }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.lgciu_gear_compressed = on_ground;
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -940,6 +968,7 @@ mod pressure_schedule_manager_tests {
                 Pressure::new::<hectopascal>(1013.),
                 Pressure::new::<hectopascal>(1013.),
                 true,
+                self.lgciu_gear_compressed,
             );
             self.outflow_valve.update(context, &self.press_overhead);
             self.cpc.update_outflow_valve_state(&self.outflow_valve);
@@ -960,7 +989,7 @@ mod pressure_schedule_manager_tests {
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
 
         test_bed.run();
@@ -972,12 +1001,12 @@ mod pressure_schedule_manager_tests {
     fn schedule_changes_from_ground_to_climb() {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
 
         test_bed.run();
 
-        test_bed.set_on_ground(false);
+        test_bed.command(|a| a.set_on_ground(false));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
@@ -989,11 +1018,11 @@ mod pressure_schedule_manager_tests {
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
         test_bed.run();
 
-        test_bed.set_on_ground(false);
+        test_bed.command(|a| a.set_on_ground(false));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
         test_bed.run();
 
@@ -1005,14 +1034,14 @@ mod pressure_schedule_manager_tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_takeoff()));
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(50.)));
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_ground()));
@@ -1171,7 +1200,7 @@ mod pressure_schedule_manager_tests {
         assert!(test_bed.query(|a| a.is_descent()));
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_ground()));
@@ -1209,7 +1238,7 @@ mod pressure_schedule_manager_tests {
         assert!(test_bed.query(|a| a.is_abort()));
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_ground()));

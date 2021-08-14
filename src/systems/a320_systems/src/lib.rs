@@ -146,6 +146,7 @@ impl Aircraft for A320 {
             context,
             &self.pressurization_overhead,
             [&self.engine_1, &self.engine_2],
+            [&self.lgciu1, &self.lgciu2],
         );
 
         self.hydraulic.update(

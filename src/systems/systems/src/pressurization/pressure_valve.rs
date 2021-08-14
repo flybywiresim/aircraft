@@ -1,6 +1,6 @@
 use crate::{shared::ControllerSignal, simulation::UpdateContext};
 
-use super::{PressureValveActuator, PressurizationOverheadPanel};
+use super::{OutflowValveActuator, PressurizationOverheadPanel};
 
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
@@ -76,7 +76,7 @@ impl PressureValve {
         }
     }
 
-    pub fn calculate_outflow_valve_position<T: PressureValveActuator>(
+    pub fn calculate_outflow_valve_position<T: OutflowValveActuator>(
         &mut self,
         actuator: &T,
         press_overhead: &PressurizationOverheadPanel,
@@ -166,7 +166,7 @@ mod pressure_valve_tests {
             self.target_valve_position = amount;
         }
     }
-    impl PressureValveActuator for TestValveActuator {
+    impl OutflowValveActuator for TestValveActuator {
         fn target_valve_position(&self, _press_overhead: &PressurizationOverheadPanel) -> Ratio {
             self.target_valve_position
         }

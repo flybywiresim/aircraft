@@ -4,7 +4,7 @@ use self::{
 };
 use crate::{
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
-    shared::{random_number, ControllerSignal, EngineCorrectedN1},
+    shared::{random_number, ControllerSignal, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
         UpdateContext, Write,
@@ -22,7 +22,7 @@ use uom::si::{
 mod cabin_pressure_controller;
 mod pressure_valve;
 
-trait PressureValveActuator {
+trait OutflowValveActuator {
     fn target_valve_position(&self, press_overhead: &PressurizationOverheadPanel) -> Ratio;
 }
 
@@ -38,6 +38,7 @@ pub struct Pressurization {
     is_in_man_mode: bool,
     man_mode_duration: Duration,
     packs_are_on: bool,
+    lgciu_gear_compressed: bool,
 }
 
 impl Pressurization {
@@ -60,6 +61,7 @@ impl Pressurization {
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             packs_are_on: true,
+            lgciu_gear_compressed: true,
         }
     }
 
@@ -68,16 +70,21 @@ impl Pressurization {
         context: &UpdateContext,
         press_overhead: &PressurizationOverheadPanel,
         engines: [&impl EngineCorrectedN1; 2],
+        lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         if !press_overhead.ldg_elev_is_auto() {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob.value())
         }
+        self.lgciu_gear_compressed = lgciu
+            .iter()
+            .all(|&a| a.left_and_right_gear_compressed(true));
 
         self.residual_pressure_controller.update(
             context,
             engines,
             self.outflow_valve.open_amount(),
             self.is_in_man_mode,
+            self.lgciu_gear_compressed,
         );
 
         for controller in self.cpc.iter_mut() {
@@ -88,6 +95,7 @@ impl Pressurization {
                 self.sea_level_pressure,
                 self.destination_qnh,
                 self.packs_are_on,
+                self.lgciu_gear_compressed,
             );
             controller.update_outflow_valve_state(&self.outflow_valve);
             controller.update_safety_valve_state(&self.safety_valve);
@@ -255,10 +263,11 @@ impl ResidualPressureController {
         engines: [&impl EngineCorrectedN1; 2],
         outflow_valve_open_amount: Ratio,
         is_in_man_mode: bool,
+        lgciu_gear_compressed: bool,
     ) {
         if outflow_valve_open_amount < Ratio::new::<percent>(100.)
             && is_in_man_mode
-            && context.is_on_ground()
+            && lgciu_gear_compressed
             && (!(engines
                 .iter()
                 .any(|&x| x.corrected_n1() > Ratio::new::<percent>(15.)))
@@ -355,11 +364,53 @@ mod tests {
         }
     }
 
+    struct TestLgciu {
+        compressed: bool,
+    }
+    impl TestLgciu {
+        fn new(compressed: bool) -> Self {
+            Self { compressed }
+        }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.compressed = on_ground;
+        }
+    }
+
+    impl LgciuWeightOnWheels for TestLgciu {
+        fn left_and_right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            self.compressed
+        }
+        fn right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn left_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn left_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn left_and_right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn nose_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn nose_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+    }
+
     pub struct TestAircraft {
         pressurization: Pressurization,
         pressurization_overhead: PressurizationOverheadPanel,
         engine_1: TestEngine,
         engine_2: TestEngine,
+        lgciu1: TestLgciu,
+        lgciu2: TestLgciu,
     }
 
     impl TestAircraft {
@@ -369,6 +420,8 @@ mod tests {
                 pressurization_overhead: PressurizationOverheadPanel::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                lgciu1: TestLgciu::new(false),
+                lgciu2: TestLgciu::new(false),
             };
             test_aircraft.pressurization.active_system = 1;
             test_aircraft.set_engine_n1(Ratio::new::<percent>(30.));
@@ -377,7 +430,12 @@ mod tests {
 
         fn set_engine_n1(&mut self, n: Ratio) {
             self.engine_1.set_engine_n1(n);
-            self.engine_2.set_engine_n1(n)
+            self.engine_2.set_engine_n1(n);
+        }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.lgciu1.set_on_ground(on_ground);
+            self.lgciu2.set_on_ground(on_ground);
         }
     }
 
@@ -387,6 +445,7 @@ mod tests {
                 context,
                 &self.pressurization_overhead,
                 [&self.engine_1, &self.engine_2],
+                [&self.lgciu1, &self.lgciu2],
             );
         }
     }
@@ -501,6 +560,10 @@ mod tests {
 
         fn safety_valve_open_amount(&self) -> Ratio {
             self.query(|a| a.pressurization.safety_valve.open_amount())
+        }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.command(|a| a.set_on_ground(on_ground));
         }
 
         fn iterate(mut self, delta: usize) -> Self {
