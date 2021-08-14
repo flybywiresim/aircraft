@@ -122,7 +122,7 @@ export const OilComponent = () => {
 export const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
-    const [manMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'Bool', 1000);
+    const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
@@ -150,14 +150,14 @@ export const PressureComponent = () => {
 
     return (
         <>
-            <g id="LandingElevation" className={!manMode ? 'show' : 'hide'}>
+            <g id="LandingElevation" className={autoMode ? 'show' : 'hide'}>
                 <text className="Standard Center" x="330" y="335">LDG ELEV</text>
                 <text id="LandingElevationMode" className="Standard Green" x="385" y="335">{ldgElevMode}</text>
 
                 <text id="LandingElevation" className={`large ${cssLdgElevName}`} x="525" y="335" textAnchor="end">{ldgElevValue}</text>
                 <text className="Standard Cyan" x="530" y="335">FT</text>
             </g>
-            <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
+            <g id="ManualVSIndicator" className={!autoMode ? 'show' : 'hide'}>
                 <GaugeComponentMemo x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs * 60 / 1000} className="Gauge" />
             </g>
 
@@ -179,7 +179,7 @@ export const PressureComponent = () => {
 
             <g
                 id="vsArrow"
-                className={(cabinVs * 60 <= -50 || cabinVs * 60 >= 50) && !manMode ? '' : 'Hide'}
+                className={(cabinVs * 60 <= -50 || cabinVs * 60 >= 50) && autoMode ? '' : 'Hide'}
                 transform={cabinVs * 60 <= -50 ? 'translate(0, 795) scale(1, -1)' : 'scale(1, 1)'}
             >
                 <path d="M433,405 h7 L446,395" className="VsIndicator" strokeLinejoin="miter" />

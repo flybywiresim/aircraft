@@ -221,30 +221,9 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT Y" switch lock is down
 
-- A32NX_LANDING_ELEVATION
-    - Number in feet
-    - Minimum -2000, maximum 15000
-
-- A32NX_MAN_VS_CONTROL
-    - Number, either 0,1 or 2
-    - 0 if switch is in up position, 1 if switch is neutral, 2 if switch is down.
-
-- A32NX_CAB_PRESS_MODE_MAN
-    - Bool
-    - True if CABIN PRESS MODE SEL is in manual mode
-
-- A32NX_CAB_PRESS_SYS_FAULT
-    - Bool
-    - Determines if the FAULT light on the CABIN PRESS MODE SEL pushbutton
-      should be on
-
 - A32NX_DESTINATION_QNH
     - Millibar
     - Destination QNH as entered by the pilot in the MCDU during descent
-
-- A32NX_DITCHING
-    - Bool
-    - True if DITCHING mode is enabled
 
 - A32NX_FWC_FLIGHT_PHASE
     - Enum
@@ -1766,3 +1745,23 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
+
+- A32NX_OVHD_PRESS_LDG_ELEV_KNOB
+    - Feet
+    - Manual landing elevation as selected on the overhead LDG ELEV knob
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH
+    - Number
+    - 0 if switch is in up position, 1 if switch is neutral, 2 if switch is down.
+
+- A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO
+    - Bool
+    - True if MODE SEL overhead pushbutton is depressed (in auto mode)
+
+- A32NX_OVHD_PRESS_MODE_SEL_PB_HAS_FAULT
+    - Bool
+    - True only when both Cabin Pressure Controller systems are faulty.
+
+- A32NX_OVHD_PRESS_DITCHING_PB_IS_ON
+    - Bool
+    - True if DITCHING pushbutton is pressed
