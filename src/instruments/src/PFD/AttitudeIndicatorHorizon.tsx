@@ -8,6 +8,7 @@ import {
     LagFilter,
 } from './PFDUtils';
 import { getSimVar } from '../util.js';
+import { getSmallestAngle } from '@instruments/common/utils';
 
 /* eslint-disable max-len */
 
