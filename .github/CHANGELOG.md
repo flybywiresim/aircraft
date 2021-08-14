@@ -170,6 +170,7 @@
 1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
 1. [ECAM] Rewrite fuel page for React - @Benjozork (Benjamin Dupont) and @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
+1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
