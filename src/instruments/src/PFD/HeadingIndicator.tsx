@@ -1,15 +1,16 @@
-import { HorizontalTape, getSmallestAngle } from './PFDUtils.jsx';
+import React from 'react';
+import { HorizontalTape, getSmallestAngle } from './PFDUtils';
 import { getSimVar } from '../util.js';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
 const ValueSpacing = 5;
 
-const GraduationElement = (heading, offset) => {
+const GraduationElement = (heading: number, offset: number) => {
     let text = '';
     let classText = '';
     let tickLength = 3.8302;
-    let textYPos;
+    let textYPos: number | undefined;
 
     const roundedHeading = Math.round(heading);
     if (roundedHeading % 10 === 0) {

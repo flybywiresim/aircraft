@@ -1,10 +1,11 @@
+import React from 'react';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
     getSmallestAngle,
     HorizontalTape,
     LagFilter,
-} from './PFDUtils.jsx';
+} from './PFDUtils';
 import { getSimVar } from '../util.js';
 
 /* eslint-disable max-len */
@@ -14,18 +15,31 @@ const DistanceSpacing = 15;
 const ValueSpacing = 10;
 const SideslipIndicatorFilter = new LagFilter(0.8);
 
-const TickFunction = (_, offset) => (
+const TickFunction = (_: any, offset: number) => (
     <path transform={`translate(${offset} 0)`} className="NormalStroke White" d="m68.906 80.823v1.8" />
 );
 
-const HeadingBug = (offset) => (
+const HeadingBug = (offset: number) => (
     <g id="HorizonHeadingBug" transform={`translate(${offset} 0)`}>
         <path className="ThickOutline" d="m68.906 80.823v-9.0213" />
         <path className="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
     </g>
 );
 
-export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive, deltaTime }) => {
+interface HorizonProps {
+    pitch: number;
+    roll: number;
+    heading: number;
+    isOnGround: boolean;
+    radioAlt: number;
+    decisionHeight: number;
+    selectedHeading: number | null;
+    FDActive: boolean;
+    isAttExcessive: boolean;
+    deltaTime: number;
+}
+
+export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive, deltaTime }: HorizonProps) => {
     if (Number.isNaN(pitch) || Number.isNaN(roll)) {
         return null;
     }
@@ -34,7 +48,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
 
     const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch), 31.563), -31.563);
 
-    const bugs = [];
+    const bugs: [(offset: number) => JSX.Element, (number | null)][] = [];
     if (!Number.isNaN(selectedHeading) && !FDActive) {
         bugs.push([HeadingBug, selectedHeading]);
     }
