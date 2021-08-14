@@ -128,8 +128,8 @@
             <ANIM_NAME>AIRBUS_Push_Transfer</ANIM_NAME>
             <PART_ID>AIRBUS_Push_Transfer</PART_ID>
             <ID>1</ID>
-            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -789,8 +789,8 @@
         <DefaultTemplateParameters>
             <HELPID/>
             <PART_ID>Chrono</PART_ID>
-            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <MouseFlags>LeftSingle</MouseFlags>
@@ -1072,35 +1072,6 @@
                 <ARROW_TYPE>Curved</ARROW_TYPE>
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                 <SWITCH_POSITION_VAR>A32NX_#TYPE#_SWITCHING_KNOB</SWITCH_POSITION_VAR>
-            </UseTemplate>
-        </Component>
-  </Template>
-    <Template Name="A32NX_Push_BARO_Template">
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-                <PART_ID>#NODE_ID#</PART_ID>
-                <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
-                <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>
-                <TOOLTIPID>#TOOLTIPID#</TOOLTIPID>
-            </UseTemplate>
-        </Component>
-    </Template>
-    <Template Name="A32NX_Push_Held_BARO_Template">
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-                <PART_ID>#NODE_ID#</PART_ID>
-                <LEFT_SINGLE_CODE>0 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>1 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_LEAVE_CODE>
-                <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>
-                <TOOLTIPID>#TOOLTIPID#</TOOLTIPID>
             </UseTemplate>
         </Component>
     </Template>

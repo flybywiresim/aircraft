@@ -18,6 +18,7 @@ import Settings from './Settings/Settings';
 import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
 import store from './Store';
 import ATC from './ATC/ATC';
+import { Failures } from './Failures/Failures';
 
 type TimeState = {
     currentTime: Date,
@@ -162,6 +163,9 @@ const Efb = () => {
         case 6:
             history.push('/settings');
             break;
+        case 7:
+            history.push('/failures');
+            break;
         default:
             history.push('/dashboard');
             break;
@@ -287,6 +291,9 @@ const Efb = () => {
                                     </Route>
                                     <Route path="/atc">
                                         <ATC />
+                                    </Route>
+                                    <Route path="/failures">
+                                        <Failures />
                                     </Route>
                                     <Route path="/settings">
                                         <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />

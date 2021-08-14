@@ -797,58 +797,47 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>8</EMISSIVE_CODE>
                 </UseTemplate>
-
-                <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
-                    <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
-                    <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
-                    <ID>3</ID>
-                    <BARO_ID> (L:A32NX_BARO_BUGS_ACTIVE) 0 == if{ 2 } els{ -1 } </BARO_ID>
-                    <CLOCKWISE_CONDITION> (H:A320_Neo_SAI_KNOB_BARO_C) ! (>H:A320_Neo_SAI_KNOB_BARO_C) 1</CLOCKWISE_CONDITION>
-                    <ANTICLOCKWISE_CONDITION> (H:A320_Neo_SAI_KNOB_BARO_AC) ! (>H:A320_Neo_SAI_KNOB_BARO_AC) 1</ANTICLOCKWISE_CONDITION>
-                    <ANIMREF_ID>-1</ANIMREF_ID>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STBY_TUNING_KNOB_INCREASE</ANIMTIP_0>
-                    <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.STBY_TUNING_KNOB_DECREASE</ANIMTIP_1>
-                    <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
-
-                </UseTemplate>
                 <CameraTitle>PA</CameraTitle>
 
-                <Component ID="BARO">
+                <Component ID="ISIS">
                     <DefaultTemplateParameters>
                         <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_EMISSIVE_CODE>
                     </DefaultTemplateParameters>
 
-                    <UseTemplate Name="A32NX_Push_BARO_Template">
+                    <UseTemplate Name="FBW_ISIS_Knob_Template">
+                        <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
+                        <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
+                    </UseTemplate>
+                    <UseTemplate Name="A32NX_ISIS_Push_Template">
                         <NODE_ID>PUSH_BARO_BUGS</NODE_ID>
                         <TOOLTIPID>Toggle ISI Bugs</TOOLTIPID>
-                        <BTN_ID>BARO_BUGS</BTN_ID>
+                        <BTN_ID>BUGS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_Push_BARO_Template">
+                    <UseTemplate Name="A32NX_ISIS_Push_Template">
                         <NODE_ID>PUSH_BARO_LS</NODE_ID>
-                        <TOOLTIPID>Inop.</TOOLTIPID>
-                        <BTN_ID>BARO_LS</BTN_ID>
+                        <TOOLTIPID>Toggle LS scales</TOOLTIPID>
+                        <BTN_ID>LS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_Push_Held_BARO_Template">
+                    <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
                         <NODE_ID>PUSH_BARO_PLUS</NODE_ID>
                         <TOOLTIPID>Increase ISI brightness</TOOLTIPID>
-                        <BTN_ID>BARO_PLUS</BTN_ID>
+                        <BTN_ID>PLUS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_Push_Held_BARO_Template">
+                    <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
                         <NODE_ID>PUSH_BARO_MINUS</NODE_ID>
                         <TOOLTIPID>Decrease ISI brightness</TOOLTIPID>
-                        <BTN_ID>BARO_MINUS</BTN_ID>
+                        <BTN_ID>MINUS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_Push_BARO_Template">
+                    <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
                         <NODE_ID>PUSH_BARO_RST</NODE_ID>
                         <TOOLTIPID>Reset ISI Attitude</TOOLTIPID>
-                        <BTN_ID>BARO_RST</BTN_ID>
+                        <BTN_ID>RST</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
                 </Component>
@@ -1359,6 +1348,8 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_BEACON</NODE_ID>
                     <PART_ID>Beacon_Light_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_BEACON</ANIM_NAME>
+                    <!-- TODO Remove when fixed in Asobo base files -->
+                    <TT_DESCRIPTION_ID>COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_BEACON_ACTION_SET</TT_DESCRIPTION_ID>
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
 
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
@@ -1370,6 +1361,8 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_RWY</NODE_ID>
                     <PART_ID>EXTLT_RWY</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
+                    <!-- TODO Remove when fixed in Asobo base files -->
+                    <TT_DESCRIPTION_ID>COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_TAXI_ACTION_SET</TT_DESCRIPTION_ID>
                     <ID>1</ID>
                     <SIMVAR_INDEX>2</SIMVAR_INDEX>
                     <SIMVAR_INDEX_2>3</SIMVAR_INDEX_2>
@@ -1687,9 +1680,13 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool))%{if}Turn OFF door video%{else}Turn ON door video%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Push_Held">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
-                        <HOLD_SIMVAR>L:PUSH_DOORPANEL_VIDEO</HOLD_SIMVAR>
+                        <LEFT_SINGLE_CODE>(L:PUSH_DOORPANEL_VIDEO) ! (>L:PUSH_DOORPANEL_VIDEO)</LEFT_SINGLE_CODE>
+                        <MOMENTARY/>
+                        <NO_SEQ1 />
+                        <NO_SEQ2 />
+                        <ROUND />
                     </UseTemplate>
 
                     <Component ID="ADIRS">
@@ -1768,6 +1765,7 @@
                             <MOMENTARY/>
                             <NO_SEQ1 />
                             <NO_SEQ2 />
+                            <ROUND />
                         </UseTemplate>
 
                         <!-- CAPT & PURS / CAPT -->
