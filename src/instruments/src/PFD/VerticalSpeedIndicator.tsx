@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }) => {
     if (Number.isNaN(verticalSpeed)) {
         return (

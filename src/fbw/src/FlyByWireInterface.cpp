@@ -36,7 +36,8 @@ bool FlyByWireInterface::connect() {
   // connect to sim connect
   return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis, flapsHandler,
                                      spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
-                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder);
+                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
+                                     disableXboxCompatibilityRudderAxisPlusMinus);
 }
 
 void FlyByWireInterface::disconnect() {
@@ -149,6 +150,8 @@ void FlyByWireInterface::loadConfiguration() {
   flightControlsKeyChangeElevator = abs(flightControlsKeyChangeElevator);
   flightControlsKeyChangeRudder = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_RUDDER", 0.02);
   flightControlsKeyChangeRudder = abs(flightControlsKeyChangeRudder);
+  disableXboxCompatibilityRudderAxisPlusMinus =
+      INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS", false);
 
   // print configuration into console
   std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED   = " << autopilotStateMachineEnabled << endl;
@@ -164,6 +167,8 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
+  std::cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
+            << endl;
 
   // create axis and load configuration
   for (size_t i = 1; i <= 2; i++) {

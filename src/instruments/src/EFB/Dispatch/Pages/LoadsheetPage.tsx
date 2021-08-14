@@ -1,3 +1,4 @@
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { IconMinus, IconPlus } from '@tabler/icons';
 import React, { useRef, useState, useEffect } from 'react';
 
@@ -9,7 +10,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const [fontSize, setFontSize] = useState(14);
+    const [fontSize, setFontSize] = usePersistentProperty('LOADSHEET_FONTSIZE', '14');
     const [imageSize, setImageSize] = useState(60);
 
     useEffect(() => {
@@ -52,7 +53,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     };
 
     const fontIncreaseHandler = () => {
-        let cFontSize = fontSize;
+        let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
         if (cFontSize < 26) {
@@ -63,7 +64,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     };
 
     const fontDecreaseHandler = () => {
-        let cFontSize = fontSize;
+        let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
         if (cFontSize > 14) {
@@ -74,7 +75,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     };
 
     const handleScaling = (cFontSize, cImageSize) => {
-        setFontSize(cFontSize);
+        setFontSize((String)(cFontSize));
         setImageSize(cImageSize);
     };
 
