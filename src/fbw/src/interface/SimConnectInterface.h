@@ -171,7 +171,8 @@ class SimConnectInterface {
                std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                double keyChangeAileron,
                double keyChangeElevator,
-               double keyChangeRudder);
+               double keyChangeRudder,
+               bool disableXboxCompatibilityRudderPlusMinus);
 
   void disconnect();
 
@@ -263,6 +264,7 @@ class SimConnectInterface {
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
+  bool disableXboxCompatibilityRudderPlusMinus = false;
 
   std::unique_ptr<LocalVariable> idFcuEventSetSPEED;
   std::unique_ptr<LocalVariable> idFcuEventSetHDG;
