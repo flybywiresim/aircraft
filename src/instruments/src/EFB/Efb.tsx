@@ -127,7 +127,7 @@ const Efb = () => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;
             // eslint-disable-next-line no-restricted-properties
-            setBrightness(Math.pow(Math.E, -(Math.pow(localTime - 12, 2) / 20)) * 100);
+            setBrightness(Math.pow(Math.E, -(Math.pow(localTime - 12, 2) / 24)) * 100);
         }
     }, [currentLocalTime]);
 
