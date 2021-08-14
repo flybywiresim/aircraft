@@ -142,7 +142,7 @@ impl LinearActuator {
         }
     }
 
-    fn update(
+    fn update_before_rigid_body(
         &mut self,
         connected_body: &mut RigidBodyOnHingeAxis,
         requested_mode: LinearActuatorMode,
@@ -322,15 +322,10 @@ impl HydraulicActuatorAssembly {
         self.linear_actuator
             .set_position_target(assembly_controller.position_request());
 
-        if assembly_controller.should_lock() {
-            self.rigid_body
-                .lock_at_position_normalized(assembly_controller.lock_position_request())
-        } else {
-            self.rigid_body.unlock();
-        }
+        self.update_lock_mechanism(assembly_controller);
 
         if !self.rigid_body.is_locked() {
-            self.linear_actuator.update(
+            self.linear_actuator.update_before_rigid_body(
                 &mut self.rigid_body,
                 assembly_controller.mode_requested(),
                 available_pressure,
@@ -338,12 +333,15 @@ impl HydraulicActuatorAssembly {
             self.rigid_body.update(context);
             self.linear_actuator
                 .update_after_rigid_body(&self.rigid_body, context);
+        }
+    }
 
-            println!(
-                "Current position {:.3}, dt{:.3}",
-                self.position(),
-                context.delta_as_secs_f64()
-            );
+    fn update_lock_mechanism(&mut self, assembly_controller: &impl HydraulicAssemblyController) {
+        if assembly_controller.should_lock() {
+            self.rigid_body
+                .lock_at_position_normalized(assembly_controller.lock_position_request())
+        } else {
+            self.rigid_body.unlock();
         }
     }
 
@@ -383,7 +381,7 @@ mod tests {
         let actuator_position_init = actuator.position;
 
         for _ in 0..5 {
-            actuator.update(
+            actuator.update_before_rigid_body(
                 &mut rigid_body,
                 LinearActuatorMode::ClosedValves,
                 Pressure::new::<psi>(1500.),
@@ -427,7 +425,7 @@ mod tests {
         let actuator_position_init = actuator.position;
 
         for _ in 0..100 {
-            actuator.update(
+            actuator.update_before_rigid_body(
                 &mut rigid_body,
                 LinearActuatorMode::ClosedValves,
                 Pressure::new::<psi>(1500.),
@@ -485,7 +483,7 @@ mod tests {
         rigid_body.unlock();
         actuator.set_position_target(1.);
         for _ in 0..700 {
-            actuator.update(
+            actuator.update_before_rigid_body(
                 &mut rigid_body,
                 LinearActuatorMode::PositionControl,
                 Pressure::new::<psi>(1500.),
@@ -539,7 +537,7 @@ mod tests {
         rigid_body.unlock();
         actuator.set_position_target(1.0);
         for _ in 0..700 {
-            actuator.update(
+            actuator.update_before_rigid_body(
                 &mut rigid_body,
                 LinearActuatorMode::PositionControl,
                 Pressure::new::<psi>(1500.),
@@ -597,7 +595,11 @@ mod tests {
         actuator.set_position_target(1.0);
         let mut requested_mode = LinearActuatorMode::PositionControl;
         for _ in 0..700 {
-            actuator.update(&mut rigid_body, requested_mode, Pressure::new::<psi>(1500.));
+            actuator.update_before_rigid_body(
+                &mut rigid_body,
+                requested_mode,
+                Pressure::new::<psi>(1500.),
+            );
             rigid_body.update(&context(
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
