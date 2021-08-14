@@ -2,6 +2,7 @@ import React, { useEffect, useState, useReducer } from 'react';
 
 import { Provider } from 'react-redux';
 import { Route, Switch, useHistory } from 'react-router-dom';
+import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
@@ -117,9 +118,23 @@ const navigraph = new NavigraphClient();
 const Efb = () => {
     const history = useHistory();
 
+    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
+    const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
+    const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 5000);
+
+    // handle setting brightness if user is using autobrightness
+    useEffect(() => {
+        if (usingAutobrightness) {
+            const localTime = currentLocalTime / 3600;
+            // eslint-disable-next-line no-restricted-properties
+            setBrightness(Math.pow(Math.E, -(Math.pow(localTime - 12, 2) / 20)) * 100);
+        }
+    }, [currentLocalTime]);
+
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
     const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
+
     const [timeState, setTimeState] = useState<TimeState>({
         currentTime: new Date(),
         initTime: new Date(),

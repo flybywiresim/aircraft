@@ -371,13 +371,20 @@ const AudioPage = () => {
 
 const FlyPadPage = () => {
     const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
+    const [usingAutobrightness, setUsingAutobrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 'EFB_USING_AUTOBRIGHTNESS');
 
     return (
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Brightness</span>
-                <div className="flex flex-row items-center py-1.5">
+                <div className={`flex flex-row items-center py-1.5 ${usingAutobrightness && 'pointer-events-none filter saturate-0'}`}>
                     <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Auto Brightness</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
                 </div>
             </div>
         </div>
