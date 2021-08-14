@@ -409,6 +409,7 @@
 1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
 1. [MISC] Added Marketplace Data - @kiwi2021 (kiwi2022#0001)
+1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
