@@ -1,6 +1,7 @@
 import React from 'react';
-import { HorizontalTape, getSmallestAngle } from './PFDUtils';
+import { HorizontalTape } from './PFDUtils';
 import { getSimVar } from '../util.js';
+import { getSmallestAngle } from '@instruments/common/utils';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
