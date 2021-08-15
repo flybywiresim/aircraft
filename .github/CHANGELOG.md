@@ -158,6 +158,7 @@
 1. [PRESS] First implementation of automatic pressurization system - @MJuhe (Miquel)
 1. [MISC] Added annunciator lights to interactive checklist - @oim1 (oim)
 1. [MISC] Workaround for altitude issues of MSFS - @aguther (Andreas Guther)
+1. [MODEL] Un-mirror sharklet textures - @tracernz (Mike)
 1. [DISPLAYS] Improved pixelated screens, only appears when camera is close to displays - @2hwk (2Cas#1022)
 1. [MISC] Change back to airliner hud in external view for SU5 - @donstim (donbikes#4084)
 1. [TEXTURE] Improved cockpit textures and screen reflections - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
@@ -167,6 +168,8 @@
 1. [ARCH] Failures are supported - @davidwalschots (David Walschots)
 1. [HYD] Updated fix for autobrake rotating knob type controllers - @Crocket63 (crocket)
 1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
+1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
+1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -406,6 +409,7 @@
 1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
 1. [MISC] Added Marketplace Data - @kiwi2021 (kiwi2022#0001)
+1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

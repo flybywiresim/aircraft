@@ -1,15 +1,15 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
-import { Horizon } from './AttitudeIndicatorHorizon.jsx';
-import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed.jsx';
-import { LandingSystem } from './LandingSystemIndicator.jsx';
-import { VerticalSpeedIndicator } from './VerticalSpeedIndicator.jsx';
-import { HeadingOfftape, HeadingTape } from './HeadingIndicator.jsx';
-import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator.jsx';
-import { AirspeedIndicatorOfftape, AirspeedIndicator, MachNumber } from './SpeedIndicator.jsx';
-import { FMA } from './FMA.jsx';
+import { Horizon } from './AttitudeIndicatorHorizon';
+import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
+import { LandingSystem } from './LandingSystemIndicator';
+import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
+import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
+import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator';
+import { AirspeedIndicatorOfftape, AirspeedIndicator, MachNumber } from './SpeedIndicator';
+import { FMA } from './FMA';
 import { getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator } from '../util.js';
-import { SmoothSin, LagFilter, RateLimiter } from './PFDUtils.jsx';
+import { SmoothSin, LagFilter, RateLimiter } from './PFDUtils';
 import { DisplayUnit } from '../Common/displayUnit';
 import { render } from '../Common';
 import './style.scss';
@@ -17,11 +17,37 @@ import './style.scss';
 /* eslint-disable max-len */
 // eslint-disable-next-line react/prefer-stateless-function
 class PFD extends Component {
-    constructor(props) {
+    private displayIndex: number;
+
+    private deltaTime: number;
+
+    private GetDeltaTime: () => number;
+
+    private prevAirspeed: number;
+
+    private VLs: number;
+
+    private barTimer: number;
+
+    private smoothFactor: number;
+
+    private isAttExcessive: boolean;
+
+    private AirspeedAccFilter: LagFilter;
+
+    private AirspeedAccRateLimiter: RateLimiter;
+
+    private LSButtonPressed: boolean;
+
+    private failuresConsumer: FailuresConsumer;
+
+    constructor(props: {}) {
         super(props);
 
         const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
-        this.displayIndex = parseInt(url.substring(url.length - 1), 10);
+        if (url) {
+            this.displayIndex = parseInt(url.substring(url.length - 1), 10);
+        }
 
         this.deltaTime = 0;
         this.GetDeltaTime = createDeltaTimeCalculator();
@@ -58,7 +84,7 @@ class PFD extends Component {
         setSimVar(`L:BTN_LS_${this.displayIndex}_FILTER_ACTIVE`, this.LSButtonPressed, 'Bool');
     }
 
-    getSupplier(knobValue) {
+    getSupplier(knobValue: number) {
         const adirs3ToCaptain = 0;
         const adirs3ToFO = 2;
 
@@ -68,7 +94,7 @@ class PFD extends Component {
         return knobValue === adirs3ToFO ? 3 : 2;
     }
 
-    getAdirsValue(name, type) {
+    getAdirsValue(name: string, type: string) {
         const value = getSimVar(name, type);
         const unavailable = -1000000;
         return Math.abs(value - unavailable) < 0.0001 ? NaN : value;
@@ -86,12 +112,12 @@ class PFD extends Component {
         return this.displayIndex === 1;
     }
 
-    smoothSpeeds(_dTime, _vls) {
+    smoothSpeeds(_dTime: number, _vls: number) {
         const seconds = _dTime / 1000;
         this.VLs = SmoothSin(this.VLs, _vls, this.smoothFactor, seconds);
     }
 
-    update(_deltaTime) {
+    update(_deltaTime: number) {
         this.deltaTime = _deltaTime;
         this.failuresConsumer.update();
         this.forceUpdate();
@@ -163,12 +189,13 @@ class PFD extends Component {
         const isManaged = altArmed || activeVerticalMode === 21 || activeVerticalMode === 20 || (!!cstnAlt && fmgcFlightPhase < 2 && clbArmed && navArmed);
         const targetAlt = isManaged ? cstnAlt : Simplane.getAutoPilotDisplayedAltitudeLockValue();
 
-        let targetSpeed;
+        let targetSpeed: number | null;
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const isMach = Simplane.getAutoPilotMachModeActive();
         if (isSelected) {
             if (isMach) {
-                targetSpeed = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue());
+                const holdValue = Simplane.getAutoPilotMachHoldValue();
+                targetSpeed = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', holdValue === null ? undefined : holdValue);
             } else {
                 targetSpeed = Simplane.getAutoPilotAirspeedHoldValue();
             }
@@ -178,7 +205,7 @@ class PFD extends Component {
 
         const FDActive = getSimVar(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.displayIndex}`, 'Bool');
 
-        let selectedHeading = NaN;
+        let selectedHeading: number | null = NaN;
         if (getSimVar('L:A320_FCU_SHOW_SELECTED_HEADING', 'number')) {
             selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
         }
@@ -201,7 +228,7 @@ class PFD extends Component {
                         className="BackgroundFill"
                         d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
                     />
-                    <HeadingTape heading={heading} ILSCourse={ILSCourse} />
+                    <HeadingTape heading={heading} />
                     <AltitudeIndicator altitude={altitude} FWCFlightPhase={FlightPhase} />
                     <AirspeedIndicator airspeed={clampedAirspeed} airspeedAcc={filteredAirspeedAcc} FWCFlightPhase={FlightPhase} altitude={altitude} VLs={this.VLs} VMax={VMax} showBars={showSpeedBars} />
                     <path
@@ -215,7 +242,7 @@ class PFD extends Component {
                     <VerticalSpeedIndicator radioAlt={radioAlt} verticalSpeed={verticalSpeed} />
                     <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                     <AltitudeIndicatorOfftape altitude={altitude} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
-                    <AirspeedIndicatorOfftape airspeed={clampedAirspeed} mach={mach} airspeedAcc={filteredAirspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
+                    <AirspeedIndicatorOfftape airspeed={clampedAirspeed} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
                     <MachNumber mach={mach} airspeedAcc={filteredAirspeedAcc} />
                     <FMA isAttExcessive={this.isAttExcessive} />
                 </svg>

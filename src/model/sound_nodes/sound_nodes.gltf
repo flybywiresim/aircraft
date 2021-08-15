@@ -425,8 +425,16 @@
             "byteOffset": 6048,
             "componentType": 5126,
             "count": 24,
-            "min": [-1.000152587890625, -0.99993896484375, -1.0001220703125],
-            "max": [0.99981689453125, 1.00006103515625, 0.9998779296875],
+            "min": [
+                -1.000152587890625,
+                -0.99993896484375,
+                -1.0001220703125
+            ],
+            "max": [
+                0.99981689453125,
+                1.00006103515625,
+                0.9998779296875
+            ],
             "type": "VEC3",
             "name": "SOUND_PACK_OUTFLOW_LEFT_vertices#0_POSITION"
         },
@@ -684,8 +692,12 @@
     ],
     "materials": [
         {
+            "name": "SOUND_NODE_INVISIBLE.001",
+            "pbrMetallicRoughness": {}
+        },
+        {
             "name": "SOUND_NODE_INVISIBLE",
-            "extensions": { "ASOBO_material_invisible": {} }
+            "pbrMetallicRoughness": {}
         }
     ],
     "meshes": [
