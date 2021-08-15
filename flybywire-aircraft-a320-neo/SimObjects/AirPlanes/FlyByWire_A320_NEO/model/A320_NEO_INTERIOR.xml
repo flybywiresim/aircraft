@@ -32,7 +32,7 @@
             </Component>
             <Component ID="PUSH_EFB_SIDE" Node="PUSH_EFB_SIDE">
                 <UseTemplate Name="ASOBO_GT_Push_Button">
-                    <LEFT_SINGLE_CODE>(H:A32NX_EFB_POWER)</LEFT_SINGLE_CODE>
+                    <LEFT_SINGLE_CODE>(&gt;H:A32NX_EFB_POWER)</LEFT_SINGLE_CODE>
                     <TOOLTIPID>EFB power</TOOLTIPID>
                 </UseTemplate>
             </Component>
