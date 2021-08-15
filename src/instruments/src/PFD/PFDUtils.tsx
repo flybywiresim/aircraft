@@ -1,5 +1,7 @@
 /* eslint-disable max-classes-per-file */
-export const calculateHorizonOffsetFromPitch = (pitch) => {
+import React from 'react';
+
+export const calculateHorizonOffsetFromPitch = (pitch: number) => {
     if (pitch > -5 && pitch <= 20) {
         return pitch * 1.8;
     } if (pitch > 20 && pitch <= 30) {
@@ -12,7 +14,7 @@ export const calculateHorizonOffsetFromPitch = (pitch) => {
     return pitch - 8;
 };
 
-export const calculateVerticalOffsetFromRoll = (roll) => {
+export const calculateVerticalOffsetFromRoll = (roll: number) => {
     let offset = 0;
 
     if (Math.abs(roll) > 60) {
@@ -27,7 +29,7 @@ export const calculateVerticalOffsetFromRoll = (roll) => {
  * @param angle2 Second angle in degrees
  * @returns {number} Smallest angle between angle1 and angle2 in degrees
  */
-export const getSmallestAngle = (angle1, angle2) => {
+export const getSmallestAngle = (angle1: number, angle2: number): number => {
     let smallestAngle = angle1 - angle2;
     if (smallestAngle > 180) {
         smallestAngle -= 360;
@@ -45,8 +47,8 @@ export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, gr
         leftmostHeading += valueSpacing;
     }
 
-    const graduationElements = [];
-    const bugElements = [];
+    const graduationElements: JSX.Element[] = [];
+    const bugElements: JSX.Element[] = [];
 
     for (let i = 0; i < numTicks; i++) {
         const elementHeading = leftmostHeading + i * valueSpacing;
@@ -54,7 +56,7 @@ export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, gr
         graduationElements.push(graduationElementFunction(elementHeading, offset));
     }
 
-    bugs.forEach((currentElement) => {
+    bugs.forEach((currentElement: [(offset: number) => JSX.Element, number]) => {
         const angleToZero = getSmallestAngle(heading, 0);
         const smallestAngle = getSmallestAngle(currentElement[1], 0);
         let offset = currentElement[1];
@@ -91,8 +93,8 @@ export const VerticalTape = ({
         lowestValue += valueSpacing;
     }
 
-    const graduationElements = [];
-    const bugElements = [];
+    const graduationElements: JSX.Element[] = [];
+    const bugElements: JSX.Element[] = [];
 
     for (let i = 0; i < numTicks; i++) {
         const elementValue = lowestValue + i * valueSpacing;
@@ -118,9 +120,10 @@ export const VerticalTape = ({
 };
 
 export const BarberpoleIndicator = (
-    tapeValue, border, isLowerBorder, displayRange, element, elementSize,
+    tapeValue: number, border: number, isLowerBorder: boolean, displayRange: number,
+    element: (offset: number) => JSX.Element, elementSize: number,
 ) => {
-    const Elements = [];
+    const Elements: [(offset: number) => JSX.Element, number][] = [];
 
     const sign = isLowerBorder ? 1 : -1;
     const isInRange = isLowerBorder ? border <= tapeValue + displayRange : border >= tapeValue - displayRange;
@@ -136,7 +139,7 @@ export const BarberpoleIndicator = (
     return Elements;
 };
 
-export const SmoothSin = (origin, destination, smoothFactor, dTime) => {
+export const SmoothSin = (origin: number, destination: number, smoothFactor: number, dTime: number) => {
     if (origin === undefined) {
         return destination;
     }
@@ -152,7 +155,13 @@ export const SmoothSin = (origin, destination, smoothFactor, dTime) => {
 };
 
 export class LagFilter {
-    constructor(timeConstant) {
+    private PreviousInput: number;
+
+    private PreviousOutput: number;
+
+    private TimeConstant: number;
+
+    constructor(timeConstant: number) {
         this.PreviousInput = 0;
         this.PreviousOutput = 0;
 
@@ -170,7 +179,7 @@ export class LagFilter {
      * @param deltaTime in seconds
      * @returns {number} Filtered output
      */
-    step(input, deltaTime) {
+    step(input: number, deltaTime: number): number {
         const filteredInput = !Number.isNaN(input) ? input : 0;
 
         const scaledDeltaTime = deltaTime * this.TimeConstant;
@@ -189,14 +198,20 @@ export class LagFilter {
 }
 
 export class RateLimiter {
-    constructor(risingRate, fallingRate) {
+    private PreviousOutput: number;
+
+    private RisingRate: number;
+
+    private FallingRate: number;
+
+    constructor(risingRate: number, fallingRate: number) {
         this.PreviousOutput = 0;
 
         this.RisingRate = risingRate;
         this.FallingRate = fallingRate;
     }
 
-    step(input, deltaTime) {
+    step(input: number, deltaTime: number) {
         const filteredInput = !Number.isNaN(input) ? input : 0;
 
         const subInput = filteredInput - this.PreviousOutput;
