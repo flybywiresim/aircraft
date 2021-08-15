@@ -60,7 +60,7 @@ export class Geometry {
             }
 
             if (activeLeg) {
-                const [itp,] = toTransition.getTurningPoints();
+                const [itp] = toTransition.getTurningPoints();
                 // TODO this should be tidied up somewhere else
                 const unTravelled = Avionics.Utils.computeGreatCircleDistance(itp, activeLeg.terminatorLocation);
                 const rad = this.getRollAnticipationDistance(gs, activeLeg, toTransition);
@@ -146,7 +146,7 @@ export class Geometry {
         }
 
         if (activeLeg) {
-            return activeLeg.getDistanceToGo(ppos) < 0.001;
+            return Math.abs(activeLeg.getDistanceToGo(ppos)) < 0.001;
         }
 
         return false;
