@@ -76,8 +76,8 @@ export class FlightPlanManager {
                 plan.setParentInstrument(_parentInstrument);
                 this._flightPlans = [];
                 this._flightPlans.push(plan);
-                // TODO Reenable this check once we set A32NX_FPSYNC in options - will always sync with AsoboFP on init
-                // if (NXDataStore.get('WT_CJ4_FPSYNC', 0) !== 0) {
+                // TODO Reenable this check once we set A32NX_FP_LOAD in options - will always sync with AsoboFP on init
+                // if (NXDataStore.get('A32NX_FP_LOAD', 0) !== 0) {
                 this.pauseSync();
                 await FlightPlanAsoboSync.LoadFromGame(this);
                 // }
@@ -300,10 +300,17 @@ export class FlightPlanManager {
      */
     public getActiveWaypointIndex(forceSimVarCall = false, useCorrection = false, flightPlanIndex = NaN): number {
         if (isNaN(flightPlanIndex)) {
-            flightPlanIndex = this._currentFlightPlanIndex;
+            return this._flightPlans[this._currentFlightPlanIndex].activeWaypointIndex;
         }
 
         return this._flightPlans[flightPlanIndex].activeWaypointIndex;
+    }
+
+    public isActiveWaypointAtEnd(forceSimVarCall = false, useCorrection = false, flightPlanIndex = NaN): boolean {
+        if (isNaN(flightPlanIndex)) {
+            return this._flightPlans[this._currentFlightPlanIndex].activeWaypointIndex + 1 === this.getWaypointsCount(this._currentFlightPlanIndex) - 1;
+        }
+        return this._flightPlans[flightPlanIndex].activeWaypointIndex === this.getWaypointsCount(flightPlanIndex) - 1;
     }
 
     /**
@@ -890,7 +897,7 @@ export class FlightPlanManager {
      */
     public getWaypointsCount(flightPlanIndex = NaN): number {
         if (isNaN(flightPlanIndex)) {
-            flightPlanIndex = this._currentFlightPlanIndex;
+            return this._flightPlans[this._currentFlightPlanIndex]?.length ?? 0;
         }
 
         return this._flightPlans[flightPlanIndex]?.length ?? 0;
