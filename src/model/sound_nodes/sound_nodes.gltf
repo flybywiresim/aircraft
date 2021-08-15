@@ -20,16 +20,8 @@
             "bufferView": 1,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -0.9999998807907104,
-                -1,
-                -0.9999995231628418
-            ],
-            "max": [
-                0.9999998807907104,
-                1,
-                1.0000004768371582
-            ],
+            "min": [-0.9999998807907104, -1, -0.9999995231628418],
+            "max": [0.9999998807907104, 1, 1.0000004768371582],
             "type": "VEC3",
             "name": "SOUND_BLOWER_EXTRACT.001_vertices#0_POSITION"
         },
@@ -85,16 +77,8 @@
             "byteOffset": 864,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -0.999908447265625,
-                -1,
-                -1
-            ],
-            "max": [
-                1.000091552734375,
-                1,
-                1
-            ],
+            "min": [-0.999908447265625, -1, -1],
+            "max": [1.000091552734375, 1, 1],
             "type": "VEC3",
             "name": "SOUND_DOOR_AFT_LEFT_vertices#0_POSITION"
         },
@@ -151,16 +135,8 @@
             "byteOffset": 1728,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1,
-                -1,
-                -0.999755859375
-            ],
-            "max": [
-                1,
-                1,
-                1.000244140625
-            ],
+            "min": [-1, -1, -0.999755859375],
+            "max": [1, 1, 1.000244140625],
             "type": "VEC3",
             "name": "SOUND_DOOR_AFT_RIGHT_vertices#0_POSITION"
         },
@@ -217,16 +193,8 @@
             "byteOffset": 2592,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1,
-                -1,
-                -1
-            ],
-            "max": [
-                1,
-                1,
-                1
-            ],
+            "min": [-1, -1, -1],
+            "max": [1, 1, 1],
             "type": "VEC3",
             "name": "SOUND_DOOR_FWD_LEFT_vertices#0_POSITION"
         },
@@ -283,16 +251,8 @@
             "byteOffset": 3456,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1.000030517578125,
-                -1,
-                -1
-            ],
-            "max": [
-                0.999969482421875,
-                1,
-                1
-            ],
+            "min": [-1.000030517578125, -1, -1],
+            "max": [0.999969482421875, 1, 1],
             "type": "VEC3",
             "name": "SOUND_DOOR_FWD_RIGHT_vertices#0_POSITION"
         },
@@ -349,16 +309,8 @@
             "byteOffset": 4320,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1,
-                -1.0000076293945312,
-                -1.0000152587890625
-            ],
-            "max": [
-                1,
-                0.9999923706054688,
-                0.9999847412109375
-            ],
+            "min": [-1, -1.0000076293945312, -1.0000152587890625],
+            "max": [1, 0.9999923706054688, 0.9999847412109375],
             "type": "VEC3",
             "name": "SOUND_ENGINE_LEFT_vertices#0_POSITION"
         },
@@ -415,16 +367,8 @@
             "byteOffset": 5184,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1,
-                -1,
-                -1
-            ],
-            "max": [
-                1,
-                1,
-                1
-            ],
+            "min": [-1, -1, -1],
+            "max": [1, 1, 1],
             "type": "VEC3",
             "name": "SOUND_ENGINE_RIGHT_vertices#0_POSITION"
         },
@@ -481,16 +425,8 @@
             "byteOffset": 6048,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1.000152587890625,
-                -0.99993896484375,
-                -1.0001220703125
-            ],
-            "max": [
-                0.99981689453125,
-                1.00006103515625,
-                0.9998779296875
-            ],
+            "min": [-1.000152587890625, -0.99993896484375, -1.0001220703125],
+            "max": [0.99981689453125, 1.00006103515625, 0.9998779296875],
             "type": "VEC3",
             "name": "SOUND_PACK_OUTFLOW_LEFT_vertices#0_POSITION"
         },
@@ -547,16 +483,8 @@
             "byteOffset": 6912,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1,
-                -1,
-                -1
-            ],
-            "max": [
-                0.999969482421875,
-                1,
-                1
-            ],
+            "min": [-1, -1, -1],
+            "max": [0.999969482421875, 1, 1],
             "type": "VEC3",
             "name": "SOUND_PACK_OUTFLOW_RIGHT_vertices#0_POSITION"
         },
@@ -613,16 +541,8 @@
             "byteOffset": 7776,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1,
-                -1,
-                -1
-            ],
-            "max": [
-                1,
-                1,
-                1
-            ],
+            "min": [-1, -1, -1],
+            "max": [1, 1, 1],
             "type": "VEC3",
             "name": "SOUND_AFT_GALLEY_vertices#0_POSITION"
         },
@@ -679,16 +599,8 @@
             "byteOffset": 8640,
             "componentType": 5126,
             "count": 24,
-            "min": [
-                -1,
-                -1,
-                -1
-            ],
-            "max": [
-                1,
-                1,
-                1
-            ],
+            "min": [-1, -1, -1],
+            "max": [1, 1, 1],
             "type": "VEC3",
             "name": "SOUND_FWD_GALLEY_vertices#0_POSITION"
         },
@@ -767,16 +679,13 @@
     ],
     "extensionsUsed": [
         "ASOBO_asset_optimized",
-        "ASOBO_normal_map_convention"
+        "ASOBO_normal_map_convention",
+        "ASOBO_material_invisible"
     ],
     "materials": [
         {
-            "name": "SOUND_NODE_INVISIBLE.001",
-            "pbrMetallicRoughness": {}
-        },
-        {
             "name": "SOUND_NODE_INVISIBLE",
-            "pbrMetallicRoughness": {}
+            "extensions": { "ASOBO_material_invisible": {} }
         }
     ],
     "meshes": [
@@ -1238,19 +1147,7 @@
     "scenes": [
         {
             "name": "Scene",
-            "nodes": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10
-            ]
+            "nodes": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         }
     ],
     "buffers": [
