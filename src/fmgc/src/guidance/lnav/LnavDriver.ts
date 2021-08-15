@@ -123,7 +123,7 @@ export class LnavDriver implements GuidanceComponent {
                 available = true;
             }
 
-            if (geometry.shouldSequenceLeg(this.ppos)) {
+            if (!this.guidanceController.flightPlanManager.isActiveWaypointAtEnd(false, false, 0) && geometry.shouldSequenceLeg(this.ppos)) {
                 const currentLeg = geometry.legs.get(1);
                 const nextLeg = geometry.legs.get(2);
 
@@ -153,10 +153,8 @@ export class LnavDriver implements GuidanceComponent {
     }
 
     sequenceLeg(_leg?: Leg): void {
-        console.log('[FMGC/Guidance] LNAV - sequencing leg');
-        // TODO: fix getting stuck here and causing performance issues
-
         let wpIndex = this.guidanceController.flightPlanManager.getActiveWaypointIndex(false, false, 0);
+        console.log(`[FMGC/Guidance] LNAV - sequencing leg. Active WP Index: ${wpIndex}`);
         const wp = this.guidanceController.flightPlanManager.getActiveWaypoint(false, false, 0);
         wp.waypointReachedAt = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
