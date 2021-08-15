@@ -1587,17 +1587,6 @@ impl A320DoorController {
         self.state = self.determine_mode(door, pressure_available);
         self.update_timers(context);
         self.update_actions_from_state();
-
-        // println!(
-        //     "REQ:{:.1} / ControlReq {:.1} / STATE:{}/ NoctrlTime:{:.1}/ HydTime:{:.1} / Shouldunlock {} / Press avail{:.0}",
-        //     self.position_requested,
-        //     self.control_position_request,
-        //     self.state as u8,
-        //     self.duration_in_no_control.as_secs_f64(),
-        //     self.duration_in_hyd_control.as_secs_f64(),
-        //     self.should_unlock,
-        //     pressure_available.get::<psi>()
-        // );
     }
 
     fn update_timers(&mut self, context: &UpdateContext) {
