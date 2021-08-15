@@ -2704,11 +2704,6 @@ mod tests {
                 self
             }
 
-            fn set_cargo_door_state(mut self, position: f64) -> Self {
-                self.write("EXIT OPEN:5", position);
-                self
-            }
-
             fn open_fwd_cargo_door(mut self) -> Self {
                 self.write("FWD_DOOR_CARGO_OPEN_REQ", 1.);
                 self
@@ -2880,7 +2875,6 @@ mod tests {
                     .set_ptu_state(true)
                     .set_park_brake(true)
                     .set_anti_skid(true)
-                    .set_cargo_door_state(0.)
                     .set_left_brake(Ratio::new::<percent>(0.))
                     .set_right_brake(Ratio::new::<percent>(0.))
                     .set_gear_down()

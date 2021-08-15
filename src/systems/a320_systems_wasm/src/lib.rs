@@ -88,16 +88,12 @@ fn create_aircraft_variable_reader(
     reader.add("SIM ON GROUND", "Bool", 0)?;
     reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 1)?;
     reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 2)?;
-    reader.add("EXIT OPEN", "Percent", 5)?;
-    // TODO It is the catering door for now.
-    reader.add("EXIT OPEN", "Percent", 3)?;
     reader.add("PUSHBACK ANGLE", "Radian", 0)?;
     reader.add("PUSHBACK STATE", "Enum", 0)?;
     reader.add("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
     reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
     reader.add("ACCELERATION BODY X", "feet per second squared", 0)?;
     reader.add("ACCELERATION BODY Y", "feet per second squared", 0)?;
-    //reader.add("INTERACTIVE POINT OPEN", "Percent over 100", 5)?;
 
     reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
     reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
