@@ -7,6 +7,7 @@ use uom::si::{
     angle::degree,
     angular_velocity::revolution_per_minute,
     f64::*,
+    length::meter,
     mass::kilogram,
     pressure::pascal,
     pressure::psi,
@@ -51,8 +52,8 @@ fn cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
     LinearActuator::new(
         &rigid_body,
         2,
-        0.04422,
-        0.03366,
+        Length::new::<meter>(0.04422),
+        Length::new::<meter>(0.03366),
         VolumeRate::new::<gallon_per_second>(0.01),
         600000.,
         15000.,
@@ -1543,7 +1544,7 @@ struct A320DoorController {
     duration_in_hyd_control: Duration,
 
     should_close_valves: bool,
-    control_position_request: f64,
+    control_position_request: Ratio,
     should_unlock: bool,
 }
 impl A320DoorController {
@@ -1563,7 +1564,7 @@ impl A320DoorController {
             duration_in_hyd_control: Duration::from_secs(0),
 
             should_close_valves: true,
-            control_position_request: 0.,
+            control_position_request: Ratio::new::<ratio>(0.),
             should_unlock: false,
         }
     }
@@ -1610,9 +1611,9 @@ impl A320DoorController {
                 if self.position_requested > 0.
                     || self.duration_in_hyd_control < Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
                 {
-                    self.control_position_request = 1.;
+                    self.control_position_request = Ratio::new::<ratio>(1.);
                 } else {
-                    self.control_position_request = 0.;
+                    self.control_position_request = Ratio::new::<ratio>(0.);
                 }
             }
             DoorControlState::UpLocked => {
@@ -1672,7 +1673,7 @@ impl HydraulicAssemblyController for A320DoorController {
             LinearActuatorMode::PositionControl
         }
     }
-    fn position_request(&self) -> f64 {
+    fn position_request(&self) -> Ratio {
         self.control_position_request
     }
     fn should_lock(&self) -> bool {
@@ -2127,6 +2128,7 @@ mod tests {
             ratio::{percent, ratio},
             thermodynamic_temperature::degree_celsius,
             velocity::knot,
+            volume::liter,
         };
 
         struct A320TestEmergencyElectricalOverheadPanel {
@@ -5561,6 +5563,38 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(30.));
 
             assert!(test_bed.cargo_fwd_door_position() > 0.85);
+        }
+
+        #[test]
+        fn cargo_door_opened_uses_correct_reservoir_amount() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_yellow_e_pump(false)
+                .set_ptu_state(false)
+                .run_waiting_for(Duration::from_secs_f64(20.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.is_yellow_pressurised());
+
+            let pressurised_yellow_level_door_closed = test_bed.get_yellow_reservoir_volume();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(40.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+
+            let pressurised_yellow_level_door_opened = test_bed.get_yellow_reservoir_volume();
+
+            let volume_used_liter = (pressurised_yellow_level_door_closed
+                - pressurised_yellow_level_door_opened)
+                .get::<liter>();
+
+            // For one cargo door we expect losing between 0.6 to 0.8 liter of fluid into the two actuators
+            assert!(volume_used_liter >= 0.6 && volume_used_liter <= 0.8);
         }
 
         #[test]

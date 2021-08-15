@@ -1,13 +1,18 @@
 extern crate nalgebra as na;
 use na::{Rotation2, Rotation3, Unit, Vector2, Vector3};
 
-use uom::si::{
-    acceleration::meter_per_second_squared,
-    angle::{degree, radian},
-    angular_acceleration::radian_per_second_squared,
-    angular_velocity::{degree_per_second, radian_per_second},
-    f64::*,
-    mass::kilogram,
+use uom::{
+    si::{
+        acceleration::meter_per_second_squared,
+        angle::{degree, radian},
+        angular_acceleration::radian_per_second_squared,
+        angular_velocity::{degree_per_second, radian_per_second},
+        f64::*,
+        force::newton,
+        length::meter,
+        mass::kilogram,
+    },
+    typenum::Le,
 };
 
 use crate::simulation::UpdateContext;
@@ -99,7 +104,7 @@ impl RigidBodyOnHingeAxis {
         new_body
     }
 
-    pub fn apply_control_arm_force(&mut self, force: f64) {
+    pub fn apply_control_arm_force(&mut self, force: Force) {
         // Computing the normalized vector on which force is applied. This is the vector from anchor point of actuator to where
         // it's connected to the rigid body
         let force_support_vector_2d = self.anchor_point - self.control_arm_actual;
@@ -118,29 +123,30 @@ impl RigidBodyOnHingeAxis {
 
         // Final moment if magnitude of the force applied on the force support vector, cross product with
         // control arm position relative to hinge.
-        let torque = (force * force_support_vector_3d_normalized).cross(&control_arm_3d);
+        let torque =
+            (force.get::<newton>() * force_support_vector_3d_normalized).cross(&control_arm_3d);
 
         let torque_value = torque[2];
 
         self.sum_of_torques += torque_value;
     }
 
-    pub fn linear_extension_to_anchor(&self) -> f64 {
-        (self.anchor_point - self.control_arm_actual).norm()
+    pub fn linear_extension_to_anchor(&self) -> Length {
+        Length::new::<meter>((self.anchor_point - self.control_arm_actual).norm())
     }
 
-    pub fn min_linear_distance_to_anchor(&self) -> f64 {
+    pub fn min_linear_distance_to_anchor(&self) -> Length {
         let rotation_min = Rotation2::new(self.min_angle);
         let control_arm_min = rotation_min * self.control_arm;
 
-        (self.anchor_point - control_arm_min).norm()
+        Length::new::<meter>((self.anchor_point - control_arm_min).norm())
     }
 
-    pub fn max_linear_distance_to_anchor(&self) -> f64 {
+    pub fn max_linear_distance_to_anchor(&self) -> Length {
         let rotation_max = Rotation2::new(self.max_angle);
         let control_arm_max = rotation_max * self.control_arm;
 
-        (self.anchor_point - control_arm_max).norm()
+        Length::new::<meter>((self.anchor_point - control_arm_max).norm())
     }
 
     fn lock_requested_position_in_absolute_reference(&self) -> f64 {

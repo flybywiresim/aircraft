@@ -6,9 +6,14 @@ use uom::si::{
     angle::{degree, radian},
     angular_acceleration::radian_per_second_squared,
     angular_velocity::{degree_per_second, radian_per_second},
+    area::square_meter,
     f64::*,
+    force::newton,
+    length::meter,
     mass::kilogram,
     pressure::pascal,
+    ratio::ratio,
+    velocity::meter_per_second,
     volume::{cubic_meter, gallon},
     volume_rate::{cubic_meter_per_second, gallon_per_second},
 };
@@ -29,43 +34,58 @@ pub enum LinearActuatorMode {
     PositionControl = 1,
     Damping = 2,
 }
+
+// LinearActuator represents a classical linear actuator with a rod side area and a bore side area
+// It is connected between an anchor point on the plane and a control arm of a rigid body
+// When the actuator moves, it takes fluid on one side and gives back to reservoir the fluid on other side
+// Difference of volume between both side will cause variation of loop reservoir level.
+// It moves between a max absolute and minimum absolute position. The position is finally normalized from 0 to 1 (compressed to extended)
+//
+// It can behave it two main ways: its control valves are either closed, and it can't move, or valves are opened and
+// hydraulic power can move it with enough pressure.
+//
+// How those two modes are done: when valves are closed, actuator is constrained by a spring damper system,
+// which simulate the fluid compressibility resisting to rigid body movement.
+// When valves are opened, a controller will try to reach the specified target position. Controller works in flow
+// control so only the correct amount of flow is sent to the actuator.
 #[derive(PartialEq, Clone, Copy)]
 pub struct LinearActuator {
     number_of_actuators: u8,
 
-    position: f64,
-    speed: f64,
-    force: f64,
+    position_normalized: Ratio,
+    position: Length,
+    last_position: Length,
 
-    max_position: f64,
-    min_position: f64,
+    speed: Velocity,
+    force: Force,
 
-    total_throw: f64,
+    max_position: Length,
+    min_position: Length,
 
-    bore_side_diameter: f64,
-    bore_side_area: f64,
-    bore_side_volume: f64,
+    total_throw: Length,
 
-    rod_side_diameter: f64,
-    rod_side_area: f64,
-    rod_side_volume: f64,
+    bore_side_area: Area,
+    bore_side_volume: Volume,
 
-    volume_extension_ratio: f64,
+    rod_side_area: Area,
+    rod_side_volume: Volume,
+
+    volume_extension_ratio: Ratio,
     signed_flow: VolumeRate,
     flow_error_prev: VolumeRate,
 
     max_flow: VolumeRate,
     min_flow: VolumeRate,
 
-    delta_displacement: f64,
+    delta_displacement: Length,
 
     volume_to_actuator_accumulator: Volume,
     volume_to_res_accumulator: Volume,
 
     mode: LinearActuatorMode,
     is_control_valves_closed: bool,
-    closed_valves_reference_position: f64,
-    opened_valves_target_position: f64,
+    closed_valves_reference_position: Ratio,
+    opened_valves_target_position: Ratio,
 
     fluid_compression_spring_constant: f64,
     fluid_compression_damping_constant: f64,
@@ -78,8 +98,8 @@ impl LinearActuator {
     pub fn new(
         connected_body: &RigidBodyOnHingeAxis,
         number_of_actuators: u8,
-        bore_side_diameter: f64,
-        rod_side_diameter: f64,
+        bore_side_diameter: Length,
+        rod_diameter: Length,
         max_flow: VolumeRate,
         spring: f64,
         damping: f64,
@@ -89,35 +109,43 @@ impl LinearActuator {
         let min_pos = connected_body.min_linear_distance_to_anchor();
         let total_throw = max_pos - min_pos;
 
-        let bore_side_area = std::f64::consts::PI * (bore_side_diameter / 2.).powi(2);
-        let bore_side_volume = bore_side_area * total_throw * number_of_actuators as f64;
+        let bore_side_area_single_actuator = Area::new::<square_meter>(
+            std::f64::consts::PI * (bore_side_diameter.get::<meter>() / 2.).powi(2),
+        );
+        let bore_side_volume_single_actuator = bore_side_area_single_actuator * total_throw;
 
-        let rod_side_area = std::f64::consts::PI * (rod_side_diameter / 2.).powi(2);
-        let rod_side_volume = rod_side_area * total_throw * number_of_actuators as f64;
+        let rod_area = Area::new::<square_meter>(
+            std::f64::consts::PI * (rod_diameter.get::<meter>() / 2.).powi(2),
+        );
 
-        let volume_extension_ratio = bore_side_volume / rod_side_volume;
+        let rod_side_area_single_actuator = bore_side_area_single_actuator - rod_area;
+        let rod_side_volume_single_actuator = rod_side_area_single_actuator * total_throw;
+
+        let volume_extension_ratio: Ratio =
+            bore_side_volume_single_actuator / rod_side_volume_single_actuator;
 
         let actual_max_flow = number_of_actuators as f64 * max_flow;
 
         Self {
             number_of_actuators,
 
-            position: 0.,
-            speed: 0.,
-            force: 0.,
+            position_normalized: Ratio::new::<ratio>(0.),
+            position: min_pos,
+            last_position: min_pos,
+
+            speed: Velocity::new::<meter_per_second>(0.),
+            force: Force::new::<newton>(0.),
 
             max_position: max_pos,
             min_position: min_pos,
 
             total_throw: total_throw,
 
-            bore_side_diameter,
-            bore_side_area: bore_side_area,
-            bore_side_volume: bore_side_volume,
+            bore_side_area: bore_side_area_single_actuator * number_of_actuators as f64,
+            bore_side_volume: bore_side_volume_single_actuator * number_of_actuators as f64,
 
-            rod_side_diameter,
-            rod_side_area: rod_side_area,
-            rod_side_volume: rod_side_volume,
+            rod_side_area: rod_side_area_single_actuator * number_of_actuators as f64,
+            rod_side_volume: rod_side_volume_single_actuator * number_of_actuators as f64,
 
             volume_extension_ratio: volume_extension_ratio,
             signed_flow: VolumeRate::new::<gallon_per_second>(0.),
@@ -126,15 +154,15 @@ impl LinearActuator {
             max_flow: actual_max_flow,
             min_flow: -actual_max_flow / volume_extension_ratio,
 
-            delta_displacement: 0.,
+            delta_displacement: Length::new::<meter>(0.),
 
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
 
             mode: LinearActuatorMode::ClosedValves,
             is_control_valves_closed: false,
-            closed_valves_reference_position: 0.,
-            opened_valves_target_position: 0.,
+            closed_valves_reference_position: Ratio::new::<ratio>(0.),
+            opened_valves_target_position: Ratio::new::<ratio>(0.),
 
             fluid_compression_spring_constant: spring,
             fluid_compression_damping_constant: damping,
@@ -178,43 +206,50 @@ impl LinearActuator {
         connected_body: &RigidBodyOnHingeAxis,
         context: &UpdateContext,
     ) {
-        let last_position = self.position;
-        let absolute_linear_extension = connected_body.linear_extension_to_anchor();
+        self.last_position = self.position;
+        self.position = connected_body.linear_extension_to_anchor();
 
-        self.position = (absolute_linear_extension - self.min_position) / self.total_throw;
+        self.position_normalized = (self.position - self.min_position) / self.total_throw;
 
-        self.delta_displacement = self.position - last_position;
+        self.delta_displacement = self.position - self.last_position;
 
-        self.speed = self.delta_displacement / context.delta_as_secs_f64();
+        self.speed = self.delta_displacement / context.delta_as_time();
     }
 
     fn update_fluid_displacements(&mut self, context: &UpdateContext) {
-        let mut volume_to_actuator = 0.;
-        let mut volume_to_reservoir = 0.;
+        let mut volume_to_actuator = Volume::new::<cubic_meter>(0.);
+        let mut volume_to_reservoir = Volume::new::<cubic_meter>(0.);
 
-        if self.delta_displacement > 0. {
-            volume_to_actuator = self.delta_displacement * self.bore_side_volume;
+        if self.delta_displacement > Length::new::<meter>(0.) {
+            volume_to_actuator = self.delta_displacement * self.bore_side_area;
             volume_to_reservoir = volume_to_actuator / self.volume_extension_ratio;
-        } else if self.delta_displacement < 0. {
-            volume_to_actuator = -self.delta_displacement * self.rod_side_volume;
+        } else if self.delta_displacement < Length::new::<meter>(0.) {
+            volume_to_actuator = -self.delta_displacement * self.rod_side_area;
             volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
         }
 
-        self.signed_flow = VolumeRate::new::<cubic_meter_per_second>(
-            volume_to_actuator * self.delta_displacement.signum() / context.delta_as_secs_f64(),
-        );
+        if self.delta_displacement >= Length::new::<meter>(0.) {
+            self.signed_flow = volume_to_actuator / context.delta_as_time();
+        } else {
+            self.signed_flow = -volume_to_actuator / context.delta_as_time();
+        }
 
-        self.volume_to_actuator_accumulator += Volume::new::<cubic_meter>(volume_to_actuator);
-        self.volume_to_res_accumulator += Volume::new::<cubic_meter>(volume_to_reservoir);
+        self.volume_to_actuator_accumulator += volume_to_actuator;
+        self.volume_to_res_accumulator += volume_to_reservoir;
     }
 
     fn update_force(&mut self, hydraulic_pressure: Pressure) {
         if self.mode == LinearActuatorMode::ClosedValves {
-            let position_error = self.closed_valves_reference_position - self.position;
-            self.force = position_error * self.fluid_compression_spring_constant
-                - self.speed * self.fluid_compression_damping_constant;
+            let position_error = self.closed_valves_reference_position - self.position_normalized;
+            self.force = Force::new::<newton>(
+                position_error.get::<ratio>() * self.fluid_compression_spring_constant
+                    - self.speed.get::<meter_per_second>()
+                        * self.fluid_compression_damping_constant,
+            );
         } else if self.mode == LinearActuatorMode::Damping {
-            self.force = -self.speed * self.active_damping_constant;
+            self.force = Force::new::<newton>(
+                -self.speed.get::<meter_per_second>() * self.active_damping_constant,
+            );
         } else {
             self.compute_control_force(hydraulic_pressure);
         }
@@ -222,7 +257,7 @@ impl LinearActuator {
 
     fn close_control_valves(&mut self) {
         if self.mode != LinearActuatorMode::ClosedValves {
-            self.closed_valves_reference_position = self.position;
+            self.closed_valves_reference_position = self.position_normalized;
             self.mode = LinearActuatorMode::ClosedValves;
         }
     }
@@ -231,17 +266,17 @@ impl LinearActuator {
         self.mode = LinearActuatorMode::PositionControl;
     }
 
-    fn set_position_target(&mut self, target_position: f64) {
+    fn set_position_target(&mut self, target_position: Ratio) {
         self.opened_valves_target_position = target_position;
     }
 
     fn compute_control_force(&mut self, hydraulic_pressure: Pressure) {
-        let position_error = self.opened_valves_target_position - self.position;
+        let position_error = self.opened_valves_target_position - self.position_normalized;
 
         let mut open_loop_flow_target = 0.;
-        if position_error >= 0.001 {
+        if position_error >= Ratio::new::<ratio>(0.001) {
             open_loop_flow_target = self.max_flow.get::<gallon_per_second>();
-        } else if position_error <= -0.001 {
+        } else if position_error <= Ratio::new::<ratio>(-0.001) {
             open_loop_flow_target = self.min_flow.get::<gallon_per_second>();
         }
 
@@ -254,16 +289,20 @@ impl LinearActuator {
         let i_term = Self::DEFAULT_I_GAIN * flow_error;
 
         let force_gain = 200000.;
-        self.force += (p_term + i_term) * force_gain;
+        self.force += Force::new::<newton>((p_term + i_term) * force_gain);
 
-        if self.force > 0. {
-            if position_error > 0. && self.speed <= 0. {
-                let max_force = hydraulic_pressure.get::<pascal>() * self.bore_side_area;
+        if self.force > Force::new::<newton>(0.) {
+            if position_error > Ratio::new::<ratio>(0.)
+                && self.speed <= Velocity::new::<meter_per_second>(0.)
+            {
+                let max_force = hydraulic_pressure * self.bore_side_area;
                 self.force = self.force.min(max_force);
             }
         } else {
-            if position_error < 0. && self.speed >= 0. {
-                let max_force = -1. * hydraulic_pressure.get::<pascal>() * self.rod_side_area;
+            if position_error < Ratio::new::<ratio>(0.)
+                && self.speed >= Velocity::new::<meter_per_second>(0.)
+            {
+                let max_force = -1. * hydraulic_pressure * self.rod_side_area;
                 self.force = self.force.max(max_force);
             }
         }
@@ -293,7 +332,7 @@ impl Actuator for LinearActuator {
 
 pub trait HydraulicAssemblyController {
     fn mode_requested(&self) -> LinearActuatorMode;
-    fn position_request(&self) -> f64;
+    fn position_request(&self) -> Ratio;
     fn should_lock(&self) -> bool;
     fn lock_position_request(&self) -> f64;
 }
@@ -378,7 +417,7 @@ mod tests {
 
         let mut time = 0.;
 
-        let actuator_position_init = actuator.position;
+        let actuator_position_init = actuator.position_normalized;
 
         for _ in 0..5 {
             actuator.update_before_rigid_body(
@@ -400,12 +439,12 @@ mod tests {
                 ),
             );
 
-            assert!(actuator.position == actuator_position_init);
+            assert!(actuator.position_normalized == actuator_position_init);
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}",
                 rigid_body.position_normalized(),
-                actuator.position,
-                actuator.force
+                actuator.position_normalized.get::<ratio>(),
+                actuator.force.get::<newton>()
             );
 
             time += dt;
@@ -422,7 +461,7 @@ mod tests {
 
         let mut time = 0.;
 
-        let actuator_position_init = actuator.position;
+        let actuator_position_init = actuator.position_normalized;
 
         for _ in 0..100 {
             actuator.update_before_rigid_body(
@@ -445,7 +484,7 @@ mod tests {
             );
 
             if time <= 0.1 {
-                assert!(actuator.position == actuator_position_init);
+                assert!(actuator.position_normalized == actuator_position_init);
             }
 
             if time > 0.1 {
@@ -453,14 +492,14 @@ mod tests {
             }
 
             if time > 0.2 {
-                assert!(actuator.position > actuator_position_init);
+                assert!(actuator.position_normalized > actuator_position_init);
             }
 
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
                 rigid_body.position_normalized(),
-                actuator.position,
-                actuator.force,
+                actuator.position_normalized.get::<ratio>(),
+                actuator.force.get::<newton>(),
                 time
             );
 
@@ -478,10 +517,10 @@ mod tests {
 
         let mut time = 0.;
 
-        let actuator_position_init = actuator.position;
+        let actuator_position_init = actuator.position_normalized;
 
         rigid_body.unlock();
-        actuator.set_position_target(1.);
+        actuator.set_position_target(Ratio::new::<ratio>(1.));
         for _ in 0..700 {
             actuator.update_before_rigid_body(
                 &mut rigid_body,
@@ -503,18 +542,18 @@ mod tests {
             );
 
             if time > 0.2 {
-                assert!(actuator.position > actuator_position_init);
+                assert!(actuator.position_normalized > actuator_position_init);
             }
 
             if time > 25. {
-                assert!(actuator.position > 0.9);
+                assert!(actuator.position_normalized > Ratio::new::<ratio>(0.9));
             }
 
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
                 rigid_body.position_normalized(),
-                actuator.position,
-                actuator.force,
+                actuator.position_normalized.get::<ratio>(),
+                actuator.force.get::<newton>(),
                 time
             );
 
@@ -532,14 +571,16 @@ mod tests {
 
         let mut time = 0.;
 
-        let actuator_position_init = actuator.position;
+        let actuator_position_init = actuator.position_normalized;
 
         rigid_body.unlock();
-        actuator.set_position_target(1.0);
+        actuator.set_position_target(Ratio::new::<ratio>(1.0));
+        let mut control_mode = LinearActuatorMode::PositionControl;
+
         for _ in 0..700 {
             actuator.update_before_rigid_body(
                 &mut rigid_body,
-                LinearActuatorMode::PositionControl,
+                control_mode,
                 Pressure::new::<psi>(1500.),
             );
             rigid_body.update(&context(
@@ -557,23 +598,23 @@ mod tests {
             );
 
             if time > 0.2 {
-                assert!(actuator.position > actuator_position_init);
+                assert!(actuator.position_normalized > actuator_position_init);
             }
 
             if time > 25. && time < 25. + dt {
-                assert!(actuator.position > 0.9);
-                actuator.close_control_valves();
+                assert!(actuator.position_normalized > Ratio::new::<ratio>(0.9));
+                control_mode = LinearActuatorMode::ClosedValves;
             }
 
             if time > 26. {
-                assert!(actuator.position > 0.7);
+                assert!(actuator.position_normalized > Ratio::new::<ratio>(0.7));
             }
 
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
                 rigid_body.position_normalized(),
-                actuator.position,
-                actuator.force,
+                actuator.position_normalized.get::<ratio>(),
+                actuator.force.get::<newton>(),
                 time
             );
 
@@ -592,7 +633,7 @@ mod tests {
         let mut time = 0.;
 
         rigid_body.unlock();
-        actuator.set_position_target(1.0);
+        actuator.set_position_target(Ratio::new::<ratio>(1.0));
         let mut requested_mode = LinearActuatorMode::PositionControl;
         for _ in 0..700 {
             actuator.update_before_rigid_body(
@@ -615,7 +656,7 @@ mod tests {
             );
 
             if time > 25. && time < 25. + dt {
-                assert!(actuator.position > 0.9);
+                assert!(actuator.position_normalized > Ratio::new::<ratio>(0.9));
                 requested_mode = LinearActuatorMode::ClosedValves;
             }
 
@@ -626,8 +667,8 @@ mod tests {
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
                 rigid_body.position_normalized(),
-                actuator.position,
-                actuator.force,
+                actuator.position_normalized.get::<ratio>(),
+                actuator.force.get::<newton>(),
                 time
             );
 
@@ -674,8 +715,8 @@ mod tests {
         LinearActuator::new(
             &rigid_body,
             2,
-            0.04422,
-            0.03366,
+            Length::new::<meter>(0.04422),
+            Length::new::<meter>(0.03366),
             VolumeRate::new::<gallon_per_second>(0.008),
             800000.,
             15000.,
