@@ -306,14 +306,6 @@ impl LinearActuator {
                 self.force = self.force.max(max_force);
             }
         }
-
-        // println!(
-        //     "Flow target {:.3}, Curren Flow {:.3}, Flow error {:.1}, ActuatorForce{:.2}",
-        //     open_loop_flow_target,
-        //     self.signed_flow.get::<gallon_per_second>(),
-        //     flow_error,
-        //     self.force,
-        // );
     }
 }
 
