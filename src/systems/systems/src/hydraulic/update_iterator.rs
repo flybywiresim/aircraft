@@ -11,7 +11,7 @@ impl FixedStepLoop {
     pub fn new(time_step: Duration) -> Self {
         Self {
             lag_time_accumulator: Duration::from_millis(0),
-            time_step: time_step,
+            time_step,
             number_of_loops_this_iteration: 0,
             number_of_loops_remaining: 0,
         }
@@ -213,6 +213,7 @@ mod fixed_tests {
     }
 }
 
+#[cfg(test)]
 mod max_step_tests {
     use super::*;
 
@@ -259,7 +260,6 @@ mod max_step_tests {
         let test_duration = Duration::from_secs_f64(0.320);
 
         max_step.update(&context(test_duration));
-        let calculated_num_of_loops = max_step.number_of_loops_this_iteration;
 
         let mut actual_loop_num = 0;
         let mut time_simulated = Duration::from_secs(0);
@@ -268,7 +268,7 @@ mod max_step_tests {
             actual_loop_num += 1;
         }
 
-        assert!(actual_loop_num == calculated_num_of_loops);
+        assert!(actual_loop_num == max_step.number_of_loops_this_iteration);
         assert!(
             time_simulated <= test_duration + Duration::from_millis(5)
                 && time_simulated >= test_duration - Duration::from_millis(5)

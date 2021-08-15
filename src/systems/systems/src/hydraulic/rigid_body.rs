@@ -1,18 +1,9 @@
 extern crate nalgebra as na;
-use na::{Rotation2, Rotation3, Unit, Vector2, Vector3};
+use na::{Rotation2, Rotation3, Vector2, Vector3};
 
-use uom::{
-    si::{
-        acceleration::meter_per_second_squared,
-        angle::{degree, radian},
-        angular_acceleration::radian_per_second_squared,
-        angular_velocity::{degree_per_second, radian_per_second},
-        f64::*,
-        force::newton,
-        length::meter,
-        mass::kilogram,
-    },
-    typenum::Le,
+use uom::si::{
+    acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
+    mass::kilogram,
 };
 
 use crate::simulation::UpdateContext;
@@ -266,12 +257,8 @@ mod tests {
 
     use std::time::Duration;
     use uom::si::{
-        acceleration::meter_per_second_squared,
-        angle::{degree, radian},
-        length::foot,
-        pressure::{pascal, psi},
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
+        acceleration::meter_per_second_squared, angle::degree, length::foot,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     #[test]
@@ -308,7 +295,7 @@ mod tests {
             ));
             time += dt;
             println!("Pos {} t={}", rigid_body.position, time);
-            assert!(rigid_body.position != init_pos);
+            assert!((rigid_body.position - init_pos).abs() > f64::EPSILON);
         }
     }
 
@@ -329,7 +316,7 @@ mod tests {
             ));
             time += dt;
             println!("Pos {} t={}", rigid_body.position, time);
-            assert!(rigid_body.position == init_pos);
+            assert!((rigid_body.position - init_pos).abs() < f64::EPSILON);
         }
     }
 
@@ -351,7 +338,7 @@ mod tests {
             time += dt;
 
             if time < 1. {
-                assert!(rigid_body.position == init_pos);
+                assert!((rigid_body.position - init_pos).abs() < f64::EPSILON);
             }
 
             if time >= 1. && time < 1. + dt {
@@ -360,7 +347,7 @@ mod tests {
             }
 
             if time > 1. + dt {
-                assert!(rigid_body.position != init_pos);
+                assert!((rigid_body.position - init_pos).abs() > f64::EPSILON);
             }
 
             println!("Pos {} t={}", rigid_body.position_normalized(), time);
@@ -372,8 +359,6 @@ mod tests {
         let mut rigid_body = cargo_door_body(false);
 
         let dt = 0.05;
-
-        let init_pos = rigid_body.position;
 
         let mut time = 0.;
 
@@ -395,7 +380,7 @@ mod tests {
         }
 
         assert!(rigid_body.is_locked);
-        assert!(rigid_body.position_normalized() == 0.5);
+        assert!((rigid_body.position_normalized() - 0.5).abs() < f64::EPSILON);
     }
 
     fn context(delta_time: Duration, pitch: Angle, bank: Angle) -> UpdateContext {

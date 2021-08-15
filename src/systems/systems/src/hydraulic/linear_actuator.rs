@@ -1,21 +1,14 @@
-extern crate nalgebra as na;
-use na::{Rotation2, Rotation3, Unit, Vector2, Vector3};
+
 
 use uom::si::{
-    acceleration::meter_per_second_squared,
-    angle::{degree, radian},
-    angular_acceleration::radian_per_second_squared,
-    angular_velocity::{degree_per_second, radian_per_second},
     area::square_meter,
     f64::*,
     force::newton,
     length::meter,
-    mass::kilogram,
-    pressure::pascal,
     ratio::ratio,
     velocity::meter_per_second,
     volume::{cubic_meter, gallon},
-    volume_rate::{cubic_meter_per_second, gallon_per_second},
+    volume_rate::gallon_per_second,
 };
 
 use super::rigid_body::RigidBodyOnHingeAxis;
@@ -95,6 +88,7 @@ impl LinearActuator {
     const DEFAULT_I_GAIN: f64 = 0.2;
     const DEFAULT_P_GAIN: f64 = 0.05;
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         connected_body: &RigidBodyOnHingeAxis,
         number_of_actuators: u8,
@@ -139,7 +133,7 @@ impl LinearActuator {
             max_position: max_pos,
             min_position: min_pos,
 
-            total_throw: total_throw,
+            total_throw,
 
             bore_side_area: bore_side_area_single_actuator * number_of_actuators as f64,
             bore_side_volume: bore_side_volume_single_actuator * number_of_actuators as f64,
@@ -147,7 +141,7 @@ impl LinearActuator {
             rod_side_area: rod_side_area_single_actuator * number_of_actuators as f64,
             rod_side_volume: rod_side_volume_single_actuator * number_of_actuators as f64,
 
-            volume_extension_ratio: volume_extension_ratio,
+            volume_extension_ratio,
             signed_flow: VolumeRate::new::<gallon_per_second>(0.),
             flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
 
@@ -298,13 +292,11 @@ impl LinearActuator {
                 let max_force = hydraulic_pressure * self.bore_side_area;
                 self.force = self.force.min(max_force);
             }
-        } else {
-            if position_error < Ratio::new::<ratio>(0.)
-                && self.speed >= Velocity::new::<meter_per_second>(0.)
-            {
-                let max_force = -1. * hydraulic_pressure * self.rod_side_area;
-                self.force = self.force.max(max_force);
-            }
+        } else if position_error < Ratio::new::<ratio>(0.)
+            && self.speed >= Velocity::new::<meter_per_second>(0.)
+        {
+            let max_force = -1. * hydraulic_pressure * self.rod_side_area;
+            self.force = self.force.max(max_force);
         }
     }
 }
@@ -387,16 +379,16 @@ impl HydraulicActuatorAssembly {
 
 #[cfg(test)]
 mod tests {
+    extern crate nalgebra as na;
+    use na::{ Vector2, Vector3};
+
     use super::*;
 
     use std::time::Duration;
     use uom::si::{
-        acceleration::meter_per_second_squared,
-        angle::{degree, radian},
-        length::foot,
-        pressure::{pascal, psi},
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
+        acceleration::meter_per_second_squared, angle::degree, length::foot, pressure::psi,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
+        mass::kilogram,
     };
 
     #[test]
@@ -406,8 +398,6 @@ mod tests {
         let mut actuator = cargo_door_actuator(&rigid_body);
 
         let dt = 0.05;
-
-        let mut time = 0.;
 
         let actuator_position_init = actuator.position_normalized;
 
@@ -438,8 +428,6 @@ mod tests {
                 actuator.position_normalized.get::<ratio>(),
                 actuator.force.get::<newton>()
             );
-
-            time += dt;
         }
     }
 

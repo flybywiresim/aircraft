@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 use na::{Vector2, Vector3};
 
-use std::{str::FromStr, time::Duration};
+use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
@@ -446,11 +446,18 @@ impl A320Hydraulic {
                 self.yellow_loop.pressure(),
             );
 
+            self.aft_cargo_door_assembly.update(
+                &self.aft_cargo_door_controller,
+                &context.with_delta(cur_time_step),
+                self.yellow_loop.pressure(),
+            );
+
             self.ram_air_turbine
                 .update_physics(&cur_time_step, &context.indicated_airspeed());
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     // Update with same refresh rate as the sim
     fn update_every_frame(
         &mut self,
@@ -499,6 +506,14 @@ impl A320Hydraulic {
 
         self.forward_cargo_door
             .update(&self.forward_cargo_door_assembly);
+
+        self.aft_cargo_door_controller.update(
+            context,
+            &self.aft_cargo_door,
+            self.yellow_loop.pressure(),
+        );
+
+        self.aft_cargo_door.update(&self.aft_cargo_door_assembly);
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -691,9 +706,8 @@ impl SimulationElement for A320Hydraulic {
         self.forward_cargo_door_controller.accept(visitor);
         self.forward_cargo_door.accept(visitor);
 
-        // TODO Uncomment when animation of aft door available
-        //self.aft_cargo_door_controller.accept(visitor);
-        //self.aft_cargo_door.accept(visitor);
+        self.aft_cargo_door_controller.accept(visitor);
+        self.aft_cargo_door.accept(visitor);
 
         self.pushback_tug.accept(visitor);
 
@@ -2122,12 +2136,8 @@ mod tests {
         use systems::simulation::test::TestBed;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
-            acceleration::meter_per_second_squared,
-            angle::radian,
             length::foot,
             ratio::{percent, ratio},
-            thermodynamic_temperature::degree_celsius,
-            velocity::knot,
             volume::liter,
         };
 
@@ -5594,7 +5604,7 @@ mod tests {
                 .get::<liter>();
 
             // For one cargo door we expect losing between 0.6 to 0.8 liter of fluid into the two actuators
-            assert!(volume_used_liter >= 0.6 && volume_used_liter <= 0.8);
+            assert!((0.6..=0.8).contains(&volume_used_liter));
         }
 
         #[test]

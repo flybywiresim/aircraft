@@ -1,7 +1,5 @@
 use std::time::Duration;
-use uom::si::{
-    angle::radian, f64::*, pressure::inch_of_mercury, time::second, velocity::foot_per_minute,
-};
+use uom::si::{f64::*, pressure::inch_of_mercury, time::second, velocity::foot_per_minute};
 
 use super::{Read, SimulatorReader};
 
@@ -35,6 +33,7 @@ impl UpdateContext {
     pub(crate) const PLANE_PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     pub(crate) const PLANE_BANK_KEY: &'static str = "PLANE BANK DEGREES";
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         delta: Duration,
         indicated_airspeed: Velocity,
