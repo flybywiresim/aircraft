@@ -89,15 +89,74 @@ export class TFLeg implements Leg {
         return loc;
     }
 
+    getIntermediatePoint(start: LatLongData, end: LatLongData, fraction: number): LatLongData {
+        const Phi1 = start.lat * Avionics.Utils.DEG2RAD;
+        const Gamma1 = start.long * Avionics.Utils.DEG2RAD;
+        const Phi2 = end.lat * Avionics.Utils.DEG2RAD;
+        const Gamma2 = end.long * Avionics.Utils.DEG2RAD;
+
+        const deltaPhi = Phi2 - Phi1;
+        const deltaGamma = Gamma2 - Gamma1;
+
+        const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) + Math.cos(Phi1) * Math.cos(Phi2) * Math.sin(deltaGamma / 2) * Math.sin(deltaGamma / 2);
+        const delta = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        const A = Math.sin((1 - fraction) * delta) / Math.sin(delta);
+        const B = Math.sin(fraction * delta) / Math.sin(delta);
+
+        const x = A * Math.cos(Phi1) * Math.cos(Gamma1) + B * Math.cos(Phi2) * Math.cos(Gamma2);
+        const y = A * Math.cos(Phi1) * Math.sin(Gamma1) + B * Math.cos(Phi2) * Math.sin(Gamma2);
+        const z = A * Math.sin(Phi1) + B * Math.sin(Phi2);
+
+        const Phi3 = Math.atan2(z, Math.sqrt(x * x + y * y));
+        const Gamma3 = Math.atan2(y, x);
+
+        const point: LatLongData = {
+            lat: Phi3 * Avionics.Utils.RAD2DEG,
+            long: Gamma3 * Avionics.Utils.RAD2DEG,
+        };
+        return point;
+    }
+
+    getAlongTrackDistanceTo(start: LatLongData, end: LatLongData, ppos: LatLongData): number {
+        const R = EARTH_RADIUS_NM;
+
+        const d13 = Avionics.Utils.computeGreatCircleDistance(start, ppos) / R;
+        const Theta13 = Avionics.Utils.DEG2RAD * Avionics.Utils.computeGreatCircleHeading(start, ppos);
+        const Theta12 = Avionics.Utils.DEG2RAD * Avionics.Utils.computeGreatCircleHeading(start, end);
+
+        const deltaXt = Math.asin(Math.sin(d13) * Math.sin(Theta13 - Theta12));
+
+        const deltaAt = Math.acos(Math.cos(d13) / Math.abs(Math.cos(deltaXt)));
+
+        return deltaAt * Math.sign(Math.cos(Theta12 - Theta13)) * R;
+    }
+
     getGuidanceParameters(ppos: LatLongData, trueTrack: Degrees): GuidanceParameters | null {
         const fromLatLongAlt = this.from.infos.coordinates;
+        const toLatLongAlt = this.to.infos.coordinates;
 
-        const desiredTrack = this.bearing;
+        // track angle error
+        const totalTrackDistance = Avionics.Utils.computeGreatCircleDistance(
+            fromLatLongAlt,
+            toLatLongAlt,
+        );
+        const alongTrackDistance = this.getAlongTrackDistanceTo(
+            fromLatLongAlt,
+            toLatLongAlt,
+            ppos,
+        );
+        const intermediatePoint = this.getIntermediatePoint(
+            fromLatLongAlt,
+            toLatLongAlt,
+            Math.min(Math.max(alongTrackDistance / totalTrackDistance, 0.05), 0.95),
+        );
+        const desiredTrack = Avionics.Utils.computeGreatCircleHeading(intermediatePoint, toLatLongAlt);
         const trackAngleError = MathUtils.mod(desiredTrack - trueTrack + 180, 360) - 180;
 
         // crosstrack error
         const bearingAC = Avionics.Utils.computeGreatCircleHeading(fromLatLongAlt, ppos);
-        const bearingAB = desiredTrack;
+        const bearingAB = Avionics.Utils.computeGreatCircleHeading(fromLatLongAlt, toLatLongAlt);
         const distanceAC = Avionics.Utils.computeDistance(fromLatLongAlt, ppos);
 
         const desiredOffset = 0;
@@ -105,7 +164,7 @@ export class TFLeg implements Leg {
             Math.asin(
                 Math.sin(Avionics.Utils.DEG2RAD * (distanceAC / EARTH_RADIUS_NM))
                 * Math.sin(Avionics.Utils.DEG2RAD * (bearingAC - bearingAB)),
-            ) / Avionics.Utils.DEG2RAD
+            ) * Avionics.Utils.RAD2DEG
         ) * EARTH_RADIUS_NM;
         const crossTrackError = desiredOffset - actualOffset;
 
