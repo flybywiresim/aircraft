@@ -3,7 +3,7 @@ use na::{Rotation2, Rotation3, Vector2, Vector3};
 
 use uom::si::{
     acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
-    mass::kilogram,
+    mass::kilogram, ratio::ratio,
 };
 
 use crate::simulation::UpdateContext;
@@ -32,8 +32,8 @@ pub struct RigidBodyOnHingeAxis {
     acceleration: f64,
     sum_of_torques: f64,
 
-    position_normalized: f64,
-    position_normalized_prev: f64,
+    position_normalized: Ratio,
+    position_normalized_prev: Ratio,
 
     mass: Mass,
     inertia_at_hinge: f64,
@@ -41,7 +41,7 @@ pub struct RigidBodyOnHingeAxis {
     natural_damping: f64,
     max_speed: f64,
 
-    lock_position_request: f64,
+    lock_position_request: Ratio,
     is_lock_requested: bool,
     is_locked: bool,
 }
@@ -79,13 +79,13 @@ impl RigidBodyOnHingeAxis {
             speed: 0.,
             acceleration: 0.,
             sum_of_torques: 0.,
-            position_normalized: 0.,
-            position_normalized_prev: 0.,
+            position_normalized: Ratio::new::<ratio>(0.),
+            position_normalized_prev: Ratio::new::<ratio>(0.),
             mass,
             inertia_at_hinge,
             natural_damping,
             max_speed: 4.0,
-            lock_position_request: min_angle.get::<radian>(),
+            lock_position_request: Ratio::new::<ratio>(0.),
             is_lock_requested: locked,
             is_locked: locked,
         };
@@ -141,17 +141,18 @@ impl RigidBodyOnHingeAxis {
     }
 
     fn lock_requested_position_in_absolute_reference(&self) -> f64 {
-        self.lock_position_request * self.throw + self.min_angle
+        self.lock_position_request.get::<ratio>() * self.throw + self.min_angle
     }
 
-    pub fn position_normalized(&self) -> f64 {
+    pub fn position_normalized(&self) -> Ratio {
         self.position_normalized
     }
 
     fn update_position_normalized(&mut self) {
         self.position_normalized_prev = self.position_normalized;
 
-        self.position_normalized = (self.position - self.min_angle) / self.throw;
+        self.position_normalized =
+            Ratio::new::<ratio>((self.position - self.min_angle) / self.throw);
     }
 
     fn update_all_rotations(&mut self) {
@@ -241,7 +242,7 @@ impl RigidBodyOnHingeAxis {
         self.is_lock_requested = false;
     }
 
-    pub fn lock_at_position_normalized(&mut self, position_normalized: f64) {
+    pub fn lock_at_position_normalized(&mut self, position_normalized: Ratio) {
         self.is_lock_requested = true;
         self.lock_position_request = position_normalized;
     }
@@ -350,7 +351,11 @@ mod tests {
                 assert!((rigid_body.position - init_pos).abs() > f64::EPSILON);
             }
 
-            println!("Pos {} t={}", rigid_body.position_normalized(), time);
+            println!(
+                "Pos {} t={}",
+                rigid_body.position_normalized().get::<ratio>(),
+                time
+            );
         }
     }
 
@@ -362,7 +367,7 @@ mod tests {
 
         let mut time = 0.;
 
-        rigid_body.lock_at_position_normalized(0.5);
+        rigid_body.lock_at_position_normalized(Ratio::new::<ratio>(0.5));
 
         assert!(rigid_body.is_lock_requested);
 
@@ -376,11 +381,15 @@ mod tests {
             ));
             time += dt;
 
-            println!("Pos {} t={}", rigid_body.position_normalized(), time);
+            println!(
+                "Pos {} t={}",
+                rigid_body.position_normalized().get::<ratio>(),
+                time
+            );
         }
 
         assert!(rigid_body.is_locked);
-        assert!((rigid_body.position_normalized() - 0.5).abs() < f64::EPSILON);
+        assert!((rigid_body.position_normalized().get::<ratio>() - 0.5).abs() < f64::EPSILON);
     }
 
     fn context(delta_time: Duration, pitch: Angle, bank: Angle) -> UpdateContext {

@@ -1682,8 +1682,8 @@ impl HydraulicAssemblyController for A320DoorController {
     fn should_lock(&self) -> bool {
         !self.should_unlock
     }
-    fn lock_position_request(&self) -> f64 {
-        0.
+    fn lock_position_request(&self) -> Ratio {
+        Ratio::new::<ratio>(0.)
     }
 }
 impl SimulationElement for A320DoorController {
@@ -1719,7 +1719,7 @@ impl Door {
 
     fn update(&mut self, hydraulic_assembly: &HydraulicActuatorAssembly) {
         self.is_locked = hydraulic_assembly.is_locked();
-        self.position = hydraulic_assembly.position();
+        self.position = hydraulic_assembly.position_normalized().get::<ratio>();
     }
 }
 impl SimulationElement for Door {

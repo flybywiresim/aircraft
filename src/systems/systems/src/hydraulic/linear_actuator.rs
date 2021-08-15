@@ -1,5 +1,3 @@
-
-
 use uom::si::{
     area::square_meter,
     f64::*,
@@ -318,7 +316,7 @@ pub trait HydraulicAssemblyController {
     fn mode_requested(&self) -> LinearActuatorMode;
     fn position_request(&self) -> Ratio;
     fn should_lock(&self) -> bool;
-    fn lock_position_request(&self) -> f64;
+    fn lock_position_request(&self) -> Ratio;
 }
 pub struct HydraulicActuatorAssembly {
     linear_actuator: LinearActuator,
@@ -372,7 +370,7 @@ impl HydraulicActuatorAssembly {
         self.rigid_body.is_locked()
     }
 
-    pub fn position(&self) -> f64 {
+    pub fn position_normalized(&self) -> Ratio {
         self.rigid_body.position_normalized()
     }
 }
@@ -380,15 +378,14 @@ impl HydraulicActuatorAssembly {
 #[cfg(test)]
 mod tests {
     extern crate nalgebra as na;
-    use na::{ Vector2, Vector3};
+    use na::{Vector2, Vector3};
 
     use super::*;
 
     use std::time::Duration;
     use uom::si::{
-        acceleration::meter_per_second_squared, angle::degree, length::foot, pressure::psi,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
-        mass::kilogram,
+        acceleration::meter_per_second_squared, angle::degree, length::foot, mass::kilogram,
+        pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     #[test]
@@ -424,7 +421,7 @@ mod tests {
             assert!(actuator.position_normalized == actuator_position_init);
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}",
-                rigid_body.position_normalized(),
+                rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
                 actuator.force.get::<newton>()
             );
@@ -477,7 +474,7 @@ mod tests {
 
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
-                rigid_body.position_normalized(),
+                rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
                 actuator.force.get::<newton>(),
                 time
@@ -531,7 +528,7 @@ mod tests {
 
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
-                rigid_body.position_normalized(),
+                rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
                 actuator.force.get::<newton>(),
                 time
@@ -592,7 +589,7 @@ mod tests {
 
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
-                rigid_body.position_normalized(),
+                rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
                 actuator.force.get::<newton>(),
                 time
@@ -646,7 +643,7 @@ mod tests {
 
             println!(
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
-                rigid_body.position_normalized(),
+                rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
                 actuator.force.get::<newton>(),
                 time
