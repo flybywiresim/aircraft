@@ -111,7 +111,7 @@ export class Geometry {
 
         // calculate RAD
         const maxRollRate = 5; // deg / s, TODO picked off the wind
-        const k2 = 0.0092;
+        const k2 = 0.0045;
         const rad = gs / 3600 * (Math.sqrt(1 + 2 * k2 * 9.81 * deltaPhi / maxRollRate) - 1) / (k2 * 9.81);
 
         // TODO consider case where RAD > transition distance
