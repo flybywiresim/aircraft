@@ -170,7 +170,7 @@ impl Aircraft for A320 {
         self.pneumatic.update(
             context,
             [&self.engine_1, &self.engine_2],
-            self.apu.bleed_air_valve_is_open(),
+            &self.apu,
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
         )

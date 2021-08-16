@@ -20,6 +20,10 @@ use uom::si::{
     volume::{cubic_inch, cubic_meter, gallon},
 };
 
+pub trait ControlledPneumaticValveSignal {
+    fn target_open_amount(&self) -> Ratio;
+}
+
 pub trait BleedAirValveState {
     fn bleed_air_valve_is_open(&self) -> bool;
 }
@@ -120,10 +124,10 @@ impl DefaultValve {
         Self::new(Ratio::new::<ratio>(1.))
     }
 
-    pub fn update_open_amount(
+    pub fn update_open_amount<T: ControlledPneumaticValveSignal>(
         &mut self,
         context: &UpdateContext,
-        controller: &impl ControllerSignal<PneumaticValveSignal>,
+        controller: &impl ControllerSignal<T>,
     ) {
         if let Some(signal) = controller.signal() {
             self.open_amount = signal.target_open_amount();
@@ -403,6 +407,27 @@ impl From<f64> for CrossBleedValveSelectorMode {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum EngineState {
+    Off = 0,
+    On = 1,
+    Starting = 2,
+    Shutting = 3,
+}
+
+read_write_enum!(EngineState);
+
+impl From<f64> for EngineState {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            1 => EngineState::On,
+            2 => EngineState::Starting,
+            3 => EngineState::Shutting,
+            _ => EngineState::Off,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -440,6 +465,12 @@ mod tests {
     impl ControllerSignal<PneumaticValveSignal> for ValveTestController {
         fn signal(&self) -> Option<PneumaticValveSignal> {
             Some(PneumaticValveSignal::new(self.command_open_amount))
+        }
+    }
+
+    impl ControlledPneumaticValveSignal for PneumaticValveSignal {
+        fn target_open_amount(&self) -> Ratio {
+            self.target_open_amount()
         }
     }
 
