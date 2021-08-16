@@ -24,7 +24,7 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
         linear_actuator::{
-            HydraulicActuatorAssembly, HydraulicAssemblyController, LinearActuator,
+            Actuator, HydraulicActuatorAssembly, HydraulicAssemblyController, LinearActuator,
             LinearActuatorMode,
         },
         rigid_body::RigidBodyOnHingeAxis,
@@ -81,6 +81,12 @@ fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
     )
 }
 
+fn cargo_door_assembly() -> HydraulicActuatorAssembly {
+    let cargo_door_body = cargo_door_body(true);
+    let cargo_actuator = cargo_door_actuator(&cargo_door_body);
+    HydraulicActuatorAssembly::new(cargo_actuator, cargo_door_body)
+}
+
 pub(super) struct A320Hydraulic {
     core_hydraulic_updater: FixedStepLoop,
     physics_updater: MaxStepLoop,
@@ -122,10 +128,8 @@ pub(super) struct A320Hydraulic {
 
     forward_cargo_door: Door,
     forward_cargo_door_controller: A320DoorController,
-    forward_cargo_door_assembly: HydraulicActuatorAssembly,
     aft_cargo_door: Door,
     aft_cargo_door_controller: A320DoorController,
-    aft_cargo_door_assembly: HydraulicActuatorAssembly,
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
@@ -167,8 +171,6 @@ impl A320Hydraulic {
     const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(50);
 
     pub(super) fn new() -> A320Hydraulic {
-        let cargo_door_body = cargo_door_body(true);
-        let cargo_actuator = cargo_door_actuator(&cargo_door_body);
         A320Hydraulic {
             core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
             physics_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
@@ -284,19 +286,11 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(),
 
-            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
+            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID, cargo_door_assembly()),
             forward_cargo_door_controller: A320DoorController::new(Self::FORWARD_CARGO_DOOR_ID),
-            forward_cargo_door_assembly: HydraulicActuatorAssembly::new(
-                cargo_actuator,
-                cargo_door_body,
-            ),
 
-            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID),
+            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID, cargo_door_assembly()),
             aft_cargo_door_controller: A320DoorController::new(Self::AFT_CARGO_DOOR_ID),
-            aft_cargo_door_assembly: HydraulicActuatorAssembly::new(
-                cargo_actuator,
-                cargo_door_body,
-            ),
         }
     }
 
@@ -440,13 +434,13 @@ impl A320Hydraulic {
     // Update with same refresh rate as the sim
     fn update_max_fixed_step(&mut self, context: &UpdateContext) {
         while let Some(cur_time_step) = self.physics_updater.next() {
-            self.forward_cargo_door_assembly.update(
+            self.forward_cargo_door.update(
                 &self.forward_cargo_door_controller,
                 &context.with_delta(cur_time_step),
                 self.yellow_loop.pressure(),
             );
 
-            self.aft_cargo_door_assembly.update(
+            self.aft_cargo_door.update(
                 &self.aft_cargo_door_controller,
                 &context.with_delta(cur_time_step),
                 self.yellow_loop.pressure(),
@@ -504,16 +498,11 @@ impl A320Hydraulic {
             self.yellow_loop.pressure(),
         );
 
-        self.forward_cargo_door
-            .update(&self.forward_cargo_door_assembly);
-
         self.aft_cargo_door_controller.update(
             context,
             &self.aft_cargo_door,
             self.yellow_loop.pressure(),
         );
-
-        self.aft_cargo_door.update(&self.aft_cargo_door_assembly);
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -533,7 +522,7 @@ impl A320Hydraulic {
             .update_actuator_volumes(&mut self.braking_circuit_altn);
 
         self.yellow_loop
-            .update_actuator_volumes(self.forward_cargo_door_assembly.actuator());
+            .update_actuator_volumes(self.forward_cargo_door.actuator());
     }
 
     fn update_blue_actuators_volume(&mut self) {}
@@ -1693,14 +1682,17 @@ impl SimulationElement for A320DoorController {
 }
 
 struct Door {
+    hydraulic_assembly: HydraulicActuatorAssembly,
+
     position_id: String,
     position: f64,
 
     is_locked: bool,
 }
 impl Door {
-    fn new(id: &str) -> Self {
+    fn new(id: &str, hydraulic_assembly: HydraulicActuatorAssembly) -> Self {
         Self {
+            hydraulic_assembly,
             position_id: format!("{}_DOOR_CARGO_POSITION", id),
 
             position: 0.,
@@ -1717,9 +1709,20 @@ impl Door {
         self.is_locked
     }
 
-    fn update(&mut self, hydraulic_assembly: &HydraulicActuatorAssembly) {
-        self.is_locked = hydraulic_assembly.is_locked();
-        self.position = hydraulic_assembly.position_normalized().get::<ratio>();
+    fn actuator(&mut self) -> &mut impl Actuator {
+        self.hydraulic_assembly.actuator()
+    }
+
+    fn update(
+        &mut self,
+        forward_cargo_door_controller: &impl HydraulicAssemblyController,
+        context: &UpdateContext,
+        hydraulic_pressure: Pressure,
+    ) {
+        self.hydraulic_assembly
+            .update(forward_cargo_door_controller, context, hydraulic_pressure);
+        self.is_locked = self.hydraulic_assembly.is_locked();
+        self.position = self.hydraulic_assembly.position_normalized().get::<ratio>();
     }
 }
 impl SimulationElement for Door {
