@@ -9,7 +9,7 @@ setIsEcamPage('door_page');
 export const DoorPage = () => {
     const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);
     const [catering] = useSimVar('INTERACTIVE POINT OPEN:3', 'percent', 1000);
-    const [cargo] = useSimVar('INTERACTIVE POINT OPEN:5', 'percent', 1000);
+    const [cargoLocked] = useSimVar('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool', 1000);
     const [oxygen] = useSimVar('L:PUSH_OVHD_OXYGEN_CREW', 'bool', 1000);
     const [slides] = useSimVar('L:A32NX_SLIDES_ARMED', 'bool', 1000);
 
@@ -30,7 +30,7 @@ export const DoorPage = () => {
                     <path className="DoorShape" d="M317 102 l0 -15 l-9 0 l0 15Z" />
 
                     <path className="DoorShape" d="M300 181 l0 10 l16 0 l0 -10Z" />
-                    <path id="DoorFwdCargo" className={cargo > 20 ? 'WarningShape' : 'DoorShape'} d="M336 221 l0 -20 l-18 0 l0 20Z" />
+                    <path id="DoorFwdCargo" className={cargoLocked ? 'DoorShape' : 'WarningShape'} d="M336 221 l0 -20 l-18 0 l0 20Z" />
                     <path className="DoorShape" d="M336 384 l0 -20 l-18 0 l0 20Z" />
                     <path className="DoorShape" d="M328 414 l0 -22 l-8 0 l0 22Z" />
                 </g>
@@ -50,7 +50,7 @@ export const DoorPage = () => {
                 <g id="dashes">
                     <path id="cabin1dash" className={cabin > 20 ? 'WarningShape' : 'Hide'} strokeDasharray="7,4" d="M138, 136 l121 0" />
                     <path id="cabin4dash" className={catering > 20 ? 'WarningShape' : 'Hide'} strokeDasharray="7,4" d="M346, 438 l77 0" />
-                    <path id="cargo1dash" className={cargo > 20 ? 'WarningShape' : 'Hide'} strokeDasharray="7,4" d="M346, 210 l77 0" />
+                    <path id="cargo1dash" className={cargoLocked ? 'Hide' : 'WarningShape'} strokeDasharray="7,4" d="M346, 210 l77 0" />
                 </g>
 
                 {/* Texts */}
@@ -65,7 +65,7 @@ export const DoorPage = () => {
 
                     <text id="cabin1" className={cabin > 20 ? 'Warning' : 'Hide'} x="103" y="136" textAnchor="middle" alignmentBaseline="central">CABIN</text>
                     <text id="cabin4" className={catering > 20 ? 'Warning' : 'Hide'} x="455" y="438" textAnchor="middle" alignmentBaseline="central">CABIN</text>
-                    <text id="cargo1" className={cargo > 20 ? 'Warning' : 'Hide'} x="455" y="211" textAnchor="middle" alignmentBaseline="central">CARGO</text>
+                    <text id="cargo1" className={cargoLocked ? 'Hide' : 'Warning'} x="455" y="211" textAnchor="middle" alignmentBaseline="central">CARGO</text>
 
                     <text
                         id="oxy"
