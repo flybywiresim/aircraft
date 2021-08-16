@@ -2548,6 +2548,10 @@ mod tests {
                 self.read("FWD_DOOR_CARGO_POSITION")
             }
 
+            fn cargo_aft_door_position(&mut self) -> f64 {
+                self.read("AFT_DOOR_CARGO_POSITION")
+            }
+
             fn green_pressure(&mut self) -> Pressure {
                 self.read("HYD_GREEN_PRESSURE")
             }
@@ -5563,6 +5567,26 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(30.));
 
             assert!(test_bed.cargo_fwd_door_position() > 0.85);
+        }
+
+        #[test]
+        fn fwd_cargo_door_controller_opens_fwd_door_only() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+            assert!(test_bed.cargo_aft_door_position() == 0.);
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+            assert!(test_bed.cargo_aft_door_position() == 0.);
         }
 
         #[test]
