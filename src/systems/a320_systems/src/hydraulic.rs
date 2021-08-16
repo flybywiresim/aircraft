@@ -129,9 +129,9 @@ pub(super) struct A320Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
 
-    forward_cargo_door: Door,
+    forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
-    aft_cargo_door: Door,
+    aft_cargo_door: CargoDoor,
     aft_cargo_door_controller: A320DoorController,
 }
 impl A320Hydraulic {
@@ -289,10 +289,10 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(),
 
-            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID, cargo_door_assembly()),
+            forward_cargo_door: CargoDoor::new(Self::FORWARD_CARGO_DOOR_ID, cargo_door_assembly()),
             forward_cargo_door_controller: A320DoorController::new(Self::FORWARD_CARGO_DOOR_ID),
 
-            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID, cargo_door_assembly()),
+            aft_cargo_door: CargoDoor::new(Self::AFT_CARGO_DOOR_ID, cargo_door_assembly()),
             aft_cargo_door_controller: A320DoorController::new(Self::AFT_CARGO_DOOR_ID),
         }
     }
@@ -1563,7 +1563,7 @@ impl A320DoorController {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, door: &Door, pressure_available: Pressure) {
+    fn update(&mut self, context: &UpdateContext, door: &CargoDoor, pressure_available: Pressure) {
         self.state = self.determine_mode(door, pressure_available);
         self.update_timers(context);
         self.update_actions_from_state();
@@ -1605,7 +1605,11 @@ impl A320DoorController {
         }
     }
 
-    fn determine_mode(&mut self, door: &Door, pressure_available: Pressure) -> DoorControlState {
+    fn determine_mode(
+        &mut self,
+        door: &CargoDoor,
+        pressure_available: Pressure,
+    ) -> DoorControlState {
         match self.state {
             DoorControlState::DownLocked => {
                 if self.position_requested > Ratio::new::<ratio>(0.) {
@@ -1676,19 +1680,21 @@ impl SimulationElement for A320DoorController {
     }
 }
 
-struct Door {
+struct CargoDoor {
     hydraulic_assembly: HydraulicActuatorAssembly,
 
     position_id: String,
+    locked_id: String,
     position: Ratio,
 
     is_locked: bool,
 }
-impl Door {
+impl CargoDoor {
     fn new(id: &str, hydraulic_assembly: HydraulicActuatorAssembly) -> Self {
         Self {
             hydraulic_assembly,
             position_id: format!("{}_DOOR_CARGO_POSITION", id),
+            locked_id: format!("{}_DOOR_CARGO_LOCKED", id),
 
             position: Ratio::new::<ratio>(0.),
 
@@ -1720,9 +1726,10 @@ impl Door {
         self.position = self.hydraulic_assembly.position_normalized();
     }
 }
-impl SimulationElement for Door {
+impl SimulationElement for CargoDoor {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.position_id, self.position);
+        writer.write(&self.position_id, self.position());
+        writer.write(&self.locked_id, self.is_locked());
     }
 }
 
@@ -2361,10 +2368,6 @@ mod tests {
                 self.hydraulics.forward_cargo_door_controller.state == DoorControlState::UpLocked
             }
 
-            fn is_cargo_fwd_door_locked_down(&self) -> bool {
-                self.hydraulics.forward_cargo_door.is_locked()
-            }
-
             fn set_ac_bus_1_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_1_powered = bus_is_alive;
             }
@@ -2527,8 +2530,8 @@ mod tests {
                 self.query(|a| a.is_yellow_pressurised())
             }
 
-            fn is_cargo_fwd_door_locked_down(&self) -> bool {
-                self.query(|a| a.is_cargo_fwd_door_locked_down())
+            fn is_cargo_fwd_door_locked_down(&mut self) -> bool {
+                self.read("FWD_DOOR_CARGO_LOCKED")
             }
 
             fn is_cargo_fwd_door_locked_up(&self) -> bool {
