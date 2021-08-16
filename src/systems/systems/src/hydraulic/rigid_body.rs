@@ -2,20 +2,21 @@ extern crate nalgebra as na;
 use na::{Rotation2, Rotation3, Vector2, Vector3};
 
 use uom::si::{
-    acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
-    mass::kilogram, ratio::ratio,
+    acceleration::meter_per_second_squared, angle::radian,
+    angular_acceleration::radian_per_second_squared, angular_velocity::radian_per_second, f64::*,
+    force::newton, length::meter, mass::kilogram, ratio::ratio, torque::newton_meter,
 };
 
 use crate::simulation::UpdateContext;
 
 // RigidBodyOnHinge represent any physical object able to rotate on a hinge axis.
 // It can be a gear, elevator, cargo door...... Only one rotation degree of freedom is handled.
-// An actuator of multiple actuators can to apply forces to its control arm
+// An actuator or multiple actuators can apply forces to its control arm
 #[derive(PartialEq, Clone, Copy)]
 pub struct RigidBodyOnHingeAxis {
-    throw: f64,
-    min_angle: f64,
-    max_angle: f64,
+    throw: Angle,
+    min_angle: Angle,
+    max_angle: Angle,
 
     size: Vector3<f64>,
 
@@ -27,10 +28,10 @@ pub struct RigidBodyOnHingeAxis {
 
     anchor_point: Vector2<f64>,
 
-    position: f64,
-    speed: f64,
-    acceleration: f64,
-    sum_of_torques: f64,
+    position: Angle,
+    speed: AngularVelocity,
+    acceleration: AngularAcceleration,
+    sum_of_torques: Torque,
 
     position_normalized: Ratio,
     position_normalized_prev: Ratio,
@@ -39,7 +40,6 @@ pub struct RigidBodyOnHingeAxis {
     inertia_at_hinge: f64,
 
     natural_damping: f64,
-    max_speed: f64,
 
     lock_position_request: Ratio,
     is_lock_requested: bool,
@@ -66,30 +66,30 @@ impl RigidBodyOnHingeAxis {
             inertia_at_cog + mass.get::<kilogram>() * center_of_gravity_offset.norm_squared();
 
         let mut new_body = RigidBodyOnHingeAxis {
-            throw: throw.get::<radian>(),
-            min_angle: min_angle.get::<radian>(),
-            max_angle: min_angle.get::<radian>() + throw.get::<radian>(),
+            throw,
+            min_angle,
+            max_angle: min_angle + throw,
             size,
             center_of_gravity_offset,
             center_of_gravity_actual: center_of_gravity_offset,
             control_arm,
             control_arm_actual: control_arm,
             anchor_point,
-            position: min_angle.get::<radian>(),
-            speed: 0.,
-            acceleration: 0.,
-            sum_of_torques: 0.,
+            position: min_angle,
+            speed: AngularVelocity::new::<radian_per_second>(0.),
+            acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
+            sum_of_torques: Torque::new::<newton_meter>(0.),
             position_normalized: Ratio::new::<ratio>(0.),
             position_normalized_prev: Ratio::new::<ratio>(0.),
             mass,
             inertia_at_hinge,
             natural_damping,
-            max_speed: 4.0,
             lock_position_request: Ratio::new::<ratio>(0.),
             is_lock_requested: locked,
             is_locked: locked,
         };
 
+        // Make sure the new object has coherent struct by updating internal roations and positions
         new_body.update_all_rotations();
         new_body.update_position_normalized();
         new_body
@@ -112,12 +112,12 @@ impl RigidBodyOnHingeAxis {
         let control_arm_3d =
             Vector3::new(self.control_arm_actual[0], self.control_arm_actual[1], 0.);
 
-        // Final moment if magnitude of the force applied on the force support vector, cross product with
+        // Final torque is magnitude of the force applied on the force support vector, cross product with
         // control arm position relative to hinge.
         let torque =
             (force.get::<newton>() * force_support_vector_3d_normalized).cross(&control_arm_3d);
 
-        let torque_value = torque[2];
+        let torque_value = Torque::new::<newton_meter>(torque[2]);
 
         self.sum_of_torques += torque_value;
     }
@@ -127,20 +127,20 @@ impl RigidBodyOnHingeAxis {
     }
 
     pub fn min_linear_distance_to_anchor(&self) -> Length {
-        let rotation_min = Rotation2::new(self.min_angle);
+        let rotation_min = Rotation2::new(self.min_angle.get::<radian>());
         let control_arm_min = rotation_min * self.control_arm;
 
         Length::new::<meter>((self.anchor_point - control_arm_min).norm())
     }
 
     pub fn max_linear_distance_to_anchor(&self) -> Length {
-        let rotation_max = Rotation2::new(self.max_angle);
+        let rotation_max = Rotation2::new(self.max_angle.get::<radian>());
         let control_arm_max = rotation_max * self.control_arm;
 
         Length::new::<meter>((self.anchor_point - control_arm_max).norm())
     }
 
-    fn lock_requested_position_in_absolute_reference(&self) -> f64 {
+    fn lock_requested_position_in_absolute_reference(&self) -> Angle {
         self.lock_position_request.get::<ratio>() * self.throw + self.min_angle
     }
 
@@ -151,17 +151,18 @@ impl RigidBodyOnHingeAxis {
     fn update_position_normalized(&mut self) {
         self.position_normalized_prev = self.position_normalized;
 
-        self.position_normalized =
-            Ratio::new::<ratio>((self.position - self.min_angle) / self.throw);
+        self.position_normalized = (self.position - self.min_angle) / self.throw;
     }
 
     fn update_all_rotations(&mut self) {
-        let rotation_transform = Rotation2::new(self.position);
+        let rotation_transform = Rotation2::new(self.position.get::<radian>());
         self.control_arm_actual = rotation_transform * self.control_arm;
         self.center_of_gravity_actual = rotation_transform * self.center_of_gravity_offset;
     }
 
-    fn gravity_force(&self, context: &UpdateContext) -> f64 {
+    // Computes local acceleration including world gravity and plane acceleration
+    // Note that this does not compute acceleration due to angular velocity of the plane
+    fn local_acceleration_and_gravity(&self, context: &UpdateContext) -> Torque {
         let plane_acceleration_plane_reference = Vector3::new(
             context.lat_accel().get::<meter_per_second_squared>(),
             context.vert_accel().get::<meter_per_second_squared>(),
@@ -197,21 +198,29 @@ impl RigidBodyOnHingeAxis {
         let gravity_moment_vector = center_of_gravity_3d.cross(&resultant_force_plane_reference);
 
         // We work with only one degree of freedom so final result holds in the hinge rotation component only
-        gravity_moment_vector[2]
+        Torque::new::<newton_meter>(gravity_moment_vector[2])
     }
 
-    fn natural_damping(&self) -> f64 {
-        -self.speed * self.natural_damping
+    // A global damping factor that simulates hinge friction and local air resistance
+    fn natural_damping(&self) -> Torque {
+        Torque::new::<newton_meter>(-self.speed.get::<radian_per_second>() * self.natural_damping)
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
         if !self.is_locked {
-            self.sum_of_torques += self.natural_damping() + self.gravity_force(context);
-            self.acceleration = self.sum_of_torques / self.inertia_at_hinge;
+            self.sum_of_torques +=
+                self.natural_damping() + self.local_acceleration_and_gravity(context);
+            self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
+                self.sum_of_torques.get::<newton_meter>() / self.inertia_at_hinge,
+            );
 
-            self.speed += self.acceleration * context.delta_as_secs_f64();
+            self.speed += AngularVelocity::new::<radian_per_second>(
+                self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
+            );
 
-            self.position += self.speed * context.delta_as_secs_f64();
+            self.position += Angle::new::<radian>(
+                self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
+            );
 
             if self.is_lock_requested {
                 if self.position_normalized >= self.lock_position_request
@@ -221,7 +230,7 @@ impl RigidBodyOnHingeAxis {
                 {
                     self.is_locked = true;
                     self.position = self.lock_requested_position_in_absolute_reference();
-                    self.speed = 0.;
+                    self.speed = AngularVelocity::new::<radian_per_second>(0.);
                 }
             } else if self.position >= self.max_angle {
                 self.position = self.max_angle;
@@ -234,7 +243,7 @@ impl RigidBodyOnHingeAxis {
             self.update_all_rotations();
         }
 
-        self.sum_of_torques = 0.;
+        self.sum_of_torques = Torque::new::<newton_meter>(0.);
     }
 
     pub fn unlock(&mut self) {
@@ -276,7 +285,7 @@ mod tests {
                 Angle::new::<degree>(-45.),
             ));
             time += dt;
-            println!("Pos {} t={}", rigid_body.position, time);
+            println!("Pos {} t={}", rigid_body.position.get::<radian>(), time);
         }
     }
 
@@ -295,8 +304,11 @@ mod tests {
                 Angle::new::<degree>(-45.),
             ));
             time += dt;
-            println!("Pos {} t={}", rigid_body.position, time);
-            assert!((rigid_body.position - init_pos).abs() > f64::EPSILON);
+            println!("Pos {} t={}", rigid_body.position.get::<radian>(), time);
+            assert!(
+                (rigid_body.position.get::<radian>() - init_pos.get::<radian>()).abs()
+                    > f64::EPSILON
+            );
         }
     }
 
@@ -316,8 +328,11 @@ mod tests {
                 Angle::new::<degree>(-45.),
             ));
             time += dt;
-            println!("Pos {} t={}", rigid_body.position, time);
-            assert!((rigid_body.position - init_pos).abs() < f64::EPSILON);
+            println!("Pos {} t={}", rigid_body.position.get::<radian>(), time);
+            assert!(
+                (rigid_body.position.get::<radian>() - init_pos.get::<radian>()).abs()
+                    < f64::EPSILON
+            );
         }
     }
 
@@ -339,7 +354,10 @@ mod tests {
             time += dt;
 
             if time < 1. {
-                assert!((rigid_body.position - init_pos).abs() < f64::EPSILON);
+                assert!(
+                    (rigid_body.position.get::<radian>() - init_pos.get::<radian>()).abs()
+                        < f64::EPSILON
+                );
             }
 
             if time >= 1. && time < 1. + dt {
@@ -348,7 +366,10 @@ mod tests {
             }
 
             if time > 1. + dt {
-                assert!((rigid_body.position - init_pos).abs() > f64::EPSILON);
+                assert!(
+                    (rigid_body.position.get::<radian>() - init_pos.get::<radian>()).abs()
+                        > f64::EPSILON
+                );
             }
 
             println!(
