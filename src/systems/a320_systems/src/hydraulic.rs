@@ -48,7 +48,7 @@ use systems::{
     },
 };
 
-fn cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
+fn a320_cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
     LinearActuator::new(
         &rigid_body,
         2,
@@ -61,7 +61,8 @@ fn cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
     )
 }
 
-fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
+// Builds a cargo door body for A320 Neo
+fn a320_cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
     let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
     let cg_offset = Vector2::new(0., -size[1] / 2.);
 
@@ -81,10 +82,12 @@ fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
     )
 }
 
+// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
+// to it
 fn cargo_door_assembly() -> HydraulicActuatorAssembly {
-    let cargo_door_body = cargo_door_body(true);
-    let cargo_actuator = cargo_door_actuator(&cargo_door_body);
-    HydraulicActuatorAssembly::new(cargo_actuator, cargo_door_body)
+    let cargo_door_body = a320_cargo_door_body(true);
+    let cargo_door_actuator = a320_cargo_door_actuator(&cargo_door_body);
+    HydraulicActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
 }
 
 pub(super) struct A320Hydraulic {
@@ -165,9 +168,9 @@ impl A320Hydraulic {
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
-    // Refresh rate of hydraulic simulation
+    // Refresh rate of core hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(100);
-    // Refresh rate of max fixed step loop
+    // Refresh rate of max fixed step loop for fast physics
     const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(50);
 
     pub(super) fn new() -> A320Hydraulic {
@@ -314,7 +317,6 @@ impl A320Hydraulic {
         // Here we update at the same rate as the sim or max time step if sim rate is too slow
         self.update_max_fixed_step(&context);
 
-        // Here we update everything requiring same refresh as the sim calls us, more likely visual stuff
         self.update_every_frame(
             &context,
             &overhead_panel,
@@ -531,7 +533,7 @@ impl A320Hydraulic {
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
     fn update_fixed_step<T: Engine, U: EngineFirePushButtons>(
         &mut self,
-        context_original: &UpdateContext,
+        context_original_sim_delta: &UpdateContext,
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
@@ -541,7 +543,7 @@ impl A320Hydraulic {
     ) {
         // Then run fixed update loop for main hydraulics
         while let Some(cur_time_step) = self.core_hydraulic_updater.next() {
-            let context = &context_original.with_delta(cur_time_step);
+            let context = &context_original_sim_delta.with_delta(cur_time_step);
 
             // First update what is currently consumed and given back by each actuator
             // Todo: might have to split the actuator volumes by expected number of loops
@@ -1524,17 +1526,6 @@ pub enum DoorControlState {
     HydControl = 2,
     UpLocked = 3,
 }
-impl From<f64> for DoorControlState {
-    fn from(value: f64) -> Self {
-        match value as u8 {
-            0 => DoorControlState::DownLocked,
-            1 => DoorControlState::NoControl,
-            2 => DoorControlState::HydControl,
-            3 => DoorControlState::UpLocked,
-            _ => DoorControlState::NoControl,
-        }
-    }
-}
 
 struct A320DoorController {
     requested_position_id: String,
@@ -1551,7 +1542,7 @@ struct A320DoorController {
     should_unlock: bool,
 }
 impl A320DoorController {
-    // Delay the hydraulic valves send a open request when request is closing (this is done so uplock can be easily unlocked without friction)
+    // Duration which the hydraulic valves sends a open request when request is closing (this is done on real aircraft so uplock can be easily unlocked without friction)
     const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(300);
 
     // Delay from the ground crew unlocking the door to the time they start requiring up movement in control panel
@@ -1719,12 +1710,12 @@ impl Door {
 
     fn update(
         &mut self,
-        forward_cargo_door_controller: &impl HydraulicAssemblyController,
+        cargo_door_controller: &impl HydraulicAssemblyController,
         context: &UpdateContext,
         hydraulic_pressure: Pressure,
     ) {
         self.hydraulic_assembly
-            .update(forward_cargo_door_controller, context, hydraulic_pressure);
+            .update(cargo_door_controller, context, hydraulic_pressure);
         self.is_locked = self.hydraulic_assembly.is_locked();
         self.position = self.hydraulic_assembly.position_normalized();
     }

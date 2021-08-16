@@ -12,12 +12,20 @@ use crate::simulation::UpdateContext;
 // RigidBodyOnHinge represent any physical object able to rotate on a hinge axis.
 // It can be a gear, elevator, cargo door...... Only one rotation degree of freedom is handled.
 // An actuator or multiple actuators can apply forces to its control arm
+//
+// Coordinates as follows:
+// on x (left->right looking at the plane from the back)
+// on y (down->up)
+// on z (aft->fwd)
+//
+// All coordinates references are from the hinge axis. So (0,0,0) is the hinge rotation axis center
 #[derive(PartialEq, Clone, Copy)]
 pub struct RigidBodyOnHingeAxis {
     throw: Angle,
     min_angle: Angle,
     max_angle: Angle,
 
+    // size in meters
     size: Vector3<f64>,
 
     center_of_gravity_offset: Vector2<f64>,
@@ -46,6 +54,9 @@ pub struct RigidBodyOnHingeAxis {
     is_locked: bool,
 }
 impl RigidBodyOnHingeAxis {
+    // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
+    const DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR: f64 = 0.3;
+
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         mass: Mass,
@@ -58,6 +69,7 @@ impl RigidBodyOnHingeAxis {
         natural_damping: f64,
         locked: bool,
     ) -> Self {
+        // Basic formula for homogenous body in 3D rectangular shape
         let inertia_at_cog =
             (1. / 12.) * mass.get::<kilogram>() * size[0] * size[0] + size[1] * size[1];
 
@@ -89,7 +101,7 @@ impl RigidBodyOnHingeAxis {
             is_locked: locked,
         };
 
-        // Make sure the new object has coherent struct by updating internal roations and positions
+        // Make sure the new object has coherent structure by updating internal roations and positions once
         new_body.update_all_rotations();
         new_body.update_position_normalized();
         new_body
@@ -97,7 +109,7 @@ impl RigidBodyOnHingeAxis {
 
     pub fn apply_control_arm_force(&mut self, force: Force) {
         // Computing the normalized vector on which force is applied. This is the vector from anchor point of actuator to where
-        // it's connected to the rigid body
+        // it is connected to the rigid body
         let force_support_vector_2d = self.anchor_point - self.control_arm_actual;
         let force_support_vector_2d_normalized =
             force_support_vector_2d / force_support_vector_2d.norm();
@@ -154,6 +166,7 @@ impl RigidBodyOnHingeAxis {
         self.position_normalized = (self.position - self.min_angle) / self.throw;
     }
 
+    // Rotates the static coordinates of the body according to its current angle to get the actual coordinates
     fn update_all_rotations(&mut self) {
         let rotation_transform = Rotation2::new(self.position.get::<radian>());
         self.control_arm_actual = rotation_transform * self.control_arm;
@@ -210,6 +223,7 @@ impl RigidBodyOnHingeAxis {
         if !self.is_locked {
             self.sum_of_torques +=
                 self.natural_damping() + self.local_acceleration_and_gravity(context);
+
             self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
                 self.sum_of_torques.get::<newton_meter>() / self.inertia_at_hinge,
             );
@@ -222,6 +236,7 @@ impl RigidBodyOnHingeAxis {
                 self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
 
+            // We check if lock is requested and if we crossed the lock position since last update
             if self.is_lock_requested {
                 if self.position_normalized >= self.lock_position_request
                     && self.position_normalized_prev <= self.lock_position_request
@@ -234,11 +249,12 @@ impl RigidBodyOnHingeAxis {
                 }
             } else if self.position >= self.max_angle {
                 self.position = self.max_angle;
-                self.speed = -self.speed * 0.3;
+                self.speed = -self.speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
             } else if self.position <= self.min_angle {
                 self.position = self.min_angle;
-                self.speed = -self.speed * 0.3;
+                self.speed = -self.speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
             }
+
             self.update_position_normalized();
             self.update_all_rotations();
         }
