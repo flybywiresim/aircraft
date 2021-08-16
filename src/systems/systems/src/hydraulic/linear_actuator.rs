@@ -53,7 +53,7 @@ pub struct LinearActuator {
     max_position: Length,
     min_position: Length,
 
-    total_throw: Length,
+    total_travel: Length,
 
     bore_side_area: Area,
     bore_side_volume: Volume,
@@ -99,19 +99,19 @@ impl LinearActuator {
     ) -> Self {
         let max_pos = connected_body.max_linear_distance_to_anchor();
         let min_pos = connected_body.min_linear_distance_to_anchor();
-        let total_throw = max_pos - min_pos;
+        let total_travel = max_pos - min_pos;
 
         let bore_side_area_single_actuator = Area::new::<square_meter>(
             std::f64::consts::PI * (bore_side_diameter.get::<meter>() / 2.).powi(2),
         );
-        let bore_side_volume_single_actuator = bore_side_area_single_actuator * total_throw;
+        let bore_side_volume_single_actuator = bore_side_area_single_actuator * total_travel;
 
         let rod_area = Area::new::<square_meter>(
             std::f64::consts::PI * (rod_diameter.get::<meter>() / 2.).powi(2),
         );
 
         let rod_side_area_single_actuator = bore_side_area_single_actuator - rod_area;
-        let rod_side_volume_single_actuator = rod_side_area_single_actuator * total_throw;
+        let rod_side_volume_single_actuator = rod_side_area_single_actuator * total_travel;
 
         let volume_extension_ratio: Ratio =
             bore_side_volume_single_actuator / rod_side_volume_single_actuator;
@@ -131,7 +131,7 @@ impl LinearActuator {
             max_position: max_pos,
             min_position: min_pos,
 
-            total_throw,
+            total_travel,
 
             bore_side_area: bore_side_area_single_actuator * number_of_actuators as f64,
             bore_side_volume: bore_side_volume_single_actuator * number_of_actuators as f64,
@@ -144,6 +144,9 @@ impl LinearActuator {
             flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
 
             max_flow: actual_max_flow,
+
+            // For the same displacement speed there is less flow needed in retraction direction because
+            // volume of the fluid is divided by the extensio ratio
             min_flow: -actual_max_flow / volume_extension_ratio,
 
             delta_displacement: Length::new::<meter>(0.),
@@ -201,7 +204,7 @@ impl LinearActuator {
         self.last_position = self.position;
         self.position = connected_body.linear_extension_to_anchor();
 
-        self.position_normalized = (self.position - self.min_position) / self.total_throw;
+        self.position_normalized = (self.position - self.min_position) / self.total_travel;
 
         self.delta_displacement = self.position - self.last_position;
 

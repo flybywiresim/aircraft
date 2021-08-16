@@ -21,7 +21,7 @@ use crate::simulation::UpdateContext;
 // All coordinates references are from the hinge axis. So (0,0,0) is the hinge rotation axis center
 #[derive(PartialEq, Clone, Copy)]
 pub struct RigidBodyOnHingeAxis {
-    throw: Angle,
+    total_travel: Angle,
     min_angle: Angle,
     max_angle: Angle,
 
@@ -65,7 +65,7 @@ impl RigidBodyOnHingeAxis {
         control_arm: Vector2<f64>,
         anchor_point: Vector2<f64>,
         min_angle: Angle,
-        throw: Angle,
+        total_travel: Angle,
         natural_damping: f64,
         locked: bool,
     ) -> Self {
@@ -78,9 +78,9 @@ impl RigidBodyOnHingeAxis {
             inertia_at_cog + mass.get::<kilogram>() * center_of_gravity_offset.norm_squared();
 
         let mut new_body = RigidBodyOnHingeAxis {
-            throw,
+            total_travel,
             min_angle,
-            max_angle: min_angle + throw,
+            max_angle: min_angle + total_travel,
             size,
             center_of_gravity_offset,
             center_of_gravity_actual: center_of_gravity_offset,
@@ -153,7 +153,7 @@ impl RigidBodyOnHingeAxis {
     }
 
     fn lock_requested_position_in_absolute_reference(&self) -> Angle {
-        self.lock_position_request.get::<ratio>() * self.throw + self.min_angle
+        self.lock_position_request.get::<ratio>() * self.total_travel + self.min_angle
     }
 
     pub fn position_normalized(&self) -> Ratio {
@@ -163,7 +163,7 @@ impl RigidBodyOnHingeAxis {
     fn update_position_normalized(&mut self) {
         self.position_normalized_prev = self.position_normalized;
 
-        self.position_normalized = (self.position - self.min_angle) / self.throw;
+        self.position_normalized = (self.position - self.min_angle) / self.total_travel;
     }
 
     // Rotates the static coordinates of the body according to its current angle to get the actual coordinates
