@@ -1541,7 +1541,7 @@ struct A320DoorController {
 
     state: DoorControlState,
 
-    position_requested: f64,
+    position_requested: Ratio,
 
     duration_in_no_control: Duration,
     duration_in_hyd_control: Duration,
@@ -1561,7 +1561,7 @@ impl A320DoorController {
         Self {
             requested_position_id: format!("{}_DOOR_CARGO_OPEN_REQ", id),
             state: DoorControlState::DownLocked,
-            position_requested: 0.,
+            position_requested: Ratio::new::<ratio>(0.),
 
             duration_in_no_control: Duration::from_secs(0),
             duration_in_hyd_control: Duration::from_secs(0),
@@ -1600,7 +1600,7 @@ impl A320DoorController {
             }
             DoorControlState::HydControl => {
                 self.should_close_valves = false;
-                if self.position_requested > 0.
+                if self.position_requested > Ratio::new::<ratio>(0.)
                     || self.duration_in_hyd_control < Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
                 {
                     self.control_position_request = Ratio::new::<ratio>(1.);
@@ -1617,7 +1617,7 @@ impl A320DoorController {
     fn determine_mode(&mut self, door: &Door, pressure_available: Pressure) -> DoorControlState {
         match self.state {
             DoorControlState::DownLocked => {
-                if self.position_requested > 0. {
+                if self.position_requested > Ratio::new::<ratio>(0.) {
                     self.should_unlock = true;
                     DoorControlState::NoControl
                 } else {
@@ -1635,14 +1635,17 @@ impl A320DoorController {
                 self.should_unlock = false;
                 if door.is_locked() {
                     DoorControlState::DownLocked
-                } else if door.position() > 0.9 && self.position_requested > 0.5 {
+                } else if door.position() > Ratio::new::<ratio>(0.9)
+                    && self.position_requested > Ratio::new::<ratio>(0.5)
+                {
                     DoorControlState::UpLocked
                 } else {
                     DoorControlState::HydControl
                 }
             }
             DoorControlState::UpLocked => {
-                if self.position_requested < 1. && pressure_available > Pressure::new::<psi>(1000.)
+                if self.position_requested < Ratio::new::<ratio>(1.)
+                    && pressure_available > Pressure::new::<psi>(1000.)
                 {
                     DoorControlState::HydControl
                 } else {
@@ -1653,7 +1656,8 @@ impl A320DoorController {
     }
 
     fn should_pressurise_hydraulics(&self) -> bool {
-        (self.state == DoorControlState::UpLocked && self.position_requested < 1.)
+        (self.state == DoorControlState::UpLocked
+            && self.position_requested < Ratio::new::<ratio>(1.))
             || self.state == DoorControlState::HydControl
     }
 }
@@ -1677,7 +1681,7 @@ impl HydraulicAssemblyController for A320DoorController {
 }
 impl SimulationElement for A320DoorController {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.position_requested = state.read(&self.requested_position_id);
+        self.position_requested = Ratio::new::<ratio>(state.read(&self.requested_position_id));
     }
 }
 
@@ -1685,7 +1689,7 @@ struct Door {
     hydraulic_assembly: HydraulicActuatorAssembly,
 
     position_id: String,
-    position: f64,
+    position: Ratio,
 
     is_locked: bool,
 }
@@ -1695,13 +1699,13 @@ impl Door {
             hydraulic_assembly,
             position_id: format!("{}_DOOR_CARGO_POSITION", id),
 
-            position: 0.,
+            position: Ratio::new::<ratio>(0.),
 
             is_locked: true,
         }
     }
 
-    fn position(&self) -> f64 {
+    fn position(&self) -> Ratio {
         self.position
     }
 
@@ -1722,7 +1726,7 @@ impl Door {
         self.hydraulic_assembly
             .update(forward_cargo_door_controller, context, hydraulic_pressure);
         self.is_locked = self.hydraulic_assembly.is_locked();
-        self.position = self.hydraulic_assembly.position_normalized().get::<ratio>();
+        self.position = self.hydraulic_assembly.position_normalized();
     }
 }
 impl SimulationElement for Door {
