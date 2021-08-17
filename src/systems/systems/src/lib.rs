@@ -11,6 +11,7 @@ pub mod macros;
 pub mod apu;
 pub mod electrical;
 pub mod engine;
+pub mod failures;
 pub mod hydraulic;
 pub mod landing_gear;
 pub mod navigation;

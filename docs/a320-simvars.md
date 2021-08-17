@@ -1552,6 +1552,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       LVR_MCT | 4
       LVR_ASYM | 5
 
+- A32NX_AUTOTHRUST_DISABLED
+    - Bool
+    - Indicates if ATHR was disabled by pressing ATHR disconnect buttons longer than 15s
+
 - A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE
     - Enum
     - Indicates the type of current thrust limit

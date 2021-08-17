@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { VerticalTape, BarberpoleIndicator } from './PFDUtils.jsx';
+import React, { useState } from 'react';
+import { VerticalTape, BarberpoleIndicator } from './PFDUtils';
 import { getSimVar } from '../util.js';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
 const DisplayRange = 42;
 
-const GraduationElement = (speed, offset) => {
+const GraduationElement = (speed: number, offset: number) => {
     if (speed < 30) {
         return null;
     }
@@ -24,49 +24,49 @@ const GraduationElement = (speed, offset) => {
     );
 };
 
-const V1BugElement = (offset) => (
+const V1BugElement = (offset: number) => (
     <g id="V1BugGroup" transform={`translate(0 ${offset})`}>
         <path className="NormalStroke Cyan" d="m16.613 80.82h5.4899" />
         <text className="FontLarge MiddleAlign Cyan" x="26.205544" y="82.96">1</text>
     </g>
 );
 
-const VRBugElement = (offset) => (
+const VRBugElement = (offset: number) => (
     <path id="RotateSpeedMarker" className="NormalStroke Cyan" transform={`translate(0 ${offset})`} d="m21.549 80.82a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />);
 
-const GreenDotBugElement = (offset) => (
+const GreenDotBugElement = (offset: number) => (
     <g id="GreenDotSpeedMarker" transform={`translate(0 ${offset})`}>
         <path className="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
         <path className="ThickStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
     </g>
 );
 
-const FlapRetractBugElement = (offset) => (
+const FlapRetractBugElement = (offset: number) => (
     <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
         <path className="NormalStroke Green" d="m19.031 80.82h3.8279" />
         <text className="FontLarge MiddleAlign Green" x="27.236509" y="83.327988">F</text>
     </g>
 );
 
-const SlatRetractBugElement = (offset) => (
+const SlatRetractBugElement = (offset: number) => (
     <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
         <path className="NormalStroke Green" d="m19.031 80.82h3.8279" />
         <text className="FontLarge MiddleAlign Green" x="27.236509" y="83.327988">S</text>
     </g>
 );
 
-const VFENextBugElement = (offset) => (
+const VFENextBugElement = (offset: number) => (
     <path id="VFeNextMarker" transform={`translate(0 ${offset})`} className="NormalStroke Amber" d="m19.031 81.34h-2.8709m0-1.0079h2.8709" />
 );
 
-const VAlphaProtBar = (offset) => (
+const VAlphaProtBar = (offset: number) => (
     <path transform={`translate(0 ${offset})`} className="BarAmber" d="m21.952 82.254v1.5119m-0.94654-2.923h0.94654v1.4111h-2.9213v-1.4111z" />);
 
-const VMaxBar = (offset) => (
+const VMaxBar = (offset: number) => (
     <path transform={`translate(0 ${offset})`} className="BarRed" d="m22.053 78.381v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022z" />
 );
 
-const VProtBug = (offset) => (
+const VProtBug = (offset: number) => (
     <g id="SpeedProtSymbol" transform={`translate(0 ${offset})`}>
         <path className="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
         <path className="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
@@ -88,7 +88,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
     const ValphaProtection = getSimVar('L:A32NX_SPEEDS_ALPHA_PROTECTION', 'number');
     const ValphaMax = getSimVar('L:A32NX_SPEEDS_ALPHA_MAX', 'number');
 
-    const bugs = [];
+    const bugs: any[] = [];
 
     if (showBars) {
         bugs.push(...BarberpoleIndicator(airspeed, ValphaProtection, false, DisplayRange, VAlphaProtBar, 2.923));

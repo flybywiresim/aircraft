@@ -1,9 +1,7 @@
 import React from 'react';
-import { IconAccessPoint, IconBattery4 } from '@tabler/icons';
+import { IconAccessPoint, IconBattery4, IconPower } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
-
-declare const SimVar;
 
 type Props = {
     initTime: Date,
@@ -66,12 +64,18 @@ class StatusBar extends React.Component<Props, TimeState> {
 
                     {/* TODO find a way to use `setSimVar` here */}
                     <IconBattery4
+                        className="ml-2"
+                        size={30}
+                        stroke={1.5}
+                        strokeLinejoin="miter"
+                    />
+                    <IconPower
                         onClick={() => {
                             efbClearState();
                             SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
                         }}
-                        className="ml-2"
-                        size={30}
+                        className="ml-6"
+                        size={25}
                         stroke={1.5}
                         strokeLinejoin="miter"
                     />

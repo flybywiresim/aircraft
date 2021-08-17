@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconClipboard, IconMap, IconCalculator, IconSettings, IconTruck, IconBuildingLighthouse } from '@tabler/icons';
+import { IconClipboard, IconMap, IconCalculator, IconSettings, IconTruck, IconBuildingLighthouse, IconAlertTriangle } from '@tabler/icons';
 import logo from '../Assets/fbw-logo.svg';
 
 type ToolbarProps = {
@@ -63,7 +63,11 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                                 <IconBuildingLighthouse className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
                             </a>
                         </li>
-
+                        <li className={this.state.activeIndex === 7 ? c.active : c.inactive}>
+                            <a onClick={() => this.handleClick(7)}>
+                                <IconAlertTriangle className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <div className="mb-6">

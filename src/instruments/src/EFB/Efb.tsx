@@ -2,6 +2,7 @@ import React, { useEffect, useState, useReducer } from 'react';
 
 import { Provider } from 'react-redux';
 import { Route, Switch, useHistory } from 'react-router-dom';
+import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
@@ -17,6 +18,7 @@ import Settings from './Settings/Settings';
 import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
 import store from './Store';
 import ATC from './ATC/ATC';
+import { Failures } from './Failures/Failures';
 
 type TimeState = {
     currentTime: Date,
@@ -117,9 +119,24 @@ const navigraph = new NavigraphClient();
 const Efb = () => {
     const history = useHistory();
 
+    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
+    const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
+    const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 5000);
+
+    // handle setting brightness if user is using autobrightness
+    useEffect(() => {
+        if (usingAutobrightness) {
+            const localTime = currentLocalTime / 3600;
+            // the below code defines a semicircular function.
+            // eslint-disable-next-line no-restricted-properties
+            setBrightness(((Math.sqrt(48 - Math.pow((localTime - 14), 2))) * 14.431) || 0);
+        }
+    }, [currentLocalTime]);
+
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
     const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
+
     const [timeState, setTimeState] = useState<TimeState>({
         currentTime: new Date(),
         initTime: new Date(),
@@ -146,6 +163,9 @@ const Efb = () => {
             break;
         case 6:
             history.push('/settings');
+            break;
+        case 7:
+            history.push('/failures');
             break;
         default:
             history.push('/dashboard');
@@ -272,6 +292,9 @@ const Efb = () => {
                                     </Route>
                                     <Route path="/atc">
                                         <ATC />
+                                    </Route>
+                                    <Route path="/failures">
+                                        <Failures />
                                     </Route>
                                     <Route path="/settings">
                                         <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
