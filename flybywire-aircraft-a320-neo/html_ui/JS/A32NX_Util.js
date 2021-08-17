@@ -258,21 +258,24 @@ class NXPopUp {
  */
 class NXNotif {
     constructor() {
-        const time = new Date().getTime();
-        this.params = new NotificationData();
-        this.params.title = "A32NX ALERT";
-        this.params.id = this.params.title + "_" + time;
-        this.params.type = "MESSAGE";
-        this.params.theme = "GAMEPLAY";
-        this.params.image = "IMAGE_NOTIFICATION";
-        this.params.description = "Default Message";
-        this.params.timeout = 10000;
+        const title = 'A32NX ALERT';
+        this.time = new Date().getTime();
+        this.params = {
+            id: `${title}_${this.time}`,
+            title,
+            type: 'MESSAGE',
+            theme: 'GAMEPLAY',
+            image: 'IMAGE_NOTIFICATION',
+            description: 'Default Message',
+            timeout: 10000,
+            time: this.time,
+        };
     }
 
     setData(params = {}) {
         if (params.title) {
             this.params.title = params.title;
-            this.params.id = params.title + "_" + new Date().getTime();
+            this.params.id = `${params.title}_${new Date().getTime()}`;
         }
         if (params.type) {
             this.params.type = params.type;
