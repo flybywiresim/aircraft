@@ -448,7 +448,7 @@
                 <EMISSIVE_CODE>
                     #DISPLAY_POWERED# sp0
                     l0 if{
-                        8 (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number) *
+                        3 (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number) *
                     } els{
                         0
                     }
