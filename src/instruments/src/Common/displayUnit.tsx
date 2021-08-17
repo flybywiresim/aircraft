@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NXDataStore } from '@shared/persistence';
-import { useSimVar } from './simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import { useUpdate } from './hooks';
 
 import './common.scss';
@@ -25,7 +25,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     const [timer, setTimer] = useState<number | null>(null);
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
-    const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
+    const [electricityState] = useSimVar(props.electricitySimvar, 'Bool', 200);
 
     useUpdate((deltaTime) => {
         if (timer !== null) {

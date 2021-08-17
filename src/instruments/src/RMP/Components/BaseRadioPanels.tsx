@@ -44,7 +44,7 @@ const UnpoweredRadioPanel = () => (
  * Renders appropriate mode sub-component (e.g. VhfRadioPanel).
  */
 const PoweredRadioPanel = (props: Props) => {
-    const [panelMode, setPanelMode] = useSimVar(`L:A32NX_RMP_${props.side}_SELECTED_MODE`, 'Number', 250);
+    const [panelMode, setPanelMode] = useSimVar(`L:A32NX_RMP_${props.side}_SELECTED_MODE`, 'number', 250);
 
     // Hook radio management panel mode buttons to set panelMode SimVar.
     useInteractionEvent(`A32NX_RMP_${props.side}_VHF1_BUTTON_PRESSED`, () => setPanelMode(1));

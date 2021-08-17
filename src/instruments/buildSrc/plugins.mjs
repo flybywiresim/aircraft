@@ -58,7 +58,10 @@ function postCss(_, instrumentFolder) {
 export function baseCompile(instrumentName, instrumentFolder) {
     return [
         image(),
-        nodeResolve({ extensions }),
+        nodeResolve({
+            extensions,
+            browser: true,
+        }),
         commonjs({ include: /node_modules/ }),
         babel(),
         typescriptPaths({

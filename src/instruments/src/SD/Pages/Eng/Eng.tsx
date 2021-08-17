@@ -209,10 +209,10 @@ const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
 const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [isValveOpen, setIsValveOpen] = useState(false);
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
-    const [isEngineStarting] = useSimVar(`GENERAL ENG STARTER:${engineNumber}`, 'bool', 300);
+    const [isEngineStarting] = useSimVar(`GENERAL ENG STARTER:${engineNumber}`, 'Bool', 300);
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
     const [showIgniter, setShowIgniter] = useState(false);
-    const [n2Igniting] = useSimVar(`TURB ENG IS IGNITING:${engineNumber}`, 'bool', 300);
+    const [n2Igniting] = useSimVar(`TURB ENG IS IGNITING:${engineNumber}`, 'Bool', 300);
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
 
     // This useEffect ensures that the igniter is only shown when the engine is starting, n2 is igniting, and n2 percent is in between 18 and 55
@@ -272,9 +272,9 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [shouldTemperaturePulse, setShouldTemperaturePulse] = useState(false);
     const [tempBeenAboveAdvisory, setTempBeenAboveAdvisory] = useState(false);
 
-    const [n1Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number');
+    const [n1Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'number');
 
-    const [n2Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number'); // FIXME TODO: should have a different value than N1, currently API limited
+    const [n2Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'number'); // FIXME TODO: should have a different value than N1, currently API limited
 
     useEffect(() => {
         if (displayedEngineOilTemperature >= OIL_TEMP_HIGH_ADVISORY) {

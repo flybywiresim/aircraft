@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
-
+import { SimVarProvider } from '@instruments/common/simVars';
 import {
     renderTarget,
     useInteractionEvent,
@@ -122,4 +122,4 @@ function DCDU() {
     }
 }
 
-ReactDOM.render(<DCDU />, renderTarget);
+ReactDOM.render(<SimVarProvider><DCDU /></SimVarProvider>, renderTarget);

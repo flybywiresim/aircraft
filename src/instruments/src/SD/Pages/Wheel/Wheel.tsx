@@ -96,9 +96,9 @@ const AntiSkid = ({ x, y }: ComponentPositionProps) => {
 };
 
 const LandingGearCtl = ({ x, y }: ComponentPositionProps) => {
-    const [landingGearLeft] = useSimVar('GEAR LEFT POSITION', 'Percent Over 100', maxStaleness);
-    const [landingGearCenter] = useSimVar('GEAR CENTER POSITION', 'Percent Over 100', maxStaleness);
-    const [landingGearRight] = useSimVar('GEAR RIGHT POSITION', 'Percent Over 100', maxStaleness);
+    const [landingGearLeft] = useSimVar('GEAR LEFT POSITION', 'percent over 100', maxStaleness);
+    const [landingGearCenter] = useSimVar('GEAR CENTER POSITION', 'percent over 100', maxStaleness);
+    const [landingGearRight] = useSimVar('GEAR RIGHT POSITION', 'percent over 100', maxStaleness);
 
     const landingGearInTransit = landingGearLeft > 0 && landingGearLeft < 1
         || landingGearCenter > 0 && landingGearCenter < 1 || landingGearRight > 0 && landingGearRight < 1;
@@ -148,7 +148,7 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
     const [eng2] = useSimVar('ENG COMBUSTION:2', 'Bool');
     const available = eng1 === 1 && eng2 === 1;
 
-    const [autoBrakeLevel] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'Number', maxStaleness);
+    const [autoBrakeLevel] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'number', maxStaleness);
 
     return autoBrakeLevel !== 0 ? (
         <SvgGroup x={x} y={y}>
@@ -259,7 +259,7 @@ interface GearProps extends ComponentPositionProps {
 }
 
 const Gear = ({ x, y, location }: GearProps) => {
-    const [landingGearPosition] = useSimVar(`GEAR ${location.toUpperCase()} POSITION`, 'Percent Over 100', maxStaleness);
+    const [landingGearPosition] = useSimVar(`GEAR ${location.toUpperCase()} POSITION`, 'percent over 100', maxStaleness);
 
     const [status, setStatus] = useState({
         inTransit: false,

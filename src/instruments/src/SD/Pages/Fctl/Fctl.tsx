@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
+import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
 import './Fctl.scss';
 import { PageTitle } from '../../Common/PageTitle';
@@ -73,7 +73,7 @@ const Wings = ({ x = 0, y = 0 }: ComponentPositionProps) => (
 );
 
 const PitchTrim = ({ x, y }: ComponentPositionProps) => {
-    const [rawPitchTrim] = useSimVar('ELEVATOR TRIM INDICATOR', 'Position 16k', 50);
+    const [rawPitchTrim] = useSimVar('ELEVATOR TRIM INDICATOR', 'position', 50);
 
     const adjustedPitchTrim = rawPitchTrim / 1213.6296;
     const [pitchIntegral, pitchFractional] = Math.abs(adjustedPitchTrim).toFixed(1).split('.');
@@ -208,8 +208,8 @@ interface ElacSecShapeProps extends ElacSecProps {
 }
 
 const ElacSecShape = ({ x, y, number, type }: ElacSecShapeProps) => {
-    const [on] = useSimVar(`L:A32NX_FBW_${type}_SWITCH:${number}`, 'boolean', 1000);
-    const [failed] = useSimVar(`L:A32NX_FBW_${type}_FAILED:${number}`, 'boolean', 1000);
+    const [on] = useSimVar(`L:A32NX_FBW_${type}_SWITCH:${number}`, 'Boolean', 1000);
+    const [failed] = useSimVar(`L:A32NX_FBW_${type}_FAILED:${number}`, 'Boolean', 1000);
 
     return (
         <SvgGroup x={x} y={y}>

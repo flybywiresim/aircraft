@@ -15,7 +15,7 @@ export const Spoilers = ({ x, y }: ComponentPositionProps) => {
     const [rightSpoilerState] = useSimVar('SPOILERS RIGHT POSITION', 'percent over 100', 50);
     const [speedBrakeHandlePosition] = useSimVar('SPOILERS HANDLE POSITION', 'percent over 100', 100);
 
-    const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'boolean', 500);
+    const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'Boolean', 500);
 
     const leftSpoilerUp = leftSpoilerState > 0.1;
     const leftAileronUp = aileronLeftDeflectionState < -0.5;

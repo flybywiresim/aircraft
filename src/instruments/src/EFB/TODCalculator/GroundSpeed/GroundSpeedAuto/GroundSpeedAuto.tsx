@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import React, { useEffect } from 'react';
+import { useSimVar } from '@instruments/common/simVars';
 import { round, isNaN, last } from 'lodash';
 import { TOD_CALCULATOR_REDUCER } from '../../../Store';
 import {
@@ -10,7 +11,6 @@ import {
 import './GroundSpeedAuto.scss';
 import Button, { BUTTON_TYPE } from '../../../Components/Button/Button';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode.enum';
-import { useSimVar } from '../../../../Common/simVars';
 
 const GroundSpeedAuto = ({ groundSpeedData, currentAltitude, setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, ...props }) => {
     let [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);

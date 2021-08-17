@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
 import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconRadio, IconTrafficLights } from '@tabler/icons';
 import { useInterval } from '@flybywiresim/react-components';
-import { useSimVar, useSplitSimVar } from '../../Common/simVars';
+import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
 
@@ -16,8 +16,8 @@ export const ATC = () => {
     const [frequency, setFrequency] = useSplitSimVar('COM ACTIVE FREQUENCY:1', 'Hz', 'K:COM_RADIO_SET_HZ', 'Hz', 500);
     const [currentFrequency, setCurrentFrequency] = useState<string>();
     const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
-    const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
-    const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
+    const [currentLatitude] = useSimVar('GPS POSITION LAT', 'degrees', 5000);
+    const [currentLongitude] = useSimVar('GPS POSITION LON', 'degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
 
     const loadAtc = useCallback(() => {

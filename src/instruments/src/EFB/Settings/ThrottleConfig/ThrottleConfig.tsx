@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Toggle } from '@flybywiresim/react-components';
 import { usePersistentProperty } from '../../../Common/persistence';
-import { useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
 

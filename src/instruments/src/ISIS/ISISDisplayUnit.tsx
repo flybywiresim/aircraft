@@ -20,8 +20,8 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
     const [state, setState] = useState(isColdAndDark ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const [timer, setTimer] = useState<number | null>(null);
 
-    const [dcEssLive] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool');
-    const [dcHotLive] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'bool');
+    const [dcEssLive] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool');
+    const [dcHotLive] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'Bool');
 
     const hasElectricity = indicatedAirspeed > 50 && dcHotLive || dcEssLive;
 

@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
+import { SimVarProvider } from '@instruments/common/simVars';
 import {
     renderTarget,
     useInteractionEvent,
@@ -79,4 +80,4 @@ function EWD() {
     }
 }
 
-ReactDOM.render(<EWD />, renderTarget);
+ReactDOM.render(<SimVarProvider><EWD /></SimVarProvider>, renderTarget);

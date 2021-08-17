@@ -1,6 +1,6 @@
 import { IconLayoutSidebar } from '@tabler/icons';
 import React, { useEffect, useState } from 'react';
-import { useSplitSimVar } from '../../Common/simVars';
+import { useSplitSimVar } from '@instruments/common/simVars';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 
 type DoorToggleProps = {
@@ -13,7 +13,7 @@ type DoorToggleProps = {
 }
 
 export const DoorToggle = (props: DoorToggleProps) => {
-    const [doorState, setDoorState] = useSplitSimVar(`A:INTERACTIVE POINT OPEN:${props.index}`, 'Percent over 100', 'K:TOGGLE_AIRCRAFT_EXIT', 'Enum', 500);
+    const [doorState, setDoorState] = useSplitSimVar(`A:INTERACTIVE POINT OPEN:${props.index}`, 'percent over 100', 'K:TOGGLE_AIRCRAFT_EXIT', 'Enum', 500);
     const [previousDoorState, setPreviousDoorState] = useState(doorState);
 
     useEffect(() => {

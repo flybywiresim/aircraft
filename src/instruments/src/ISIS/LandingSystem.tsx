@@ -26,9 +26,9 @@ const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, avai
 
 export const LandingSystem: React.FC = () => {
     const [gsDeviation] = useSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees');
-    const [gsAvailable] = useSimVar('NAV HAS GLIDE SLOPE:3', 'bool');
+    const [gsAvailable] = useSimVar('NAV HAS GLIDE SLOPE:3', 'Bool');
     const [lsDeviation] = useSimVar('NAV RADIAL ERROR:3', 'degrees');
-    const [lsAvailable] = useSimVar('NAV HAS LOCALIZER:3', 'bool');
+    const [lsAvailable] = useSimVar('NAV HAS LOCALIZER:3', 'Bool');
 
     const [lsActive] = useInteractionSimVar('L:A32NX_ISIS_LS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_LS_PRESSED');
 
