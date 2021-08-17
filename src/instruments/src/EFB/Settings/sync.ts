@@ -45,6 +45,10 @@ const settingsToSync: SettingSync[] = [
         simVar: ['L:A32NX_EFB_BRIGHTNESS', 'number'],
         propertyName: 'EFB_BRIGHTNESS',
     },
+    {
+        simVar: ['L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool'],
+        propertyName: 'EFB_USING_AUTOBRIGHTNESS',
+    },
 ];
 
 export function readSettingsFromPersistentStorage() {

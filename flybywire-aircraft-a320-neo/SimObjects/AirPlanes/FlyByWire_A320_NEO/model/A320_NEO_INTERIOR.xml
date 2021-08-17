@@ -513,7 +513,7 @@
                     <PART_ID>SCREEN_PFD1</PART_ID>
                     <CAMERA_TITLE>PFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -614,7 +614,7 @@
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- DCDU -->
@@ -623,7 +623,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
-                            8 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
+                            3 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -658,7 +658,7 @@
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND SCREEN -->
@@ -675,7 +675,7 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O WX SCREEN -->
@@ -693,7 +693,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
-                            8 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
+                            3 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -803,7 +803,7 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
                 </UseTemplate>
                 <CameraTitle>PA</CameraTitle>
 
@@ -878,7 +878,7 @@
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
@@ -895,7 +895,7 @@
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>8</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
@@ -1246,11 +1246,11 @@
                     <TYPE>Auto</TYPE>
                     <INVERT_ANIM>True</INVERT_ANIM>
                     <POTENTIOMETER>24</POTENTIOMETER>
+                    <SIMVAR_INDEX>0</SIMVAR_INDEX>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_0>
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
                     <ANIMTIP_1>Set strobe lights to AUTO</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_OFF</ANIMTIP_2>
-
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
@@ -1461,7 +1461,7 @@
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
-                <!-- Turn off the conenction to the lights when the landing gear is retracted-->
+                <!-- Turn off the connection to the lights when the landing gear is retracted-->
                 <UseTemplate Name="ASOBO_GT_Update">
                     <FREQUENCY>5</FREQUENCY>
                     <UPDATE_CODE>
