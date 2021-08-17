@@ -1,11 +1,5 @@
 @import "../Assets/Efb.scss";
 
-.wrapper {
-  // this lets us use position:absolute in widgets
-  position: relative;
-  padding: 1rem;
-}
-
 .airplane {
   height: 100%;
   max-width: 100%;
@@ -25,10 +19,12 @@
 .stop {
   grid-column: 2 / 3;
 }
+
 button:active {
   @apply transform;
   @apply translate-y-1;
 }
+
 .down-left {
   grid-column: 1/1;
 }

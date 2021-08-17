@@ -13,7 +13,7 @@
             <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
             <BRT_DIM_INVERT_ANIM>1</BRT_DIM_INVERT_ANIM>
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-            <WWISE_EVENT>fmc_push_button_on</WWISE_EVENT>
+            <WWISE_EVENT>mcdubuttons</WWISE_EVENT>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
@@ -68,8 +68,8 @@
         <DefaultTemplateParameters>
             <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-            <WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
@@ -99,161 +99,11 @@
         </UseTemplate>
     </Template>
 
-
-    <!--
-    Template for handling autobrake push buttons
-
-    Clone of Asobo template to fix broken logic
-
-    Takes into account the value of L:A32NX_OVHD_INTLT_ANN.
-    -->
-    <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
-        <DefaultTemplateParameters>
-            <AUTOBRAKE_LEVEL>1</AUTOBRAKE_LEVEL>
-            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-            <TOOLTIPID>%((L:XMLVAR_RTO_Level) #AUTOBRAKE_LEVEL# ==)%{if}TT:COCKPIT.TOOLTIPS.AUTO_BRK_TURN_OFF%{else}TT:#OFF_TOOLTIP#%{end}</TOOLTIPID>
-            <ENGINES_COUNT>2</ENGINES_COUNT>
-            <REF_DECEL_FPSS>-7</REF_DECEL_FPSS>
-            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
-        </DefaultTemplateParameters>
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <!--XMLVAR_Autobrakes_Level it the SIMVAR that tracks the position of the autobrake pushbutton switches in A32NX.
-                In order for autobrakes to be set, anti-skid must be enabled. In addition, autobrakes MAX can only
-                be set if the aircraft is on the ground.-->
-            <UseTemplate Name="ASOBO_GT_Push_Button">
-                <LEFT_SINGLE_CODE>
-                (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or if{
-                    0 (&gt;L:XMLVAR_Autobrakes_Level)
-                    } els{
-                        (A:SIM ON GROUND, Bool) #AUTOBRAKE_LEVEL# 3 != or if{
-                            #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
-                        }
-                    }
-                }
-
-                (L:XMLVAR_Autobrakes_Level) 0 == if{
-                    1 (&gt;K:SET_AUTOBRAKE_CONTROL)
-                } els{
-                    (A:SIM ON GROUND, Bool) if{
-                        0 (&gt;K:SET_AUTOBRAKE_CONTROL)
-                    } els{
-                        (L:XMLVAR_Autobrakes_Level) 1 + (&gt;K:SET_AUTOBRAKE_CONTROL)
-                    }
-                }
-
-                (A:SIM ON GROUND, Bool) if{
-                    1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
-                } els{
-                    0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
-                }
-                </LEFT_SINGLE_CODE>
-            </UseTemplate>
-            <!--This is the update code that adjusts the autobrake push button settings in response to SIMVAR changes.
-                1) A:AUTO BRAKE SWITCH CB is not how we keep track of autobrake settings since it reflects the positioning of the rotary
-                   BOEING switch. However, it is currently what is getting set by autobrakes settings in the .flt files. Taxi.flt and Runway.flt
-                   both set autobrakes to 4, so we look for that value and set autbrakes to max if we find it. Technically, this is a bit
-                   abusive since RTO is 0, while 4 is the maximum setting for normal braking but doing it this way enables us to have
-                   the check work only once.
-
-                2) Autobrakes should automatically disarm 10 seconds after the landing gear is retracted. To simulate this, we use a counter
-                   to create a delay after we notice that the landing gear lever has been retracted. Obviously, this won't be exactly accurate,
-                   but it is much closer to reality. Once the autobrakes have been automatically disarmed they are allowed to be rearmed.
-                   Additionally, if the aircraft touches down and the autobrakes are not engaged; i.e. in the balked landing scenario where
-                   the ground spoilers do not deploy, then the autobrakes will be disarmed normally by landing gear retraction.
-
-                3) Upon landing, the autobrake buttons will be disarmed once autobraking deactivates. To ensure that we are actually down,
-                   we will also wait approximately 10 seconds before beginning to test for autobrake deactivation. This is necessary since
-                   at least currently, the autobrake system is activating and deactivating during bounced landings.
-                   CONSIDER: If the autobrake system is rewritten to accurately simulate the real-life system, can we remove the delay?
-                   -->
-            <Condition Check="AUTOBRAKE_LEVEL" Match="1">
-                <True>
-                    <UseTemplate Name="ASOBO_GT_Update">
-                        <FREQUENCY>1</FREQUENCY>
-                        <UPDATE_CODE type="rnp">
-                            alias onGround = (A:SIM ON GROUND, bool);
-                            alias groundSpeed = (A:GROUND VELOCITY, number);
-                            alias autobrakeControl = (K:SET_AUTOBRAKE_CONTROL, number);
-                            alias autobrakesLevel = (L:XMLVAR_Autobrakes_Level, number);
-                            alias lgUpWaitCounter = (L:A32NX_LG_UP_WAIT_COUNTER, number);
-                            alias onGroundWaitCounter = (L:A32NX_ON_GROUND_WAIT_COUNTER, number);
-                            alias disarmAutobrakesOnLgRetract = (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT, bool);
-                            alias autobrakesActivated = (L:A32NX_AUTOBRAKES_ACTIVATED, bool);
-                            let autoBrakeSwitch = (A:AUTO BRAKE SWITCH CB, number);
-
-                            if autoBrakeSwitch &gt; 0 {
-                                if onGround or autoBrakeSwitch &lt; 4 {
-                                    autobrakesLevel = autoBrakeSwitch - 1;
-                                }
-                                if !onGround and autoBrakeSwitch == 4 {
-                                   autobrakeControl = 0;
-                                }
-                            }
-
-                            if autobrakesLevel != 0 {
-                                if disarmAutobrakesOnLgRetract and !(A:GEAR HANDLE POSITION, bool) {
-                                    if lgUpWaitCounter == 30 {
-                                        autobrakesLevel = 0;
-                                        disarmAutobrakesOnLgRetract = false;
-                                        lgUpWaitCounter = 0;
-                                    } else {
-                                        lgUpWaitCounter += 1;
-                                    }
-                                }
-
-                                if onGround {
-                                    disarmAutobrakesOnLgRetract = true;
-
-                                    if groundSpeed &lt; 10 {
-                                      autobrakeControl = 0;
-                                    }
-
-                                    if onGroundWaitCounter == 30 {
-                                        if (A:AUTOBRAKES ACTIVE, bool) {
-                                            autobrakesActivated = true;
-                                        }
-                                        if autobrakesActivated and !(A:AUTOBRAKES ACTIVE, bool) {
-                                            autobrakesLevel = 0;
-                                            autobrakesActivated = false;
-                                            onGroundWaitCounter = 0;
-                                        }
-                                    } else {
-                                        onGroundWaitCounter += 1;
-                                    }
-                                } else {
-                                    onGroundWaitCounter = 0;
-                                }
-                            }
-                        </UPDATE_CODE>
-                    </UseTemplate>
-                </True>
-            </Condition>
-        </Component>
-        <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
-            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
-                </EMISSIVE_CODE>
-                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-            </UseTemplate>
-        </Component>
-        <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
-            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
-                </EMISSIVE_CODE>
-            </UseTemplate>
-        </Component>
-    </Template>
-
     <!--
     Template for beacon light switches
     -->
     <Template Name="FBW_Airbus_LIGHTING_Switch_Light_Beacon_Template">
-        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Beacon_Template">
             <DefaultTemplateParameters>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.BEACON_LIGHT_OFF</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.BEACON_LIGHT_ON</ANIMTIP_1>
@@ -263,7 +113,6 @@
                 <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             </DefaultTemplateParameters>
 
-            <LIGHT_TYPE>BEACON</LIGHT_TYPE>
         </UseTemplate>
     </Template>
 
@@ -271,7 +120,7 @@
     Template for wing light switches
     -->
     <Template Name="FBW_Airbus_LIGHTING_Switch_Light_Wing_Template">
-        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Wing_Template">
             <LIGHT_TYPE>WING</LIGHT_TYPE>
             <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
             <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
@@ -294,9 +143,8 @@
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
         </DefaultTemplateParameters>
-        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
             <LIGHT_TYPE>LANDING</LIGHT_TYPE>
-            <KEY_ID>LANDING_LIGHTS_TOGGLE</KEY_ID>
         </UseTemplate>
     </Template>
 
@@ -306,7 +154,7 @@
     <Template Name="FBW_LIGHTING_Switch_Console_Template">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_3States">
-                <INVERT_ANIM />
+                <INVERT_ANIM>True</INVERT_ANIM>
                 <WWISE_EVENT>lswitch</WWISE_EVENT>
                 <ANIMTIP_0>Set Console/Floor light to off</ANIMTIP_0>
                 <ANIMTIP_1>Set Console/Floor light to dim</ANIMTIP_1>
@@ -493,8 +341,8 @@
 
     <Template Name="FBW_Airbus_Push_EFIS_GPWS">
         <UseTemplate Name="FBW_Push_Held">
-            <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
 
             <SEQ1_CODE>(L:A32NX_GPWS_Warning_Active, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(L:A32NX_GPWS_GS_Warning_Active, Bool)</SEQ2_CODE>
@@ -508,8 +356,8 @@
 
     <Template Name="FBW_Airbus_Sidestick_Priority">
         <DefaultTemplateParameters>
-            <WWISE_EVENT_1>yoke_push_button_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>firetestbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>firetestbutton</WWISE_EVENT_2>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <ID>1</ID>
         </DefaultTemplateParameters>
@@ -655,6 +503,8 @@
             <SEQ1_CODE>(L:A32NX_DCDU_ATC_MSG_WAITING, Bool)</SEQ1_CODE>
             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_DCDU_ATC_MSG_ACK, Bool)</LEFT_SINGLE_CODE>
             <NO_SEQ2/>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
         </UseTemplate>
     </Template>
 
@@ -679,5 +529,122 @@
                 cabinReady and (absTime - callStart) &lt; 5
             </SEQ1_CODE>
         </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_AUTOPILOT_Knob_Baro_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
+            <ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
+            <ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
+            <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
+            <ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+            <TEMPLATE_TO_CALL>FBW_AUTOPILOT_Knob_Baro_SubTemplate1</TEMPLATE_TO_CALL>
+        </UseTemplate>
+    </Template>
+    <Template Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate1">
+        <DefaultTemplateParameters>
+            <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
+            <ANIM_NAME>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</ANIM_NAME>
+            <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+        </DefaultTemplateParameters>
+            <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                <UseTemplate Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate2">
+                </UseTemplate>
+            </Component>
+        </Template>
+        <Template Name="FBW_AUTOPILOT_Knob_Baro_SubTemplate2">
+            <DefaultTemplateParameters>
+                <BARO_ID>#ID#</BARO_ID>
+                <ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
+                <ANIM_NAME_PUSH>AUTOPILOT_Knob_Baro_#ID#_push#SUFFIX_ID#</ANIM_NAME_PUSH>
+                <Switch Param="AIRLINER_TYPE">
+                    <Case Value="A320">
+                        <MODE_BARO>0</MODE_BARO>
+                        <MODE_QNH>1</MODE_QNH>
+                        <MODE_STD>2</MODE_STD>
+                        <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Baro_#ID#_pushpull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+                    </Case>
+                </Switch>
+                <Condition Valid="USE_PUSH_STD">
+                    <PUSH/>
+                </Condition>
+            </DefaultTemplateParameters>
+
+            <Switch>
+                <Case Check="AIRLINER_TYPE">
+                    <Switch Param="AIRLINER_TYPE">
+                        <Case Value="A320">
+                            <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                                <ANTICLOCKWISE_CODE>
+                                    #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                                </ANTICLOCKWISE_CODE>
+                                <CLOCKWISE_CODE>
+                                    #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                                </CLOCKWISE_CODE>
+                                <CLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</CLOCKWISE_CONDITION>
+                                <ANTICLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</ANTICLOCKWISE_CONDITION>
+                                <PULL_CODE>
+                                    #MODE_STD# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                                </PULL_CODE>
+                                <PUSH_CODE>
+                                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == if{ #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) } els{ (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) }
+                                </PUSH_CODE>
+                                <CENTER_RADIUS>0</CENTER_RADIUS>
+                                <OVERRIDE_PUSH_ANIM_CODE>0 100 (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == ? 50 (O:_PushAnimVar) ?</OVERRIDE_PUSH_ANIM_CODE>
+                                <COUNT>36</COUNT>
+                            </UseTemplate>
+                        </Case>
+                        <Default>
+                            <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
+                                <ANTICLOCKWISE_CODE>
+                                (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! if{
+                                    #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                                }
+                                </ANTICLOCKWISE_CODE>
+                                <CLOCKWISE_CODE>
+                                (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! if{
+                                    #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                                }
+                                </CLOCKWISE_CODE>
+                                <LEFT_SINGLE_CODE>
+                                    (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) ! (&gt;L:XMLVAR_Baro#BARO_ID#_ForcedToSTD)
+                                    (L:XMLVAR_Baro#BARO_ID#_ForcedToSTD) if{
+                                        (A:KOHLSMAN SETTING MB:1, mbars) 16 * (&gt;L:XMLVAR_Baro#BARO_ID#_SavedPressure)
+                                        #BARO_ID# (&gt;K:BAROMETRIC_STD_PRESSURE)
+                                    } els{
+                                        #BARO_ID# (L:XMLVAR_Baro#BARO_ID#_SavedPressure) (&gt;K:2:KOHLSMAN_SET)
+                                    }
+                                </LEFT_SINGLE_CODE>
+                                <COUNT>36</COUNT>
+                                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                            </UseTemplate>
+                        </Default>
+                    </Switch>
+                </Case>
+                <Default>
+                    <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                        <ANTICLOCKWISE_CODE>#BARO_ID# (&gt;K:KOHLSMAN_DEC)</ANTICLOCKWISE_CODE>
+                        <CLOCKWISE_CODE>#BARO_ID# (&gt;K:KOHLSMAN_INC)</CLOCKWISE_CODE>
+                        <WWISE_EVENT>RMPknob</WWISE_EVENT>
+                        <COUNT>36</COUNT>
+                    </UseTemplate>
+                </Default>
+            </Switch>
     </Template>
 </ModelBehaviors>

@@ -1,206 +1,466 @@
-import React, { useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
-import { Select, SelectGroup, SelectItem } from '../Components/Form/Select';
-import { useSimVarSyncedPersistentProperty } from '../../Common/persistence';
+import { useSimVar } from '@instruments/common/simVars';
+import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
+import { SelectGroup, SelectItem } from '../Components/Form/Select';
+import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
+import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
+import { Navbar } from '../Components/Navbar';
 
-const PlaneSettings: React.FC = () => (
-    <div className="bg-gray-800 opacity-40 rounded-xl px-6 py-4 shadow-lg">
-        <h1 className="text-xl font-medium text-white mb-3">Realism</h1>
+type ButtonType = {
+    name: string,
+    setting: string,
+}
 
-        <div className="divide-y divide-gray-700 flex flex-col">
-            <div className="mb-3.5 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">ADIRS Align Time</span>
-                <SelectGroup>
-                    <SelectItem>Instant</SelectItem>
-                    <SelectItem>Fast</SelectItem>
-                    <SelectItem selected>Real</SelectItem>
-                </SelectGroup>
-            </div>
-            <div className="mb-4 pt-3 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">DMC self-test</span>
-                <SelectGroup>
-                    <SelectItem>Instant</SelectItem>
-                    <SelectItem>Fast</SelectItem>
-                    <SelectItem selected>Real</SelectItem>
-                </SelectGroup>
-            </div>
-        </div>
+type AdirsButton = {
+    simVarValue: number,
+}
 
-        <h1 className="text-xl text-white font-medium mt-4 mb-3">ATSU/AOC</h1>
-
-        <div className="divide-y divide-gray-700 flex flex-col">
-            <div className="mb-3.5 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">ATIS Source</span>
-                <SelectGroup>
-                    <SelectItem>FAA (US)</SelectItem>
-                    <SelectItem>PilotEdge</SelectItem>
-                    <SelectItem>IVAO</SelectItem>
-                    <SelectItem selected>VATSIM</SelectItem>
-                </SelectGroup>
-            </div>
-            <div className="mb-3.5 pt-3 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">METAR Source</span>
-                <SelectGroup>
-                    <SelectItem>MeteoBlue</SelectItem>
-                    <SelectItem>IVAO</SelectItem>
-                    <SelectItem>PilotEdge</SelectItem>
-                    <SelectItem selected>VATSIM</SelectItem>
-                </SelectGroup>
-            </div>
-            <div className="pt-3 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">TAF Source</span>
-                <SelectGroup>
-                    <SelectItem>IVAO</SelectItem>
-                    <SelectItem selected>NOAA</SelectItem>
-                </SelectGroup>
-            </div>
-        </div>
-
-        <h1 className="text-xl text-white font-medium mt-5 mb-3">FMGC</h1>
-
-        <div className="divide-y divide-gray-700 flex flex-col">
-            <div className="mb-3.5 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Thrust Reduction Altitude</span>
-                <div className="flex flex-row">
-                    <Select>1500 ft</Select>
-                </div>
-            </div>
-            <div className="mb-3.5 pt-3 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Acceleration Altitude </span>
-                <div className="flex flex-row">
-                    <Select>1500 ft</Select>
-                </div>
-            </div>
-            <div className="mb-3.5 pt-3 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Transition Level</span>
-                <div className="flex flex-row">
-                    <Select>FL180</Select>
-                </div>
-            </div>
-
-            <div className="w-full pt-2 flex flex-row justify-between">
-                <div className="pt-2 pr-4 flex-grow flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Default Baro</span>
-                    <SelectGroup>
-                        <SelectItem selected>Auto</SelectItem>
-                        <SelectItem>in Hg</SelectItem>
-                        <SelectItem>hPa</SelectItem>
-                    </SelectGroup>
-                </div>
-                <div className="pt-2 pl-4 flex-grow flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Weight Unit</span>
-                    <SelectGroup>
-                        <SelectItem selected>Kg</SelectItem>
-                        <SelectItem>lbs</SelectItem>
-                    </SelectGroup>
-                </div>
-            </div>
+const ControlSettings = ({ setShowSettings }) => (
+    <div className="bg-navy-lighter divide-y my-4 divide-gray-700 flex flex-col rounded-xl p-6 shadow-lg">
+        <div className="flex flex-row justify-between items-center">
+            <span className="text-lg text-gray-300">Detents</span>
+            <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
         </div>
     </div>
 );
 
-const SoundSettings: React.FC = () => {
+const DefaultsPage = () => {
+    const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
+    const [thrustReductionHeightSetting, setThrustReductionHeightSetting] = useState(thrustReductionHeight);
+    const [accelerationHeight, setAccelerationHeight] = usePersistentProperty('CONFIG_ACCEL_ALT', '1500');
+    const [accelerationHeightSetting, setAccelerationHeightSetting] = useState(accelerationHeight);
+    const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
+    const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
+
+    const handleSetThrustReductionAlt = (value: string) => {
+        setThrustReductionHeightSetting(value);
+
+        const parsedValue = parseInt(value);
+
+        if (parsedValue >= 400 && parsedValue <= 5000) {
+            setThrustReductionHeight(value.trim());
+        }
+    };
+
+    const handleSetAccelerationAlt = (value: string) => {
+        setAccelerationHeightSetting(value);
+
+        const parsedValue = parseInt(value);
+
+        if (parsedValue >= 400 && parsedValue <= 10000) {
+            setAccelerationHeight(value.trim());
+        }
+    };
+
+    const handleSetAccelerationOutAlt = (value: string) => {
+        setAccelerationOutHeightSetting(value);
+
+        const parsedValue = parseInt(value);
+
+        if (parsedValue >= 400 && parsedValue <= 10000) {
+            setAccelerationOutHeight(value.trim());
+        }
+    };
+
+    return (
+        <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Thrust Reduction Height (ft)</span>
+                <div className="flex flex-row">
+                    <SimpleInput
+                        className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                        placeholder={thrustReductionHeight}
+                        noLabel
+                        value={thrustReductionHeightSetting}
+                        onChange={(event) => handleSetThrustReductionAlt(event)}
+                    />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Acceleration Height (ft)</span>
+                <div className="flex flex-row">
+                    <SimpleInput
+                        className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                        placeholder={accelerationHeight}
+                        noLabel
+                        value={accelerationHeightSetting}
+                        onChange={(event) => handleSetAccelerationAlt(event)}
+                    />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Engine-Out Acceleration Height (ft)</span>
+                <div className="flex flex-row">
+                    <SimpleInput
+                        className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                        placeholder={accelerationOutHeight}
+                        noLabel
+                        value={accelerationOutHeightSetting}
+                        onChange={(event) => handleSetAccelerationOutAlt(event)}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AircraftConfigurationPage = () => {
+    const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+
+    const paxSignsButtons: ButtonType[] = [
+        { name: 'No Smoking', setting: '0' },
+        { name: 'No Portable Device', setting: '1' },
+    ];
+
+    const weightUnitButtons: ButtonType[] = [
+        { name: 'Kg', setting: '1' },
+        { name: 'lbs', setting: '0' },
+    ];
+
+    return (
+        <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
+            <div className="py-4 flex-grow flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300 mr-1">Weight Unit</span>
+                <SelectGroup>
+                    {weightUnitButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setWeightUnit(button.setting)}
+                            selected={weightUnit === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">PAX Signs</span>
+                <SelectGroup>
+                    {paxSignsButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setPaxSigns(button.setting)}
+                            selected={paxSigns === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+        </div>
+    );
+};
+
+const SimOptionsPage = () => {
+    const [showThrottleSettings, setShowThrottleSettings] = useState(false);
+    const { setShowNavbar } = useContext(SettingsNavbarContext);
+
+    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
+    const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
+    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
+
+    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
+
+    const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
+        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
+        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
+        { name: 'Real', setting: 'REAL', simVarValue: 0 },
+    ];
+
+    const dmcSelfTestTimeButtons: ButtonType[] = [
+        { name: 'Instant', setting: '0' },
+        { name: 'Fast', setting: '5' },
+        { name: 'Real', setting: '12' },
+    ];
+
+    const defaultBaroButtons: ButtonType[] = [
+        { name: 'Auto', setting: 'AUTO' },
+        { name: 'in Hg', setting: 'IN HG' },
+        { name: 'hPa', setting: 'HPA' },
+    ];
+
+    useEffect(() => {
+        setShowNavbar(!showThrottleSettings);
+    }, [showThrottleSettings]);
+
+    return (
+        <div>
+            {!showThrottleSettings
+        && (
+            <>
+                <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300">ADIRS Align Time</span>
+                        <SelectGroup>
+                            {adirsAlignTimeButtons.map((button) => (
+                                <SelectItem
+                                    onSelect={() => {
+                                        setAdirsAlignTime(button.setting);
+                                        setAdirsAlignTimeSimVar(button.simVarValue);
+                                    }}
+                                    selected={adirsAlignTime === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300">DMC Self Test Time</span>
+                        <SelectGroup>
+                            {dmcSelfTestTimeButtons.map((button) => (
+                                <SelectItem
+                                    onSelect={() => setDmcSelfTestTime(button.setting)}
+                                    selected={dmcSelfTestTime === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Default Baro</span>
+                        <SelectGroup>
+                            {defaultBaroButtons.map((button) => (
+                                <SelectItem
+                                    onSelect={() => setDefaultBaro(button.setting)}
+                                    selected={defaultBaro === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+                </div>
+                <ControlSettings setShowSettings={setShowThrottleSettings} />
+            </>
+        )}
+            <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />
+        </div>
+    );
+};
+
+const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
+    const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+    const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
+
+    const atisSourceButtons: ButtonType[] = [
+        { name: 'FAA (US)', setting: 'FAA' },
+        { name: 'PilotEdge', setting: 'PILOTEDGE' },
+        { name: 'IVAO', setting: 'IVAO' },
+        { name: 'VATSIM', setting: 'VATSIM' },
+    ];
+
+    const metarSourceButtons: ButtonType[] = [
+        { name: 'MeteoBlue', setting: 'MSFS' },
+        { name: 'PilotEdge', setting: 'PILOTEDGE' },
+        { name: 'IVAO', setting: 'IVAO' },
+        { name: 'VATSIM', setting: 'VATSIM' },
+    ];
+
+    const tafSourceButtons: ButtonType[] = [
+        { name: 'IVAO', setting: 'IVAO' },
+        { name: 'NOAA', setting: 'NOAA' },
+    ];
+
+    return (
+        <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">ATIS/ATC Source</span>
+                <SelectGroup>
+                    {atisSourceButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setAtisSource(button.setting)}
+                            selected={atisSource === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">METAR Source</span>
+                <SelectGroup>
+                    {metarSourceButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setMetarSource(button.setting)}
+                            selected={metarSource === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">TAF Source</span>
+                <SelectGroup>
+                    {tafSourceButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setTafSource(button.setting)}
+                            selected={tafSource === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Simbrief Username</span>
+                <div className="flex flex-row items-center">
+                    <SimpleInput
+                        className="w-30"
+                        value={props.simbriefUsername}
+                        noLabel
+                        onChange={(event) => props.setSimbriefUsername(event)}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AudioPage = () => {
     const [ptuAudible, setPtuAudible] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool', 'SOUND_PTU_AUDIBLE_COCKPIT');
     const [exteriorVolume, setExteriorVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_EXTERIOR_MASTER', 'number', 'SOUND_EXTERIOR_MASTER');
     const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
     const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
 
     return (
-        <div className="bg-gray-800 rounded-xl px-6 py-4 shadow-lg">
-            <div className="divide-y divide-gray-700 flex flex-col">
-                <div className="mb-4 flex flex-row justify-between items-center">
-                    <span>
-                        <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>
-                        <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
-                    </span>
-                    <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
+        <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
+            <div className="py-8 flex flex-row justify-between items-center">
+                <span>
+                    <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>
+                    <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
+                </span>
+                <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Exterior Master Volume</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <span className="text-base pr-3">{exteriorVolume}</span>
+                    <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
                 </div>
-                <div className="mb-4 pt-3 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Exterior Master Volume</span>
-                    <div className="flex flex-row items-center">
-                        <span className="text-base pr-3">{exteriorVolume}</span>
-                        <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
-                    </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Engine Interior Volume</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <span className="text-base pr-3">{engineVolume}</span>
+                    <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
                 </div>
-                <div className="mb-4 pt-3 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Engine Interior Volume</span>
-                    <div className="flex flex-row items-center">
-                        <span className="text-base pr-3">{engineVolume}</span>
-                        <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
-                    </div>
-                </div>
-                <div className="pt-3 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Wind Interior Volume</span>
-                    <div className="flex flex-row items-center">
-                        <span className="text-base pr-3">{windVolume}</span>
-                        <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
-                    </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Wind Interior Volume</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <span className="text-base pr-3">{windVolume}</span>
+                    <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
                 </div>
             </div>
         </div>
     );
 };
 
-const ControlSettings = ({ setShowSettings }) => (
-    <div className="bg-gray-800 divide-y divide-gray-700 flex flex-col rounded-xl px-6 py-4 shadow-lg">
-        <div className="flex flex-row justify-between items-center">
-            <span className="text-lg text-gray-300">Detents</span>
-            <Button text="Calibrate" onClick={() => setShowSettings(true)} />
-        </div>
-
-    </div>
-);
-
-const FlyPadSettings: React.FC = () => {
+const FlyPadPage = () => {
     const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
+    const [usingAutobrightness, setUsingAutobrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 'EFB_USING_AUTOBRIGHTNESS');
+
     return (
-        <div className="bg-gray-800 divide-y divide-gray-700 flex flex-col rounded-xl px-6 py-4 shadow-lg">
-            <div className="flex flex-row justify-between items-center">
+        <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
+            <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Brightness</span>
-                <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                <div className={`flex flex-row items-center py-1.5 ${usingAutobrightness && 'pointer-events-none filter saturate-0'}`}>
+                    <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Auto Brightness</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
+                </div>
             </div>
         </div>
     );
 };
 
-const Settings: React.FC = () => {
-    const [showThrottleSettings, setShowThrottleSettings] = useState(false);
+interface SettingsNavbarContextInterface {
+    showNavbar: boolean,
+    setShowNavbar: (newValue: boolean) => void
+}
+
+const SettingsNavbarContext = React.createContext<SettingsNavbarContextInterface>(undefined as any);
+
+const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
+    const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+    const [subPageIndex, setSubPageIndex] = useState(0);
+    const [showNavbar, setShowNavbar] = useState(true);
+
+    function currentPage(): JSX.Element[] {
+        switch (selectedTabIndex) {
+        case 0: return [<DefaultsPage />];
+        case 1: return [<AircraftConfigurationPage />];
+        case 2: return [<SimOptionsPage />];
+        case 3: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
+        case 4: return [<AudioPage />];
+        case 5: return [<FlyPadPage />];
+        default: return [<AircraftConfigurationPage />];
+        }
+    }
 
     return (
-
-        <div className="w-full h-full flex flex-col">
-            { !showThrottleSettings
-        && (
-            <div className="flex-grow m-6 rounded-xl flex flex-row">
-                <div className="w-1/2 pr-3">
-                    <div className="opacity-40">
-                        <h1 className="text-2xl text-white mb-4">Plane Settings</h1>
-
-                        <PlaneSettings />
+        <SettingsNavbarContext.Provider value={{ showNavbar, setShowNavbar }}>
+            <div className="w-full">
+                <div className={`flex flex-row flex-wrap items-center space-x-10 mb-2 ${!showNavbar && 'hidden'}`}>
+                    <Navbar
+                        tabs={[
+                            'Defaults',
+                            'Aircraft Configuration',
+                            'Sim Options',
+                            'ATSU/AOC',
+                            'Audio',
+                            'flyPad',
+                        ]}
+                        onSelected={(indexNumber) => {
+                            setSelectedTabIndex(indexNumber);
+                            setSubPageIndex(0);
+                        }}
+                    />
+                </div>
+                {currentPage()[subPageIndex]}
+                <div className={`mx-auto w-min mb-4 flex flex-row space-x-10 items-center justify-center mt-5 align-baseline ${!showNavbar && 'hidden'}`}>
+                    <div
+                        className={`p-3 rounded-full duration-200
+                            ${subPageIndex === 0 ? 'bg-navy-lighter text-gray-700' : 'bg-teal-light-contrast hover:bg-white hover:text-teal-light-contrast text-white'}`}
+                        onClick={() => {
+                            if (subPageIndex > 0) {
+                                setSubPageIndex(subPageIndex - 1);
+                            }
+                        }}
+                    >
+                        <IconArrowLeft size={32} className="text-current" />
+                    </div>
+                    <div
+                        className={`p-3 rounded-full duration-200
+                            ${subPageIndex === currentPage().length - 1 ? 'bg-navy-lighter text-gray-700' : 'bg-teal-light-contrast hover:bg-white hover:text-teal-light-contrast text-white'}`}
+                        onClick={() => {
+                            if (subPageIndex < currentPage().length - 1) {
+                                setSubPageIndex(subPageIndex + 1);
+                            }
+                        }}
+                    >
+                        <IconArrowRight size={32} className="text-current" />
                     </div>
                 </div>
-                <div className="w-1/2 pl-3">
-                    <h1 className="text-2xl text-white mb-4">Audio Settings</h1>
-                    <SoundSettings />
-
-                    <h1 className="text-2xl text-white mt-5 mb-4">Throttle Settings</h1>
-                    <ControlSettings setShowSettings={setShowThrottleSettings} />
-
-                    <h1 className="text-2xl text-white mt-5 mb-4">flyPad Settings</h1>
-                    <FlyPadSettings />
-
-                    <h1 className="text-4xl text-center text-gray-700 pt-10">flyPadOS</h1>
-                    <h1 className="text-xl text-center text-gray-600 py-2">vAlpha</h1>
-                    <h1 className="text-md text-center text-gray-700 py-2">Copyright &copy; 2020-2021 FlyByWire Simulations</h1>
-                </div>
             </div>
-        )}
-            { showThrottleSettings && <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />}
-
-        </div>
-
+        </SettingsNavbarContext.Provider>
     );
 };
 

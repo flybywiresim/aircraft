@@ -1271,8 +1271,8 @@ pub struct ElectricPump {
     pump: Pump,
 }
 impl ElectricPump {
-    const SPOOLUP_TIME: f64 = 1.;
-    const SPOOLDOWN_TIME: f64 = 3.0;
+    const SPOOLUP_TIME: f64 = 0.1;
+    const SPOOLDOWN_TIME: f64 = 0.3;
     const NOMINAL_SPEED: f64 = 7600.0;
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
@@ -1363,6 +1363,7 @@ pub struct EngineDrivenPump {
     active_id: String,
 
     is_active: bool,
+    rpm: f64,
     pump: Pump,
 }
 impl EngineDrivenPump {
@@ -1378,6 +1379,7 @@ impl EngineDrivenPump {
         Self {
             active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
             is_active: false,
+            rpm: 0.,
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -1394,13 +1396,14 @@ impl EngineDrivenPump {
         pump_rpm: f64,
         controller: &T,
     ) {
+        self.rpm = pump_rpm;
         self.pump
             .update(context, pressure, &reservoir, pump_rpm, controller);
         self.is_active = controller.should_pressurise();
     }
 
     pub fn rpm(&self) -> f64 {
-        self.pump.rpm
+        self.rpm
     }
 }
 impl PressureSource for EngineDrivenPump {
@@ -1636,6 +1639,10 @@ impl RamAirTurbine {
                 self.position = 1.;
             }
         }
+    }
+
+    pub fn turbine_rpm(&self) -> f64 {
+        self.wind_turbine.rpm
     }
 }
 impl PressureSource for RamAirTurbine {

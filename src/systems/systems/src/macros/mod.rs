@@ -45,46 +45,33 @@ macro_rules! provide_potential {
     };
 }
 
-#[macro_export]
-macro_rules! assert_is_powered {
-    ($tb:expr, $bus_type:expr) => {
-        assert!(
-            $tb.is_powered($bus_type),
-            "Expected the {} bus to be powered, but it is unpowered.",
-            $bus_type.to_string()
-        );
-    };
-}
-
-#[macro_export]
-macro_rules! assert_is_unpowered {
-    ($tb:expr, $bus_type:expr) => {
-        assert!(
-            !$tb.is_powered($bus_type),
-            "Expected the {} bus to be unpowered, but it is powered.",
-            $bus_type.to_string()
-        );
-    };
-}
-
-#[macro_export]
-macro_rules! assert_is_powered_by {
-    ($tb:expr, $bus_type:expr, $origin:expr) => {
-        let potential = $tb.potential_of($bus_type);
-        let origins = potential.origins();
-        if origins.count() == 0 {
-            panic!(
-                "Expected the {} bus to be powered by {}, but it is unpowered.",
-                $bus_type.to_string(),
-                $origin.to_string(),
-            )
+macro_rules! read_write_enum {
+    ($t: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn read(&mut self, name: &str) -> $t {
+                self.read_f64(name).into()
+            }
         }
 
-        assert!(
-            $tb.is_single_origin($bus_type, $origin),
-            "Expected the {} bus to be powered by {}, but it is powered.",
-            $bus_type.to_string(),
-            $origin.to_string()
-        );
+        impl<T: Writer> Write<$t> for T {
+            fn write(&mut self, name: &str, value: $t) {
+                self.write_f64(name, value.into());
+            }
+        }
+
+        impl From<$t> for f64 {
+            fn from(value: $t) -> f64 {
+                value as u8 as f64
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! accept_iterable {
+    ($iterable: expr, $visitor: expr) => {
+        $iterable.iter_mut().for_each(|el| {
+            el.accept($visitor);
+        });
     };
 }

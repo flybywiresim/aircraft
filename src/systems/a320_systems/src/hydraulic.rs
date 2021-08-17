@@ -1,33 +1,44 @@
 use std::time::Duration;
 use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, volume::gallon,
+    acceleration::meter_per_second_squared,
+    angular_velocity::revolution_per_minute,
+    f64::*,
+    pressure::pascal,
+    pressure::psi,
+    ratio::{percent, ratio},
+    velocity::knot,
+    volume::gallon,
+    volume_rate::gallon_per_second,
 };
 
 use systems::{
     engine::Engine,
     hydraulic::{
-        brake_circuit::BrakeCircuit, ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop,
-        HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
-        PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
+        brake_circuit::{
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
+        },
+        ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
+        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
+        RamAirTurbine, RamAirTurbineController, Reservoir,
     },
-    landing_gear::LandingGear,
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        DelayedFalseLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineFirePushButtons,
-        LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+        interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
+        ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
+        EmergencyElectricalState, EngineFirePushButtons, LgciuInterface,
+        RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, Write,
+        Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, Write,
     },
 };
 
 pub(super) struct A320Hydraulic {
-    hyd_brake_logic: A320HydraulicBrakingLogic,
+    brake_computer: A320HydraulicBrakeComputerUnit,
+
     blue_loop: HydraulicLoop,
     blue_loop_controller: A320HydraulicLoopController,
     green_loop: HydraulicLoop,
@@ -67,6 +78,10 @@ pub(super) struct A320Hydraulic {
     lag_time_accumulator: Duration,
 }
 impl A320Hydraulic {
+    const FORWARD_CARGO_DOOR_ID: usize = 5;
+    // Same id for aft door as a place holder until it gets animated
+    const AFT_CARGO_DOOR_ID: usize = 5;
+
     const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
     const BLUE_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
@@ -104,7 +119,7 @@ impl A320Hydraulic {
 
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
-            hyd_brake_logic: A320HydraulicBrakingLogic::new(),
+            brake_computer: A320HydraulicBrakeComputerUnit::new(),
 
             blue_loop: HydraulicLoop::new(
                 "BLUE",
@@ -186,8 +201,8 @@ impl A320Hydraulic {
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
 
-            forward_cargo_door: Door::new(5),
-            aft_cargo_door: Door::new(3),
+            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
+            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID),
             pushback_tug: PushbackTug::new(),
 
             ram_air_turbine: RamAirTurbine::new(),
@@ -229,8 +244,10 @@ impl A320Hydraulic {
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
+        autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &U,
-        landing_gear: &LandingGear,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
@@ -250,8 +267,11 @@ impl A320Hydraulic {
         self.update_every_frame(
             &context,
             &overhead_panel,
+            &autobrake_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
+            lgciu1,
+            lgciu2,
         );
 
         if number_of_steps_floating_point < 1.0 {
@@ -286,7 +306,8 @@ impl A320Hydraulic {
                     engine2,
                     overhead_panel,
                     engine_fire_push_buttons,
-                    landing_gear,
+                    lgciu1,
+                    lgciu2,
                 );
             }
 
@@ -302,6 +323,54 @@ impl A320Hydraulic {
                 self.update_fast_rate(&context, &delta_time_physics);
             }
         }
+    }
+
+    // Placeholder function to give an estimation of blue pump flow for sound purpose
+    // Todo remove when hydraulics gives directly correct values of flow and displacement
+    fn blue_electric_pump_estimated_flow(&self) -> VolumeRate {
+        // If RAT pump has some RPM then we consider epump provides only a fraction of the loop total flow
+        let rat_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
+
+        let estimated_blue_epump_flow: VolumeRate;
+        if self.blue_electric_pump_controller.should_pressurise() {
+            if rat_produces_flow {
+                estimated_blue_epump_flow = self.blue_loop.current_flow() * 0.4;
+            } else {
+                estimated_blue_epump_flow = self.blue_loop.current_flow();
+            }
+        } else {
+            estimated_blue_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+
+        estimated_blue_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
+    }
+
+    // Placeholder function to give an estimation of yellow pump flow for sound purpose
+    // Todo remove when hydraulics gives directly correct values of flow and displacement
+    fn yellow_electric_pump_estimated_flow(&self) -> VolumeRate {
+        // If EDP started pumping and has some RPM then we consider epump provides a fraction of the loop total flow
+        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
+            && self.engine_driven_pump_2_controller.should_pressurise();
+
+        let mut estimated_yellow_epump_flow: VolumeRate;
+        if self.yellow_electric_pump_controller.should_pressurise() {
+            if yellow_edp_outputs_some_flow {
+                // If electric pump is not the only pump to work we only consider it gives a 0.2 fraction of the loop total flow
+                estimated_yellow_epump_flow = self.yellow_loop.current_flow() * 0.2;
+            } else {
+                estimated_yellow_epump_flow = self.yellow_loop.current_flow();
+            }
+
+            if self.power_transfer_unit.is_active_right_to_left() {
+                estimated_yellow_epump_flow += self.power_transfer_unit.flow();
+            } else if self.power_transfer_unit.is_active_left_to_right() {
+                estimated_yellow_epump_flow -= self.power_transfer_unit.flow();
+            }
+        } else {
+            estimated_yellow_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+
+        estimated_yellow_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
     }
 
     fn green_edp_has_low_press_fault(&self) -> bool {
@@ -349,14 +418,28 @@ impl A320Hydraulic {
         self.yellow_loop.is_pressurised()
     }
 
+    #[allow(clippy::too_many_arguments)]
     // Update with same refresh rate as the sim
     fn update_every_frame(
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
+        autobrake_panel: &AutobrakePanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
+        // Process brake logic (which circuit brakes) and send brake demands (how much)
+        self.brake_computer.update_brake_demands(
+            context,
+            &self.green_loop,
+            &self.braking_circuit_altn,
+            lgciu1,
+            lgciu2,
+            &autobrake_panel,
+        );
+
         // Updating rat stowed pos on all frames in case it's used for graphics
         self.ram_air_turbine.update_position(&context.delta());
 
@@ -370,8 +453,11 @@ impl A320Hydraulic {
         // Tug has its angle changing on each frame and we'd like to detect this
         self.pushback_tug.update();
 
-        self.braking_force
-            .update_forces(&self.braking_circuit_norm, &self.braking_circuit_altn);
+        self.braking_force.update_forces(
+            &context,
+            &self.braking_circuit_norm,
+            &self.braking_circuit_altn,
+        );
     }
 
     // All the higher frequency updates like physics
@@ -399,6 +485,7 @@ impl A320Hydraulic {
 
     fn update_blue_actuators_volume(&mut self) {}
 
+    #[allow(clippy::too_many_arguments)]
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
     fn update_fixed_step<T: Engine, U: EngineFirePushButtons>(
         &mut self,
@@ -407,22 +494,12 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
-        landing_gear: &LandingGear,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
-        //TODO REMOVE
         let reservoir = Reservoir::new(Volume::new::<gallon>(5.), Volume::new::<gallon>(5.));
-        // Process brake logic (which circuit brakes) and send brake demands (how much)
-        self.hyd_brake_logic.update_brake_demands(
-            context,
-            &self.green_loop,
-            &self.braking_circuit_altn,
-            &landing_gear,
-        );
-        self.hyd_brake_logic.update_brake_pressure_limitation(
-            &mut self.braking_circuit_norm,
-            &mut self.braking_circuit_altn,
-        );
-        self.hyd_brake_logic.send_brake_demands(
+
+        self.brake_computer.send_brake_demands(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
         );
@@ -433,6 +510,7 @@ impl A320Hydraulic {
             &self.forward_cargo_door,
             &self.aft_cargo_door,
             &self.pushback_tug,
+            lgciu2,
         );
         self.power_transfer_unit.update(
             &self.green_loop,
@@ -445,9 +523,10 @@ impl A320Hydraulic {
         self.engine_driven_pump_1_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine1.corrected_n2(),
+            engine1.uncorrected_n2(),
             engine1.oil_pressure(),
             self.engine_driven_pump_1_pressure_switch.is_pressurised(),
+            lgciu1,
         );
 
         self.engine_driven_pump_1.update(
@@ -465,9 +544,10 @@ impl A320Hydraulic {
         self.engine_driven_pump_2_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine2.corrected_n2(),
+            engine2.uncorrected_n2(),
             engine2.oil_pressure(),
             self.engine_driven_pump_2_pressure_switch.is_pressurised(),
+            lgciu2,
         );
 
         self.engine_driven_pump_2.update(
@@ -487,6 +567,8 @@ impl A320Hydraulic {
             engine2.oil_pressure(),
             engine1.is_above_minimum_idle(),
             engine2.is_above_minimum_idle(),
+            lgciu1,
+            lgciu2,
         );
         self.blue_electric_pump.update(
             context,
@@ -583,13 +665,27 @@ impl SimulationElement for A320Hydraulic {
         self.green_loop.accept(visitor);
         self.yellow_loop.accept(visitor);
 
-        self.hyd_brake_logic.accept(visitor);
+        self.brake_computer.accept(visitor);
 
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
         self.braking_force.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            "HYD_YELLOW_EPUMP_FLOW",
+            self.yellow_electric_pump_estimated_flow()
+                .get::<gallon_per_second>(),
+        );
+
+        writer.write(
+            "HYD_BLUE_EPUMP_FLOW",
+            self.blue_electric_pump_estimated_flow()
+                .get::<gallon_per_second>(),
+        );
     }
 }
 
@@ -621,9 +717,6 @@ struct A320EngineDrivenPumpController {
     is_powered: bool,
     powered_by: Vec<ElectricalBusType>,
     engine_number: usize,
-    engine_master_on_id: String,
-    engine_master_on: bool,
-    weight_on_wheels: bool,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
@@ -636,9 +729,6 @@ impl A320EngineDrivenPumpController {
             is_powered: false,
             powered_by,
             engine_number,
-            engine_master_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", engine_number),
-            engine_master_on: false,
-            weight_on_wheels: true,
             should_pressurise: true,
             has_pressure_low_fault: false,
             is_pressure_low: true,
@@ -650,6 +740,7 @@ impl A320EngineDrivenPumpController {
         engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
+        lgciu: &impl LgciuInterface,
     ) {
         // Faking edp section pressure low level as if engine is slow we shouldn't have pressure
         let faked_is_edp_section_low_pressure = engine_n2.get::<percent>() < 5.;
@@ -663,8 +754,9 @@ impl A320EngineDrivenPumpController {
             && (!pressure_switch_state || faked_is_edp_section_low_pressure);
 
         // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
-        self.has_pressure_low_fault =
-            self.is_pressure_low && (!is_engine_low_oil_pressure || !self.weight_on_wheels);
+        self.has_pressure_low_fault = self.is_pressure_low
+            && (!is_engine_low_oil_pressure
+                || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
     }
 
     fn update<T: EngineFirePushButtons>(
@@ -674,6 +766,7 @@ impl A320EngineDrivenPumpController {
         engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
+        lgciu: &impl LgciuInterface,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.engine_number)
@@ -689,7 +782,12 @@ impl A320EngineDrivenPumpController {
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
 
-        self.update_low_pressure_state(engine_n2, engine_oil_pressure, pressure_switch_state);
+        self.update_low_pressure_state(
+            engine_n2,
+            engine_oil_pressure,
+            pressure_switch_state,
+            lgciu,
+        );
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -702,11 +800,6 @@ impl PumpController for A320EngineDrivenPumpController {
     }
 }
 impl SimulationElement for A320EngineDrivenPumpController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.engine_master_on = reader.read(&self.engine_master_on_id);
-        self.weight_on_wheels = reader.read("SIM ON GROUND");
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         if self.engine_number == 1 {
             writer.write("HYD_GREEN_EDPUMP_LOW_PRESS", self.is_pressure_low);
@@ -728,7 +821,6 @@ struct A320BlueElectricPumpController {
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
-    weight_on_wheels: bool,
 }
 impl A320BlueElectricPumpController {
     const MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT: f64 = 18.;
@@ -740,10 +832,10 @@ impl A320BlueElectricPumpController {
             should_pressurise: false,
             has_pressure_low_fault: false,
             is_pressure_low: true,
-            weight_on_wheels: true,
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
@@ -752,10 +844,12 @@ impl A320BlueElectricPumpController {
         engine2_oil_pressure: Pressure,
         engine1_above_min_idle: bool,
         engine2_above_min_idle: bool,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
-            if !self.weight_on_wheels
+            if !lgciu1.nose_gear_compressed(false)
                 || engine1_above_min_idle
                 || engine2_above_min_idle
                 || overhead_panel.blue_epump_override_push_button_is_on()
@@ -775,6 +869,8 @@ impl A320BlueElectricPumpController {
             pressure_switch_state,
             engine1_oil_pressure,
             engine2_oil_pressure,
+            lgciu1,
+            lgciu2,
         );
     }
 
@@ -784,6 +880,8 @@ impl A320BlueElectricPumpController {
         pressure_switch_state: bool,
         engine1_oil_pressure: Pressure,
         engine2_oil_pressure: Pressure,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
         // Low engine oil pressure inhibits fault under 18psi level
         let is_engine_low_oil_pressure = engine1_oil_pressure.get::<psi>()
@@ -794,7 +892,10 @@ impl A320BlueElectricPumpController {
         self.is_pressure_low = self.should_pressurise() && !pressure_switch_state;
 
         self.has_pressure_low_fault = self.is_pressure_low
-            && ((!is_engine_low_oil_pressure || !self.weight_on_wheels)
+            && (!is_engine_low_oil_pressure
+                || (!(lgciu1.left_gear_compressed(false) && lgciu1.right_gear_compressed(false))
+                    || !(lgciu2.left_gear_compressed(false)
+                        && lgciu2.right_gear_compressed(false)))
                 || overhead_panel.blue_epump_override_push_button_is_on());
     }
 
@@ -810,10 +911,6 @@ impl PumpController for A320BlueElectricPumpController {
 }
 
 impl SimulationElement for A320BlueElectricPumpController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.weight_on_wheels = reader.read("SIM ON GROUND");
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write("HYD_BLUE_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
@@ -922,7 +1019,6 @@ struct A320PowerTransferUnitController {
     parking_brake_lever_pos: bool,
     eng_1_master_on: bool,
     eng_2_master_on: bool,
-    weight_on_wheels: bool,
 }
 impl A320PowerTransferUnitController {
     const DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION: Duration = Duration::from_secs(40);
@@ -944,7 +1040,6 @@ impl A320PowerTransferUnitController {
             parking_brake_lever_pos: false,
             eng_1_master_on: false,
             eng_2_master_on: false,
-            weight_on_wheels: false,
         }
     }
 
@@ -955,6 +1050,7 @@ impl A320PowerTransferUnitController {
         forward_cargo_door: &Door,
         aft_cargo_door: &Door,
         pushback_tug: &PushbackTug,
+        lgciu2: &impl LgciuInterface,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
@@ -967,7 +1063,7 @@ impl A320PowerTransferUnitController {
             && overhead_panel.yellow_epump_push_button_is_auto();
 
         let should_enable_if_powered = overhead_panel.ptu_push_button_is_auto()
-            && (!self.weight_on_wheels
+            && (!lgciu2.nose_gear_compressed(false)
                 || self.eng_1_master_on && self.eng_2_master_on
                 || !self.eng_1_master_on && !self.eng_2_master_on
                 || (!self.parking_brake_lever_pos
@@ -993,7 +1089,6 @@ impl SimulationElement for A320PowerTransferUnitController {
         self.parking_brake_lever_pos = reader.read("PARK_BRAKE_LEVER_POS");
         self.eng_1_master_on = reader.read("GENERAL ENG STARTER ACTIVE:1");
         self.eng_2_master_on = reader.read("GENERAL ENG STARTER ACTIVE:2");
-        self.weight_on_wheels = reader.read("SIM ON GROUND");
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -1061,23 +1156,25 @@ impl SimulationElement for A320RamAirTurbineController {
     }
 }
 
-struct A320HydraulicBrakingLogic {
+struct A320HydraulicBrakeComputerUnit {
+    autobrake_controller: A320AutobrakeController,
     parking_brake_demand: bool,
-    weight_on_wheels: bool,
     is_gear_lever_down: bool,
-    left_brake_pilot_input: f64,
-    right_brake_pilot_input: f64,
-    left_brake_green_output: f64,
-    left_brake_yellow_output: f64,
-    right_brake_green_output: f64,
-    right_brake_yellow_output: f64,
+    left_brake_pilot_input: Ratio,
+    right_brake_pilot_input: Ratio,
+    left_brake_green_output: Ratio,
+    left_brake_yellow_output: Ratio,
+    right_brake_green_output: Ratio,
+    right_brake_yellow_output: Ratio,
     normal_brakes_available: bool,
     should_disable_auto_brake_when_retracting: DelayedTrueLogicGate,
     anti_skid_activated: bool,
-    autobrakes_setting: u8,
+
+    alternate_brake_pressure_limit: Pressure,
+    normal_brake_pressure_limit: Pressure,
 }
 /// Implements brakes computers logic
-impl A320HydraulicBrakingLogic {
+impl A320HydraulicBrakeComputerUnit {
     // Minimum pressure hysteresis on green until main switched on ALTN brakes
     // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
     const MIN_PRESSURE_BRAKE_ALTN_HYST_LO: f64 = 1305.;
@@ -1089,34 +1186,43 @@ impl A320HydraulicBrakingLogic {
 
     const AUTOBRAKE_GEAR_RETRACTION_DURATION_S: f64 = 3.;
 
-    fn new() -> A320HydraulicBrakingLogic {
-        A320HydraulicBrakingLogic {
+    const PILOT_INPUT_DETECTION_TRESHOLD: f64 = 0.2;
+
+    fn new() -> A320HydraulicBrakeComputerUnit {
+        A320HydraulicBrakeComputerUnit {
+            autobrake_controller: A320AutobrakeController::new(),
             // Position of parking brake lever
             parking_brake_demand: true,
-            weight_on_wheels: true,
             is_gear_lever_down: true,
-            left_brake_pilot_input: 0.0,
-            right_brake_pilot_input: 0.0,
+            left_brake_pilot_input: Ratio::new::<ratio>(0.0),
+            right_brake_pilot_input: Ratio::new::<ratio>(0.0),
             // Actual command sent to left green circuit
-            left_brake_green_output: 0.0,
+            left_brake_green_output: Ratio::new::<ratio>(0.0),
             // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
-            left_brake_yellow_output: 1.0,
+            left_brake_yellow_output: Ratio::new::<ratio>(1.0),
             // Actual command sent to right green circuit
-            right_brake_green_output: 0.0,
+            right_brake_green_output: Ratio::new::<ratio>(0.0),
             // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
-            right_brake_yellow_output: 1.0,
+            right_brake_yellow_output: Ratio::new::<ratio>(1.0),
             normal_brakes_available: false,
             should_disable_auto_brake_when_retracting: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
             ),
             anti_skid_activated: true,
-            autobrakes_setting: 0,
+            alternate_brake_pressure_limit: Pressure::new::<psi>(3000.),
+            normal_brake_pressure_limit: Pressure::new::<psi>(3000.),
         }
+    }
+
+    fn allow_autobrake_arming(&self) -> bool {
+        self.anti_skid_activated && self.normal_brakes_available
     }
 
     fn update_normal_braking_availability(&mut self, normal_braking_loop_pressure: &Pressure) {
         if normal_braking_loop_pressure.get::<psi>() > Self::MIN_PRESSURE_BRAKE_ALTN_HYST_HI
-            && (self.left_brake_pilot_input < 0.2 && self.right_brake_pilot_input < 0.2)
+            && (self.left_brake_pilot_input.get::<ratio>() < Self::PILOT_INPUT_DETECTION_TRESHOLD
+                && self.right_brake_pilot_input.get::<ratio>()
+                    < Self::PILOT_INPUT_DETECTION_TRESHOLD)
         {
             self.normal_brakes_available = true;
         } else if normal_braking_loop_pressure.get::<psi>() < Self::MIN_PRESSURE_BRAKE_ALTN_HYST_LO
@@ -1125,37 +1231,29 @@ impl A320HydraulicBrakingLogic {
         }
     }
 
-    fn update_brake_pressure_limitation(
-        &mut self,
-        norm_brk: &mut BrakeCircuit,
-        altn_brk: &mut BrakeCircuit,
-    ) {
+    fn update_brake_pressure_limitation(&mut self) {
         let yellow_manual_braking_input = self.left_brake_pilot_input
-            > self.left_brake_yellow_output + 0.2
-            || self.right_brake_pilot_input > self.right_brake_yellow_output + 0.2;
+            > self.left_brake_yellow_output + Ratio::new::<ratio>(0.2)
+            || self.right_brake_pilot_input
+                > self.right_brake_yellow_output + Ratio::new::<ratio>(0.2);
 
         // Nominal braking from pedals is limited to 2538psi
-        norm_brk.set_brake_limit_active(true);
-        norm_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
+        self.normal_brake_pressure_limit = Pressure::new::<psi>(2538.);
 
-        if self.parking_brake_demand {
-            altn_brk.set_brake_limit_active(true);
-
+        self.alternate_brake_pressure_limit = Pressure::new::<psi>(if self.parking_brake_demand {
             // If no pilot action, standard park brake pressure limit
             if !yellow_manual_braking_input {
-                altn_brk.set_brake_press_limit(Pressure::new::<psi>(2103.));
+                2103.
             } else {
                 // Else manual action limited to a higher max nominal pressure
-                altn_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
+                2538.
             }
         } else if !self.anti_skid_activated {
-            altn_brk.set_brake_press_limit(Pressure::new::<psi>(1160.));
-            altn_brk.set_brake_limit_active(true);
+            1160.
         } else {
             // Else if any manual braking we use standard limit
-            altn_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
-            altn_brk.set_brake_limit_active(true);
-        }
+            2538.
+        });
     }
 
     /// Updates final brake demands per hydraulic loop based on pilot pedal demands
@@ -1164,49 +1262,70 @@ impl A320HydraulicBrakingLogic {
         context: &UpdateContext,
         green_loop: &HydraulicLoop,
         alternate_circuit: &BrakeCircuit,
-        landing_gear: &LandingGear,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
+        autobrake_panel: &AutobrakePanel,
     ) {
         self.update_normal_braking_availability(&green_loop.pressure());
+        self.update_brake_pressure_limitation();
 
-        let is_in_flight_gear_lever_up = !self.weight_on_wheels && !self.is_gear_lever_down;
+        self.autobrake_controller.update(
+            &context,
+            &autobrake_panel,
+            self.allow_autobrake_arming(),
+            self.left_brake_pilot_input,
+            self.right_brake_pilot_input,
+            lgciu1,
+            lgciu2,
+        );
+
+        let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
+            || lgciu2.left_and_right_gear_compressed(true)
+            || self.is_gear_lever_down);
+
         self.should_disable_auto_brake_when_retracting.update(
             context,
-            !landing_gear.is_down_and_locked() && !self.is_gear_lever_down,
+            !lgciu1.all_down_and_locked() && !self.is_gear_lever_down,
         );
 
         if is_in_flight_gear_lever_up {
             if self.should_disable_auto_brake_when_retracting.output() {
-                self.left_brake_green_output = 0.;
-                self.right_brake_green_output = 0.;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.);
             } else {
                 // Slight brake pressure to stop the spinning wheels (have no pressure data available yet, 0.2 is random one)
-                self.left_brake_green_output = 0.2;
-                self.right_brake_green_output = 0.2;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.2);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.2);
             }
 
-            self.left_brake_yellow_output = 0.;
-            self.right_brake_yellow_output = 0.;
+            self.left_brake_yellow_output = Ratio::new::<ratio>(0.);
+            self.right_brake_yellow_output = Ratio::new::<ratio>(0.);
         } else {
             let green_used_for_brakes = self.normal_brakes_available
                 && self.anti_skid_activated
                 && !self.parking_brake_demand;
 
             if green_used_for_brakes {
-                self.left_brake_green_output = self.left_brake_pilot_input;
-                self.right_brake_green_output = self.right_brake_pilot_input;
-                self.left_brake_yellow_output = 0.;
-                self.right_brake_yellow_output = 0.;
+                // Final output on normal brakes is max(pilot demand , autobrake demand) to allow pilot override autobrake demand
+                self.left_brake_green_output = self
+                    .left_brake_pilot_input
+                    .max(self.autobrake_controller.brake_output());
+                self.right_brake_green_output = self
+                    .right_brake_pilot_input
+                    .max(self.autobrake_controller.brake_output());
+                self.left_brake_yellow_output = Ratio::new::<ratio>(0.);
+                self.right_brake_yellow_output = Ratio::new::<ratio>(0.);
             } else {
-                self.left_brake_green_output = 0.;
-                self.right_brake_green_output = 0.;
+                self.left_brake_green_output = Ratio::new::<ratio>(0.);
+                self.right_brake_green_output = Ratio::new::<ratio>(0.);
                 if !self.parking_brake_demand {
                     // Normal braking but using alternate circuit
                     self.left_brake_yellow_output = self.left_brake_pilot_input;
                     self.right_brake_yellow_output = self.right_brake_pilot_input;
                 } else {
                     // Else we just use parking brake
-                    self.left_brake_yellow_output = 1.;
-                    self.right_brake_yellow_output = 1.;
+                    self.left_brake_yellow_output = Ratio::new::<ratio>(1.);
+                    self.right_brake_yellow_output = Ratio::new::<ratio>(1.);
 
                     // Special case: parking brake on but yellow can't provide enough brakes: green are allowed to brake for emergency
                     if alternate_circuit.left_brake_pressure().get::<psi>()
@@ -1222,30 +1341,47 @@ impl A320HydraulicBrakingLogic {
         }
 
         // Limiting final values
-        self.left_brake_yellow_output = self.left_brake_yellow_output.min(1.).max(0.);
-        self.right_brake_yellow_output = self.right_brake_yellow_output.min(1.).max(0.);
-        self.left_brake_green_output = self.left_brake_green_output.min(1.).max(0.);
-        self.right_brake_green_output = self.right_brake_green_output.min(1.).max(0.);
+        self.left_brake_yellow_output = self
+            .left_brake_yellow_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.right_brake_yellow_output = self
+            .right_brake_yellow_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.left_brake_green_output = self
+            .left_brake_green_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
+        self.right_brake_green_output = self
+            .right_brake_green_output
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
     }
 
     fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
+        norm.set_brake_press_limit(self.normal_brake_pressure_limit);
         norm.set_brake_demand_left(self.left_brake_green_output);
         norm.set_brake_demand_right(self.right_brake_green_output);
+
+        altn.set_brake_press_limit(self.alternate_brake_pressure_limit);
         altn.set_brake_demand_left(self.left_brake_yellow_output);
         altn.set_brake_demand_right(self.right_brake_yellow_output);
     }
 }
 
-impl SimulationElement for A320HydraulicBrakingLogic {
+impl SimulationElement for A320HydraulicBrakeComputerUnit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.autobrake_controller.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.parking_brake_demand = reader.read("PARK_BRAKE_LEVER_POS");
-        self.weight_on_wheels = reader.read("SIM ON GROUND");
         self.is_gear_lever_down = reader.read("GEAR HANDLE POSITION");
         self.anti_skid_activated = reader.read("ANTISKID BRAKES ACTIVE");
-        self.left_brake_pilot_input = reader.read("LEFT_BRAKE_PEDAL_INPUT");
-        self.right_brake_pilot_input = reader.read("RIGHT_BRAKE_PEDAL_INPUT");
-        let autobrakes_setting: f64 = reader.read("AUTOBRAKES SETTING");
-        self.autobrakes_setting = autobrakes_setting.floor() as u8;
+        self.left_brake_pilot_input = Ratio::new::<ratio>(reader.read("LEFT_BRAKE_PEDAL_INPUT"));
+        self.right_brake_pilot_input = Ratio::new::<ratio>(reader.read("RIGHT_BRAKE_PEDAL_INPUT"));
     }
 }
 
@@ -1253,34 +1389,70 @@ struct A320BrakingForce {
     left_braking_force: f64,
     right_braking_force: f64,
 
-    park_brake_lever_is_set: bool,
+    flap_position: f64,
 }
 impl A320BrakingForce {
-    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2000.;
+    const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
+
+    const FLAPS_BREAKPOINTS: [f64; 3] = [0., 50., 100.];
+    const FLAPS_PENALTY_PERCENT: [f64; 3] = [5., 5., 0.];
 
     pub fn new() -> Self {
         A320BrakingForce {
             left_braking_force: 0.,
             right_braking_force: 0.,
 
-            park_brake_lever_is_set: true,
+            flap_position: 0.,
         }
     }
 
-    pub fn update_forces(&mut self, norm_brakes: &BrakeCircuit, altn_brakes: &BrakeCircuit) {
-        let left_force_norm =
-            norm_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
-        let left_force_altn =
-            altn_brakes.left_brake_pressure().get::<psi>() / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+    pub fn update_forces(
+        &mut self,
+        context: &UpdateContext,
+        norm_brakes: &BrakeCircuit,
+        altn_brakes: &BrakeCircuit,
+    ) {
+        // Base formula for output force is output_force[0:1] = 50 * sqrt(hydraulic_pressure) / Max_brake_pressure
+        // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
+        // gives really too low brake force for 1000psi
+
+        let left_force_norm = 50. * norm_brakes.left_brake_pressure().get::<psi>().sqrt()
+            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
+        let left_force_altn = 50. * altn_brakes.left_brake_pressure().get::<psi>().sqrt()
+            / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.left_braking_force = left_force_norm + left_force_altn;
         self.left_braking_force = self.left_braking_force.max(0.).min(1.);
 
-        let right_force_norm = norm_brakes.right_brake_pressure().get::<psi>()
+        let right_force_norm = 50. * norm_brakes.right_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
-        let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>()
+        let right_force_altn = 50. * altn_brakes.right_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.right_braking_force = right_force_norm + right_force_altn;
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
+
+        self.correct_with_flaps_state(context);
+    }
+
+    fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
+        let flap_correction = Ratio::new::<percent>(interpolation(
+            &Self::FLAPS_BREAKPOINTS,
+            &Self::FLAPS_PENALTY_PERCENT,
+            self.flap_position,
+        ));
+
+        // Using airspeed with formula 0.1 * sqrt(airspeed) to get a 0 to 1 ratio to use our flap correction
+        // This way the less airspeed, the less our correction is used as it is an aerodynamic effect on brakes
+        let mut airspeed_corrective_factor =
+            0.1 * context.indicated_airspeed().get::<knot>().abs().sqrt();
+        airspeed_corrective_factor = airspeed_corrective_factor.min(1.0);
+
+        let final_flaps_correction_with_speed = flap_correction * airspeed_corrective_factor;
+
+        self.left_braking_force = self.left_braking_force
+            - (self.left_braking_force * final_flaps_correction_with_speed.get::<ratio>());
+
+        self.right_braking_force = self.right_braking_force
+            - (self.right_braking_force * final_flaps_correction_with_speed.get::<ratio>());
     }
 }
 
@@ -1291,9 +1463,10 @@ impl SimulationElement for A320BrakingForce {
         writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
     }
 
-    // We receive here the desired parking brake position. This is the parking brake lever input
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.park_brake_lever_is_set = reader.read("PARK_BRAKE_LEVER_POS");
+    fn read(&mut self, state: &mut SimulatorReader) {
+        let left_flap: f64 = state.read("TRAILING EDGE FLAPS LEFT PERCENT");
+        let right_flap: f64 = state.read("TRAILING EDGE FLAPS RIGHT PERCENT");
+        self.flap_position = (left_flap + right_flap) / 2.;
     }
 }
 
@@ -1369,6 +1542,235 @@ impl SimulationElement for PushbackTug {
         self.previous_angle = self.angle;
         self.angle = state.read("PUSHBACK ANGLE");
         self.state = state.read("PUSHBACK STATE");
+    }
+}
+
+/// Autobrake controller computes the state machine of the autobrake logic, and the deceleration target
+/// that we expect for the plane
+pub struct A320AutobrakeController {
+    deceleration_governor: AutobrakeDecelerationGovernor,
+
+    target: Acceleration,
+    mode: AutobrakeMode,
+
+    arming_is_allowed_by_bcu: bool,
+    left_brake_pedal_input: Ratio,
+    right_brake_pedal_input: Ratio,
+
+    ground_spoilers_are_deployed: bool,
+    last_ground_spoilers_are_deployed: bool,
+
+    should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate,
+    should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate,
+
+    external_disarm_event: bool,
+}
+impl A320AutobrakeController {
+    const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
+
+    // Dynamic decel target map versus time for any mode that needs it
+    const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [4., 4., 0., -2.];
+    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 4.5];
+
+    const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [4., 4., 0., -2., -3.];
+    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 2.5, 4.];
+
+    const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
+    const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
+
+    const MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
+    const TARGET_TO_SHOW_DECEL_IN_MAX_MS2: f64 = -2.7;
+
+    fn new() -> A320AutobrakeController {
+        A320AutobrakeController {
+            deceleration_governor: AutobrakeDecelerationGovernor::new(),
+            target: Acceleration::new::<meter_per_second_squared>(0.),
+            mode: AutobrakeMode::NONE,
+            arming_is_allowed_by_bcu: false,
+            left_brake_pedal_input: Ratio::new::<percent>(0.),
+            right_brake_pedal_input: Ratio::new::<percent>(0.),
+            ground_spoilers_are_deployed: false,
+            last_ground_spoilers_are_deployed: false,
+            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
+                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
+            ),
+            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
+                Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
+            ),
+            external_disarm_event: false,
+        }
+    }
+
+    fn spoilers_retracted_during_this_update(&self) -> bool {
+        !self.ground_spoilers_are_deployed && self.last_ground_spoilers_are_deployed
+    }
+
+    fn brake_output(&self) -> Ratio {
+        Ratio::new::<ratio>(self.deceleration_governor.output())
+    }
+
+    fn determine_mode(&mut self, autobrake_panel: &AutobrakePanel) -> AutobrakeMode {
+        if self.should_disarm() {
+            AutobrakeMode::NONE
+        } else {
+            match autobrake_panel.pressed_mode() {
+                Some(mode) if self.mode == mode => AutobrakeMode::NONE,
+                Some(mode)
+                    if mode != AutobrakeMode::MAX
+                        || !self.should_reject_max_mode_after_time_in_flight.output() =>
+                {
+                    mode
+                }
+                Some(_) | None => self.mode,
+            }
+        }
+    }
+
+    fn should_engage_deceleration_governor(&self) -> bool {
+        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm()
+    }
+
+    fn is_armed(&self) -> bool {
+        self.mode != AutobrakeMode::NONE
+    }
+
+    fn is_decelerating(&self) -> bool {
+        match self.mode {
+            AutobrakeMode::NONE => false,
+            AutobrakeMode::LOW | AutobrakeMode::MED => {
+                self.deceleration_demanded()
+                    && self
+                        .deceleration_governor
+                        .is_on_target(Ratio::new::<percent>(
+                            Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED,
+                        ))
+            }
+            _ => {
+                self.deceleration_demanded()
+                    && self.deceleration_governor.decelerating_at_or_above_rate(
+                        Acceleration::new::<meter_per_second_squared>(
+                            Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2,
+                        ),
+                    )
+            }
+        }
+    }
+
+    fn deceleration_demanded(&self) -> bool {
+        self.deceleration_governor.is_engaged()
+            && self.target.get::<meter_per_second_squared>() < 0.
+    }
+
+    fn should_disarm_due_to_pedal_input(&self) -> bool {
+        match self.mode {
+            AutobrakeMode::NONE => false,
+            AutobrakeMode::LOW | AutobrakeMode::MED => {
+                self.left_brake_pedal_input > Ratio::new::<percent>(53.)
+                    || self.right_brake_pedal_input > Ratio::new::<percent>(53.)
+                    || (self.left_brake_pedal_input > Ratio::new::<percent>(11.)
+                        && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
+            }
+            AutobrakeMode::MAX => {
+                self.left_brake_pedal_input > Ratio::new::<percent>(77.)
+                    || self.right_brake_pedal_input > Ratio::new::<percent>(77.)
+                    || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
+                        && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
+            }
+            _ => false,
+        }
+    }
+
+    fn should_disarm(&self) -> bool {
+        (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
+            || !self.arming_is_allowed_by_bcu
+            || self.spoilers_retracted_during_this_update()
+            || self.should_disarm_after_time_in_flight.output()
+            || self.external_disarm_event
+    }
+
+    fn calculate_target(&mut self) -> Acceleration {
+        Acceleration::new::<meter_per_second_squared>(match self.mode {
+            AutobrakeMode::NONE => Self::OFF_MODE_DECEL_TARGET_MS2,
+            AutobrakeMode::LOW => interpolation(
+                &Self::LOW_MODE_DECEL_PROFILE_TIME_S,
+                &Self::LOW_MODE_DECEL_PROFILE_ACCEL_MS2,
+                self.deceleration_governor.time_engaged().as_secs_f64(),
+            ),
+            AutobrakeMode::MED => interpolation(
+                &Self::MED_MODE_DECEL_PROFILE_TIME_S,
+                &Self::MED_MODE_DECEL_PROFILE_ACCEL_MS2,
+                self.deceleration_governor.time_engaged().as_secs_f64(),
+            ),
+            AutobrakeMode::MAX => Self::MAX_MODE_DECEL_TARGET_MS2,
+            _ => Self::OFF_MODE_DECEL_TARGET_MS2,
+        })
+    }
+
+    fn update_input_conditions(
+        &mut self,
+        context: &UpdateContext,
+        allow_arming: bool,
+        pedal_input_left: Ratio,
+        pedal_input_right: Ratio,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
+    ) {
+        let in_flight_lgciu1 =
+            !lgciu1.right_gear_compressed(false) && !lgciu1.left_gear_compressed(false);
+        let in_flight_lgciu2 =
+            !lgciu2.right_gear_compressed(false) && !lgciu2.left_gear_compressed(false);
+
+        self.should_disarm_after_time_in_flight
+            .update(context, in_flight_lgciu1 && in_flight_lgciu2);
+        self.should_reject_max_mode_after_time_in_flight
+            .update(context, in_flight_lgciu1 && in_flight_lgciu2);
+
+        self.arming_is_allowed_by_bcu = allow_arming;
+        self.left_brake_pedal_input = pedal_input_left;
+        self.right_brake_pedal_input = pedal_input_right;
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        autobrake_panel: &AutobrakePanel,
+        allow_arming: bool,
+        pedal_input_left: Ratio,
+        pedal_input_right: Ratio,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
+    ) {
+        self.update_input_conditions(
+            &context,
+            allow_arming,
+            pedal_input_left,
+            pedal_input_right,
+            lgciu1,
+            lgciu2,
+        );
+        self.mode = self.determine_mode(&autobrake_panel);
+
+        self.deceleration_governor
+            .engage_when(self.should_engage_deceleration_governor());
+
+        self.target = self.calculate_target();
+        self.deceleration_governor.update(&context, self.target);
+    }
+}
+impl SimulationElement for A320AutobrakeController {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write("AUTOBRAKES_ARMED_MODE", self.mode as u8 as f64);
+        writer.write("AUTOBRAKES_DECEL_LIGHT", self.is_decelerating());
+    }
+
+    fn read(&mut self, state: &mut SimulatorReader) {
+        self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
+        self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
+        self.external_disarm_event = state.read("AUTOBRAKE_DISARM");
+
+        // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
+        self.mode = state.read_f64("AUTOBRAKES_ARMED_MODE").into();
     }
 }
 
@@ -1481,14 +1883,18 @@ mod tests {
         use systems::electrical::test::TestElectricitySource;
         use systems::electrical::ElectricalBus;
         use systems::electrical::Electricity;
+        use systems::electrical::ElectricitySource;
+        use systems::electrical::ExternalPowerSource;
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
+        use systems::landing_gear::{LandingGear, LandingGearControlInterfaceUnit};
         use systems::shared::EmergencyElectricalState;
         use systems::shared::PotentialOrigin;
         use systems::simulation::test::TestBed;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
-            acceleration::foot_per_second_squared, length::foot, ratio::percent,
-            thermodynamic_temperature::degree_celsius, velocity::knot,
+            length::foot,
+            ratio::{percent, ratio},
+            velocity::knot,
         };
 
         struct A320TestEmergencyElectricalOverheadPanel {
@@ -1547,10 +1953,14 @@ mod tests {
             engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
+            autobrake_panel: AutobrakePanel,
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
+            lgciu1: LandingGearControlInterfaceUnit,
+            lgciu2: LandingGearControlInterfaceUnit,
             electrical: A320TestElectrical,
+            ext_pwr: ExternalPowerSource,
 
             powered_source: TestElectricitySource,
             ac_ground_service_bus: ElectricalBus,
@@ -1581,10 +1991,18 @@ mod tests {
                     engine_2: LeapEngine::new(2),
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
+                    autobrake_panel: AutobrakePanel::new(),
                     emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     engine_fire_overhead: EngineFireOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
+                    lgciu1: LandingGearControlInterfaceUnit::new(
+                        ElectricalBusType::DirectCurrentEssential,
+                    ),
+                    lgciu2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(
+                        2,
+                    )),
                     electrical: A320TestElectrical::new(),
+                    ext_pwr: ExternalPowerSource::new(electricity),
                     powered_source: TestElectricitySource::powered(
                         PotentialOrigin::EngineGenerator(1),
                         electricity,
@@ -1660,6 +2078,36 @@ mod tests {
             fn is_cargo_powering_yellow_epump(&self) -> bool {
                 self.hydraulics
                     .should_pressurise_yellow_pump_for_cargo_door_operation()
+            }
+
+            fn is_yellow_epump_controller_pressurising(&self) -> bool {
+                self.hydraulics
+                    .yellow_electric_pump_controller
+                    .should_pressurise()
+            }
+
+            fn is_blue_epump_controller_pressurising(&self) -> bool {
+                self.hydraulics
+                    .blue_electric_pump_controller
+                    .should_pressurise()
+            }
+
+            fn is_edp1_green_pump_controller_pressurising(&self) -> bool {
+                self.hydraulics
+                    .engine_driven_pump_1_controller
+                    .should_pressurise()
+            }
+
+            fn is_edp2_yellow_pump_controller_pressurising(&self) -> bool {
+                self.hydraulics
+                    .engine_driven_pump_2_controller
+                    .should_pressurise()
+            }
+
+            fn is_ptu_controller_activating_ptu(&self) -> bool {
+                self.hydraulics
+                    .power_transfer_unit_controller
+                    .should_enable()
             }
 
             fn is_ptu_enabled(&self) -> bool {
@@ -1750,13 +2198,24 @@ mod tests {
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
                 self.electrical.update(context);
 
+                self.lgciu1.update(
+                    &self.landing_gear,
+                    self.ext_pwr.output_potential().is_powered(),
+                );
+                self.lgciu2.update(
+                    &self.landing_gear,
+                    self.ext_pwr.output_potential().is_powered(),
+                );
+
                 self.hydraulics.update(
                     context,
                     &self.engine_1,
                     &self.engine_2,
                     &self.overhead,
+                    &self.autobrake_panel,
                     &self.engine_fire_overhead,
-                    &self.landing_gear,
+                    &self.lgciu1,
+                    &self.lgciu2,
                     &self.emergency_electrical_overhead,
                     &self.electrical,
                 );
@@ -1768,12 +2227,16 @@ mod tests {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
                 self.engine_1.accept(visitor);
                 self.engine_2.accept(visitor);
+                self.landing_gear.accept(visitor);
+                self.lgciu1.accept(visitor);
+                self.lgciu2.accept(visitor);
                 self.hydraulics.accept(visitor);
+                self.autobrake_panel.accept(visitor);
                 self.overhead.accept(visitor);
                 self.engine_fire_overhead.accept(visitor);
-                self.landing_gear.accept(visitor);
                 self.emergency_electrical_overhead.accept(visitor);
                 self.electrical.accept(visitor);
+                self.ext_pwr.accept(visitor);
 
                 visitor.visit(self);
             }
@@ -1791,14 +2254,15 @@ mod tests {
                 }
             }
 
-            fn run_one_tick(self) -> Self {
-                self.run_waiting_for(Duration::from_millis(
+            fn run_one_tick(mut self) -> Self {
+                self.run_with_delta(Duration::from_millis(
                     A320Hydraulic::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS,
-                ))
+                ));
+                self
             }
 
             fn run_waiting_for(mut self, delta: Duration) -> Self {
-                self.run_with_delta(delta);
+                self.test_bed.run_multiple_frames(delta);
                 self
             }
 
@@ -1890,6 +2354,10 @@ mod tests {
                 self.read("HYD_BLUE_RESERVOIR")
             }
 
+            fn autobrake_mode(&mut self) -> AutobrakeMode {
+                self.read_f64("AUTOBRAKES_ARMED_MODE").into()
+            }
+
             fn get_brake_left_green_pressure(&mut self) -> Pressure {
                 self.read("HYD_BRAKE_NORM_LEFT_PRESS")
             }
@@ -1932,10 +2400,35 @@ mod tests {
                 self.stop_eng1().stop_eng2()
             }
 
+            fn external_power(mut self, is_connected: bool) -> Self {
+                self.write("EXTERNAL POWER AVAILABLE:1", is_connected);
+
+                if is_connected {
+                    self = self.on_the_ground();
+                }
+                self
+            }
+
             fn on_the_ground(mut self) -> Self {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(5.));
+                self
+            }
+
+            fn rotates_on_runway(mut self) -> Self {
+                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_on_ground(false);
+                self.set_indicated_airspeed(Velocity::new::<knot>(135.));
+                self.write(
+                    LandingGear::GEAR_CENTER_COMPRESSION,
+                    Ratio::new::<ratio>(0.5),
+                );
+                self.write(LandingGear::GEAR_LEFT_COMPRESSION, Ratio::new::<ratio>(0.8));
+                self.write(
+                    LandingGear::GEAR_RIGHT_COMPRESSION,
+                    Ratio::new::<ratio>(0.8),
+                );
                 self
             }
 
@@ -1947,11 +2440,7 @@ mod tests {
                     .start_eng2(Ratio::new::<percent>(80.))
                     .set_gear_up()
                     .set_park_brake(false)
-            }
-
-            fn set_gear_compressed_switch(mut self, is_compressed: bool) -> Self {
-                self.set_on_ground(is_compressed);
-                self
+                    .external_power(false)
             }
 
             fn set_eng1_fire_button(mut self, is_active: bool) -> Self {
@@ -1983,42 +2472,42 @@ mod tests {
 
             fn start_eng1(mut self, n2: Ratio) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:1", true);
-                self.write("TURB ENG CORRECTED N2:1", n2);
+                self.write("ENGINE_N2:1", n2);
 
                 self
             }
 
             fn start_eng2(mut self, n2: Ratio) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:2", true);
-                self.write("TURB ENG CORRECTED N2:2", n2);
+                self.write("ENGINE_N2:2", n2);
 
                 self
             }
 
             fn stop_eng1(mut self) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:1", false);
-                self.write("TURB ENG CORRECTED N2:1", 0.);
+                self.write("ENGINE_N2:1", 0.);
 
                 self
             }
 
             fn stopping_eng1(mut self) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:1", false);
-                self.write("TURB ENG CORRECTED N2:1", 25.);
+                self.write("ENGINE_N2:1", 25.);
 
                 self
             }
 
             fn stop_eng2(mut self) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:2", false);
-                self.write("TURB ENG CORRECTED N2:2", 0.);
+                self.write("ENGINE_N2:2", 0.);
 
                 self
             }
 
             fn stopping_eng2(mut self) -> Self {
                 self.write("GENERAL ENG STARTER ACTIVE:2", false);
-                self.write("TURB ENG CORRECTED N2:2", 25.);
+                self.write("ENGINE_N2:2", 25.);
 
                 self
             }
@@ -2030,6 +2519,8 @@ mod tests {
 
             fn set_gear_up(mut self) -> Self {
                 self.write("GEAR CENTER POSITION", 0.);
+                self.write("GEAR LEFT POSITION", 0.);
+                self.write("GEAR RIGHT POSITION", 0.);
                 self.write("GEAR HANDLE POSITION", false);
 
                 self
@@ -2037,6 +2528,8 @@ mod tests {
 
             fn set_gear_down(mut self) -> Self {
                 self.write("GEAR CENTER POSITION", 100.);
+                self.write("GEAR LEFT POSITION", 100.);
+                self.write("GEAR RIGHT POSITION", 100.);
                 self.write("GEAR HANDLE POSITION", true);
 
                 self
@@ -2141,8 +2634,39 @@ mod tests {
             }
 
             fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
-                let scaled_value = position_percent.get::<percent>() / 100.;
+                let scaled_value = position_percent.get::<ratio>();
                 self.write(name, scaled_value.min(1.).max(0.));
+                self
+            }
+
+            fn set_autobrake_low(mut self) -> Self {
+                self.write("OVHD_AUTOBRK_LOW_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.write("OVHD_AUTOBRK_LOW_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_autobrake_med(mut self) -> Self {
+                self.write("OVHD_AUTOBRK_MED_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.write("OVHD_AUTOBRK_MED_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_autobrake_max(mut self) -> Self {
+                self.write("OVHD_AUTOBRK_MAX_ON_IS_PRESSED", true);
+                self = self.run_one_tick();
+                self.write("OVHD_AUTOBRK_MAX_ON_IS_PRESSED", false);
+                self
+            }
+
+            fn set_deploy_spoilers(mut self) -> Self {
+                self.write("SPOILERS_GROUND_SPOILERS_ACTIVE", true);
+                self
+            }
+
+            fn set_retract_spoilers(mut self) -> Self {
+                self.write("SPOILERS_GROUND_SPOILERS_ACTIVE", false);
                 self
             }
 
@@ -2268,7 +2792,7 @@ mod tests {
         }
 
         #[test]
-        fn ptu_inhibits() {
+        fn ptu_inhibited_by_overhead_off_push_button() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2283,18 +2807,38 @@ mod tests {
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.set_ptu_state(true).run_one_tick();
             assert!(test_bed.is_ptu_enabled());
+        }
 
-            // Not all engines on or off should disable ptu if on ground and park brake on
-            test_bed = test_bed
+        #[test]
+        fn ptu_inhibited_on_ground_when_only_one_engine_on_and_park_brake_on() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
+
             assert!(!test_bed.is_ptu_enabled());
+
             test_bed = test_bed.set_park_brake(false).run_one_tick();
             assert!(test_bed.is_ptu_enabled());
+
             test_bed = test_bed.set_park_brake(true).run_one_tick();
-            test_bed = test_bed.set_gear_compressed_switch(true).run_one_tick();
             assert!(!test_bed.is_ptu_enabled());
-            test_bed = test_bed.set_gear_compressed_switch(false).run_one_tick();
+        }
+
+        #[test]
+        fn ptu_inhibited_on_ground_is_activated_when_center_gear_in_air() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_ptu_enabled());
+
+            test_bed = test_bed.rotates_on_runway().run_one_tick();
             assert!(test_bed.is_ptu_enabled());
         }
 
@@ -3901,590 +4445,669 @@ mod tests {
         }
 
         #[test]
-        fn controller_blue_epump_activates_when_no_weight_on_wheels() {
-            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
-            let overhead_panel = A320HydraulicOverheadPanel::new();
+        fn autobrakes_arms_in_flight_lo_or_med() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
 
-            let mut blue_epump_controller = A320BlueElectricPumpController::new(
-                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
-            );
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
 
-            blue_epump_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                true,
-            ));
+            test_bed = test_bed
+                .set_autobrake_low()
+                .run_waiting_for(Duration::from_secs(1));
 
-            let eng1_above_idle = false;
-            let eng2_above_idle = false;
-            blue_epump_controller.weight_on_wheels = false;
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
 
-            blue_epump_controller.update(
-                &overhead_panel,
-                true,
-                engine_off_oil_pressure,
-                engine_off_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(blue_epump_controller.should_pressurise());
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
 
-            blue_epump_controller.weight_on_wheels = true;
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+        }
 
-            blue_epump_controller.update(
-                &overhead_panel,
-                true,
-                engine_off_oil_pressure,
-                engine_off_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(!blue_epump_controller.should_pressurise());
+        #[test]
+        fn autobrakes_disarms_if_green_pressure_low() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_low()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+
+            test_bed = test_bed
+                .set_ptu_state(false)
+                .stop_eng1()
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_disarms_if_askid_off() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_anti_skid(false)
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_max_wont_arm_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_taxiing_wont_disarm_when_braking() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(60.))
+                .start_eng2(Ratio::new::<percent>(60.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+        }
+
+        #[test]
+        fn autobrakes_activates_on_ground_on_spoiler_deploy() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_disengage_on_spoiler_retract() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_retract_spoilers()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        // Should disable with one pedal > 61° over max range of 79.4° thus 77%
+        fn autobrakes_max_disengage_at_77_on_one_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(70.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(78.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_max_disengage_at_52_on_both_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(55.))
+                .set_right_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        // Should disable with one pedals > 42° over max range of 79.4° thus 52%
+        fn autobrakes_med_disengage_at_52_on_one_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(50.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(55.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_med_disengage_at_11_on_both_pedal_input() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed
+                .set_deploy_spoilers()
+                .run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(15.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+
+            test_bed = test_bed
+                .set_right_brake(Ratio::new::<percent>(15.))
+                .set_left_brake(Ratio::new::<percent>(15.))
+                .run_waiting_for(Duration::from_secs(1))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn autobrakes_max_disarm_after_10s_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            test_bed = test_bed
+                .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn controller_blue_epump_activates_when_no_weight_on_center_wheel() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(!test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
+
+            test_bed = test_bed.rotates_on_runway().run_one_tick();
+
+            assert!(test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
         }
 
         #[test]
         fn controller_blue_epump_split_engine_states() {
-            let engine_on_oil_pressure = Pressure::new::<psi>(30.);
-            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
-            let overhead_panel = A320HydraulicOverheadPanel::new();
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
 
-            let mut blue_epump_controller = A320BlueElectricPumpController::new(
-                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
-            );
-            blue_epump_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                true,
-            ));
+            assert!(!test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
 
-            let eng1_above_idle = false;
-            let eng2_above_idle = false;
-            blue_epump_controller.update(
-                &overhead_panel,
-                true,
-                engine_off_oil_pressure,
-                engine_off_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(!blue_epump_controller.should_pressurise());
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(65.))
+                .run_one_tick();
 
-            let eng1_above_idle = true;
-            let eng2_above_idle = false;
-            blue_epump_controller.update(
-                &overhead_panel,
-                true,
-                engine_on_oil_pressure,
-                engine_off_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(blue_epump_controller.should_pressurise());
+            assert!(test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
 
-            let eng1_above_idle = false;
-            let eng2_above_idle = true;
-            blue_epump_controller.update(
-                &overhead_panel,
-                true,
-                engine_off_oil_pressure,
-                engine_on_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(blue_epump_controller.should_pressurise());
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(65.))
+                .stop_eng1()
+                .run_one_tick();
+
+            assert!(test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
         }
 
         #[test]
         fn controller_blue_epump_on_off_engines() {
-            let engine_on_oil_pressure = Pressure::new::<psi>(30.);
-            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
-            let overhead_panel = A320HydraulicOverheadPanel::new();
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(65.))
+                .start_eng2(Ratio::new::<percent>(65.))
+                .run_one_tick();
 
-            let mut blue_epump_controller = A320BlueElectricPumpController::new(
-                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
-            );
-            blue_epump_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                true,
-            ));
+            assert!(test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
 
-            let eng1_above_idle = true;
-            let eng2_above_idle = true;
-            blue_epump_controller.update(
-                &overhead_panel,
-                true,
-                engine_on_oil_pressure,
-                engine_on_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(blue_epump_controller.should_pressurise());
+            test_bed = test_bed.stop_eng1().stop_eng2().run_one_tick();
 
-            let eng1_above_idle = false;
-            let eng2_above_idle = false;
-            blue_epump_controller.update(
-                &overhead_panel,
-                false,
-                engine_off_oil_pressure,
-                engine_off_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(!blue_epump_controller.should_pressurise());
+            assert!(!test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
         }
 
         #[test]
         fn controller_blue_epump_override() {
-            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .press_blue_epump_override_button_once()
+                .run_one_tick();
 
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let mut blue_epump_controller = A320BlueElectricPumpController::new(
-                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
-            );
-            blue_epump_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                true,
-            ));
+            assert!(test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
 
-            let eng1_above_idle = false;
-            let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.turn_on();
-            blue_epump_controller.update(
-                &overhead_panel,
-                true,
-                engine_off_oil_pressure,
-                engine_off_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(blue_epump_controller.should_pressurise());
+            test_bed = test_bed
+                .press_blue_epump_override_button_once()
+                .run_one_tick();
 
-            let eng1_above_idle = false;
-            let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.turn_off();
-            blue_epump_controller.update(
-                &overhead_panel,
-                false,
-                engine_off_oil_pressure,
-                engine_off_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(!blue_epump_controller.should_pressurise());
+            assert!(!test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
         }
 
         #[test]
         fn controller_blue_epump_override_without_power_shall_not_run_blue_pump() {
-            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(65.))
+                .run_one_tick();
 
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let mut blue_epump_controller = A320BlueElectricPumpController::new(
-                A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
-            );
+            assert!(test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
 
-            let eng1_above_idle = false;
-            let eng2_above_idle = false;
-            overhead_panel.blue_epump_override_push_button.turn_on();
+            test_bed = test_bed.dc_ess_lost().run_one_tick();
 
-            blue_epump_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                false,
-            ));
-            blue_epump_controller.update(
-                &overhead_panel,
-                false,
-                engine_off_oil_pressure,
-                engine_off_oil_pressure,
-                eng1_above_idle,
-                eng2_above_idle,
-            );
-            assert!(!blue_epump_controller.should_pressurise());
+            assert!(!test_bed.query(|a| a.is_blue_epump_controller_pressurising()));
         }
 
         #[test]
-        fn controller_yellow_epump_overhead_button_logic() {
-            let fwd_door = Door::new(1);
-            let aft_door = Door::new(2);
-            let context = context(Duration::from_millis(100));
+        fn controller_yellow_epump_is_activated_by_overhead_button() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
 
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
 
-            let mut yellow_epump_controller = A320YellowElectricPumpController::new(
-                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
-                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
-            );
-            yellow_epump_controller
-                .receive_power(&test_electricity(ElectricalBusType::DirectCurrent(2), true));
+            test_bed = test_bed.set_yellow_e_pump(false).run_one_tick();
 
-            overhead_panel.yellow_epump_push_button.push_auto();
-            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
-            assert!(!yellow_epump_controller.should_pressurise());
+            assert!(test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
 
-            overhead_panel.yellow_epump_push_button.push_on();
-            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
-            assert!(yellow_epump_controller.should_pressurise());
+            test_bed = test_bed.set_yellow_e_pump(true).run_one_tick();
 
-            overhead_panel.yellow_epump_push_button.push_auto();
-            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
-            assert!(!yellow_epump_controller.should_pressurise());
+            assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
         }
 
         #[test]
         fn controller_yellow_epump_unpowered_cant_command_pump() {
-            let fwd_door = Door::new(1);
-            let aft_door = Door::new(2);
-            let context = context(Duration::from_millis(100));
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_yellow_e_pump(false)
+                .run_one_tick();
 
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            assert!(test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
 
-            let mut yellow_epump_controller = A320YellowElectricPumpController::new(
-                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
-                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
-            );
+            test_bed = test_bed.dc_bus_2_lost().run_one_tick();
 
-            yellow_epump_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrent(2),
-                false,
-            ));
-            overhead_panel.yellow_epump_push_button.push_on();
-            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
-            assert!(!yellow_epump_controller.should_pressurise());
-        }
-
-        #[test]
-        fn controller_yellow_epump_cargo_doors_starts_pump_for_timeout_delay() {
-            let context = context(Duration::from_millis(100));
-
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-
-            let mut yellow_epump_controller = A320YellowElectricPumpController::new(
-                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
-                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
-            );
-            yellow_epump_controller
-                .receive_power(&test_electricity(ElectricalBusType::DirectCurrent(2), true));
-
-            overhead_panel.yellow_epump_push_button.push_auto();
-            assert!(!yellow_epump_controller.should_pressurise());
-
-            let aft_door = non_moving_door(2);
-            let fwd_door = moving_door(1);
-            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
-            assert!(yellow_epump_controller.should_pressurise());
-            let fwd_door = non_moving_door(1);
-
-            yellow_epump_controller.update(&context.with_delta(Duration::from_secs(1) + A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION), &overhead_panel,&fwd_door,&aft_door, true);
-            assert!(!yellow_epump_controller.should_pressurise());
-
-            let aft_door = moving_door(2);
-            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
-            assert!(yellow_epump_controller.should_pressurise());
-            let aft_door = non_moving_door(2);
-
-            yellow_epump_controller.update(&context.with_delta(Duration::from_secs(1) + A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION), &overhead_panel,&fwd_door,&aft_door, true);
-            assert!(!yellow_epump_controller.should_pressurise());
+            assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
         }
 
         #[test]
         fn controller_yellow_epump_can_operate_from_cargo_door_without_main_control_power_bus() {
-            let context = context(Duration::from_millis(100));
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
 
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
-            let mut yellow_epump_controller = A320YellowElectricPumpController::new(
-                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
-                A320Hydraulic::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
-            );
-            yellow_epump_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentGndFltService,
-                false,
-            ));
-
-            overhead_panel.yellow_epump_push_button.push_auto();
-            assert!(!yellow_epump_controller.should_pressurise());
-
-            let aft_door = non_moving_door(2);
-            let fwd_door = moving_door(1);
-            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
-
-            // Need to run again the receive power state as now cargo door is operated
-            yellow_epump_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentGndFltService,
-                true,
-            ));
-            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
-
-            assert!(yellow_epump_controller.should_pressurise());
+            test_bed = test_bed
+                .dc_ground_service_lost()
+                .set_cargo_door_state(1.0)
+                .run_one_tick();
+            assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
         }
 
         #[test]
         fn controller_engine_driven_pump1_overhead_button_logic_with_eng_on() {
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let fire_overhead_panel = EngineFireOverheadPanel::new();
-            overhead_panel.edp1_push_button.push_auto();
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
 
-            let mut edp1_controller = A320EngineDrivenPumpController::new(
-                1,
-                vec![A320Hydraulic::GREEN_EDP_CONTROL_POWER_BUS1],
-            );
-            edp1_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                true,
-            ));
+            assert!(test_bed.query(|a| a.is_edp1_green_pump_controller_pressurising()));
 
-            edp1_controller.engine_master_on = true;
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(65.))
+                .run_one_tick();
+            assert!(test_bed.query(|a| a.is_edp1_green_pump_controller_pressurising()));
 
-            edp1_controller.update(
-                &overhead_panel,
-                &fire_overhead_panel,
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(30.),
-                true,
-            );
-            assert!(edp1_controller.should_pressurise());
+            test_bed = test_bed.set_green_ed_pump(false).run_one_tick();
+            assert!(!test_bed.query(|a| a.is_edp1_green_pump_controller_pressurising()));
 
-            overhead_panel.edp1_push_button.push_off();
-            edp1_controller.update(
-                &overhead_panel,
-                &fire_overhead_panel,
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(30.),
-                true,
-            );
-            assert!(!edp1_controller.should_pressurise());
-
-            overhead_panel.edp1_push_button.push_auto();
-            edp1_controller.update(
-                &overhead_panel,
-                &fire_overhead_panel,
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(30.),
-                true,
-            );
-            assert!(edp1_controller.should_pressurise());
+            test_bed = test_bed.set_green_ed_pump(true).run_one_tick();
+            assert!(test_bed.query(|a| a.is_edp1_green_pump_controller_pressurising()));
         }
 
         #[test]
         fn controller_engine_driven_pump1_fire_overhead_released_stops_pump() {
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let fire_overhead_panel = EngineFireOverheadPanel::new();
-            overhead_panel.edp1_push_button.push_auto();
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(65.))
+                .start_eng2(Ratio::new::<percent>(65.))
+                .run_one_tick();
 
-            let mut edp1_controller = A320EngineDrivenPumpController::new(
-                1,
-                vec![A320Hydraulic::GREEN_EDP_CONTROL_POWER_BUS1],
-            );
-            edp1_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                true,
-            ));
+            assert!(test_bed.query(|a| a.is_edp1_green_pump_controller_pressurising()));
 
-            edp1_controller.engine_master_on = true;
-
-            edp1_controller.update(
-                &overhead_panel,
-                &fire_overhead_panel,
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(30.),
-                true,
-            );
-            assert!(edp1_controller.should_pressurise());
-
-            let mut test_bed = SimulationTestBed::from(fire_overhead_panel);
-            test_bed.write("FIRE_BUTTON_ENG1", true);
-            test_bed.run();
-
-            test_bed.query_element(|element| {
-                edp1_controller.update(
-                    &overhead_panel,
-                    element,
-                    Ratio::new::<percent>(50.),
-                    Pressure::new::<psi>(10.),
-                    true,
-                )
-            });
-            assert!(!edp1_controller.should_pressurise());
+            test_bed = test_bed.set_eng1_fire_button(true).run_one_tick();
+            assert!(!test_bed.query(|a| a.is_edp1_green_pump_controller_pressurising()));
         }
 
         #[test]
         fn controller_engine_driven_pump2_overhead_button_logic_with_eng_on() {
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let fire_overhead_panel = EngineFireOverheadPanel::new();
-            overhead_panel.edp2_push_button.push_auto();
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
 
-            let mut edp2_controller = A320EngineDrivenPumpController::new(
-                2,
-                vec![
-                    A320Hydraulic::YELLOW_EDP_CONTROL_POWER_BUS1,
-                    A320Hydraulic::YELLOW_EDP_CONTROL_POWER_BUS2,
-                ],
-            );
-            edp2_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                true,
-            ));
+            assert!(test_bed.query(|a| a.is_edp2_yellow_pump_controller_pressurising()));
 
-            edp2_controller.engine_master_on = true;
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(65.))
+                .run_one_tick();
+            assert!(test_bed.query(|a| a.is_edp2_yellow_pump_controller_pressurising()));
 
-            edp2_controller.update(
-                &overhead_panel,
-                &fire_overhead_panel,
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(30.),
-                true,
-            );
-            assert!(edp2_controller.should_pressurise());
+            test_bed = test_bed.set_yellow_ed_pump(false).run_one_tick();
+            assert!(!test_bed.query(|a| a.is_edp2_yellow_pump_controller_pressurising()));
 
-            overhead_panel.edp2_push_button.push_off();
-            edp2_controller.update(
-                &overhead_panel,
-                &fire_overhead_panel,
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(30.),
-                true,
-            );
-            assert!(!edp2_controller.should_pressurise());
-
-            overhead_panel.edp2_push_button.push_auto();
-            edp2_controller.update(
-                &overhead_panel,
-                &fire_overhead_panel,
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(30.),
-                true,
-            );
-            assert!(edp2_controller.should_pressurise());
+            test_bed = test_bed.set_yellow_ed_pump(true).run_one_tick();
+            assert!(test_bed.query(|a| a.is_edp2_yellow_pump_controller_pressurising()));
         }
 
         #[test]
         fn controller_engine_driven_pump2_fire_overhead_released_stops_pump() {
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let fire_overhead_panel = EngineFireOverheadPanel::new();
-            overhead_panel.edp2_push_button.push_auto();
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(65.))
+                .start_eng2(Ratio::new::<percent>(65.))
+                .run_one_tick();
 
-            let mut edp2_controller = A320EngineDrivenPumpController::new(
-                2,
-                vec![
-                    A320Hydraulic::YELLOW_EDP_CONTROL_POWER_BUS1,
-                    A320Hydraulic::YELLOW_EDP_CONTROL_POWER_BUS2,
-                ],
-            );
-            edp2_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentEssential,
-                true,
-            ));
-            edp2_controller.engine_master_on = true;
+            assert!(test_bed.query(|a| a.is_edp2_yellow_pump_controller_pressurising()));
 
-            edp2_controller.update(
-                &overhead_panel,
-                &fire_overhead_panel,
-                Ratio::new::<percent>(50.),
-                Pressure::new::<psi>(30.),
-                true,
-            );
-            assert!(edp2_controller.should_pressurise());
-
-            let mut test_bed = SimulationTestBed::from(fire_overhead_panel);
-            test_bed.write("FIRE_BUTTON_ENG2", true);
-            test_bed.run();
-
-            test_bed.query_element(|element| {
-                edp2_controller.update(
-                    &overhead_panel,
-                    element,
-                    Ratio::new::<percent>(50.),
-                    Pressure::new::<psi>(5.),
-                    true,
-                )
-            });
-            assert!(!edp2_controller.should_pressurise());
+            test_bed = test_bed.set_eng2_fire_button(true).run_one_tick();
+            assert!(!test_bed.query(|a| a.is_edp2_yellow_pump_controller_pressurising()));
         }
 
         #[test]
-        fn controller_ptu_on_off_cargo_door() {
-            let tug = PushbackTug::new();
-            let context = context(Duration::from_millis(100));
+        fn controller_ptu_on_off_with_overhead_pushbutton() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
 
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            let mut ptu_controller =
-                A320PowerTransferUnitController::new(ElectricalBusType::DirectCurrentGndFltService);
-            ptu_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentGndFltService,
-                true,
-            ));
-            overhead_panel.ptu_push_button.push_auto();
+            test_bed = test_bed.set_ptu_state(false).run_one_tick();
 
-            ptu_controller.update(
-                &context,
-                &overhead_panel,
-                &non_moving_door(1),
-                &non_moving_door(2),
-                &tug,
-            );
-            assert!(ptu_controller.should_enable());
+            assert!(!test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            overhead_panel.ptu_push_button.push_off();
+            test_bed = test_bed.set_ptu_state(true).run_one_tick();
 
-            ptu_controller.update(
-                &context,
-                &overhead_panel,
-                &non_moving_door(1),
-                &non_moving_door(2),
-                &tug,
-            );
-            assert!(!ptu_controller.should_enable());
-
-            overhead_panel.ptu_push_button.push_auto();
-
-            ptu_controller.update(
-                &context,
-                &overhead_panel,
-                &moving_door(1),
-                &non_moving_door(2),
-                &tug,
-            );
-            assert!(!ptu_controller.should_enable());
-
-            ptu_controller.update(&context.with_delta(Duration::from_secs(1) + A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION), &overhead_panel, &non_moving_door(1), &non_moving_door(2), &tug);
-            assert!(ptu_controller.should_enable());
+            assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
         }
 
         #[test]
-        fn controller_ptu_tug() {
-            let fwd_door = Door::new(1);
-            let aft_door = Door::new(2);
-            let mut tug = PushbackTug::new();
-            let context = context(Duration::from_millis(100));
+        fn controller_ptu_off_when_cargo_door_is_moved() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
 
-            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            let mut ptu_controller =
-                A320PowerTransferUnitController::new(ElectricalBusType::DirectCurrentGndFltService);
-            ptu_controller.receive_power(&test_electricity(
-                ElectricalBusType::DirectCurrentGndFltService,
-                true,
-            ));
+            test_bed = test_bed.set_cargo_door_state(1.0).run_one_tick();
 
-            overhead_panel.ptu_push_button.push_auto();
+            assert!(!test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            ptu_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, &tug);
-            assert!(ptu_controller.should_enable());
+            // Ptu should reactivate after 40s
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(41));
 
-            ptu_controller.weight_on_wheels = true;
-            ptu_controller.eng_1_master_on = true;
-            ptu_controller.eng_2_master_on = false;
-            ptu_controller.parking_brake_lever_pos = false;
+            assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
+        }
 
-            tug = detached_tug();
-            ptu_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, &tug);
-            assert!(ptu_controller.should_enable());
+        #[test]
+        fn controller_ptu_disabled_when_tug_attached() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
 
-            tug = attached_tug();
-            ptu_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, &tug);
-            assert!(!ptu_controller.should_enable());
+            assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            tug = detached_tug();
-            ptu_controller.update(&context.with_delta(Duration::from_secs(1) + A320PowerTransferUnitController::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK), &overhead_panel, &fwd_door, &aft_door,&tug);
-            assert!(ptu_controller.should_enable());
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(65.))
+                .set_park_brake(false)
+                .run_one_tick();
+
+            assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
+
+            test_bed = test_bed.set_pushback_state(true).run_one_tick();
+
+            assert!(!test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
+
+            // Ptu should reactivate after 15ish seconds
+            test_bed = test_bed
+                .set_pushback_state(false)
+                .run_waiting_for(Duration::from_secs(16));
+
+            assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
         }
 
         #[test]
@@ -4595,64 +5218,6 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressurised());
-        }
-
-        fn context(delta_time: Duration) -> UpdateContext {
-            UpdateContext::new(
-                delta_time,
-                Velocity::new::<knot>(250.),
-                Length::new::<foot>(5000.),
-                ThermodynamicTemperature::new::<degree_celsius>(25.0),
-                true,
-                Acceleration::new::<foot_per_second_squared>(0.),
-            )
-        }
-
-        fn moving_door(id: usize) -> Door {
-            let mut door = Door::new(id);
-            door.position += 0.01;
-            door
-        }
-
-        fn non_moving_door(id: usize) -> Door {
-            let mut door = Door::new(id);
-            door.previous_position = door.position;
-            door
-        }
-
-        fn attached_tug() -> PushbackTug {
-            let mut tug = PushbackTug::new();
-            tug.angle = tug.previous_angle + 0.1;
-            tug.state = 0.;
-            tug.update();
-            tug
-        }
-
-        fn detached_tug() -> PushbackTug {
-            let mut tug = PushbackTug::new();
-            tug.angle = tug.previous_angle;
-            tug.state = 3.;
-            tug.update();
-            tug
-        }
-
-        fn test_electricity(bus_id: ElectricalBusType, is_powered: bool) -> Electricity {
-            let mut electricity = Electricity::new();
-            let mut source = TestElectricitySource::unpowered(
-                PotentialOrigin::EngineGenerator(1),
-                &mut electricity,
-            );
-
-            if is_powered {
-                source.power();
-            }
-
-            let bus = ElectricalBus::new(bus_id, &mut electricity);
-
-            electricity.supplied_by(&source);
-            electricity.flow(&source, &bus);
-
-            electricity
         }
     }
 }

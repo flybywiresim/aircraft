@@ -15,6 +15,10 @@ class A32NX_SoundManager {
     }
 
     addPeriodicSound(sound, period = NaN) {
+        if (!sound) {
+            return;
+        }
+
         let useLengthForPeriod = false;
         if (period < sound.length) {
             console.error("A32NXSoundManager ERROR: Sound period can't be smaller than sound length. Using sound length instead.");
@@ -34,6 +38,10 @@ class A32NX_SoundManager {
     }
 
     removePeriodicSound(sound) {
+        if (!sound) {
+            return;
+        }
+
         for (let i = 0; i < this.periodicList.length; i++) {
             if (this.periodicList[i].sound.name === sound.name) {
                 this.periodicList.splice(i, 1);
@@ -75,15 +83,15 @@ class A32NX_SoundManager {
 // many lengths are approximate until we can get them accuratly (when boris re-makes them and we have the sources)
 const soundList = {
     pull_up: {
-        name: "aural_pull_up",
+        name: "aural_pullup_new",
         length: 0.9
     },
     sink_rate: {
-        name: "aural_sink_rate",
+        name: "aural_sink_rate_new",
         length: 0.9
     },
     dont_sink:{
-        name: "aural_dont_sink",
+        name: "aural_dontsink_new",
         length: 0.9
     },
     too_low_gear:{

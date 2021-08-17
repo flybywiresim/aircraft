@@ -11,6 +11,7 @@ pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 #[cfg(test)]
 use systems::electrical::Battery;
 use systems::{
+    accept_iterable,
     electrical::{
         AlternatingCurrentElectricalSystem, BatteryPushButtons,
         ElectricalElementIdentifierProvider, Electricity, EmergencyElectrical, EmergencyGenerator,
@@ -22,8 +23,8 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
-        RamAirTurbineHydraulicLoopPressurised,
+        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons,
+        LandingGearRealPosition, RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -65,7 +66,7 @@ impl A320Electrical {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
         hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
     ) {
         self.alternating_current.update_main_power_sources(
             context,
@@ -138,16 +139,6 @@ impl A320Electrical {
     fn debug_assert_invariants(&self) {
         self.alternating_current.debug_assert_invariants();
         self.direct_current.debug_assert_invariants();
-    }
-
-    #[cfg(test)]
-    fn fail_tr_1(&mut self) {
-        self.alternating_current.fail_tr_1();
-    }
-
-    #[cfg(test)]
-    fn fail_tr_2(&mut self) {
-        self.alternating_current.fail_tr_2();
     }
 
     #[cfg(test)]
@@ -332,15 +323,10 @@ impl BatteryPushButtons for A320ElectricalOverheadPanel {
 }
 impl SimulationElement for A320ElectricalOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.batteries.iter_mut().for_each(|bat| {
-            bat.accept(visitor);
-        });
-        self.idgs.iter_mut().for_each(|idg| {
-            idg.accept(visitor);
-        });
-        self.generators.iter_mut().for_each(|gen| {
-            gen.accept(visitor);
-        });
+        accept_iterable!(self.batteries, visitor);
+        accept_iterable!(self.idgs, visitor);
+        accept_iterable!(self.generators, visitor);
+
         self.apu_gen.accept(visitor);
         self.bus_tie.accept(visitor);
         self.ac_ess_feed.accept(visitor);
@@ -427,6 +413,7 @@ mod a320_electrical_circuit_tests {
             ExternalPowerSource, Potential,
             INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
+        failures::FailureType,
         shared::{
             ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
             PotentialOrigin,
@@ -2216,7 +2203,7 @@ mod a320_electrical_circuit_tests {
             Self {}
         }
     }
-    impl LandingGearPosition for TestLandingGear {
+    impl LandingGearRealPosition for TestLandingGear {
         fn is_up_and_locked(&self) -> bool {
             true
         }
@@ -2284,14 +2271,6 @@ mod a320_electrical_circuit_tests {
 
         fn empty_battery_2(&mut self) {
             self.elec.empty_battery_2();
-        }
-
-        fn failed_tr_1(&mut self) {
-            self.elec.fail_tr_1();
-        }
-
-        fn failed_tr_2(&mut self) {
-            self.elec.fail_tr_2();
         }
 
         fn running_emergency_generator(&mut self) {
@@ -2448,12 +2427,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn failed_tr_1(mut self) -> Self {
-            self.command(|a| a.failed_tr_1());
+            self.test_bed.fail(FailureType::TransformerRectifier(1));
             self
         }
 
         fn failed_tr_2(mut self) -> Self {
-            self.command(|a| a.failed_tr_2());
+            self.test_bed.fail(FailureType::TransformerRectifier(2));
             self
         }
 

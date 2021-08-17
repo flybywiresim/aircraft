@@ -3,7 +3,7 @@ use super::{
     ElectricitySource, EmergencyElectrical, ProvideCurrent, ProvidePotential,
 };
 use crate::{
-    shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearPosition},
+    shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearRealPosition},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
@@ -33,7 +33,7 @@ impl State {
         emergency_generator: &impl ElectricitySource,
         battery: &(impl ProvidePotential + ProvideCurrent),
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -103,7 +103,7 @@ impl BatteryChargeLimiter {
         emergency_generator: &impl ElectricitySource,
         battery: &(impl ProvidePotential + ProvideCurrent),
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -242,7 +242,7 @@ impl Open {
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &impl ElectricitySource,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
@@ -281,7 +281,7 @@ impl Open {
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &impl ElectricitySource,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
     ) -> bool {
         emergency_elec.is_active()
             && (!landing_gear.is_up_and_locked()
@@ -316,7 +316,7 @@ impl Open {
         emergency_generator: &impl ElectricitySource,
         battery: &impl ProvidePotential,
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
@@ -424,7 +424,7 @@ impl Closed {
         context: &UpdateContext,
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
@@ -444,7 +444,7 @@ impl Closed {
         }
     }
 
-    fn emergency_elec_inhibited(&self, landing_gear: &impl LandingGearPosition) -> bool {
+    fn emergency_elec_inhibited(&self, landing_gear: &impl LandingGearRealPosition) -> bool {
         !self.entered_in_emergency_elec || !landing_gear.is_up_and_locked()
     }
 
@@ -482,7 +482,7 @@ impl Closed {
         battery_number: usize,
         emergency_elec: &EmergencyElectrical,
         battery: &(impl ProvidePotential + ProvideCurrent),
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -830,7 +830,7 @@ mod tests {
                 Self { is_down }
             }
         }
-        impl LandingGearPosition for TestLandingGear {
+        impl LandingGearRealPosition for TestLandingGear {
             fn is_up_and_locked(&self) -> bool {
                 !self.is_down
             }

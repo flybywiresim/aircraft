@@ -59,7 +59,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
 
     createLowerScreenPages() {
-        this.createLowerScreenPage("ENG", "BottomScreen", "a320-neo-lower-ecam-engine");
+        this.createLowerScreenPage("ENG", "BottomScreen", "a32nx-eng-page-element");
         this.createLowerScreenPage("BLEED", "BottomScreen", "a320-neo-lower-ecam-bleed");
         this.createLowerScreenPage("PRESS", "BottomScreen", "a320-neo-lower-ecam-press");
         this.createLowerScreenPage("ELEC", "BottomScreen", "a32nx-elec-page-element");
@@ -71,7 +71,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a32nx-wheel-page-element");
         this.createLowerScreenPage("FTCL", "BottomScreen", "a32nx-fctl-page-element");
         this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status");
-        this.createLowerScreenPage("CRZ", "BottomScreen", "a320-neo-lower-ecam-crz");
+        this.createLowerScreenPage("CRZ", "BottomScreen", "a32nx-crz-page-element");
     }
 
     getLowerScreenChangeEventNamePrefix() {
@@ -86,8 +86,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ecamAllButtonTimerStarted = false;
 
         this.pageNameWhenUnselected = "DOOR";
-        //this prevents switching back to previous pages
-        this.minPageIndexWhenUnselected = 0;
 
         this.ecamFCTLTimer = -1;
 
@@ -138,6 +136,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.isTopScreen ? 92 : 93,
             this.querySelector(`#${this.isTopScreen ? "Top" : "Bottom"}SelfTest`)
         );
+
+        // LCD OVERLAY
+        this.lcdOverlay = document.querySelector("#LcdOverlay");
     }
 
     onUpdate() {
@@ -150,6 +151,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (deltaTime === -1) {
             return;
         }
+        this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
 
         this.displayUnit.update(deltaTime);
 
@@ -157,79 +159,82 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         this.updateAnnunciations();
 
-        // TODO Move anything dependent on ac power change to A32NX_Core
-        const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-
         // Engineering self-tests
         updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
 
-        // modification start here
-        const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
-
         //Determine displayed page when no button is selected
         const prevPage = this.pageNameWhenUnselected;
 
-        const altitude = Simplane.getAltitude();
-        const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
-        const currFlightPhase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
-        const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
-        const apuAvailable = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
-        const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
-        const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") != 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") != 0;
+        const fwcFlightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
 
-        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer <= 0) || (currFlightPhase == FmgcFlightPhases.CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
+        switch (fwcFlightPhase) {
+            case 10:
+            case 1:
+                this.CrzCondTimer = 60;
+                this.pageNameWhenUnselected = "DOOR";
+                //TODO: Emergency Generator Test displays ELEC
+                //Needs system implementation (see A320_NEO_INTERIOR Component ID EMER_ELEC_PWR [LVar: L:A32NX_EMERELECPWR_GEN_TEST])
+                this.checkApuPage(deltaTime);
+                this.checkEnginePage(deltaTime);
+                break;
+            case 2:
+                const sidestickPosX = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_X", "Number");
+                const sidestickPosY = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_Y", "Number");
+                const rudderPos = SimVar.GetSimVarValue("RUDDER PEDAL POSITION", "Position");
+                const controlsMoved = Math.abs(sidestickPosX) > 0.05 || Math.abs(sidestickPosY) > 0.05 || Math.abs(rudderPos) > 0.2;
 
-        if ((currFlightPhase != FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
-            this.CrzCondTimer = 60;
-        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer >= 0) {
-            this.CrzCondTimer -= deltaTime / 1000;
-        }
+                this.pageNameWhenUnselected = "WHEEL";
+                // When controls are moved > threshold, show FCTL page for 20s
+                if (controlsMoved) {
+                    this.pageNameWhenUnselected = "FTCL";
+                    this.ecamFCTLTimer = 20;
+                } else if (this.ecamFCTLTimer >= 0) {
+                    this.pageNameWhenUnselected = "FTCL";
+                    this.ecamFCTLTimer -= deltaTime / 1000;
+                }
+                this.checkApuPage(deltaTime);
+                this.checkEnginePage(deltaTime);
+                break;
+            case 3:
+            case 4:
+            case 5:
+                this.pageNameWhenUnselected = "ENG";
+                break;
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
+                const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
+                const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") !== 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") !== 0;
 
-        if (EngModeSel == 2 || EngModeSel == 0 || this.MainEngineStarterOffTimer >= 0) {
-            if (EngModeSel == 0 || EngModeSel == 2) {
-                this.MainEngineStarterOffTimer = 10;
-            } else if (this.MainEngineStarterOffTimer >= 0) {
-                this.MainEngineStarterOffTimer -= deltaTime / 1000;
-            }
-            this.pageNameWhenUnselected = "ENG";
-        } else if (currentAPUMasterState && (!apuAvailable || this.ApuAboveThresholdTimer >= 0)) {
-            // Show APU on Lower ECAM until 10s after it became available.
-            if (this.ApuAboveThresholdTimer <= 0 && !apuAvailable) {
-                this.ApuAboveThresholdTimer = 10;
-            } else if (apuAvailable) {
-                this.ApuAboveThresholdTimer -= deltaTime / 1000;
-            }
+                if (isGearExtended && (Simplane.getAltitude() < 16000)) {
+                    this.pageNameWhenUnselected = "WHEEL";
+                    this.checkApuPage(deltaTime);
+                    this.checkEnginePage(deltaTime);
+                    break;
+                    // Else check for CRZ
+                }
 
-            this.pageNameWhenUnselected = "APU";
-        } else if (!engineOn && Simplane.getIsGrounded()) {
-            // reset minIndex and cruise timer after shutdown
-            this.minPageIndexWhenUnselected = 0;
-            this.CrzCondTimer = 60;
-            this.pageNameWhenUnselected = "DOOR";
-        } else if (engineOn && !ToPowerSet && Simplane.getIsGrounded() && this.minPageIndexWhenUnselected <= 1) {
-            const sidestickPosX = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_X", "Number");
-            const sidestickPosY = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_Y", "Number");
-            const rudderPos = SimVar.GetSimVarValue("RUDDER PEDAL POSITION", "Position");
-            const controlsMoved = Math.abs(sidestickPosX) > 0.05 || Math.abs(sidestickPosY) > 0.05 || Math.abs(rudderPos) > 0.2;
-
-            this.pageNameWhenUnselected = "WHEEL";
-            // When controls are moved, show FCTL page for 20s
-            if (controlsMoved) {
-                this.pageNameWhenUnselected = "FTCL";
-                this.ecamFCTLTimer = 20;
-            } else if (this.ecamFCTLTimer >= 0) {
-                this.pageNameWhenUnselected = "FTCL";
-                this.ecamFCTLTimer -= deltaTime / 1000;
-            }
-        } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
-            this.pageNameWhenUnselected = "ENG";
-        } else if (crzCond && !(isGearExtended && altitude < 16000)) {
-            this.pageNameWhenUnselected = "CRZ";
-            this.minPageIndexWhenUnselected = 3;
-        } else if (isGearExtended && (altitude < 16000)) {
-            this.pageNameWhenUnselected = "WHEEL";
-            this.minPageIndexWhenUnselected = 4;
+                if ((spoilerOrFlapsDeployed || ToPowerSet)) {
+                    if (this.CrzCondTimer <= 0) {
+                        this.pageNameWhenUnselected = "CRZ";
+                        this.checkApuPage(deltaTime);
+                        this.checkEnginePage(deltaTime);
+                    } else {
+                        this.CrzCondTimer -= deltaTime / 1000;
+                    }
+                } else if (!spoilerOrFlapsDeployed && !ToPowerSet) {
+                    this.pageNameWhenUnselected = "CRZ";
+                    this.checkApuPage(deltaTime);
+                    this.checkEnginePage(deltaTime);
+                }
+                break;
+            default:
+                // Sometimes happens when loading in, in which case we have to initialise pageNameWhenUnselected here.
+                this.pageNameWhenUnselected = "DOOR";
+                break;
         }
 
         const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
@@ -262,6 +267,37 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.PrevFailPage = sFailPage;
     }
 
+    checkEnginePage(deltaTime) {
+        const engModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
+        const eng1State = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "number");
+        const eng2State = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "number");
+        const oneEngOff = eng1State !== 1 || eng2State !== 1;
+
+        if (engModeSel === 0 || (oneEngOff && engModeSel === 2) || this.MainEngineStarterOffTimer >= 0) {
+            // Show ENG until >10 seconds after both engines are fully started
+            if (engModeSel === 0 || (oneEngOff && engModeSel === 2)) {
+                this.MainEngineStarterOffTimer = 10;
+            } else if (this.MainEngineStarterOffTimer >= 0) {
+                this.MainEngineStarterOffTimer -= deltaTime / 1000;
+            }
+            this.pageNameWhenUnselected = "ENG";
+        }
+    }
+
+    checkApuPage(deltaTime) {
+        const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
+        const apuRpm = SimVar.GetSimVarValue("L:A32NX_APU_N", "Percent Over 100");
+        if (currentAPUMasterState && (apuRpm <= 95 || this.ApuAboveThresholdTimer >= 0)) {
+            // Show APU on Lower ECAM until 15s after RPM > 95%
+            if (this.ApuAboveThresholdTimer <= 0 && apuRpm <= 95) {
+                this.ApuAboveThresholdTimer = 15;
+            } else if (apuRpm > 95) {
+                this.ApuAboveThresholdTimer -= deltaTime / 1000;
+            }
+            this.pageNameWhenUnselected = "APU";
+        }
+    }
+
     updateDoorVideoState() {
         const doorVideoPressedNow = SimVar.GetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool") === 1;
         const doorVideoEnabledNow = SimVar.GetSimVarValue("L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE", "Bool") === 1;
@@ -280,15 +316,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     updateAnnunciations() {
         const infoPanelManager = this.upperTopScreen.getInfoPanelManager();
         if (infoPanelManager) {
-
-            // ----------- MODIFIED --------------------//
-            const autoBrkValue = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
-            const starterOne = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool");
-            const starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
-            const splrsArmed = SimVar.GetSimVarValue("L:A32NX_SPOILERS_ARMED", "Bool");
-            const flapsPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
-            // ----------- MODIFIED END --------------------//
-
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
 
             if (this.warnings) {
