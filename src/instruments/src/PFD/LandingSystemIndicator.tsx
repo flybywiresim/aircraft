@@ -1,10 +1,10 @@
 import { useUpdate } from '@instruments/common/hooks.js';
-import { useSimVar } from '@instruments/common/simVars.js';
+import { useSimVar } from '@instruments/common/simVars';
 import React, { useState } from 'react';
 import { getSimVar } from '../util.js';
 import { LagFilter } from './PFDUtils';
 
-export function LandingSystem({ LSButtonPressed }) {
+export var LandingSystem = ({ LSButtonPressed }) => {
     let showVDev = false;
 
     if (!LSButtonPressed) {
@@ -29,7 +29,7 @@ export function LandingSystem({ LSButtonPressed }) {
             )}
         </g>
     );
-}
+};
 
 const LandingSystemInfo = ({ displayed }) => {
     if (!displayed || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {

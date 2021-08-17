@@ -13,7 +13,7 @@ const secondsToDisplay = (seconds: number): number[] => {
 };
 
 export const Clock = () => {
-    const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
+    const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 250);
     const [dateMode, setDateMode] = useState(false);
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds', 200);
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number', 1000);

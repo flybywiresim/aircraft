@@ -1,7 +1,7 @@
 import './style.scss';
 import React from 'react';
+import { useSimVar } from '@instruments/common/simVars';
 import { render } from '../Common';
-import { useSimVar } from '../Common/simVars';
 
 const RTPIDisplay = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 400);

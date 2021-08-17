@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import React, { useEffect } from 'react';
 import { round } from 'lodash';
+import { useSimVar } from '@instruments/common/simVars';
 import Input from '../../Components/Form/Input/Input';
 import Card from '../../Components/Card/Card';
 import Divider from '../../Components/Divider/Divider';
@@ -8,7 +9,6 @@ import { TOD_CALCULATOR_REDUCER } from '../../Store';
 import { setTodCurrentAltitudeSync, setTodData } from '../../Store/action-creator/tod-calculator';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType.enum';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import { useSimVar } from '../../../Common/simVars';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode.enum';
 
 const Data = ({
@@ -23,9 +23,9 @@ const Data = ({
 }) => {
     let [altitude] = useSimVar('INDICATED ALTITUDE', 'feet', 1_000);
     let [distance] = useSimVar('GPS WP DISTANCE', 'nautical miles', 1_000);
-    let [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per minute', 1_000);
+    let [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet/minute', 1_000);
     let [pitchAngle] = useSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'degree', 1_000);
-    const [trkModeActive] = useSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool', 1_000);
+    const [trkModeActive] = useSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'Bool', 1_000);
 
     altitude = round(altitude, -1);
     distance = round(distance, 1);

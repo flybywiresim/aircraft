@@ -37,9 +37,11 @@
     "@rollup/plugin-sucrase": "^3.1.0",
     "@rollup/plugin-typescript": "~8.0.0",
     "@types/jest": "^27.0.2",
+    "@types/lodash": "^4.14.172",
     "@types/react": "~17.0.0",
     "@types/react-dom": "~17.0.0",
     "@types/react-router-dom": "~5.1.6",
+    "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "~4.14.2",
     "@typescript-eslint/parser": "~4.14.2",
     "babel-plugin-module-resolver": "^4.1.0",
@@ -89,8 +91,10 @@
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "rollup-plugin-scss": "^2.6.1",
+    "rxjs": "^7.3.0",
     "sass": "~1.30.0",
     "tailwindcss": "^2.2.2",
-    "type-to-reducer": "^1.2.0"
+    "type-to-reducer": "^1.2.0",
+    "uuid": "^8.3.2"
   }
 }

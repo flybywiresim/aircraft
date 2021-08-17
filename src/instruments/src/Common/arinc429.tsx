@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { useSimVarValue } from './simVars';
+import { SimVarType, useVariableValue } from './simVars';
 
 type SignStatusMatrixRange = (typeof Arinc429Word.SignStatusMatrix)[keyof typeof Arinc429Word.SignStatusMatrix];
 
@@ -70,7 +70,7 @@ export const useArinc429Var = (
     name: string,
     maxStaleness = 0,
 ): Arinc429Word => {
-    const value = useSimVarValue(name, 'number', maxStaleness);
+    const value = useVariableValue(name, 'number', SimVarType.Sim, maxStaleness);
     try {
         return new Arinc429Word(value);
     } catch (e) {

@@ -1,17 +1,17 @@
 import './Door.scss';
 import ReactDOM from 'react-dom';
 import React from 'react';
+import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
 setIsEcamPage('door_page');
 
 export const DoorPage = () => {
     const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);
     const [catering] = useSimVar('INTERACTIVE POINT OPEN:3', 'percent', 1000);
-    const [cargoLocked] = useSimVar('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool', 1000);
-    const [oxygen] = useSimVar('L:PUSH_OVHD_OXYGEN_CREW', 'bool', 1000);
-    const [slides] = useSimVar('L:A32NX_SLIDES_ARMED', 'bool', 1000);
+    const [cargoLocked] = useSimVar('A32NX_FWD_DOOR_CARGO_LOCKED', 'Bool', 1000);
+    const [oxygen] = useSimVar('L:PUSH_OVHD_OXYGEN_CREW', 'Bool', 1000);
+    const [slides] = useSimVar('L:A32NX_SLIDES_ARMED', 'Bool', 1000);
 
     return (
         <>

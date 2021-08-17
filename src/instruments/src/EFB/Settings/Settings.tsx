@@ -1,11 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
+import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { HttpError } from '@flybywiresim/api-client';
 import { PopUp } from '@shared/popup';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
-import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';

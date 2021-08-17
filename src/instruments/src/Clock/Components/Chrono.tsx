@@ -1,14 +1,14 @@
+import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 import { useInteractionEvent } from '../../Common/hooks';
-import { useSimVar } from '../../Common/simVars';
 
 const getDisplayString = (seconds: number | null, running: boolean) : string => (seconds == null ? ''
     : `${Math.floor(Math.min(seconds, 5999) / 60).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor(Math.min(seconds, 5999) % 60)).toString().padStart(2, '0')}`);
 
 export const Chrono = () => {
-    const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
-    const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 250);
-    const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 200);
+    const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 250);
+    const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool', 250);
+    const [absTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 200);
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState<null | number>(null);

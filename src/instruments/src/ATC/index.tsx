@@ -26,7 +26,7 @@ const PoweredXpdrDisplay = () => {
     const [newDigits, setNewDigits] = useState<null | number[]>(null);
     const [clrPressed, setClrPressed] = useState(false);
     const [displayResetTimer, setDisplayResetTimer] = useState(-1);
-    const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Number', 250);
+    const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'number', 250);
 
     const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'Bco16', 'K:XPNDR_SET', 'Bco16', 500);
     const codeInDisplay = newDigits !== null ? newDigits : getDigitsFromBco16(transponderCode);

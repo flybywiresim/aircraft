@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, IconBolt } from '@tabler/icons';
+import { useSimVar } from '@instruments/common/simVars';
 import fuselage from '../../Assets/320neo-outline-nose.svg';
-import { useSimVar } from '../../../Common/simVars';
 
 /* eslint-disable react/no-unused-prop-types */
 
@@ -54,7 +54,7 @@ const OverviewPage = (props: OverviewPageProps) => {
         setUnitConversion(unitConv);
     }, [props.units]);
 
-    let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
+    let [airline] = useSimVar('ATC AIRLINE', 'string', 1_000);
 
     if (airline === 0 || null || '') {
         airline = 'FlyByWire Simulations';

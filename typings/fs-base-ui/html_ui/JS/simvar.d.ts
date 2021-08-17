@@ -84,6 +84,8 @@ declare global {
         function GetSimVarValue(name: string, unit: PitchBankHeadingVarUnit, dataSource?: string): PitchBankHeading | null;
         function GetSimVarValue(name: string, unit: PID_STRUCTVarUnit, dataSource?: string): PID_STRUCT | null;
         function GetSimVarValue(name: string, unit: XYZVarUnit, dataSource?: string): XYZ | null;
+        // Temporary to allow all simvar types
+        function GetSimVarValue(name: string, unit: string, dataSource?: string): unknown | null;
 
         function SetSimVarValue(name: string, unit: NumberVarUnit, value: number, dataSource?: string): Promise<void>;
         function SetSimVarValue(name: string, unit: TextVarUnit, value: string, dataSource?: string): Promise<void>;
@@ -92,6 +94,8 @@ declare global {
         function SetSimVarValue(name: string, unit: PitchBankHeadingVarUnit, value: PitchBankHeading, dataSource?: string): Promise<void>;
         function SetSimVarValue(name: string, unit: PID_STRUCTVarUnit, value: PID_STRUCT, dataSource?: string): Promise<void>;
         function SetSimVarValue(name: string, unit: XYZVarUnit, value: XYZ, dataSource?: string): Promise<void>;
+        // Temporary to allow all simvar types
+        function SetSimVarValue(name: string, unit: string, value: unknown, dataSource?: string): Promise<void>;
 
         function GetGlobalVarValue(name: string, unit: string): any | null;
 
@@ -101,9 +105,11 @@ declare global {
         function GetGameVarValue(name: string, unit: POIListVarUnit): any | null;
         function GetGameVarValue(name: string, unit: FuelLevelsVarUnit): FuelLevels | null;
         function GetGameVarValue(name: string, unit: GlassCockpitSettingsVarUnit): GlassCockpitSettings | null;
-        function GetGameVarValue(name: string, unit: string): any | null;
+        // Temporary to allow all simvar types
+        function GetGameVarValue(name: string, unit: string): unknown | null;
 
         function SetGameVarValue(name: string, unit: NumberVarUnit, value: number): Promise<void>;
+        function SetGameVarValue(name: string, unit: string, value: any): Promise<void>;
         /**
          * Doesn't do anything.
          */

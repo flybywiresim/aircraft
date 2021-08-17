@@ -1,7 +1,7 @@
 import React from 'react';
 import { CurrentFlight, Map } from '@flybywiresim/react-components';
+import { useSimVar } from '@instruments/common/simVars';
 import FlightWidget from './Widgets/FlightWidget';
-import { useSimVar } from '../../Common/simVars';
 import WeatherWidget from './Widgets/WeatherWidget';
 import { SimbriefData } from '../Efb';
 
@@ -11,8 +11,8 @@ type DashboardProps = {
 }
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
-    const [flightNumber] = useSimVar('ATC FLIGHT NUMBER', 'String', 1_000);
-    const [aircraftType] = useSimVar('TITLE', 'String', 1_000);
+    const [flightNumber] = useSimVar('ATC FLIGHT NUMBER', 'string', 1_000);
+    const [aircraftType] = useSimVar('TITLE', 'string', 1_000);
     const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 500);
     const [heading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 500);
     const [latitude] = useSimVar('PLANE LATITUDE', 'degree latitude', 500);

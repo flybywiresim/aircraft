@@ -1,9 +1,9 @@
 import classNames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { PageTitle } from '../../Common/PageTitle';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 
@@ -147,10 +147,10 @@ export const ElecPage = () => {
 const Battery = ({ x, y, number }) => {
     const [isAuto] = useSimVar(`L:A32NX_OVHD_ELEC_BAT_${number}_PB_IS_AUTO`, 'Bool', maxStaleness);
 
-    const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${number}_POTENTIAL`, 'Volts', maxStaleness);
+    const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${number}_POTENTIAL`, 'volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
 
-    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${number}_CURRENT`, 'Ampere', maxStaleness);
+    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${number}_CURRENT`, 'ampere', maxStaleness);
     const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${number}_CURRENT_NORMAL`, 'Bool', maxStaleness);
 
     const allParametersWithinNormalRange = potentialWithinNormalRange && currentWithinNormalRange;
@@ -181,7 +181,7 @@ const Battery = ({ x, y, number }) => {
 
 const BatteryToBatBusWire = ({ x, y, number }) => {
     const [contactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_6PB${number}_IS_CLOSED`, 'Bool', maxStaleness);
-    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${number}_CURRENT`, 'Ampere', maxStaleness);
+    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${number}_CURRENT`, 'ampere', maxStaleness);
     const [showArrowWhenContactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_6PB${number}_SHOW_ARROW_WHEN_CLOSED`, 'Bool', maxStaleness);
 
     const showArrow = contactorClosed && showArrowWhenContactorClosed;
@@ -267,10 +267,10 @@ const BatteryBus = ({ x, y, width }) => {
 const EngineGenerator = ({ x, y, number }) => {
     const [isOn] = useSimVar(`GENERAL ENG MASTER ALTERNATOR:${number}`, 'Bool', maxStaleness);
 
-    const [load] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_LOAD`, 'Percent', maxStaleness);
+    const [load] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_LOAD`, 'percent', maxStaleness);
     const [loadWithinNormalRange] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_LOAD_NORMAL`, 'Bool', maxStaleness);
 
-    const [potential] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_POTENTIAL`, 'Volts', maxStaleness);
+    const [potential] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_POTENTIAL`, 'volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
 
     const [frequency] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_FREQUENCY`, 'Hertz', maxStaleness);
@@ -300,10 +300,10 @@ const ApuGenerator = ({ x, y }) => {
     const [masterSwPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', maxStaleness);
     const [genSwitchOn] = useSimVar('APU GENERATOR SWITCH:1', 'Bool', maxStaleness);
 
-    const [load] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD', 'Percent', maxStaleness);
+    const [load] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD', 'percent', maxStaleness);
     const [loadWithinNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD_NORMAL', 'Bool', maxStaleness);
 
-    const [potential] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL', 'Volts', maxStaleness);
+    const [potential] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL', 'volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL_NORMAL', 'Bool', maxStaleness);
 
     const [frequency] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY', 'Hertz', maxStaleness);
@@ -335,7 +335,7 @@ const ApuGenerator = ({ x, y }) => {
 };
 
 const ExternalPower = ({ x, y }) => {
-    const [potential] = useSimVar('L:A32NX_ELEC_EXT_PWR_POTENTIAL', 'Volts', maxStaleness);
+    const [potential] = useSimVar('L:A32NX_ELEC_EXT_PWR_POTENTIAL', 'volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_EXT_PWR_POTENTIAL_NORMAL', 'Bool', maxStaleness);
 
     const [frequency] = useSimVar('L:A32NX_ELEC_EXT_PWR_FREQUENCY', 'Hertz', maxStaleness);
@@ -355,7 +355,7 @@ const ExternalPower = ({ x, y }) => {
 };
 
 const StaticInverter = ({ x, y }) => {
-    const [potential] = useSimVar('L:A32NX_ELEC_STAT_INV_POTENTIAL', 'Volts', maxStaleness);
+    const [potential] = useSimVar('L:A32NX_ELEC_STAT_INV_POTENTIAL', 'volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_STAT_INV_POTENTIAL_NORMAL', 'Bool', maxStaleness);
 
     const [frequency] = useSimVar('L:A32NX_ELEC_STAT_INV_FREQUENCY', 'Hertz', maxStaleness);
@@ -395,10 +395,10 @@ interface TransformerRectifierProps {
 }
 
 const TransformerRectifier = ({ x, y, number, titleOnly }: TransformerRectifierProps) => {
-    const [potential] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL`, 'Volts', maxStaleness);
+    const [potential] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL`, 'volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
 
-    const [current] = useSimVar(`L:A32NX_ELEC_TR_${number}_CURRENT`, 'Ampere', maxStaleness);
+    const [current] = useSimVar(`L:A32NX_ELEC_TR_${number}_CURRENT`, 'ampere', maxStaleness);
     const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_CURRENT_NORMAL`, 'Bool', maxStaleness);
 
     const allParametersWithinNormalRange = potentialWithinNormalRange && currentWithinNormalRange;
@@ -426,7 +426,7 @@ const TransformerRectifier = ({ x, y, number, titleOnly }: TransformerRectifierP
 };
 
 const EmergencyGenerator = ({ x, y, titleOnly }) => {
-    const [potential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'Volts', maxStaleness);
+    const [potential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'volts', maxStaleness);
     const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL_NORMAL', 'Bool', maxStaleness);
 
     const [frequency] = useSimVar('L:A32NX_ELEC_EMER_GEN_FREQUENCY', 'Hertz', maxStaleness);
@@ -470,7 +470,7 @@ const IntegratedDriveGeneratorTitle = ({ x, y, number }) => {
 };
 
 const IntegratedDriveGeneratorTemperature = ({ x, y, number }) => {
-    const [temperature] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_IDG_OIL_OUTLET_TEMPERATURE`, 'Celsius', maxStaleness);
+    const [temperature] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_IDG_OIL_OUTLET_TEMPERATURE`, 'celsius', maxStaleness);
     return (
         <SvgGroup x={x} y={y}>
             <text className="Green Right">{Math.round(temperature)}</text>

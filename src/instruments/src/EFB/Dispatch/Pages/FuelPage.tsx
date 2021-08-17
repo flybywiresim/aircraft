@@ -2,13 +2,12 @@ import React from 'react';
 import { round } from 'lodash';
 import { IconPlayerPlay, IconHandStop } from '@tabler/icons';
 import { Slider } from '@flybywiresim/react-components';
+import { useSimVar, useSimVarSyncedPersistentProperty } from '@instruments/common/simVars';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import { ProgressBar } from '../../Components/Progress/Progress';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import fuselage from '../../Assets/320neo_outline_fuel.svg';
-import { useSimVar } from '../../../Common/simVars';
-import { usePersistentProperty } from '../../../Common/persistence';
 
 export const FuelPage = () => {
     const totalFuelGallons = 6267;
@@ -47,20 +46,20 @@ export const FuelPage = () => {
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
     const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
     const [refuelRate, setRefuelRate] = usePersistentProperty('REFUEL_RATE_SETTING');
-    const [sliderValue, setSliderValue] = useSimVar('L:A32NX_FUEL_DESIRED_PERCENT', 'Number');
-    const [inputValue, setInputValue] = useSimVar('L:A32NX_FUEL_DESIRED', 'Number');
-    const [totalTarget, setTotalTarget] = useSimVar('L:A32NX_FUEL_TOTAL_DESIRED', 'Number');
+    const [sliderValue, setSliderValue] = useSimVar('L:A32NX_FUEL_DESIRED_PERCENT', 'number');
+    const [inputValue, setInputValue] = useSimVar('L:A32NX_FUEL_DESIRED', 'number');
+    const [totalTarget, setTotalTarget] = useSimVar('L:A32NX_FUEL_TOTAL_DESIRED', 'number');
     const [refuelStartedByUser, setRefuelStartedByUser] = useSimVar('L:A32NX_REFUEL_STARTED_BY_USR', 'Bool');
-    const [centerTarget, setCenterTarget] = useSimVar('L:A32NX_FUEL_CENTER_DESIRED', 'Number');
-    const [LInnTarget, setLInnTarget] = useSimVar('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'Number');
-    const [LOutTarget, setLOutTarget] = useSimVar('L:A32NX_FUEL_LEFT_AUX_DESIRED', 'Number');
-    const [RInnTarget, setRInnTarget] = useSimVar('L:A32NX_FUEL_RIGHT_MAIN_DESIRED', 'Number');
-    const [ROutTarget, setROutTarget] = useSimVar('L:A32NX_FUEL_RIGHT_AUX_DESIRED', 'Number');
-    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons', 1_000);
-    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', 1_000);
-    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 1_000);
-    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
-    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
+    const [centerTarget, setCenterTarget] = useSimVar('L:A32NX_FUEL_CENTER_DESIRED', 'number');
+    const [LInnTarget, setLInnTarget] = useSimVar('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'number');
+    const [LOutTarget, setLOutTarget] = useSimVar('L:A32NX_FUEL_LEFT_AUX_DESIRED', 'number');
+    const [RInnTarget, setRInnTarget] = useSimVar('L:A32NX_FUEL_RIGHT_MAIN_DESIRED', 'number');
+    const [ROutTarget, setROutTarget] = useSimVar('L:A32NX_FUEL_RIGHT_AUX_DESIRED', 'number');
+    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'gallons', 1_000);
+    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'gallons', 1_000);
+    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'gallons', 1_000);
+    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'gallons', 1_000);
+    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'gallons', 1_000);
     const getFuelBarPercent = (curr:number, max: number) => (Math.max(curr, 0) / max) * 100;
 
     const isAirplaneCnD = () => {
@@ -415,6 +414,7 @@ export const FuelPage = () => {
                     </div>
                 </div>
             </div>
+
             <div className="flex flex-col items-center justify-end">
                 <img className="z-20 h-96 mb-3" src={fuselage} />
                 <div className="z-0 w-24 h-20 absolute bottom-ctr-tk-y" style={{ background: formatFuelFilling(centerCurrent, centerTankGallon) }} />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MemoryRouter as Router } from 'react-router-dom';
+import { useSimVar } from '@instruments/common/simVars';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
 import logo from './Assets/fbw-logo.svg';

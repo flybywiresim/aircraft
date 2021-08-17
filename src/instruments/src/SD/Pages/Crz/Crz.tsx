@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
+import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { splitDecimals, valueRadianAngleConverter, polarToCartesian } from './common';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
@@ -57,8 +57,8 @@ export const OilComponent = () => {
     const oilLeft = splitDecimals(oilQuantLeft, 'oil');
     const oilRight = splitDecimals(oilQuantRight, 'oil');
 
-    const [leftVIBN1] = useSimVar('TURB ENG VIBRATION:1', 'Number', 1000);
-    const [rightVIBN1] = useSimVar('TURB ENG VIBRATION:2', 'Number', 1000);
+    const [leftVIBN1] = useSimVar('TURB ENG VIBRATION:1', 'number', 1000);
+    const [rightVIBN1] = useSimVar('TURB ENG VIBRATION:2', 'number', 1000);
 
     const leftVN1 = splitDecimals(leftVIBN1, 'vib');
     const rightVN1 = splitDecimals(rightVIBN1, 'vib');
@@ -119,7 +119,7 @@ export const OilComponent = () => {
 };
 
 export const PressureComponent = () => {
-    const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
+    const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 100);
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
     const [manMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
@@ -127,7 +127,7 @@ export const PressureComponent = () => {
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
     const [landingElev] = useSimVar('L:A32NX_LANDING_ELEVATION', 'feet', 100);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
-    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
+    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet/minute', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);
 
     const deltaPress = splitDecimals(deltaPsi, '');

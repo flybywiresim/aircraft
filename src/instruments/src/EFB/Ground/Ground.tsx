@@ -2,8 +2,8 @@ import { connect } from 'react-redux';
 import React, { useEffect, useState } from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
 import './Ground.scss';
+import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import fuselage from '../Assets/320neo-outline-upright.svg';
-import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 import { DoorToggle } from './DoorToggle';
 import { BUTTON_STATE_REDUCER } from '../Store';
@@ -22,18 +22,18 @@ export const Ground = ({
     activeButtons, disabledButtons, pushBackWaitTimerHandle, setPushBackWaitTimerHandle,
     tugRequestOnly, setTugRequestOnly, addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton,
 }) => {
-    const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
-    const [, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
-    const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
-    const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 'K:REQUEST_CATERING', 'bool', 1000);
+    const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'percent over 100', 'K:TOGGLE_JETWAY', 'Bool', 1000);
+    const [, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'percent over 100', 'K:TOGGLE_RAMPTRUCK', 'Bool', 1000);
+    const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'percent over 100', 'K:REQUEST_LUGGAGE', 'Bool', 1000);
+    const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'percent over 100', 'K:REQUEST_CATERING', 'Bool', 1000);
 
-    const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 'K:REQUEST_FUEL_KEY', 'bool', 1000);
-    const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'UINT32', 1000);
-    const [pushBack, setPushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
-    const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
+    const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'percent over 100', 'K:REQUEST_FUEL_KEY', 'Bool', 1000);
+    const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'number', 1000);
+    const [pushBack, setPushBack] = useSplitSimVar('PUSHBACK STATE', 'Enum', 'K:TOGGLE_PUSHBACK', 'Bool', 1000);
+    const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'percent over 100', 'K:REQUEST_POWER_SUPPLY', 'Bool', 1000);
 
-    const [, setPushBackWait] = useSimVar('Pushback Wait', 'bool', 100);
-    const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 1000);
+    const [, setPushBackWait] = useSimVar('Pushback Wait', 'Bool', 100);
+    const [pushBackAttached] = useSimVar('Pushback Attached', 'Bool', 1000);
 
     const [tugDirection, setTugDirection] = useState(0);
     const [tugActive, setTugActive] = useState(false);

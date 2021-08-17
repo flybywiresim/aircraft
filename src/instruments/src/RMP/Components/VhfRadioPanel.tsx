@@ -1,6 +1,6 @@
 import React from 'react';
+import { useSplitSimVar } from '@instruments/common/simVars';
 import { StandbyFrequency } from './StandbyFrequency';
-import { useSplitSimVar } from '../../Common/simVars';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 import { useInteractionEvent } from '../../Common/hooks';
 

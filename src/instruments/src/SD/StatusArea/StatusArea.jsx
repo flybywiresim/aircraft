@@ -7,8 +7,9 @@
  */
 
 import './StatusArea.scss';
+import { useGlobalVar } from '@instruments/common/simVars';
 import { Text } from '../Text/Text.jsx';
-import { useGlobalVar, getSimVar } from '../../util.js';
+import { getSimVar } from '../../util.js';
 
 export const StatusArea = () => {
     const gw = getSimVar('TOTAL WEIGHT', 'kg');

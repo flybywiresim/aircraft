@@ -1,8 +1,8 @@
 import './Cond.scss';
 import ReactDOM from 'react-dom';
 import React from 'react';
+import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
 setIsEcamPage('cond_page');
 
@@ -24,7 +24,7 @@ export const CondPage = () => {
 
     // Note: There is a state where the hot air valve can be closed and classed as normal
     // This is not modelled at present. Re-check when packs are done.
-    const [hotAir] = useSimVar('L:A32NX_AIRCOND_HOTAIR_TOGGLE', 'bool', 1000);
+    const [hotAir] = useSimVar('L:A32NX_AIRCOND_HOTAIR_TOGGLE', 'Bool', 1000);
 
     return (
         <>
