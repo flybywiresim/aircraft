@@ -197,7 +197,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
             </div>
 
             <div className="text-xl text-red-600">{isConfigValid().length > 0 ? isConfigValid()[0] : ''}</div>
-            <div className="bg-navy-lighter flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-2xl">
+            <div className="bg-navy-lighter flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-lg">
 
                 <Button
                     text="Save &amp; Apply"
