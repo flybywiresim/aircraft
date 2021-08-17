@@ -16,6 +16,7 @@ type ISISDisplayUnitProps = {
 export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirspeed, children }) => {
     const powerUpTime = 90;
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
+    const [opacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 200);
 
     const [state, setState] = useState(isColdAndDark ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const [timer, setTimer] = useState<number | null>(null);
@@ -57,28 +58,31 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
 
     if (state === DisplayUnitState.Selftest) {
         return (
-            <svg id="SelfTest" className="SelfTest" version="1.1" viewBox="0 0 512 512">
-                <g id="AttFlag">
-                    <rect id="AttTest" className="FillYellow" width="84" height="40" x="214" y="174" />
-                    <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="256" y="206">ATT</text>
-                </g>
-                <g id="SpeedFlag">
-                    <rect id="SpeedTest" className="FillYellow" width="84" height="40" x="70" y="244" />
-                    <text id="SpeedTestTxt" className="TextBackground" textAnchor="middle" x="112" y="276">SPD</text>
-                </g>
-                <g id="AltFlag">
-                    <rect id="AltTest" className="FillYellow" width="84" height="40" x="358" y="244" />
-                    <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="400" y="276">ALT</text>
-                </g>
-                <g id="TimerFlag">
-                    <rect id="TmrTest" className="FillYellow" width="160" height="40" x="178" y="332" />
-                    <text id="TmrTestTxt" className="TextBackground" x="186" y="366">INIT</text>
-                    <text id="TmrTestCountdown" className="TextBackground" textAnchor="end" x="330" y="366">
-                        {Math.max(0, Math.ceil(timer!))}
-                        s
-                    </text>
-                </g>
-            </svg>
+            <>
+                <div className="LcdOverlayISIS" style={{ opacity }} />
+                <svg id="SelfTest" className="SelfTest" version="1.1" viewBox="0 0 512 512">
+                    <g id="AttFlag">
+                        <rect id="AttTest" className="FillYellow" width="84" height="40" x="214" y="174" />
+                        <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="256" y="206">ATT</text>
+                    </g>
+                    <g id="SpeedFlag">
+                        <rect id="SpeedTest" className="FillYellow" width="84" height="40" x="70" y="244" />
+                        <text id="SpeedTestTxt" className="TextBackground" textAnchor="middle" x="112" y="276">SPD</text>
+                    </g>
+                    <g id="AltFlag">
+                        <rect id="AltTest" className="FillYellow" width="84" height="40" x="358" y="244" />
+                        <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="400" y="276">ALT</text>
+                    </g>
+                    <g id="TimerFlag">
+                        <rect id="TmrTest" className="FillYellow" width="160" height="40" x="178" y="332" />
+                        <text id="TmrTestTxt" className="TextBackground" x="186" y="366">INIT</text>
+                        <text id="TmrTestCountdown" className="TextBackground" textAnchor="end" x="330" y="366">
+                            {Math.max(0, Math.ceil(timer!))}
+                            s
+                        </text>
+                    </g>
+                </svg>
+            </>
         );
     }
 
@@ -89,6 +93,9 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
     }
 
     return (
-        <>{children}</>
+        <>
+            <div className="LcdOverlay" style={{ opacity }} />
+            {children}
+        </>
     );
 };
