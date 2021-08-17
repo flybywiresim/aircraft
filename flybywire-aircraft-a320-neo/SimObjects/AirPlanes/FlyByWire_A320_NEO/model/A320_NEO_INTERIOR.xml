@@ -1238,11 +1238,11 @@
                     <TYPE>Auto</TYPE>
                     <INVERT_ANIM>True</INVERT_ANIM>
                     <POTENTIOMETER>24</POTENTIOMETER>
+                    <SIMVAR_INDEX>0</SIMVAR_INDEX>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_0>
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
                     <ANIMTIP_1>Set strobe lights to AUTO</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_OFF</ANIMTIP_2>
-
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
