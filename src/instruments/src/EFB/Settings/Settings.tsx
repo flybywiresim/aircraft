@@ -32,7 +32,6 @@ const PlaneSettings = () => {
     const [accelerationOutAltSetting, setAccelerationOutAltSetting] = useState(accelerationOutAlt);
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
     const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const notification = new Notification();
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -252,7 +251,7 @@ const PlaneSettings = () => {
                                 <SelectItem
                                     onSelect={() => {
                                         setWeightUnit(button.setting);
-                                        notification.showNotification({ title: 'RELOAD AIRCRAFT', theme: 'GAMEPLAY', message: 'Reload the aircraft to apply settings.' });
+                                        new Notification().showNotification({ title: 'RELOAD AIRCRAFT', theme: 'GAMEPLAY', message: 'Reload the aircraft to apply settings.' });
                                     }}
                                     selected={weightUnit === button.setting}
                                 >
