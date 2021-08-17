@@ -14,7 +14,6 @@ import { FMMessages } from './elements/messages/FMMessages';
 import { TcasWxrMessages } from './elements/messages/TcasWxrMessages';
 import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
-import { WeatherTerrainBackdrop } from './elements/WeatherTerrainBackdrop';
 
 import './styles.scss';
 
@@ -111,9 +110,8 @@ const NavigationDisplay: React.FC = () => {
         >
             <div className="BacklightBleed" />
             <div className="LcdOverlayDcdu" style={{ opacity }} />
-            <WeatherTerrainBackdrop mode={modeIndex} side={side} range={rangeSettings[rangeIndex]} ppos={ppos} />
             <FlightPlanProvider>
-                <svg className="nd-svg" version="1.1" viewBox="0 0 768 768" style={{ position: 'absolute', zIndex: 100 }}>
+                <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
                     <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
                     <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
 
