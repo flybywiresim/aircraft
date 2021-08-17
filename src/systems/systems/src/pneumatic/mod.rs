@@ -89,14 +89,13 @@ impl DefaultPipe {
             pressure,
         }
     }
-    fn update(&self, context: &UpdateContext) {}
+
     fn calculate_pressure_change_for_volume_change(&self, volume: Volume) -> Pressure {
         self.fluid.bulk_mod() * volume / self.volume()
     }
 
-    // TODO: Not sure this should be here
-    pub fn fluid(&self) -> &Fluid {
-        &self.fluid
+    fn vol_to_target(&self, target_press: Pressure) -> Volume {
+        (target_press - self.pressure()) * self.volume() / self.fluid.bulk_mod()
     }
 }
 
@@ -269,9 +268,11 @@ impl PneumaticContainer for CompressionChamber {
     fn pressure(&self) -> Pressure {
         self.pipe.pressure()
     }
+
     fn volume(&self) -> Volume {
         self.pipe.volume()
     }
+
     fn change_volume(&mut self, volume: Volume) {
         self.pipe.change_volume(volume);
     }
@@ -289,12 +290,8 @@ impl CompressionChamber {
 
     pub fn update(&mut self, controller: &impl ControllerSignal<TargetPressureSignal>) {
         if let Some(signal) = controller.signal() {
-            self.change_volume(self.vol_to_target(signal.target_pressure))
+            self.change_volume(self.pipe.vol_to_target(signal.target_pressure))
         }
-    }
-
-    fn vol_to_target(&self, target_press: Pressure) -> Volume {
-        (target_press - self.pressure()) * self.volume() / self.pipe.fluid().bulk_mod()
     }
 }
 
@@ -355,7 +352,7 @@ impl DefaultConsumer {
 
     pub fn update(&mut self, controller: &impl ControllerSignal<PneumaticConsumptionSignal>) {
         if let Some(signal) = controller.signal() {
-            let max_consumption = self.pressure() * self.volume() / self.pipe.fluid().bulk_mod();
+            let max_consumption = -self.pipe.vol_to_target(Pressure::new::<psi>(0.));
 
             self.change_volume(-signal.consumed_volume.min(max_consumption));
         }
@@ -869,9 +866,6 @@ mod tests {
     #[test]
     fn consumer_pressure_stays_above_zero() {
         let consumption_rate = VolumeRate::new::<cubic_meter_per_second>(1.);
-
-        // This is what consumer should be initialized to automatically.
-        let initial_pressure = Pressure::new::<psi>(14.7);
 
         let mut consumer_controller = ConstantConsumerController::new(consumption_rate);
         let mut consumer = DefaultConsumer::new(Volume::new::<cubic_meter>(1.));

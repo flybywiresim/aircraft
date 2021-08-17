@@ -1,3 +1,5 @@
+use core::panic;
+
 use crate::UpdateContext;
 
 use uom::si::{
@@ -19,7 +21,7 @@ use systems::{
     },
     shared::{
         ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
-        PneumaticValve, PneumaticValveSignal,
+        PneumaticValve,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
@@ -162,8 +164,8 @@ pub struct A320Pneumatic {
 impl A320Pneumatic {
     pub fn new() -> Self {
         Self {
-            bmc1: BleedMonitoringComputer::new(1, 1, 2),
-            bmc2: BleedMonitoringComputer::new(2, 2, 1),
+            bmc1: BleedMonitoringComputer::new(1, 2),
+            bmc2: BleedMonitoringComputer::new(2, 1),
             engine_systems: [EngineBleedAirSystem::new(1), EngineBleedAirSystem::new(2)],
             cross_bleed_valve_controller: CrossBleedValveController::new(),
             cross_bleed_valve: DefaultValve::new_closed(),
@@ -184,41 +186,19 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
     ) {
-        // Update BMC
-        self.bmc1.update_main_channel(
-            &self.engine_systems[0],
-            overhead_panel.engine_1_bleed_is_auto(),
-            engine_fire_push_buttons.is_released(1),
-            overhead_panel.apu_bleed_is_on(),
+        self.bmc1.update(
+            &self.engine_systems,
             apu_bleed_valve_state,
-            overhead_panel.cross_bleed_mode(),
+            overhead_panel,
+            engine_fire_push_buttons,
             self.cross_bleed_valve.is_open(),
         );
-        self.bmc1.update_backup_channel(
-            &self.engine_systems[1],
-            overhead_panel.engine_2_bleed_is_auto(),
-            engine_fire_push_buttons.is_released(2),
-            overhead_panel.apu_bleed_is_on(),
+
+        self.bmc2.update(
+            &self.engine_systems,
             apu_bleed_valve_state,
-            overhead_panel.cross_bleed_mode(),
-            self.cross_bleed_valve.is_open(),
-        );
-        self.bmc2.update_main_channel(
-            &self.engine_systems[0],
-            overhead_panel.engine_2_bleed_is_auto(),
-            engine_fire_push_buttons.is_released(2),
-            overhead_panel.apu_bleed_is_on(),
-            apu_bleed_valve_state,
-            overhead_panel.cross_bleed_mode(),
-            self.cross_bleed_valve.is_open(),
-        );
-        self.bmc2.update_backup_channel(
-            &self.engine_systems[1],
-            overhead_panel.engine_2_bleed_is_auto(),
-            engine_fire_push_buttons.is_released(1),
-            overhead_panel.apu_bleed_is_on(),
-            apu_bleed_valve_state,
-            overhead_panel.cross_bleed_mode(),
+            overhead_panel,
+            engine_fire_push_buttons,
             self.cross_bleed_valve.is_open(),
         );
 
@@ -378,62 +358,47 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
 }
 
 struct BleedMonitoringComputer {
-    number: usize,
+    main_channel_engine_number: usize,
+    backup_channel_engine_number: usize,
     main_channel: BleedMonitoringComputerChannel,
     backup_channel: BleedMonitoringComputerChannel,
 }
 impl BleedMonitoringComputer {
-    fn new(
-        number: usize,
-        main_channel_engine_number: usize,
-        backup_channel_engine_number: usize,
-    ) -> Self {
+    fn new(main_channel_engine_number: usize, backup_channel_engine_number: usize) -> Self {
         Self {
             // This is the BMC number, not directly related to any engine number.
-            number,
+            main_channel_engine_number,
+            backup_channel_engine_number,
             main_channel: BleedMonitoringComputerChannel::new(main_channel_engine_number),
             backup_channel: BleedMonitoringComputerChannel::new(backup_channel_engine_number),
         }
     }
 
-    fn update_main_channel(
+    fn update(
         &mut self,
-        sensors: &impl EngineBleedDataProvider,
-        is_engine_bleed_pushbutton_auto: bool,
-        is_engine_fire_pushbutton_released: bool,
-        is_apu_bleed_on: bool,
+        sensors: &[EngineBleedAirSystem; 2],
         apu_bleed_valve_state: &impl BleedAirValveState,
-        cross_bleed_valve_selector: CrossBleedValveSelectorMode,
+        overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
         cross_bleed_valve_is_open: bool,
     ) {
         self.main_channel.update(
-            sensors,
-            is_engine_bleed_pushbutton_auto,
-            is_engine_fire_pushbutton_released,
-            is_apu_bleed_on,
+            &sensors[self.main_channel_engine_number - 1],
+            overhead_panel.engine_bleed_pb_is_auto(self.main_channel_engine_number),
+            engine_fire_push_buttons.is_released(self.main_channel_engine_number),
+            overhead_panel.apu_bleed_is_on(),
             apu_bleed_valve_state,
-            cross_bleed_valve_selector,
+            overhead_panel.cross_bleed_mode(),
             cross_bleed_valve_is_open,
         );
-    }
 
-    fn update_backup_channel(
-        &mut self,
-        sensors: &impl EngineBleedDataProvider,
-        is_engine_bleed_pushbutton_auto: bool,
-        is_engine_fire_pushbutton_released: bool,
-        is_apu_bleed_on: bool,
-        apu_bleed_valve_state: &impl BleedAirValveState,
-        cross_bleed_valve_selector: CrossBleedValveSelectorMode,
-        cross_bleed_valve_is_open: bool,
-    ) {
         self.backup_channel.update(
-            sensors,
-            is_engine_bleed_pushbutton_auto,
-            is_engine_fire_pushbutton_released,
-            is_apu_bleed_on,
+            &sensors[self.backup_channel_engine_number - 1],
+            overhead_panel.engine_bleed_pb_is_auto(self.backup_channel_engine_number),
+            engine_fire_push_buttons.is_released(self.backup_channel_engine_number),
+            overhead_panel.apu_bleed_is_on(),
             apu_bleed_valve_state,
-            cross_bleed_valve_selector,
+            overhead_panel.cross_bleed_mode(),
             cross_bleed_valve_is_open,
         );
     }
@@ -570,7 +535,6 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
     }
 }
 
-// TODO: Would it make sense to use the generics for traits here? e.g T: PneumaticCompressionChamber, U: PneumaticValve, etc.
 struct EngineBleedAirSystem {
     number: usize,
     ip_compression_chamber_controller: EngineCompressionChamberController,
@@ -764,20 +728,20 @@ impl A320PneumaticOverheadPanel {
         self.cross_bleed.mode()
     }
 
-    pub fn engine_1_bleed_is_auto(&self) -> bool {
-        self.engine_1_bleed.is_auto()
+    pub fn engine_bleed_pb_is_auto(&self, engine_number: usize) -> bool {
+        match engine_number {
+            1 => self.engine_1_bleed.is_auto(),
+            2 => self.engine_2_bleed.is_auto(),
+            _ => panic!("Invalid engine number"),
+        }
     }
 
-    pub fn engine_2_bleed_is_auto(&self) -> bool {
-        self.engine_2_bleed.is_auto()
-    }
-
-    pub fn engine_1_bleed_has_fault(&self) -> bool {
-        self.engine_1_bleed.has_fault()
-    }
-
-    pub fn engine_2_bleed_has_fault(&self) -> bool {
-        self.engine_2_bleed.has_fault()
+    pub fn engine_bleed_pb_has_fault(&self, engine_number: usize) -> bool {
+        match engine_number {
+            1 => self.engine_1_bleed.has_fault(),
+            2 => self.engine_2_bleed.has_fault(),
+            _ => panic!("Invalid engine number"),
+        }
     }
 }
 impl SimulationElement for A320PneumaticOverheadPanel {
@@ -833,9 +797,7 @@ mod tests {
 
     use std::{fs::File, time::Duration};
 
-    use uom::si::{
-        acceleration::foot_per_second_squared, length::foot, pressure::pascal, velocity::knot,
-    };
+    use uom::si::{length::foot, pressure::pascal};
 
     struct TestApu {
         bleed_air_valve_is_open: bool,
@@ -1084,19 +1046,6 @@ mod tests {
             self.query(|a| a.fire_pushbuttons.is_released(number))
         }
 
-        fn for_both_engine_systems_with_capture<T: Fn(&EngineBleedAirSystem, &mut U) -> (), U>(
-            &self,
-            func: T,
-            captured_variables: &mut U,
-        ) {
-            self.query(|a| {
-                a.pneumatic
-                    .engine_systems
-                    .iter()
-                    .for_each(|sys| func(sys, captured_variables))
-            });
-        }
-
         fn cross_bleed_valve_is_open(&self) -> bool {
             self.query(|a| a.pneumatic.cross_bleed_valve.is_open())
         }
@@ -1106,19 +1055,11 @@ mod tests {
         }
 
         fn engine_bleed_push_button_is_auto(&self, number: usize) -> bool {
-            match number {
-                1 => self.query(|a| a.overhead_panel.engine_1_bleed_is_auto()),
-                2 => self.query(|a| a.overhead_panel.engine_2_bleed_is_auto()),
-                _ => false,
-            }
+            self.query(|a| a.overhead_panel.engine_bleed_pb_is_auto(number))
         }
 
         fn engine_bleed_push_button_has_fault(&self, number: usize) -> bool {
-            match number {
-                1 => self.query(|a| a.overhead_panel.engine_1_bleed_has_fault()),
-                2 => self.query(|a| a.overhead_panel.engine_2_bleed_has_fault()),
-                _ => false,
-            }
+            self.query(|a| a.overhead_panel.engine_bleed_pb_has_fault(number))
         }
     }
 
@@ -1128,17 +1069,6 @@ mod tests {
 
     fn test_bed_with() -> PneumaticTestBed {
         test_bed()
-    }
-
-    fn context(delta_time: Duration, altitude: Length) -> UpdateContext {
-        UpdateContext::new(
-            delta_time,
-            Velocity::new::<knot>(0.),
-            altitude,
-            ISA::temperature_at_altitude(altitude),
-            true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-        )
     }
 
     fn pressure_tolerance() -> Pressure {
@@ -1380,25 +1310,6 @@ mod tests {
     }
 
     #[test]
-    fn n1_affects_compression_chamber() {
-        let altitude = Length::new::<foot>(0.);
-
-        let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng1()
-            .corrected_n1(Ratio::new::<ratio>(0.2))
-            .in_isa_atmosphere(Length::new::<foot>(0.));
-
-        test_bed.run();
-        test_bed.run();
-
-        test_bed.for_both_engine_systems(|sys| {
-            assert!(sys.regulated_pressure_pipe.pressure() > ISA::pressure_at_altitude(altitude))
-        });
-        // test_bed.for_both_engine_systems(|sys| assert!(sys.hp_valve.is_open()));
-    }
-
-    #[test]
     fn n1_affects_compression_chamber_pressure() {
         let altitude = Length::new::<foot>(0.);
 
@@ -1422,8 +1333,27 @@ mod tests {
     }
 
     #[test]
+    fn n2_affects_compression_chamber_pressure() {
+        let altitude = Length::new::<foot>(0.);
+
+        let mut test_bed = test_bed_with()
+            .mach_number(MachNumber(0.))
+            .idle_eng1()
+            .idle_eng2()
+            .corrected_n2(Ratio::new::<ratio>(0.6))
+            .in_isa_atmosphere(altitude);
+
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(50));
+
+        test_bed.for_both_engine_systems(|sys| {
+            assert!(sys.ip_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
+            assert!(sys.hp_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
+        });
+    }
+
+    #[test]
     fn starter_valve_opens_on_engine_start() {
-        // Set takeoff thrust
         let mut test_bed = test_bed_with().stop_eng1().stop_eng2();
 
         test_bed.run();
