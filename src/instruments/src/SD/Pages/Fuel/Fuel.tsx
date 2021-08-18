@@ -193,11 +193,11 @@ const FuelFlow = ({ unit }: FuelFlowProps) => {
     );
 };
 
-type FOBProp = {
+type FOBProps = {
     unit: string
 };
 
-const FOB = ({ unit }:FOBProp) => {
+const FOB = ({ unit }:FOBProps) => {
     const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 1000);
 
     return (
