@@ -236,14 +236,14 @@ const Wings = () => (
     </>
 );
 
-type EngineStatusProp = {
+type EngineStatusProps = {
     x: number,
     y: number,
     engineNumber: number,
     fuelUsed: number
 };
 
-const EngineStatus = ({ x, y, engineNumber, fuelUsed }: EngineStatusProp) => {
+const EngineStatus = ({ x, y, engineNumber, fuelUsed }: EngineStatusProps) => {
     const [EngN2] = useSimVar(`TURB ENG N2:${engineNumber}`, 'Percent', 1000);
 
     return (
