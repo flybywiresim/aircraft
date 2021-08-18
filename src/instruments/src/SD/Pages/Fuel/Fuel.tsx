@@ -254,7 +254,13 @@ const EngineStatus = ({ x, y, engineNumber, fuelUsed }: EngineStatusProps) => {
     );
 };
 
-const EngineLpValveLine = ({ x, y, position }) => {
+type EngineValveProps = {
+    x: number,
+    y: number,
+    position: number,
+};
+
+const EngineLpValveLine = ({ x, y, position = 0 }: EngineValveProps) => {
     if (position === 0) {
         return <line x1={x - 15} y1={y} x2={x + 15} y2={y} />;
     }
@@ -266,7 +272,13 @@ const EngineLpValveLine = ({ x, y, position }) => {
     return <line x1={x} y1={y - 15} x2={x} y2={y + 15} />;
 };
 
-const EngineLpValve = ({ x, y, engineNumber }) => {
+type EngineLpValveProps = {
+    x: number,
+    y: number,
+    engineNumber?: number,
+};
+
+const EngineLpValve = ({ x, y, engineNumber }: EngineLpValveProps) => {
     const [position] = useSimVar(`FUELSYSTEM VALVE OPEN:${engineNumber}`, 'percent', 500);
 
     return (
@@ -278,7 +290,7 @@ const EngineLpValve = ({ x, y, engineNumber }) => {
     );
 };
 
-const CrossFeedValveLine = ({ x, y, position }) => {
+const CrossFeedValveLine = ({ x, y, position }: EngineValveProps) => {
     if (position === 0) {
         return <line x1={x} y1={y - 15} x2={x} y2={y + 15} />;
     }
@@ -290,7 +302,7 @@ const CrossFeedValveLine = ({ x, y, position }) => {
     return <line x1={x - 15} y1={y} x2={x + 15} y2={y} />;
 };
 
-const CrossFeedValve = ({ x, y }) => {
+const CrossFeedValve = ({ x, y } : EngineLpValveProps) => {
     const [position] = useSimVar(
         'FUELSYSTEM VALVE OPEN:3',
         'percent',
@@ -306,7 +318,14 @@ const CrossFeedValve = ({ x, y }) => {
     );
 };
 
-const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }) => {
+type PumpProps = {
+    x: number,
+    y: number,
+    onBus: string,
+    pumpNumber: number
+}
+
+const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }: PumpProps) => {
     const [active] = useSimVar(`FUELSYSTEM PUMP ACTIVE:${pumpNumber}`, 'bool', 500);
     const [pushButtonPressed] = pumpNumber === 1 || pumpNumber === 4
         ? pumpNumber === 1
