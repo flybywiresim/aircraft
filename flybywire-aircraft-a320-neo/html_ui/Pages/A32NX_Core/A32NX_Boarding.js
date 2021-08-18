@@ -6,7 +6,7 @@ function airplaneCanBoard() {
     const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool");
     const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool");
 
-return !(gs > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1));
+    return !(gs > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1));
 }
 
 class A32NX_Boarding {
