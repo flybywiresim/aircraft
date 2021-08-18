@@ -146,7 +146,10 @@ export class Geometry {
         }
 
         if (activeLeg) {
-            return Math.abs(activeLeg.getDistanceToGo(ppos)) < 0.001;
+            const distanceToGo = activeLeg.getDistanceToGo(ppos);
+            if (distanceToGo > -0.1 && distanceToGo < 0.001) {
+                return true;
+            }
         }
 
         return false;
