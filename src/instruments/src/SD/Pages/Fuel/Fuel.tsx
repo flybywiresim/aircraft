@@ -134,7 +134,7 @@ export const FuelPage = () => {
                 {/* Quantities */}
                 <text className="TankQuantity" x={472} y={285}>{fuelInTanksForDisplay(tankRightInner, unit, fuelWeightPerGallon)}</text>
                 <text className="TankQuantity" x={579} y={285}>{fuelInTanksForDisplay(tankRightOuter, unit, fuelWeightPerGallon)}</text>
-                { rightOuterInnerValve ? <Triangle x={522} y={319} colour="Green" fill={0} orientation={-90} /> : null }
+                {rightOuterInnerValve && <Triangle x={522} y={319} colour="Green" fill={0} orientation={-90} />}
 
                 <text className="UnitTemp" x="510" y="355">°C</text>
             </>
