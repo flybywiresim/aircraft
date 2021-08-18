@@ -186,6 +186,12 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
     ) {
+        // Update cross bleed
+        self.cross_bleed_valve_controller
+            .update(apu_bleed_valve_state, overhead_panel.cross_bleed_mode());
+        self.cross_bleed_valve
+            .update_open_amount(context, &self.cross_bleed_valve_controller);
+
         self.bmc1.update(
             &self.engine_systems,
             apu_bleed_valve_state,
@@ -223,12 +229,6 @@ impl A320Pneumatic {
             &self.engine_starter_valve_controllers[1],
             engines[1],
         );
-
-        // Update cross bleed
-        self.cross_bleed_valve_controller
-            .update(apu_bleed_valve_state, overhead_panel.cross_bleed_mode());
-        self.cross_bleed_valve
-            .update_open_amount(context, &self.cross_bleed_valve_controller);
 
         // TODO: I'm sure there's a better way to do this
         let (left, right) = self.engine_systems.split_at_mut(1);
@@ -906,6 +906,12 @@ mod tests {
             }
         }
 
+        fn and_run(mut self) -> Self {
+            self.run();
+
+            self
+        }
+
         fn mach_number(mut self, mach: MachNumber) -> Self {
             self.write("AIRSPEED MACH", mach);
 
@@ -967,20 +973,6 @@ mod tests {
             self
         }
 
-        fn corrected_n1(mut self, corrected_n1: Ratio) -> Self {
-            self.write("TURB ENG CORRECTED N1:1", corrected_n1);
-            self.write("TURB ENG CORRECTED N1:2", corrected_n1);
-
-            self
-        }
-
-        fn corrected_n2(mut self, corrected_n2: Ratio) -> Self {
-            self.write("TURB ENG CORRECTED N2:1", corrected_n2);
-            self.write("TURB ENG CORRECTED N2:2", corrected_n2);
-
-            self
-        }
-
         fn cross_bleed_valve_selector_knob(mut self, mode: CrossBleedValveSelectorMode) -> Self {
             self.write("KNOB_OVHD_AIRCOND_XBLEED_Position", mode);
 
@@ -991,8 +983,36 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems.iter().for_each(|sys| func(sys)));
         }
 
-        fn for_engine<T: Fn(&EngineBleedAirSystem) -> ()>(&self, number: usize, func: T) {
-            self.query(|a| func(&a.pneumatic.engine_systems[number - 1]))
+        fn ip_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].ip_pressure())
+        }
+
+        fn hp_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].hp_pressure())
+        }
+
+        fn transfer_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].transfer_pressure())
+        }
+
+        fn regulated_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_pressure())
+        }
+
+        fn ip_valve_is_open(&self, number: usize) -> bool {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].ip_valve.is_open())
+        }
+
+        fn hp_valve_is_open(&self, number: usize) -> bool {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].hp_valve.is_open())
+        }
+
+        fn pr_valve_is_open(&self, number: usize) -> bool {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].pr_valve.is_open())
+        }
+
+        fn es_valve_is_open(&self, number: usize) -> bool {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].esv_is_open())
         }
 
         fn set_engine_bleed_push_button_off(mut self, number: usize) -> Self {
@@ -1096,8 +1116,8 @@ mod tests {
         let mut ipv_open = Vec::new();
         let mut esv_open = Vec::new();
 
-        for i in 1..100 {
-            ts.push(i as f64 * 100.);
+        for i in 1..10 {
+            ts.push(i as f64 * 1000.);
 
             // if i == 3 {
             //     test_bed = test_bed.set_apu_bleed_valve(true).set_bleed_air_pb(false);
@@ -1115,40 +1135,17 @@ mod tests {
             //         .corrected_n2(Ratio::new::<ratio>(new_n2));
             // }
 
-            hps.push(test_bed.query(|aircraft| {
-                aircraft.pneumatic.engine_systems[1]
-                    .hp_compression_chamber
-                    .pressure()
-                    .get::<psi>()
-            }));
-
-            ips.push(test_bed.query(|aircraft| {
-                aircraft.pneumatic.engine_systems[1]
-                    .ip_compression_chamber
-                    .pressure()
-                    .get::<psi>()
-            }));
-
-            c2s.push(test_bed.query(|aircraft| {
-                aircraft.pneumatic.engine_systems[1]
-                    .transfer_pressure_pipe
-                    .pressure()
-                    .get::<psi>()
-            }));
-
-            c1s.push(test_bed.query(|aircraft| {
-                aircraft.pneumatic.engine_systems[1]
-                    .regulated_pressure_pipe
-                    .pressure()
-                    .get::<psi>()
-            }));
+            hps.push(test_bed.hp_pressure(1).get::<psi>());
+            ips.push(test_bed.ip_pressure(1).get::<psi>());
+            c2s.push(test_bed.transfer_pressure(1).get::<psi>());
+            c1s.push(test_bed.regulated_pressure(1).get::<psi>());
 
             hpv_open.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[1]
                     .hp_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
+                    * 100.
             }));
 
             prv_open.push(test_bed.query(|aircraft| {
@@ -1175,7 +1172,7 @@ mod tests {
                     * 10.
             }));
 
-            test_bed.run_with_delta(Duration::from_millis(100));
+            test_bed.run_with_delta(Duration::from_millis(1000));
         }
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
@@ -1192,47 +1189,30 @@ mod tests {
     #[test]
     fn cold_dark_valves_closed() {
         let altitude = Length::new::<foot>(0.);
-        let mut test_bed = test_bed_with()
+        let ambient_pressure = ISA::pressure_at_altitude(altitude);
+
+        let test_bed = test_bed_with()
             .stop_eng1()
             .stop_eng2()
             .in_isa_atmosphere(altitude)
-            .mach_number(MachNumber(0.));
-
-        test_bed.run();
-        let ambient_pressure = ISA::pressure_at_altitude(altitude);
+            .mach_number(MachNumber(0.))
+            .and_run();
 
         test_bed.for_both_engine_systems(|sys| {
-            assert!(
-                (sys.ip_compression_chamber.pressure() - ambient_pressure).abs()
-                    < pressure_tolerance()
-            )
+            assert!((sys.ip_pressure() - ambient_pressure).abs() < pressure_tolerance())
         });
         test_bed.for_both_engine_systems(|sys| {
-            assert!(
-                (sys.hp_compression_chamber.pressure() - ambient_pressure).abs()
-                    < pressure_tolerance()
-            )
+            assert!((sys.hp_pressure() - ambient_pressure).abs() < pressure_tolerance())
         });
         test_bed.for_both_engine_systems(|sys| {
-            assert!(
-                (sys.transfer_pressure_pipe.pressure() - ambient_pressure).abs()
-                    < pressure_tolerance()
-            )
+            assert!((sys.transfer_pressure() - ambient_pressure).abs() < pressure_tolerance())
         });
         test_bed.for_both_engine_systems(|sys| {
-            assert!(
-                (sys.regulated_pressure_pipe.pressure() - ambient_pressure).abs()
-                    < pressure_tolerance()
-            )
+            assert!((sys.regulated_pressure() - ambient_pressure).abs() < pressure_tolerance())
         });
 
         test_bed.for_both_engine_systems(|sys| assert!(sys.ip_valve.is_open()));
-        test_bed.for_both_engine_systems(|sys| assert!(sys.ip_valve.is_open()));
-
         test_bed.for_both_engine_systems(|sys| assert!(!sys.hp_valve.is_open()));
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.hp_valve.is_open()));
-
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
         test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
 
         assert!(!test_bed.cross_bleed_valve_is_open())
@@ -1245,150 +1225,76 @@ mod tests {
             .idle_eng1()
             .stop_eng2()
             .in_isa_atmosphere(altitude)
-            .mach_number(MachNumber(0.));
+            .mach_number(MachNumber(0.))
+            .and_run();
 
         let ambient_pressure = ISA::pressure_at_altitude(altitude);
 
         // Three updates for now until propagation logic is fixed
         test_bed.run_with_delta(Duration::from_secs(5));
         test_bed.run_with_delta(Duration::from_secs(5));
-        test_bed.run_with_delta(Duration::from_secs(5));
 
-        test_bed.for_engine(1, |sys| {
-            assert!(sys.ip_compression_chamber.pressure() - ambient_pressure > pressure_tolerance())
-        });
-        test_bed.for_engine(2, |sys| {
-            assert!(
-                (sys.ip_compression_chamber.pressure() - ambient_pressure).abs()
-                    < pressure_tolerance()
-            )
-        });
+        assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!((test_bed.ip_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
 
-        test_bed.for_engine(1, |sys| {
-            assert!(sys.hp_compression_chamber.pressure() - ambient_pressure > pressure_tolerance())
-        });
-        test_bed.for_engine(2, |sys| {
-            assert!(
-                (sys.hp_compression_chamber.pressure() - ambient_pressure).abs()
-                    < pressure_tolerance()
-            )
-        });
+        assert!(test_bed.hp_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!((test_bed.hp_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
 
-        test_bed.for_engine(1, |sys| {
-            assert!(sys.transfer_pressure_pipe.pressure() - ambient_pressure > pressure_tolerance())
-        });
-        test_bed.for_engine(2, |sys| {
-            assert!(
-                (sys.transfer_pressure_pipe.pressure() - ambient_pressure).abs()
-                    < pressure_tolerance()
-            )
-        });
+        assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!((test_bed.transfer_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
 
-        test_bed.for_engine(1, |sys| {
-            assert!(
-                sys.regulated_pressure_pipe.pressure() - ambient_pressure > pressure_tolerance()
-            )
-        });
-        test_bed.for_engine(2, |sys| {
-            assert!(
-                (sys.regulated_pressure_pipe.pressure() - ambient_pressure).abs()
-                    < pressure_tolerance()
-            )
-        });
+        assert!(test_bed.regulated_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!((test_bed.regulated_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
 
-        test_bed.for_engine(1, |sys| assert!(!sys.ip_valve.is_open()));
-        test_bed.for_engine(2, |sys| assert!(sys.ip_valve.is_open()));
+        assert!(!test_bed.ip_valve_is_open(1));
+        assert!(test_bed.ip_valve_is_open(2));
 
-        test_bed.for_engine(1, |sys| assert!(sys.hp_valve.is_open()));
-        test_bed.for_engine(2, |sys| assert!(!sys.hp_valve.is_open()));
+        assert!(test_bed.hp_valve_is_open(1));
+        assert!(!test_bed.hp_valve_is_open(2));
 
-        test_bed.for_engine(1, |sys| assert!(sys.pr_valve.is_open()));
-        test_bed.for_engine(2, |sys| assert!(!sys.pr_valve.is_open()));
+        assert!(test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
 
         test_bed.for_both_engine_systems(|sys| assert!(!sys.engine_starter_valve.is_open()));
         assert!(!test_bed.cross_bleed_valve_is_open());
     }
 
     #[test]
-    fn n1_affects_compression_chamber_pressure() {
-        let altitude = Length::new::<foot>(0.);
-
-        let mut test_bed = test_bed_with()
-            .mach_number(MachNumber(0.))
-            .idle_eng1()
-            .idle_eng2()
-            .corrected_n1(Ratio::new::<ratio>(0.2))
-            .in_isa_atmosphere(altitude);
-
-        test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs(50));
-
-        test_bed.for_both_engine_systems(|sys| {
-            println!("ip pressure: {:?}", sys.ip_compression_chamber.pressure());
-
-            assert!(sys.ip_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
-            assert!(sys.hp_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
-            assert!(sys.hp_compression_chamber.pressure() > sys.ip_compression_chamber.pressure())
-        });
-    }
-
-    #[test]
-    fn n2_affects_compression_chamber_pressure() {
-        let altitude = Length::new::<foot>(0.);
-
-        let mut test_bed = test_bed_with()
-            .mach_number(MachNumber(0.))
-            .idle_eng1()
-            .idle_eng2()
-            .corrected_n2(Ratio::new::<ratio>(0.6))
-            .in_isa_atmosphere(altitude);
-
-        test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs(50));
-
-        test_bed.for_both_engine_systems(|sys| {
-            assert!(sys.ip_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
-            assert!(sys.hp_compression_chamber.pressure() > ISA::pressure_at_altitude(altitude));
-        });
-    }
-
-    #[test]
     fn starter_valve_opens_on_engine_start() {
-        let mut test_bed = test_bed_with().stop_eng1().stop_eng2();
+        let mut test_bed = test_bed_with().stop_eng1().stop_eng2().and_run();
 
-        test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs(50));
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
 
-        test_bed.for_both_engine_systems(|sys| {
-            assert!(!sys.engine_starter_valve.is_open());
-        });
+        test_bed = test_bed.start_eng1().start_eng2().and_run();
 
-        test_bed = test_bed.start_eng1().start_eng2();
-        test_bed.run();
-
-        test_bed.for_both_engine_systems(|sys| {
-            assert!(sys.engine_starter_valve.is_open());
-        });
+        assert!(test_bed.es_valve_is_open(1));
+        assert!(test_bed.es_valve_is_open(2));
     }
 
     #[test]
     fn cross_bleed_valve_opens_when_apu_bleed_valve_opens() {
         let mut test_bed = test_bed_with()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .set_apu_bleed_valve(true);
+            .and_run();
 
-        test_bed.run();
+        assert!(!test_bed.cross_bleed_valve_is_open());
 
-        assert!(test_bed.cross_bleed_valve_is_open())
+        test_bed = test_bed.set_apu_bleed_valve(true).and_run();
+
+        assert!(test_bed.cross_bleed_valve_is_open());
     }
 
     #[test]
     fn cross_bleed_valve_closes_when_apu_bleed_valve_closes() {
         let mut test_bed = test_bed_with()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .set_apu_bleed_valve(false);
+            .set_apu_bleed_valve(true)
+            .and_run();
 
-        test_bed.run();
+        assert!(test_bed.cross_bleed_valve_is_open());
+
+        test_bed = test_bed.set_apu_bleed_valve(false).and_run();
 
         assert!(!test_bed.cross_bleed_valve_is_open());
     }
@@ -1397,25 +1303,24 @@ mod tests {
     fn cross_bleed_valve_manual_overrides_everything() {
         let mut test_bed = test_bed_with()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
-            .set_apu_bleed_valve(true);
-
-        test_bed.run();
+            .set_apu_bleed_valve(true)
+            .and_run();
 
         assert!(!test_bed.cross_bleed_valve_is_open());
 
         test_bed = test_bed
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
-            .set_apu_bleed_valve(false);
-
-        test_bed.run();
+            .set_apu_bleed_valve(false)
+            .and_run();
 
         assert!(test_bed.cross_bleed_valve_is_open());
     }
 
     #[test]
     fn simvars_initialized_properly() {
-        let mut test_bed = test_bed_with().in_isa_atmosphere(Length::new::<foot>(0.));
-        test_bed.run();
+        let test_bed = test_bed()
+            .in_isa_atmosphere(Length::new::<foot>(0.))
+            .and_run();
 
         assert!(test_bed.contains_key("PNEU_ENG_1_IP_PRESSURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_IP_PRESSURE"));
@@ -1451,133 +1356,78 @@ mod tests {
     }
 
     #[test]
-    fn ovhd_engine_bleed_push_buttons() {
-        let mut test_bed = test_bed();
-
-        test_bed.run();
-
-        assert!(test_bed.engine_bleed_push_button_is_auto(1));
-        assert!(test_bed.engine_bleed_push_button_is_auto(2));
-
-        test_bed = test_bed
-            .set_engine_bleed_push_button_off(1)
-            .set_engine_bleed_push_button_off(2);
-
-        test_bed.run();
-
-        assert!(!test_bed.engine_bleed_push_button_is_auto(1));
-        assert!(!test_bed.engine_bleed_push_button_is_auto(2));
-    }
-
-    #[test]
-    fn ovhd_engine_bleed_push_buttons_fault_lights() {
-        let mut test_bed = test_bed();
-
-        test_bed.run();
-
-        assert!(!test_bed.engine_bleed_push_button_has_fault(1));
-        assert!(!test_bed.engine_bleed_push_button_has_fault(2));
-
-        test_bed = test_bed
-            .set_engine_bleed_push_button_has_fault(1, true)
-            .set_engine_bleed_push_button_has_fault(2, true);
-
-        test_bed.run();
-
-        assert!(test_bed.engine_bleed_push_button_has_fault(1));
-        assert!(test_bed.engine_bleed_push_button_has_fault(2));
-    }
-
-    #[test]
-    fn ovhd_cross_bleed_valve_mode_selector() {
-        let mut test_bed = test_bed();
-
-        test_bed.run();
-
-        assert_eq!(
-            test_bed.cross_bleed_valve_selector(),
-            CrossBleedValveSelectorMode::Auto
-        );
-
-        test_bed = test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open);
-        test_bed.run();
-
-        assert_eq!(
-            test_bed.cross_bleed_valve_selector(),
-            CrossBleedValveSelectorMode::Open
-        );
-
-        test_bed = test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
-        test_bed.run();
-
-        assert_eq!(
-            test_bed.cross_bleed_valve_selector(),
-            CrossBleedValveSelectorMode::Shut
-        );
-    }
-
-    #[test]
     fn prv_closes_with_ovhd_engine_bleed_off() {
-        let mut test_bed = test_bed()
-            .idle_eng1()
-            .idle_eng2()
-            .in_isa_atmosphere(Length::new::<foot>(0.));
+        let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
 
         // TODO: I shouldn't have to run this twice, but it just takes two updates for the pressure to propagate through the system.
         test_bed.run_with_delta(Duration::from_secs(5));
-        test_bed.run_with_delta(Duration::from_secs(5));
 
-        test_bed.for_both_engine_systems(|a| assert!(a.pr_valve.is_open()));
+        assert!(test_bed.pr_valve_is_open(1));
+        assert!(test_bed.pr_valve_is_open(2));
 
-        test_bed = test_bed.set_engine_bleed_push_button_off(1);
-        test_bed.run();
+        test_bed = test_bed.set_engine_bleed_push_button_off(1).and_run();
 
-        test_bed.for_engine(1, |a| assert!(!a.pr_valve.is_open()));
-        test_bed.for_engine(2, |a| assert!(a.pr_valve.is_open()));
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(test_bed.pr_valve_is_open(2));
 
-        test_bed = test_bed.set_engine_bleed_push_button_off(2);
-        test_bed.run();
+        test_bed = test_bed.set_engine_bleed_push_button_off(2).and_run();
 
-        test_bed.for_both_engine_systems(|a| assert!(!a.pr_valve.is_open()));
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
     }
 
     #[test]
     fn prv_closes_with_ovhd_engine_fire_pushbutton_released() {
-        let mut test_bed = test_bed()
-            .idle_eng1()
-            .idle_eng2()
-            .in_isa_atmosphere(Length::new::<foot>(0.));
+        let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
 
         // TODO: I shouldn't have to run this twice, but it just takes two updates for the pressure to propagate through the system.
         test_bed.run_with_delta(Duration::from_secs(5));
-        test_bed.run_with_delta(Duration::from_secs(5));
 
-        test_bed.for_both_engine_systems(|a| assert!(a.pr_valve.is_open()));
+        assert!(test_bed.pr_valve_is_open(1));
+        assert!(test_bed.pr_valve_is_open(2));
 
-        test_bed = test_bed
-            .release_fire_pushbutton(1)
-            .release_fire_pushbutton(2);
-        test_bed.run();
+        test_bed = test_bed.release_fire_pushbutton(1).and_run();
 
-        assert!(test_bed.is_fire_pushbutton_released(1));
-        assert!(test_bed.is_fire_pushbutton_released(2));
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(test_bed.pr_valve_is_open(2));
 
-        test_bed.for_both_engine_systems(|a| assert!(!a.pr_valve.is_open()));
+        test_bed = test_bed.release_fire_pushbutton(2).and_run();
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
     }
 
     #[test]
-    fn prv_closes_with_apu_bleed_on() {
-        let mut test_bed = test_bed_with().idle_eng1().idle_eng2();
-        test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs(30));
+    fn prv_1_closes_with_apu_bleed_on() {
+        let mut test_bed = test_bed_with().idle_eng1().idle_eng2().and_run();
 
-        test_bed.for_both_engine_systems(|sys| assert!(sys.pr_valve.is_open()));
+        test_bed.run_with_delta(Duration::from_secs(5));
 
-        test_bed = test_bed.set_apu_bleed_valve(true).set_bleed_air_pb(true);
-        test_bed.run();
-        test_bed.run();
+        assert!(test_bed.pr_valve_is_open(1));
 
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
+        test_bed = test_bed
+            .set_bleed_air_pb(true)
+            .set_apu_bleed_valve(true)
+            .and_run();
+
+        assert!(!test_bed.pr_valve_is_open(1));
+    }
+
+    #[test]
+    fn prv_2_closes_with_apu_bleed_on_and_cross_bleed_open() {
+        let mut test_bed = test_bed_with().idle_eng1().idle_eng2().and_run();
+
+        test_bed.run_with_delta(Duration::from_secs(5));
+
+        assert!(test_bed.pr_valve_is_open(2));
+
+        test_bed = test_bed
+            .set_bleed_air_pb(true)
+            .set_apu_bleed_valve(true)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .and_run();
+
+        assert!(!test_bed.pr_valve_is_open(2));
     }
 
     #[test]
@@ -1589,40 +1439,106 @@ mod tests {
         assert_eq!(test_bed.engine_state(1), EngineState::Off);
         assert_eq!(test_bed.engine_state(2), EngineState::Off);
 
-        test_bed = test_bed.set_engine_state(1, EngineState::Starting);
-        test_bed.run();
+        test_bed = test_bed
+            .set_engine_state(1, EngineState::Starting)
+            .and_run();
 
         assert_eq!(test_bed.engine_state(1), EngineState::Starting);
         assert_eq!(test_bed.engine_state(2), EngineState::Off);
 
-        test_bed = test_bed.set_engine_state(2, EngineState::Starting);
-        test_bed.run();
+        test_bed = test_bed
+            .set_engine_state(2, EngineState::Starting)
+            .and_run();
 
         assert_eq!(test_bed.engine_state(1), EngineState::Starting);
         assert_eq!(test_bed.engine_state(2), EngineState::Starting);
 
-        test_bed = test_bed.set_engine_state(1, EngineState::On);
-        test_bed.run();
+        test_bed = test_bed.set_engine_state(1, EngineState::On).and_run();
 
         assert_eq!(test_bed.engine_state(1), EngineState::On);
         assert_eq!(test_bed.engine_state(2), EngineState::Starting);
 
-        test_bed = test_bed.set_engine_state(2, EngineState::On);
-        test_bed.run();
+        test_bed = test_bed.set_engine_state(2, EngineState::On).and_run();
 
         assert_eq!(test_bed.engine_state(1), EngineState::On);
         assert_eq!(test_bed.engine_state(2), EngineState::On);
 
-        test_bed = test_bed.set_engine_state(1, EngineState::Shutting);
-        test_bed.run();
+        test_bed = test_bed
+            .set_engine_state(1, EngineState::Shutting)
+            .and_run();
 
         assert_eq!(test_bed.engine_state(1), EngineState::Shutting);
         assert_eq!(test_bed.engine_state(2), EngineState::On);
 
-        test_bed = test_bed.set_engine_state(2, EngineState::Shutting);
-        test_bed.run();
+        test_bed = test_bed
+            .set_engine_state(2, EngineState::Shutting)
+            .and_run();
 
         assert_eq!(test_bed.engine_state(1), EngineState::Shutting);
         assert_eq!(test_bed.engine_state(2), EngineState::Shutting);
+    }
+
+    mod ovhd {
+        use super::*;
+
+        #[test]
+        fn ovhd_engine_bleed_push_buttons() {
+            let mut test_bed = test_bed().and_run();
+
+            assert!(test_bed.engine_bleed_push_button_is_auto(1));
+            assert!(test_bed.engine_bleed_push_button_is_auto(2));
+
+            test_bed = test_bed
+                .set_engine_bleed_push_button_off(1)
+                .set_engine_bleed_push_button_off(2)
+                .and_run();
+
+            assert!(!test_bed.engine_bleed_push_button_is_auto(1));
+            assert!(!test_bed.engine_bleed_push_button_is_auto(2));
+        }
+
+        #[test]
+        fn ovhd_engine_bleed_push_buttons_fault_lights() {
+            let mut test_bed = test_bed().and_run();
+
+            assert!(!test_bed.engine_bleed_push_button_has_fault(1));
+            assert!(!test_bed.engine_bleed_push_button_has_fault(2));
+
+            test_bed = test_bed
+                .set_engine_bleed_push_button_has_fault(1, true)
+                .set_engine_bleed_push_button_has_fault(2, true)
+                .and_run();
+
+            assert!(test_bed.engine_bleed_push_button_has_fault(1));
+            assert!(test_bed.engine_bleed_push_button_has_fault(2));
+        }
+
+        #[test]
+        fn ovhd_cross_bleed_valve_mode_selector() {
+            let mut test_bed = test_bed().and_run();
+
+            assert_eq!(
+                test_bed.cross_bleed_valve_selector(),
+                CrossBleedValveSelectorMode::Auto
+            );
+
+            test_bed = test_bed
+                .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+                .and_run();
+
+            assert_eq!(
+                test_bed.cross_bleed_valve_selector(),
+                CrossBleedValveSelectorMode::Open
+            );
+
+            test_bed = test_bed
+                .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+                .and_run();
+
+            assert_eq!(
+                test_bed.cross_bleed_valve_selector(),
+                CrossBleedValveSelectorMode::Shut
+            );
+        }
     }
 }
