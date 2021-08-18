@@ -172,6 +172,7 @@
 1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
 1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
 1. [GPWS] Fix "retard" callout so it plays at less than 20 ft radio altitude with autopilot off - @donstim (donbikes#4084)
+1. [FADAC] Fix "fuel used. Fuel used is reset to zero when an engine is restarted on the gound. - john P Maguire#9027
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
