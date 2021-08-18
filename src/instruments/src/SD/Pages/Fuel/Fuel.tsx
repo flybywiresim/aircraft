@@ -168,11 +168,11 @@ const Apu = () => {
     );
 };
 
-type FuelFlowProp = {
+type FuelFlowProps = {
     unit: string
 };
 
-const FuelFlow = ({ unit }: FuelFlowProp) => {
+const FuelFlow = ({ unit }: FuelFlowProps) => {
     const [leftFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:1', 'number', 1000); // KG/HR
     const [rightFuelFlow] = useSimVar('L:A32NX_ENGINE_FF:2', 'number', 1000);
 
