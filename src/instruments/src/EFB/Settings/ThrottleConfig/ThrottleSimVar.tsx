@@ -1,5 +1,3 @@
-import { useSimVar } from '../../../Common/simVars';
-
 export class ThrottleSimvar {
     readableName: string;
 
@@ -20,7 +18,7 @@ export class ThrottleSimvar {
     constructor(readableName: string, technicalName: string, throttleNumber: number) {
         this.readableName = readableName;
         this.technicalName = technicalName;
-        this.hiValue = useSimVar(`${technicalName}HIGH:${throttleNumber}`, 'number', 100);
-        this.lowValue = useSimVar(`${technicalName}LOW:${throttleNumber}`, 'number', 100);
+        this.hiValue = SimVar.GetSimVarValue(`${technicalName}HIGH:${throttleNumber}`, 'number');
+        this.lowValue = SimVar.GetSimVarValue(`${technicalName}LOW:${throttleNumber}`, 'number');
     }
 }

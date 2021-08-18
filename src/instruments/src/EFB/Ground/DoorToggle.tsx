@@ -5,8 +5,8 @@ import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 
 type DoorToggleProps = {
     index: number,
-    clickCallback,
-    selectionCallback,
+    onClick: (callback: () => void, e: React.MouseEvent) => void,
+    selectionCallback: (className: string, id: string, doorState: any, disabledId: string) => string,
     id: string,
     tugActive: boolean,
     disabled?
@@ -25,11 +25,11 @@ export const DoorToggle = (props: DoorToggleProps) => {
         } else {
             setPreviousDoorState(doorState);
         }
-    });
+    }, [props.tugActive, props.index, previousDoorState, setDoorState, doorState]);
 
     return (
         <Button
-            onClick={(e) => props.clickCallback(() => {
+            onClick={(e) => props.onClick(() => {
                 setDoorState(props.index + 1);
                 setPreviousDoorState(true);
             }, e)}

@@ -153,18 +153,18 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
         document.removeEventListener('mouseup', mouseUpHandler);
     };
 
-    const zoomin = () => {
+    const handleZoomIn = () => {
         const chart :any = document.getElementById('chart');
         const currWidth = chart.clientWidth;
-        if (currWidth === 2500) return false;
+        if (currWidth === 2500) return;
 
         chart.style.width = `${currWidth + 100}px`;
     };
 
-    const zoomout = () => {
+    const handleZoomOut = () => {
         const chart :any = document.getElementById('chart');
         const currWidth = chart.clientWidth;
-        if (currWidth === 100) return false;
+        if (currWidth === 100) return;
 
         chart.style.width = `${currWidth - 100}px`;
     };
@@ -198,14 +198,14 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
             <div className="z-40 flex flex-col justify-end fixed bottom-16 right-12">
                 <button
                     type="button"
-                    onClick={zoomin}
+                    onClick={handleZoomIn}
                     className="mb-2 bg-navy-regular p-2 rounded-lg bg-opacity-50"
                 >
                     <IconPlus size={30} />
                 </button>
                 <button
                     type="button"
-                    onClick={zoomout}
+                    onClick={handleZoomOut}
                     className="bg-navy-regular p-2 rounded-lg bg-opacity-50"
                 >
                     <IconMinus size={30} />
