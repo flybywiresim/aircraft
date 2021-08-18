@@ -6,7 +6,7 @@
             "componentType": 5123,
             "count": 24,
             "type": "VEC4",
-            "name": "SOUND_BLOWER_EXTRACT.001_vertices#0_COLOR_0"
+            "name": "SOUND_BLOWER_EXTRACT_vertices#0_COLOR_0"
         },
         {
             "bufferView": 1,
@@ -14,7 +14,7 @@
             "componentType": 5120,
             "count": 24,
             "type": "VEC4",
-            "name": "SOUND_BLOWER_EXTRACT.001_vertices#0_NORMAL"
+            "name": "SOUND_BLOWER_EXTRACT_vertices#0_NORMAL"
         },
         {
             "bufferView": 1,
@@ -23,7 +23,7 @@
             "min": [-0.9999998807907104, -1, -0.9999995231628418],
             "max": [0.9999998807907104, 1, 1.0000004768371582],
             "type": "VEC3",
-            "name": "SOUND_BLOWER_EXTRACT.001_vertices#0_POSITION"
+            "name": "SOUND_BLOWER_EXTRACT_vertices#0_POSITION"
         },
         {
             "bufferView": 1,
@@ -31,7 +31,7 @@
             "componentType": 5120,
             "count": 24,
             "type": "VEC4",
-            "name": "SOUND_BLOWER_EXTRACT.001_vertices#0_TANGENT"
+            "name": "SOUND_BLOWER_EXTRACT_vertices#0_TANGENT"
         },
         {
             "bufferView": 1,
@@ -39,7 +39,7 @@
             "componentType": 5122,
             "count": 24,
             "type": "VEC2",
-            "name": "SOUND_BLOWER_EXTRACT.001_vertices#0_TEXCOORD_0"
+            "name": "SOUND_BLOWER_EXTRACT_vertices#0_TEXCOORD_0"
         },
         {
             "bufferView": 1,
@@ -47,14 +47,14 @@
             "componentType": 5122,
             "count": 24,
             "type": "VEC2",
-            "name": "SOUND_BLOWER_EXTRACT.001_vertices#0_TEXCOORD_1"
+            "name": "SOUND_BLOWER_EXTRACT_vertices#0_TEXCOORD_1"
         },
         {
             "bufferView": 0,
             "componentType": 5123,
             "count": 36,
             "type": "SCALAR",
-            "name": "SOUND_BLOWER_EXTRACT.001_indices#0"
+            "name": "SOUND_BLOWER_EXTRACT_indices#0"
         },
         {
             "bufferView": 1,
@@ -692,12 +692,11 @@
     ],
     "materials": [
         {
-            "name": "SOUND_NODE_INVISIBLE.001",
-            "pbrMetallicRoughness": {}
-        },
-        {
             "name": "SOUND_NODE_INVISIBLE",
-            "pbrMetallicRoughness": {}
+            "pbrMetallicRoughness": {},
+            "extensions": {
+                "ASOBO_material_invisible": {}
+            }
         }
     ],
     "meshes": [
@@ -726,7 +725,7 @@
                     }
                 }
             ],
-            "name": "SOUND_BLOWER_EXTRACT.001"
+            "name": "SOUND_BLOWER_EXTRACT"
         },
         {
             "primitives": [
