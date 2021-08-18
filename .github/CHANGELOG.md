@@ -163,6 +163,7 @@
 1. [MISC] Change back to airliner hud in external view for SU5 - @donstim (donbikes#4084)
 1. [TEXTURE] Improved cockpit textures and screen reflections - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
 1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
+1. [EFB] Add tabbed settings page to EFB - @ErickSharp (Erick [Z-6]#6484)
 1. [FCU] Added LVAR for selected speed and only fill active LVAR for VS or FPA mode
 1. [MODEL] Removed unused material to fix potential crash to desktop - @aguther (Andreas Guther)
 1. [ARCH] Failures are supported - @davidwalschots (David Walschots)
@@ -170,6 +171,7 @@
 1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
 1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
 1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
+1. [GPWS] Fix "retard" callout so it plays at less than 20 ft radio altitude with autopilot off - @donstim (donbikes#4084)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
