@@ -171,6 +171,7 @@
 1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
 1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
 1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
+1. [GPWS] Fix "retard" callout so it plays at less than 20 ft radio altitude with autopilot off - @donstim (donbikes#4084)
 1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
 1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 
