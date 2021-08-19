@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IconAccessPoint, IconBattery4 } from '@tabler/icons';
+import { IconAccessPoint, IconBattery4, IconPower } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
 

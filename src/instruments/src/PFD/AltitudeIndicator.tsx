@@ -1,5 +1,6 @@
-import { VerticalTape } from './PFDUtils.jsx';
-import { DigitalAltitudeReadout } from './DigitalAltitudeReadout.jsx';
+import React from 'react';
+import { VerticalTape } from './PFDUtils';
+import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { getSimVar } from '../util.js';
 
 const DisplayRange = 570;
@@ -177,11 +178,15 @@ const AltimeterIndicator = ({ mode, alt }) => {
 
     const units = Simplane.getPressureSelectedUnits();
     const pressure = Simplane.getPressureValue(units);
-    let text;
-    if (units === 'millibar') {
-        text = Math.round(pressure).toString();
+    let text: string;
+    if (pressure !== null) {
+        if (units === 'millibar') {
+            text = Math.round(pressure).toString();
+        } else {
+            text = pressure.toFixed(2);
+        }
     } else {
-        text = pressure.toFixed(2);
+        text = '';
     }
 
     return (
