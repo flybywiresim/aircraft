@@ -172,6 +172,8 @@
 1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
 1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
 1. [GPWS] Fix "retard" callout so it plays at less than 20 ft radio altitude with autopilot off - @donstim (donbikes#4084)
+1. [SOUNDS] Replace all remaining Asobo sounds - @hotshotp (boris#8008)
+1. [SOUNDS] Implement an early version of closed vs open cockpit door sounds - @hotshotp (boris#8008)
 1. [OVHD] CVR ground test auto-resets on first engine start - @tracernz (Mike)
 
 ## 0.6.0
