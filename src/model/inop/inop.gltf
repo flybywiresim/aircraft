@@ -1,0 +1,286 @@
+{
+    "accessors": [
+        {
+            "bufferView": 1,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_MAINPANEL_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_MAINPANEL_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 4,
+            "min": [
+                -0.004155450500547886,
+                5.424022674560547e-6,
+                -0.0017863959074020386
+            ],
+            "max": [
+                0.004155418835580349,
+                6.765127182006836e-6,
+                0.0017864108085632324
+            ],
+            "type": "VEC3",
+            "name": "INOP_MAINPANEL_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_MAINPANEL_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "INOP_MAINPANEL_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "INOP_MAINPANEL_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "componentType": 5123,
+            "count": 6,
+            "type": "SCALAR",
+            "name": "INOP_MAINPANEL_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 172,
+            "componentType": 5123,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_PEDESTAL_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 160,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_PEDESTAL_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 144,
+            "componentType": 5126,
+            "count": 4,
+            "min": [
+                -0.00415545329451561,
+                -0.0001819133758544922,
+                -0.0017864136025309563
+            ],
+            "max": [
+                0.004155416041612625,
+                -0.0001812577247619629,
+                0.001786467619240284
+            ],
+            "type": "VEC3",
+            "name": "INOP_PEDESTAL_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 156,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_PEDESTAL_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 164,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "INOP_PEDESTAL_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 168,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "INOP_PEDESTAL_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5123,
+            "count": 6,
+            "type": "SCALAR",
+            "name": "INOP_PEDESTAL_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.7.5",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.004155418835580349,
+                    6.765127182006836e-6,
+                    0.001786467619240284
+                ],
+                "BoundingBoxMin": [
+                    -0.00415545329451561,
+                    -0.0001819133758544922,
+                    -0.0017864136025309563
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 24,
+            "byteOffset": 0,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 288,
+            "byteStride": 36,
+            "byteOffset": 24,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        }
+    ],
+    "extensionsUsed": ["ASOBO_asset_optimized", "ASOBO_normal_map_convention"],
+    "materials": [],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 0,
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4,
+                        "TEXCOORD_1": 5
+                    },
+                    "indices": 6,
+                    "material": "TEXT_NoEmi",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "INOP_MAINPANEL"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 7,
+                        "NORMAL": 8,
+                        "POSITION": 9,
+                        "TANGENT": 10,
+                        "TEXCOORD_0": 11,
+                        "TEXCOORD_1": 12
+                    },
+                    "indices": 13,
+                    "material": "TEXT_NoEmi",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "INOP_PEDESTAL"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0.2407613843679428,
+                1.537426233291626,
+                11.848071098327637
+            ],
+            "rotation": [
+                -0.005268970504403114,
+                0.8023883104324341,
+                -0.596738874912262,
+                0.006924042943865061
+            ],
+            "scale": [
+                3.0243492126464844,
+                3.0243492126464844,
+                3.0243492126464844
+            ],
+            "mesh": 0,
+            "name": "INOP_MAINPANEL"
+        },
+        {
+            "translation": [
+                0.2568877339363098,
+                1.2179856300354004,
+                11.231157302856445
+            ],
+            "rotation": [
+                0.0015029729111120105,
+                0.9940648078918457,
+                -0.1078939139842987,
+                -0.013848667964339256
+            ],
+            "scale": [
+                3.0243492126464844,
+                3.0243492126464844,
+                3.0243492126464844
+            ],
+            "mesh": 1,
+            "name": "INOP_PEDESTAL"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [0, 1]
+        }
+    ],
+    "textures": [],
+    "buffers": [
+        {
+            "byteLength": 312,
+            "uri": "inop.bin"
+        }
+    ],
+    "images": [],
+    "samplers": []
+}
