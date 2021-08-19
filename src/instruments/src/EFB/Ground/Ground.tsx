@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
 import './Ground.scss';
 import fuselage from '../Assets/320neo-outline-upright.svg';
-import { useSimVar, useSimVarSetter, useSplitSimVar } from '../../Common/simVars';
+import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 import { DoorToggle } from './DoorToggle';
 import { BUTTON_STATE_REDUCER } from '../Store';
@@ -23,7 +23,7 @@ export const Ground = ({
     tugRequestOnly, setTugRequestOnly, addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton,
 }) => {
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
-    const [_rampActive, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
+    const [, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
     const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
     const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 'K:REQUEST_CATERING', 'bool', 1000);
 
@@ -32,7 +32,7 @@ export const Ground = ({
     const [pushBack, setPushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
     const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
 
-    const setPushBackWait = useSimVarSetter('Pushback Wait', 'bool');
+    const [, setPushBackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 1000);
 
     const [tugDirection, setTugDirection] = useState(0);

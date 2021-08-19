@@ -13,7 +13,7 @@ type ButtonSelectionState = {
     activeButtons: any[];
     disabledButtons: string[];
     tugRequestOnly: boolean;
-    pushBackWaitTimerHandle: number
+    pushBackWaitTimerHandle: number;
 };
 
 const initialState: ButtonSelectionState = {
