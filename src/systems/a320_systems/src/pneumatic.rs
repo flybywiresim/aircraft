@@ -150,8 +150,7 @@ impl ControlledPneumaticValveSignal for CrossBleedValveSignal {
 }
 
 pub struct A320Pneumatic {
-    bmc1: BleedMonitoringComputer,
-    bmc2: BleedMonitoringComputer,
+    bmcs: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
 
     cross_bleed_valve_controller: CrossBleedValveController,
@@ -164,8 +163,10 @@ pub struct A320Pneumatic {
 impl A320Pneumatic {
     pub fn new() -> Self {
         Self {
-            bmc1: BleedMonitoringComputer::new(1, 2),
-            bmc2: BleedMonitoringComputer::new(2, 1),
+            bmcs: [
+                BleedMonitoringComputer::new(1, 2),
+                BleedMonitoringComputer::new(2, 1),
+            ],
             engine_systems: [EngineBleedAirSystem::new(1), EngineBleedAirSystem::new(2)],
             cross_bleed_valve_controller: CrossBleedValveController::new(),
             cross_bleed_valve: DefaultValve::new_closed(),
@@ -177,7 +178,6 @@ impl A320Pneumatic {
         }
     }
 
-    // TODO: Extract T to it's own type since it's used a lot.
     pub fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
         &mut self,
         context: &UpdateContext,
@@ -190,50 +190,38 @@ impl A320Pneumatic {
         self.cross_bleed_valve_controller
             .update(apu_bleed_valve_state, overhead_panel.cross_bleed_mode());
         self.cross_bleed_valve
-            .update_open_amount(context, &self.cross_bleed_valve_controller);
+            .update_open_amount(&self.cross_bleed_valve_controller);
 
-        self.bmc1.update(
-            &self.engine_systems,
-            apu_bleed_valve_state,
-            overhead_panel,
-            engine_fire_push_buttons,
-            self.cross_bleed_valve.is_open(),
-        );
-
-        self.bmc2.update(
-            &self.engine_systems,
-            apu_bleed_valve_state,
-            overhead_panel,
-            engine_fire_push_buttons,
-            self.cross_bleed_valve.is_open(),
-        );
+        for bmc in self.bmcs.iter_mut() {
+            bmc.update(
+                &self.engine_systems,
+                apu_bleed_valve_state,
+                overhead_panel,
+                engine_fire_push_buttons,
+                self.cross_bleed_valve.is_open(),
+            );
+        }
 
         for esv_controller in self.engine_starter_valve_controllers.iter_mut() {
             esv_controller.update(&self.fadec);
         }
 
-        // Update engine systems
-        self.engine_systems[0].update(
-            context,
-            &self.bmc1.main_channel,
-            &self.bmc1.main_channel,
-            &self.bmc1.main_channel,
-            &self.engine_starter_valve_controllers[0],
-            engines[0],
-        );
-        self.engine_systems[1].update(
-            context,
-            &self.bmc2.main_channel,
-            &self.bmc2.main_channel,
-            &self.bmc2.main_channel,
-            &self.engine_starter_valve_controllers[1],
-            engines[1],
-        );
+        for engine_system in self.engine_systems.iter_mut() {
+            let index = engine_system.number - 1;
 
-        // TODO: I'm sure there's a better way to do this
+            engine_system.update(
+                context,
+                &self.bmcs[index].main_channel,
+                &self.bmcs[index].main_channel,
+                &self.bmcs[index].main_channel,
+                &self.engine_starter_valve_controllers[index],
+                engines[index],
+            );
+        }
+
         let (left, right) = self.engine_systems.split_at_mut(1);
         self.cross_bleed_valve
-            .update_move_fluid(context, &mut left[0], &mut right[0])
+            .update_move_fluid(context, &mut left[0], &mut right[0]);
 
         // Update APU stuff
     }
@@ -353,7 +341,7 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
     }
 
     fn esv_is_open(&self) -> bool {
-        self.engine_starter_valve.is_open()
+        self.es_valve.is_open()
     }
 }
 
@@ -547,9 +535,8 @@ struct EngineBleedAirSystem {
     transfer_pressure_pipe: DefaultPipe,
     regulated_pressure_pipe: DefaultPipe,
     engine_starter_consumer: DefaultConsumer,
-    // TODO: Use more sophisticated controller
     engine_starter_consumer_controller: ConstantConsumerController,
-    engine_starter_valve: DefaultValve,
+    es_valve: DefaultValve,
 }
 impl EngineBleedAirSystem {
     fn new(number: usize) -> Self {
@@ -578,7 +565,7 @@ impl EngineBleedAirSystem {
             engine_starter_consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
                 cubic_meter_per_second,
             >(0.1)),
-            engine_starter_valve: DefaultValve::new(Ratio::new::<ratio>(0.)),
+            es_valve: DefaultValve::new(Ratio::new::<ratio>(0.)),
         }
     }
 
@@ -610,11 +597,10 @@ impl EngineBleedAirSystem {
             .update(&self.engine_starter_consumer_controller);
 
         // Update valves (open amount)
-        self.ip_valve.update_open_amount(context, ipv_controller);
-        self.hp_valve.update_open_amount(context, hpv_controller);
-        self.pr_valve.update_open_amount(context, prv_controller);
-        self.engine_starter_valve
-            .update_open_amount(context, esv_controller);
+        self.ip_valve.update_open_amount(ipv_controller);
+        self.hp_valve.update_open_amount(hpv_controller);
+        self.pr_valve.update_open_amount(prv_controller);
+        self.es_valve.update_open_amount(esv_controller);
 
         // Update valves (fluid movement)
         self.ip_valve.update_move_fluid(
@@ -632,7 +618,7 @@ impl EngineBleedAirSystem {
             &mut self.transfer_pressure_pipe,
             &mut self.regulated_pressure_pipe,
         );
-        self.engine_starter_valve.update_move_fluid(
+        self.es_valve.update_move_fluid(
             context,
             &mut self.regulated_pressure_pipe,
             &mut self.engine_starter_consumer,
@@ -684,7 +670,7 @@ impl SimulationElement for EngineBleedAirSystem {
 
         writer.write(
             &format!("PNEU_ENG_{}_STARTER_VALVE_OPEN", self.number),
-            self.engine_starter_valve.is_open(),
+            self.es_valve.is_open(),
         );
     }
 }
@@ -1166,7 +1152,7 @@ mod tests {
 
             esv_open.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[1]
-                    .engine_starter_valve
+                    .es_valve
                     .open_amount()
                     .get::<ratio>()
                     * 10.
@@ -1255,7 +1241,7 @@ mod tests {
         assert!(test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
 
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.engine_starter_valve.is_open()));
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.es_valve.is_open()));
         assert!(!test_bed.cross_bleed_valve_is_open());
     }
 

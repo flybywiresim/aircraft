@@ -108,7 +108,6 @@ impl PneumaticValve for DefaultValve {
     }
 }
 impl DefaultValve {
-    const GAMMA: f64 = 1.4;
     const TRANSFER_SPEED: f64 = 3.;
 
     pub fn new(open_amount: Ratio) -> Self {
@@ -125,7 +124,6 @@ impl DefaultValve {
 
     pub fn update_open_amount<T: ControlledPneumaticValveSignal>(
         &mut self,
-        context: &UpdateContext,
         controller: &impl ControllerSignal<T>,
     ) {
         if let Some(signal) = controller.signal() {
@@ -534,11 +532,11 @@ mod tests {
         assert_eq!(valve.open_amount, Ratio::new::<percent>(0.));
 
         let mut controller = ValveTestController::new(Ratio::new::<percent>(50.));
-        valve.update_open_amount(&context, &controller);
+        valve.update_open_amount(&controller);
         assert_eq!(valve.open_amount, Ratio::new::<percent>(50.));
 
         controller.set_command_open_amount(Ratio::new::<percent>(100.));
-        valve.update_open_amount(&context, &controller);
+        valve.update_open_amount(&controller);
         assert_eq!(valve.open_amount, Ratio::new::<percent>(100.));
     }
 
