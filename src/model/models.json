@@ -78,6 +78,10 @@
       {
         "gltf": "./buttondecals/buttondecals.gltf",
         "bin": "./buttondecals/buttondecals.bin"
+      },
+      {
+        "gltf": "./inop/inop.gltf",
+        "bin": "./inop/inop.bin"
       }
     ],
     "modifications": [
