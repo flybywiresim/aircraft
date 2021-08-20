@@ -84,6 +84,16 @@ const StatusBar = (props: StatusBarProps) => {
                     stroke={1.5}
                     strokeLinejoin="miter"
                 />
+                <IconPower
+                    onClick={() => {
+                        efbClearState();
+                        SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
+                    }}
+                    className="ml-6"
+                    size={25}
+                    stroke={1.5}
+                    strokeLinejoin="miter"
+                />
             </div>
         </div>
     );
