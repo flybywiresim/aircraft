@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 /// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
 
-declare let g_NotificationsListener;
+let nxNotificationsListener;
 
 /**
  * NotificationData container for notifications to package notification metadata
@@ -93,13 +93,12 @@ export class Notification {
     showNotification(params: any = {}): void {
         this.setData(params);
 
-        if (!g_NotificationsListener) {
-            g_NotificationsListener = RegisterViewListener('JS_LISTENER_NOTIFICATIONS');
-        } else {
-            g_NotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
-            setTimeout(() => {
-                g_NotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, this.params.id);
-            }, this.params.timeout);
+        if (!nxNotificationsListener) {
+            nxNotificationsListener = RegisterViewListener('JS_LISTENER_NOTIFICATIONS');
         }
+        nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
+        setTimeout(() => {
+            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, this.params.id);
+        }, this.params.timeout);
     }
 }

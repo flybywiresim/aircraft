@@ -1,5 +1,7 @@
 const A32NX_Util = {};
 
+let nxNotificationsListener;
+
 A32NX_Util.createDeltaTimeCalculator = (startTime = Date.now()) => {
     let lastTime = startTime;
 
@@ -306,14 +308,13 @@ class NXNotif {
     showNotification(params = {}) {
         this.setData(params);
 
-        if (!g_NotificationsListener) {
-            g_NotificationsListener = RegisterViewListener('JS_LISTENER_NOTIFICATIONS');
-        } else {
-            g_NotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
-            setTimeout(() => {
-                g_NotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, this.params.id);
-            }, this.params.timeout);
+        if (!nxNotificationsListener) {
+            nxNotificationsListener = RegisterViewListener('JS_LISTENER_NOTIFICATIONS');
         }
+        nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
+        setTimeout(() => {
+            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, this.params.id);
+        }, this.params.timeout);
     }
 }
 
