@@ -5,8 +5,8 @@ import { efbClearState } from '../Store/action-creator/efb';
 
 type StatusBarProps = {
     initTime: Date,
-    updateTimeSinceStart: Function,
-    updateCurrentTime: Function,
+    updateTimeSinceStart: (newTimeSinceStart: string) => void,
+    updateCurrentTime: (newCurrentTime: Date) => void,
     efbClearState: () => {}
 }
 
