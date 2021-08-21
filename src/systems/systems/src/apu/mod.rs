@@ -8,10 +8,10 @@ use crate::{
         ElectricitySource, Potential, ProvideFrequency, ProvidePotential,
     },
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
-    pneumatic::{BleedAirValve, BleedAirValveState},
+    pneumatic::ControllablePneumaticValve,
     shared::{
-        ApuAvailable, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal,
-        ControllerSignal, ElectricalBusType, PneumaticValve,
+        ApuAvailable, ApuBleedAirValveSignal, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
+        ContactorSignal, ControllerSignal, ElectricalBusType,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -84,7 +84,6 @@ pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor> {
     ecb: ElectronicControlBox,
     start_motor: U,
     air_intake_flap: AirIntakeFlap,
-    bleed_air_valve: BleedAirValve,
     fuel_pressure_switch: FuelPressureSwitch,
 }
 impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
@@ -101,7 +100,6 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
             ecb: ElectronicControlBox::new(electronic_control_box_powered_by),
             start_motor,
             air_intake_flap: AirIntakeFlap::new(air_intake_flap_powered_by),
-            bleed_air_valve: BleedAirValve::new(),
             fuel_pressure_switch: FuelPressureSwitch::new(),
         }
     }
@@ -113,6 +111,7 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
         fire_overhead: &AuxiliaryPowerUnitFireOverheadPanel,
         apu_bleed_is_on: bool,
         apu_gen_is_used: bool,
+        bleed_air_valve: &mut impl ControllablePneumaticValve,
         has_fuel_remaining: bool,
     ) {
         self.ecb
@@ -120,16 +119,16 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
         self.fuel_pressure_switch.update(has_fuel_remaining);
         self.ecb
             .update_fuel_pressure_switch_state(&self.fuel_pressure_switch);
-        self.bleed_air_valve.update(&self.ecb);
+        bleed_air_valve.update_open_amount::<ApuBleedAirValveSignal>(self);
         self.ecb
-            .update_bleed_air_valve_state(context, &self.bleed_air_valve);
+            .update_bleed_air_valve_state(context, bleed_air_valve);
         self.air_intake_flap.update(context, &self.ecb);
         self.ecb.update_air_intake_flap_state(&self.air_intake_flap);
 
         if let Some(turbine) = self.turbine.take() {
             let updated_turbine = turbine.update(
                 context,
-                self.bleed_air_valve.is_open(),
+                bleed_air_valve.is_open(),
                 apu_gen_is_used,
                 &self.ecb,
             );
@@ -212,6 +211,14 @@ impl<T: ApuGenerator, U: ApuStartMotor> ElectricalElement for AuxiliaryPowerUnit
         self.generator.is_conductive()
     }
 }
+impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ApuBleedAirValveSignal>
+    for AuxiliaryPowerUnit<T, U>
+{
+    fn signal(&self) -> Option<ApuBleedAirValveSignal> {
+        self.ecb.signal()
+    }
+}
+
 impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit<T, U> {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.generator.accept(visitor);
@@ -227,12 +234,6 @@ impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit
             "APU_FLAP_OPEN_PERCENTAGE",
             self.air_intake_flap.open_amount(),
         );
-        writer.write("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
-    }
-}
-impl<T: ApuGenerator, U: ApuStartMotor> BleedAirValveState for AuxiliaryPowerUnit<T, U> {
-    fn bleed_air_valve_is_open(&self) -> bool {
-        self.bleed_air_valve.is_open()
     }
 }
 
@@ -247,6 +248,7 @@ pub trait Turbine {
     fn n(&self) -> Ratio;
     fn egt(&self) -> ThermodynamicTemperature;
     fn state(&self) -> TurbineState;
+    fn bleed_air_pressure(&self) -> Pressure;
 }
 
 #[derive(PartialEq)]
@@ -350,6 +352,7 @@ pub mod tests {
         electrical::{
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus, Electricity,
         },
+        pneumatic::DefaultValve,
         shared::{ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
         simulation::{
             test::{SimulationTestBed, TestBed},
@@ -360,7 +363,8 @@ pub mod tests {
     use super::*;
     use std::time::Duration;
     use uom::si::{
-        length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
+        length::foot, power::watt, pressure::psi, ratio::percent,
+        thermodynamic_temperature::degree_celsius,
     };
 
     pub fn test_bed_with() -> AuxiliaryPowerUnitTestBed {
@@ -401,6 +405,25 @@ pub mod tests {
         fn state(&self) -> TurbineState {
             TurbineState::Starting
         }
+
+        fn bleed_air_pressure(&self) -> Pressure {
+            Pressure::new::<psi>(35.)
+        }
+    }
+
+    struct TestPneumatic {
+        apu_bleed_air_valve: DefaultValve,
+    }
+    impl TestPneumatic {
+        fn new() -> Self {
+            Self {
+                apu_bleed_air_valve: DefaultValve::new_closed(),
+            }
+        }
+
+        fn bleed_air_valve(&mut self) -> &mut impl ControllablePneumaticValve {
+            &mut self.apu_bleed_air_valve
+        }
     }
 
     pub struct AuxiliaryPowerUnitTestAircraft {
@@ -419,6 +442,7 @@ pub mod tests {
         power_consumption: Power,
         apu_generator_output_within_normal_parameters_before_processing_power_consumption_report:
             bool,
+        pneumatic: TestPneumatic,
     }
     impl AuxiliaryPowerUnitTestAircraft {
         const START_MOTOR_POWERED_BY: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
@@ -441,6 +465,7 @@ pub mod tests {
                 cut_start_motor_power: false,
                 power_consumption: Power::new::<watt>(0.),
                 apu_generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
+                pneumatic: TestPneumatic::new(),
             }
         }
 
@@ -513,6 +538,7 @@ pub mod tests {
                 &self.apu_fire_overhead,
                 self.apu_bleed.is_on(),
                 self.apu_gen_is_used,
+                self.pneumatic.bleed_air_valve(),
                 self.has_fuel_remaining,
             );
 
@@ -917,6 +943,10 @@ pub mod tests {
 
         fn power_consumption(&self) -> Power {
             self.query(|a| a.power_consumption())
+        }
+
+        fn bleed_air_pressure(&mut self) -> Pressure {
+            self.read("APU_BLEED_AIR_PRESSURE")
         }
     }
     impl TestBed for AuxiliaryPowerUnitTestBed {
@@ -1996,6 +2026,30 @@ pub mod tests {
                 powered = still_powered;
                 test_bed.run_with_delta(Duration::from_millis(1));
             }
+        }
+
+        #[test]
+        fn starting_apu_has_no_bleed_air_pressure() {
+            let mut test_bed = test_bed_with().starting_apu();
+
+            assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(0.));
+        }
+
+        #[test]
+        fn running_apu_has_35_psi_bleed_air_pressure() {
+            let mut test_bed = test_bed_with().running_apu();
+
+            assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(35.));
+        }
+
+        #[test]
+        fn stopping_apu_has_no_bleed_air_pressure() {
+            let mut test_bed = test_bed_with()
+                .running_apu_going_in_emergency_shutdown()
+                // Transition to Stopping state.
+                .run(Duration::from_millis(1));
+
+            assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(0.));
         }
     }
 }

@@ -651,6 +651,12 @@ impl<T: Writer> Write<Pressure> for T {
     }
 }
 
+impl<T: Writer> WriteWhen<Pressure> for T {
+    fn write_when(&mut self, condition: bool, name: &str, value: Pressure) {
+        self.write_f64(name, if condition { value.get::<psi>() } else { -1. });
+    }
+}
+
 impl<T: Reader> Read<Volume> for T {
     fn read(&mut self, name: &str) -> Volume {
         Volume::new::<gallon>(self.read_f64(name))

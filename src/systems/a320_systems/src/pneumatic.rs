@@ -14,10 +14,10 @@ use systems::{
     hydraulic::Fluid,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
-        BleedAirValveState, CompressionChamber, ConstantConsumerController,
-        ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
-        DefaultConsumer, DefaultPipe, DefaultValve, EngineCompressionChamberController,
-        EngineState, PneumaticContainer,
+        ApuCompressionChamberController, CompressionChamber, ConstantConsumerController,
+        ControllablePneumaticValve, ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob,
+        CrossBleedValveSelectorMode, DefaultConsumer, DefaultPipe, DefaultValve,
+        EngineCompressionChamberController, EngineState, PneumaticContainer, TargetPressureSignal,
     },
     shared::{
         ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
@@ -159,6 +159,10 @@ pub struct A320Pneumatic {
     // TODO: Not really sure this should be in the pneumatic system
     fadec: FullAuthorityDigitalEngineControl,
     engine_starter_valve_controllers: [EngineStarterValveController; 2],
+
+    apu: CompressionChamber,
+    apu_bleed_air_valve: DefaultValve,
+    apu_bleed_air_controller: ApuCompressionChamberController,
 }
 impl A320Pneumatic {
     pub fn new() -> Self {
@@ -175,6 +179,9 @@ impl A320Pneumatic {
                 EngineStarterValveController::new(1),
                 EngineStarterValveController::new(2),
             ],
+            apu: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
+            apu_bleed_air_valve: DefaultValve::new_closed(),
+            apu_bleed_air_controller: ApuCompressionChamberController::new(),
         }
     }
 
@@ -182,20 +189,23 @@ impl A320Pneumatic {
         &mut self,
         context: &UpdateContext,
         engines: [&T; 2],
-        apu_bleed_valve_state: &impl BleedAirValveState,
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
     ) {
         // Update cross bleed
-        self.cross_bleed_valve_controller
-            .update(apu_bleed_valve_state, overhead_panel.cross_bleed_mode());
+        self.cross_bleed_valve_controller.update(
+            self.apu_bleed_air_valve.is_open(),
+            overhead_panel.cross_bleed_mode(),
+        );
         self.cross_bleed_valve
             .update_open_amount(&self.cross_bleed_valve_controller);
+
+        self.apu.update(&self.apu_bleed_air_controller);
 
         for bmc in self.bmcs.iter_mut() {
             bmc.update(
                 &self.engine_systems,
-                apu_bleed_valve_state,
+                self.apu_bleed_air_valve.is_open(),
                 overhead_panel,
                 engine_fire_push_buttons,
                 self.cross_bleed_valve.is_open(),
@@ -220,10 +230,20 @@ impl A320Pneumatic {
         }
 
         let (left, right) = self.engine_systems.split_at_mut(1);
+        self.apu_bleed_air_valve
+            .update_move_fluid(context, &mut self.apu, &mut left[0]);
+
         self.cross_bleed_valve
             .update_move_fluid(context, &mut left[0], &mut right[0]);
+    }
 
-        // Update APU stuff
+    // TODO: Returning a mutable reference here is not great. I was running into an issue with the update order:
+    // - The APU turbine must know about the bleed valve being open as soon as possible to update EGT properly
+    // - To open the bleed valve, we need a signal from the ecb
+    // - To get a signal from the ECB to open the bleed valve, we have to update the APU.
+    // For now, we just pass over control of the bleed valve to the APU, so it can be updated after the ECB update but before the turbine update.
+    pub fn apu_bleed_air_valve(&mut self) -> &mut impl ControllablePneumaticValve {
+        &mut self.apu_bleed_air_valve
     }
 }
 impl SimulationElement for A320Pneumatic {
@@ -231,9 +251,12 @@ impl SimulationElement for A320Pneumatic {
     where
         Self: Sized,
     {
+        self.apu_bleed_air_controller.accept(visitor);
+
         for engine_system in self.engine_systems.iter_mut() {
             engine_system.accept(visitor);
         }
+
         self.fadec.accept(visitor);
 
         visitor.visit(self);
@@ -241,6 +264,10 @@ impl SimulationElement for A320Pneumatic {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write("PNEU_XBLEED_VALVE_OPEN", self.cross_bleed_valve.is_open());
+        writer.write(
+            "APU_BLEED_AIR_VALVE_OPEN",
+            self.apu_bleed_air_valve.is_open(),
+        );
     }
 }
 
@@ -283,10 +310,10 @@ impl CrossBleedValveController {
 
     fn update(
         &mut self,
-        apu: &impl BleedAirValveState,
+        apu_bleed_air_valve_is_open: bool,
         cross_bleed_valve_selector: CrossBleedValveSelectorMode,
     ) {
-        self.is_apu_bleed_valve_open = apu.bleed_air_valve_is_open();
+        self.is_apu_bleed_valve_open = apu_bleed_air_valve_is_open;
         self.cross_bleed_valve_selector = cross_bleed_valve_selector;
     }
 }
@@ -365,7 +392,7 @@ impl BleedMonitoringComputer {
     fn update(
         &mut self,
         sensors: &[EngineBleedAirSystem; 2],
-        apu_bleed_valve_state: &impl BleedAirValveState,
+        apu_bleed_valve_is_open: bool,
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         cross_bleed_valve_is_open: bool,
@@ -375,7 +402,7 @@ impl BleedMonitoringComputer {
             overhead_panel.engine_bleed_pb_is_auto(self.main_channel_engine_number),
             engine_fire_push_buttons.is_released(self.main_channel_engine_number),
             overhead_panel.apu_bleed_is_on(),
-            apu_bleed_valve_state,
+            apu_bleed_valve_is_open,
             overhead_panel.cross_bleed_mode(),
             cross_bleed_valve_is_open,
         );
@@ -385,7 +412,7 @@ impl BleedMonitoringComputer {
             overhead_panel.engine_bleed_pb_is_auto(self.backup_channel_engine_number),
             engine_fire_push_buttons.is_released(self.backup_channel_engine_number),
             overhead_panel.apu_bleed_is_on(),
-            apu_bleed_valve_state,
+            apu_bleed_valve_is_open,
             overhead_panel.cross_bleed_mode(),
             cross_bleed_valve_is_open,
         );
@@ -444,7 +471,7 @@ impl BleedMonitoringComputerChannel {
         is_engine_bleed_pushbutton_auto: bool,
         is_engine_fire_pushbutton_released: bool,
         is_apu_bleed_on: bool,
-        apu_bleed_valve_state: &impl BleedAirValveState,
+        apu_bleed_valve_is_open: bool,
         cross_bleed_valve_selector: CrossBleedValveSelectorMode,
         cross_bleed_valve_is_open: bool,
     ) {
@@ -469,7 +496,7 @@ impl BleedMonitoringComputerChannel {
         self.is_engine_bleed_pushbutton_auto = is_engine_bleed_pushbutton_auto;
         self.is_engine_fire_pushbutton_released = is_engine_fire_pushbutton_released;
 
-        self.is_apu_bleed_valve_open = apu_bleed_valve_state.bleed_air_valve_is_open();
+        self.is_apu_bleed_valve_open = apu_bleed_valve_is_open;
         self.is_apu_bleed_on = is_apu_bleed_on;
 
         self.cross_bleed_valve_selector = cross_bleed_valve_selector;
@@ -774,7 +801,7 @@ mod tests {
     use systems::{
         engine::leap_engine::LeapEngine,
         pneumatic::{EngineState, PneumaticContainer},
-        shared::{MachNumber, ISA},
+        shared::{ApuBleedAirValveSignal, MachNumber, ISA},
         simulation::{
             test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElement, Write,
@@ -786,22 +813,26 @@ mod tests {
     use uom::si::{length::foot, pressure::pascal};
 
     struct TestApu {
-        bleed_air_valve_is_open: bool,
+        bleed_air_valve_signal: ApuBleedAirValveSignal,
     }
     impl TestApu {
         fn new() -> Self {
             Self {
-                bleed_air_valve_is_open: false,
+                bleed_air_valve_signal: ApuBleedAirValveSignal::Close,
             }
         }
 
-        fn set_bleed_air_valve(&mut self, is_open: bool) {
-            self.bleed_air_valve_is_open = is_open;
+        fn update(&self, bleed_valve: &mut impl ControllablePneumaticValve) {
+            bleed_valve.update_open_amount(self);
+        }
+
+        fn set_bleed_air_valve_signal(&mut self, signal: ApuBleedAirValveSignal) {
+            self.bleed_air_valve_signal = signal;
         }
     }
-    impl BleedAirValveState for TestApu {
-        fn bleed_air_valve_is_open(&self) -> bool {
-            self.bleed_air_valve_is_open
+    impl ControllerSignal<ApuBleedAirValveSignal> for TestApu {
+        fn signal(&self) -> Option<ApuBleedAirValveSignal> {
+            Some(self.bleed_air_valve_signal)
         }
     }
 
@@ -847,10 +878,10 @@ mod tests {
     }
     impl Aircraft for PneumaticTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.apu.update(self.pneumatic.apu_bleed_air_valve());
             self.pneumatic.update(
                 context,
                 [&self.engine_1, &self.engine_2],
-                &self.apu,
                 &self.overhead_panel,
                 &self.fire_pushbuttons,
             );
@@ -1020,8 +1051,8 @@ mod tests {
             self
         }
 
-        fn set_apu_bleed_valve(mut self, is_open: bool) -> Self {
-            self.command(|a| a.apu.set_bleed_air_valve(is_open));
+        fn set_apu_bleed_valve_signal(mut self, signal: ApuBleedAirValveSignal) -> Self {
+            self.command(|a| a.apu.set_bleed_air_valve_signal(signal));
 
             self
         }
@@ -1266,7 +1297,9 @@ mod tests {
 
         assert!(!test_bed.cross_bleed_valve_is_open());
 
-        test_bed = test_bed.set_apu_bleed_valve(true).and_run();
+        test_bed = test_bed
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
+            .and_run();
 
         assert!(test_bed.cross_bleed_valve_is_open());
     }
@@ -1275,12 +1308,14 @@ mod tests {
     fn cross_bleed_valve_closes_when_apu_bleed_valve_closes() {
         let mut test_bed = test_bed_with()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .set_apu_bleed_valve(true)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
             .and_run();
 
         assert!(test_bed.cross_bleed_valve_is_open());
 
-        test_bed = test_bed.set_apu_bleed_valve(false).and_run();
+        test_bed = test_bed
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Close)
+            .and_run();
 
         assert!(!test_bed.cross_bleed_valve_is_open());
     }
@@ -1289,14 +1324,14 @@ mod tests {
     fn cross_bleed_valve_manual_overrides_everything() {
         let mut test_bed = test_bed_with()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
-            .set_apu_bleed_valve(true)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
             .and_run();
 
         assert!(!test_bed.cross_bleed_valve_is_open());
 
         test_bed = test_bed
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
-            .set_apu_bleed_valve(false)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Close)
             .and_run();
 
         assert!(test_bed.cross_bleed_valve_is_open());
@@ -1393,7 +1428,7 @@ mod tests {
 
         test_bed = test_bed
             .set_bleed_air_pb(true)
-            .set_apu_bleed_valve(true)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
             .and_run();
 
         assert!(!test_bed.pr_valve_is_open(1));
@@ -1409,7 +1444,7 @@ mod tests {
 
         test_bed = test_bed
             .set_bleed_air_pb(true)
-            .set_apu_bleed_valve(true)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             .and_run();
 

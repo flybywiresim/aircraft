@@ -5,14 +5,15 @@ use super::{
 };
 use crate::{
     shared::{
-        ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, PneumaticValve, PneumaticValveSignal,
+        ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower, ContactorSignal,
+        ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
     },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write, WriteWhen},
 };
 use std::time::Duration;
 use uom::si::{
-    f64::*, length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
+    f64::*, length::foot, power::watt, pressure::psi, ratio::percent,
+    thermodynamic_temperature::degree_celsius,
 };
 
 pub(super) struct ElectronicControlBox {
@@ -25,6 +26,7 @@ pub(super) struct ElectronicControlBox {
     n: Ratio,
     bleed_is_on: bool,
     bleed_air_valve_last_open_time_ago: Duration,
+    bleed_air_pressure: Pressure,
     fault: Option<ApuFault>,
     air_intake_flap_open_amount: Ratio,
     egt: ThermodynamicTemperature,
@@ -48,6 +50,7 @@ impl ElectronicControlBox {
             n: Ratio::new::<percent>(0.),
             bleed_is_on: false,
             bleed_air_valve_last_open_time_ago: Duration::from_secs(1000),
+            bleed_air_pressure: Pressure::new::<psi>(0.),
             fault: None,
             air_intake_flap_open_amount: Ratio::new::<percent>(0.),
             egt: ThermodynamicTemperature::new::<degree_celsius>(0.),
@@ -105,6 +108,7 @@ impl ElectronicControlBox {
         self.n = turbine.n();
         self.egt = turbine.egt();
         self.turbine_state = turbine.state();
+        self.bleed_air_pressure = turbine.bleed_air_pressure();
         self.egt_warning_temperature =
             ElectronicControlBox::calculate_egt_warning_temperature(context, &self.turbine_state);
 
@@ -298,8 +302,8 @@ impl ControllerSignal<TurbineSignal> for ElectronicControlBox {
     }
 }
 /// Bleed air valve controller
-impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
-    fn signal(&self) -> Option<PneumaticValveSignal> {
+impl ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox {
+    fn signal(&self) -> Option<ApuBleedAirValveSignal> {
         if !self.is_on() {
             None
         } else if self.fault != Some(ApuFault::ApuFire)
@@ -307,9 +311,9 @@ impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
             && self.n.get::<percent>() > 95.
             && self.bleed_is_on
         {
-            Some(PneumaticValveSignal::open())
+            Some(ApuBleedAirValveSignal::Open)
         } else {
-            Some(PneumaticValveSignal::close())
+            Some(ApuBleedAirValveSignal::Close)
         }
     }
 }
@@ -333,6 +337,8 @@ impl SimulationElement for ElectronicControlBox {
             "APU_FLAP_FULLY_OPEN",
             self.air_intake_flap_is_fully_open(),
         );
+
+        writer.write_when(is_on, "APU_BLEED_AIR_PRESSURE", self.bleed_air_pressure);
 
         // Flight Warning Computer related information.
         writer.write("ECAM_INOP_SYS_APU", self.is_inoperable());

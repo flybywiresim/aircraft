@@ -26,7 +26,6 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
-    pneumatic::BleedAirValveState,
     pressurization::Pressurization,
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -109,6 +108,7 @@ impl Aircraft for A320 {
             self.electrical_overhead.apu_generator_is_on()
                 && !(self.electrical_overhead.external_power_is_on()
                     && self.electrical_overhead.external_power_is_available()),
+            self.pneumatic.apu_bleed_air_valve(),
             self.fuel.left_inner_tank_has_fuel_remaining(),
         );
 
@@ -170,10 +170,9 @@ impl Aircraft for A320 {
         self.pneumatic.update(
             context,
             [&self.engine_1, &self.engine_2],
-            &self.apu,
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
-        )
+        );
     }
 }
 impl SimulationElement for A320 {

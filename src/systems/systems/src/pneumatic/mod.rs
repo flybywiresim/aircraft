@@ -3,10 +3,7 @@
 use crate::{
     engine::Engine,
     hydraulic::Fluid,
-    shared::{
-        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve,
-        PneumaticValveSignal,
-    },
+    shared::{ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve},
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, Write, Writer,
@@ -24,35 +21,11 @@ pub trait ControlledPneumaticValveSignal {
     fn target_open_amount(&self) -> Ratio;
 }
 
-pub trait BleedAirValveState {
-    fn bleed_air_valve_is_open(&self) -> bool;
-}
-
-pub struct BleedAirValve {
-    open_amount: Ratio,
-}
-impl BleedAirValve {
-    pub fn new() -> Self {
-        BleedAirValve {
-            open_amount: Ratio::new::<percent>(0.),
-        }
-    }
-
-    pub fn update(&mut self, controller: &impl ControllerSignal<PneumaticValveSignal>) {
-        if let Some(signal) = controller.signal() {
-            self.open_amount = signal.target_open_amount();
-        }
-    }
-}
-impl PneumaticValve for BleedAirValve {
-    fn is_open(&self) -> bool {
-        self.open_amount > Ratio::new::<percent>(0.)
-    }
-}
-impl Default for BleedAirValve {
-    fn default() -> Self {
-        Self::new()
-    }
+pub trait ControllablePneumaticValve: PneumaticValve {
+    fn update_open_amount<T: ControlledPneumaticValveSignal>(
+        &mut self,
+        controller: &dyn ControllerSignal<T>,
+    );
 }
 
 pub trait PneumaticContainer {
@@ -164,9 +137,24 @@ impl DefaultValve {
         to.change_volume(volume);
     }
 }
+impl ControllablePneumaticValve for DefaultValve {
+    fn update_open_amount<T: ControlledPneumaticValveSignal>(
+        &mut self,
+        controller: &dyn ControllerSignal<T>,
+    ) {
+        if let Some(signal) = controller.signal() {
+            self.open_amount = signal.target_open_amount();
+        }
+    }
+}
 
 pub struct TargetPressureSignal {
     target_pressure: Pressure,
+}
+impl TargetPressureSignal {
+    pub fn new(target_pressure: Pressure) -> Self {
+        Self { target_pressure }
+    }
 }
 
 pub struct ConstantPressureController {
@@ -174,9 +162,7 @@ pub struct ConstantPressureController {
 }
 impl ControllerSignal<TargetPressureSignal> for ConstantPressureController {
     fn signal(&self) -> Option<TargetPressureSignal> {
-        Some(TargetPressureSignal {
-            target_pressure: self.target_pressure,
-        })
+        Some(TargetPressureSignal::new(self.target_pressure))
     }
 }
 impl ConstantPressureController {
@@ -194,9 +180,7 @@ pub struct EngineCompressionChamberController {
 }
 impl ControllerSignal<TargetPressureSignal> for EngineCompressionChamberController {
     fn signal(&self) -> Option<TargetPressureSignal> {
-        Some(TargetPressureSignal {
-            target_pressure: self.target_pressure,
-        })
+        Some(TargetPressureSignal::new(self.target_pressure))
     }
 }
 impl SimulationElement for EngineCompressionChamberController {
@@ -423,13 +407,34 @@ impl From<f64> for EngineState {
     }
 }
 
+pub struct ApuCompressionChamberController {
+    current_pressure: Pressure,
+}
+impl ApuCompressionChamberController {
+    pub fn new() -> Self {
+        Self {
+            current_pressure: Pressure::new::<psi>(0.),
+        }
+    }
+}
+impl SimulationElement for ApuCompressionChamberController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.current_pressure = reader.read("APU_BLEED_AIR_PRESSURE")
+    }
+}
+impl ControllerSignal<TargetPressureSignal> for ApuCompressionChamberController {
+    fn signal(&self) -> Option<TargetPressureSignal> {
+        Some(TargetPressureSignal::new(self.current_pressure))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
         hydraulic::Fluid,
         pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
-        shared::{ControllerSignal, PneumaticValveSignal, ISA},
+        shared::{ControllerSignal, ISA},
         simulation::{
             test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElement, UpdateContext,
@@ -442,6 +447,15 @@ mod tests {
         thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
         volume_rate::cubic_meter_per_second,
     };
+
+    struct TestPneumaticValveSignal {
+        target_open_amount: Ratio,
+    }
+    impl TestPneumaticValveSignal {
+        fn new(target_open_amount: Ratio) -> Self {
+            Self { target_open_amount }
+        }
+    }
 
     struct ValveTestController {
         command_open_amount: Ratio,
@@ -457,15 +471,15 @@ mod tests {
             self.command_open_amount = command_open_amount;
         }
     }
-    impl ControllerSignal<PneumaticValveSignal> for ValveTestController {
-        fn signal(&self) -> Option<PneumaticValveSignal> {
-            Some(PneumaticValveSignal::new(self.command_open_amount))
+    impl ControllerSignal<TestPneumaticValveSignal> for ValveTestController {
+        fn signal(&self) -> Option<TestPneumaticValveSignal> {
+            Some(TestPneumaticValveSignal::new(self.command_open_amount))
         }
     }
 
-    impl ControlledPneumaticValveSignal for PneumaticValveSignal {
+    impl ControlledPneumaticValveSignal for TestPneumaticValveSignal {
         fn target_open_amount(&self) -> Ratio {
-            self.target_open_amount()
+            self.target_open_amount
         }
     }
 
