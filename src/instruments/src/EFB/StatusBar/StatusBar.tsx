@@ -37,7 +37,7 @@ export function dateFormat(date: number): string {
     return numberWithSuffix;
 }
 
-export const StatusBar = (props: StatusBarProps) => {
+const StatusBar = (props: StatusBarProps) => {
     const [currentTime, setCurrentTime] = useState(props.initTime);
 
     function calculateTimeSinceStart(currentTime: Date) {
