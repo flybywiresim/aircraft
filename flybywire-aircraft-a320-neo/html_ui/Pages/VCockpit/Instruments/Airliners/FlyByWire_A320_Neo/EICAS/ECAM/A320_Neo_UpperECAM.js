@@ -778,14 +778,19 @@ var A320_Neo_UpperECAM;
                                 ),
                                 actions: [
                                     {
-                                        style: "cyan",
-                                        message: "EXPECT HI CAB RATE",
-                                        action: "ON"
+                                        style: "action",
+                                        message: "PACK 1",
+                                        action: "OFF"
                                     },
                                     {
                                         style: "action",
-                                        message: "A/C V/S",
-                                        action: "REDUCE",
+                                        message: "PACK 2",
+                                        action: "OFF",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT",
                                     },
                                 ]
                             },
@@ -800,7 +805,7 @@ var A320_Neo_UpperECAM;
                                 ),
                                 actions: [
                                     {
-                                        style: "remark",
+                                        style: "cyan",
                                         message: "EXPECT HI CAB RATE",
                                         action: "ON"
                                     },
@@ -1522,7 +1527,7 @@ var A320_Neo_UpperECAM;
                         message: "MAN LDG ELEV",
                         isActive: () => {
                             return (
-                                (SimVar.GetSimVarValue("L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV", "number") !== 0)
+                                (this.getCachedSimVar("L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV", "number") !== 0)
                             );
                         }
                     },

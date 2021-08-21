@@ -203,9 +203,9 @@ var A320_Neo_LowerECAM_PRESS;
             const safetyValvePosition = (SimVar.GetSimVarValue("L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE", "Percent") / 100).toFixed(0);
             const activeSystem = SimVar.GetSimVarValue("L:A32NX_PRESS_ACTIVE_CPC_SYS", "Number");
 
-            const cabinVSValue = fastToFixed(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_VS", "Feet per minute"), 0);
-            const pressureDelta = SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI");
-            const cabinAltitude = fastToFixed(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_ALTITUDE", "feet"), 0);
+            const cabinVSValue = Math.round(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_VS", "Feet per minute"));
+            const pressureDelta = Math.round(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI") * 10) / 10;
+            const cabinAltitude = Math.round(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_ALTITUDE", "feet"));
             const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2);
             const outletValveOpenPercent = SimVar.GetSimVarValue("L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE", "Percent");
 
@@ -214,7 +214,7 @@ var A320_Neo_LowerECAM_PRESS;
             let landingElev;
             let landingElevManual;
             if (SimVar.GetSimVarValue("L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV", "number") !== 0) {
-                landingElev = SimVar.GetSimVarValue("L:A32NX_OVHD_KNOB_PRESS_LDG_ELEV", "feet");
+                landingElev = SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB", "feet");
                 landingElevManual = true;
             } else {
                 landingElev = SimVar.GetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet");

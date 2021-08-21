@@ -49,6 +49,14 @@ impl CabinPressureController {
     const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
     const C: f64 = 1.; // Flow coefficient
 
+    // Vertical speed constraints
+    const MAX_CLIMB_RATE: f64 = 750.;
+    const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.;
+    const MAX_DESCENT_RATE: f64 = -750.;
+    const MAX_ABORT_DESCENT_RATE: f64 = -500.;
+    const TAKEOFF_RATE: f64 = -400.;
+    const DEPRESS_RATE: f64 = 500.;
+
     pub fn new() -> Self {
         Self {
             pressure_schedule_manager: PressureScheduleManager::new(),
@@ -167,28 +175,21 @@ impl CabinPressureController {
     }
 
     fn calculate_cabin_vs(&mut self, context: &UpdateContext) -> Velocity {
-        const MAX_CLIMB_RATE: f64 = 750.;
-        const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.;
-        const MAX_DESCENT_RATE: f64 = -750.;
-        const MAX_ABORT_DESCENT_RATE: f64 = -500.;
-        const TAKEOFF_RATE: f64 = -400.;
-        const DEPRESS_RATE: f64 = 500.;
-
         let error_margin = Pressure::new::<hectopascal>(1.);
 
         match self.pressure_schedule_manager {
             PressureScheduleManager::Ground(_) => {
                 if (self.cabin_pressure - context.ambient_pressure()) > error_margin {
-                    Velocity::new::<foot_per_minute>(DEPRESS_RATE)
+                    Velocity::new::<foot_per_minute>(Self::DEPRESS_RATE)
                 } else if (self.cabin_pressure - context.ambient_pressure()) < -error_margin {
-                    Velocity::new::<foot_per_minute>(-DEPRESS_RATE)
+                    Velocity::new::<foot_per_minute>(-Self::DEPRESS_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
             PressureScheduleManager::TakeOff(_) => {
                 if self.cabin_delta_p() < Pressure::new::<psi>(0.1) {
-                    Velocity::new::<foot_per_minute>(TAKEOFF_RATE)
+                    Velocity::new::<foot_per_minute>(Self::TAKEOFF_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
@@ -203,11 +204,11 @@ impl CabinPressureController {
                         * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
                 );
                 if self.cabin_delta_p() >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT) {
-                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE)
+                    Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE)
                 } else if self.cabin_altitude() >= Length::new::<foot>(CABIN_ALTITUDE_LIMIT) {
                     Velocity::new::<foot_per_minute>(0.)
-                } else if target_vs <= Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE) {
-                    Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE)
+                } else if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
+                    Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE)
                 } else {
                     target_vs
                 }
@@ -219,10 +220,12 @@ impl CabinPressureController {
                         * context.vertical_speed().get::<foot_per_minute>()
                         / self.get_ext_diff_with_ldg_elev(context).get::<foot>(),
                 );
-                if target_vs <= Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE) {
-                    Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE)
-                } else if target_vs >= Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT) {
-                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT)
+                if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
+                    Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE)
+                } else if target_vs
+                    >= Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
+                {
+                    Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
                 } else {
                     target_vs
                 }
@@ -234,11 +237,11 @@ impl CabinPressureController {
                 if self.cabin_altitude()
                     < self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
-                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT)
+                    Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
                 } else if self.cabin_altitude()
                     > self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
-                    Velocity::new::<foot_per_minute>(MAX_ABORT_DESCENT_RATE)
+                    Velocity::new::<foot_per_minute>(Self::MAX_ABORT_DESCENT_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
@@ -260,11 +263,13 @@ impl CabinPressureController {
     }
 
     fn set_cabin_vs(&self) -> Velocity {
+        const Z_VALUE_FOR_RP_CLOSE_TO_1: f64 = 0.0011;
+
         let equilibrium_ratio = self.calculate_equilibrium_outflow_valve_open_amount();
         let error_margin = f64::EPSILON;
         let z = self.calculate_z();
 
-        if (z - 0.0011).abs() < error_margin
+        if (z - Z_VALUE_FOR_RP_CLOSE_TO_1).abs() < error_margin
             && (self.outflow_valve_open_amount >= equilibrium_ratio
                 || (self.outflow_valve_open_amount == Ratio::new::<percent>(100.)
                     && equilibrium_ratio > Ratio::new::<percent>(100.)))
@@ -301,27 +306,31 @@ impl CabinPressureController {
     }
 
     fn calculate_z(&self) -> f64 {
+        const Z_VALUE_FOR_RP_CLOSE_TO_1: f64 = 0.0011;
+        const Z_VALUE_FOR_RP_UNDER_053: f64 = 0.256;
+
         let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
 
         let margin = 0.004;
         if (pressure_ratio - 1.).abs() <= margin {
-            0.0011
+            Z_VALUE_FOR_RP_CLOSE_TO_1
         } else if pressure_ratio > 0.53 {
             pressure_ratio.powf(2. / CabinPressureController::GAMMA)
                 - pressure_ratio
                     .powf((CabinPressureController::GAMMA + 1.) / CabinPressureController::GAMMA)
         } else {
-            0.256
+            Z_VALUE_FOR_RP_UNDER_053
         }
     }
 
     fn calculate_cabin_flow_in(&self, packs_are_on: bool, context: &UpdateContext) -> VolumeRate {
+        // Placeholder until Air Con system is simulated
         const INTERNAL_FLOW_RATE_CHANGE: f64 = 0.1;
+        // Equivalent to 0.25kg of air per minute per passenger
         const FLOW_RATE_WITH_PACKS_ON: f64 = 0.6;
 
         let rate_of_change_for_delta = INTERNAL_FLOW_RATE_CHANGE * context.delta_as_secs_f64();
 
-        // Placeholder until Air Con system of air is simulated
         if packs_are_on {
             if VolumeRate::new::<cubic_meter_per_second>(FLOW_RATE_WITH_PACKS_ON)
                 > self.cabin_flow_in
@@ -504,6 +513,7 @@ impl OutflowValveActuator for CabinPressureController {
     }
 }
 
+// Safety valve signal
 impl ControllerSignal<PressureValveSignal> for CabinPressureController {
     fn signal(&self) -> Option<PressureValveSignal> {
         if self.cabin_delta_p() > Pressure::new::<psi>(8.6)
