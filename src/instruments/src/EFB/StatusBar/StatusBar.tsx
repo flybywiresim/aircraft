@@ -37,7 +37,7 @@ export function dateFormat(date: number): string {
     return numberWithSuffix;
 }
 
-const StatusBar = (props: StatusBarProps) => {
+export const StatusBar = (props: StatusBarProps) => {
     const [currentTime, setCurrentTime] = useState(props.initTime);
 
     function calculateTimeSinceStart(currentTime: Date) {
@@ -59,7 +59,7 @@ const StatusBar = (props: StatusBarProps) => {
         }, 1000);
 
         return () => clearInterval();
-    });
+    }, []);
 
     const { efbClearState } = props;
 
@@ -75,10 +75,6 @@ const StatusBar = (props: StatusBarProps) => {
 
                 {/* TODO find a way to use `setSimVar` here */}
                 <IconBattery4
-                    onClick={() => {
-                        efbClearState();
-                        SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
-                    }}
                     className="ml-2"
                     size={30}
                     stroke={1.5}
