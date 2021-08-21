@@ -146,10 +146,7 @@ export class Geometry {
         }
 
         if (activeLeg) {
-            const distanceToGo = activeLeg.getDistanceToGo(ppos);
-            if (distanceToGo > -0.1 && distanceToGo < 0.001) {
-                return true;
-            }
+            return activeLeg.getDistanceToGo(ppos) < 0.001;
         }
 
         return false;
