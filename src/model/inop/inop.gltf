@@ -6,7 +6,7 @@
             "componentType": 5123,
             "count": 4,
             "type": "VEC4",
-            "name": "INOP_MAINPANEL_vertices#0_COLOR_0"
+            "name": "INOP_MAINPANEL-CA_vertices#0_COLOR_0"
         },
         {
             "bufferView": 1,
@@ -14,24 +14,24 @@
             "componentType": 5120,
             "count": 4,
             "type": "VEC4",
-            "name": "INOP_MAINPANEL_vertices#0_NORMAL"
+            "name": "INOP_MAINPANEL-CA_vertices#0_NORMAL"
         },
         {
             "bufferView": 1,
             "componentType": 5126,
             "count": 4,
             "min": [
-                -0.004155450500547886,
-                5.424022674560547e-6,
-                -0.0017863959074020386
+                -0.012659518979489803,
+                -0.00537836691364646,
+                -0.0016322954325005412
             ],
             "max": [
-                0.004155418835580349,
-                6.765127182006836e-6,
-                0.0017864108085632324
+                0.012659449130296707,
+                0.005388803314417601,
+                0.0015974093694239855
             ],
             "type": "VEC3",
-            "name": "INOP_MAINPANEL_vertices#0_POSITION"
+            "name": "INOP_MAINPANEL-CA_vertices#0_POSITION"
         },
         {
             "bufferView": 1,
@@ -39,7 +39,7 @@
             "componentType": 5120,
             "count": 4,
             "type": "VEC4",
-            "name": "INOP_MAINPANEL_vertices#0_TANGENT"
+            "name": "INOP_MAINPANEL-CA_vertices#0_TANGENT"
         },
         {
             "bufferView": 1,
@@ -47,7 +47,7 @@
             "componentType": 5122,
             "count": 4,
             "type": "VEC2",
-            "name": "INOP_MAINPANEL_vertices#0_TEXCOORD_0"
+            "name": "INOP_MAINPANEL-CA_vertices#0_TEXCOORD_0"
         },
         {
             "bufferView": 1,
@@ -55,14 +55,14 @@
             "componentType": 5122,
             "count": 4,
             "type": "VEC2",
-            "name": "INOP_MAINPANEL_vertices#0_TEXCOORD_1"
+            "name": "INOP_MAINPANEL-CA_vertices#0_TEXCOORD_1"
         },
         {
             "bufferView": 0,
             "componentType": 5123,
             "count": 6,
             "type": "SCALAR",
-            "name": "INOP_MAINPANEL_indices#0"
+            "name": "INOP_MAINPANEL-CA_indices#0"
         },
         {
             "bufferView": 1,
@@ -86,14 +86,14 @@
             "componentType": 5126,
             "count": 4,
             "min": [
-                -0.00415545329451561,
-                -0.0001819133758544922,
-                -0.0017864136025309563
+                -0.012713061645627022,
+                -0.0017711149994283915,
+                -0.005498543381690979
             ],
             "max": [
-                0.004155416041612625,
-                -0.0001812577247619629,
-                0.001786467619240284
+                0.012713169679045677,
+                0.0006983692292124033,
+                0.005734344944357872
             ],
             "type": "VEC3",
             "name": "INOP_PEDESTAL_vertices#0_POSITION"
@@ -129,6 +129,72 @@
             "count": 6,
             "type": "SCALAR",
             "name": "INOP_PEDESTAL_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 316,
+            "componentType": 5123,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_MAINPANEL-FO_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 304,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_MAINPANEL-FO_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 288,
+            "componentType": 5126,
+            "count": 4,
+            "min": [
+                -0.012798890471458435,
+                -0.00475455354899168,
+                -0.004959593992680311
+            ],
+            "max": [
+                0.012792014516890049,
+                0.00668797641992569,
+                -0.0015834703808650374
+            ],
+            "type": "VEC3",
+            "name": "INOP_MAINPANEL-FO_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 300,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "INOP_MAINPANEL-FO_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 308,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "INOP_MAINPANEL-FO_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 312,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "INOP_MAINPANEL-FO_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5123,
+            "count": 6,
+            "type": "SCALAR",
+            "name": "INOP_MAINPANEL-FO_indices#0"
         }
     ],
     "asset": {
@@ -137,14 +203,14 @@
         "extensions": {
             "ASOBO_asset_optimized": {
                 "BoundingBoxMax": [
-                    0.004155418835580349,
-                    6.765127182006836e-6,
-                    0.001786467619240284
+                    0.012792014516890049,
+                    0.00668797641992569,
+                    0.005734344944357872
                 ],
                 "BoundingBoxMin": [
-                    -0.00415545329451561,
-                    -0.0001819133758544922,
-                    -0.0017864136025309563
+                    -0.012798890471458435,
+                    -0.00537836691364646,
+                    -0.005498543381690979
                 ],
                 "MajorVersion": 4,
                 "MinorVersion": 2
@@ -157,16 +223,16 @@
     "bufferViews": [
         {
             "buffer": 0,
-            "byteLength": 24,
+            "byteLength": 36,
             "byteOffset": 0,
             "target": 34963,
             "name": "BufferViewIndex"
         },
         {
             "buffer": 0,
-            "byteLength": 288,
+            "byteLength": 432,
             "byteStride": 36,
-            "byteOffset": 24,
+            "byteOffset": 36,
             "target": 34962,
             "name": "BufferViewVertexND"
         }
@@ -197,7 +263,7 @@
                     }
                 }
             ],
-            "name": "INOP_MAINPANEL"
+            "name": "INOP_MAINPANEL-CA"
         },
         {
             "primitives": [
@@ -223,6 +289,31 @@
                 }
             ],
             "name": "INOP_PEDESTAL"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 14,
+                        "NORMAL": 15,
+                        "POSITION": 16,
+                        "TANGENT": 17,
+                        "TEXCOORD_0": 18,
+                        "TEXCOORD_1": 19
+                    },
+                    "indices": 20,
+                    "material": "TEXT_NoEmi",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "INOP_MAINPANEL-FO"
         }
     ],
     "nodes": [
@@ -232,19 +323,8 @@
                 1.537426233291626,
                 11.848071098327637
             ],
-            "rotation": [
-                -0.005268970504403114,
-                0.8023883104324341,
-                -0.596738874912262,
-                0.006924042943865061
-            ],
-            "scale": [
-                3.0243492126464844,
-                3.0243492126464844,
-                3.0243492126464844
-            ],
             "mesh": 0,
-            "name": "INOP_MAINPANEL"
+            "name": "INOP_MAINPANEL-CA"
         },
         {
             "translation": [
@@ -252,32 +332,30 @@
                 1.2179856300354004,
                 11.231157302856445
             ],
-            "rotation": [
-                0.0015029729111120105,
-                0.9940648078918457,
-                -0.1078939139842987,
-                -0.013848667964339256
-            ],
-            "scale": [
-                3.0243492126464844,
-                3.0243492126464844,
-                3.0243492126464844
-            ],
             "mesh": 1,
             "name": "INOP_PEDESTAL"
+        },
+        {
+            "translation": [
+                -0.24920707941055298,
+                1.6395668983459473,
+                11.87914752960205
+            ],
+            "mesh": 2,
+            "name": "INOP_MAINPANEL-FO"
         }
     ],
     "scene": 0,
     "scenes": [
         {
             "name": "Scene",
-            "nodes": [0, 1]
+            "nodes": [0, 1, 2]
         }
     ],
     "textures": [],
     "buffers": [
         {
-            "byteLength": 312,
+            "byteLength": 468,
             "uri": "inop.bin"
         }
     ],
