@@ -71,7 +71,7 @@ impl RigidBodyOnHingeAxis {
     ) -> Self {
         // Basic formula for homogenous body in 3D rectangular shape
         let inertia_at_cog =
-            (1. / 12.) * mass.get::<kilogram>() * size[0] * size[0] + size[1] * size[1];
+            (1. / 12.) * mass.get::<kilogram>() * (size[0] * size[0] + size[1] * size[1]);
 
         // Parallel axis theorem to get inertia at hinge axis from inertia at CoG
         let inertia_at_hinge =
