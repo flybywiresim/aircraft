@@ -929,6 +929,14 @@ mod tests {
             self
         }
 
+        fn and_stabilize(mut self) -> Self {
+            for _ in 1..1000 {
+                self.run_with_delta(Duration::from_millis(16));
+            }
+
+            self
+        }
+
         fn mach_number(mut self, mach: MachNumber) -> Self {
             self.write("AIRSPEED MACH", mach);
 
@@ -1032,6 +1040,10 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].esv_is_open())
         }
 
+        fn apu_bleed_valve_is_open(&self) -> bool {
+            self.query(|a| a.pneumatic.apu_bleed_air_valve.is_open())
+        }
+
         fn set_engine_bleed_push_button_off(mut self, number: usize) -> Self {
             self.write(&format!("OVHD_PNEU_ENG_{}_BLEED_PB_IS_AUTO", number), false);
 
@@ -1061,6 +1073,12 @@ mod tests {
             self.write("OVHD_APU_BLEED_PB_IS_ON", is_on);
 
             self
+        }
+
+        fn set_bleed_air_running(mut self) -> Self {
+            self.write("APU_BLEED_AIR_PRESSURE", Pressure::new::<psi>(35.));
+            self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
+                .set_bleed_air_pb(true)
         }
 
         fn release_fire_pushbutton(mut self, number: usize) -> Self {
@@ -1120,8 +1138,9 @@ mod tests {
         let mut test_bed = test_bed_with()
             .mach_number(MachNumber(0.))
             .in_isa_atmosphere(alt)
-            .idle_eng1()
-            .stop_eng2();
+            .stop_eng1()
+            .stop_eng2()
+            .set_bleed_air_running();
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
@@ -1132,9 +1151,10 @@ mod tests {
         let mut prv_open = Vec::new();
         let mut ipv_open = Vec::new();
         let mut esv_open = Vec::new();
+        let mut abv_open = Vec::new();
 
-        for i in 1..10 {
-            ts.push(i as f64 * 1000.);
+        for i in 1..1000 {
+            ts.push(i as f64 * 16.);
 
             // if i == 3 {
             //     test_bed = test_bed.set_apu_bleed_valve(true).set_bleed_air_pb(false);
@@ -1189,12 +1209,18 @@ mod tests {
                     * 10.
             }));
 
-            test_bed.run_with_delta(Duration::from_millis(1000));
+            abv_open.push(if test_bed.apu_bleed_valve_is_open() {
+                10.
+            } else {
+                0.
+            });
+
+            test_bed.run_with_delta(Duration::from_millis(16));
         }
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
-            ts, hps, ips, c2s, c1s, hpv_open, prv_open, ipv_open, esv_open,
+            ts, hps, ips, c2s, c1s, hpv_open, prv_open, ipv_open, esv_open, abv_open,
         ];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
 
@@ -1497,6 +1523,51 @@ mod tests {
 
         assert_eq!(test_bed.engine_state(1), EngineState::Shutting);
         assert_eq!(test_bed.engine_state(2), EngineState::Shutting);
+    }
+
+    #[test]
+    fn apu_bleed_provides_35_psi_with_open_cross_bleed_valve() {
+        let test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
+            .set_bleed_air_running()
+            .and_stabilize();
+
+        assert!(test_bed.cross_bleed_valve_is_open());
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
+
+        assert!(
+            (test_bed.regulated_pressure(1) - Pressure::new::<psi>(35.)).abs()
+                < pressure_tolerance()
+        );
+        assert!(
+            (test_bed.regulated_pressure(2) - Pressure::new::<psi>(35.)).abs()
+                < pressure_tolerance()
+        )
+    }
+
+    #[test]
+    fn apu_bleed_provides_35_psi_to_left_system_with_closed_cross_bleed_valve() {
+        let test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+            .set_bleed_air_running()
+            .and_stabilize();
+
+        assert!(!test_bed.pr_valve_is_open(1));
+
+        assert!(
+            (test_bed.regulated_pressure(1) - Pressure::new::<psi>(35.)).abs()
+                < pressure_tolerance()
+        );
+        assert!(
+            (test_bed.regulated_pressure(2) - Pressure::new::<psi>(14.7)).abs()
+                < pressure_tolerance()
+        )
     }
 
     mod ovhd {
