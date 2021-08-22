@@ -142,6 +142,7 @@ export class GuidanceManager {
             : this.flightPlanManager.getCurrentFlightPlan().length;
         for (let i = wpCount - 1; (i >= activeIdx - 1); i--) {
             const nextLeg = legs.get(i + 1);
+            const isActive = i === activeIdx;
 
             const from = temp
                 ? this.flightPlanManager.getWaypoint(i - 1, 1)
@@ -187,6 +188,7 @@ export class GuidanceManager {
                 const transition = new Type1Transition(
                     currentLeg,
                     nextLeg,
+                    isActive,
                 );
 
                 transitions.set(i, transition);

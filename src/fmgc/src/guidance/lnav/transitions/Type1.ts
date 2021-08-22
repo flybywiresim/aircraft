@@ -1,4 +1,4 @@
-import { Degrees, NauticalMiles } from '@typings/types';
+import { Degrees, Knots, NauticalMiles } from '@typings/types';
 import { MathUtils } from '@shared/MathUtils';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
@@ -22,12 +22,19 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
     constructor(
         previousLeg: TFLeg,
         nextLeg: TFLeg | VMLeg, // FIXME this cannot happen, but what are you gonna do about it ?,
+        isActive: boolean = true,
     ) {
         super();
         this.previousLeg = previousLeg;
         this.nextLeg = nextLeg;
 
-        const kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
+        let kts: Knots;
+        // TODO remove this hack when VNAV can provide a proper prediction
+        if (!isActive && this.previousLeg.to.additionalData.predictedSpeed) {
+            kts = this.previousLeg.to.additionalData.predictedSpeed;
+        } else {
+            kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
+        }
 
         const courseChange = mod(nextLeg.bearing - previousLeg.bearing + 180, 360) - 180;
 

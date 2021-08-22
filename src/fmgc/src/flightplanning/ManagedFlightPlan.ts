@@ -874,6 +874,32 @@ export class ManagedFlightPlan {
                 }
             }
         }
+        this.updateArrivalApproachSpeeds();
+    }
+
+    /**
+     * basic speed prediction until VNAV is ready...
+     * helps us draw arrival and approach paths reasonably during cruise
+     * @todo replace with actual predictions from VNAV!
+     */
+    private updateArrivalApproachSpeeds(): void {
+        let speed = 250; // initial guess...
+        this.getSegment(SegmentType.Arrival).waypoints.forEach((wp) => {
+            if ((wp.speedConstraint ?? -1) > 100) {
+                speed = wp.speedConstraint;
+            } else if (wp.icao.substring(3, 7).trim().length > 0) {
+                // terminal waypoint, we assume a reasonable approach transition speed
+                speed = Math.max(180, speed);
+            }
+            wp.additionalData.predictedSpeed = speed;
+        });
+        speed = Math.min(160, speed); // slow down a bit for approach
+        this.getSegment(SegmentType.Approach).waypoints.forEach((wp) => {
+            if ((wp.speedConstraint ?? -1) > 100) {
+                speed = wp.speedConstraint;
+            }
+            wp.additionalData.predictedSpeed = speed;
+        });
     }
 
     /**
@@ -975,6 +1001,7 @@ export class ManagedFlightPlan {
                 }
             }
         }
+        this.updateArrivalApproachSpeeds();
     }
 
     /**
