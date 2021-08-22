@@ -3,6 +3,7 @@ use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
 };
+use std::f64::consts::E;
 use std::string::String;
 use std::time::Duration;
 use uom::si::{
@@ -663,15 +664,12 @@ impl SimulationElement for HydraulicLoop {
 }
 
 pub struct HydraulicCircuit {
-    pump_section: Section,
+    pump_sections: Vec<Section>,
     system_section: Section,
-    pump_to_system_checkvalve: CheckValve,
+    pump_to_system_checkvalves: Vec<CheckValve>,
 
     fluid: Fluid,
     reservoir: Reservoir,
-
-    pump_section_pressure_switch: PressureSwitch,
-    system_section_pressure_switch: PressureSwitch,
 
     total_actuators_consumed_volume: Volume,
     total_actuators_returned_volume: Volume,
@@ -695,6 +693,7 @@ impl HydraulicCircuit {
         [0.0, 0.001, 0.005, 0.05, 0.08, 0.15, 0.25, 0.35, 0.5, 0.5];
 
     pub fn new(
+        pump_sections_number: usize,
         priming_volume_percent: f64,
         high_pressure_max_volume: Volume,
         reservoir_volume: Volume,
@@ -704,16 +703,30 @@ impl HydraulicCircuit {
         pump_pressure_switch_lo_hyst: Pressure,
         pump_pressure_switch_hi_hyst: Pressure,
     ) -> Self {
-        let system_section_volume =
-            high_pressure_max_volume - Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL);
-        Self {
-            pump_section: Section::new(
+        let mut pump_sections: Vec<Section> = Vec::new();
+        let mut pump_to_system_checkvalves: Vec<CheckValve> = Vec::new();
+
+        for _ in 0..pump_sections_number {
+            pump_sections.push(Section::new(
                 Volume::new::<gallon>(
                     Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume_percent / 100.,
                 ),
                 Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL),
                 None,
-            ),
+                pump_pressure_switch_lo_hyst,
+                pump_pressure_switch_hi_hyst,
+            ));
+
+            pump_to_system_checkvalves.push(CheckValve::new(VolumeRate::new::<gallon_per_second>(
+                Self::VALVE_MAX_FLOW_GAL_P_S,
+            )));
+        }
+
+        let system_section_volume = high_pressure_max_volume
+            - Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL)
+                * pump_sections_number as f64;
+        Self {
+            pump_sections,
             system_section: Section::new(
                 system_section_volume * priming_volume_percent / 100.,
                 system_section_volume,
@@ -725,22 +738,14 @@ impl HydraulicCircuit {
                     Self::ACCUMULATOR_FLOW_CARAC_GAL_P_S,
                     false,
                 )),
+                system_pressure_switch_lo_hyst,
+                system_pressure_switch_hi_hyst,
             ),
-            pump_to_system_checkvalve: CheckValve::new(VolumeRate::new::<gallon_per_second>(
-                Self::VALVE_MAX_FLOW_GAL_P_S,
-            )),
+            pump_to_system_checkvalves,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
             reservoir: Reservoir::new(
                 Volume::new::<gallon>(Self::RESERVOIR_MAX_VOLUME_GAL),
                 reservoir_volume,
-            ),
-            pump_section_pressure_switch: PressureSwitch::new(
-                pump_pressure_switch_hi_hyst,
-                pump_pressure_switch_lo_hyst,
-            ),
-            system_section_pressure_switch: PressureSwitch::new(
-                system_pressure_switch_hi_hyst,
-                system_pressure_switch_lo_hyst,
             ),
             total_actuators_consumed_volume: Volume::new::<gallon>(0.),
             total_actuators_returned_volume: Volume::new::<gallon>(0.),
@@ -749,72 +754,104 @@ impl HydraulicCircuit {
 
     pub fn update(
         &mut self,
-        main_section_pump: &mut impl PressureSource,
+        main_section_pumps: &mut Vec<&mut impl PressureSource>,
         system_section_pump: &mut impl PressureSource,
         context: &UpdateContext,
     ) {
-        self.pump_section
-            .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
+        for section in &mut self.pump_sections {
+            section
+                .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
+        }
         self.system_section
             .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
 
-        self.pump_section
-            .update_delta_vol(&mut self.reservoir, &context);
+        for section in &mut self.pump_sections {
+            section.update_delta_vol(&mut self.reservoir, &context);
+        }
         self.system_section
             .update_delta_vol(&mut self.reservoir, &context);
 
-        self.pump_section.update_target_volume_after_consumer_pass(
-            &self.fluid,
-            Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-        );
+        for section in &mut self.pump_sections {
+            section.update_target_volume_after_consumer_pass(
+                &self.fluid,
+                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
+            );
+        }
         self.system_section
             .update_target_volume_after_consumer_pass(
                 &self.fluid,
                 Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
             );
 
-        self.pump_section
-            .update_max_pump_capacity(main_section_pump);
+        let mut idx = 0;
+        for section in &mut self.pump_sections {
+            section.update_max_pump_capacity(main_section_pumps[idx]);
+            idx += 1;
+        }
         self.system_section
             .update_max_pump_capacity(system_section_pump);
 
-        self.pump_to_system_checkvalve.update_forward_pass(
-            &self.pump_section,
-            &self.system_section,
-            &context,
-        );
-        self.pump_to_system_checkvalve.update_backward_pass(
-            &self.pump_section,
-            &self.system_section,
-            &context,
-        );
+        let mut idx = 0;
+        for valve in &mut self.pump_to_system_checkvalves {
+            valve.update_forward_pass(&self.pump_sections[idx], &self.system_section, &context);
+            idx += 1;
+        }
 
-        self.pump_section.update_actual_pumping_states(
-            main_section_pump,
-            Vec::new(),
-            vec![&self.pump_to_system_checkvalve],
-            &mut self.reservoir,
-            &context,
-            &self.fluid,
-        );
+        self.update_valves_flows();
+
+        let mut idx = 0;
+        for section in &mut self.pump_sections {
+            section.update_actual_pumping_states(
+                main_section_pumps[idx],
+                &Vec::new(),
+                &self.pump_to_system_checkvalves,
+                &mut self.reservoir,
+                &context,
+                &self.fluid,
+            );
+            idx += 1;
+        }
 
         self.system_section.update_actual_pumping_states(
             system_section_pump,
-            vec![&self.pump_to_system_checkvalve],
-            Vec::new(),
+            &self.pump_to_system_checkvalves,
+            &Vec::new(),
             &mut self.reservoir,
             &context,
             &self.fluid,
         );
-
-        self.pump_section_pressure_switch
-            .update(self.pump_section.pressure());
-        self.system_section_pressure_switch
-            .update(self.system_section.pressure());
     }
 
-    pub fn pump_pressure(&self) -> Pressure {
-        self.pump_section.pressure()
+    fn update_valves_flows(&mut self) {
+        let mut total_max_valves_volume = Volume::new::<gallon>(0.);
+
+        for valve in &mut self.pump_to_system_checkvalves {
+            total_max_valves_volume += valve.max_virtual_volume;
+        }
+
+        let used_system_volume = self
+            .system_section
+            .volume_target
+            .max(Volume::new::<gallon>(0.));
+
+        if used_system_volume >= total_max_valves_volume {
+            // If all the volume upstream is used by system section, each valve will provide it's max volume available
+            for valve in &mut self.pump_to_system_checkvalves {
+                valve.current_volume = valve.min_physical_volume.max(valve.max_virtual_volume);
+            }
+        } else {
+            if total_max_valves_volume > Volume::new::<gallon>(0.) {
+                let needed_ratio = used_system_volume / total_max_valves_volume;
+
+                for valve in &mut self.pump_to_system_checkvalves {
+                    valve.current_volume = valve.max_virtual_volume * needed_ratio;
+                }
+            }
+        }
+    }
+
+    pub fn pump_pressure(&self, idx: usize) -> Pressure {
+        self.pump_sections[idx].pressure()
     }
 
     pub fn system_pressure(&self) -> Pressure {
@@ -825,12 +862,12 @@ impl HydraulicCircuit {
         self.system_section.accumulator_volume()
     }
 
-    pub fn pump_section_switch_pressurised(&self) -> bool {
-        self.pump_section_pressure_switch.is_pressurised()
+    pub fn pump_section_switch_pressurised(&self, idx: usize) -> bool {
+        self.pump_sections[idx].pressure_switch()
     }
 
     pub fn system_section_switch_pressurised(&self) -> bool {
-        self.system_section_pressure_switch.is_pressurised()
+        self.system_section.pressure_switch()
     }
 
     pub fn reservoir_level(&self) -> Volume {
@@ -855,6 +892,8 @@ pub struct Section {
     max_pumpable_volume: Volume,
     volume_target: Volume,
 
+    pressure_switch: PressureSwitch,
+
     total_actuator_consumed_volume: Volume,
     total_actuator_returned_volume: Volume,
 }
@@ -863,6 +902,8 @@ impl Section {
         current_volume: Volume,
         max_high_press_volume: Volume,
         accumulator: Option<Accumulator>,
+        pressure_switch_lo_hyst: Pressure,
+        pressure_switch_hi_hyst: Pressure,
     ) -> Self {
         Self {
             current_volume,
@@ -876,6 +917,8 @@ impl Section {
             max_pumpable_volume: Volume::new::<gallon>(0.),
             volume_target: Volume::new::<gallon>(0.),
 
+            pressure_switch: PressureSwitch::new(pressure_switch_hi_hyst, pressure_switch_lo_hyst),
+
             total_actuator_consumed_volume: Volume::new::<gallon>(0.),
             total_actuator_returned_volume: Volume::new::<gallon>(0.),
         }
@@ -884,6 +927,10 @@ impl Section {
     /// Gives the exact volume of fluid needed to get to any target_press pressure
     fn volume_to_reach_target(&self, target_press: Pressure, fluid: &Fluid) -> Volume {
         (target_press - self.current_pressure) * (self.max_high_press_volume) / fluid.bulk_mod()
+    }
+
+    fn pressure_switch(&self) -> bool {
+        self.pressure_switch.is_pressurised()
     }
 
     pub fn update_target_volume(&mut self, fluid: &Fluid, target_pressure: Pressure) {
@@ -951,8 +998,8 @@ impl Section {
     pub fn update_actual_pumping_states(
         &mut self,
         pump: &mut impl PressureSource,
-        upstream_valves: Vec<&CheckValve>,
-        downstream_valves: Vec<&CheckValve>,
+        upstream_valves: &Vec<CheckValve>,
+        downstream_valves: &Vec<CheckValve>,
         reservoir: &mut Reservoir,
         context: &UpdateContext,
         fluid: &Fluid,
@@ -983,7 +1030,7 @@ impl Section {
         delta_vol += total_volume_pumped;
 
         // If we are finishing to prime the section, we must take care of delta vol part used to reach
-        // total volume, and the rest used to rise pressure
+        // total volume, and the rest used to actually rise pressure
         let volume_updated = self.current_volume + delta_vol;
         let mut volume_actually_over_max_volume = delta_vol;
         if self.current_volume < self.max_high_press_volume
@@ -1007,6 +1054,8 @@ impl Section {
         }
 
         self.current_flow = delta_vol / context.delta_as_time();
+
+        self.pressure_switch.update(self.current_pressure);
     }
 
     fn delta_pressure_from_delta_volume(&self, delta_vol: Volume, fluid: &Fluid) -> Pressure {
@@ -1037,16 +1086,28 @@ impl Section {
 pub struct CheckValve {
     is_opened: bool,
     max_flow: VolumeRate,
+
     current_volume: Volume,
     max_virtual_volume: Volume,
+    min_physical_volume: Volume,
+
+    pressure_delta_filtered: Pressure,
+    last_pressure_delta_filtered: Pressure,
 }
 impl CheckValve {
+    const DELTA_PRESSURE_FILTER_TIMECONST_S: f64 = 0.01;
+
     pub fn new(max_flow: VolumeRate) -> Self {
         Self {
             is_opened: true,
             max_flow,
+
             current_volume: Volume::new::<gallon>(0.),
             max_virtual_volume: Volume::new::<gallon>(0.),
+            min_physical_volume: Volume::new::<gallon>(0.),
+
+            pressure_delta_filtered: Pressure::new::<psi>(0.),
+            last_pressure_delta_filtered: Pressure::new::<psi>(0.),
         }
     }
 
@@ -1057,16 +1118,38 @@ impl CheckValve {
         context: &UpdateContext,
     ) {
         if self.is_opened {
+            let delta_pressure = upstream_section.pressure() - downstream_section.pressure();
+
             let available_volume_from_upstream =
                 upstream_section.max_pumpable_volume - upstream_section.volume_target;
+
+            self.last_pressure_delta_filtered = self.pressure_delta_filtered;
+            self.pressure_delta_filtered = self.pressure_delta_filtered
+                + (delta_pressure - self.pressure_delta_filtered)
+                    * (1.
+                        - E.powf(
+                            -context.delta_as_secs_f64() / Self::DELTA_PRESSURE_FILTER_TIMECONST_S,
+                        ));
 
             if available_volume_from_upstream.get::<gallon>() > 0. {
                 self.max_virtual_volume = available_volume_from_upstream;
             } else {
                 self.max_virtual_volume = Volume::new::<gallon>(0.);
             }
+
+            let delta_pressure_error =
+                self.pressure_delta_filtered - self.last_pressure_delta_filtered;
+
+            let p_term = 0.000002 * delta_pressure_error.get::<psi>();
+            let i_term = 0.000002 * self.pressure_delta_filtered.get::<psi>();
+
+            self.min_physical_volume += Volume::new::<gallon>(p_term + i_term);
+
+            //TODO check if limit to max flow of valve here
+            self.min_physical_volume = self.min_physical_volume.max(Volume::new::<gallon>(0.));
         } else {
             self.max_virtual_volume = Volume::new::<gallon>(0.);
+            self.min_physical_volume = Volume::new::<gallon>(0.);
         }
     }
 

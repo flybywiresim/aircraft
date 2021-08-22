@@ -244,7 +244,8 @@ fn hyd_circuit_basic(path: &str) {
     let mut epump_controller = TestPumpController::commanding_depressurise();
 
     let mut hydraulic_loop = HydraulicCircuit::new(
-        98.,
+        1,
+        95.,
         Volume::new::<gallon>(15.),
         Volume::new::<gallon>(3.6),
         Pressure::new::<psi>(1450.),
@@ -258,9 +259,9 @@ fn hyd_circuit_basic(path: &str) {
     hyd_circuit_history.init(
         0.0,
         vec![
-            hydraulic_loop.pump_pressure().get::<psi>(),
+            hydraulic_loop.pump_pressure(0).get::<psi>(),
             hydraulic_loop.system_pressure().get::<psi>(),
-            hydraulic_loop.pump_section_switch_pressurised() as u8 as f64,
+            hydraulic_loop.pump_section_switch_pressurised(0) as u8 as f64,
             hydraulic_loop.system_section_switch_pressurised() as u8 as f64,
             hydraulic_loop
                 .system_accumulator_fluid_volume()
@@ -272,41 +273,41 @@ fn hyd_circuit_basic(path: &str) {
         0.0,
         vec![
             hydraulic_loop.reservoir_level().get::<gallon>(),
-            hydraulic_loop.pump_pressure().get::<psi>(),
+            hydraulic_loop.pump_pressure(0).get::<psi>(),
             hydraulic_loop.system_pressure().get::<psi>(),
         ],
     );
 
     let mut edp_rpm = 0.;
     let mut epump_rpm = 0.;
-    for x in 0..800 {
+    for x in 0..1000 {
         if x >= 100 {
-            // After 1s pressurising edp
+            // After 10s pressurising edp
             edp_controller.command_pressurise();
             edp_rpm = 4000.;
         }
 
         if x >= 300 {
-            // After 1s pressurising edp
-            edp_controller.command_depressurise();
-            edp_rpm = 4000.;
+            // After 30s depressurising edp
+            //edp_controller.command_depressurise();
+            edp_rpm = 0.;
         }
 
         if x >= 350 {
-            // After 1s pressurising edp
+            // After 35s pressurising epump
             epump_controller.command_pressurise();
             epump_rpm = 7200.;
         }
 
         if x >= 500 {
-            // After 1s pressurising edp
-            epump_controller.command_depressurise();
-            epump_rpm = 7200.;
+            // After 50s depressurising epump
+            //epump_controller.command_depressurise();
+            epump_rpm = 0.;
         }
 
         edp.update(
             &context,
-            hydraulic_loop.pump_pressure(),
+            hydraulic_loop.pump_pressure(0),
             hydraulic_loop.reservoir(),
             edp_rpm,
             &edp_controller,
@@ -323,14 +324,14 @@ fn hyd_circuit_basic(path: &str) {
             &epump_controller,
         );
 
-        hydraulic_loop.update(&mut edp, &mut epump, &context);
+        hydraulic_loop.update(&mut vec![&mut edp], &mut epump, &context);
 
         hyd_circuit_history.update(
             context.delta_as_secs_f64(),
             vec![
-                hydraulic_loop.pump_pressure().get::<psi>(),
+                hydraulic_loop.pump_pressure(0).get::<psi>(),
                 hydraulic_loop.system_pressure().get::<psi>(),
-                hydraulic_loop.pump_section_switch_pressurised() as u8 as f64,
+                hydraulic_loop.pump_section_switch_pressurised(0) as u8 as f64,
                 hydraulic_loop.system_section_switch_pressurised() as u8 as f64,
                 hydraulic_loop
                     .system_accumulator_fluid_volume()
@@ -341,7 +342,7 @@ fn hyd_circuit_basic(path: &str) {
             context.delta_as_secs_f64(),
             vec![
                 hydraulic_loop.reservoir_level().get::<gallon>(),
-                hydraulic_loop.pump_pressure().get::<psi>(),
+                hydraulic_loop.pump_pressure(0).get::<psi>(),
                 hydraulic_loop.system_pressure().get::<psi>(),
             ],
         );
