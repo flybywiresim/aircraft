@@ -4,19 +4,19 @@ import { LateralMode, VerticalMode } from '@shared/autopilot';
 import { ManagedFlightPlan } from '@fmgc/flightplanning/ManagedFlightPlan';
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
-import { GuidanceComponent } from '../GuidanceComponent';
+import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
+import { Feet } from '@typings/types';
 import { Leg, AltitudeConstraint, AltitudeConstraintType, SpeedConstraint, SpeedConstraintType } from '@fmgc/guidance/lnav/legs';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
+import { GuidanceComponent } from '../GuidanceComponent';
 import { GuidanceController } from '../GuidanceController';
 
 import { Common, FlapConf, VerticalLeg, VerticalWaypointType } from './common';
 import { EngineModel } from './EngineModel';
 import { FlightModel } from './FlightModel';
 import { Predictions } from './Predictions';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { Transition } from '../lnav/transitions';
 import { Type1Transition } from '../lnav/transitions/Type1';
-import { Feet, Knots } from '@typings/types';
 
 export class ClimbProfile implements GuidanceComponent {
     private guidanceController: GuidanceController;
@@ -308,6 +308,7 @@ export class ClimbProfile implements GuidanceComponent {
         }
 
         const firstStepSize = (Math.ceil((this.initialAltitude + 100) / 1000) * 1000) - this.initialAltitude;
+        // TODO: Final step altitude should be minimum of FCU altitude and cruise altitude
         let finalStepAltitude;
         let finalStepSize;
         if (this.targetAltitude % 1000 === 0) {
@@ -337,7 +338,7 @@ export class ClimbProfile implements GuidanceComponent {
         let predFuelWeight = this.fuelWeight - firstStepResult.fuelBurned;
 
         // Loop (ignoring constraints for now)
-        // TODO: stop at each waypoint as well as SPD LIM, and record time elapsed and fuel weight
+        // TODO: stop at each waypoint, and at each alt constraint, as well as SPD LIM, and record time elapsed and fuel weight
         for (let alt = this.initialAltitude + firstStepSize; alt < finalStepAltitude; alt += 1000) {
             const stepResult = Predictions.altitudeStep(
                 alt,

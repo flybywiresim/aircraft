@@ -1,4 +1,3 @@
-// Local imports
 import { MathUtils } from '@shared/MathUtils';
 import { Common, FlapConf, AccelFactorMode } from './common';
 import { EngineModel } from './EngineModel';
