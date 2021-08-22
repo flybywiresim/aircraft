@@ -63,7 +63,7 @@ const Data = ({
         }
 
         setTodData({ calculation: { input: syncedInput, type: calculationType } });
-    }, [calculationInputSyncEnabled, distance, verticalSpeed, pitchAngle]);
+    }, [calculationInputSyncEnabled, distance, verticalSpeed, pitchAngle, calculationType, inputValid, syncedInput]);
 
     const calculationTypes = [
         { label: 'Distance', rightLabel: 'NM', type: TOD_CALCULATION_TYPE.DISTANCE, syncValue: distance, negativeValue: false },
