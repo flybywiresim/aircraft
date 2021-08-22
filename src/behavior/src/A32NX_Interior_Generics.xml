@@ -386,8 +386,8 @@
             - SEQ3_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ3 emissive drives the visibility of the SEQ3 text
             - SEQ4_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ4 emissive drives the visibility of the SEQ4 text
             - INVERTED                          False           Whether or not the switch is OFF by default
-            - LEFT_SINGLE_CODE                  Not present    Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed
-            - LEFT_LEAVE_CODE                   LEFT_SINGLE_CODE Overrides HOLD_SIMVAR, will execute the specified code when the button is released
+            - LEFT_SINGLE_CODE                  Not present     Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed
+            - LEFT_LEAVE_CODE                   Not present     Overrides HOLD_SIMVAR, will execute the specified code when the button is released
     -->
     <Template Name="FBW_Push_Held">
         <DefaultTemplateParameters>
@@ -425,7 +425,7 @@
                             </True>
                             <False>
                                 <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
-                                <LEFT_LEAVE_CODE>#LEFT_SINGLE_CODE#</LEFT_LEAVE_CODE>
+                                <LEFT_LEAVE_CODE></LEFT_LEAVE_CODE>
                             </False>
                         </Condition>
                     </True>
