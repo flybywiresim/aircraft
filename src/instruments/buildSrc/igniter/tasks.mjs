@@ -36,6 +36,10 @@ const ecamPages = [
         name: 'crz-page',
         path: 'SD/Pages/Crz',
     },
+    {
+        name: 'fuel-page',
+        path: 'SD/Pages/Fuel',
+    },
 ];
 
 export function getInputs() {

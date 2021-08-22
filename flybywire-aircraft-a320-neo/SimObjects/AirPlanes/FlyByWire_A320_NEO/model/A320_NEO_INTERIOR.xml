@@ -3951,6 +3951,7 @@
                 <WWISE_EVENT_2>SEToff</WWISE_EVENT_2>
                 <TOOLTIPID>Toggle clock date/time</TOOLTIPID>
                 <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_DATE)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>(&gt;H:A32NX_CHRONO_DATE)</LEFT_LEAVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
