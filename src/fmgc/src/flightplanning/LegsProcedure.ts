@@ -111,6 +111,13 @@ export class LegsProcedure {
           const currentLeg = this._legs[this._currentIndex];
           isLegMappable = true;
 
+          // Filter out DER legs at the start of procedures, as we create our own DER leg
+          // for the departure runway
+          if (this._currentIndex === 0 && currentLeg.fixIcao?.substring(7, 10) === 'DER') {
+              this._currentIndex++;
+              continue;
+          }
+
           // Some procedures don't start with 15 (initial fix) but instead start with a heading and distance from
           // a fix: the procedure then starts with the fix exactly
           if (this._currentIndex === 0 && currentLeg.type === 10 && !this._addedProcedureStart) {
