@@ -96,6 +96,7 @@ class ThrottleAxisMapping {
   std::unique_ptr<LocalVariable> idInputValue;
   std::unique_ptr<LocalVariable> idThrustLeverAngle;
 
+  std::unique_ptr<LocalVariable> idUsingConfig;
   std::unique_ptr<LocalVariable> idUseReverseOnAxis;
   std::unique_ptr<LocalVariable> idDetentReverseLow;
   std::unique_ptr<LocalVariable> idDetentReverseHigh;
@@ -112,6 +113,7 @@ class ThrottleAxisMapping {
 
   std::string LVAR_INPUT_VALUE = "A32NX_THROTTLE_MAPPING_INPUT:";
   std::string LVAR_THRUST_LEVER_ANGLE = "A32NX_AUTOTHRUST_TLA:";
+  std::string LVAR_LOAD_CONFIG = "A32NX_THROTTLE_MAPPING_LOADED_CONFIG:";
   std::string LVAR_USE_REVERSE_ON_AXIS = "A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:";
   std::string LVAR_DETENT_REVERSE_LOW = "A32NX_THROTTLE_MAPPING_REVERSE_LOW:";
   std::string LVAR_DETENT_REVERSE_HIGH = "A32NX_THROTTLE_MAPPING_REVERSE_HIGH:";
