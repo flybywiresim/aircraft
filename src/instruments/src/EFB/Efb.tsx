@@ -178,9 +178,7 @@ const Efb = () => {
             return;
         }
 
-        console.log('Fetching simbriefData');
         const returnedSimbriefData = await getSimbriefData(simbriefUsername);
-        console.info(returnedSimbriefData);
         setSimbriefData({
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,

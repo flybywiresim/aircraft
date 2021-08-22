@@ -1,4 +1,4 @@
-import { useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 
 export class ThrottleSimvar {
     readableName: string;
