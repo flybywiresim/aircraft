@@ -14,6 +14,7 @@ use uom::si::{
     f64::*,
     pressure::{pascal, psi},
     ratio::{percent, ratio},
+    thermodynamic_temperature::degree_celsius,
     volume::{cubic_inch, cubic_meter, gallon},
 };
 
@@ -31,6 +32,7 @@ pub trait ControllablePneumaticValve: PneumaticValve {
 pub trait PneumaticContainer {
     fn pressure(&self) -> Pressure;
     fn volume(&self) -> Volume; // Not the volume of gas, but the physical measurements
+    fn temperature(&self) -> ThermodynamicTemperature;
     fn change_volume(&mut self, volume: Volume);
 }
 
@@ -38,6 +40,7 @@ pub trait PneumaticContainer {
 pub struct DefaultPipe {
     volume: Volume,
     pressure: Pressure,
+    temperature: ThermodynamicTemperature,
     fluid: Fluid,
 }
 impl PneumaticContainer for DefaultPipe {
@@ -49,22 +52,41 @@ impl PneumaticContainer for DefaultPipe {
         self.volume
     }
 
+    fn temperature(&self) -> ThermodynamicTemperature {
+        self.temperature
+    }
+
     // Adds or removes a certain amount of air
     fn change_volume(&mut self, volume: Volume) {
         self.pressure += self.calculate_pressure_change_for_volume_change(volume);
+        self.update_temperature_for_volume_change(volume);
     }
 }
 impl DefaultPipe {
-    pub fn new(volume: Volume, fluid: Fluid, pressure: Pressure) -> Self {
+    const HEAT_CAPACITY_RATIO: f64 = 1.4;
+
+    pub fn new(
+        volume: Volume,
+        fluid: Fluid,
+        pressure: Pressure,
+        temperature: ThermodynamicTemperature,
+    ) -> Self {
         DefaultPipe {
             volume,
             fluid,
             pressure,
+            temperature,
         }
     }
 
     fn calculate_pressure_change_for_volume_change(&self, volume: Volume) -> Pressure {
         self.fluid.bulk_mod() * volume / self.volume()
+    }
+
+    fn update_temperature_for_volume_change(&mut self, volume: Volume) {
+        // There is no powf function for SI quantities (even without units)...
+        self.temperature *= (1. + volume.get::<cubic_meter>() / self.volume.get::<cubic_meter>())
+            .powf(Self::HEAT_CAPACITY_RATIO - 1.);
     }
 
     fn vol_to_target(&self, target_press: Pressure) -> Volume {
@@ -255,6 +277,10 @@ impl PneumaticContainer for CompressionChamber {
         self.pipe.volume()
     }
 
+    fn temperature(&self) -> ThermodynamicTemperature {
+        self.pipe.temperature()
+    }
+
     fn change_volume(&mut self, volume: Volume) {
         self.pipe.change_volume(volume);
     }
@@ -266,6 +292,7 @@ impl CompressionChamber {
                 volume,
                 Fluid::new(Pressure::new::<pascal>(142000.)),
                 Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
         }
     }
@@ -310,11 +337,15 @@ pub struct DefaultConsumer {
 }
 impl PneumaticContainer for DefaultConsumer {
     fn pressure(&self) -> Pressure {
-        self.pipe.pressure
+        self.pipe.pressure()
     }
 
     fn volume(&self) -> Volume {
-        self.pipe.volume
+        self.pipe.volume()
+    }
+
+    fn temperature(&self) -> ThermodynamicTemperature {
+        self.pipe.temperature()
     }
 
     fn change_volume(&mut self, volume: Volume) {
@@ -328,6 +359,7 @@ impl DefaultConsumer {
                 volume,
                 Fluid::new(Pressure::new::<pascal>(142000.)),
                 Pressure::new::<psi>(1.),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
         }
     }
@@ -562,18 +594,29 @@ mod tests {
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
         valve.update_move_fluid(&context, &mut from, &mut to);
 
         assert_eq!(from.pressure(), Pressure::new::<psi>(14.));
+        assert_eq!(
+            from.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
+
         assert_eq!(to.pressure(), Pressure::new::<psi>(14.));
+        assert_eq!(
+            to.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
     }
 
     #[test]
@@ -584,18 +627,23 @@ mod tests {
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
         valve.update_move_fluid(&context, &mut from, &mut to);
 
         assert!(from.pressure() < Pressure::new::<psi>(28.));
+        assert!(from.temperature() < ThermodynamicTemperature::new::<degree_celsius>(15.));
+
         assert!(to.pressure() > Pressure::new::<psi>(14.));
+        assert!(to.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
     }
 
     #[test]
@@ -606,11 +654,13 @@ mod tests {
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -636,11 +686,13 @@ mod tests {
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
         let context1 = context(Duration::from_millis(200), Length::new::<foot>(0.));
@@ -651,11 +703,13 @@ mod tests {
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to2 = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
         let context2 = context(Duration::from_millis(400), Length::new::<foot>(0.));
@@ -675,11 +729,13 @@ mod tests {
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
             Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
         let context = context(Duration::from_secs(5), Length::new::<foot>(0.));

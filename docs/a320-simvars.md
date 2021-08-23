@@ -1784,9 +1784,44 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_PNEU_ENG_{number}_TRANSFER_PRESSURE:
+    - Pressure between IP/HP valves but before the pressure regulating valve
+    - PSI
+    - {number}
+        - 1
+        - 2
+
 - A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_PRESSURE:
     - Pressure at precooler inlet for engine bleed system
     - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
+    - Temperature in intermediate pressure compression chamber
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_HP_TEMPERATURE:
+    - Temperature in high pressure compression chamber
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_TRANSFER_TEMPERATURE:
+    - Temperature between IP/HP valves but before the pressure regulating valve
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_TEMPERATURE:
+    - Temperature at precooler inlet for engine bleed system
+    - Degree celsius
     - {number}
         - 1
         - 2

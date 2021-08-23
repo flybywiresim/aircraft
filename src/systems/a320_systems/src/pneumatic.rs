@@ -6,6 +6,7 @@ use uom::si::{
     f64::*,
     pressure::{pascal, psi},
     ratio::{percent, ratio},
+    thermodynamic_temperature::degree_celsius,
     volume::cubic_meter,
     volume_rate::cubic_meter_per_second,
 };
@@ -338,38 +339,13 @@ trait EngineBleedDataProvider {
     fn hp_pressure(&self) -> Pressure;
     fn transfer_pressure(&self) -> Pressure;
     fn regulated_pressure(&self) -> Pressure;
+    fn ip_temperature(&self) -> ThermodynamicTemperature;
+    fn hp_temperature(&self) -> ThermodynamicTemperature;
+    fn transfer_temperature(&self) -> ThermodynamicTemperature;
+    fn regulated_temperature(&self) -> ThermodynamicTemperature;
     fn prv_open_amount(&self) -> Ratio;
     fn hpv_open_amount(&self) -> Ratio;
     fn esv_is_open(&self) -> bool;
-}
-impl EngineBleedDataProvider for EngineBleedAirSystem {
-    fn ip_pressure(&self) -> Pressure {
-        self.ip_compression_chamber.pressure()
-    }
-
-    fn hp_pressure(&self) -> Pressure {
-        self.hp_compression_chamber.pressure()
-    }
-
-    fn transfer_pressure(&self) -> Pressure {
-        self.transfer_pressure_pipe.pressure()
-    }
-
-    fn regulated_pressure(&self) -> Pressure {
-        self.regulated_pressure_pipe.pressure()
-    }
-
-    fn prv_open_amount(&self) -> Ratio {
-        self.pr_valve.open_amount()
-    }
-
-    fn hpv_open_amount(&self) -> Ratio {
-        self.hp_valve.open_amount()
-    }
-
-    fn esv_is_open(&self) -> bool {
-        self.es_valve.is_open()
-    }
 }
 
 struct BleedMonitoringComputer {
@@ -582,11 +558,13 @@ impl EngineBleedAirSystem {
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
                 Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             regulated_pressure_pipe: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
                 Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             engine_starter_consumer: DefaultConsumer::new(Volume::new::<cubic_meter>(1.)),
             engine_starter_consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
@@ -652,6 +630,51 @@ impl EngineBleedAirSystem {
         );
     }
 }
+impl EngineBleedDataProvider for EngineBleedAirSystem {
+    fn ip_pressure(&self) -> Pressure {
+        self.ip_compression_chamber.pressure()
+    }
+
+    fn hp_pressure(&self) -> Pressure {
+        self.hp_compression_chamber.pressure()
+    }
+
+    fn transfer_pressure(&self) -> Pressure {
+        self.transfer_pressure_pipe.pressure()
+    }
+
+    fn regulated_pressure(&self) -> Pressure {
+        self.regulated_pressure_pipe.pressure()
+    }
+
+    fn ip_temperature(&self) -> ThermodynamicTemperature {
+        self.ip_compression_chamber.temperature()
+    }
+
+    fn hp_temperature(&self) -> ThermodynamicTemperature {
+        self.hp_compression_chamber.temperature()
+    }
+
+    fn transfer_temperature(&self) -> ThermodynamicTemperature {
+        self.transfer_pressure_pipe.temperature()
+    }
+
+    fn regulated_temperature(&self) -> ThermodynamicTemperature {
+        self.regulated_pressure_pipe.temperature()
+    }
+
+    fn prv_open_amount(&self) -> Ratio {
+        self.pr_valve.open_amount()
+    }
+
+    fn hpv_open_amount(&self) -> Ratio {
+        self.hp_valve.open_amount()
+    }
+
+    fn esv_is_open(&self) -> bool {
+        self.es_valve.is_open()
+    }
+}
 impl SimulationElement for EngineBleedAirSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
     where
@@ -667,17 +690,42 @@ impl SimulationElement for EngineBleedAirSystem {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &format!("PNEU_ENG_{}_IP_PRESSURE", self.number),
-            self.ip_compression_chamber.pressure(),
+            self.ip_pressure(),
         );
 
         writer.write(
             &format!("PNEU_ENG_{}_HP_PRESSURE", self.number),
-            self.hp_compression_chamber.pressure(),
+            self.hp_pressure(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_TRANSFER_PRESSURE", self.number),
+            self.transfer_pressure(),
         );
 
         writer.write(
             &format!("PNEU_ENG_{}_PRECOOLER_INLET_PRESSURE", self.number),
-            self.regulated_pressure_pipe.pressure(),
+            self.regulated_pressure(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_IP_TEMPERATURE", self.number),
+            self.ip_temperature(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_HP_TEMPERATURE", self.number),
+            self.hp_temperature(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_TRANSFER_TEMPERATURE", self.number),
+            self.transfer_temperature(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_PRECOOLER_INLET_TEMPERATURE", self.number),
+            self.regulated_temperature(),
         );
 
         writer.write(
@@ -710,6 +758,10 @@ impl PneumaticContainer for EngineBleedAirSystem {
 
     fn volume(&self) -> Volume {
         self.regulated_pressure_pipe.volume()
+    }
+
+    fn temperature(&self) -> ThermodynamicTemperature {
+        self.regulated_pressure_pipe.temperature()
     }
 
     fn change_volume(&mut self, volume: Volume) {
@@ -810,7 +862,7 @@ mod tests {
 
     use std::{fs::File, time::Duration};
 
-    use uom::si::{length::foot, pressure::pascal};
+    use uom::si::{length::foot, pressure::pascal, thermodynamic_temperature::degree_celsius};
 
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
@@ -1024,6 +1076,22 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_pressure())
         }
 
+        fn ip_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].ip_temperature())
+        }
+
+        fn hp_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].hp_temperature())
+        }
+
+        fn transfer_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].transfer_temperature())
+        }
+
+        fn regulated_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_temperature())
+        }
+
         fn ip_valve_is_open(&self, number: usize) -> bool {
             self.query(|a| a.pneumatic.engine_systems[number - 1].ip_valve.is_open())
         }
@@ -1138,38 +1206,30 @@ mod tests {
         let mut test_bed = test_bed_with()
             .mach_number(MachNumber(0.))
             .in_isa_atmosphere(alt)
-            .stop_eng1()
-            .stop_eng2()
-            .set_bleed_air_running();
+            .idle_eng1()
+            .stop_eng2();
+        // .set_bleed_air_running();
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
         let mut ips = Vec::new();
         let mut c2s = Vec::new();
         let mut c1s = Vec::new();
+        let mut ipts = Vec::new();
+        let mut hpts = Vec::new();
+        let mut c2ts = Vec::new();
+        let mut c1ts = Vec::new();
         let mut hpv_open = Vec::new();
         let mut prv_open = Vec::new();
         let mut ipv_open = Vec::new();
         let mut esv_open = Vec::new();
         let mut abv_open = Vec::new();
 
-        for i in 1..1000 {
+        for i in 1..500 {
             ts.push(i as f64 * 16.);
 
-            // if i == 3 {
-            //     test_bed = test_bed.set_apu_bleed_valve(true).set_bleed_air_pb(false);
-            // }
-
-            // if i > 100 {
-            //     let new_n1 = 0.2 + ((i as f64) - 100.) / 120.;
-            //     let new_n2 = 0.5 + ((i as f64) - 100.) / 200.;
-
-            //     println!("n1: {}", new_n1);
-            //     println!("n2: {}", new_n2);
-
-            //     test_bed = test_bed
-            //         .corrected_n1(Ratio::new::<ratio>(new_n1))
-            //         .corrected_n2(Ratio::new::<ratio>(new_n2));
+            // if i == 100 {
+            //     test_bed = test_bed.start_eng1();
             // }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
@@ -1177,16 +1237,21 @@ mod tests {
             c2s.push(test_bed.transfer_pressure(1).get::<psi>());
             c1s.push(test_bed.regulated_pressure(1).get::<psi>());
 
+            ipts.push(test_bed.ip_temperature(1).get::<degree_celsius>());
+            hpts.push(test_bed.hp_temperature(1).get::<degree_celsius>());
+            c2ts.push(test_bed.transfer_temperature(1).get::<degree_celsius>());
+            c1ts.push(test_bed.regulated_temperature(1).get::<degree_celsius>());
+
             hpv_open.push(test_bed.query(|aircraft| {
-                aircraft.pneumatic.engine_systems[1]
+                aircraft.pneumatic.engine_systems[0]
                     .hp_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 100.
+                    * 10.
             }));
 
             prv_open.push(test_bed.query(|aircraft| {
-                aircraft.pneumatic.engine_systems[1]
+                aircraft.pneumatic.engine_systems[0]
                     .pr_valve
                     .open_amount()
                     .get::<ratio>()
@@ -1194,7 +1259,7 @@ mod tests {
             }));
 
             ipv_open.push(test_bed.query(|aircraft| {
-                aircraft.pneumatic.engine_systems[1]
+                aircraft.pneumatic.engine_systems[0]
                     .ip_valve
                     .open_amount()
                     .get::<ratio>()
@@ -1202,7 +1267,7 @@ mod tests {
             }));
 
             esv_open.push(test_bed.query(|aircraft| {
-                aircraft.pneumatic.engine_systems[1]
+                aircraft.pneumatic.engine_systems[0]
                     .es_valve
                     .open_amount()
                     .get::<ratio>()
@@ -1220,7 +1285,8 @@ mod tests {
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
-            ts, hps, ips, c2s, c1s, hpv_open, prv_open, ipv_open, esv_open, abv_open,
+            ts, hps, ips, c2s, c1s, hpts, ipts, c2ts, c1ts, hpv_open, prv_open, ipv_open, esv_open,
+            abv_open,
         ];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
 
@@ -1242,21 +1308,15 @@ mod tests {
             .and_run();
 
         test_bed.for_both_engine_systems(|sys| {
-            assert!((sys.ip_pressure() - ambient_pressure).abs() < pressure_tolerance())
-        });
-        test_bed.for_both_engine_systems(|sys| {
-            assert!((sys.hp_pressure() - ambient_pressure).abs() < pressure_tolerance())
-        });
-        test_bed.for_both_engine_systems(|sys| {
-            assert!((sys.transfer_pressure() - ambient_pressure).abs() < pressure_tolerance())
-        });
-        test_bed.for_both_engine_systems(|sys| {
-            assert!((sys.regulated_pressure() - ambient_pressure).abs() < pressure_tolerance())
-        });
+            assert!((sys.ip_pressure() - ambient_pressure).abs() < pressure_tolerance());
+            assert!((sys.hp_pressure() - ambient_pressure).abs() < pressure_tolerance());
+            assert!((sys.transfer_pressure() - ambient_pressure).abs() < pressure_tolerance());
+            assert!((sys.regulated_pressure() - ambient_pressure).abs() < pressure_tolerance());
 
-        test_bed.for_both_engine_systems(|sys| assert!(sys.ip_valve.is_open()));
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.hp_valve.is_open()));
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.pr_valve.is_open()));
+            assert!(sys.ip_valve.is_open());
+            assert!(!sys.hp_valve.is_open());
+            assert!(!sys.pr_valve.is_open());
+        });
 
         assert!(!test_bed.cross_bleed_valve_is_open())
     }
@@ -1375,8 +1435,23 @@ mod tests {
         assert!(test_bed.contains_key("PNEU_ENG_1_HP_PRESSURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_HP_PRESSURE"));
 
+        assert!(test_bed.contains_key("PNEU_ENG_1_TRANSFER_PRESSURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_TRANSFER_PRESSURE"));
+
         assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_INLET_PRESSURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_INLET_PRESSURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_IP_TEMPERATURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_IP_TEMPERATURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_HP_TEMPERATURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_HP_TEMPERATURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_TRANSFER_TEMPERATURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_TRANSFER_TEMPERATURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_INLET_TEMPERATURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_INLET_TEMPERATURE"));
 
         assert!(test_bed.contains_key("PNEU_ENG_1_IP_PRESSURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_IP_PRESSURE"));
