@@ -89,7 +89,6 @@ class A32NX_Boarding {
     }
 
     async init() {
-
         // Set default pax (0)
         await this.setPax(0);
         await this.loadPayload();
@@ -97,7 +96,6 @@ class A32NX_Boarding {
     }
 
     async fillStation(station, paxToFill) {
-
         const pax = Math.min(paxToFill, station.seats);
         station.pax = pax;
 
@@ -105,11 +103,9 @@ class A32NX_Boarding {
     }
 
     async setPax(numberOfPax) {
-
         let paxRemaining = parseInt(numberOfPax);
 
         async function fillStation(station, paxToFill) {
-
             const pax = Math.min(paxToFill, station.seats);
             station.pax = pax;
 
@@ -129,7 +125,6 @@ class A32NX_Boarding {
     }
 
     async loadPayload() {
-
         const MAX_SEAT_AVAILABLE = 174;
         const PAX_WEIGHT = 84;
         const BAG_WEIGHT = 20;
@@ -144,7 +139,6 @@ class A32NX_Boarding {
     }
 
     async loadCargoZero() {
-
         for (const station of Object.values(this.payloadStations)) {
             await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", 0);
         }
