@@ -1,5 +1,7 @@
 const A32NX_Util = {};
 
+let nxNotificationsListener;
+
 A32NX_Util.createDeltaTimeCalculator = (startTime = Date.now()) => {
     let lastTime = startTime;
 
@@ -183,6 +185,136 @@ class UpdateThrottler {
         } else {
             return -1;
         }
+    }
+}
+
+/**
+ * PopUpParams class container for popups to package popup metadata
+ */
+class PopUpParams {
+    constructor() {
+        this.__Type = "PopUpParams";
+        this.buttons = [];
+        this.style = "normal";
+        this.displayGlobalPopup = true;
+    }
+}
+
+/**
+ * NXPopUp utility class to create a pop-up UI element
+ */
+class NXPopUp {
+    constructor() {
+        this.params = new PopUpParams();
+        this.popupListener;
+        this.params.title = "A32NX POPUP";
+        this.params.time = new Date().getTime();
+        this.params.id = this.params.title + "_" + this.params.time;
+        this.params.contentData = "Default Message";
+        this.params.style = "small";
+        this.params.buttons.push(new NotificationButton("TT:MENU.YES", "A32NX_POP_" + this.params.id + "_YES"));
+        this.params.buttons.push(new NotificationButton("TT:MENU.NO", "A32NX_POP_" + this.params.id + "_NO"));
+    }
+
+    _showPopUp(params) {
+        Coherent.trigger("SHOW_POP_UP", params);
+    }
+
+    /**
+     * Show popup with given or already initiated parameters
+     * @param {string} params.title Title for popup - will show in menu bar
+     * @param {string} params.message Popup message
+     * @param {string} params.style Style/Type of popup. Valid types are small|normal|big|big-help
+     * @param {function} callbackYes Callback function -> YES button is clicked.
+     * @param {function} callbackNo Callback function -> NO button is clicked.
+     */
+    showPopUp(params = {}, callbackYes, callbackNo) {
+        if (params.title) {
+            this.params.title = params.title;
+        }
+        if (params.message) {
+            this.params.contentData = params.message;
+        }
+        if (params.style) {
+            this.params.style = params.style;
+        }
+        if (callbackYes) {
+            const yes = (typeof callbackYes === 'function') ? callbackYes : () => callbackYes;
+            Coherent.on("A32NX_POP_" + this.params.id + "_YES", yes);
+        }
+        if (callbackNo) {
+            const no = (typeof callbackNo === 'function') ? callbackNo : () => callbackNo;
+            Coherent.on("A32NX_POP_" + this.params.id + "_NO", no);
+        }
+
+        if (!this.popupListener) {
+            this.popupListener = RegisterViewListener("JS_LISTENER_POPUP", this._showPopUp.bind(null, this.params));
+        } else {
+            this._showPopUp();
+        }
+    }
+}
+
+/**
+ * NXNotif utility class to create a notification event and element
+ */
+class NXNotif {
+    constructor() {
+        const title = 'A32NX ALERT';
+        this.time = new Date().getTime();
+        this.params = {
+            id: `${title}_${this.time}`,
+            title,
+            type: 'MESSAGE',
+            theme: 'GAMEPLAY',
+            image: 'IMAGE_NOTIFICATION',
+            description: 'Default Message',
+            timeout: 10000,
+            time: this.time,
+        };
+    }
+
+    setData(params = {}) {
+        if (params.title) {
+            this.params.title = params.title;
+            this.params.id = `${params.title}_${new Date().getTime()}`;
+        }
+        if (params.type) {
+            this.params.type = params.type;
+        }
+        if (params.theme) {
+            this.params.theme = params.theme;
+        }
+        if (params.image) {
+            this.params.image = params.image;
+        }
+        if (params.message) {
+            this.params.description = params.message;
+        }
+        if (params.timeout) {
+            this.params.timeout = params.timeout;
+        }
+    }
+
+    /**
+     * Show notification with given or already initiated parametrs.
+     * @param {string} params.title Title for notification - will show as the message header
+     * @param {string} params.type Type of Notification - Valid types are MESSAGE|SUBTITLES
+     * @param {string} params.theme Theme of Notification. Valid types are TIPS|GAMEPLAY|SYSTEM
+     * @param {string} params.image Notification image. Valid types are IMAGE_NOTIFICATION|IMAGE_SCORE
+     * @param {string} params.message Notification message
+     * @param {number} params.timeout Time in ms before notification message will disappear
+     */
+    showNotification(params = {}) {
+        this.setData(params);
+
+        if (!nxNotificationsListener) {
+            nxNotificationsListener = RegisterViewListener('JS_LISTENER_NOTIFICATIONS');
+        }
+        nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
+        setTimeout(() => {
+            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, this.params.id);
+        }, this.params.timeout);
     }
 }
 
