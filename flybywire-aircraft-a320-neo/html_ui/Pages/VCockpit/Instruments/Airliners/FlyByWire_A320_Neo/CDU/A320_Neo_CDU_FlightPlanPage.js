@@ -150,7 +150,7 @@ class CDUFlightPlanPage {
 
                 // Color
                 let color = "green";
-                if (fpm.getCurrentFlightPlanIndex() === 1) {
+                if (fpm.isCurrentFlightPlanTemporary()) {
                     color = "yellow";
                 } else if (waypointsAndMarkers[winI].wp === fpm.getActiveWaypoint() && waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
                     color = "white";
@@ -248,7 +248,7 @@ class CDUFlightPlanPage {
                     } else if (rowI === 2) {
                         const tr = Avionics.Utils.computeGreatCircleHeading(waypointsAndMarkers[winI - 1].wp.infos.coordinates, waypointsAndMarkers[winI].wp.infos.coordinates);
                         const track = A32NX_Util.trueToMagnetic(tr, magVar);
-                        bearingTrack = `{green}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
+                        bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
                     }
                 }
                 // Distance
