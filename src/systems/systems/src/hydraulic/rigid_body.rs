@@ -33,6 +33,7 @@ pub struct RigidBodyOnHingeAxis {
 
     control_arm: Vector2<f64>,
     control_arm_actual: Vector2<f64>,
+    actuator_extension_gives_positive_angle: bool,
 
     anchor_point: Vector2<f64>,
 
@@ -86,6 +87,7 @@ impl RigidBodyOnHingeAxis {
             center_of_gravity_actual: center_of_gravity_offset,
             control_arm,
             control_arm_actual: control_arm,
+            actuator_extension_gives_positive_angle: false,
             anchor_point,
             position: min_angle,
             speed: AngularVelocity::new::<radian_per_second>(0.),
@@ -102,12 +104,20 @@ impl RigidBodyOnHingeAxis {
         };
 
         // Make sure the new object has coherent structure by updating internal roations and positions once
+        new_body.initialize_actuator_force_direction();
         new_body.update_all_rotations();
         new_body.update_position_normalized();
         new_body
     }
 
-    pub fn apply_control_arm_force(&mut self, force: Force) {
+    pub fn apply_control_arm_force(&mut self, actuator_local_force: Force) {
+        // Actuator local force convention is positive in extension / negative in compression. We reverse direction depending on
+        // rigid body configuration so we get an absolute force in the rigid body frame of reference
+        let mut absolute_actuator_force = actuator_local_force;
+        if !self.actuator_extension_gives_positive_angle() {
+            absolute_actuator_force = -actuator_local_force;
+        }
+
         // Computing the normalized vector on which force is applied. This is the vector from anchor point of actuator to where
         // it is connected to the rigid body
         let force_support_vector_2d = self.anchor_point - self.control_arm_actual;
@@ -124,10 +134,10 @@ impl RigidBodyOnHingeAxis {
         let control_arm_3d =
             Vector3::new(self.control_arm_actual[0], self.control_arm_actual[1], 0.);
 
-        // Final torque is magnitude of the force applied on the force support vector, cross product with
-        // control arm position relative to hinge.
-        let torque =
-            (force.get::<newton>() * force_support_vector_3d_normalized).cross(&control_arm_3d);
+        // Final torque is control arm position relative to hinge, cross product with
+        // magnitude of the force applied on the force support vector
+        let torque = control_arm_3d
+            .cross(&(absolute_actuator_force.get::<newton>() * force_support_vector_3d_normalized));
 
         let torque_value = Torque::new::<newton_meter>(torque[2]);
 
@@ -150,6 +160,20 @@ impl RigidBodyOnHingeAxis {
         let control_arm_max = rotation_max * self.control_arm;
 
         Length::new::<meter>((self.anchor_point - control_arm_max).norm())
+    }
+
+    // Initialises the object with correct direction of the rigid body when an actuator would be extending or compressing.
+    // If compressing actuator would give a rising rigid body angle, sets TRUE
+    // If extending actuator would give a lowering rigid body angle, sets FALSE
+    fn initialize_actuator_force_direction(&mut self) {
+        self.actuator_extension_gives_positive_angle =
+            self.max_linear_distance_to_anchor() < self.min_linear_distance_to_anchor();
+    }
+
+    // If compressing actuator would give a rising rigid body angle, returns TRUE
+    // If extending actuator would give a lowering rigid body angle, returns FALSE
+    pub fn actuator_extension_gives_positive_angle(&self) -> bool {
+        self.actuator_extension_gives_positive_angle
     }
 
     fn lock_requested_position_in_absolute_reference(&self) -> Angle {
