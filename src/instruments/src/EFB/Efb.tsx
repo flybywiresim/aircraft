@@ -131,7 +131,7 @@ const Efb = () => {
             // eslint-disable-next-line no-restricted-properties
             setBrightness(((Math.sqrt(48 - Math.pow((localTime - 14), 2))) * 14.431) || 0);
         }
-    }, [currentLocalTime]);
+    }, [currentLocalTime, usingAutobrightness]);
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
