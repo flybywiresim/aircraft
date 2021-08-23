@@ -5,6 +5,10 @@ import { Directories } from '../directories.mjs';
 
 const ecamPages = [
     {
+        name: 'eng-page',
+        path: 'SD/Pages/Eng',
+    },
+    {
         name: 'door-page',
         path: 'SD/Pages/Door',
     },
@@ -31,6 +35,10 @@ const ecamPages = [
     {
         name: 'crz-page',
         path: 'SD/Pages/Crz',
+    },
+    {
+        name: 'fuel-page',
+        path: 'SD/Pages/Fuel',
     },
 ];
 

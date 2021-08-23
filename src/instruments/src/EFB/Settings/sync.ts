@@ -3,12 +3,12 @@ import { setSimVar } from '../../util.js';
 
 type SettingSync = { simVar: [name: string, type: string], propertyName: string }
 
-function syncSetting(simVarName, simVarUnit, propertyName) {
+function syncSetting(simVarName, propertyName) {
     const propertyValue = NXDataStore.get<string>(propertyName);
 
     try {
         setSimVar(simVarName, Number.parseInt(propertyValue), 'number');
-    } catch (_) {
+    } catch (e) {
         console.error(`Could not sync simvar '${simVarName}' because it was not of type number`);
     }
 }
@@ -44,6 +44,10 @@ const settingsToSync: SettingSync[] = [
     {
         simVar: ['L:A32NX_EFB_BRIGHTNESS', 'number'],
         propertyName: 'EFB_BRIGHTNESS',
+    },
+    {
+        simVar: ['L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool'],
+        propertyName: 'EFB_USING_AUTOBRIGHTNESS',
     },
 ];
 

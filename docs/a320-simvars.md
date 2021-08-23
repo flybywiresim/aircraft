@@ -8,8 +8,8 @@
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
-1. [Engine and FADEC System](#engine-fadec-system)
-1. [Air Conditioning / Pressurisation / Ventilation](#aircon-press-vent-systems)
+1. [Engine and FADEC System](#engine-and-fadec-system)
+1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
 
 ## Uncategorized
 
@@ -969,6 +969,56 @@
       0 | inactive
       1 | active
 
+- A32NX_MFD_MASK_OPACITY
+    - Number
+    - Current LCD mask opacity for MFDs, used for driving LCD display pixels effect
+
+- A32NX_MCDU_MASK_OPACITY
+    - Number
+    - Current LCD mask opacity for MCDU, used for driving MCDU display pixels effect
+
+- A32NX_ISIS_LS_ACTIVE
+	- Bool
+	- Indicates whether LS scales are shown on the ISIS
+	- Toggled by `H:A32NX_ISIS_LS_PRESSED`
+
+- A32NX_ISIS_BUGS_ACTIVE
+	- Bool
+	- Indicates whether bugs page is shown on the ISIS
+	- Toggled by `H:A32NX_ISIS_BUGS_PRESSED`
+
+- A32NX_ISIS_BUGS_ALT_VALUE:{number}
+	- Number (feet)
+	- Altitude of altitude bug set on ISIS bugs page
+    - {number}
+        - 0
+        - 1
+
+- A32NX_ISIS_BUGS_ALT_ACTIVE:{number}
+	- Bool
+	- Indicates whether altitude bug is shown on the altitude tape of the ISIS
+    - {number}
+        - 0
+        - 1
+
+- A32NX_ISIS_BUGS_SPD_VALUE:{number}
+	- Number (knots)
+	- Speed of speed bug set on ISIS bugs page
+    - {number}
+        - 0
+        - 1
+        - 2
+        - 3
+
+- A32NX_ISIS_BUGS_SPD_ACTIVE:{number}
+	- Bool
+	- Indicates whether speed bug is shown on the speed tape of the ISIS
+    - {number}
+        - 0
+        - 1
+        - 2
+        - 3
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
@@ -1334,6 +1384,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
       THRUST_IDLE | 2
       THRUST_CLB | 3
 
+- A32NX_AUTOPILOT_SPEED_SELECTED
+    - SPEED mode: 100 to 399 (knots)
+    - MACH mode: 0.10 to 0.99 (M)
+    - Indicates the selected speed on the FCU, instantly updated
+    - In case of managed speed mode, the value is -1
+
 - A32NX_AUTOPILOT_FPA_SELECTED
     - Number (Degrees)
     - Indicates the selected FPA on the FCU, instantly updated
@@ -1495,6 +1551,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       LVR_MCT | 4
       LVR_ASYM | 5
 
+- A32NX_AUTOTHRUST_DISABLED
+    - Bool
+    - Indicates if ATHR was disabled by pressing ATHR disconnect buttons longer than 15s
+
 - A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE
     - Enum
     - Indicates the type of current thrust limit
@@ -1552,6 +1612,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ACTIVE | 1
 
 ## Throttle Mapping System
+
+- A32NX_THROTTLE_MAPPING_LOADED_CONFIG:{index}
+    - Bool
+    - Indicates if we are using a configured throttle mapping for throttle axis {index}, first axis has index 1
 
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
     - Number

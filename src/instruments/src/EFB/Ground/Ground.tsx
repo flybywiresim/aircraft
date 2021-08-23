@@ -64,7 +64,7 @@ export const Ground = ({
             clearInterval(pushBackWaitTimerHandle);
             setPushBackWaitTimerHandle(-1);
         }
-    }, [pushBack, tugDirection, activeButtons, pushBackWaitTimerHandle, tugRequestOnly]);
+    }, [pushBack, tugDirection, activeButtons, pushBackWaitTimerHandle, tugRequestOnly, pushBack, tugDirection]);
 
     const getTugHeading = (value: number): number => (tugHeading + value) % 360;
 
@@ -192,7 +192,7 @@ export const Ground = ({
                     <DoorToggle
                         index={0}
                         tugActive={tugActive}
-                        clickCallback={handleClick}
+                        onClick={handleClick}
                         selectionCallback={applySelectedWithSync}
                         id="door-fwd-left"
                         disabled={disabledButtons.includes('door-fwd-left')}
@@ -244,7 +244,7 @@ export const Ground = ({
                     <DoorToggle
                         tugActive={tugActive}
                         index={3}
-                        clickCallback={handleClick}
+                        onClick={handleClick}
                         selectionCallback={applySelectedWithSync}
                         id="door-aft-right"
                         disabled={disabledButtons.includes('door-aft-right')}

@@ -118,7 +118,7 @@ impl A320AlternatingCurrentElectrical {
         emergency_generator: &EmergencyGenerator,
     ) {
         self.ac_bus_2_to_tr_2_contactor
-            .close_when(electricity.is_powered(&self.ac_bus_2) && !self.tr_2.failed());
+            .close_when(electricity.is_powered(&self.ac_bus_2) && !self.tr_2.has_failed());
         electricity.flow(&self.ac_bus_2, &self.ac_bus_2_to_tr_2_contactor);
 
         // On the real aircraft there is a button inside the galley which is taken into
@@ -127,7 +127,7 @@ impl A320AlternatingCurrentElectrical {
         self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
             .close_when(
                 !electricity.is_powered(&self.ac_bus_2)
-                    && !self.tr_2.failed()
+                    && !self.tr_2.has_failed()
                     && electricity.is_powered(ext_pwr),
             );
         electricity.flow(
@@ -281,16 +281,6 @@ impl A320AlternatingCurrentElectrical {
     fn static_inverter_or_emergency_gen_powers_ac_ess_bus(&self) -> bool {
         !(self.static_inv_to_ac_ess_bus_contactor.is_closed()
             && self.ac_ess_to_tr_ess_contactor.is_closed())
-    }
-
-    #[cfg(test)]
-    pub fn fail_tr_1(&mut self) {
-        self.tr_1.fail();
-    }
-
-    #[cfg(test)]
-    pub fn fail_tr_2(&mut self) {
-        self.tr_2.fail();
     }
 
     pub fn gen_contactor_open(&self, number: usize) -> bool {

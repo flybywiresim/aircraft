@@ -5,17 +5,22 @@ use uom::si::{
     f64::*,
     length::foot,
     pressure::inch_of_mercury,
+    ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
 };
 
-use crate::electrical::{Electricity, Potential};
+use crate::{
+    electrical::{Electricity, Potential},
+    failures::FailureType,
+};
 
 use super::{
     Aircraft, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
     Writer,
 };
+use crate::landing_gear::LandingGear;
 
 pub trait TestBed {
     type Aircraft: Aircraft;
@@ -33,6 +38,10 @@ pub trait TestBed {
 
     fn run_with_delta(&mut self, delta: Duration) {
         self.test_bed_mut().run_with_delta(delta);
+    }
+
+    fn fail(&mut self, failure_type: FailureType) {
+        self.test_bed_mut().fail(failure_type);
     }
 
     fn command<V: FnOnce(&mut Self::Aircraft)>(&mut self, func: V) {
@@ -177,6 +186,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
         }
     }
 
+    fn fail(&mut self, failure_type: FailureType) {
+        self.simulation.activate_failure(failure_type);
+    }
+
     fn aircraft(&self) -> &T {
         self.simulation.aircraft()
     }
@@ -222,6 +235,15 @@ impl<T: Aircraft> SimulationTestBed<T> {
 
     fn set_on_ground(&mut self, on_ground: bool) {
         self.write(UpdateContext::IS_ON_GROUND_KEY, on_ground);
+
+        let mut gear_compression = Ratio::new::<ratio>(0.5);
+        if on_ground {
+            gear_compression = Ratio::new::<ratio>(0.8);
+        }
+
+        self.write(LandingGear::GEAR_CENTER_COMPRESSION, gear_compression);
+        self.write(LandingGear::GEAR_LEFT_COMPRESSION, gear_compression);
+        self.write(LandingGear::GEAR_RIGHT_COMPRESSION, gear_compression);
     }
 
     fn set_ambient_pressure(&mut self, ambient_pressure: Pressure) {
