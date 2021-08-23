@@ -630,7 +630,7 @@ impl SimulatorAspect for CargoDoors {
         sim_connect: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.forward_cargo_door_position
-            .set_value(self.fwd_position * 100.);
+            .set_value(self.fwd_position);
 
         Ok(())
     }
