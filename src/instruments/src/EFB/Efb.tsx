@@ -131,7 +131,7 @@ const Efb = () => {
             // eslint-disable-next-line no-restricted-properties
             setBrightness(((Math.sqrt(48 - Math.pow((localTime - 14), 2))) * 14.431) || 0);
         }
-    }, [currentLocalTime]);
+    }, [currentLocalTime, usingAutobrightness]);
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
@@ -178,9 +178,7 @@ const Efb = () => {
             return;
         }
 
-        console.log('Fetching simbriefData');
         const returnedSimbriefData = await getSimbriefData(simbriefUsername);
-        console.info(returnedSimbriefData);
         setSimbriefData({
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,
