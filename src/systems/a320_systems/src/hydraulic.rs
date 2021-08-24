@@ -86,14 +86,14 @@ impl A320CargoDoorFactory {
 
     // Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     // to it
-    fn cargo_door_assembly() -> HydraulicActuatorAssembly {
+    fn a320_cargo_door_assembly() -> HydraulicActuatorAssembly {
         let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
         let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
         HydraulicActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
     }
 
-    fn new(id: &str) -> CargoDoor {
-        CargoDoor::new(id, A320CargoDoorFactory::cargo_door_assembly())
+    fn new_a320_cargo_door(id: &str) -> CargoDoor {
+        CargoDoor::new(id, A320CargoDoorFactory::a320_cargo_door_assembly())
     }
 }
 
@@ -296,10 +296,12 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(),
 
-            forward_cargo_door: A320CargoDoorFactory::new(Self::FORWARD_CARGO_DOOR_ID),
+            forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
+                Self::FORWARD_CARGO_DOOR_ID,
+            ),
             forward_cargo_door_controller: A320DoorController::new(Self::FORWARD_CARGO_DOOR_ID),
 
-            aft_cargo_door: A320CargoDoorFactory::new(Self::AFT_CARGO_DOOR_ID),
+            aft_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(Self::AFT_CARGO_DOOR_ID),
             aft_cargo_door_controller: A320DoorController::new(Self::AFT_CARGO_DOOR_ID),
         }
     }
