@@ -1033,19 +1033,15 @@ impl Section {
         // total volume, and the rest used to actually rise pressure
         let volume_updated = self.current_volume + delta_vol;
         let mut volume_actually_over_max_volume = delta_vol;
-        if self.current_volume < self.max_high_press_volume
-            && volume_updated > self.max_high_press_volume
-        {
+        if !self.is_primed() && volume_updated > self.max_high_press_volume {
             volume_actually_over_max_volume = volume_updated - self.max_high_press_volume;
-        } else if self.current_volume > self.max_high_press_volume
-            && volume_updated < self.max_high_press_volume
-        {
+        } else if self.is_primed() && volume_updated < self.max_high_press_volume {
             volume_actually_over_max_volume = self.current_volume - self.max_high_press_volume;
         }
 
         self.current_volume = volume_updated;
 
-        if self.current_volume >= self.max_high_press_volume {
+        if self.is_primed() {
             self.current_pressure +=
                 self.delta_pressure_from_delta_volume(volume_actually_over_max_volume, fluid);
             self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
@@ -1060,6 +1056,10 @@ impl Section {
 
     fn delta_pressure_from_delta_volume(&self, delta_vol: Volume, fluid: &Fluid) -> Pressure {
         return delta_vol / self.max_high_press_volume * fluid.bulk_mod();
+    }
+
+    fn is_primed(&self) -> bool {
+        self.current_volume >= self.max_high_press_volume
     }
 
     pub fn pressure(&self) -> Pressure {
@@ -1095,7 +1095,7 @@ pub struct CheckValve {
     last_pressure_delta_filtered: Pressure,
 }
 impl CheckValve {
-    const DELTA_PRESSURE_FILTER_TIMECONST_S: f64 = 0.01;
+    const DELTA_PRESSURE_FILTER_TIMECONST_S: f64 = 0.001;
 
     pub fn new(max_flow: VolumeRate) -> Self {
         Self {
@@ -1120,8 +1120,12 @@ impl CheckValve {
         if self.is_opened {
             let delta_pressure = upstream_section.pressure() - downstream_section.pressure();
 
-            let available_volume_from_upstream =
+            let mut available_volume_from_upstream =
                 upstream_section.max_pumpable_volume - upstream_section.volume_target;
+
+            if !downstream_section.is_primed() {
+                available_volume_from_upstream = upstream_section.max_pumpable_volume;
+            }
 
             self.last_pressure_delta_filtered = self.pressure_delta_filtered;
             self.pressure_delta_filtered = self.pressure_delta_filtered
@@ -1141,12 +1145,18 @@ impl CheckValve {
                 self.pressure_delta_filtered - self.last_pressure_delta_filtered;
 
             let p_term = 0.000002 * delta_pressure_error.get::<psi>();
-            let i_term = 0.000002 * self.pressure_delta_filtered.get::<psi>();
+            let i_term = 0.000001 * self.pressure_delta_filtered.get::<psi>();
 
             self.min_physical_volume += Volume::new::<gallon>(p_term + i_term);
 
             //TODO check if limit to max flow of valve here
             self.min_physical_volume = self.min_physical_volume.max(Volume::new::<gallon>(0.));
+
+            if delta_pressure < Pressure::new::<psi>(10.)
+                && downstream_section.pressure() >= Pressure::new::<psi>(2990.)
+            {
+                self.min_physical_volume = Volume::new::<gallon>(0.);
+            }
         } else {
             self.max_virtual_volume = Volume::new::<gallon>(0.);
             self.min_physical_volume = Volume::new::<gallon>(0.);

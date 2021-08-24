@@ -245,7 +245,7 @@ fn hyd_circuit_basic(path: &str) {
 
     let mut hydraulic_loop = HydraulicCircuit::new(
         1,
-        95.,
+        90.,
         Volume::new::<gallon>(15.),
         Volume::new::<gallon>(3.6),
         Pressure::new::<psi>(1450.),
@@ -279,30 +279,27 @@ fn hyd_circuit_basic(path: &str) {
     );
 
     let mut edp_rpm = 0.;
-    let mut epump_rpm = 0.;
     for x in 0..1000 {
         if x >= 100 {
             // After 10s pressurising edp
             edp_controller.command_pressurise();
-            edp_rpm = 4000.;
+            edp_rpm = 400.;
         }
 
-        if x >= 300 {
-            // After 30s depressurising edp
+        if x >= 500 {
+            // After 50s depressurising edp
             //edp_controller.command_depressurise();
             edp_rpm = 0.;
         }
 
-        if x >= 350 {
+        if x >= 550 {
             // After 35s pressurising epump
             epump_controller.command_pressurise();
-            epump_rpm = 7200.;
         }
 
-        if x >= 500 {
-            // After 50s depressurising epump
-            //epump_controller.command_depressurise();
-            epump_rpm = 0.;
+        if x >= 700 {
+            // After 70s depressurising epump
+            epump_controller.command_depressurise();
         }
 
         edp.update(
