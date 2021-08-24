@@ -66,9 +66,9 @@ Please read the [known Issues and bug reporting](#known-issues-and-bug-reporting
 
 ### Is this going to be "study-level"?
 
-While many in the team dislike the term "study-level" as its use is mostly applicable to certified training devices, we are in fact very dedicated on bringing a high fidelity A320 to the Microsoft Flight Simulator platform.
+While many in the team dislike the term "study-level" as its use is mostly applicable to certified training devices, we are in fact very dedicated on bringing a high fidelity A320neo to the Microsoft Flight Simulator platform.
 
-### Is X feature from the A320 going to be implemented?
+### Is X feature from the A320neo going to be implemented?
 
 Chances are, yes! While we do not guarantee every single detail of the aircraft will eventually be represented, our goal is to produce an extremely accurate simulation based on technical data and real-world testing. This means you can be almost certain every feature of the aircraft will eventually be simulated to the best of the simulator's ability as long as the technical data backs it up.
 
