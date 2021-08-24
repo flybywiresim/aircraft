@@ -449,7 +449,7 @@ impl A320Hydraulic {
             );
 
             self.ram_air_turbine
-                .update_physics(&cur_time_step, &context.indicated_airspeed());
+                .update_physics(&cur_time_step, context.indicated_airspeed());
         }
     }
 

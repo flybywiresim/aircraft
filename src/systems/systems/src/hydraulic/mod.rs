@@ -893,7 +893,7 @@ impl WindTurbine {
         self.rpm
     }
 
-    fn update_generated_torque(&mut self, indicated_speed: &Velocity, stow_pos: f64) {
+    fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
         let cur_aplha = interpolation(
             &Self::RPM_GOVERNOR_BREAKPTS,
             &Self::PROP_ALPHA_MAP,
@@ -936,7 +936,7 @@ impl WindTurbine {
     fn update(
         &mut self,
         delta_time: &Duration,
-        indicated_speed: &Velocity,
+        indicated_speed: Velocity,
         stow_pos: f64,
         displacement_ratio: f64,
     ) {
@@ -1043,12 +1043,12 @@ impl RamAirTurbine {
         self.pump.delta_vol_min = self.pump.delta_vol_max;
     }
 
-    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: &Velocity) {
+    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: Velocity) {
         // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
         let displacement_ratio = self.delta_vol_max().get::<gallon>() / self.max_displacement;
         self.wind_turbine.update(
             &delta_time,
-            &indicated_airspeed,
+            indicated_airspeed,
             self.position,
             displacement_ratio,
         );
@@ -1214,7 +1214,7 @@ mod tests {
                 assert!(rat.wind_turbine.rpm <= 2500.);
             }
 
-            rat.update_physics(&context.delta(), &indicated_airspeed);
+            rat.update_physics(&context.delta(), indicated_airspeed);
             rat.update(&context, &blue_loop, &rat_controller);
             blue_loop.update(
                 &context,
