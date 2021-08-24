@@ -48,46 +48,53 @@ use systems::{
     },
 };
 
-fn a320_cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
-    LinearActuator::new(
-        &rigid_body,
-        2,
-        Length::new::<meter>(0.04422),
-        Length::new::<meter>(0.03366),
-        VolumeRate::new::<gallon_per_second>(0.01),
-        600000.,
-        15000.,
-        500.,
-    )
-}
+struct A320CargoDoorFactory {}
+impl A320CargoDoorFactory {
+    fn a320_cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
+        LinearActuator::new(
+            &rigid_body,
+            2,
+            Length::new::<meter>(0.04422),
+            Length::new::<meter>(0.03366),
+            VolumeRate::new::<gallon_per_second>(0.01),
+            600000.,
+            15000.,
+            500.,
+        )
+    }
 
-// Builds a cargo door body for A320 Neo
-fn a320_cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
-    let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-    let cg_offset = Vector2::new(0., -size[1] / 2.);
+    // Builds a cargo door body for A320 Neo
+    fn a320_cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
+        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
+        let cg_offset = Vector2::new(0., -size[1] / 2.);
 
-    let control_arm = Vector2::new(-0.1597, -0.1614);
-    let anchor = Vector2::new(-0.7596, -0.086);
+        let control_arm = Vector2::new(-0.1597, -0.1614);
+        let anchor = Vector2::new(-0.7596, -0.086);
 
-    RigidBodyOnHingeAxis::new(
-        Mass::new::<kilogram>(130.),
-        size,
-        cg_offset,
-        control_arm,
-        anchor,
-        Angle::new::<degree>(-23.),
-        Angle::new::<degree>(136.),
-        100.,
-        is_locked,
-    )
-}
+        RigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(130.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-23.),
+            Angle::new::<degree>(136.),
+            100.,
+            is_locked,
+        )
+    }
 
-// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
-// to it
-fn cargo_door_assembly() -> HydraulicActuatorAssembly {
-    let cargo_door_body = a320_cargo_door_body(true);
-    let cargo_door_actuator = a320_cargo_door_actuator(&cargo_door_body);
-    HydraulicActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
+    // Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
+    // to it
+    fn cargo_door_assembly() -> HydraulicActuatorAssembly {
+        let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
+        let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
+        HydraulicActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
+    }
+
+    fn new(id: &str) -> CargoDoor {
+        CargoDoor::new(id, A320CargoDoorFactory::cargo_door_assembly())
+    }
 }
 
 pub(super) struct A320Hydraulic {
@@ -289,10 +296,10 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(),
 
-            forward_cargo_door: CargoDoor::new(Self::FORWARD_CARGO_DOOR_ID, cargo_door_assembly()),
+            forward_cargo_door: A320CargoDoorFactory::new(Self::FORWARD_CARGO_DOOR_ID),
             forward_cargo_door_controller: A320DoorController::new(Self::FORWARD_CARGO_DOOR_ID),
 
-            aft_cargo_door: CargoDoor::new(Self::AFT_CARGO_DOOR_ID, cargo_door_assembly()),
+            aft_cargo_door: A320CargoDoorFactory::new(Self::AFT_CARGO_DOOR_ID),
             aft_cargo_door_controller: A320DoorController::new(Self::AFT_CARGO_DOOR_ID),
         }
     }
