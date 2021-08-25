@@ -1417,8 +1417,9 @@ void FlyByWireModelClass::step()
   rtb_Limiterxi_o = rtb_BusAssignment_p_roll_data_computed_in_flight_gain * rtb_Sum1_d5 + rtb_Limiterxi1;
   FlyByWire_Y.out.roll.law_normal.pk_c_deg_s = rtb_Gain1_b;
   FlyByWire_Y.out.roll.law_normal.Phi_c_deg = rtb_Y_o;
-  rtb_BusAssignment_e_roll_law_normal_xi_deg = ((FlyByWire_P.Gain3_Gain_k * rtb_Y_ps + rtb_Y_o) - rtb_GainPhi) *
-    FlyByWire_P.Gain2_Gain_i + FlyByWire_P.Gain1_Gain_mg * rtb_BusAssignment_a_sim_data_pk_deg_s * FlyByWire_P.pKp_Gain;
+  rtb_BusAssignment_e_roll_law_normal_xi_deg = (((FlyByWire_P.Gain3_Gain_k * rtb_Y_ps + rtb_Y_o) - rtb_GainPhi) *
+    FlyByWire_P.Gain2_Gain_i + FlyByWire_P.PreControlGain_Gain * rtb_Gain1_b) + FlyByWire_P.Gain1_Gain_mg *
+    rtb_BusAssignment_a_sim_data_pk_deg_s * FlyByWire_P.pKp_Gain;
   FlyByWire_RateLimiter(static_cast<real_T>(rtb_on_ground), FlyByWire_P.RateLimiterVariableTs_up_dlj,
                         FlyByWire_P.RateLimiterVariableTs_lo_fw, FlyByWire_U.in.time.dt,
                         FlyByWire_P.RateLimiterVariableTs_InitialCondition_p, &rtb_Y_b,

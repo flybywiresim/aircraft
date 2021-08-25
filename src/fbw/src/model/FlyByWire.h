@@ -469,6 +469,7 @@ class FlyByWireModelClass {
     real_T Saturation_UpperSat_n;
     real_T Saturation_LowerSat_o;
     real_T Switch_Threshold_p;
+    real_T PreControlGain_Gain;
     real_T Gain3_Gain_k;
     real_T Gain2_Gain_i;
     real_T Gain1_Gain_mg;
