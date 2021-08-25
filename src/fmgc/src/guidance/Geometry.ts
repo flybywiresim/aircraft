@@ -49,7 +49,7 @@ export class Geometry {
      */
     getGuidanceParameters(ppos, trueTrack, gs) {
         // first, check if we're abeam with one of the transitions (start or end)
-        const fromTransition = this.transitions.get(1);
+        const fromTransition = this.transitions.get(0);
         // TODO RAD
         if (fromTransition && fromTransition.isAbeam(ppos)) {
             return fromTransition.getGuidanceParameters(ppos, trueTrack);
@@ -57,7 +57,7 @@ export class Geometry {
 
         const activeLeg = this.legs.get(1);
 
-        const toTransition = this.transitions.get(2);
+        const toTransition = this.transitions.get(1);
         if (toTransition) {
             if (toTransition.isAbeam(ppos)) {
                 return toTransition.getGuidanceParameters(ppos, trueTrack);
