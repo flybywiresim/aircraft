@@ -793,7 +793,12 @@ impl HydraulicCircuit {
 
         let mut idx = 0;
         for valve in &mut self.pump_to_system_checkvalves {
-            valve.update_forward_pass(&self.pump_sections[idx], &self.system_section, &context);
+            valve.update_forward_pass(
+                &self.pump_sections[idx],
+                &self.system_section,
+                &self.fluid,
+                &context,
+            );
             idx += 1;
         }
 
@@ -837,7 +842,7 @@ impl HydraulicCircuit {
         if used_system_volume >= total_max_valves_volume {
             // If all the volume upstream is used by system section, each valve will provide it's max volume available
             for valve in &mut self.pump_to_system_checkvalves {
-                valve.current_volume = valve.min_physical_volume.max(valve.max_virtual_volume);
+                valve.current_volume = valve.max_virtual_volume;
             }
         } else {
             if total_max_valves_volume > Volume::new::<gallon>(0.) {
@@ -1081,10 +1086,6 @@ pub struct CheckValve {
 
     current_volume: Volume,
     max_virtual_volume: Volume,
-    min_physical_volume: Volume,
-
-    pressure_delta_filtered: Pressure,
-    last_pressure_delta_filtered: Pressure,
 }
 impl CheckValve {
     const DELTA_PRESSURE_FILTER_TIMECONST_S: f64 = 0.001;
@@ -1096,10 +1097,25 @@ impl CheckValve {
 
             current_volume: Volume::new::<gallon>(0.),
             max_virtual_volume: Volume::new::<gallon>(0.),
-            min_physical_volume: Volume::new::<gallon>(0.),
+        }
+    }
 
-            pressure_delta_filtered: Pressure::new::<psi>(0.),
-            last_pressure_delta_filtered: Pressure::new::<psi>(0.),
+    fn volume_to_equalize_pressures(
+        &self,
+        upstream_section: &Section,
+        downstream_section: &Section,
+        fluid: &Fluid,
+    ) -> Volume {
+        let delta_pressure = upstream_section.pressure() - downstream_section.pressure();
+
+        if delta_pressure > Pressure::new::<psi>(0.) {
+            downstream_section.max_high_press_volume
+                * upstream_section.max_high_press_volume
+                * delta_pressure
+                / (fluid.bulk_mod() * downstream_section.max_high_press_volume
+                    + fluid.bulk_mod() * upstream_section.max_high_press_volume)
+        } else {
+            Volume::new::<gallon>(0.)
         }
     }
 
@@ -1107,69 +1123,30 @@ impl CheckValve {
         &mut self,
         upstream_section: &Section,
         downstream_section: &Section,
+        fluid: &Fluid,
         context: &UpdateContext,
     ) {
         if self.is_opened {
-            let delta_pressure = upstream_section.pressure() - downstream_section.pressure();
+            let physical_volume_transfered =
+                self.volume_to_equalize_pressures(upstream_section, downstream_section, fluid);
 
-            let mut available_volume_from_upstream =
-                upstream_section.max_pumpable_volume - upstream_section.volume_target;
+            let mut available_volume_from_upstream = (upstream_section.max_pumpable_volume
+                - upstream_section.volume_target)
+                .max(physical_volume_transfered);
 
             if !downstream_section.is_primed() {
-                available_volume_from_upstream = upstream_section.max_pumpable_volume;
+                available_volume_from_upstream = upstream_section
+                    .max_pumpable_volume
+                    .max(physical_volume_transfered);
             }
-
-            self.last_pressure_delta_filtered = self.pressure_delta_filtered;
-            self.pressure_delta_filtered = self.pressure_delta_filtered
-                + (delta_pressure - self.pressure_delta_filtered)
-                    * (1.
-                        - E.powf(
-                            -context.delta_as_secs_f64() / Self::DELTA_PRESSURE_FILTER_TIMECONST_S,
-                        ));
 
             if available_volume_from_upstream.get::<gallon>() > 0. {
                 self.max_virtual_volume = available_volume_from_upstream;
             } else {
                 self.max_virtual_volume = Volume::new::<gallon>(0.);
             }
-
-            let delta_pressure_error =
-                self.pressure_delta_filtered - self.last_pressure_delta_filtered;
-
-            let p_term = 0.000002 * delta_pressure_error.get::<psi>();
-            let i_term = 0.000001 * self.pressure_delta_filtered.get::<psi>();
-
-            self.min_physical_volume += Volume::new::<gallon>(p_term + i_term);
-
-            //TODO check if limit to max flow of valve here
-            self.min_physical_volume = self.min_physical_volume.max(Volume::new::<gallon>(0.));
-
-            if delta_pressure < Pressure::new::<psi>(10.)
-                && downstream_section.pressure() >= Pressure::new::<psi>(2990.)
-            {
-                self.min_physical_volume = Volume::new::<gallon>(0.);
-            }
         } else {
             self.max_virtual_volume = Volume::new::<gallon>(0.);
-            self.min_physical_volume = Volume::new::<gallon>(0.);
-        }
-    }
-
-    pub fn update_backward_pass(
-        &mut self,
-        upstream_section: &Section,
-        downstream_section: &Section,
-        context: &UpdateContext,
-    ) {
-        if self.is_opened {
-            let used_volume_downstream = self
-                .max_virtual_volume
-                .min(downstream_section.volume_target)
-                .max(Volume::new::<gallon>(0.));
-            self.current_volume =
-                used_volume_downstream.min(self.max_flow * context.delta_as_time());
-        } else {
-            self.current_volume = Volume::new::<gallon>(0.);
         }
     }
 }
