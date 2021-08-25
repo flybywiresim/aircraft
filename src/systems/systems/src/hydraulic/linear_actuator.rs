@@ -381,7 +381,7 @@ impl HydraulicActuatorAssembly {
 #[cfg(test)]
 mod tests {
     extern crate nalgebra as na;
-    use na::{Vector3};
+    use na::Vector3;
 
     use super::*;
 
@@ -673,10 +673,10 @@ mod tests {
 
     fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector3::new(0., -size[1] / 2.,0.);
+        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
 
-        let control_arm = Vector3::new(-0.1597, -0.1614,0.);
-        let anchor = Vector3::new(-0.7596, -0.086,0.);
+        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
+        let anchor = Vector3::new(-0.7596, -0.086, 0.);
 
         RigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
@@ -688,7 +688,7 @@ mod tests {
             Angle::new::<degree>(136.),
             100.,
             is_locked,
-            Vector3::new(0.,0.,1.),
+            Vector3::new(0., 0., 1.),
         )
     }
 

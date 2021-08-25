@@ -1,5 +1,5 @@
 extern crate nalgebra as na;
-use na::{Vector3};
+use na::Vector3;
 
 use std::time::Duration;
 use uom::si::{
@@ -66,11 +66,11 @@ impl A320CargoDoorFactory {
     // Builds a cargo door body for A320 Neo
     fn a320_cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector3::new(0., -size[1] / 2.,0.);
+        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
 
-        let control_arm = Vector3::new(-0.1597, -0.1614,0.);
-        let anchor = Vector3::new(-0.7596, -0.086,0.);
-        let axis_direction = Vector3::new(0.,0.,1.);
+        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
+        let anchor = Vector3::new(-0.7596, -0.086, 0.);
+        let axis_direction = Vector3::new(0., 0., 1.);
         RigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
             size,
