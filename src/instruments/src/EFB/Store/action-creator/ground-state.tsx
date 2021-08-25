@@ -1,4 +1,4 @@
-import { ADD_ACTIVE_BUTTON, ADD_DISABLED_BUTTON, REMOVE_ACTIVE_BUTTON, REMOVE_DISABLED_BUTTON, SET_ACTIVE_BUTTONS, SET_TUG_REQUEST_ONLY } from '../actions';
+import { ADD_ACTIVE_BUTTON, ADD_DISABLED_BUTTON, REMOVE_ACTIVE_BUTTON, REMOVE_DISABLED_BUTTON, SET_ACTIVE_BUTTONS, SET_TUG_REQUEST_ONLY, SET_PUSH_BACK_WAIT_TIMER_HANDLE } from '../actions';
 
 export const addActiveButton = (button) => ({
     type: ADD_ACTIVE_BUTTON,
@@ -28,4 +28,9 @@ export const removeDisabledButton = (elementIndex) => ({
 export const setTugRequestOnly = (tugRequest) => ({
     type: SET_TUG_REQUEST_ONLY,
     tugRequest,
+});
+
+export const setPushBackWaitTimerHandle = (pushBackWaitTimerHandle) => ({
+    type: SET_PUSH_BACK_WAIT_TIMER_HANDLE,
+    pushBackWaitTimerHandle,
 });
