@@ -55,6 +55,7 @@ pub struct RigidBodyOnHingeAxis {
     is_locked: bool,
 
     axis_direction: Vector3<f64>,
+
 }
 impl RigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
@@ -75,7 +76,7 @@ impl RigidBodyOnHingeAxis {
     ) -> Self {
         // This is a very ugly way to calculate the inertia. The inertia about an axis is the distance from that axis. So if the 
         // hinge axis is z, then the inertia is proportional to size[0]^2+size[1]^2. If the hinge axis is y, then 
-        // the inertia is size[0]^2+size[2]^2. This calculation achieve this result.
+        // the inertia is size[0]^2+size[2]^2. This calculation achieve this result. This should be changed.
         let relevant_inertia = (Vector3::new(1.,1.,1.) - axis_direction).dot(&size);
         let relevant_inertia = 0.5*(relevant_inertia*relevant_inertia + (Vector3::new(1.,-1.,1.) - axis_direction).dot(&size)*(Vector3::new(1.,-1.,1.) - axis_direction).dot(&size));
         let inertia_at_cog =
@@ -137,7 +138,7 @@ impl RigidBodyOnHingeAxis {
         let torque = self.control_arm
             .cross(&(absolute_actuator_force.get::<newton>() * force_support_vector_normalized));
 
-        let torque_value = Torque::new::<newton_meter>(torque[2]);
+        let torque_value = Torque::new::<newton_meter>(self.axis_direction.dot(&torque));
 
         self.sum_of_torques += torque_value;
     }
