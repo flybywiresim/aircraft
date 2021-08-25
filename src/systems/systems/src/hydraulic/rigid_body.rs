@@ -1,5 +1,5 @@
 extern crate nalgebra as na;
-use na::{Rotation2, Rotation3, Vector2, Vector3};
+use na::{Rotation3, Vector3,Unit};
 
 use uom::si::{
     acceleration::meter_per_second_squared, angle::radian,
@@ -28,14 +28,14 @@ pub struct RigidBodyOnHingeAxis {
     // size in meters
     size: Vector3<f64>,
 
-    center_of_gravity_offset: Vector2<f64>,
-    center_of_gravity_actual: Vector2<f64>,
+    center_of_gravity_offset: Vector3<f64>,
+    center_of_gravity_actual: Vector3<f64>,
 
-    control_arm: Vector2<f64>,
-    control_arm_actual: Vector2<f64>,
+    control_arm: Vector3<f64>,
+    control_arm_actual: Vector3<f64>,
     actuator_extension_gives_positive_angle: bool,
 
-    anchor_point: Vector2<f64>,
+    anchor_point: Vector3<f64>,
 
     position: Angle,
     speed: AngularVelocity,
@@ -53,6 +53,8 @@ pub struct RigidBodyOnHingeAxis {
     lock_position_request: Ratio,
     is_lock_requested: bool,
     is_locked: bool,
+
+    axis_direction: Vector3<f64>,
 }
 impl RigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
@@ -62,21 +64,24 @@ impl RigidBodyOnHingeAxis {
     pub fn new(
         mass: Mass,
         size: Vector3<f64>,
-        center_of_gravity_offset: Vector2<f64>,
-        control_arm: Vector2<f64>,
-        anchor_point: Vector2<f64>,
+        center_of_gravity_offset: Vector3<f64>,
+        control_arm: Vector3<f64>,
+        anchor_point: Vector3<f64>,
         min_angle: Angle,
         total_travel: Angle,
         natural_damping: f64,
         locked: bool,
+        axis_direction: Vector3<f64>,
     ) -> Self {
         // Basic formula for homogenous body in 3D rectangular shape
+        let relevant_inertia = (Vector3::new(1.,1.,1.) - axis_direction).dot(&size);
+        let relevant_inertia = 0.5*(relevant_inertia*relevant_inertia + (Vector3::new(1.,-1.,1.) - axis_direction).dot(&size)*(Vector3::new(1.,-1.,1.) - axis_direction).dot(&size));
         let inertia_at_cog =
-            (1. / 12.) * mass.get::<kilogram>() * (size[0] * size[0] + size[1] * size[1]);
-
+            (1. / 12.) * mass.get::<kilogram>() * relevant_inertia;
         // Parallel axis theorem to get inertia at hinge axis from inertia at CoG
         let inertia_at_hinge =
             inertia_at_cog + mass.get::<kilogram>() * center_of_gravity_offset.norm_squared();
+
 
         let mut new_body = RigidBodyOnHingeAxis {
             total_travel,
@@ -101,8 +106,8 @@ impl RigidBodyOnHingeAxis {
             lock_position_request: Ratio::new::<ratio>(0.),
             is_lock_requested: locked,
             is_locked: locked,
+            axis_direction,
         };
-
         // Make sure the new object has coherent structure by updating internal roations and positions once
         new_body.initialize_actuator_force_direction();
         new_body.update_all_rotations();
@@ -120,24 +125,15 @@ impl RigidBodyOnHingeAxis {
 
         // Computing the normalized vector on which force is applied. This is the vector from anchor point of actuator to where
         // it is connected to the rigid body
-        let force_support_vector_2d = self.anchor_point - self.control_arm_actual;
-        let force_support_vector_2d_normalized =
-            force_support_vector_2d / force_support_vector_2d.norm();
+        let force_support_vector = self.anchor_point - self.control_arm_actual;
+        let force_support_vector_normalized =
+            force_support_vector / force_support_vector.norm();
 
-        // Adding a dummy 0 component to get 3D coordinates
-        let force_support_vector_3d_normalized = Vector3::new(
-            force_support_vector_2d_normalized[0],
-            force_support_vector_2d_normalized[1],
-            0.,
-        );
-
-        let control_arm_3d =
-            Vector3::new(self.control_arm_actual[0], self.control_arm_actual[1], 0.);
 
         // Final torque is control arm position relative to hinge, cross product with
         // magnitude of the force applied on the force support vector
-        let torque = control_arm_3d
-            .cross(&(absolute_actuator_force.get::<newton>() * force_support_vector_3d_normalized));
+        let torque = self.control_arm
+            .cross(&(absolute_actuator_force.get::<newton>() * force_support_vector_normalized));
 
         let torque_value = Torque::new::<newton_meter>(torque[2]);
 
@@ -149,14 +145,14 @@ impl RigidBodyOnHingeAxis {
     }
 
     pub fn min_linear_distance_to_anchor(&self) -> Length {
-        let rotation_min = Rotation2::new(self.min_angle.get::<radian>());
+        let rotation_min = Rotation3::from_axis_angle(&Unit::new_normalize(self.axis_direction),self.min_angle.get::<radian>());
         let control_arm_min = rotation_min * self.control_arm;
 
         Length::new::<meter>((self.anchor_point - control_arm_min).norm())
     }
 
     pub fn max_linear_distance_to_anchor(&self) -> Length {
-        let rotation_max = Rotation2::new(self.max_angle.get::<radian>());
+        let rotation_max = Rotation3::from_axis_angle(&Unit::new_normalize(self.axis_direction),self.max_angle.get::<radian>());
         let control_arm_max = rotation_max * self.control_arm;
 
         Length::new::<meter>((self.anchor_point - control_arm_max).norm())
@@ -192,7 +188,7 @@ impl RigidBodyOnHingeAxis {
 
     // Rotates the static coordinates of the body according to its current angle to get the actual coordinates
     fn update_all_rotations(&mut self) {
-        let rotation_transform = Rotation2::new(self.position.get::<radian>());
+        let rotation_transform = Rotation3::from_axis_angle(&Unit::new_normalize(self.axis_direction),self.position.get::<radian>());
         self.control_arm_actual = rotation_transform * self.control_arm;
         self.center_of_gravity_actual = rotation_transform * self.center_of_gravity_offset;
     }
@@ -221,21 +217,16 @@ impl RigidBodyOnHingeAxis {
             - plane_acceleration_plane_reference;
 
         // We add a 0 component to make the 2D CG position a 3D vector so we can compute a cross product easily
-        let center_of_gravity_3d = Vector3::new(
-            self.center_of_gravity_actual[0],
-            self.center_of_gravity_actual[1],
-            0.,
-        );
 
         // Force = m * G
         let resultant_force_plane_reference =
             total_acceleration_plane_reference * self.mass.get::<kilogram>();
 
         // The Moment generated by acceleration force is the CoG offset from hinge position cross product with the acceleration force
-        let gravity_moment_vector = center_of_gravity_3d.cross(&resultant_force_plane_reference);
+        let gravity_moment_vector = self.center_of_gravity_actual.cross(&resultant_force_plane_reference);
 
         // We work with only one degree of freedom so final result holds in the hinge rotation component only
-        Torque::new::<newton_meter>(gravity_moment_vector[2])
+        Torque::new::<newton_meter>(gravity_moment_vector.norm())
     }
 
     // A global damping factor that simulates hinge friction and local air resistance
@@ -470,10 +461,10 @@ mod tests {
 
     fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector2::new(0., -size[1] / 2.);
+        let cg_offset = Vector3::new(0., -size[1] / 2.,0.);
 
-        let control_arm = Vector2::new(-0.1597, -0.1614);
-        let anchor = Vector2::new(-0.759, -0.086);
+        let control_arm = Vector3::new(-0.1597, -0.1614,0.);
+        let anchor = Vector3::new(-0.759, -0.086,0.);
 
         RigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
@@ -485,6 +476,7 @@ mod tests {
             Angle::new::<degree>(136.),
             100.,
             is_locked,
+            Vector3::new(0.,0.,1.),
         )
     }
 }
