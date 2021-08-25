@@ -1029,27 +1029,19 @@ impl Section {
 
         delta_vol += total_volume_pumped;
 
-        // If we are finishing to prime the section, we must take care of delta vol part used to reach
-        // total volume, and the rest used to actually rise pressure
-        let volume_updated = self.current_volume + delta_vol;
-        let mut volume_actually_over_max_volume = delta_vol;
-        if !self.is_primed() && volume_updated > self.max_high_press_volume {
-            volume_actually_over_max_volume = volume_updated - self.max_high_press_volume;
-        } else if self.is_primed() && volume_updated < self.max_high_press_volume {
-            volume_actually_over_max_volume = self.current_volume - self.max_high_press_volume;
-        }
+        self.current_volume += delta_vol;
 
-        self.current_volume = volume_updated;
-
-        if self.is_primed() {
-            self.current_pressure +=
-                self.delta_pressure_from_delta_volume(volume_actually_over_max_volume, fluid);
-            self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
-        } else {
-            self.current_pressure = Pressure::new::<psi>(14.7);
-        }
+        self.update_pressure(fluid);
 
         self.current_flow = delta_vol / context.delta_as_time();
+    }
+
+    fn update_pressure(&mut self, fluid: &Fluid) {
+        let fluid_volume_compressed = self.current_volume - self.max_high_press_volume;
+
+        self.current_pressure = Pressure::new::<psi>(14.7)
+            + self.delta_pressure_from_delta_volume(fluid_volume_compressed, fluid);
+        self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
 
         self.pressure_switch.update(self.current_pressure);
     }
