@@ -254,7 +254,7 @@ fn hyd_circuit_basic(path: &str) {
         Pressure::new::<psi>(1750.),
     );
 
-    let context = context(Duration::from_millis(100));
+    let context = context(Duration::from_millis(50));
 
     hyd_circuit_history.init(
         0.0,
@@ -279,25 +279,25 @@ fn hyd_circuit_basic(path: &str) {
     );
 
     let mut edp_rpm = 0.;
-    for x in 0..1000 {
-        if x >= 100 {
+    for x in 0..2000 {
+        if x >= 200 {
             // After 10s pressurising edp
             edp_controller.command_pressurise();
             edp_rpm = 400.;
         }
 
-        if x >= 500 {
+        if x >= 1000 {
             // After 50s depressurising edp
             //edp_controller.command_depressurise();
             edp_rpm = 0.;
         }
 
-        if x >= 550 {
+        if x >= 1100 {
             // After 35s pressurising epump
             epump_controller.command_pressurise();
         }
 
-        if x >= 700 {
+        if x >= 1400 {
             // After 70s depressurising epump
             epump_controller.command_depressurise();
         }
