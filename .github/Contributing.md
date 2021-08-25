@@ -32,6 +32,8 @@ cd a32nx
 
 Note that you should use `run.sh` instead of `run.cmd` if you are on Linux (including WSL).
 
+Also, if using WSL, make sure that the `Vmmem` process is not memory limited, or has at least `10GB` of memory. This is configured in `C:\<user>\.wslconfig`
+
 ## Asobo branch
 
 The master branch only contains files which have been modified from the original package. If you wish to work on a file that isn't present in the master branch, simply copy it over from the latest Asobo branch, and add it in its own commit. Please DO NOT add, modify, or delete files from the Asobo branch.
