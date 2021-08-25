@@ -228,7 +228,7 @@ impl RigidBodyOnHingeAxis {
         let gravity_moment_vector = self.center_of_gravity_actual.cross(&resultant_force_plane_reference);
 
         // We work with only one degree of freedom so final result holds in the hinge rotation component only
-        Torque::new::<newton_meter>(gravity_moment_vector.norm())
+        Torque::new::<newton_meter>(gravity_moment_vector.dot(&self.axis_direction))
     }
 
     // A global damping factor that simulates hinge friction and local air resistance
