@@ -47,7 +47,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
     }, 2_000);
 
     if (geometry) {
-        let legs = Array.from(geometry.legs.values());
+        const legs = Array.from(geometry.legs.values());
         const unslicedLegs = legs;
 
         const origin = flightPlan.originAirfield;
@@ -117,8 +117,8 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
                             ))
                         }
                         {
-                            Array.from(geometry.transitions.values()).map((transition) => (
-                                <DebugTransition transition={transition} mapParams={mapParams} />
+                            Array.from(geometry.transitions.entries()).map(([index, transition]) => (
+                                <DebugTransition transition={transition} index={index} mapParams={mapParams} />
                             ))
                         }
                     </>
@@ -502,10 +502,11 @@ const DebugVMLeg: FC<DebugLegProps<VMLeg>> = ({ leg, mapParams }) => {
 
 export type DebugTransitionProps = {
     transition: Transition,
+    index: number,
     mapParams: MapParameters,
 }
 
-const DebugTransition: FC<DebugTransitionProps> = ({ transition, mapParams }) => {
+const DebugTransition: FC<DebugTransitionProps> = ({ transition, index, mapParams }) => {
     if (!(transition instanceof Type1Transition)) {
         return null;
     }
@@ -521,16 +522,32 @@ const DebugTransition: FC<DebugTransitionProps> = ({ transition, mapParams }) =>
         Math.round(Math.min(fromY, toY) + (Math.abs(toY - fromY) / 2)),
     ];
 
-    let transitionType;
-    if (transition instanceof Type1Transition) {
-        transitionType = 'Type 1';
-    }
+    const transitionType = 'Type 1';
+    const fromLegType = 'TF';
+    const toLegType = (transition.nextLeg instanceof TFLeg) ? 'TF' : 'VM';
+
+    const [itp, ftp] = transition.getTurningPoints();
+    const [inX, inY] = mapParams.coordinatesToXYy(itp);
+    const [outX, outY] = mapParams.coordinatesToXYy(ftp);
 
     return (
         <>
-            <text fill="yellow" x={infoX} y={infoY} fontSize={16}>
+            <text fill="yellow" x={infoX - 15} y={infoY} fontSize={16} textAnchor="end">
                 {transitionType}
+                {' '}
+                (
+                {fromLegType}
+                {' '}
+                -&gt;
+                {' '}
+                {toLegType}
+                ) (
+                {index}
+                )
             </text>
+
+            <circle cx={inX} cy={inY} r={5} fill="yellow" />
+            <circle cx={outX} cy={outY} r={5} fill="yellow" />
         </>
     );
 };

@@ -108,13 +108,14 @@ export class GuidanceManager {
 
         // TODO generalise selection of transitions
         if (nextLeg) {
-            legs.set(2, nextLeg);
             if (activeLeg instanceof TFLeg && !(nextLeg instanceof RFLeg)) {
-                transitions.set(2, new Type1Transition(
+                transitions.set(1, new Type1Transition(
                     activeLeg,
                     nextLeg,
                 ));
             }
+
+            legs.set(2, nextLeg);
         }
 
         return new Geometry(transitions, legs);

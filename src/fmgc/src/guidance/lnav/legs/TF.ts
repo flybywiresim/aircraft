@@ -13,6 +13,7 @@ import {
 } from '@fmgc/guidance/lnav/legs';
 import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { SegmentType } from '@fmgc/wtsdk';
+import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 
 export class TFLeg implements Leg {
     public from: WayPoint;
@@ -203,39 +204,13 @@ export class TFLeg implements Leg {
      */
     getAircraftToLegBearing(ppos: LatLongData): number {
         const aircraftToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(ppos, this.to.infos.coordinates);
+        const aircraftLegBearing = MathUtils.smallCrossingAngle(this.bearing, aircraftToTerminationBearing);
 
-        // Rotate frame of reference to 0deg
-        let correctedLegBearing = this.bearing - aircraftToTerminationBearing;
-        if (correctedLegBearing < 0) {
-            correctedLegBearing = 360 + correctedLegBearing;
-        }
-
-        let aircraftToLegBearing = 180 - correctedLegBearing;
-        if (aircraftToLegBearing < 0) {
-            // if correctedLegBearing was greater than 180 degrees, then its supplementary angle is negative.
-            // In this case, we can subtract it from 360 degrees to obtain the bearing.
-
-            aircraftToLegBearing = 360 + aircraftToLegBearing;
-        }
-
-        return aircraftToLegBearing;
+        return aircraftLegBearing;
     }
 
     getDistanceToGo(ppos: LatLongData): NauticalMiles {
-        const aircraftLegBearing = this.getAircraftToLegBearing(ppos);
-
-        const absDtg = Avionics.Utils.computeGreatCircleDistance(ppos, this.to.infos.coordinates);
-
-        // @todo should be abeam distance
-        if (aircraftLegBearing >= 90 && aircraftLegBearing <= 270) {
-            // Since a line perpendicular to the leg is formed by two 90 degree angles, an aircraftLegBearing outside
-            // (North - 90) and (North + 90) is in the lower quadrants of a plane centered at the TO fix. This means
-            // the aircraft is NOT past the TO fix, and DTG must be positive.
-
-            return absDtg;
-        }
-
-        return -absDtg;
+        return GeoMath.directedDistanceToGo(ppos, this.to.infos.coordinates, this.getAircraftToLegBearing(ppos));
     }
 
     isAbeam(ppos: LatLongAlt): boolean {

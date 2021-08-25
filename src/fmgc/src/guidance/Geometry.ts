@@ -1,16 +1,20 @@
-import { Degrees, NauticalMiles } from '@typings/types';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
+import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
 import { Leg } from '@fmgc/guidance/lnav/legs';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
+import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
+import { GeoMath } from '@fmgc/flightplanning/GeoMath';
+import { MathUtils } from '@shared/MathUtils';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { Degrees, NauticalMiles } from '../../../../typings';
 import { GuidanceParameters } from './ControlLaws';
 
 export const EARTH_RADIUS_NM = 3440.1;
 
 export interface Guidable {
-    getGuidanceParameters(ppos: LatLongData, trueTrack: Degrees): GuidanceParameters | null;
-    getDistanceToGo(ppos: LatLongData): NauticalMiles;
-    isAbeam(ppos: LatLongData): boolean;
+    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | null;
+    getDistanceToGo(ppos: Coordinates): NauticalMiles;
+    isAbeam(ppos: Coordinates): boolean;
 }
 
 export class Geometry {
@@ -136,13 +140,18 @@ export class Geometry {
             return false;
         }
 
-        // FIXME I don't think this works since getActiveLegGeometry doesn't put a transition at n = 2
-        const terminatingTransition = this.transitions.get(2);
+        const transitionAfterActiveLeg = this.transitions.get(1);
+        if (activeLeg instanceof TFLeg && transitionAfterActiveLeg instanceof Type1Transition) {
+            // Sequence at ITP
+            const [transItp] = transitionAfterActiveLeg.getTurningPoints();
 
-        if (terminatingTransition) {
-            const tdttp = terminatingTransition.getTrackDistanceToTerminationPoint(ppos);
+            const legBearing = activeLeg.bearing;
+            const bearingToTransItp = Avionics.Utils.computeGreatCircleHeading(ppos, transItp);
+            const innerAngleWithTransItp = MathUtils.smallCrossingAngle(legBearing, bearingToTransItp);
 
-            return tdttp < 0.001;
+            const directedDtgToTransItp = GeoMath.directedDistanceToGo(ppos, transItp, innerAngleWithTransItp);
+
+            return directedDtgToTransItp < 0;
         }
 
         if (activeLeg) {
