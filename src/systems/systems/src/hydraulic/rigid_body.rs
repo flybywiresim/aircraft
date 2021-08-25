@@ -73,7 +73,9 @@ impl RigidBodyOnHingeAxis {
         locked: bool,
         axis_direction: Vector3<f64>,
     ) -> Self {
-        // Basic formula for homogenous body in 3D rectangular shape
+        // This is a very ugly way to calculate the inertia. The inertia about an axis is the distance from that axis. So if the 
+        // hinge axis is z, then the inertia is proportional to size[0]^2+size[1]^2. If the hinge axis is y, then 
+        // the inertia is size[0]^2+size[2]^2. This calculation achieve this result.
         let relevant_inertia = (Vector3::new(1.,1.,1.) - axis_direction).dot(&size);
         let relevant_inertia = 0.5*(relevant_inertia*relevant_inertia + (Vector3::new(1.,-1.,1.) - axis_direction).dot(&size)*(Vector3::new(1.,-1.,1.) - axis_direction).dot(&size));
         let inertia_at_cog =
