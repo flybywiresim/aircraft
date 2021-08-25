@@ -390,6 +390,7 @@ class FlyByWireModelClass {
     real_T Constant_Value_jz;
     real_T Saturation1_UpperSat_f;
     real_T Saturation1_LowerSat_p;
+    real_T Constant2_Value_l;
     real_T uDLookupTable_tableData_d[25];
     real_T uDLookupTable_bp01Data_l[5];
     real_T uDLookupTable_bp02Data[5];
@@ -474,7 +475,7 @@ class FlyByWireModelClass {
     real_T Gain2_Gain_i;
     real_T Gain1_Gain_mg;
     real_T pKp_Gain;
-    real_T Constant2_Value_l;
+    real_T Constant2_Value_li;
     real_T Gain1_Gain_br;
     real_T Gain1_Gain_cq;
     real_T Saturation_UpperSat_l;
