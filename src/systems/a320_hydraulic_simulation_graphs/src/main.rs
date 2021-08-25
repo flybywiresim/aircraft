@@ -283,7 +283,7 @@ fn hyd_circuit_basic(path: &str) {
         if x >= 200 {
             // After 10s pressurising edp
             edp_controller.command_pressurise();
-            edp_rpm = 400.;
+            edp_rpm = 1300.;
         }
 
         if x >= 1000 {
