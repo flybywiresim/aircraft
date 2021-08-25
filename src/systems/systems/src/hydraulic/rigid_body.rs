@@ -74,11 +74,10 @@ impl RigidBodyOnHingeAxis {
         locked: bool,
         axis_direction: Vector3<f64>,
     ) -> Self {
-        // This is a very ugly way to calculate the inertia. The inertia about an axis is the distance from that axis. So if the 
-        // hinge axis is z, then the inertia is proportional to size[0]^2+size[1]^2. If the hinge axis is y, then 
-        // the inertia is size[0]^2+size[2]^2. This calculation achieve this result. This should be changed.
-        let relevant_inertia = (Vector3::new(1.,1.,1.) - axis_direction).dot(&size);
-        let relevant_inertia = 0.5*(relevant_inertia*relevant_inertia + (Vector3::new(1.,-1.,1.) - axis_direction).dot(&size)*(Vector3::new(1.,-1.,1.) - axis_direction).dot(&size));
+        // The inertia about a given axis is the sum of squares of the size of the rectangle, minus 
+        // the size along the axis dimension
+        let relevant_inertia = size.norm_squared();
+        let relevant_inertia = relevant_inertia - (size.dot(&axis_direction)).powf(2.);
         let inertia_at_cog =
             (1. / 12.) * mass.get::<kilogram>() * relevant_inertia;
         // Parallel axis theorem to get inertia at hinge axis from inertia at CoG
