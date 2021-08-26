@@ -14,6 +14,13 @@ export const usePersistentProperty = (propertyName: string, defaultValue?: strin
         rawPropertySetter(defaultValue);
     }
 
+    useEffect(() => {
+        const unsubscribe = NXDataStore.subscribe<string>(propertyName, (key, value) => rawPropertySetter(value));
+        return () => {
+            unsubscribe();
+        };
+    });
+
     const propertySetter = (value: string) => {
         NXDataStore.set<string>(propertyName, value);
         rawPropertySetter(value);
@@ -25,7 +32,12 @@ export const usePersistentProperty = (propertyName: string, defaultValue?: strin
 export const usePersistentPropertyWithDefault = (propertyName: string, defaultValue: string): [string, (string) => void] => {
     const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get<string>(propertyName, defaultValue));
 
-    NXDataStore.subscribe<string>(propertyName, (key, value) => rawPropertySetter(value));
+    useEffect(() => {
+        const unsubscribe = NXDataStore.subscribe<string>(propertyName, (key, value) => rawPropertySetter(value));
+        return () => {
+            unsubscribe();
+        };
+    });
 
     const propertySetter = (value: string) => {
         NXDataStore.set<string>(propertyName, value);
