@@ -37,7 +37,7 @@ export const usePersistentPropertyWithDefault = <T extends StorageValue>(propert
         return () => {
             unsubscribe();
         };
-    });
+    }, []);
 
     const propertySetter = (value: StorageContents<T>) => {
         NXDataStore.set<T>(propertyName, value);
