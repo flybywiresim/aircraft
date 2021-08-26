@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
-import { Notification } from '@shared/notification';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
@@ -133,10 +132,7 @@ const AircraftConfigurationPage = () => {
                 <SelectGroup>
                     {weightUnitButtons.map((button) => (
                         <SelectItem
-                            onSelect={() => {
-                                setWeightUnit(button.setting);
-                                new Notification().showNotification({ title: 'RELOAD AIRCRAFT', theme: 'GAMEPLAY', message: 'Reload the aircraft to apply settings.' });
-                            }}
+                            onSelect={() => setWeightUnit(button.setting)}
                             selected={weightUnit === button.setting}
                         >
                             {button.name}
