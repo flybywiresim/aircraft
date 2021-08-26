@@ -10,6 +10,7 @@ class CDUAocInit {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCInit;
+        mcdu.pageRedrawCallback = () => CDUAocInit.ShowPage(mcdu);
         mcdu.activeSystem = 'ATSU';
 
         let fltNbr = '_______[color]amber';
@@ -50,7 +51,7 @@ class CDUAocInit {
             ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
         }
 
-        const currentFob = formatWeight(mcdu.getFOB() * mcdu._conversionWeight);
+        const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
         if (currentFob) {
             fob = `{small}${currentFob}{end}[color]green`;
         }
@@ -103,7 +104,7 @@ class CDUAocInit {
         mcdu.page.Current = mcdu.page.AOCInit2;
         mcdu.activeSystem = 'ATSU';
 
-        const currentFob = formatWeight(mcdu.getFOB() * mcdu._conversionWeight);
+        const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
 
         mcdu.refreshPageCallback = () => {
             CDUAocInit.ShowPage2(mcdu);
