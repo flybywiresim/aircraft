@@ -180,7 +180,6 @@
 1. [OVHD] CVR ground test auto-resets on first engine start - @tracernz (Mike)
 1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022)
 
-
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
