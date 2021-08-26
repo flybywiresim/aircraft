@@ -37,6 +37,7 @@ class CDUAocOfpData {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCOfpData;
+        mcdu.pageRedrawCallback = () => CDUAocOfpData.ShowPage(mcdu);
         mcdu.activeSystem = 'ATSU';
 
         function updateView() {
@@ -64,19 +65,19 @@ class CDUAocOfpData {
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
         if (currentBlockFuel) {
             const size = mcdu.aocWeight.blockFuel ? 'big' : 'small';
-            blockFuel = `{${size}}${Math.round(currentBlockFuel * mcdu._conversionWeight)}{end}[color]cyan`;
+            blockFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentBlockFuel))}{end}[color]cyan`;
         }
 
         const currentTaxiFuel = mcdu.aocWeight.taxiFuel || mcdu.simbrief.taxiFuel;
         if (currentTaxiFuel) {
             const size = mcdu.aocWeight.taxiFuel ? 'big' : 'small';
-            taxiFuel = `{${size}}${Math.round(currentTaxiFuel * mcdu._conversionWeight)}{end}[color]cyan`;
+            taxiFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentTaxiFuel))}{end}[color]cyan`;
         }
 
         const currentTripFuel = mcdu.aocWeight.tripFuel || mcdu.simbrief.tripFuel;
         if (currentTripFuel) {
             const size = mcdu.aocWeight.tripFuel ? 'big' : 'small';
-            tripFuel = `{${size}}${Math.round(currentTripFuel * mcdu._conversionWeight)}{end}[color]cyan`;
+            tripFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentTripFuel))}{end}[color]cyan`;
         }
 
         const display = [
@@ -105,7 +106,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
+            const enteredFuel = NXUnits.userToKg(Math.round(+value));
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
                 mcdu.aocWeight.blockFuel = enteredFuel;
                 updateView();
@@ -124,7 +125,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
+            const enteredFuel = NXUnits.userToKg(Math.round(+value));
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
                 mcdu.aocWeight.taxiFuel = enteredFuel;
                 updateView();
@@ -143,7 +144,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
+            const enteredFuel = NXUnits.userToKg(Math.round(+value));
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
                 mcdu.aocWeight.tripFuel = enteredFuel;
                 updateView();
@@ -230,24 +231,24 @@ class CDUAocOfpData {
         const currentPayload = mcdu.aocWeight.payload || mcdu.simbrief.payload;
         if (currentPayload) {
             const size = mcdu.aocWeight.payload ? 'big' : 'small';
-            payload = `{${size}}${Math.round(currentPayload * mcdu._conversionWeight)}{end}[color]cyan`;
+            payload = `{${size}}${Math.round(NXUnits.kgToUser(currentPayload))}{end}[color]cyan`;
 
             // Update ZFW as well
             const emptyWeight = 41000;
             const actualZfw = emptyWeight + (+currentPayload);
-            estZfw = `{${size}}${formatWeightInTons(actualZfw * mcdu._conversionWeight)}{end}[color]cyan`;
+            estZfw = `{${size}}${formatWeightInTons(NXUnits.kgToUser(actualZfw))}{end}[color]cyan`;
         }
 
         const currentfwdBag = getCurrentFwdBag(mcdu);
         if (!isNaN(currentfwdBag)) {
             const size = mcdu.aocWeight.fwdBag ? 'big' : 'small';
-            fwdBag = `{${size}}${Math.round(currentfwdBag * mcdu._conversionWeight)}{end}[color]cyan`;
+            fwdBag = `{${size}}${Math.round(NXUnits.kgToUser(currentfwdBag))}{end}[color]cyan`;
         }
 
         const currentRearBag = getCurrentRearBag(mcdu);
         if (!isNaN(currentRearBag)) {
             const size = mcdu.aocWeight.rearBag ? 'big' : 'small';
-            rearBag = `{${size}}${Math.round(currentRearBag * mcdu._conversionWeight)}{end}[color]cyan`;
+            rearBag = `{${size}}${Math.round(NXUnits.kgToUser(currentRearBag))}{end}[color]cyan`;
         }
 
         function updateView() {
@@ -284,7 +285,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const enteredPayload = Math.round(+value) / mcdu._conversionWeight;
+            const enteredPayload = NXUnits.userToKg(Math.round(+value));
             if (enteredPayload >= 0 && enteredPayload <= maxAllowablePayload) {
                 mcdu.aocWeight.payload = enteredPayload;
                 mcdu.aocWeight.fwdBag = undefined;
@@ -307,7 +308,7 @@ class CDUAocOfpData {
             }
             const currentRearBag = !isNaN(getCurrentRearBag(mcdu)) ? getCurrentRearBag(mcdu) : 0;
 
-            const enteredFwdBag = Math.round(+value) / mcdu._conversionWeight;
+            const enteredFwdBag = NXUnits.userToKg(Math.round(+value));
             const actualPayload = enteredFwdBag + (+currentRearBag);
 
             if (enteredFwdBag >= 0 && actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
@@ -345,7 +346,7 @@ class CDUAocOfpData {
             }
             const currentFwdBag = !isNaN(getCurrentFwdBag(mcdu)) ? getCurrentFwdBag(mcdu) : 0;
 
-            const enteredRearBag = Math.round(+value) / mcdu._conversionWeight;
+            const enteredRearBag = NXUnits.userToKg(Math.round(+value));
             const actualPayload = enteredRearBag + (+currentFwdBag);
 
             if (enteredRearBag >= 0 && actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
