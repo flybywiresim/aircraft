@@ -19,7 +19,7 @@ export const usePersistentProperty = <T extends StorageValue>(propertyName: stri
         return () => {
             unsubscribe();
         };
-    });
+    }, []);
 
     const propertySetter = (value: StorageContents<T>) => {
         NXDataStore.set<T>(propertyName, value);
