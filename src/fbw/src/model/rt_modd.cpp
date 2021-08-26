@@ -25,10 +25,8 @@ real_T rt_modd(real_T u0, real_T u1)
 
     if (yEq) {
       y = 0.0;
-    } else {
-      if ((u0 < 0.0) != (u1 < 0.0)) {
-        y += u1;
-      }
+    } else if ((u0 < 0.0) != (u1 < 0.0)) {
+      y += u1;
     }
   }
 
