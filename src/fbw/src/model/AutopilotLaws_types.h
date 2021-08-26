@@ -5,17 +5,19 @@
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
 #define DEFINED_TYPEDEF_FOR_ap_raw_time_
 
-typedef struct {
+struct ap_raw_time
+{
   real_T dt;
   real_T simulation_time;
-} ap_raw_time;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_data_
 #define DEFINED_TYPEDEF_FOR_ap_raw_data_
 
-typedef struct {
+struct ap_raw_data
+{
   real_T Theta_deg;
   real_T Phi_deg;
   real_T q_rad_s;
@@ -70,14 +72,15 @@ typedef struct {
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
-} ap_raw_data;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_input_
 #define DEFINED_TYPEDEF_FOR_ap_raw_laws_input_
 
-typedef struct {
+struct ap_raw_laws_input
+{
   real_T enabled_AP1;
   real_T enabled_AP2;
   real_T lateral_law;
@@ -103,25 +106,27 @@ typedef struct {
   boolean_T EXPED_mode_active;
   boolean_T FD_disconnect;
   boolean_T FD_connect;
-} ap_raw_laws_input;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_laws_input_
 #define DEFINED_TYPEDEF_FOR_ap_laws_input_
 
-typedef struct {
+struct ap_laws_input
+{
   ap_raw_time time;
   ap_raw_data data;
   ap_raw_laws_input input;
-} ap_laws_input;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_data_
 #define DEFINED_TYPEDEF_FOR_ap_data_
 
-typedef struct {
+struct ap_data
+{
   real_T Theta_deg;
   real_T Phi_deg;
   real_T qk_deg_s;
@@ -178,52 +183,56 @@ typedef struct {
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
-} ap_data;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_command_
 #define DEFINED_TYPEDEF_FOR_ap_raw_output_command_
 
-typedef struct {
+struct ap_raw_output_command
+{
   real_T Theta_c_deg;
   real_T Phi_c_deg;
   real_T Beta_c_deg;
-} ap_raw_output_command;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_
 #define DEFINED_TYPEDEF_FOR_ap_raw_output_
 
-typedef struct {
+struct ap_raw_output
+{
   real_T ap_on;
   real_T Phi_loc_c;
   ap_raw_output_command flight_director;
   ap_raw_output_command autopilot;
-} ap_raw_output;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_laws_output_
 #define DEFINED_TYPEDEF_FOR_ap_laws_output_
 
-typedef struct {
+struct ap_laws_output
+{
   ap_raw_time time;
   ap_data data;
   ap_raw_laws_input input;
   ap_raw_output output;
-} ap_laws_output;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_output_law_
 #define DEFINED_TYPEDEF_FOR_ap_output_law_
 
-typedef struct {
+struct ap_output_law
+{
   real_T flight_director;
   real_T autopilot;
-} ap_output_law;
+};
 
 #endif
 #endif
