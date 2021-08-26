@@ -421,6 +421,8 @@
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
 1. [MISC] Added Marketplace Data - @kiwi2021 (kiwi2022#0001)
 1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
+1. [FBW] Improved pitch/C* law using streamlined pitch rate target - @aguther (Andreas Guther)
+1. [AP] Improved ALT* law that targets 0.05g capture - @aguther (Andreas Guther)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
