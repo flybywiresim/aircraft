@@ -1,76 +1,46 @@
 import { useEffect, useState } from 'react';
+import { NXDataStore, StorageValue, StorageContents } from '@shared/persistence';
 import { useSimVar } from './simVars';
-
-declare function GetStoredData(property: string, defaultValue?: string);
-declare function SetStoredData(property: string, newValue: string);
-
-/**
- * Allows interacting with the persistent storage
- */
-export class NXDataStore {
-    /**
-     * Reads a value from persistent storage
-     *
-     * @param key The property key
-     * @param defaultVal The default value if the property is not set
-     */
-    static get(key: string, defaultVal?: string) {
-        if (process.env.SIMVAR_DISABLE) {
-            const val = window.localStorage.getItem(`A32NX_${key}`);
-            if (!val) {
-                return defaultVal;
-            }
-            return val;
-        }
-
-        const val = GetStoredData(`A32NX_${key}`);
-        if (!val) {
-            return defaultVal;
-        }
-        return val;
-    }
-
-    /**
-     * Sets a value in persistent storage
-     *
-     * @param key The property key
-     * @param val The value to assign to the property
-     */
-    static set(key: string, val: string) {
-        if (process.env.SIMVAR_DISABLE) {
-            window.localStorage.setItem(`A32NX_${key}`, val);
-            return;
-        }
-
-        SetStoredData(`A32NX_${key}`, val);
-    }
-}
 
 /**
  * This hook allows to read and set a persistent storage property.
  *
  * Note: The value of the persistent property does not automatically refresh for now
  */
-export const usePersistentProperty = (propertyName: string, defaultValue?: string): [string, (string) => void] => {
+export const usePersistentProperty = <T extends StorageValue>(propertyName: string, defaultValue?: StorageContents<T>): [StorageContents<T>, (value: StorageContents<T>) => void] => {
     const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get(propertyName, defaultValue));
 
     if (defaultValue !== undefined && propertyValue === undefined) {
         rawPropertySetter(defaultValue);
     }
 
-    const propertySetter = (value: string) => {
-        NXDataStore.set(propertyName, value);
+    useEffect(() => {
+        const unsubscribe = NXDataStore.subscribe<T>(propertyName, (key, value) => rawPropertySetter(value));
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    const propertySetter = (value: StorageContents<T>) => {
+        NXDataStore.set<T>(propertyName, value);
         rawPropertySetter(value);
     };
 
     return [propertyValue, propertySetter];
 };
 
-export const usePersistentPropertyWithDefault = (propertyName: string, defaultValue: string): [string, (string) => void] => {
-    const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get(propertyName, defaultValue));
+export const usePersistentPropertyWithDefault = <T extends StorageValue>(propertyName: string, defaultValue: StorageContents<T>): [StorageContents<T>, (value: StorageContents<T>) => void] => {
+    const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get<T>(propertyName, defaultValue));
 
-    const propertySetter = (value: string) => {
-        NXDataStore.set(propertyName, value);
+    useEffect(() => {
+        const unsubscribe = NXDataStore.subscribe<T>(propertyName, (key, value) => rawPropertySetter(value));
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    const propertySetter = (value: StorageContents<T>) => {
+        NXDataStore.set<T>(propertyName, value);
         rawPropertySetter(value);
     };
 

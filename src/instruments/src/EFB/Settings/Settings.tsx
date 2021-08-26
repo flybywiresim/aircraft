@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
-import { Notification } from '@shared/notification';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
@@ -29,11 +28,11 @@ const ControlSettings = ({ setShowSettings }) => (
 );
 
 const DefaultsPage = () => {
-    const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
+    const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty<string>('CONFIG_THR_RED_ALT', '1500');
     const [thrustReductionHeightSetting, setThrustReductionHeightSetting] = useState(thrustReductionHeight);
-    const [accelerationHeight, setAccelerationHeight] = usePersistentProperty('CONFIG_ACCEL_ALT', '1500');
+    const [accelerationHeight, setAccelerationHeight] = usePersistentProperty<string>('CONFIG_ACCEL_ALT', '1500');
     const [accelerationHeightSetting, setAccelerationHeightSetting] = useState(accelerationHeight);
-    const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
+    const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty<string>('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
     const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
 
     const handleSetThrustReductionAlt = (value: string) => {
@@ -113,8 +112,8 @@ const DefaultsPage = () => {
 };
 
 const AircraftConfigurationPage = () => {
-    const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+    const [weightUnit, setWeightUnit] = usePersistentProperty<string>('CONFIG_USING_METRIC_UNIT', '1');
+    const [paxSigns, setPaxSigns] = usePersistentProperty<string>('CONFIG_USING_PORTABLE_DEVICES', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -122,7 +121,7 @@ const AircraftConfigurationPage = () => {
     ];
 
     const weightUnitButtons: ButtonType[] = [
-        { name: 'Kg', setting: '1' },
+        { name: 'kg', setting: '1' },
         { name: 'lbs', setting: '0' },
     ];
 
@@ -133,10 +132,7 @@ const AircraftConfigurationPage = () => {
                 <SelectGroup>
                     {weightUnitButtons.map((button) => (
                         <SelectItem
-                            onSelect={() => {
-                                setWeightUnit(button.setting);
-                                new Notification().showNotification({ title: 'RELOAD AIRCRAFT', theme: 'GAMEPLAY', message: 'Reload the aircraft to apply settings.' });
-                            }}
+                            onSelect={() => setWeightUnit(button.setting)}
                             selected={weightUnit === button.setting}
                         >
                             {button.name}
@@ -166,11 +162,11 @@ const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
     const { setShowNavbar } = useContext(SettingsNavbarContext);
 
-    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
+    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty<string>('CONFIG_ALIGN_TIME', 'REAL');
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
-    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
+    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty<string>('CONFIG_SELF_TEST_TIME', '12');
 
-    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
+    const [defaultBaro, setDefaultBaro] = usePersistentProperty<string>('CONFIG_INIT_BARO_UNIT', 'IN HG');
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -254,9 +250,9 @@ const SimOptionsPage = () => {
 };
 
 const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
-    const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
-    const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-    const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
+    const [atisSource, setAtisSource] = usePersistentProperty<string>('CONFIG_ATIS_SRC', 'FAA');
+    const [metarSource, setMetarSource] = usePersistentProperty<string>('CONFIG_METAR_SRC', 'MSFS');
+    const [tafSource, setTafSource] = usePersistentProperty<string>('CONFIG_TAF_SRC', 'NOAA');
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
