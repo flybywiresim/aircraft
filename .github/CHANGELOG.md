@@ -178,7 +178,8 @@
 1. [SOUNDS] Replace all remaining Asobo sounds - @hotshotp (boris#8008)
 1. [SOUNDS] Implement an early version of closed vs open cockpit door sounds - @hotshotp (boris#8008)
 1. [OVHD] CVR ground test auto-resets on first engine start - @tracernz (Mike)
-1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022)
+1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022
+1. [ECAM] ENG oil temperature amber while below takeoff minimum - @tracernz (Mike)
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
 
