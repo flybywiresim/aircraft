@@ -17,7 +17,7 @@ export const FuelPage = () => {
     const centerTankGallon = 2179;
     const wingTotalRefuelTimeSeconds = 1020;
     const CenterTotalRefuelTimeSeconds = 180;
-    const [usingMetrics] = usePersistentProperty('CONFIG_USING_METRIC_UNIT');
+    const [usingMetrics] = usePersistentProperty<string>('CONFIG_USING_METRIC_UNIT');
 
     const currentUnit = () => {
         if (usingMetrics === '1') {
@@ -46,7 +46,7 @@ export const FuelPage = () => {
     const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
     const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
-    const [refuelRate, setRefuelRate] = usePersistentProperty('REFUEL_RATE_SETTING');
+    const [refuelRate, setRefuelRate] = usePersistentProperty<string>('REFUEL_RATE_SETTING');
     const [sliderValue, setSliderValue] = useSimVar('L:A32NX_FUEL_DESIRED_PERCENT', 'Number');
     const [inputValue, setInputValue] = useSimVar('L:A32NX_FUEL_DESIRED', 'Number');
     const [totalTarget, setTotalTarget] = useSimVar('L:A32NX_FUEL_TOTAL_DESIRED', 'Number');
@@ -185,7 +185,7 @@ export const FuelPage = () => {
     };
 
     const calculateEta = () => {
-        if (round(totalTarget) === totalCurrentGallon() || refuelRate === '2') {
+        if (round(totalTarget) === totalCurrentGallon() || refuelRate === '2') { // instant
             return ' 0';
         }
         let estimatedTimeSeconds = 0;
@@ -194,7 +194,7 @@ export const FuelPage = () => {
         const differentialFuelCenter = Math.abs(centerTarget - centerCurrent);
         estimatedTimeSeconds += (differentialFuelWings / totalWingFuel) * wingTotalRefuelTimeSeconds;
         estimatedTimeSeconds += (differentialFuelCenter / centerTankGallon) * CenterTotalRefuelTimeSeconds;
-        if (refuelRate === '1') {
+        if (refuelRate === '1') { // fast
             estimatedTimeSeconds /= 5;
         }
         if (estimatedTimeSeconds < 35) {
