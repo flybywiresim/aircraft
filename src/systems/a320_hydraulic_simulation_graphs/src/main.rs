@@ -244,6 +244,7 @@ fn hyd_circuit_basic(path: &str) {
     let mut epump_controller = TestPumpController::commanding_depressurise();
 
     let mut hydraulic_loop = HydraulicCircuit::new(
+        "YELLOW",
         1,
         90.,
         Volume::new::<gallon>(15.),
@@ -321,7 +322,12 @@ fn hyd_circuit_basic(path: &str) {
             &epump_controller,
         );
 
-        hydraulic_loop.update(&mut vec![&mut edp], &mut epump, &context);
+        hydraulic_loop.update(
+            &mut vec![&mut edp],
+            &mut vec![&mut epump],
+            &context,
+            &TestHydraulicLoopController::commanding_open_fire_shutoff_valve(),
+        );
 
         hyd_circuit_history.update(
             context.delta_as_secs_f64(),

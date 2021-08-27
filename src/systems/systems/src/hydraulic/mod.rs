@@ -27,6 +27,7 @@ pub trait PressureSource {
         &mut self,
         volume_required: Volume,
         reservoir: &mut Reservoir,
+        is_pump_connected_to_reservoir: bool,
         context: &UpdateContext,
     ) {
     }
@@ -732,6 +733,7 @@ impl HydraulicCircuit {
                 None,
                 pump_pressure_switch_lo_hyst,
                 pump_pressure_switch_hi_hyst,
+                Some(FireValve::new()),
             ));
 
             pump_to_system_checkvalves.push(CheckValve::new(VolumeRate::new::<gallon_per_second>(
@@ -759,6 +761,7 @@ impl HydraulicCircuit {
                 )),
                 system_pressure_switch_lo_hyst,
                 system_pressure_switch_hi_hyst,
+                None,
             ),
             pump_to_system_checkvalves,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
@@ -770,8 +773,9 @@ impl HydraulicCircuit {
         }
     }
 
+    // TODO should ask for pump section ID for multiple section planes
     pub fn is_fire_shutoff_valve_opened(&self) -> bool {
-        self.pump_to_system_checkvalves[0].is_opened()
+        self.pump_sections[0].fire_valve_is_opened()
     }
 
     pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &mut T) {
@@ -785,7 +789,8 @@ impl HydraulicCircuit {
         context: &UpdateContext,
         controller: &T,
     ) {
-        self.pump_to_system_checkvalves[0].set_open(controller.should_open_fire_shutoff_valve());
+        // TODO  find a way to pass all fire valve states to all pump sections
+        self.pump_sections[0].set_fire_valve_command(controller.should_open_fire_shutoff_valve());
 
         for section in &mut self.pump_sections {
             section
@@ -947,6 +952,8 @@ pub struct Section {
     current_pressure: Pressure,
     current_flow: VolumeRate,
 
+    fire_valve: Option<FireValve>,
+
     accumulator: Option<Accumulator>,
 
     delta_vol_consumer_pass: Volume,
@@ -965,13 +972,14 @@ impl Section {
         accumulator: Option<Accumulator>,
         pressure_switch_lo_hyst: Pressure,
         pressure_switch_hi_hyst: Pressure,
+        fire_valve: Option<FireValve>,
     ) -> Self {
         Self {
             current_volume,
             max_high_press_volume,
             current_pressure: Pressure::new::<psi>(14.7),
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
-
+            fire_valve,
             accumulator,
 
             delta_vol_consumer_pass: Volume::new::<gallon>(0.),
@@ -992,6 +1000,23 @@ impl Section {
 
     fn pressure_switch(&self) -> bool {
         self.pressure_switch.is_pressurised()
+    }
+
+    fn fire_valve_is_opened(&self) -> bool {
+        if self.fire_valve.is_some() {
+            self.fire_valve.as_ref().unwrap().is_opened()
+        } else {
+            true
+        }
+    }
+
+    fn set_fire_valve_command(&mut self, open_request: bool) {
+        if self.fire_valve.is_some() {
+            self.fire_valve
+                .as_mut()
+                .unwrap()
+                .set_open_state(open_request);
+        }
     }
 
     pub fn update_target_volume(&mut self, fluid: &Fluid, target_pressure: Pressure) {
@@ -1053,7 +1078,11 @@ impl Section {
     }
 
     pub fn update_max_pump_capacity(&mut self, pump: &mut impl PressureSource) {
-        self.max_pumpable_volume = pump.delta_vol_max();
+        if self.fire_valve_is_opened() {
+            self.max_pumpable_volume = pump.delta_vol_max();
+        } else {
+            self.max_pumpable_volume = Volume::new::<gallon>(0.);
+        }
     }
 
     pub fn update_actual_pumping_states(
@@ -1083,6 +1112,7 @@ impl Section {
         pump.update_actual_state_after_pressure_regulation(
             final_volume_needed_to_reach_target_pressure,
             reservoir,
+            self.fire_valve_is_opened(),
             &context,
         );
 
@@ -1163,8 +1193,23 @@ impl Section {
     }
 }
 
-pub struct CheckValve {
+pub struct FireValve {
     is_opened: bool,
+}
+impl FireValve {
+    fn new() -> Self {
+        Self { is_opened: true }
+    }
+
+    fn set_open_state(&mut self, valve_open_command: bool) {
+        self.is_opened = valve_open_command;
+    }
+
+    fn is_opened(&self) -> bool {
+        self.is_opened
+    }
+}
+pub struct CheckValve {
     max_flow: VolumeRate,
 
     current_volume: Volume,
@@ -1175,20 +1220,11 @@ impl CheckValve {
 
     pub fn new(max_flow: VolumeRate) -> Self {
         Self {
-            is_opened: true,
             max_flow,
 
             current_volume: Volume::new::<gallon>(0.),
             max_virtual_volume: Volume::new::<gallon>(0.),
         }
-    }
-
-    fn set_open(&mut self, opened: bool) {
-        self.is_opened = opened;
-    }
-
-    fn is_opened(&self) -> bool {
-        self.is_opened
     }
 
     fn volume_to_equalize_pressures(
@@ -1217,25 +1253,21 @@ impl CheckValve {
         fluid: &Fluid,
         context: &UpdateContext,
     ) {
-        if self.is_opened {
-            let physical_volume_transfered =
-                self.volume_to_equalize_pressures(upstream_section, downstream_section, fluid);
+        let physical_volume_transfered =
+            self.volume_to_equalize_pressures(upstream_section, downstream_section, fluid);
 
-            let mut available_volume_from_upstream = (upstream_section.max_pumpable_volume
-                - upstream_section.volume_target)
+        let mut available_volume_from_upstream = (upstream_section.max_pumpable_volume
+            - upstream_section.volume_target)
+            .max(physical_volume_transfered);
+
+        if !downstream_section.is_primed() {
+            available_volume_from_upstream = upstream_section
+                .max_pumpable_volume
                 .max(physical_volume_transfered);
+        }
 
-            if !downstream_section.is_primed() {
-                available_volume_from_upstream = upstream_section
-                    .max_pumpable_volume
-                    .max(physical_volume_transfered);
-            }
-
-            if available_volume_from_upstream.get::<gallon>() > 0. {
-                self.max_virtual_volume = available_volume_from_upstream;
-            } else {
-                self.max_virtual_volume = Volume::new::<gallon>(0.);
-            }
+        if available_volume_from_upstream.get::<gallon>() > 0. {
+            self.max_virtual_volume = available_volume_from_upstream;
         } else {
             self.max_virtual_volume = Volume::new::<gallon>(0.);
         }
@@ -1403,13 +1435,18 @@ impl PressureSource for Pump {
         &mut self,
         volume_required: Volume,
         reservoir: &mut Reservoir,
+        is_pump_connected_to_reservoir: bool,
         context: &UpdateContext,
     ) {
         let required_flow = volume_required / context.delta_as_time();
         self.current_displacement = self.calculate_displacement_from_required_flow(required_flow);
-        let max_current_flow = self.get_max_flow();
+        let mut max_current_flow = self.get_max_flow();
 
-        self.current_flow = reservoir.get_flow(max_current_flow, &context);
+        if is_pump_connected_to_reservoir {
+            self.current_flow = reservoir.get_flow(max_current_flow, &context);
+        } else {
+            self.current_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
     }
 
     fn flow(&self) -> VolumeRate {
@@ -1494,11 +1531,13 @@ impl PressureSource for ElectricPump {
         &mut self,
         volume_required: Volume,
         reservoir: &mut Reservoir,
+        is_pump_connected_to_reservoir: bool,
         context: &UpdateContext,
     ) {
         self.pump.update_actual_state_after_pressure_regulation(
             volume_required,
             reservoir,
+            is_pump_connected_to_reservoir,
             context,
         );
     }
@@ -1584,11 +1623,13 @@ impl PressureSource for EngineDrivenPump {
         &mut self,
         volume_required: Volume,
         reservoir: &mut Reservoir,
+        is_pump_connected_to_reservoir: bool,
         context: &UpdateContext,
     ) {
         self.pump.update_actual_state_after_pressure_regulation(
             volume_required,
             reservoir,
+            is_pump_connected_to_reservoir,
             context,
         );
     }
@@ -1827,11 +1868,13 @@ impl PressureSource for RamAirTurbine {
         &mut self,
         volume_required: Volume,
         reservoir: &mut Reservoir,
+        is_pump_connected_to_reservoir: bool,
         context: &UpdateContext,
     ) {
         self.pump.update_actual_state_after_pressure_regulation(
             volume_required,
             reservoir,
+            is_pump_connected_to_reservoir,
             context,
         );
     }
@@ -1953,7 +1996,7 @@ mod tests {
         let mut rat_controller = TestRamAirTurbineController::new();
         let mut blue_loop = hydraulic_loop("BLUE");
         let mut blue_reservoir =
-            Reservoir::new(Volume::new::<gallon>(3.), Volume::new::<gallon>(3.));
+            Reservoir::new("BLUE", Volume::new::<gallon>(3.), Volume::new::<gallon>(3.));
         let blue_loop_controller =
             TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
 
