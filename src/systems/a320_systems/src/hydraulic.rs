@@ -1553,7 +1553,7 @@ struct A320DoorController {
 }
 impl A320DoorController {
     // Duration which the hydraulic valves sends a open request when request is closing (this is done on real aircraft so uplock can be easily unlocked without friction)
-    const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(300);
+    const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(200);
 
     // Delay from the ground crew unlocking the door to the time they start requiring up movement in control panel
     const DELAY_UNLOCK_TO_HYDRAULIC_CONTROL: Duration = Duration::from_secs(5);
