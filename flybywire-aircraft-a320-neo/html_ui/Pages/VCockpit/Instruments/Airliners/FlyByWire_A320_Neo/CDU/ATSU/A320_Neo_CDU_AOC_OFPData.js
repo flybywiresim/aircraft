@@ -237,7 +237,6 @@ class CDUAocOfpData {
 
             async function fillStation(station, paxToFill) {
 
-
                 const pax = Math.min(paxToFill, station.seats);
                 station.pax = pax;
 
