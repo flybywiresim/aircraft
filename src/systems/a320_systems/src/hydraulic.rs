@@ -45,6 +45,7 @@ impl A320HydraulicCircuitFactory {
 
     fn new_green_loop() -> HydraulicCircuit {
         HydraulicCircuit::new(
+            "GREEN",
             1,
             99.,
             Volume::new::<gallon>(26.41),
@@ -58,6 +59,7 @@ impl A320HydraulicCircuitFactory {
 
     fn new_blue_loop() -> HydraulicCircuit {
         HydraulicCircuit::new(
+            "BLUE",
             1,
             99.,
             Volume::new::<gallon>(15.85),
@@ -71,6 +73,7 @@ impl A320HydraulicCircuitFactory {
 
     fn new_yellow_loop() -> HydraulicCircuit {
         HydraulicCircuit::new(
+            "YELLOW",
             1,
             99.,
             Volume::new::<gallon>(19.81),
@@ -151,11 +154,6 @@ impl A320Hydraulic {
         ElectricalBusType::DirectCurrentHot(1);
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(2);
-
-    const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
-    const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
-    const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
-    const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
     // Refresh rate of hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP_MILLISECONDS: u64 = 100;
@@ -326,54 +324,6 @@ impl A320Hydraulic {
         }
     }
 
-    // Placeholder function to give an estimation of blue pump flow for sound purpose
-    // Todo remove when hydraulics gives directly correct values of flow and displacement
-    // fn blue_electric_pump_estimated_flow(&self) -> VolumeRate {
-    //     // If RAT pump has some RPM then we consider epump provides only a fraction of the loop total flow
-    //     let rat_produces_flow = self.ram_air_turbine.turbine_rpm() > 1000.;
-
-    //     let estimated_blue_epump_flow: VolumeRate;
-    //     if self.blue_electric_pump_controller.should_pressurise() {
-    //         if rat_produces_flow {
-    //             estimated_blue_epump_flow = self.blue_loop.current_flow() * 0.4;
-    //         } else {
-    //             estimated_blue_epump_flow = self.blue_loop.current_flow();
-    //         }
-    //     } else {
-    //         estimated_blue_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
-    //     }
-
-    //     estimated_blue_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
-    // }
-
-    // Placeholder function to give an estimation of yellow pump flow for sound purpose
-    // Todo remove when hydraulics gives directly correct values of flow and displacement
-    // fn yellow_electric_pump_estimated_flow(&self) -> VolumeRate {
-    //     // If EDP started pumping and has some RPM then we consider epump provides a fraction of the loop total flow
-    //     let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
-    //         && self.engine_driven_pump_2_controller.should_pressurise();
-
-    //     let mut estimated_yellow_epump_flow: VolumeRate;
-    //     if self.yellow_electric_pump_controller.should_pressurise() {
-    //         if yellow_edp_outputs_some_flow {
-    //             // If electric pump is not the only pump to work we only consider it gives a 0.2 fraction of the loop total flow
-    //             estimated_yellow_epump_flow = self.yellow_loop.current_flow() * 0.2;
-    //         } else {
-    //             estimated_yellow_epump_flow = self.yellow_loop.current_flow();
-    //         }
-
-    //         if self.power_transfer_unit.is_active_right_to_left() {
-    //             estimated_yellow_epump_flow += self.power_transfer_unit.flow();
-    //         } else if self.power_transfer_unit.is_active_left_to_right() {
-    //             estimated_yellow_epump_flow -= self.power_transfer_unit.flow();
-    //         }
-    //     } else {
-    //         estimated_yellow_epump_flow = VolumeRate::new::<gallon_per_second>(0.);
-    //     }
-
-    //     estimated_yellow_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
-    // }
-
     fn green_edp_has_low_press_fault(&self) -> bool {
         self.engine_driven_pump_1_controller
             .has_pressure_low_fault()
@@ -498,8 +448,6 @@ impl A320Hydraulic {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
-        let reservoir = Reservoir::new(Volume::new::<gallon>(5.), Volume::new::<gallon>(5.));
-
         self.brake_computer.send_brake_demands(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
@@ -531,7 +479,7 @@ impl A320Hydraulic {
         self.engine_driven_pump_1.update(
             context,
             self.green_loop.pump_pressure(0),
-            &reservoir,
+            self.green_loop.reservoir(),
             engine1
                 .hydraulic_pump_output_speed()
                 .get::<revolution_per_minute>(),
@@ -550,7 +498,7 @@ impl A320Hydraulic {
         self.engine_driven_pump_2.update(
             context,
             self.yellow_loop.pump_pressure(0),
-            &reservoir,
+            self.yellow_loop.reservoir(),
             engine2
                 .hydraulic_pump_output_speed()
                 .get::<revolution_per_minute>(),
@@ -570,7 +518,7 @@ impl A320Hydraulic {
         self.blue_electric_pump.update(
             context,
             self.blue_loop.system_pressure(),
-            &reservoir,
+            self.blue_loop.reservoir(),
             &self.blue_electric_pump_controller,
         );
 
@@ -584,14 +532,14 @@ impl A320Hydraulic {
         self.yellow_electric_pump.update(
             context,
             self.yellow_loop.system_pressure(),
-            &reservoir,
+            self.yellow_loop.reservoir(),
             &self.yellow_electric_pump_controller,
         );
 
         self.ram_air_turbine.update(
             context,
             self.blue_loop.system_pressure(),
-            &reservoir,
+            self.blue_loop.reservoir(),
             &self.ram_air_turbine_controller,
         );
 
@@ -613,7 +561,7 @@ impl A320Hydraulic {
 
         self.blue_loop_controller.update(engine_fire_push_buttons);
         self.blue_loop.update(
-            &mut vec![&mut self.engine_driven_pump_2],
+            &mut vec![&mut self.blue_electric_pump],
             &mut vec![&mut self.ram_air_turbine],
             context,
             &self.blue_loop_controller,
@@ -654,9 +602,9 @@ impl SimulationElement for A320Hydraulic {
         self.power_transfer_unit.accept(visitor);
         self.power_transfer_unit_controller.accept(visitor);
 
-        // self.blue_loop.accept(visitor);
-        // self.green_loop.accept(visitor);
-        // self.yellow_loop.accept(visitor);
+        self.blue_loop.accept(visitor);
+        self.green_loop.accept(visitor);
+        self.yellow_loop.accept(visitor);
 
         self.brake_computer.accept(visitor);
 
@@ -666,20 +614,6 @@ impl SimulationElement for A320Hydraulic {
 
         visitor.visit(self);
     }
-
-    // fn write(&self, writer: &mut SimulatorWriter) {
-    //     writer.write(
-    //         "HYD_YELLOW_EPUMP_FLOW",
-    //         self.yellow_electric_pump_estimated_flow()
-    //             .get::<gallon_per_second>(),
-    //     );
-
-    //     writer.write(
-    //         "HYD_BLUE_EPUMP_FLOW",
-    //         self.blue_electric_pump_estimated_flow()
-    //             .get::<gallon_per_second>(),
-    //     );
-    // }
 }
 
 struct A320HydraulicLoopController {
@@ -2291,7 +2225,7 @@ mod tests {
             }
 
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
-                self.read("HYD_YELLOW_RESERVOIR")
+                self.read("HYD_YELLOW_RESERVOIR_LEVEL")
             }
 
             fn is_green_edp_press_low(&mut self) -> bool {
@@ -2335,11 +2269,11 @@ mod tests {
             }
 
             fn get_green_reservoir_volume(&mut self) -> Volume {
-                self.read("HYD_GREEN_RESERVOIR")
+                self.read("HYD_GREEN_RESERVOIR_LEVEL")
             }
 
             fn get_blue_reservoir_volume(&mut self) -> Volume {
-                self.read("HYD_BLUE_RESERVOIR")
+                self.read("HYD_BLUE_RESERVOIR_LEVEL")
             }
 
             fn autobrake_mode(&mut self) -> AutobrakeMode {

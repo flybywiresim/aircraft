@@ -679,15 +679,15 @@ impl SimulationElement for HydraulicLoop {
 }
 
 pub struct HydraulicCircuit {
+    pressure_id: String,
+    fire_valve_id: String,
+
     pump_sections: Vec<Section>,
     system_section: Section,
     pump_to_system_checkvalves: Vec<CheckValve>,
 
     fluid: Fluid,
     reservoir: Reservoir,
-
-    total_actuators_consumed_volume: Volume,
-    total_actuators_returned_volume: Volume,
 }
 impl HydraulicCircuit {
     const PUMP_SECTION_MAX_VOLUME_GAL: f64 = 0.5;
@@ -708,6 +708,8 @@ impl HydraulicCircuit {
         [0.0, 0.001, 0.005, 0.05, 0.08, 0.15, 0.25, 0.35, 0.5, 0.5];
 
     pub fn new(
+        id: &str,
+
         pump_sections_number: usize,
         priming_volume_percent: f64,
         high_pressure_max_volume: Volume,
@@ -741,6 +743,8 @@ impl HydraulicCircuit {
             - Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL)
                 * pump_sections_number as f64;
         Self {
+            pressure_id: format!("HYD_{}_PRESSURE", id),
+            fire_valve_id: format!("HYD_{}_FIRE_VALVE_OPENED", id),
             pump_sections,
             system_section: Section::new(
                 system_section_volume * priming_volume_percent / 100.,
@@ -759,11 +763,10 @@ impl HydraulicCircuit {
             pump_to_system_checkvalves,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
             reservoir: Reservoir::new(
+                id,
                 Volume::new::<gallon>(Self::RESERVOIR_MAX_VOLUME_GAL),
                 reservoir_volume,
             ),
-            total_actuators_consumed_volume: Volume::new::<gallon>(0.),
-            total_actuators_returned_volume: Volume::new::<gallon>(0.),
         }
     }
 
@@ -922,6 +925,20 @@ impl HydraulicCircuit {
         &self.reservoir
     }
 }
+impl SimulationElement for HydraulicCircuit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.reservoir.accept(visitor);
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.pressure_id, self.system_pressure());
+        //if self.has_fire_valve {
+        writer.write(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
+        //}
+    }
+}
 // This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
 // through a checkvalve
 pub struct Section {
@@ -995,7 +1012,7 @@ impl Section {
     }
 
     fn static_leak(&self, context: &UpdateContext) -> Volume {
-        VolumeRate::new::<gallon_per_second>(0.02)
+        VolumeRate::new::<gallon_per_second>(0.05)
             * context.delta_as_time()
             * (self.current_pressure - Pressure::new::<psi>(14.7))
             / Pressure::new::<psi>(3000.)
@@ -1063,15 +1080,13 @@ impl Section {
 
         let mut delta_vol = self.delta_vol_consumer_pass + delta_vol_from_valves;
 
-        let mut total_volume_pumped = Volume::new::<gallon>(0.);
-
         pump.update_actual_state_after_pressure_regulation(
             final_volume_needed_to_reach_target_pressure,
             reservoir,
             &context,
         );
 
-        total_volume_pumped = pump.flow() * context.delta_as_time();
+        let total_volume_pumped = pump.flow() * context.delta_as_time();
 
         delta_vol += total_volume_pumped;
 
@@ -1100,10 +1115,7 @@ impl Section {
             delta_vol_from_valves -= down.current_volume;
         }
 
-        let final_volume_needed_to_reach_target_pressure =
-            self.volume_target - delta_vol_from_valves;
-
-        let mut delta_vol = self.delta_vol_consumer_pass + delta_vol_from_valves;
+        let delta_vol = self.delta_vol_consumer_pass + delta_vol_from_valves;
 
         self.current_volume += delta_vol;
 
@@ -1231,6 +1243,7 @@ impl CheckValve {
 }
 
 pub struct Reservoir {
+    level_id: String,
     max_capacity: Volume,
     current_level: Volume,
     min_usable: Volume,
@@ -1238,8 +1251,9 @@ pub struct Reservoir {
 impl Reservoir {
     const MIN_USABLE_VOLUME: f64 = 0.2; // Gallons
 
-    pub fn new(max_capacity: Volume, current_level: Volume) -> Self {
+    pub fn new(id: &str, max_capacity: Volume, current_level: Volume) -> Self {
         Self {
+            level_id: format!("HYD_{}_RESERVOIR_LEVEL", id),
             max_capacity,
             current_level,
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME),
@@ -1277,6 +1291,11 @@ impl Reservoir {
 
     pub fn level(&self) -> Volume {
         self.current_level
+    }
+}
+impl SimulationElement for Reservoir {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.level_id, self.level().get::<gallon>());
     }
 }
 
@@ -1404,6 +1423,7 @@ impl PressureSource for Pump {
 
 pub struct ElectricPump {
     active_id: String,
+    displacement_id: String,
 
     is_active: bool,
     bus_type: ElectricalBusType,
@@ -1425,6 +1445,7 @@ impl ElectricPump {
     pub fn new(id: &str, bus_type: ElectricalBusType) -> Self {
         Self {
             active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
+            displacement_id: format!("HYD_{}_EPUMP_DISPLACEMENT", id),
             is_active: false,
             bus_type,
             is_powered: false,
@@ -1493,6 +1514,11 @@ impl PressureSource for ElectricPump {
 impl SimulationElement for ElectricPump {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.active_id, self.is_active);
+
+        writer.write(
+            &self.displacement_id,
+            self.displacement().get::<cubic_inch>(),
+        );
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -1502,6 +1528,7 @@ impl SimulationElement for ElectricPump {
 
 pub struct EngineDrivenPump {
     active_id: String,
+    displacement_id: String,
 
     is_active: bool,
     rpm: f64,
@@ -1519,6 +1546,7 @@ impl EngineDrivenPump {
     pub fn new(id: &str) -> Self {
         Self {
             active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
+            displacement_id: format!("HYD_{}_EDPUMP_DISPLACEMENT", id),
             is_active: false,
             rpm: 0.,
             pump: Pump::new(
@@ -1576,6 +1604,10 @@ impl PressureSource for EngineDrivenPump {
 impl SimulationElement for EngineDrivenPump {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.active_id, self.is_active);
+        writer.write(
+            &self.displacement_id,
+            self.displacement().get::<cubic_inch>(),
+        );
     }
 }
 
