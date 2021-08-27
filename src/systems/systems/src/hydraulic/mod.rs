@@ -19,19 +19,34 @@ pub mod brake_circuit;
 pub trait PressureSource {
     /// Gives the maximum available volume at that time as if it is a variable displacement
     /// pump it can be adjusted by pump regulation.
-    fn delta_vol_max(&self) -> Volume;
+    fn delta_vol_max(&self) -> Volume {
+        Volume::new::<gallon>(0.)
+    }
 
     fn update_actual_state_after_pressure_regulation(
         &mut self,
         volume_required: Volume,
         reservoir: &mut Reservoir,
         context: &UpdateContext,
-    );
+    ) {
+    }
 
-    fn flow(&self) -> VolumeRate;
+    fn flow(&self) -> VolumeRate {
+        VolumeRate::new::<gallon_per_second>(0.)
+    }
 
-    fn displacement(&self) -> Volume;
+    fn displacement(&self) -> Volume {
+        Volume::new::<gallon>(0.)
+    }
 }
+
+pub struct DummyPump {}
+impl DummyPump {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+impl PressureSource for DummyPump {}
 
 // TODO update method that can update physic constants from given temperature
 // This would change pressure response to volume
@@ -129,13 +144,13 @@ impl PowerTransferUnit {
 
     pub fn update<T: PowerTransferUnitController>(
         &mut self,
-        loop_left: &HydraulicLoop,
-        loop_right: &HydraulicLoop,
+        loop_left_pressure: Pressure,
+        loop_right_pressure: Pressure,
         controller: &T,
     ) {
         self.is_enabled = controller.should_enable();
 
-        let delta_p = loop_left.pressure() - loop_right.pressure();
+        let delta_p = loop_left_pressure - loop_right_pressure;
 
         if !self.is_enabled
             || self.is_active_right && delta_p.get::<psi>() > -5.
@@ -149,13 +164,13 @@ impl PowerTransferUnit {
         } else if delta_p.get::<psi>() > 500. || (self.is_active_left && delta_p.get::<psi>() > 5.)
         {
             // Left sends flow to right
-            let mut vr = 16.0f64.min(loop_left.loop_pressure.get::<psi>() * 0.0058) / 60.0;
+            let mut vr = 16.0f64.min(loop_left_pressure.get::<psi>() * 0.0058) / 60.0;
 
             // Limiting available flow with maximum flow capacity of all pumps of the loop.
             // This is a workaround to limit PTU greed for flow
-            vr = vr.min(
-                loop_left.current_max_flow.get::<gallon_per_second>() * Self::AGRESSIVENESS_FACTOR,
-            );
+            // vr = vr.min(
+            //     loop_left.system_flow().get::<gallon_per_second>() * Self::AGRESSIVENESS_FACTOR,
+            // );
 
             // Low pass on flow
             vr = Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE * vr
@@ -172,13 +187,13 @@ impl PowerTransferUnit {
             || (self.is_active_right && delta_p.get::<psi>() < -5.)
         {
             // Right sends flow to left
-            let mut vr = 34.0f64.min(loop_right.loop_pressure.get::<psi>() * 0.0125) / 60.0;
+            let mut vr = 34.0f64.min(loop_right_pressure.get::<psi>() * 0.0125) / 60.0;
 
             // Limiting available flow with maximum flow capacity of all pumps of the loop.
             // This is a workaround to limit PTU greed for flow
-            vr = vr.min(
-                loop_right.current_max_flow.get::<gallon_per_second>() * Self::AGRESSIVENESS_FACTOR,
-            );
+            // vr = vr.min(
+            //     loop_right_pressure.current_max_flow.get::<gallon_per_second>() * Self::AGRESSIVENESS_FACTOR,
+            // );
 
             // Low pass on flow
             vr = Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE * vr
@@ -752,12 +767,23 @@ impl HydraulicCircuit {
         }
     }
 
-    pub fn update(
+    pub fn is_fire_shutoff_valve_opened(&self) -> bool {
+        self.pump_to_system_checkvalves[0].is_opened()
+    }
+
+    pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &mut T) {
+        self.system_section.update_actuator_volumes(actuator);
+    }
+
+    pub fn update<T: HydraulicLoopController>(
         &mut self,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &mut impl PressureSource,
+        system_section_pump: &mut Vec<&mut impl PressureSource>,
         context: &UpdateContext,
+        controller: &T,
     ) {
+        self.pump_to_system_checkvalves[0].set_open(controller.should_open_fire_shutoff_valve());
+
         for section in &mut self.pump_sections {
             section
                 .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
@@ -788,8 +814,10 @@ impl HydraulicCircuit {
             section.update_max_pump_capacity(main_section_pumps[idx]);
             idx += 1;
         }
-        self.system_section
-            .update_max_pump_capacity(system_section_pump);
+        if !system_section_pump.is_empty() {
+            self.system_section
+                .update_max_pump_capacity(system_section_pump[0]);
+        }
 
         let mut idx = 0;
         for valve in &mut self.pump_to_system_checkvalves {
@@ -817,14 +845,25 @@ impl HydraulicCircuit {
             idx += 1;
         }
 
-        self.system_section.update_actual_pumping_states(
-            system_section_pump,
-            &self.pump_to_system_checkvalves,
-            &Vec::new(),
-            &mut self.reservoir,
-            &context,
-            &self.fluid,
-        );
+        // TODO Find a way to call same function with Option without being borrow checked
+        if !system_section_pump.is_empty() {
+            self.system_section.update_actual_pumping_states(
+                system_section_pump[0],
+                &self.pump_to_system_checkvalves,
+                &Vec::new(),
+                &mut self.reservoir,
+                &context,
+                &self.fluid,
+            );
+        } else {
+            self.system_section.update_actual_pumping_states_no_pump(
+                &self.pump_to_system_checkvalves,
+                &Vec::new(),
+                &mut self.reservoir,
+                &context,
+                &self.fluid,
+            );
+        }
     }
 
     fn update_valves_flows(&mut self) {
@@ -996,7 +1035,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_max_pump_capacity(&mut self, pump: &impl PressureSource) {
+    pub fn update_max_pump_capacity(&mut self, pump: &mut impl PressureSource) {
         self.max_pumpable_volume = pump.delta_vol_max();
     }
 
@@ -1024,15 +1063,47 @@ impl Section {
 
         let mut delta_vol = self.delta_vol_consumer_pass + delta_vol_from_valves;
 
+        let mut total_volume_pumped = Volume::new::<gallon>(0.);
+
         pump.update_actual_state_after_pressure_regulation(
             final_volume_needed_to_reach_target_pressure,
             reservoir,
             &context,
         );
 
-        let total_volume_pumped = pump.flow() * context.delta_as_time();
+        total_volume_pumped = pump.flow() * context.delta_as_time();
 
         delta_vol += total_volume_pumped;
+
+        self.current_volume += delta_vol;
+
+        self.update_pressure(fluid);
+
+        self.current_flow = delta_vol / context.delta_as_time();
+    }
+
+    pub fn update_actual_pumping_states_no_pump(
+        &mut self,
+        upstream_valves: &Vec<CheckValve>,
+        downstream_valves: &Vec<CheckValve>,
+        reservoir: &mut Reservoir,
+        context: &UpdateContext,
+        fluid: &Fluid,
+    ) {
+        let mut delta_vol_from_valves = Volume::new::<gallon>(0.);
+
+        for up in upstream_valves {
+            delta_vol_from_valves += up.current_volume;
+        }
+
+        for down in downstream_valves {
+            delta_vol_from_valves -= down.current_volume;
+        }
+
+        let final_volume_needed_to_reach_target_pressure =
+            self.volume_target - delta_vol_from_valves;
+
+        let mut delta_vol = self.delta_vol_consumer_pass + delta_vol_from_valves;
 
         self.current_volume += delta_vol;
 
@@ -1098,6 +1169,14 @@ impl CheckValve {
             current_volume: Volume::new::<gallon>(0.),
             max_virtual_volume: Volume::new::<gallon>(0.),
         }
+    }
+
+    fn set_open(&mut self, opened: bool) {
+        self.is_opened = opened;
+    }
+
+    fn is_opened(&self) -> bool {
+        self.is_opened
     }
 
     fn volume_to_equalize_pressures(

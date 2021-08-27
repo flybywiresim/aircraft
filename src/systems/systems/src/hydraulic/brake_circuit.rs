@@ -216,13 +216,13 @@ impl BrakeCircuit {
             .update(context, actual_max_allowed_pressure);
     }
 
-    pub fn update(&mut self, context: &UpdateContext, hyd_loop: &HydraulicLoop) {
+    pub fn update(&mut self, context: &UpdateContext, hyd_loop_pressure: Pressure) {
         // The pressure available in brakes is the one of accumulator only if accumulator has fluid
         let actual_pressure_available: Pressure;
         if self.accumulator.fluid_volume() > Volume::new::<gallon>(0.) {
             actual_pressure_available = self.accumulator.raw_gas_press();
         } else {
-            actual_pressure_available = hyd_loop.pressure();
+            actual_pressure_available = hyd_loop_pressure;
         }
 
         self.update_brake_actuators(context, actual_pressure_available);
@@ -235,7 +235,7 @@ impl BrakeCircuit {
             self.accumulator.update(
                 context,
                 &mut volume_into_accumulator,
-                hyd_loop.loop_pressure,
+                hyd_loop_pressure,
                 Volume::new::<gallon>(1.),
             );
 
@@ -509,18 +509,11 @@ impl Default for AutobrakeDecelerationGovernor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        hydraulic::{Fluid, HydraulicLoop},
-        simulation::UpdateContext,
-    };
+    use crate::simulation::UpdateContext;
     use std::time::Duration;
     use uom::si::{
-        acceleration::foot_per_second_squared,
-        length::foot,
-        pressure::{pascal, psi},
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
-        volume::gallon,
+        acceleration::foot_per_second_squared, length::foot, pressure::psi,
+        thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
     };
 
     #[test]
@@ -662,8 +655,7 @@ mod tests {
     #[test]
     fn brake_pressure_rise() {
         let init_max_vol = Volume::new::<gallon>(1.5);
-        let mut hyd_loop = hydraulic_loop("YELLOW");
-        hyd_loop.loop_pressure = Pressure::new::<psi>(2500.0);
+        let loop_pressure = Pressure::new::<psi>(2500.0);
 
         let mut brake_circuit_primed = BrakeCircuit::new(
             "Altn",
@@ -678,7 +670,7 @@ mod tests {
                 < Pressure::new::<psi>(10.0)
         );
 
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), loop_pressure);
 
         assert!(
             brake_circuit_primed.left_brake_pressure()
@@ -687,7 +679,7 @@ mod tests {
         );
 
         brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), loop_pressure);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.right_brake_pressure() <= Pressure::new::<psi>(50.));
@@ -695,7 +687,7 @@ mod tests {
 
         brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(0.0));
         brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), loop_pressure);
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.left_brake_pressure() <= Pressure::new::<psi>(50.));
         assert!(brake_circuit_primed.accumulator.fluid_volume() >= Volume::new::<gallon>(0.1));
@@ -704,8 +696,7 @@ mod tests {
     #[test]
     fn brake_pressure_rise_no_accumulator() {
         let init_max_vol = Volume::new::<gallon>(0.0);
-        let mut hyd_loop = hydraulic_loop("GREEN");
-        hyd_loop.loop_pressure = Pressure::new::<psi>(2500.0);
+        let loop_pressure = Pressure::new::<psi>(2500.0);
 
         let mut brake_circuit_primed = BrakeCircuit::new(
             "norm",
@@ -720,7 +711,7 @@ mod tests {
                 < Pressure::new::<psi>(10.0)
         );
 
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), loop_pressure);
 
         assert!(
             brake_circuit_primed.left_brake_pressure()
@@ -729,14 +720,14 @@ mod tests {
         );
 
         brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), loop_pressure);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.right_brake_pressure() <= Pressure::new::<psi>(50.));
 
         brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(0.0));
         brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), loop_pressure);
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.left_brake_pressure() <= Pressure::new::<psi>(50.));
         assert!(brake_circuit_primed.accumulator.fluid_volume() == Volume::new::<gallon>(0.0));
@@ -745,8 +736,7 @@ mod tests {
     #[test]
     fn brake_pressure_limitation() {
         let init_max_vol = Volume::new::<gallon>(0.0);
-        let mut hyd_loop = hydraulic_loop("GREEN");
-        hyd_loop.loop_pressure = Pressure::new::<psi>(3100.0);
+        let loop_pressure = Pressure::new::<psi>(3100.0);
 
         let mut brake_circuit_primed = BrakeCircuit::new(
             "norm",
@@ -755,7 +745,7 @@ mod tests {
             Volume::new::<gallon>(0.1),
         );
 
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(5.)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(5.)), loop_pressure);
 
         assert!(
             brake_circuit_primed.left_brake_pressure()
@@ -765,68 +755,24 @@ mod tests {
 
         brake_circuit_primed.set_brake_demand_left(Ratio::new::<ratio>(1.0));
         brake_circuit_primed.set_brake_demand_right(Ratio::new::<ratio>(1.0));
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.5)), loop_pressure);
 
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2900.));
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(2900.));
 
         let pressure_limit = Pressure::new::<psi>(1200.);
         brake_circuit_primed.set_brake_press_limit(pressure_limit);
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), loop_pressure);
 
         // Now we limit to 1200 but pressure shouldn't drop instantly
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(2500.));
 
-        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), &hyd_loop);
+        brake_circuit_primed.update(&context(Duration::from_secs_f64(1.)), loop_pressure);
 
         // After one second it should have reached the lower limit
         assert!(brake_circuit_primed.left_brake_pressure() <= pressure_limit);
         assert!(brake_circuit_primed.right_brake_pressure() <= pressure_limit);
-    }
-
-    fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
-        match loop_color {
-            "GREEN" => HydraulicLoop::new(
-                loop_color,
-                false,
-                true,
-                Volume::new::<gallon>(26.00),
-                Volume::new::<gallon>(26.41),
-                Volume::new::<gallon>(10.0),
-                Volume::new::<gallon>(3.83),
-                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
-                true,
-                Pressure::new::<psi>(1450.0),
-                Pressure::new::<psi>(1750.0),
-            ),
-            "YELLOW" => HydraulicLoop::new(
-                loop_color,
-                true,
-                false,
-                Volume::new::<gallon>(10.2),
-                Volume::new::<gallon>(10.2),
-                Volume::new::<gallon>(8.0),
-                Volume::new::<gallon>(3.3),
-                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
-                true,
-                Pressure::new::<psi>(1450.0),
-                Pressure::new::<psi>(1750.0),
-            ),
-            _ => HydraulicLoop::new(
-                loop_color,
-                false,
-                false,
-                Volume::new::<gallon>(15.85),
-                Volume::new::<gallon>(15.85),
-                Volume::new::<gallon>(8.0),
-                Volume::new::<gallon>(1.5),
-                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
-                false,
-                Pressure::new::<psi>(1450.0),
-                Pressure::new::<psi>(1750.0),
-            ),
-        }
     }
 
     fn context(delta_time: Duration) -> UpdateContext {
