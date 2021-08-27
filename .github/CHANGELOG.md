@@ -12,6 +12,14 @@
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
 1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+1. [AP] Improved flight director guidance
+1. [FBW] Improved turn coodination in manual flight - @aguther (Andreas Guther)
+1. [FBW] Roll normal law is no longer using elasticity table - @IbrahimK42 (IbrahimK42)
+1. [AP] Improved LOC law and condition - @aguther (Andreas Guther)
+1. [AP] Improved LOC ALIGN law - @aguther (Andreas Guther)
+1. [AP] improved G/S law - @aguther (Andreas Guther)
+1. [AP] Allow V/S push and pull during ALT CPT - @aguther (Andreas Guther)
+1. [AP] Soft Altitude mode uses now FMGC flight phase to detect cruise situation
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
