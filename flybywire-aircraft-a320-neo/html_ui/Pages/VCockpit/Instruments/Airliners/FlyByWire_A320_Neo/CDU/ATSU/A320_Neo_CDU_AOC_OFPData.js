@@ -26,6 +26,7 @@ class CDUAocOfpData {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCOfpData;
+        mcdu.pageRedrawCallback = () => CDUAocOfpData.ShowPage(mcdu);
         mcdu.activeSystem = 'ATSU';
 
         function updateView() {
@@ -53,19 +54,19 @@ class CDUAocOfpData {
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
         if (currentBlockFuel) {
             const size = mcdu.aocWeight.blockFuel ? 'big' : 'small';
-            blockFuel = `{${size}}${Math.round(currentBlockFuel * mcdu._conversionWeight)}{end}[color]cyan`;
+            blockFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentBlockFuel))}{end}[color]cyan`;
         }
 
         const currentTaxiFuel = mcdu.aocWeight.taxiFuel || mcdu.simbrief.taxiFuel;
         if (currentTaxiFuel) {
             const size = mcdu.aocWeight.taxiFuel ? 'big' : 'small';
-            taxiFuel = `{${size}}${Math.round(currentTaxiFuel * mcdu._conversionWeight)}{end}[color]cyan`;
+            taxiFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentTaxiFuel))}{end}[color]cyan`;
         }
 
         const currentTripFuel = mcdu.aocWeight.tripFuel || mcdu.simbrief.tripFuel;
         if (currentTripFuel) {
             const size = mcdu.aocWeight.tripFuel ? 'big' : 'small';
-            tripFuel = `{${size}}${Math.round(currentTripFuel * mcdu._conversionWeight)}{end}[color]cyan`;
+            tripFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentTripFuel))}{end}[color]cyan`;
         }
 
         const display = [
@@ -94,7 +95,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
+            const enteredFuel = NXUnits.userToKg(Math.round(+value));
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
                 mcdu.aocWeight.blockFuel = enteredFuel;
                 updateView();
@@ -113,7 +114,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
+            const enteredFuel = NXUnits.userToKg(Math.round(+value));
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
                 mcdu.aocWeight.taxiFuel = enteredFuel;
                 updateView();
@@ -132,7 +133,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
+            const enteredFuel = NXUnits.userToKg(Math.round(+value));
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
                 mcdu.aocWeight.tripFuel = enteredFuel;
                 updateView();
@@ -235,6 +236,7 @@ class CDUAocOfpData {
             let paxRemaining = parseInt(numberOfPax);
 
             async function fillStation(station, paxToFill) {
+
 
                 const pax = Math.min(paxToFill, station.seats);
                 station.pax = pax;

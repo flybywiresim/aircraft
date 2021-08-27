@@ -1,0 +1,27 @@
+{
+  "LocalisationPackage": {
+    "Language": "nb-NO",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Airbus lanserte deres første A320 i mars 1984. Nesten 26 år senere, i 2010, annonserte de A320neo (\"new engine option\") som det nyeste medlemmet i familien, for å revitalisere og opprettholde sin linje av verdensledende, smalbuk, tvilling-turbofan passasjerfly.<\/br><\/br>Etter en lengre utviklingsprosess ble A320neo tidlig i 2016 offisielt tatt i bruk av Lufthansa, og ble raskt det mestselgende kommersielle flyet noensinne, med mer enn 7400 fly bestilt av over 115 flyselskap så langt.<\/br><\/br>A320neo fortsetter tradisjonen etablert av den originale A320, som var det første passasjerflyet - annet enn Concorde - til å bruke Fly-By-Wire kontroll for normale operasjoner, og deler over 95 prosent av flyrammen med forgjengermodellene. Det er imidlertid introduksjonen av to neste-generasjons motortyper, samt selskapets proprietære 'Sharklet' vingespisser, som virkelig skiller neo-modellen fra de foregående.<\/br><\/br>Drivstoffbesparelser, utvidet rekkevidde, økt maksimum nyttelast og kortere landingsdistanse; disse viktige fremskrittene - sammen med en dramatisk reduksjon i støy og CO₂-utslipp - beviser hvorfor A320neo ikke bare er en kommersiell suksess, men også et stort steg fremover på luftfartens vei til et større miljøansvar.",
+      "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
+      "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Reduser lysstyrke til venstre PFD",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Øk lysstyrke til venstre PFD",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Reduser lysstyrke for høyre PFD",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Øk lysstyrke for høyre PFD",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Juster valgt kurs til venstre (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Juster valgt kurs til høyre (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Juster valgt rettvisende beholden kurs til venstre (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Juster valgt rettvisende beholden kurs til høyre (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU er tilgjengelig",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Sett \"røyking forbudt\" lampen til AUTO",
+      "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX er et samarbeid mellom hundrevis av individuelle bidragsytere.",
+      "A32NX.LOADING.TIPS.A320NEO_002": "Visste du? A320 kan lande med sidevind på opptil 38 knop, og medvind på opptil 15 knop!",
+      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire er oppkalt etter fly-by-wire kontrollsystemet først introdusert i Airbus A320.",
+      "A32NX.LOADING.TIPS.A320NEO_004": "Flere enn 9900 fly av A320-familien har blitt bygget! Det er nesten like mange som befolkningen i Tuvalu!",
+      "A32NX.LOADING.TIPS.A320NEO_005": "Airbus A320neo fly har en rekkevidde på 3500 nautiske mil eller 6500 km. Det er langt nok til å fly fra New York til Paris!",
+      "A32NX.LOADING.TIPS.A320NEO_006": "Visste du? A320-familien har 4 varianter: A318, A319, A320, og A321."
+    }
+  }
+}

@@ -1,7 +1,6 @@
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
-        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
         this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
@@ -1422,7 +1421,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        const value = parseFloat(altFuel) / this._conversionWeight;
+        const value = NXUnits.userToKg(parseFloat(altFuel));
         if (isFinite(value)) {
             if (this.isAltFuelInRange(value)) {
                 this._routeAltFuelEntered = true;
@@ -1448,7 +1447,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        const value = parseFloat(fuel) / this._conversionWeight;
+        const value = NXUnits.userToKg(parseFloat(fuel));
         if (isFinite(value)) {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
@@ -2303,7 +2302,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        const value = parseFloat(s) / this._conversionWeight;
+        const value = NXUnits.userToKg(parseFloat(s));
         if (isFinite(value)) {
             if (this.isTaxiFuelInRange(value)) {
                 this._taxiEntered = true;
@@ -2392,7 +2391,7 @@ class FMCMainDisplay extends BaseAirliners {
                     return false;
                 }
 
-                const rteFinalWeight = parseFloat(enteredValue) / this._conversionWeight;
+                const rteFinalWeight = NXUnits.userToKg(parseFloat(enteredValue));
 
                 if (this.isFinalFuelInRange(rteFinalWeight)) {
                     this._rteFinalWeightEntered = true;
@@ -2560,7 +2559,7 @@ class FMCMainDisplay extends BaseAirliners {
                     return false;
                 }
 
-                const rteRsvWeight = parseFloat(enteredValue) / this._conversionWeight;
+                const rteRsvWeight = NXUnits.userToKg(parseFloat(enteredValue));
 
                 if (!this.isRteRsvFuelInRange(rteRsvWeight)) {
                     this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2590,7 +2589,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (s) {
             if (s.includes("/")) {
                 const sSplit = s.split("/");
-                const zfw = parseFloat(sSplit[0]) / this._conversionWeight;
+                const zfw = NXUnits.userToKg(parseFloat(sSplit[0]));
                 const zfwcg = parseFloat(sSplit[1]);
                 if (isFinite(zfw) && isFinite(zfwcg)) {
                     if (this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
@@ -2621,7 +2620,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.addNewMessage(NXSystemMessages.notAllowed);
                 return false;
             }
-            const zfw = parseFloat(s) / this._conversionWeight;
+            const zfw = NXUnits.userToKg(parseFloat(s));
             if (this.isZFWInRange(zfw)) {
                 this.zeroFuelWeight = zfw;
                 return true;
@@ -2656,7 +2655,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
             return true;
         }
-        const value = parseFloat(s) / this._conversionWeight;
+        const value = NXUnits.userToKg(parseFloat(s));
         if (isFinite(value) && this.isBlockFuelInRange(value)) {
             if (this.isBlockFuelInRange(value)) {
                 this.blockFuel = value;
