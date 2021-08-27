@@ -288,13 +288,13 @@ class CDUAocOfpData {
         const display = [
             ["W/B", "2", "2", "AOC"],
             ["TOTAL PAX", "PAYLOAD"],
-            [buildTotalPaxValue(), `${Math.round(getTotalPayload())}[color]green`],
+            [buildTotalPaxValue(), `${Math.round(NXUnits.kgToUser(getTotalPayload()))}[color]green`],
             [paxStations.rows1_6.name, "ZFW"],
-            [buildStationValue(paxStations.rows1_6), `${Math.round(getZfw())}[color]green`],
+            [buildStationValue(paxStations.rows1_6), `${Math.round(NXUnits.kgToUser(getZfw()))}[color]green`],
             [paxStations.rows7_13.name, "ZFW CG"],
             [buildStationValue(paxStations.rows7_13), zfwcg],
             [paxStations.rows14_21.name, "CARGO"],
-            [buildStationValue(paxStations.rows14_21), `${Math.round(getTotalCargo())} >[color]inop`],
+            [buildStationValue(paxStations.rows14_21), `${Math.round(NXUnits.kgToUser(getTotalCargo()))} >[color]inop`],
             [paxStations.rows22_29.name, "OFP REQUEST"],
             [buildStationValue(paxStations.rows22_29), requestButton],
             ["", "BOARDING"],
@@ -449,7 +449,7 @@ const cargoStations = {
         simVar: 'PAYLOAD STATION WEIGHT:9',
     },
     aftBulk: {
-        name: '[COMP 5 - AFT BULK/LOOSE]',
+        name: '[AFT BULK/LOOSE]',
         weight: 1497,
         stationIndex: 9 + 1,
         position: -37.35,
@@ -471,7 +471,7 @@ function getZfwcg() {
     const leMacZ = -5.39; // Value from Debug Weight
     const macSize = 13.45; // Value from Debug Aircraft Sim Tunning
 
-    const emptyWeight = 90400 * 0.453592; // Value from flight_model.cfg to kgs
+    const emptyWeight = 101990 * 0.453592; // Value from flight_model.cfg to kgs
     const emptyPosition = -8.75; // Value from flight_model.cfg
     const emptyMoment = emptyPosition * emptyWeight;
 
@@ -507,6 +507,6 @@ function getTotalPayload() {
 }
 
 function getZfw() {
-    const emptyWeight = 90400 * 0.453592; // Value from flight_model.cfg to kgs
+    const emptyWeight = 101990 * 0.453592; // Value from flight_model.cfg to kgs
     return emptyWeight + getTotalPayload();
 }
