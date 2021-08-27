@@ -249,7 +249,7 @@ class CDUInitPage {
             fmc._zeroFuelWeightZFWCGEntered &&
             fmc._blockFuelEntered;
     }
-    static trySetFuelPred(fmc) {
+    static trySetFuelPred(fmc, mcdu) {
         if (CDUInitPage.fuelPredConditionsMet(fmc) && !fmc._fuelPredDone) {
             setTimeout(() => {
                 if (CDUInitPage.fuelPredConditionsMet(fmc) && !fmc._fuelPredDone) { //Double check as user can clear block fuel during timeout
@@ -296,7 +296,7 @@ class CDUInitPage {
             } else if (fmc.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(fmc);
                 mcdu.requestUpdate();
-                CDUInitPage.trySetFuelPred(fmc);
+                CDUInitPage.trySetFuelPred(fmc, mcdu);
             }
         };
 
@@ -313,7 +313,7 @@ class CDUInitPage {
                 if (await fmc.trySetBlockFuel(value)) {
                     CDUInitPage.updateTowIfNeeded(fmc);
                     mcdu.requestUpdate();
-                    CDUInitPage.trySetFuelPred(fmc);
+                    CDUInitPage.trySetFuelPred(fmc, mcdu);
                 }
             } else {
                 if (await fmc.trySetBlockFuel(value)) {
@@ -346,7 +346,7 @@ class CDUInitPage {
                 if (await fmc.tryFuelPlanning()) {
                     CDUInitPage.updateTowIfNeeded(fmc);
                     mcdu.requestUpdate();
-                    CDUInitPage.trySetFuelPred(fmc);
+                    CDUInitPage.trySetFuelPred(fmc, mcdu);
                 }
             };
         }
