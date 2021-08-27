@@ -80,7 +80,7 @@ class A32NX_Boarding {
                 position: -27.10,
             },
             aftBulk: {
-                name: 'COMP 5 - AFT BULK/LOOSE',
+                name: 'AFT BULK/LOOSE',
                 weight: 1497,
                 stationIndex: 9 + 1,
                 position: -37.35,

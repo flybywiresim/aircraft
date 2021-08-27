@@ -486,7 +486,7 @@ class FMCMainDisplay extends BaseAirliners {
                 position: -27.10,
             },
             "aftBulk": {
-                name: "COMP 5 - AFT BULK/LOOSE",
+                name: "AFT BULK/LOOSE",
                 seats: 0,
                 weight: 1497,
                 currentWeight: 0,
