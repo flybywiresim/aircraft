@@ -1,6 +1,6 @@
 class CDUMenuPage {
     static ShowPage(fmc, mcdu) {
-        mcdu.setCurrentPage(); // no refresh
+        mcdu.setCurrentPage(null, null, () => mcdu.forceClearScratchpad()); // no refresh
         mcdu.forceClearScratchpad();
 
         const activeSystem = mcdu.activeSystem;

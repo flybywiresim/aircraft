@@ -8,6 +8,7 @@ class A320_Neo_CDU_Display {
         this._pageCurrent = undefined;
         this._pageCount = undefined;
         this.pageRedrawCallback = null;
+        this.pageCleanupCallback = null;
         this.updateRequest = false;
         this.minPageUpdateThrottler = new UpdateThrottler(100);
         this.pageRefreshThrottler = new UpdateThrottler(1000);
@@ -243,12 +244,19 @@ class A320_Neo_CDU_Display {
         this.fmc.requestUpdate(this);
     }
 
-    setCurrentPage(redrawCallback, activeSystem) {
+    /**
+     *
+     * @param {(): void} redrawCallback function to be called to refresh the display (usually redraw the current page)
+     * @param {string} activeSystem
+     * @param {(): void} cleanupCallback function to do any cleanup before the next redraw (could be a different page, or the same page refreshed)
+     */
+    setCurrentPage(redrawCallback, activeSystem, cleanupCallback = null) {
         if (activeSystem) {
             this.activeSystem = activeSystem;
         }
         this.clearDisplay();
         this.pageRedrawCallback = redrawCallback;
+        this.pageCleanupCallback = cleanupCallback;
     }
 
     generateHTMLLayout() {
@@ -605,6 +613,10 @@ class A320_Neo_CDU_Display {
         this.setPageCurrent(0);
         this.setPageCount(0);
         this.pageRedrawCallback = null;
+        if (this.pageCleanupCallback) {
+            this.pageCleanupCallback();
+        }
+        this.pageCleanupCallback = null;
         for (let i = 0; i < 6; i++) {
             this.setLabel("", i, -1);
         }
