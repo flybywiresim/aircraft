@@ -760,6 +760,9 @@ const GlideSlope: FC = () => {
     // TODO need some photo refs for this
     const [gsDeviation] = useSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees');
     const [gsAvailable] = useSimVar('NAV HAS GLIDE SLOPE:3', 'number');
+
+    const deviationPx = gsDeviation / 0.8 * 128;
+
     return (
         <>
             <Layer x={750} y={384}>
@@ -771,11 +774,18 @@ const GlideSlope: FC = () => {
             </Layer>
             <Layer x={750} y={384}>
                 <path
-                    d="M-10,0 L0,16 L10,0 L0,-16 L-10,0"
-                    transform={`translate(0 ${gsDeviation * 128 / 0.175})`}
+                    d="M10,0 L0,-16 L-10,0"
+                    transform={`translate(0 ${Math.max(-128, deviationPx)})`}
                     className="Magenta rounded"
                     strokeWidth={2.5}
-                    visibility={(gsAvailable && Math.abs(gsDeviation) < 0.175) ? 'visible' : 'hidden'}
+                    visibility={(gsAvailable && deviationPx < 128) ? 'visible' : 'hidden'}
+                />
+                <path
+                    d="M-10,0 L0,16 L10,0"
+                    transform={`translate(0 ${Math.min(128, deviationPx)})`}
+                    className="Magenta rounded"
+                    strokeWidth={2.5}
+                    visibility={(gsAvailable && deviationPx > -128) ? 'visible' : 'hidden'}
                 />
             </Layer>
         </>
