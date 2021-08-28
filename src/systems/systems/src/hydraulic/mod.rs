@@ -680,7 +680,8 @@ impl SimulationElement for HydraulicLoop {
 }
 
 pub struct HydraulicCircuit {
-    pressure_id: String,
+    system_pressure_id: String,
+    system_pressure_switch_id: String,
     fire_valve_id: String,
 
     pump_sections: Vec<Section>,
@@ -754,7 +755,8 @@ impl HydraulicCircuit {
             - Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL)
                 * pump_sections_number as f64;
         Self {
-            pressure_id: format!("HYD_{}_PRESSURE", id),
+            system_pressure_id: format!("HYD_{}_PRESSURE", id),
+            system_pressure_switch_id: format!("HYD_{}_SYS_PRESSURE_SWITCH", id),
             fire_valve_id: format!("HYD_{}_FIRE_VALVE_OPENED", id),
             pump_sections,
             system_section: Section::new(
@@ -940,7 +942,11 @@ impl SimulationElement for HydraulicCircuit {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.pressure_id, self.system_pressure());
+        writer.write(&self.system_pressure_id, self.system_pressure());
+        writer.write(
+            &self.system_pressure_switch_id,
+            self.system_section_switch_pressurised(),
+        );
         //if self.has_fire_valve {
         writer.write(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
         //}

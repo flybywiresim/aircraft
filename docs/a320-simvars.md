@@ -773,6 +773,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_SYS_PRESSURE_SWITCH
+    - Bool
+    - Current pressure switch state in the {loop_name} system section
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL
     - Gallon
     - Current fluid level in the {loop_name} hydraulic circuit reservoir
