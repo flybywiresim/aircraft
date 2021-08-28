@@ -757,9 +757,7 @@ class A320_Neo_CDU_Display {
      * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
      * @param propagate {boolean} Whether to propagate type II messages to the other MCDU
      */
-    addNewMessage(message, isResolved = () => {
-        return false;
-    }, onClear = () => {}, propagate = true) {
+    addNewMessage(message, isResolved = () => false, onClear = () => {}, propagate = true) {
         if (message.isTypeTwo) {
             if (!isResolved()) {
                 this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
@@ -1297,9 +1295,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
      * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    addNewMessage(message, isResolved = () => {
-        return false;
-    }, onClear = () => {}) {
+    addNewMessage(message, isResolved = () => false, onClear = () => {}) {
         this.mcdus.forEach((mcdu) => mcdu.addNewMessage(message, isResolved, onClear, false));
     }
 
@@ -1309,9 +1305,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
      * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    addNewOffsideMessage(onsideMcdu, message, isResolved = () => {
-        return false;
-    }, onClear = () => {}) {
+    addNewOffsideMessage(onsideMcdu, message, isResolved = () => false, onClear = () => {}) {
         this.mcdus.forEach((mcdu) => {
             if (mcdu !== onsideMcdu) {
                 mcdu.addNewMessage(message, isResolved, onClear, false);
