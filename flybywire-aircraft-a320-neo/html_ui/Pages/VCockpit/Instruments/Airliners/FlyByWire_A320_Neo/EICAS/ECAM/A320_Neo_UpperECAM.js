@@ -719,7 +719,10 @@ var A320_Neo_UpperECAM;
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
                                 isActive: () => (
                                     !Simplane.getIsGrounded() &&
-                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > 9550
+                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > 9550 &&
+                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > (this.getCachedSimVar("L:A32NX_DEPARTURE_ELEVATION", "feet") + 1000) &&
+                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > (this.getCachedSimVar("L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB", "feet") + 1000
+                                        || this.getCachedSimVar("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet") + 1000)
                                 ),
                                 actions: [
                                     {
@@ -801,7 +804,8 @@ var A320_Neo_UpperECAM;
                                 isActive: () => (
                                     this.getCachedSimVar("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI") < 1.45 &&
                                     this.getCachedSimVar("VERTICAL SPEED", "feet per minute") < -500 &&
-                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > (this.getCachedSimVar("L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB", "feet") + 1500 || this.getCachedSimVar("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet") + 1500)
+                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > (this.getCachedSimVar("L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB", "feet") + 1500
+                                        || this.getCachedSimVar("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet") + 1500)
                                 ),
                                 actions: [
                                     {

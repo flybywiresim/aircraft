@@ -225,6 +225,10 @@
     - Millibar
     - Destination QNH as entered by the pilot in the MCDU during descent
 
+- A32NX_DEPARTURE_ELEVATION
+    - Feet
+    - Departure runway elevation as calculated by the FMC
+
 - A32NX_FWC_FLIGHT_PHASE
     - Enum
     - Contains the numeric flight phase as determined by the FWC
