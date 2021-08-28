@@ -253,6 +253,8 @@ fn hyd_circuit_basic(path: &str) {
         Pressure::new::<psi>(1750.),
         Pressure::new::<psi>(1450.),
         Pressure::new::<psi>(1750.),
+        false,
+        false,
     );
 
     let context = context(Duration::from_millis(50));
@@ -325,6 +327,7 @@ fn hyd_circuit_basic(path: &str) {
         hydraulic_loop.update(
             &mut vec![&mut edp],
             &mut vec![&mut epump],
+            &None,
             &context,
             &TestHydraulicLoopController::commanding_open_fire_shutoff_valve(),
         );

@@ -7,7 +7,7 @@ use uom::si::{
     pressure::psi,
     ratio::{percent, ratio},
     velocity::knot,
-    volume::gallon,
+    volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
 };
 
@@ -47,13 +47,15 @@ impl A320HydraulicCircuitFactory {
         HydraulicCircuit::new(
             "GREEN",
             1,
-            99.,
+            100.,
             Volume::new::<gallon>(26.41),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+            true,
+            false,
         )
     }
 
@@ -61,13 +63,15 @@ impl A320HydraulicCircuitFactory {
         HydraulicCircuit::new(
             "BLUE",
             1,
-            99.,
+            100.,
             Volume::new::<gallon>(15.85),
             Volume::new::<gallon>(1.56),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+            false,
+            false,
         )
     }
 
@@ -75,13 +79,15 @@ impl A320HydraulicCircuitFactory {
         HydraulicCircuit::new(
             "YELLOW",
             1,
-            99.,
+            100.,
             Volume::new::<gallon>(19.81),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+            false,
+            true,
         )
     }
 }
@@ -547,6 +553,7 @@ impl A320Hydraulic {
         self.green_loop.update(
             &mut vec![&mut self.engine_driven_pump_1],
             &mut vec![&mut DummyPump::new()],
+            &Some(&self.power_transfer_unit),
             &context,
             &self.green_loop_controller,
         );
@@ -555,14 +562,30 @@ impl A320Hydraulic {
         self.yellow_loop.update(
             &mut vec![&mut self.engine_driven_pump_2],
             &mut vec![&mut self.yellow_electric_pump],
+            &Some(&self.power_transfer_unit),
             context,
             &self.yellow_loop_controller,
         );
+        println!(
+            "Yloop P={:.0} Gloop={:.0} Yedp={:.0} Gedp={:.0}",
+            self.yellow_loop.system_pressure().get::<psi>(),
+            self.green_loop.system_pressure().get::<psi>(),
+            self.yellow_loop.pump_pressure(0).get::<psi>(),
+            self.green_loop.pump_pressure(0).get::<psi>(),
+        );
+        // use systems::hydraulic::PressureSource;
+        // println!(
+        //     "Bloop P={:.0} Bepump={:.0} bdisp={:.2}",
+        //     self.blue_loop.system_pressure().get::<psi>(),
+        //     self.blue_loop.pump_pressure(0).get::<psi>(),
+        //     self.blue_electric_pump.displacement().get::<cubic_inch>(),
+        // );
 
         self.blue_loop_controller.update(engine_fire_push_buttons);
         self.blue_loop.update(
             &mut vec![&mut self.blue_electric_pump],
             &mut vec![&mut self.ram_air_turbine],
+            &None,
             context,
             &self.blue_loop_controller,
         );
@@ -2871,7 +2894,7 @@ mod tests {
             // Yellow epump ON / Waiting 25s
             test_bed = test_bed
                 .set_yellow_e_pump(false)
-                .run_waiting_for(Duration::from_secs(25));
+                .run_waiting_for(Duration::from_secs(55));
 
             assert!(test_bed.is_ptu_enabled());
 
@@ -3182,7 +3205,7 @@ mod tests {
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
+                .run_waiting_for(Duration::from_secs(25));
 
             // No more fault LOW expected
             assert!(test_bed.is_green_pressurised());
