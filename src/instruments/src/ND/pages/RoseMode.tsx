@@ -551,6 +551,20 @@ const VorCaptureOverlay: React.FC<{
     const [course] = useSimVar(`NAV OBS:${index}`, 'degrees');
     const [courseDeviation] = useSimVar(`NAV RADIAL ERROR:${index}`, 'degrees', 20);
     const [available] = useSimVar(`NAV HAS NAV:${index}`, 'number');
+    const [toward, setToward] = useState(true);
+    const [cdiPx, setCdiPx] = useState(12);
+
+    useEffect(() => {
+        let cdiDegrees: number;
+        if (Math.abs(courseDeviation) <= 90) {
+            cdiDegrees = courseDeviation;
+            setToward(true);
+        } else {
+            cdiDegrees = Math.sign(courseDeviation) * -Avionics.Utils.diffAngle(180, Math.abs(courseDeviation));
+            setToward(false);
+        }
+        setCdiPx(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);
+    }, [courseDeviation.toFixed(2)]);
 
     return (
         <g transform={`rotate(${course - heading} 384 384)`} stroke="white" strokeWidth={3} fill="none">
@@ -561,20 +575,29 @@ const VorCaptureOverlay: React.FC<{
                 <circle cx={532} cy={384} r={5} />
             </g>
             <path
-                d="M364,256 L404,256 M384,134 L384,289 M384,479 L384,634"
-                stroke="cyan"
+                d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
+                className="Cyan rounded"
                 id="vor-course-pointer"
-                strokeWidth={5}
+                strokeWidth={4}
             />
-            { available && Math.abs(courseDeviation) < 12
+            { available
                 && (
-                    <path
-                        d="M384,289 L384,479"
-                        stroke="cyan"
-                        transform={`translate(${courseDeviation * 74 / 5}, 0)`}
-                        id="vor-deviation"
-                        strokeWidth={5}
-                    />
+                    <>
+                        <path
+                            d="M372,322 L384,304 L396,322"
+                            className="Cyan rounded"
+                            transform={`translate(${cdiPx}, ${toward ? 0 : 160}) rotate(${toward ? 0 : 180} 384 304)`}
+                            id="vor-deviation"
+                            strokeWidth={4}
+                        />
+                        <path
+                            d="M384,304 L384,464"
+                            className="Cyan rounded"
+                            transform={`translate(${cdiPx}, 0)`}
+                            id="vor-deviation"
+                            strokeWidth={4}
+                        />
+                    </>
                 )}
         </g>
     );
@@ -587,6 +610,12 @@ const IlsCaptureOverlay: React.FC<{
     const [course] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [courseDeviation] = useSimVar('NAV RADIAL ERROR:3', 'degrees', 20);
     const [available] = useSimVar('NAV HAS LOCALIZER:3', 'number');
+    const [cdiPx, setCdiPx] = useState(12);
+
+    useEffect(() => {
+        // TODO back-course
+        setCdiPx(Math.min(12, Math.max(-12, courseDeviation)) * 74 / 5);
+    }, [courseDeviation.toFixed(2)]);
 
     return (
         <g transform={`rotate(${course - heading} 384 384)`} stroke="white" strokeWidth={3} fill="none">
@@ -597,19 +626,19 @@ const IlsCaptureOverlay: React.FC<{
                 <circle cx={532} cy={384} r={5} />
             </g>
             <path
-                d="M364,256 L404,256 M384,134 L384,289 M384,479 L384,634"
-                stroke="magenta"
+                d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
+                className="Magenta rounded"
                 id="ils-course-pointer"
-                strokeWidth={5}
+                strokeWidth={4}
             />
-            { available && Math.abs(courseDeviation) < 12
+            { available
                 && (
                     <path
-                        d="M384,289 L384,479"
-                        stroke="magenta"
-                        transform={`translate(${courseDeviation * 74 / 5}, 0)`}
+                        d="M384,304 L384,464"
+                        className="Magenta rounded"
+                        transform={`translate(${cdiPx}, 0)`}
                         id="ils-deviation"
-                        strokeWidth={5}
+                        strokeWidth={4}
                     />
                 )}
         </g>
