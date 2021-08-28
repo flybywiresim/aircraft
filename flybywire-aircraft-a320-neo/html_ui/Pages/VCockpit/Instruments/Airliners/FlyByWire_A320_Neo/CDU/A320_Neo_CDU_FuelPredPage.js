@@ -241,6 +241,14 @@ class CDUFuelPredPage {
             }
         }
 
+        mcdu.setArrows(false, false, true, true);
+        mcdu.onPrevPage = () => {
+            CDUInitPage.ShowPage1(fmc, mcdu);
+        };
+        mcdu.onNextPage = () => {
+            CDUInitPage.ShowPage1(fmc, mcdu);
+        };
+
         mcdu.setTemplate([
             ["FUEL PRED"],
             ["\xa0AT", "EFOB", isFlying ? "UTC" : "TIME"],
