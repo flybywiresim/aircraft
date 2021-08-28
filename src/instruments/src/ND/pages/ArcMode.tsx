@@ -89,6 +89,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
                 />
                 <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
+                <Plane />
             </>
         );
     }
@@ -495,7 +496,6 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, si
             { lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
             <SelectedHeadingBug heading={heading} selected={selectedHeading} />
         </g>
-        <Plane />
     </>
 ));
 
