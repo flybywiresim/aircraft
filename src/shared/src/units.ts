@@ -3,7 +3,7 @@ import { NXDataStore } from "./persistence";
 // SI base units
 export type Celsius = number; // derived unit
 export type HectoPascal = number; // derived unit
-export type Kilogram = number;
+export type KiloGram = number;
 export type Metre = number;
 
 export class Units {
@@ -18,11 +18,11 @@ export class Units {
         return Units._metricUnits;
     }
 
-    static userToKilogram(value: number): Kilogram {
+    static userToKilogram(value: number): KiloGram {
         return Units.metricUnits ? value : value / 2.20462;
     }
 
-    static kilogramToUser(value: Kilogram): number {
+    static kilogramToUser(value: KiloGram): number {
         return Units.metricUnits ? value : value * 2.20462;
     }
 

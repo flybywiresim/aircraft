@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Units } from '@shared/units';
 import React from 'react';
 
 import '../../Assets/Performance.scss';
@@ -98,8 +99,8 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
     function runwayLengthLabel(): JSX.Element {
         return (
             <div className="text-white absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
-                { props.mainLength ?? 0 }
-                m
+                { Math.round(Units.metreToUser(props.mainLength ?? 0)) }&nbsp;
+                { Units.userLengthUnit }
             </div>
         );
     }
@@ -119,8 +120,8 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
                         Stop Margin
                     </div>
                     <div>
-                        { Math.round(props.stopMargin)}
-                        m
+                        { Math.round(Units.metreToUser(props.stopMargin))}&nbsp;
+                        { Units.userLengthUnit }
                     </div>
                     <div className={`border-l-4 h-full absolute top-0 left-0 ${props.stopMargin > 0 ? 'border-green-500' : 'border-red-500'}`} />
                 </div>
@@ -166,8 +167,8 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
                             <div className="w-full text-center absolute -top-0.5 transform -translate-y-full">
                                 {label.label}
                                 {' '}
-                                { Math.round(label.distance) }
-                                m
+                                { Math.round(Units.metreToUser(label.distance)) }&nbsp;
+                                { Units.userLengthUnit }
                             </div>
                         )}
 

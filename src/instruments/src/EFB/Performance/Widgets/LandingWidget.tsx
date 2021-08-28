@@ -27,6 +27,7 @@ import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { EPerformanceActions, PerformanceContext, performanceInitialState } from '../../Store/performance-context';
+import { Units } from '@shared/units';
 
 const poundsToKgs = 0.453592;
 
@@ -168,6 +169,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(weight)) {
             weight = undefined;
+        } else {
+            weight = Units.userToKilogram(weight);
         }
 
         performanceDispatch({
@@ -220,6 +223,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(temperature)) {
             temperature = undefined;
+        } else {
+            temperature = Units.userToCelsius(temperature);
         }
 
         performanceDispatch({
@@ -281,6 +286,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(runwayLength)) {
             runwayLength = undefined;
+        } else {
+            runwayLength = Units.userToMetre(runwayLength);
         }
 
         performanceDispatch({
@@ -303,6 +310,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(pressure)) {
             pressure = undefined;
+        } else {
+            pressure = Units.userToHectopascal(pressure);
         }
 
         performanceDispatch({
@@ -366,8 +375,8 @@ export const LandingWidget = () => {
                                 <SimpleInput
                                     className="w-56 my-1.5"
                                     label="Temperature"
-                                    value={temperature}
-                                    placeholder="°C"
+                                    value={Units.celsiusToUser(temperature)}
+                                    placeholder={Units.userTemperatureUnit}
                                     min={-50}
                                     max={55}
                                     decimalPrecision={1}
@@ -377,11 +386,11 @@ export const LandingWidget = () => {
                                 <SimpleInput
                                     className="w-56 my-1.5"
                                     label="QNH"
-                                    value={pressure}
-                                    placeholder="mb"
-                                    min={800}
-                                    max={1200}
-                                    decimalPrecision={2}
+                                    value={Units.hectopascalToUserString(pressure)}
+                                    placeholder={Units.userPressureUnit}
+                                    min={Units.metricUnits ? 745 : 22.00}
+                                    max={Units.metricUnits ? 1100 : 32.48}
+                                    decimalPrecision={Units.metricUnits ? 0 : 2}
                                     onChange={handlePressureChange}
                                     number
                                 />
@@ -389,7 +398,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Rwy Altitude"
                                     value={altitude}
-                                    placeholder='" ASL'
+                                    placeholder='ft MSL'
                                     min={-2000}
                                     max={20000}
                                     decimalPrecision={0}
@@ -439,10 +448,10 @@ export const LandingWidget = () => {
                                 <SimpleInput
                                     className="w-56 my-1.5"
                                     label="Rwy LDA"
-                                    value={runwayLength}
-                                    placeholder="m"
+                                    value={Units.kilogramToUser(runwayLength)}
+                                    placeholder={Units.userLengthUnit}
                                     min={0}
-                                    max={6000}
+                                    max={Units.metricUnits ? 6000 : 20000}
                                     decimalPrecision={0}
                                     onChange={handleRunwayLengthChange}
                                     number
@@ -463,10 +472,10 @@ export const LandingWidget = () => {
                                 <SimpleInput
                                     className="w-56 my-1.5"
                                     label="Weight"
-                                    value={weight}
-                                    placeholder="KG"
-                                    min={41000}
-                                    max={100000}
+                                    value={Units.kilogramToUser(weight)}
+                                    placeholder={Units.userWeightUnit}
+                                    min={Units.metricUnits ? 41000 : 90400}
+                                    max={Units.metricUnits ? 100000 : 220000}
                                     decimalPrecision={0}
                                     onChange={handleWeightChange}
                                     number
@@ -536,9 +545,9 @@ export const LandingWidget = () => {
                     <div className="border-t border-white pt-3">
                         <div className="flex flex-col items-center m-3">
                             <div className="flex items-end">
-                                <OutputDisplay label="MAX MANUAL" value={`${maxAutobrakeLandingDist}m`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
-                                <OutputDisplay label="MEDIUM" value={`${mediumAutobrakeLandingDist}m`} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
-                                <OutputDisplay label="LOW" value={`${lowAutobrakeLandingDist}m`} error={lowAutobrakeLandingDist > displayedRunwayLength} />
+                                <OutputDisplay label="MAX MANUAL" value={`${Math.round(Units.metreToUser(maxAutobrakeLandingDist))}\xa0${Units.userLengthUnit}`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
+                                <OutputDisplay label="MEDIUM" value={`${Math.round(Units.metreToUser(mediumAutobrakeLandingDist))}\xa0${Units.userLengthUnit}`} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
+                                <OutputDisplay label="LOW" value={`${Math.round(Units.metreToUser(lowAutobrakeLandingDist))}\xa0${Units.userLengthUnit}`} error={lowAutobrakeLandingDist > displayedRunwayLength} />
                             </div>
                         </div>
                     </div>
