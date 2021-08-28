@@ -48,7 +48,7 @@ impl A320HydraulicCircuitFactory {
             "GREEN",
             1,
             100.,
-            Volume::new::<gallon>(26.41),
+            Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
@@ -64,7 +64,7 @@ impl A320HydraulicCircuitFactory {
             "BLUE",
             1,
             100.,
-            Volume::new::<gallon>(15.85),
+            Volume::new::<gallon>(8.),
             Volume::new::<gallon>(1.56),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
@@ -80,7 +80,7 @@ impl A320HydraulicCircuitFactory {
             "YELLOW",
             1,
             100.,
-            Volume::new::<gallon>(19.81),
+            Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
@@ -566,13 +566,13 @@ impl A320Hydraulic {
             context,
             &self.yellow_loop_controller,
         );
-        println!(
-            "Yloop P={:.0} Gloop={:.0} Yedp={:.0} Gedp={:.0}",
-            self.yellow_loop.system_pressure().get::<psi>(),
-            self.green_loop.system_pressure().get::<psi>(),
-            self.yellow_loop.pump_pressure(0).get::<psi>(),
-            self.green_loop.pump_pressure(0).get::<psi>(),
-        );
+        // println!(
+        //     "Yloop P={:.0} Gloop={:.0} Yedp={:.0} Gedp={:.0}",
+        //     self.yellow_loop.system_pressure().get::<psi>(),
+        //     self.green_loop.system_pressure().get::<psi>(),
+        //     self.yellow_loop.pump_pressure(0).get::<psi>(),
+        //     self.green_loop.pump_pressure(0).get::<psi>(),
+        // );
         // use systems::hydraulic::PressureSource;
         // println!(
         //     "Bloop P={:.0} Bepump={:.0} bdisp={:.2}",
@@ -2236,15 +2236,15 @@ mod tests {
             }
 
             fn green_pressure(&mut self) -> Pressure {
-                self.read("HYD_GREEN_PRESSURE")
+                self.read("HYD_GREEN_SYSTEM_SECTION_PRESSURE")
             }
 
             fn blue_pressure(&mut self) -> Pressure {
-                self.read("HYD_BLUE_PRESSURE")
+                self.read("HYD_BLUE_SYSTEM_SECTION_PRESSURE")
             }
 
             fn yellow_pressure(&mut self) -> Pressure {
-                self.read("HYD_YELLOW_PRESSURE")
+                self.read("HYD_YELLOW_SYSTEM_SECTION_PRESSURE")
             }
 
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
@@ -2964,13 +2964,13 @@ mod tests {
 
             // ALMOST No pressure
             assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(1000.));
 
             // Blue is auto run from engine master switches logic
             assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(1000.));
             assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
@@ -3533,8 +3533,8 @@ mod tests {
                 .run_one_tick();
 
             // ALMOST No pressure
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(1000.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
@@ -3577,9 +3577,9 @@ mod tests {
             assert!(!test_bed.is_blue_pressurised());
 
             // Blue is auto run
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(1000.));
             assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed

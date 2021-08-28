@@ -680,10 +680,6 @@ impl SimulationElement for HydraulicLoop {
 }
 
 pub struct HydraulicCircuit {
-    system_pressure_id: String,
-    system_pressure_switch_id: String,
-    fire_valve_id: String,
-
     pump_sections: Vec<Section>,
     system_section: Section,
     pump_to_system_checkvalves: Vec<CheckValve>,
@@ -731,8 +727,9 @@ impl HydraulicCircuit {
         let mut pump_sections: Vec<Section> = Vec::new();
         let mut pump_to_system_checkvalves: Vec<CheckValve> = Vec::new();
 
-        for _ in 0..pump_sections_number {
+        for pump_idx in 0..pump_sections_number {
             pump_sections.push(Section::new(
+                format!("HYD_{}_PUMP_{}_SECTION", id, pump_idx).as_str(),
                 VolumeRate::new::<gallon_per_second>(Self::PUMP_SECTION_STATIC_LEAK_GAL_P_S),
                 Volume::new::<gallon>(
                     Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume_percent / 100.,
@@ -741,7 +738,9 @@ impl HydraulicCircuit {
                 None,
                 pump_pressure_switch_lo_hyst,
                 pump_pressure_switch_hi_hyst,
-                Some(FireValve::new()),
+                Some(FireValve::new(
+                    format!("HYD_{}_PUMP_{}", id, pump_idx).as_str(),
+                )),
                 false,
                 false,
             ));
@@ -754,12 +753,12 @@ impl HydraulicCircuit {
         let system_section_volume = high_pressure_max_volume
             - Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL)
                 * pump_sections_number as f64;
+
+        let system_section_id = format!("HYD_{}_{}", id, "SYSTEM_SECTION");
         Self {
-            system_pressure_id: format!("HYD_{}_PRESSURE", id),
-            system_pressure_switch_id: format!("HYD_{}_SYS_PRESSURE_SWITCH", id),
-            fire_valve_id: format!("HYD_{}_FIRE_VALVE_OPENED", id),
             pump_sections,
             system_section: Section::new(
+                system_section_id.as_str(),
                 VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
                 system_section_volume * priming_volume_percent / 100.,
                 system_section_volume,
@@ -938,23 +937,21 @@ impl SimulationElement for HydraulicCircuit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.reservoir.accept(visitor);
 
-        visitor.visit(self);
-    }
+        for section in &mut self.pump_sections {
+            section.accept(visitor);
+        }
 
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.system_pressure_id, self.system_pressure());
-        writer.write(
-            &self.system_pressure_switch_id,
-            self.system_section_switch_pressurised(),
-        );
-        //if self.has_fire_valve {
-        writer.write(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
-        //}
+        self.system_section.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 // This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
 // through a checkvalve
 pub struct Section {
+    pressure_id: String,
+    pressure_switch_id: String,
+
     static_leak_at_max_press: VolumeRate,
     current_volume: Volume,
     max_high_press_volume: Volume,
@@ -979,6 +976,7 @@ pub struct Section {
 }
 impl Section {
     pub fn new(
+        id: &str,
         static_leak_at_max_press: VolumeRate,
         current_volume: Volume,
         max_high_press_volume: Volume,
@@ -990,6 +988,8 @@ impl Section {
         connected_to_ptu_right_side: bool,
     ) -> Self {
         Self {
+            pressure_id: format!("{}_PRESSURE", id),
+            pressure_switch_id: format!("{}_PRESSURE_SWITCH", id),
             static_leak_at_max_press,
             current_volume,
             max_high_press_volume,
@@ -1250,13 +1250,31 @@ impl Section {
         }
     }
 }
+impl SimulationElement for Section {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        if self.fire_valve.is_some() {
+            self.fire_valve.as_mut().unwrap().accept(visitor);
+        }
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.pressure_id, self.pressure());
+        writer.write(&self.pressure_switch_id, self.pressure_switch());
+    }
+}
 
 pub struct FireValve {
+    opened_id: String,
     is_opened: bool,
 }
 impl FireValve {
-    fn new() -> Self {
-        Self { is_opened: true }
+    fn new(id: &str) -> Self {
+        Self {
+            opened_id: format!("{}_FIRE_VALVE_OPENED", id),
+            is_opened: true,
+        }
     }
 
     fn set_open_state(&mut self, valve_open_command: bool) {
@@ -1265,6 +1283,11 @@ impl FireValve {
 
     fn is_opened(&self) -> bool {
         self.is_opened
+    }
+}
+impl SimulationElement for FireValve {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.opened_id, self.is_opened());
     }
 }
 pub struct CheckValve {
