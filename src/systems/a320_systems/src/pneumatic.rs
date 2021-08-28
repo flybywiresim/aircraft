@@ -767,6 +767,10 @@ impl PneumaticContainer for EngineBleedAirSystem {
     fn change_volume(&mut self, volume: Volume) {
         self.regulated_pressure_pipe.change_volume(volume)
     }
+
+    fn update_temperature(&mut self, temperature: TemperatureInterval) {
+        self.regulated_pressure_pipe.update_temperature(temperature);
+    }
 }
 
 pub struct A320PneumaticOverheadPanel {

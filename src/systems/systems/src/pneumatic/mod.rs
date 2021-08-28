@@ -1,7 +1,6 @@
 //! As we've not yet modelled pneumatic systems and some pneumatic things are needed for the APU, for now this implementation will be very simple.
 
 use crate::{
-    engine::Engine,
     hydraulic::Fluid,
     shared::{ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve},
     simulation::{
@@ -14,6 +13,7 @@ use uom::si::{
     f64::*,
     pressure::{pascal, psi},
     ratio::{percent, ratio},
+    temperature_interval,
     thermodynamic_temperature::degree_celsius,
     volume::{cubic_inch, cubic_meter, gallon},
 };
@@ -34,6 +34,7 @@ pub trait PneumaticContainer {
     fn volume(&self) -> Volume; // Not the volume of gas, but the physical measurements
     fn temperature(&self) -> ThermodynamicTemperature;
     fn change_volume(&mut self, volume: Volume);
+    fn update_temperature(&mut self, temperature: TemperatureInterval);
 }
 
 // Default container
@@ -60,6 +61,10 @@ impl PneumaticContainer for DefaultPipe {
     fn change_volume(&mut self, volume: Volume) {
         self.pressure += self.calculate_pressure_change_for_volume_change(volume);
         self.update_temperature_for_volume_change(volume);
+    }
+
+    fn update_temperature(&mut self, temperature: TemperatureInterval) {
+        self.temperature += temperature;
     }
 }
 impl DefaultPipe {
@@ -284,6 +289,10 @@ impl PneumaticContainer for CompressionChamber {
     fn change_volume(&mut self, volume: Volume) {
         self.pipe.change_volume(volume);
     }
+
+    fn update_temperature(&mut self, temperature: TemperatureInterval) {
+        self.pipe.update_temperature(temperature);
+    }
 }
 impl CompressionChamber {
     pub fn new(volume: Volume) -> Self {
@@ -350,6 +359,10 @@ impl PneumaticContainer for DefaultConsumer {
 
     fn change_volume(&mut self, volume: Volume) {
         self.pipe.change_volume(volume);
+    }
+
+    fn update_temperature(&mut self, temperature: TemperatureInterval) {
+        self.pipe.update_temperature(temperature);
     }
 }
 impl DefaultConsumer {
@@ -460,6 +473,41 @@ impl ControllerSignal<TargetPressureSignal> for ApuCompressionChamberController 
     }
 }
 
+struct HeatExchanger {
+    coefficient: f64,
+    internal_valve: DefaultValve,
+}
+impl HeatExchanger {
+    fn new(coefficient: f64) -> Self {
+        Self {
+            coefficient,
+            internal_valve: DefaultValve::new_open(),
+        }
+    }
+
+    fn update(
+        &self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+        supply: &mut impl PneumaticContainer,
+        to: &mut impl PneumaticContainer,
+    ) {
+        let temperature_gradient = TemperatureInterval::new::<temperature_interval::degree_celsius>(
+            supply.temperature().get::<degree_celsius>()
+                - from.temperature().get::<degree_celsius>(),
+        );
+
+        self.internal_valve.update_move_fluid(context, from, to);
+
+        supply.update_temperature(
+            -self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
+        );
+        to.update_temperature(
+            self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
+        );
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -560,6 +608,10 @@ mod tests {
 
     fn pressure_tolerance() -> Pressure {
         Pressure::new::<pascal>(100.)
+    }
+
+    fn air() -> Fluid {
+        Fluid::new(Pressure::new::<pascal>(142000.))
     }
 
     #[test]
@@ -945,6 +997,109 @@ mod tests {
 
         assert!(consumer.pressure() >= Pressure::new::<psi>(0.));
         assert!(consumer.pressure() < pressure_tolerance());
+    }
+
+    #[test]
+    fn heat_exchanger_does_not_do_anything_when_no_air_is_moved() {
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+
+        let mut from = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(14.7),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+        let mut supply = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(14.7),
+            ThermodynamicTemperature::new::<degree_celsius>(150.),
+        );
+        let mut to = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(14.7),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+
+        let heat_exchanger = HeatExchanger::new(1.);
+        heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
+
+        assert_eq!(
+            from.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
+        assert_eq!(
+            supply.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(150.)
+        );
+        assert_eq!(
+            to.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
+    }
+
+    #[test]
+    fn heat_exchanger_does_not_do_anything_when_temperatures_are_equal() {
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+
+        let mut from = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(29.4),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+        let mut supply = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(14.7),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+        let mut to = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(14.7),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+
+        let heat_exchanger = HeatExchanger::new(1.);
+        heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
+
+        // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
+        assert_eq!(
+            supply.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
+    }
+
+    #[test]
+    fn heat_exchanger_cools() {
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+
+        let mut from = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(29.4),
+            ThermodynamicTemperature::new::<degree_celsius>(200.),
+        );
+        let mut supply = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(14.7),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+        let mut to = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(14.7),
+            ThermodynamicTemperature::new::<degree_celsius>(200.),
+        );
+
+        let heat_exchanger = HeatExchanger::new(1.);
+        heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
+
+        // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
+        assert!(supply.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
     }
 
     mod cross_bleed_selector_knob {
