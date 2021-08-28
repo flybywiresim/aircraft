@@ -6,45 +6,45 @@
 
 class AutopilotLawsModelClass {
  public:
-  typedef struct {
-    uint8_T is_active_c8_sUPy3BXaP8VT23gJSge3dZD_ap_library;
-    uint8_T is_c8_sUPy3BXaP8VT23gJSge3dZD_ap_library;
-  } rtDW_Chart_AutopilotLaws_T;
+  struct rtDW_Chart_AutopilotLaws_T {
+    uint8_T is_active_c8_srSgcGQg2zvTgc1tMselx4F_ap_library;
+    uint8_T is_c8_srSgcGQg2zvTgc1tMselx4F_ap_library;
+  };
 
-  typedef struct {
+  struct rtDW_LagFilter_AutopilotLaws_T {
     real_T pY;
     real_T pU;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-  } rtDW_LagFilter_AutopilotLaws_T;
+  };
 
-  typedef struct {
-    uint8_T is_active_c8_sQHqjOt6dG4nwhom4nTqEME_ap_library;
-    uint8_T is_c8_sQHqjOt6dG4nwhom4nTqEME_ap_library;
-  } rtDW_Chart_AutopilotLaws_c_T;
+  struct rtDW_Chart_AutopilotLaws_c_T {
+    uint8_T is_active_c8_s7y0WEx1xKopCu1ds66dilB_ap_library;
+    uint8_T is_c8_s7y0WEx1xKopCu1ds66dilB_ap_library;
+  };
 
-  typedef struct {
+  struct rtDW_storevalue_AutopilotLaws_T {
     real_T storage;
     boolean_T storage_not_empty;
-  } rtDW_storevalue_AutopilotLaws_T;
+  };
 
-  typedef struct {
+  struct rtDW_RateLimiter_AutopilotLaws_T {
     real_T pY;
     boolean_T pY_not_empty;
-  } rtDW_RateLimiter_AutopilotLaws_T;
+  };
 
-  typedef struct {
+  struct rtDW_WashoutFilter_AutopilotLaws_T {
     real_T pY;
     real_T pU;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-  } rtDW_WashoutFilter_AutopilotLaws_T;
+  };
 
-  typedef struct {
+  struct BlockIO_AutopilotLaws_T {
     real_T u;
-  } BlockIO_AutopilotLaws_T;
+  };
 
-  typedef struct {
+  struct D_Work_AutopilotLaws_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_i;
     real_T Delay_DSTATE_h;
@@ -59,15 +59,15 @@ class AutopilotLawsModelClass {
     real_T limit;
     boolean_T Delay_DSTATE_l[100];
     boolean_T Delay_DSTATE_h5[100];
-    uint8_T icLoad;
-    uint8_T icLoad_f;
     uint8_T is_active_c5_AutopilotLaws;
     uint8_T is_c5_AutopilotLaws;
+    boolean_T icLoad;
+    boolean_T icLoad_f;
     boolean_T eventTime_not_empty;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
-    boolean_T wasActive_g;
-    boolean_T wasActive_not_empty_d;
+    boolean_T wasActive_i;
+    boolean_T wasActive_not_empty_m;
     boolean_T limit_not_empty;
     rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_g;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_n;
@@ -90,15 +90,15 @@ class AutopilotLawsModelClass {
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_j;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter;
     rtDW_Chart_AutopilotLaws_T sf_Chart;
-  } D_Work_AutopilotLaws_T;
+  };
 
-  typedef struct {
+  struct ExternalInputs_AutopilotLaws_T {
     ap_laws_input in;
-  } ExternalInputs_AutopilotLaws_T;
+  };
 
-  typedef struct {
+  struct ExternalOutputs_AutopilotLaws_T {
     ap_laws_output out;
-  } ExternalOutputs_AutopilotLaws_T;
+  };
 
   struct Parameters_AutopilotLaws_T {
     ap_laws_output ap_laws_output_MATLABStruct;
@@ -109,7 +109,6 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_BreakpointsForDimension1_j[3];
     real_T ScheduledGain_BreakpointsForDimension1_a[7];
     real_T ScheduledGain_BreakpointsForDimension1_d[7];
-    real_T ScheduledGain2_BreakpointsForDimension1_k[7];
     real_T ScheduledGain_BreakpointsForDimension1_e[5];
     real_T ScheduledGain2_BreakpointsForDimension1_j[7];
     real_T ScheduledGain_BreakpointsForDimension1_h[6];
@@ -150,7 +149,6 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_Table_p[3];
     real_T ScheduledGain_Table_i[7];
     real_T ScheduledGain_Table_h[7];
-    real_T ScheduledGain2_Table_g[7];
     real_T ScheduledGain_Table_pf[5];
     real_T ScheduledGain2_Table_h[7];
     real_T ScheduledGain_Table_ir[6];
@@ -183,19 +181,18 @@ class AutopilotLawsModelClass {
     real_T Gain_Gain_a;
     real_T Constant1_Value;
     real_T Gain2_Gain;
-    real_T Gain_Gain_n;
+    real_T Gain_Gain_c;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Gain1_Gain_n;
     real_T Constant3_Value;
     real_T beta_Value;
     real_T beta_Value_e;
     real_T beta_Value_b;
-    real_T beta_Value_m;
+    real_T beta_Value_i;
     real_T beta_Value_d;
     real_T Gain_Gain_b;
     real_T Gain5_Gain;
-    real_T Gain1_Gain_ni;
+    real_T Gain1_Gain_n;
     real_T Gain_Gain_k;
     real_T Gain1_Gain_l;
     real_T Constant_Value;
@@ -225,7 +222,7 @@ class AutopilotLawsModelClass {
     real_T Gain_Gain_de;
     real_T Gainpk_Gain;
     real_T Gain3_Gain_a;
-    real_T Gain_Gain_nz;
+    real_T Gain_Gain_n;
     real_T Constant1_Value_b;
     real_T Saturation_UpperSat_p;
     real_T Saturation_LowerSat_g;
@@ -260,6 +257,8 @@ class AutopilotLawsModelClass {
     real_T Gain_Gain_ac;
     real_T Constant3_Value_n;
     real_T Gain_Gain_e;
+    real_T tau_Value;
+    real_T zeta_Value;
     real_T Gain3_Gain_i;
     real_T ROLLLIM1_tableData[5];
     real_T ROLLLIM1_bp01Data[5];
@@ -300,7 +299,7 @@ class AutopilotLawsModelClass {
     real_T Saturation_UpperSat_k;
     real_T Saturation_LowerSat_l;
     real_T Gain_Gain_l;
-    real_T Gain_Gain_c;
+    real_T Gain_Gain_c3;
     real_T Gain1_Gain_b2;
     real_T Gain_Gain_p2;
     real_T Gain_Gain_n1;
@@ -403,10 +402,12 @@ class AutopilotLawsModelClass {
   D_Work_AutopilotLaws_T AutopilotLaws_DWork;
   ExternalInputs_AutopilotLaws_T AutopilotLaws_U;
   ExternalOutputs_AutopilotLaws_T AutopilotLaws_Y;
+  static void AutopilotLaws_Chart_Init(real_T *rty_out);
   static void AutopilotLaws_Chart(real_T rtu_right, real_T rtu_left, boolean_T rtu_use_short_path, real_T *rty_out,
     rtDW_Chart_AutopilotLaws_T *localDW);
   static void AutopilotLaws_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_AutopilotLaws_T *localDW);
+  static void AutopilotLaws_Chart_p_Init(real_T *rty_out);
   static void AutopilotLaws_Chart_j(real_T rtu_right, real_T rtu_left, real_T rtu_use_short_path, real_T *rty_out,
     rtDW_Chart_AutopilotLaws_c_T *localDW);
   static void AutopilotLaws_storevalue(boolean_T rtu_active, real_T rtu_u, real_T *rty_y,

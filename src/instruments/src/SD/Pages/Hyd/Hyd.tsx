@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
 import { ptuArray, levels } from './common';
+import { Triangle } from '../../Common/Shapes';
 
 setIsEcamPage('hyd_page');
 
@@ -444,29 +445,6 @@ const PTU = ({ x, y, ptuScenario } : PTUProps) => {
             <Triangle x={triangle2.orientation > 0 ? x + 70 : x + 50} y={y} colour={triangle2.colour} fill={triangle2.fill} orientation={triangle2.orientation} />
             <Triangle x={triangle3.orientation > 0 ? x + 135 : x + 117} y={y} colour={triangle3.colour} fill={triangle3.fill} orientation={triangle3.orientation} />
         </>
-    );
-};
-
-type TriangleProps = {
-    x: number,
-    y: number,
-    colour: string,
-    fill: number,
-    orientation: number
-}
-
-const Triangle = ({ x, y, colour, fill, orientation } : TriangleProps) => {
-    // x,y marks the top of the triangle
-    // You can rotate this 0, 90, -90 degrees
-    const polyPoints = `${x + 9},${y + 18} ${x},${y} ${x - 9},${y + 18}`;
-    const transformation = `rotate(${orientation} ${x} ${y})`;
-    let classSelector = `${colour}Line`;
-    if (fill === 1) {
-        classSelector += ` Fill${colour}`;
-    }
-
-    return (
-        <polygon className={classSelector} points={polyPoints} transform={transformation} />
     );
 };
 

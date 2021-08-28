@@ -30,8 +30,6 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.loadFactorVisible = new NXLogic_MemoryNode(true);
         this.gwUnit = this.querySelector("#GWUnit");
         this.gwValue = this.querySelector("#GWValue");
-        this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-        this.gwUnit.textContent = this.conversionWeight === 1 ? "KG" : "LBS";
         this.refreshTAT(0);
         this.refreshSAT(0);
         this.refreshISA(0);
@@ -155,12 +153,19 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg");
         const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", "kg");
         const payloadWeight = this.getPayloadWeight("kg");
-        const gw = Math.round((emptyWeight + fuelWeight + payloadWeight) * this.conversionWeight);
+        const gw = Math.round(NXUnits.kgToUser(emptyWeight + fuelWeight + payloadWeight));
+        const gwUnit = NXUnits.userWeightUnit();
         if ((gw != this.currentGW) || _force) {
             this.currentGW = gw;
             if (this.gwValue != null) {
                 // Lower EICAS displays GW in increments of 100
                 this.gwValue.textContent = (Math.floor(this.currentGW / 100) * 100).toString();
+            }
+        }
+        if (gwUnit != this.currentGwUnit) {
+            this.currentGwUnit = gwUnit;
+            if (this.gwUnit != null) {
+                this.gwUnit.textContent = gwUnit;
             }
         }
     }

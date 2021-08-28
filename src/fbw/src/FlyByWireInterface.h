@@ -71,6 +71,8 @@ class FlyByWireInterface {
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
 
+  bool disableXboxCompatibilityRudderAxisPlusMinus = false;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
@@ -180,6 +182,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
+  std::unique_ptr<LocalVariable> idAutothrustDisabled;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningFlex;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningToga;
   std::unique_ptr<LocalVariable> idAutothrustDisconnect;

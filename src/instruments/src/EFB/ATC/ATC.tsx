@@ -18,7 +18,7 @@ export const ATC = () => {
     const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
-    const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+    const [atisSource] = usePersistentProperty<string>('CONFIG_ATIS_SRC', 'FAA');
 
     const loadAtc = useCallback(() => {
         apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
@@ -85,7 +85,7 @@ export const ATC = () => {
         if (frequency) {
             setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
         }
-    }, [controllers]);
+    }, [controllers, frequency]);
 
     useInterval(() => {
         loadAtc();

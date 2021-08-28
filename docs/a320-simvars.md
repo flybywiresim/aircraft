@@ -1534,6 +1534,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       LVR_MCT | 4
       LVR_ASYM | 5
 
+- A32NX_AUTOTHRUST_DISABLED
+    - Bool
+    - Indicates if ATHR was disabled by pressing ATHR disconnect buttons longer than 15s
+
 - A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE
     - Enum
     - Indicates the type of current thrust limit
@@ -1591,6 +1595,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ACTIVE | 1
 
 ## Throttle Mapping System
+
+- A32NX_THROTTLE_MAPPING_LOADED_CONFIG:{index}
+    - Bool
+    - Indicates if we are using a configured throttle mapping for throttle axis {index}, first axis has index 1
 
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
     - Number

@@ -10,6 +10,7 @@ import { BUTTON_STATE_REDUCER } from '../Store';
 import {
     addActiveButton, removeActiveButton, setTugRequestOnly,
     setActiveButtons, addDisabledButton, removeDisabledButton,
+    setPushBackWaitTimerHandle,
 } from '../Store/action-creator/ground-state';
 
 type StatefulButton = {
@@ -18,11 +19,11 @@ type StatefulButton = {
 }
 
 export const Ground = ({
-    activeButtons, disabledButtons, tugRequestOnly,
-    setTugRequestOnly, addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton,
+    activeButtons, disabledButtons, pushBackWaitTimerHandle, setPushBackWaitTimerHandle,
+    tugRequestOnly, setTugRequestOnly, addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton,
 }) => {
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
-    const [_rampActive, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
+    const [, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
     const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
     const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 'K:REQUEST_CATERING', 'bool', 1000);
 
@@ -31,7 +32,7 @@ export const Ground = ({
     const [pushBack, setPushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
     const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
 
-    const [pushBackWait, setPushBackWait] = useSimVar('Pushback Wait', 'bool', 100);
+    const [, setPushBackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 1000);
 
     const [tugDirection, setTugDirection] = useState(0);
@@ -51,16 +52,19 @@ export const Ground = ({
             computeAndSetTugHeading(tugDirection);
             setTugDirection(0);
         }
-        /**
-         * Timer needed, as we cannot check when the variable "Pushback Wait" is being set to false after calling the tug
-         */
-        const timer = setInterval(() => {
-            if (tugRequestOnly) {
-                setPushBackWait(1);
+        if (activeButtons.find((button) => button.id === 'tug-request') && tugRequestOnly) {
+            /* Timer needed, as we cannot check when the variable "Pushback Wait" is being set to false after calling the tug */
+            if (pushBackWaitTimerHandle === -1) {
+                const timer = setInterval(() => {
+                    setPushBackWait(1);
+                }, 100);
+                setPushBackWaitTimerHandle(timer);
             }
-        }, 100);
-        return () => clearInterval(timer);
-    }, [pushBackWait, tugRequestOnly]);
+        } else if (pushBackWaitTimerHandle !== -1) {
+            clearInterval(pushBackWaitTimerHandle);
+            setPushBackWaitTimerHandle(-1);
+        }
+    }, [pushBack, tugDirection, activeButtons, pushBackWaitTimerHandle, tugRequestOnly, pushBack, tugDirection]);
 
     const getTugHeading = (value: number): number => (tugHeading + value) % 360;
 
@@ -188,7 +192,7 @@ export const Ground = ({
                     <DoorToggle
                         index={0}
                         tugActive={tugActive}
-                        clickCallback={handleClick}
+                        onClick={handleClick}
                         selectionCallback={applySelectedWithSync}
                         id="door-fwd-left"
                         disabled={disabledButtons.includes('door-fwd-left')}
@@ -240,7 +244,7 @@ export const Ground = ({
                     <DoorToggle
                         tugActive={tugActive}
                         index={3}
-                        clickCallback={handleClick}
+                        onClick={handleClick}
                         selectionCallback={applySelectedWithSync}
                         id="door-aft-right"
                         disabled={disabledButtons.includes('door-aft-right')}
@@ -316,6 +320,6 @@ export const Ground = ({
 };
 
 export default connect(
-    ({ [BUTTON_STATE_REDUCER]: { activeButtons, disabledButtons, tugRequestOnly } }) => ({ activeButtons, disabledButtons, tugRequestOnly }),
-    { addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton, setTugRequestOnly },
+    ({ [BUTTON_STATE_REDUCER]: { activeButtons, disabledButtons, tugRequestOnly, pushBackWaitTimerHandle } }) => ({ activeButtons, disabledButtons, tugRequestOnly, pushBackWaitTimerHandle }),
+    { addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton, setTugRequestOnly, setPushBackWaitTimerHandle },
 )(Ground);
