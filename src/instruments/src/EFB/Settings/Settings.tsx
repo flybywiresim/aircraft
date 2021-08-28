@@ -3,7 +3,7 @@ import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
-import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
+import { usePersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
@@ -330,10 +330,10 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
 };
 
 const AudioPage = () => {
-    const [ptuAudible, setPtuAudible] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool', 'SOUND_PTU_AUDIBLE_COCKPIT');
-    const [exteriorVolume, setExteriorVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_EXTERIOR_MASTER', 'number', 'SOUND_EXTERIOR_MASTER');
-    const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
-    const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
+    const [ptuAudible, setPtuAudible] = usePersistentProperty<string>('SOUND_PTU_AUDIBLE_COCKPIT');
+    const [exteriorVolume, setExteriorVolume] = usePersistentProperty<string>('SOUND_EXTERIOR_MASTER');
+    const [engineVolume, setEngineVolume] = usePersistentProperty<string>('SOUND_INTERIOR_ENGINE');
+    const [windVolume, setWindVolume] = usePersistentProperty<string>('SOUND_INTERIOR_WIND');
 
     return (
         <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
@@ -342,27 +342,27 @@ const AudioPage = () => {
                     <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>
                     <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
                 </span>
-                <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
+                <Toggle value={ptuAudible === "1"} onToggle={(value) => setPtuAudible(value ? "1" : "0")} />
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Exterior Master Volume</span>
                 <div className="flex flex-row items-center py-1.5">
                     <span className="text-base pr-3">{exteriorVolume}</span>
-                    <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
+                    <Slider className="w-60" value={parseInt(exteriorVolume) + 50} onInput={(value) => setExteriorVolume("" + (value - 50))} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Engine Interior Volume</span>
                 <div className="flex flex-row items-center py-1.5">
                     <span className="text-base pr-3">{engineVolume}</span>
-                    <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
+                    <Slider className="w-60" value={parseInt(engineVolume + 50)} onInput={(value) => setEngineVolume("" + (value - 50))} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Wind Interior Volume</span>
                 <div className="flex flex-row items-center py-1.5">
                     <span className="text-base pr-3">{windVolume}</span>
-                    <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
+                    <Slider className="w-60" value={parseInt(windVolume + 50)} onInput={(value) => setWindVolume("" + (value - 50))} />
                 </div>
             </div>
         </div>
@@ -370,21 +370,21 @@ const AudioPage = () => {
 };
 
 const FlyPadPage = () => {
-    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
-    const [usingAutobrightness, setUsingAutobrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 'EFB_USING_AUTOBRIGHTNESS');
+    const [brightness, setBrightness] = usePersistentProperty<string>('EFB_BRIGHTNESS');
+    const [usingAutobrightness, setUsingAutobrightness] = usePersistentProperty<string>('EFB_USING_AUTOBRIGHTNESS');
 
     return (
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Brightness</span>
                 <div className={`flex flex-row items-center py-1.5 ${usingAutobrightness && 'pointer-events-none filter saturate-0'}`}>
-                    <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                    <Slider className="w-60" value={parseInt(brightness)} onInput={(value) => setBrightness("" + value)} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Auto Brightness</span>
                 <div className="flex flex-row items-center py-1.5">
-                    <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
+                    <Toggle value={usingAutobrightness === "1"} onToggle={(value) => setUsingAutobrightness(value ? "1" : "0")} />
                 </div>
             </div>
         </div>

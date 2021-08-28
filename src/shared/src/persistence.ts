@@ -1,4 +1,4 @@
-export type StorageValue = string | number;
+export type StorageValue = string; // this is the ONLY type that SetStoredData accepts, it silently fails otherwise
 
 export type StorageContents<T> = T extends undefined ? StorageValue : T;
 
@@ -29,7 +29,7 @@ export class NXDataStore {
      */
     static get<T extends StorageValue>(key: string, defaultVal?: StorageContents<T>): StorageContents<T> {
         const val = GetStoredData(`A32NX_${key}`);
-        if (!val) {
+        if (val === null) {
             return defaultVal;
         }
         return val;
@@ -42,7 +42,9 @@ export class NXDataStore {
      * @param val The value to assign to the property
      */
     static set<T extends StorageValue>(key: string, val: StorageContents<T>): void {
-        SetStoredData(`A32NX_${key}`, val);
+        if (SetStoredData(`A32NX_${key}`, val) !== val) {
+            console.error(`NXDataStore: Failed to set ${key} = ${val}`);
+        }
         this.listener.triggerToAllSubscribers('A32NX_NXDATASTORE_UPDATE', key, val);
     }
 
