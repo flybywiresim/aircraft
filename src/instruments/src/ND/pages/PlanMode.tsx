@@ -7,6 +7,8 @@ import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { EfisOption } from '../index';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { Degrees } from '../../../../../typings';
 
 export interface PlanModeProps {
     rangeSetting: number,
@@ -21,6 +23,7 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption, ma
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
     const [selectedWaypoint, setSelectedWaypoint] = useState<WayPoint>();
+    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
 
     useEffect(() => {
         setSelectedWaypoint(flightPlanManager.getCurrentFlightPlan().waypoints[selectedWaypointIndex]);
@@ -71,6 +74,8 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption, ma
 
             <Overlay rangeSetting={rangeSetting} />
 
+            <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
+
             <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
         </>
     );
@@ -107,3 +112,18 @@ const Overlay: FC<OverlayProps> = ({ rangeSetting }) => (
         </g>
     </>
 );
+
+interface PlaneProps {
+    location: Coordinates,
+    heading: Degrees, // True
+    mapParams: MapParameters,
+}
+
+const Plane: FC<PlaneProps> = ({ location, heading, mapParams }) => {
+    const [x, y] = mapParams.coordinatesToXYy(location);
+    const rotation = mapParams.rotation(heading);
+
+    return <g transform={`translate(${x} ${y}) rotate(${rotation} 384 384)`}>
+        <image x={342} y={357} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
+    </g>;
+};
