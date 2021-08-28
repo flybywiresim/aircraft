@@ -1,7 +1,10 @@
 class CDULateralRevisionPage {
     static ShowPage(fmc, mcdu, waypoint, waypointIndexFP) {
-        console.log("CDULateralRevisionPage.ShowPage");
-        console.log(waypoint);
+        if (fmc.dirTosInProcess > 0) {
+            mcdu.addNewMessage(NXSystemMessages.dirToInProcess);
+            CDUFlightPlanPage.ShowPage(fmc, mcdu);
+            return;
+        }
 
         mcdu.setCurrentPage(() => {
             CDULateralRevisionPage.ShowPage(fmc, mcdu, waypoint, waypointIndexFP);

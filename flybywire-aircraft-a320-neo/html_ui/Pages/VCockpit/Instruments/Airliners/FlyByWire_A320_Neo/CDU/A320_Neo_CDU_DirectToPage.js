@@ -2,7 +2,8 @@ class CDUDirectToPage {
     static ShowPage(fmc, mcdu, directWaypoint, wptsListIndex = 0) {
         mcdu.setCurrentPage(() => {
             CDUDirectToPage.ShowPage(fmc, mcdu, directWaypoint, wptsListIndex);
-        }, 'FMGC');
+        }, 'FMGC', () => fmc.dirTosInProcess--);
+        fmc.dirTosInProcess++;
         mcdu.returnPageCallback = () => {
             CDUDirectToPage.ShowPage(fmc, mcdu, directWaypoint, wptsListIndex);
         };

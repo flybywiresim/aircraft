@@ -1,5 +1,11 @@
 class CDUVerticalRevisionPage {
     static ShowPage(fmc, mcdu, waypoint) {
+        if (fmc.dirTosInProcess > 0) {
+            mcdu.addNewMessage(NXSystemMessages.dirToInProcess);
+            CDUFlightPlanPage.ShowPage(fmc, mcdu);
+            return;
+        }
+
         const waypointInfo = waypoint.infos;
         if (waypointInfo instanceof WayPointInfo) {
             mcdu.setCurrentPage(() => {

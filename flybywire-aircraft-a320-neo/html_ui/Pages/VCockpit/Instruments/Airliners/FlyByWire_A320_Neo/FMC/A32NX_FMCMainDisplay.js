@@ -176,6 +176,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.gpsPrimaryLostMessageAcknowledged = false;
         this.gpsPrimaryMessageAcknowledged = false;
         this.activeWpIdx = undefined;
+        this.dirTosInProcess = 0;
     }
 
     Init() {

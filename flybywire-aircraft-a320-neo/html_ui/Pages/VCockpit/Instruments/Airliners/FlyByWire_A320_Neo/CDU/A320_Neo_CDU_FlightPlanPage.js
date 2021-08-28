@@ -86,7 +86,11 @@ class CDUFlightPlanPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onLeftInput[5] = () => {
-                CDULateralRevisionPage.ShowPage(fmc, mcdu, fmc.flightPlanManager.getDestination(), fmc.flightPlanManager.getWaypointsCount() - 1);
+                if (fmc.dirTosInProcess > 0) {
+                    mcdu.addNewMessage(NXSystemMessages.dirToInProcess);
+                } else {
+                    CDULateralRevisionPage.ShowPage(fmc, mcdu, fmc.flightPlanManager.getDestination(), fmc.flightPlanManager.getWaypointsCount() - 1);
+                }
             };
         }
         const waypointsWithDiscontinuities = [];
@@ -365,7 +369,9 @@ class CDUFlightPlanPage {
                                 return mcdu.getDelaySwitchPage();
                             };
                             mcdu.onRightInput[i] = async () => {
-                                if (waypoint) {
+                                if (fmc.dirTosInProcess > 0) {
+                                    mcdu.addNewMessage(NXSystemMessages.dirToInProcess);
+                                } else if (waypoint) {
                                     CDUVerticalRevisionPage.ShowPage(fmc, mcdu, waypoint);
                                 }
                             };

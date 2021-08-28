@@ -36,6 +36,7 @@ const NXSystemMessages = {
     checkMinDestFob:        new McduMessage("CHECK MIN DEST FOB", false, true),
     checkToData:            new McduMessage("CHECK TAKE OFF DATA", true, true),
     destEfobBelowMin:       new McduMessage("DEST EFOB BELOW MIN", true, true),
+    dirToInProcess:         new McduMessage("DIR TO IN PROCESS", false, false),
     enterDestData:          new McduMessage("ENTER DEST DATA", true, true),
     entryOutOfRange:        new McduMessage("ENTRY OUT OF RANGE", false, false),
     formatError:            new McduMessage("FORMAT ERROR", false, false),
