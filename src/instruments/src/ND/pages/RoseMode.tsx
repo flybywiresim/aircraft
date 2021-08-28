@@ -103,6 +103,7 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
                 { mode === Mode.ROSE_ILS && <IlsInfo /> }
 
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
+                <Plane />
             </>
         );
     }
@@ -511,8 +512,6 @@ const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, tcasMode, dis
         </g>
 
         { displayMode === Mode.ROSE_ILS && <GlideSlope /> }
-
-        <Plane />
     </>
 );
 
