@@ -1464,7 +1464,7 @@ impl Pump {
     }
 
     fn calculate_displacement_from_required_flow(&self, required_flow: VolumeRate) -> Volume {
-        if self.rpm != 0. {
+        if self.rpm > 0. {
             let displacement = Volume::new::<cubic_inch>(
                 required_flow.get::<gallon_per_second>() * 231.0 * 60.0 / self.rpm,
             );
@@ -1477,13 +1477,23 @@ impl Pump {
     }
 
     fn calculate_flow(rpm: f64, displacement: Volume) -> VolumeRate {
-        VolumeRate::new::<gallon_per_second>(rpm * displacement.get::<cubic_inch>() / 231.0 / 60.0)
+        if rpm > 0. {
+            VolumeRate::new::<gallon_per_second>(
+                rpm * displacement.get::<cubic_inch>() / 231.00 / 60.0,
+            )
+        } else {
+            VolumeRate::new::<gallon_per_second>(0.)
+        }
     }
 
     fn get_max_flow(&self) -> VolumeRate {
-        VolumeRate::new::<gallon_per_second>(
-            self.rpm * self.current_displacement.get::<cubic_inch>() / 231.0 / 60.0,
-        )
+        if self.rpm > 0. {
+            VolumeRate::new::<gallon_per_second>(
+                self.rpm * self.current_displacement.get::<cubic_inch>() / 231.0 / 60.0,
+            )
+        } else {
+            VolumeRate::new::<gallon_per_second>(0.)
+        }
     }
 }
 impl PressureSource for Pump {
