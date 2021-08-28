@@ -377,8 +377,8 @@ export const LandingWidget = () => {
                                     label="Temperature"
                                     value={Units.celsiusToUser(temperature)}
                                     placeholder={Units.userTemperatureUnit}
-                                    min={-50}
-                                    max={55}
+                                    min={Units.metricUnits ? -50 : -58}
+                                    max={Units.metricUnits ? 55 : 131}
                                     decimalPrecision={1}
                                     onChange={handleTemperatureChange}
                                     number
