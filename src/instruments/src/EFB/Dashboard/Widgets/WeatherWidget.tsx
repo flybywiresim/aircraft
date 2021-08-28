@@ -74,7 +74,7 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
 
-    let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    let [metarSource] = usePersistentProperty<string>('CONFIG_METAR_SRC', 'MSFS');
 
     if (metarSource === 'MSFS') {
         metarSource = 'MS';
