@@ -179,7 +179,9 @@ export class GuidanceManager {
             : this.flightPlanManager.getCurrentFlightPlan().length;
         for (let i = wpCount - 1; (i >= activeIdx - 1); i--) {
             const nextLeg = legs.get(i + 1);
-            const isActive = i === activeIdx;
+
+            // We need to predict every path before the active leg + the active leg itself with the current speed
+            const predictWithCurrentSpeed = i <= activeIdx;
 
             const from = temp
                 ? this.flightPlanManager.getWaypoint(i - 1, 1)
@@ -225,7 +227,7 @@ export class GuidanceManager {
                 const transition = new Type1Transition(
                     currentLeg,
                     nextLeg,
-                    isActive,
+                    predictWithCurrentSpeed,
                 );
 
                 transitions.set(i, transition);

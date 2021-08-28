@@ -22,7 +22,7 @@ export class Type1Transition extends Transition {
     constructor(
         previousLeg: TFLeg,
         nextLeg: TFLeg | VMLeg, // FIXME this cannot happen, but what are you gonna do about it ?,
-        isActive: boolean = true,
+        predictWithCurrentSpeed: boolean = true,
     ) {
         super();
         this.previousLeg = previousLeg;
@@ -30,7 +30,7 @@ export class Type1Transition extends Transition {
 
         let kts: Knots;
         // TODO remove this hack when VNAV can provide a proper prediction
-        if (!isActive && this.previousLeg.to.additionalData.predictedSpeed) {
+        if (!predictWithCurrentSpeed && this.previousLeg.to.additionalData.predictedSpeed) {
             kts = this.previousLeg.to.additionalData.predictedSpeed;
         } else {
             kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
