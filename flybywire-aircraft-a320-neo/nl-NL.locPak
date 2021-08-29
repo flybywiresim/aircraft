@@ -1,0 +1,27 @@
+{
+  "LocalisationPackage": {
+    "Language": "nl-NL",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Airbus lanceerde hun eerste A320 in maart 1984. Bijna 26 jaar later, in 2010, kondigden ze de A320neo (\"new engine option\") aan als het nieuwste lid van de familie, om hun lijn van wereld leidende, narrow-body, twin-turbofan vliegtuigen te vernieuwen en in stand te houden.<\/br><\/br>Na een uitgebreid ontwikkelingsproces is de A320neo begin 2016 officieel in gebruik genomen bij Lufthansa.  De A320neo werd al gauw het snelst verkopende commerciële vliegtuig ooit, met tot op heden meer dan 7.400 bestelde vliegtuigen door meer dan 115 vliegmaatschappijen.<\/br><\/br>De A320neo zet de door de originele A320 (welke het eerste vliegtuig was, naast de Concorde, welke gebruik maakte van “Fly-By-Wire” besturing voor regulier gebruik) vastgestelde traditie voort door 95 procent van de vliegtuigromp te delen met de voorgaande modellen. Het was de introductie van twee nieuwe generatie motortypes, samen met de gesloten “Sharklet” vleugeltips, wat de neo echt onderscheidde van zijn voorganger.<\/br><\/br>Brandstofbesparing, een groter bereik, verhoogde maximale vracht belasting en een verkorte landingsafstand; deze belangrijke ontwikkelingen, samen met een enorme terugname in geluid en CO₂ emissie, bewijzen waarom de A320neo niet alleen een commercieel succes is, maar ook een aanzienlijke stap vooruit op de weg van de luchtvaart naar een grotere milieuverantwoordelijkheid.",
+      "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
+      "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Helderheid PFD links verlagen",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Helderheid PFD links verhogen",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Helderheid PFD rechts verlagen",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Helderheid PFD rechts verhogen",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "De geselecteerde koers naar links aanpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "De geselecteerde koers naar rechts aanpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "De geselecteerde track naar links aanpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "De geselecteerde track naar rechts aanpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Waarschuwingslicht \"niet roken\" naar AUTO",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU beschikbaar",
+      "A32NX.LOADING.TIPS.A320NEO_001": "De FlyByWire A32NX is een samenwerking tussen honderden individuele bijdragers.",
+      "A32NX.LOADING.TIPS.A320NEO_002": "Wist je dit? De A320 kan landen met zijwinden tot wel 38 knopen en staart winden tot wel 15 knopen!",
+      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire is vernoemd naar de fly-by-wire besturing welke als eerst is geïntroduceerd in de Airbus A320.",
+      "A32NX.LOADING.TIPS.A320NEO_004": "Er zijn meer dan 9900 vliegtuigen van de A320 familie gebouwd. Dat is bijna net zoveel als de populatie van Tuvalu!",
+      "A32NX.LOADING.TIPS.A320NEO_005": "De Airbus A320neo heeft een bereik van 3500 NM, of 6500 KM. Dat is genoeg om van New York naar Parijs te vliegen!",
+      "A32NX.LOADING.TIPS.A320NEO_006": "Wist je dit? De A320 familie heeft 4 varianten: de A318, A319, A320 en de A321."
+    }
+  }
+}

@@ -131,11 +131,11 @@ const Efb = () => {
             // eslint-disable-next-line no-restricted-properties
             setBrightness(((Math.sqrt(48 - Math.pow((localTime - 14), 2))) * 14.431) || 0);
         }
-    }, [currentLocalTime]);
+    }, [currentLocalTime, usingAutobrightness]);
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
-    const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
+    const [simbriefUsername, setSimbriefUsername] = usePersistentProperty<string>('SimbriefUsername');
 
     const [timeState, setTimeState] = useState<TimeState>({
         currentTime: new Date(),

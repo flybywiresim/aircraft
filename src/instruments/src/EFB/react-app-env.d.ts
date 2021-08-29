@@ -28,8 +28,8 @@ declare global {
          * @param context This binding for executing the handler, defaults to the Emitter.
          * @return An object with a clear function to remove the handler for the event.
          */
-        function on(name: string, callback: () => void): { clear: () => void };
-        function on(name: string, callback: () => void, context: any): { clear: () => void };
+        function on(name: string, callback: (event, ...args) => void): { clear: () => void };
+        function on(name: string, callback: (event, ...args) => void, context: any): { clear: () => void };
     }
 }
 

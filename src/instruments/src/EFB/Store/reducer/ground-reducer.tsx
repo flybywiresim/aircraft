@@ -6,19 +6,21 @@ import {
     SET_ACTIVE_BUTTONS,
     REMOVE_DISABLED_BUTTON,
     SET_TUG_REQUEST_ONLY,
+    SET_PUSH_BACK_WAIT_TIMER_HANDLE,
 } from '../actions';
 
 type ButtonSelectionState = {
     activeButtons: any[];
     disabledButtons: string[];
-    tugRequestOnly: boolean,
-
+    tugRequestOnly: boolean;
+    pushBackWaitTimerHandle: number;
 };
 
 const initialState: ButtonSelectionState = {
     activeButtons: [],
     disabledButtons: [],
     tugRequestOnly: false,
+    pushBackWaitTimerHandle: -1,
 };
 
 export const buttonsReducer = typeToReducer(
@@ -59,6 +61,10 @@ export const buttonsReducer = typeToReducer(
         [SET_TUG_REQUEST_ONLY]: (state, { tugRequest }) => ({
             ...state,
             tugRequestOnly: tugRequest,
+        }),
+        [SET_PUSH_BACK_WAIT_TIMER_HANDLE]: (state, { pushBackWaitTimerHandle }) => ({
+            ...state,
+            pushBackWaitTimerHandle,
         }),
     },
     initialState,
