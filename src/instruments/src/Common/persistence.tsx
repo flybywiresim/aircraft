@@ -1,47 +1,41 @@
 import { useEffect, useState } from 'react';
-import { NXDataStore, StorageValue, StorageContents } from '@shared/persistence';
+import { NXDataStore } from '@shared/persistence';
 
 /**
  * This hook allows to read and set a persistent storage property.
- *
- * Note: The value of the persistent property does not automatically refresh for now
+ * Overloads are provided to absolve callers with defaults from dealing with possibly undefined
  */
-export const usePersistentProperty = <T extends StorageValue>(propertyName: string, defaultValue?: StorageContents<T>): [StorageContents<T>, (value: StorageContents<T>) => void] => {
-    const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get<T>(propertyName, defaultValue));
-
-    if (defaultValue !== undefined && propertyValue === undefined) {
-        rawPropertySetter(defaultValue);
-    }
+export function usePersistentProperty(propertyName: string, defaultValue: string): [string, (value: string) => void];
+export function usePersistentProperty(propertyName: string, defaultValue?: string): [string | undefined, (value: string) => void];
+export function usePersistentProperty(propertyName: string, defaultValue?: string): any {
+    const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get(propertyName, defaultValue));
 
     useEffect(() => {
-        const unsubscribe = NXDataStore.subscribe<T>(propertyName, (key, value) => rawPropertySetter(value));
+        const unsubscribe = NXDataStore.subscribe(propertyName, (key, value) => rawPropertySetter(value));
         return () => {
             unsubscribe();
         };
     }, []);
 
-    const propertySetter = (value: StorageContents<T>) => {
-        NXDataStore.set<T>(propertyName, value);
+    const propertySetter = (value: string) => {
+        NXDataStore.set(propertyName, value);
         rawPropertySetter(value);
     };
 
     return [propertyValue, propertySetter];
-};
+}
 
-export const usePersistentPropertyWithDefault = <T extends StorageValue>(propertyName: string, defaultValue: StorageContents<T>): [StorageContents<T>, (value: StorageContents<T>) => void] => {
-    const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get<T>(propertyName, defaultValue));
+/**
+ * This hook allows to read and set a persistent storage property as a number.
+ * Overloads are provided to absolve callers with defaults from dealing with possibly undefined
+ */
+export function usePersistentNumberProperty(propertyName: string, defaultValue: number): [number, (value: number) => void];
+export function usePersistentNumberProperty(propertyName: string, defaultValue?: number): [number | undefined, (value: number) => void];
+export function usePersistentNumberProperty(propertyName: string, defaultValue?: number): any {
+    const [strPropertyValue, strPropertySetter] = usePersistentProperty(propertyName, defaultValue !== undefined ? `${defaultValue}` : undefined);
 
-    useEffect(() => {
-        const unsubscribe = NXDataStore.subscribe<T>(propertyName, (key, value) => rawPropertySetter(value));
-        return () => {
-            unsubscribe();
-        };
-    }, []);
-
-    const propertySetter = (value: StorageContents<T>) => {
-        NXDataStore.set<T>(propertyName, value);
-        rawPropertySetter(value);
-    };
+    const propertyValue = strPropertyValue !== undefined ? parseInt(strPropertyValue) : undefined;
+    const propertySetter = (value: number) => strPropertySetter(`${value}`);
 
     return [propertyValue, propertySetter];
-};
+}

@@ -3,7 +3,7 @@ import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
-import { usePersistentProperty } from '../../Common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
@@ -28,11 +28,11 @@ const ControlSettings = ({ setShowSettings }) => (
 );
 
 const DefaultsPage = () => {
-    const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty<string>('CONFIG_THR_RED_ALT', '1500');
+    const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
     const [thrustReductionHeightSetting, setThrustReductionHeightSetting] = useState(thrustReductionHeight);
-    const [accelerationHeight, setAccelerationHeight] = usePersistentProperty<string>('CONFIG_ACCEL_ALT', '1500');
+    const [accelerationHeight, setAccelerationHeight] = usePersistentProperty('CONFIG_ACCEL_ALT', '1500');
     const [accelerationHeightSetting, setAccelerationHeightSetting] = useState(accelerationHeight);
-    const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty<string>('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
+    const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
     const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
 
     const handleSetThrustReductionAlt = (value: string) => {
@@ -112,8 +112,8 @@ const DefaultsPage = () => {
 };
 
 const AircraftConfigurationPage = () => {
-    const [weightUnit, setWeightUnit] = usePersistentProperty<string>('CONFIG_USING_METRIC_UNIT', '1');
-    const [paxSigns, setPaxSigns] = usePersistentProperty<string>('CONFIG_USING_PORTABLE_DEVICES', '0');
+    const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -162,11 +162,11 @@ const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
     const { setShowNavbar } = useContext(SettingsNavbarContext);
 
-    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty<string>('CONFIG_ALIGN_TIME', 'REAL');
+    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
-    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty<string>('CONFIG_SELF_TEST_TIME', '12');
+    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
 
-    const [defaultBaro, setDefaultBaro] = usePersistentProperty<string>('CONFIG_INIT_BARO_UNIT', 'IN HG');
+    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -250,9 +250,9 @@ const SimOptionsPage = () => {
 };
 
 const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
-    const [atisSource, setAtisSource] = usePersistentProperty<string>('CONFIG_ATIS_SRC', 'FAA');
-    const [metarSource, setMetarSource] = usePersistentProperty<string>('CONFIG_METAR_SRC', 'MSFS');
-    const [tafSource, setTafSource] = usePersistentProperty<string>('CONFIG_TAF_SRC', 'NOAA');
+    const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+    const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -330,10 +330,10 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
 };
 
 const AudioPage = () => {
-    const [ptuAudible, setPtuAudible] = usePersistentProperty<string>('SOUND_PTU_AUDIBLE_COCKPIT');
-    const [exteriorVolume, setExteriorVolume] = usePersistentProperty<string>('SOUND_EXTERIOR_MASTER');
-    const [engineVolume, setEngineVolume] = usePersistentProperty<string>('SOUND_INTERIOR_ENGINE');
-    const [windVolume, setWindVolume] = usePersistentProperty<string>('SOUND_INTERIOR_WIND');
+    const [ptuAudible, setPtuAudible] = usePersistentNumberProperty('SOUND_PTU_AUDIBLE_COCKPIT', 0);
+    const [exteriorVolume, setExteriorVolume] = usePersistentNumberProperty('SOUND_EXTERIOR_MASTER', 0);
+    const [engineVolume, setEngineVolume] = usePersistentNumberProperty('SOUND_INTERIOR_ENGINE', 0);
+    const [windVolume, setWindVolume] = usePersistentNumberProperty('SOUND_INTERIOR_WIND', 0);
 
     return (
         <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
@@ -342,27 +342,27 @@ const AudioPage = () => {
                     <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>
                     <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
                 </span>
-                <Toggle value={ptuAudible === "1"} onToggle={(value) => setPtuAudible(value ? "1" : "0")} />
+                <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Exterior Master Volume</span>
                 <div className="flex flex-row items-center py-1.5">
                     <span className="text-base pr-3">{exteriorVolume}</span>
-                    <Slider className="w-60" value={parseInt(exteriorVolume) + 50} onInput={(value) => setExteriorVolume("" + (value - 50))} />
+                    <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Engine Interior Volume</span>
                 <div className="flex flex-row items-center py-1.5">
                     <span className="text-base pr-3">{engineVolume}</span>
-                    <Slider className="w-60" value={parseInt(engineVolume + 50)} onInput={(value) => setEngineVolume("" + (value - 50))} />
+                    <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Wind Interior Volume</span>
                 <div className="flex flex-row items-center py-1.5">
                     <span className="text-base pr-3">{windVolume}</span>
-                    <Slider className="w-60" value={parseInt(windVolume + 50)} onInput={(value) => setWindVolume("" + (value - 50))} />
+                    <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
                 </div>
             </div>
         </div>
@@ -370,21 +370,21 @@ const AudioPage = () => {
 };
 
 const FlyPadPage = () => {
-    const [brightness, setBrightness] = usePersistentProperty<string>('EFB_BRIGHTNESS');
-    const [usingAutobrightness, setUsingAutobrightness] = usePersistentProperty<string>('EFB_USING_AUTOBRIGHTNESS');
+    const [brightness, setBrightness] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
+    const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
 
     return (
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Brightness</span>
                 <div className={`flex flex-row items-center py-1.5 ${usingAutobrightness && 'pointer-events-none filter saturate-0'}`}>
-                    <Slider className="w-60" value={parseInt(brightness)} onInput={(value) => setBrightness("" + value)} />
+                    <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Auto Brightness</span>
                 <div className="flex flex-row items-center py-1.5">
-                    <Toggle value={usingAutobrightness === "1"} onToggle={(value) => setUsingAutobrightness(value ? "1" : "0")} />
+                    <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
                 </div>
             </div>
         </div>

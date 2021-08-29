@@ -1,11 +1,7 @@
-export type StorageValue = string; // this is the ONLY type that SetStoredData accepts, it silently fails otherwise
+declare function GetStoredData(property: string, defaultValue?: string);
+declare function SetStoredData(property: string, newValue: string);
 
-export type StorageContents<T> = T extends undefined ? StorageValue : T;
-
-declare function GetStoredData<T extends StorageValue>(property: string, defaultValue?: StorageContents<T>);
-declare function SetStoredData<T extends StorageValue>(property: string, newValue: StorageContents<T>);
-
-type SubscribeCallback<T extends StorageValue> = (key: string, value: StorageContents<T>) => void;
+type SubscribeCallback = (key: string, value: string) => void;
 type SubscribeCancellation = () => void;
 
 /**
@@ -27,7 +23,9 @@ export class NXDataStore {
      * @param key The property key
      * @param defaultVal The default value if the property is not set
      */
-    static get<T extends StorageValue>(key: string, defaultVal?: StorageContents<T>): StorageContents<T> {
+    static get(key: string, defaultVal: string): string;
+    static get(key: string, defaultVal?: string): string | undefined;
+    static get(key: string, defaultVal?: string): any {
         const val = GetStoredData(`A32NX_${key}`);
         if (val === null) {
             return defaultVal;
@@ -41,23 +39,23 @@ export class NXDataStore {
      * @param key The property key
      * @param val The value to assign to the property
      */
-    static set<T extends StorageValue>(key: string, val: StorageContents<T>): void {
+    static set(key: string, val: string): void {
         if (SetStoredData(`A32NX_${key}`, val) !== val) {
             console.error(`NXDataStore: Failed to set ${key} = ${val}`);
         }
         this.listener.triggerToAllSubscribers('A32NX_NXDATASTORE_UPDATE', key, val);
     }
 
-    static subscribe<T extends StorageValue>(key: string, callback: SubscribeCallback<T>): SubscribeCancellation {
-        return Coherent.on('A32NX_NXDATASTORE_UPDATE', (updatedKey: string, value: StorageContents<T>) => {
+    static subscribe(key: string, callback: SubscribeCallback): SubscribeCancellation {
+        return Coherent.on('A32NX_NXDATASTORE_UPDATE', (updatedKey: string, value: string) => {
             if (key === '*' || key === updatedKey) {
                 callback(updatedKey, value);
             }
         }).clear;
     }
 
-    static getAndSubscribe<T extends StorageValue>(key: string, callback: SubscribeCallback<T>, defaultVal?: StorageContents<T>): SubscribeCancellation {
-        callback(key, NXDataStore.get<T>(key, defaultVal));
-        return NXDataStore.subscribe<T>(key, callback);
+    static getAndSubscribe(key: string, callback: SubscribeCallback, defaultVal?: string): SubscribeCancellation {
+        callback(key, NXDataStore.get(key, defaultVal));
+        return NXDataStore.subscribe(key, callback);
     }
 }

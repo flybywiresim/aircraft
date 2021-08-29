@@ -60,7 +60,7 @@ type ChartDisplay = {
 
 const Loading = () => {
     const navigraph = useNavigraph();
-    const [, setRefreshToken] = usePersistentProperty<string>('NAVIGRAPH_REFRESH_TOKEN');
+    const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
 
     const handleResetRefreshToken = () => {
         setRefreshToken('');
