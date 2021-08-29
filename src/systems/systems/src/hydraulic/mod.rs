@@ -3,7 +3,6 @@ use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
 };
-use std::f64::consts::E;
 use std::string::String;
 use std::time::Duration;
 use uom::si::{
@@ -25,10 +24,10 @@ pub trait PressureSource {
 
     fn update_actual_state_after_pressure_regulation(
         &mut self,
-        volume_required: Volume,
-        reservoir: &mut Reservoir,
-        is_pump_connected_to_reservoir: bool,
-        context: &UpdateContext,
+        _volume_required: Volume,
+        _reservoir: &mut Reservoir,
+        _is_pump_connected_to_reservoir: bool,
+        _context: &UpdateContext,
     ) {
     }
 
@@ -48,6 +47,11 @@ impl DummyPump {
     }
 }
 impl PressureSource for DummyPump {}
+impl Default for DummyPump {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 // TODO update method that can update physic constants from given temperature
 // This would change pressure response to volume
@@ -112,10 +116,6 @@ impl PowerTransferUnit {
     const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.8;
     const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.8;
 
-    // Part of the max total pump capacity PTU model is allowed to take. Set to 1 all capacity used
-    // set to 0.5 PTU will only use half of the flow that all pumps are able to generate
-    const AGRESSIVENESS_FACTOR: f64 = 0.78;
-
     pub fn new() -> Self {
         Self {
             is_enabled: false,
@@ -167,12 +167,6 @@ impl PowerTransferUnit {
             // Left sends flow to right
             let mut vr = 16.0f64.min(loop_left_pressure.get::<psi>() * 0.0058) / 60.0;
 
-            // Limiting available flow with maximum flow capacity of all pumps of the loop.
-            // This is a workaround to limit PTU greed for flow
-            // vr = vr.min(
-            //     loop_left.system_flow().get::<gallon_per_second>() * Self::AGRESSIVENESS_FACTOR,
-            // );
-
             // Low pass on flow
             vr = Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE * vr
                 + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE)
@@ -189,12 +183,6 @@ impl PowerTransferUnit {
         {
             // Right sends flow to left
             let mut vr = 34.0f64.min(loop_right_pressure.get::<psi>() * 0.0125) / 60.0;
-
-            // Limiting available flow with maximum flow capacity of all pumps of the loop.
-            // This is a workaround to limit PTU greed for flow
-            // vr = vr.min(
-            //     loop_right_pressure.current_max_flow.get::<gallon_per_second>() * Self::AGRESSIVENESS_FACTOR,
-            // );
 
             // Low pass on flow
             vr = Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE * vr
@@ -374,6 +362,7 @@ impl HydraulicCircuit {
     const ACCUMULATOR_FLOW_CARAC_GAL_P_S: [f64; 10] =
         [0.0, 0.001, 0.005, 0.05, 0.08, 0.15, 0.25, 0.35, 0.5, 0.5];
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &str,
 
@@ -473,10 +462,8 @@ impl HydraulicCircuit {
         context: &UpdateContext,
         controller: &T,
     ) {
-        let mut pump_idx = 0;
-        for section in &mut self.pump_sections {
+        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
             section.set_fire_valve_command(controller.should_open_fire_shutoff_valve(pump_idx));
-            pump_idx += 1;
         }
 
         for section in &mut self.pump_sections {
@@ -493,51 +480,38 @@ impl HydraulicCircuit {
             .update_delta_vol(&mut self.reservoir, ptu, &context);
 
         for section in &mut self.pump_sections {
-            section.update_target_volume_after_consumer_pass(
-                &self.fluid,
-                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-            );
+            section.update_target_volume_after_consumer_pass();
         }
         self.system_section
-            .update_target_volume_after_consumer_pass(
-                &self.fluid,
-                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-            );
+            .update_target_volume_after_consumer_pass();
 
-        let mut idx = 0;
-        for section in &mut self.pump_sections {
-            section.update_max_pump_capacity(main_section_pumps[idx]);
-            idx += 1;
+        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
+            section.update_max_pump_capacity(main_section_pumps[pump_idx]);
         }
         if !system_section_pump.is_empty() {
             self.system_section
                 .update_max_pump_capacity(system_section_pump[0]);
         }
 
-        let mut idx = 0;
-        for valve in &mut self.pump_to_system_checkvalves {
+        for (pump_section_idx, valve) in self.pump_to_system_checkvalves.iter_mut().enumerate() {
             valve.update_forward_pass(
-                &self.pump_sections[idx],
+                &self.pump_sections[pump_section_idx],
                 &self.system_section,
                 &self.fluid,
-                &context,
             );
-            idx += 1;
         }
 
         self.update_valves_flows();
 
-        let mut idx = 0;
-        for section in &mut self.pump_sections {
+        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_actual_pumping_states(
-                main_section_pumps[idx],
+                main_section_pumps[pump_idx],
                 &Vec::new(),
                 &self.pump_to_system_checkvalves,
                 &mut self.reservoir,
                 &context,
                 &self.fluid,
             );
-            idx += 1;
         }
 
         self.system_section.update_actual_pumping_states(
@@ -567,13 +541,11 @@ impl HydraulicCircuit {
             for valve in &mut self.pump_to_system_checkvalves {
                 valve.current_volume = valve.max_virtual_volume;
             }
-        } else {
-            if total_max_valves_volume > Volume::new::<gallon>(0.) {
-                let needed_ratio = used_system_volume / total_max_valves_volume;
+        } else if total_max_valves_volume > Volume::new::<gallon>(0.) {
+            let needed_ratio = used_system_volume / total_max_valves_volume;
 
-                for valve in &mut self.pump_to_system_checkvalves {
-                    valve.current_volume = valve.max_virtual_volume * needed_ratio;
-                }
+            for valve in &mut self.pump_to_system_checkvalves {
+                valve.current_volume = valve.max_virtual_volume * needed_ratio;
             }
         }
     }
@@ -619,6 +591,7 @@ impl SimulationElement for HydraulicCircuit {
         visitor.visit(self);
     }
 }
+
 // This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
 // through a checkvalve
 pub struct Section {
@@ -648,6 +621,7 @@ pub struct Section {
     total_actuator_returned_volume: Volume,
 }
 impl Section {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         loop_id: &str,
         section_id: &str,
@@ -726,12 +700,8 @@ impl Section {
         }
     }
 
-    pub fn update_target_volume_after_consumer_pass(
-        &mut self,
-        fluid: &Fluid,
-        target_pressure: Pressure,
-    ) {
-        self.volume_target = self.volume_target - self.delta_vol_consumer_pass;
+    pub fn update_target_volume_after_consumer_pass(&mut self) {
+        self.volume_target -= self.delta_vol_consumer_pass;
     }
 
     fn static_leak(&self, context: &UpdateContext) -> Volume {
@@ -795,8 +765,8 @@ impl Section {
     pub fn update_actual_pumping_states(
         &mut self,
         pump: &mut impl PressureSource,
-        upstream_valves: &Vec<CheckValve>,
-        downstream_valves: &Vec<CheckValve>,
+        upstream_valves: &[CheckValve],
+        downstream_valves: &[CheckValve],
         reservoir: &mut Reservoir,
         context: &UpdateContext,
         fluid: &Fluid,
@@ -836,8 +806,8 @@ impl Section {
 
     pub fn update_actual_pumping_states_no_pump(
         &mut self,
-        upstream_valves: &Vec<CheckValve>,
-        downstream_valves: &Vec<CheckValve>,
+        upstream_valves: &[CheckValve],
+        downstream_valves: &[CheckValve],
         context: &UpdateContext,
         fluid: &Fluid,
     ) {
@@ -1017,7 +987,6 @@ impl CheckValve {
         upstream_section: &Section,
         downstream_section: &Section,
         fluid: &Fluid,
-        context: &UpdateContext,
     ) {
         let physical_volume_transfered =
             self.volume_to_equalize_pressures(upstream_section, downstream_section, fluid);
@@ -1037,6 +1006,11 @@ impl CheckValve {
         } else {
             self.max_virtual_volume = Volume::new::<gallon>(0.);
         }
+    }
+}
+impl Default for CheckValve {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -1218,7 +1192,7 @@ impl PressureSource for Pump {
     ) {
         let required_flow = volume_required / context.delta_as_time();
         self.current_displacement = self.calculate_displacement_from_required_flow(required_flow);
-        let mut max_current_flow = self.get_max_flow();
+        let max_current_flow = self.get_max_flow();
 
         if is_pump_connected_to_reservoir {
             self.current_flow = reservoir.get_flow(max_current_flow, &context);

@@ -6,21 +6,14 @@ use std::time::Duration;
 use systems::electrical::test::TestElectricitySource;
 use systems::electrical::ElectricalBus;
 use systems::electrical::Electricity;
-use systems::electrical::Potential;
+
 pub use systems::hydraulic::*;
 use systems::shared::PotentialOrigin;
 use systems::simulation::SimulationElement;
 use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
-    acceleration::foot_per_second_squared,
-    electric_potential::volt,
-    f64::*,
-    length::foot,
-    pressure::{pascal, psi},
-    thermodynamic_temperature::degree_celsius,
-    velocity::knot,
-    volume::{gallon, liter},
-    volume_rate::gallon_per_second,
+    acceleration::foot_per_second_squared, f64::*, length::foot, pressure::psi,
+    thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
 };
 
 extern crate rustplotlib;

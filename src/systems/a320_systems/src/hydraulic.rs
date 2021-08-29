@@ -3,12 +3,10 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angular_velocity::revolution_per_minute,
     f64::*,
-    pressure::pascal,
     pressure::psi,
     ratio::{percent, ratio},
     velocity::knot,
-    volume::{cubic_inch, gallon},
-    volume_rate::gallon_per_second,
+    volume::gallon,
 };
 
 use systems::{
@@ -17,9 +15,9 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
-        DummyPump, ElectricPump, EngineDrivenPump, Fluid, HydraulicCircuit,
-        HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
-        PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
+        DummyPump, ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicLoopController,
+        PowerTransferUnit, PowerTransferUnitController, PumpController, RamAirTurbine,
+        RamAirTurbineController,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
