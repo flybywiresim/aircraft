@@ -370,7 +370,8 @@ const AudioPage = () => {
 };
 
 const FlyPadPage = () => {
-    const [brightness, setBrightness] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
+    const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
+    const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
 
     return (
@@ -378,7 +379,7 @@ const FlyPadPage = () => {
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Brightness</span>
                 <div className={`flex flex-row items-center py-1.5 ${usingAutobrightness && 'pointer-events-none filter saturate-0'}`}>
-                    <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                    <Slider className="w-60" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
