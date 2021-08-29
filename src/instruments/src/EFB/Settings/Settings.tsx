@@ -35,7 +35,6 @@ const DefaultsPage = () => {
     const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
     const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
 
-
     const handleSetThrustReductionAlt = (value: string) => {
         setThrustReductionHeightSetting(value);
 
