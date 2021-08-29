@@ -1661,21 +1661,17 @@ mod tests {
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::UpdateContext;
     use uom::si::{
-        acceleration::foot_per_second_squared,
-        f64::*,
-        length::foot,
-        pressure::{pascal, psi},
-        thermodynamic_temperature::degree_celsius,
-        volume::gallon,
+        acceleration::foot_per_second_squared, f64::*, length::foot, pressure::psi,
+        thermodynamic_temperature::degree_celsius, volume::gallon,
     };
 
     struct TestHydraulicLoopController {
         should_open_fire_shutoff_valve: Vec<bool>,
     }
     impl TestHydraulicLoopController {
-        fn commanding_open_fire_shutoff_valve(number_of_pumps: usize) -> Self {
+        fn _commanding_open_fire_shutoff_valve(number_of_pumps: usize) -> Self {
             Self {
-                should_open_fire_shutoff_valve: vec![false; number_of_pumps],
+                should_open_fire_shutoff_valve: vec![true; number_of_pumps],
             }
         }
     }
@@ -1689,7 +1685,7 @@ mod tests {
         should_pressurise: bool,
     }
     impl TestPumpController {
-        fn commanding_pressurise() -> Self {
+        fn _commanding_pressurise() -> Self {
             Self {
                 should_pressurise: true,
             }
@@ -1705,13 +1701,13 @@ mod tests {
         should_deploy: bool,
     }
     impl TestRamAirTurbineController {
-        fn new() -> Self {
+        fn _new() -> Self {
             Self {
                 should_deploy: false,
             }
         }
 
-        fn command_deployment(&mut self) {
+        fn _command_deployment(&mut self) {
             self.should_deploy = true;
         }
     }
@@ -1879,7 +1875,7 @@ mod tests {
         EngineDrivenPump::new("DEFAULT")
     }
 
-    fn context(delta_time: Duration) -> UpdateContext {
+    fn _context(delta_time: Duration) -> UpdateContext {
         UpdateContext::new(
             delta_time,
             Velocity::new::<knot>(250.),

@@ -39,7 +39,7 @@ struct TestPumpController {
     should_pressurise: bool,
 }
 impl TestPumpController {
-    fn commanding_pressurise() -> Self {
+    fn _commanding_pressurise() -> Self {
         Self {
             should_pressurise: true,
         }
@@ -69,19 +69,19 @@ struct TestPowerTransferUnitController {
     should_enable: bool,
 }
 impl TestPowerTransferUnitController {
-    fn commanding_disabled() -> Self {
+    fn _commanding_disabled() -> Self {
         Self {
             should_enable: false,
         }
     }
 
-    fn commanding_enabled() -> Self {
+    fn _commanding_enabled() -> Self {
         Self {
             should_enable: true,
         }
     }
 
-    fn command_enable(&mut self) {
+    fn _command_enable(&mut self) {
         self.should_enable = true;
     }
 }
@@ -404,7 +404,7 @@ fn electric_pump() -> ElectricPump {
     ElectricPump::new("DEFAULT", ElectricalBusType::AlternatingCurrentEssential)
 }
 
-fn engine_driven_pump() -> EngineDrivenPump {
+fn _engine_driven_pump() -> EngineDrivenPump {
     EngineDrivenPump::new("DEFAULT")
 }
 

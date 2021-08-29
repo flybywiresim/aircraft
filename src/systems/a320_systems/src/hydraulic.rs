@@ -474,7 +474,6 @@ impl A320Hydraulic {
         self.engine_driven_pump_1_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine1.uncorrected_n2(),
             engine1.oil_pressure(),
             self.green_loop.pump_section_switch_pressurised(0),
             lgciu1,
@@ -493,7 +492,6 @@ impl A320Hydraulic {
         self.engine_driven_pump_2_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine2.uncorrected_n2(),
             engine2.oil_pressure(),
             self.yellow_loop.pump_section_switch_pressurised(0),
             lgciu2,
@@ -686,7 +684,6 @@ impl A320EngineDrivenPumpController {
 
     fn update_low_pressure_state(
         &mut self,
-        engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pump_section_pressure_switch_state: bool,
         lgciu: &impl LgciuInterface,
@@ -707,7 +704,6 @@ impl A320EngineDrivenPumpController {
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &T,
-        engine_n2: Ratio,
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
         lgciu: &impl LgciuInterface,
@@ -726,12 +722,7 @@ impl A320EngineDrivenPumpController {
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
 
-        self.update_low_pressure_state(
-            engine_n2,
-            engine_oil_pressure,
-            pressure_switch_state,
-            lgciu,
-        );
+        self.update_low_pressure_state(engine_oil_pressure, pressure_switch_state, lgciu);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
