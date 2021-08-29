@@ -225,7 +225,7 @@ impl Default for PowerTransferUnit {
 }
 
 pub trait HydraulicLoopController {
-    fn should_open_fire_shutoff_valve(&self) -> bool;
+    fn should_open_fire_shutoff_valve(&self, pump_idx: usize) -> bool;
 }
 
 pub struct Accumulator {
@@ -473,8 +473,11 @@ impl HydraulicCircuit {
         context: &UpdateContext,
         controller: &T,
     ) {
-        // TODO  find a way to pass all fire valve states to all pump sections
-        self.pump_sections[0].set_fire_valve_command(controller.should_open_fire_shutoff_valve());
+        let mut pump_idx = 0;
+        for section in &mut self.pump_sections {
+            section.set_fire_valve_command(controller.should_open_fire_shutoff_valve(pump_idx));
+            pump_idx += 1;
+        }
 
         for section in &mut self.pump_sections {
             section
@@ -1693,18 +1696,18 @@ mod tests {
     };
 
     struct TestHydraulicLoopController {
-        should_open_fire_shutoff_valve: bool,
+        should_open_fire_shutoff_valve: Vec<bool>,
     }
     impl TestHydraulicLoopController {
-        fn commanding_open_fire_shutoff_valve() -> Self {
+        fn commanding_open_fire_shutoff_valve(number_of_pumps: usize) -> Self {
             Self {
-                should_open_fire_shutoff_valve: true,
+                should_open_fire_shutoff_valve: vec![false; number_of_pumps],
             }
         }
     }
     impl HydraulicLoopController for TestHydraulicLoopController {
-        fn should_open_fire_shutoff_valve(&self) -> bool {
-            self.should_open_fire_shutoff_valve
+        fn should_open_fire_shutoff_valve(&self, pump_idx: usize) -> bool {
+            self.should_open_fire_shutoff_valve[pump_idx]
         }
     }
 
@@ -1781,6 +1784,26 @@ mod tests {
 
         assert!(test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
         assert!(test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE_SWITCH"));
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
+    }
+
+    #[test]
+    fn hyd_circuit_with_pump_number_writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(hydraulic_loop("BROWN", 2));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP0_SECTION_PRESSURE"));
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP0_SECTION_PRESSURE_SWITCH"));
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP0_FIRE_VALVE_OPENED"));
+
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE_SWITCH"));
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
+
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE_SWITCH"));
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
     }
 
     #[test]
@@ -1791,6 +1814,28 @@ mod tests {
 
         assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE"));
         assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE_SWITCH"));
+    }
+
+    #[test]
+    fn hyd_circuit_without_pump_number_writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(hydraulic_loop("BROWN", 1));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE"));
+        assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE_SWITCH"));
+
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP_SECTION_PRESSURE"));
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP_SECTION_PRESSURE_SWITCH"));
+        assert!(test_bed.contains_key("HYD_BROWN_FIRE_VALVE_OPENED"));
+
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE_SWITCH"));
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
+
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE_SWITCH"));
+        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
     }
 
     fn section(loop_id: &str, section_id: &str, pump_number: Option<usize>) -> Section {

@@ -27,18 +27,18 @@ extern crate rustplotlib;
 use rustplotlib::Figure;
 
 struct TestHydraulicLoopController {
-    should_open_fire_shutoff_valve: bool,
+    should_open_fire_shutoff_valve: Vec<bool>,
 }
 impl TestHydraulicLoopController {
-    fn commanding_open_fire_shutoff_valve() -> Self {
+    fn commanding_open_fire_shutoff_valve(number_of_pumps: usize) -> Self {
         Self {
-            should_open_fire_shutoff_valve: true,
+            should_open_fire_shutoff_valve: vec![true; number_of_pumps],
         }
     }
 }
 impl HydraulicLoopController for TestHydraulicLoopController {
-    fn should_open_fire_shutoff_valve(&self) -> bool {
-        self.should_open_fire_shutoff_valve
+    fn should_open_fire_shutoff_valve(&self, pump_idx: usize) -> bool {
+        self.should_open_fire_shutoff_valve[pump_idx]
     }
 }
 
@@ -243,19 +243,7 @@ fn hyd_circuit_basic(path: &str) {
     let mut epump = electric_pump();
     let mut epump_controller = TestPumpController::commanding_depressurise();
 
-    let mut hydraulic_loop = HydraulicCircuit::new(
-        "YELLOW",
-        1,
-        90.,
-        Volume::new::<gallon>(15.),
-        Volume::new::<gallon>(3.6),
-        Pressure::new::<psi>(1450.),
-        Pressure::new::<psi>(1750.),
-        Pressure::new::<psi>(1450.),
-        Pressure::new::<psi>(1750.),
-        false,
-        false,
-    );
+    let mut hydraulic_loop = hydraulic_loop("YELLOW", 1);
 
     let context = context(Duration::from_millis(50));
 
@@ -286,7 +274,7 @@ fn hyd_circuit_basic(path: &str) {
         if x >= 200 {
             // After 10s pressurising edp
             edp_controller.command_pressurise();
-            edp_rpm = 300.;
+            edp_rpm = 4000.;
         }
 
         if x >= 1000 {
@@ -329,7 +317,7 @@ fn hyd_circuit_basic(path: &str) {
             &mut vec![&mut epump],
             &None,
             &context,
-            &TestHydraulicLoopController::commanding_open_fire_shutoff_valve(),
+            &TestHydraulicLoopController::commanding_open_fire_shutoff_valve(1),
         );
 
         hyd_circuit_history.update(
@@ -384,9 +372,9 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
             Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1900.),
-            Pressure::new::<psi>(1300.),
-            Pressure::new::<psi>(1800.),
+            Pressure::new::<psi>(1750.),
+            Pressure::new::<psi>(1450.),
+            Pressure::new::<psi>(1750.),
             true,
             false,
         ),
@@ -397,9 +385,9 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
             Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1900.),
-            Pressure::new::<psi>(1300.),
-            Pressure::new::<psi>(1800.),
+            Pressure::new::<psi>(1750.),
+            Pressure::new::<psi>(1450.),
+            Pressure::new::<psi>(1750.),
             true,
             false,
         ),
@@ -410,9 +398,9 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
             Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1900.),
-            Pressure::new::<psi>(1300.),
-            Pressure::new::<psi>(1800.),
+            Pressure::new::<psi>(1750.),
+            Pressure::new::<psi>(1450.),
+            Pressure::new::<psi>(1750.),
             true,
             false,
         ),
