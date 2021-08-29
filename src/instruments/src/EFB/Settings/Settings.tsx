@@ -166,7 +166,7 @@ const SimOptionsPage = () => {
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
 
-    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
+    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
