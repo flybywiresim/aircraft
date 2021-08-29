@@ -1,5 +1,4 @@
 use crate::{
-    hydraulic::HydraulicLoop,
     overhead::PressSingleSignalButton,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,

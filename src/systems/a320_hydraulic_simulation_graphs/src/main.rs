@@ -375,46 +375,46 @@ fn test_electricity(bus_id: ElectricalBusType, is_powered: bool) -> Electricity 
     electricity
 }
 
-fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
+fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit {
     match loop_color {
-        "GREEN" => HydraulicLoop::new(
+        "GREEN" => HydraulicCircuit::new(
             loop_color,
+            main_pump_number,
+            100.,
+            Volume::new::<gallon>(10.),
+            Volume::new::<gallon>(3.6),
+            Pressure::new::<psi>(1450.),
+            Pressure::new::<psi>(1900.),
+            Pressure::new::<psi>(1300.),
+            Pressure::new::<psi>(1800.),
             true,
             false,
-            Volume::new::<gallon>(26.41),
-            Volume::new::<gallon>(26.41),
-            Volume::new::<gallon>(10.0),
-            Volume::new::<gallon>(3.83),
-            Fluid::new(Pressure::new::<pascal>(1450000000.0)),
-            true,
-            Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
         ),
-        "YELLOW" => HydraulicLoop::new(
+        "YELLOW" => HydraulicCircuit::new(
             loop_color,
-            false,
-            true,
-            Volume::new::<gallon>(10.2),
-            Volume::new::<gallon>(10.2),
-            Volume::new::<gallon>(8.0),
-            Volume::new::<gallon>(3.3),
-            Fluid::new(Pressure::new::<pascal>(1450000000.0)),
-            true,
+            main_pump_number,
+            100.,
+            Volume::new::<gallon>(10.),
+            Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
+            Pressure::new::<psi>(1900.),
+            Pressure::new::<psi>(1300.),
+            Pressure::new::<psi>(1800.),
+            true,
+            false,
         ),
-        _ => HydraulicLoop::new(
+        _ => HydraulicCircuit::new(
             loop_color,
-            false,
-            false,
-            Volume::new::<gallon>(15.85),
-            Volume::new::<gallon>(15.85),
-            Volume::new::<gallon>(8.0),
-            Volume::new::<gallon>(1.5),
-            Fluid::new(Pressure::new::<pascal>(1450000000.0)),
-            false,
+            main_pump_number,
+            100.,
+            Volume::new::<gallon>(10.),
+            Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
+            Pressure::new::<psi>(1900.),
+            Pressure::new::<psi>(1300.),
+            Pressure::new::<psi>(1800.),
+            true,
+            false,
         ),
     }
 }

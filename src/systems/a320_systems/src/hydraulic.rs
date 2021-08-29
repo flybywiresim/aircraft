@@ -17,7 +17,7 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
-        DummyPump, ElectricPump, EngineDrivenPump, Fluid, HydraulicCircuit, HydraulicLoop,
+        DummyPump, ElectricPump, EngineDrivenPump, Fluid, HydraulicCircuit,
         HydraulicLoopController, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
         PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
     },
