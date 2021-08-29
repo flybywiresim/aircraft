@@ -35,6 +35,7 @@ const DefaultsPage = () => {
     const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
     const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
 
+
     const handleSetThrustReductionAlt = (value: string) => {
         setThrustReductionHeightSetting(value);
 
@@ -371,8 +372,16 @@ const AudioPage = () => {
 
 const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
-    const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
+    const [brightness, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
     const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
+
+    const handleSetAutobrightness = (value: boolean) => {
+        setUsingAutobrightness(value ? 1 : 0);
+
+        if (!value) {
+            setBrightness(brightnessSetting);
+        }
+    };
 
     return (
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
@@ -385,7 +394,7 @@ const FlyPadPage = () => {
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Auto Brightness</span>
                 <div className="flex flex-row items-center py-1.5">
-                    <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
+                    <Toggle value={!!usingAutobrightness} onToggle={(value) => handleSetAutobrightness(value)} />
                 </div>
             </div>
         </div>
