@@ -526,9 +526,9 @@ mod tests {
                 self.set_ambient_pressure(Pressure::new::<hectopascal>(
                     PRESSURE_CONSTANT - (((i * 1000) as f64) * (KPA_FT)),
                 ));
-                self.run();
-                self.run();
-                self.run();
+                for _ in 1..10 {
+                    self.run();
+                }
             }
             self.set_ambient_pressure(Pressure::new::<hectopascal>(
                 PRESSURE_CONSTANT - final_altitude.get::<foot>() * (KPA_FT),
@@ -567,7 +567,7 @@ mod tests {
         }
 
         fn iterate(mut self, delta: usize) -> Self {
-            for _i in 0..delta {
+            for _ in 0..delta {
                 self.run();
             }
             self
@@ -593,7 +593,7 @@ mod tests {
         //Equivalent to FL100 from tables
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(696.86));
         test_bed.run_with_delta(Duration::from_secs(20));
-        test_bed = test_bed.iterate(60);
+        test_bed = test_bed.iterate(200);
         assert!(
             (test_bed.query(|a| a.pressurization.cpc[0].cabin_altitude())
                 - Length::new::<foot>(10000.))
@@ -1026,16 +1026,15 @@ mod tests {
         let mut test_bed = test_bed();
         test_bed = test_bed.iterate(10);
 
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(2000.));
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+        test_bed =
+            test_bed.command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.));
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(696.85));
         test_bed = test_bed.iterate(10);
         let first_vs = test_bed.cabin_vs();
 
-        test_bed.set_indicated_altitude(Length::new::<foot>(20000.));
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(465.67));
-        test_bed = test_bed.iterate(10);
-
-        test_bed.set_indicated_altitude(Length::new::<foot>(30000.));
+        test_bed = test_bed
+            .command_aircraft_climb(Length::new::<foot>(10000.), Length::new::<foot>(30000.));
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(300.92));
         test_bed = test_bed.iterate(10);
 
@@ -1085,14 +1084,12 @@ mod tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
         test_bed.run();
 
-        for i in 1..39 {
-            test_bed.run_with_delta(Duration::from_secs(60));
-            test_bed.set_indicated_altitude(Length::new::<foot>((i * 1000) as f64));
-        }
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.41));
+        test_bed = test_bed
+            .command_aircraft_climb(Length::new::<foot>(1000.), Length::new::<foot>(39000.));
 
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.41));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
-        test_bed.run_with_delta(Duration::from_secs(60));
+
         test_bed = test_bed.iterate(10);
 
         assert!(test_bed.cabin_delta_p() < Pressure::new::<psi>(8.06));
@@ -1203,6 +1200,8 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+        test_bed =
+            test_bed.command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(20000.));
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(465.63));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
 
@@ -1211,7 +1210,7 @@ mod tests {
         test_bed.run();
 
         test_bed = test_bed.command_man_vs_switch_position(0);
-        test_bed = test_bed.iterate(100);
+        test_bed = test_bed.iterate(500);
         assert!(
             (test_bed.cabin_pressure() - Pressure::new::<hectopascal>(465.63)).abs()
                 < Pressure::new::<hectopascal>(10.)
@@ -1248,9 +1247,16 @@ mod tests {
     fn safety_valve_opens_when_delta_p_above_8_6_psi() {
         let mut test_bed = test_bed();
 
-        //Equivalent to SL - 8.7 PSI
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(413.));
+        test_bed = test_bed.command_mode_sel_pb_man();
         test_bed.run();
+
+        test_bed = test_bed.command_man_vs_switch_position(2);
+        test_bed = test_bed.command_packs_off();
+        test_bed = test_bed.iterate(100);
+
+        //Equivalent to SL - 10 PSI
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(323.));
+        test_bed = test_bed.iterate(20);
         assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
     }
 
@@ -1258,9 +1264,15 @@ mod tests {
     fn safety_valve_opens_when_delta_p_below_minus_1_psi() {
         let mut test_bed = test_bed();
 
-        //Equivalent to SL + 1.1 PSI
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1089.));
+        test_bed = test_bed.command_mode_sel_pb_man();
         test_bed.run();
+
+        test_bed = test_bed.command_man_vs_switch_position(2);
+        test_bed = test_bed.command_packs_off();
+        test_bed = test_bed.iterate(100);
+        //Equivalent to SL + 2 PSI
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1400.));
+        test_bed = test_bed.iterate(20);
         assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
     }
 
@@ -1268,13 +1280,20 @@ mod tests {
     fn safety_valve_closes_when_condition_is_not_met() {
         let mut test_bed = test_bed();
 
-        //Equivalent to SL + 1.1 PSI
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1089.));
+        test_bed = test_bed.command_mode_sel_pb_man();
         test_bed.run();
+
+        test_bed = test_bed.command_man_vs_switch_position(2);
+        test_bed = test_bed.command_packs_off();
+        test_bed = test_bed.iterate(100);
+
+        //Equivalent to SL + 2 PSI
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1400.));
+        test_bed = test_bed.iterate(20);
         assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
 
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1020.));
-        test_bed.run();
+        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
+        test_bed = test_bed.iterate(20);
         assert_eq!(
             test_bed.safety_valve_open_amount(),
             Ratio::new::<percent>(0.)

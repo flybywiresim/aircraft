@@ -717,6 +717,7 @@ var A320_Neo_UpperECAM;
                                 message: "EXCESS CAB ALT",
                                 level: 3,
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+                                page: "PRESS",
                                 isActive: () => (
                                     !Simplane.getIsGrounded() &&
                                     this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > 9550 &&
@@ -801,6 +802,7 @@ var A320_Neo_UpperECAM;
                                 message: "LO DIFF PR",
                                 level: 2,
                                 flightPhasesInhib: [2, 3, 4, 5, 7, 8, 9, 10],
+                                page: "PRESS",
                                 isActive: () => (
                                     this.getCachedSimVar("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI") < 1.45 &&
                                     this.getCachedSimVar("VERTICAL SPEED", "feet per minute") < -500 &&
@@ -810,8 +812,7 @@ var A320_Neo_UpperECAM;
                                 actions: [
                                     {
                                         style: "cyan",
-                                        message: "EXPECT HI CAB RATE",
-                                        action: "ON"
+                                        message: "&nbsp;-EXPECT HI CAB RATE",
                                     },
                                     {
                                         style: "action",

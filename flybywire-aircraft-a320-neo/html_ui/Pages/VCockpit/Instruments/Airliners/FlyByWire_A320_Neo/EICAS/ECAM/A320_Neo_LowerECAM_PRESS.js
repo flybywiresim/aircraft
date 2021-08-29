@@ -203,9 +203,9 @@ var A320_Neo_LowerECAM_PRESS;
             const safetyValvePosition = (SimVar.GetSimVarValue("L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE", "Percent") / 100).toFixed(0);
             const activeSystem = SimVar.GetSimVarValue("L:A32NX_PRESS_ACTIVE_CPC_SYS", "Number");
 
-            const cabinVSValue = Math.round(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_VS", "Feet per minute"));
+            const cabinVSValue = SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_VS", "Feet per minute");
             const pressureDelta = Math.round(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI") * 10) / 10;
-            const cabinAltitude = Math.round(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_ALTITUDE", "feet"));
+            const cabinAltitude = SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_ALTITUDE", "feet");
             const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2);
             const outletValveOpenPercent = SimVar.GetSimVarValue("L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE", "Percent");
 
@@ -229,8 +229,8 @@ var A320_Neo_LowerECAM_PRESS;
             const cabinPsiDeltaIndicatorRot = this.setMaxIndicatorRotation(pressureDelta, 20, 0, 175, -15);
 
             //update values
-            this.oldCabinAltitudeValue = this.updateValue(this.htmlCabinAltValue, this.oldCabinAltitudeValue, cabinAltitude);
-            this.oldCabinVSValue = this.updateValue(this.htmlCabinVSValue, this.oldCabinVSValue, cabinVSValue);
+            this.oldCabinAltitudeValue = this.updateValue(this.htmlCabinAltValue, this.oldCabinAltitudeValue, Math.round(cabinAltitude / 50) * 50);
+            this.oldCabinVSValue = this.updateValue(this.htmlCabinVSValue, this.oldCabinVSValue, Math.round(cabinVSValue / 50) * 50);
 
             if (pressureDelta < 0) {
                 this.oldCabinPsiDeltaIntValue = this.updateValue(this.htmlPsiInt, this.oldCabinPsiDeltaIntValue, "-" + Math.abs(pressureDeltaDecimalSplit[0]) + ".");
