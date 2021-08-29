@@ -106,8 +106,8 @@ pub struct PowerTransferUnit {
 impl PowerTransferUnit {
     // Low pass filter to handle flow dynamic: avoids instantaneous flow transient,
     // simulating RPM dynamic of PTU
-    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.15;
-    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.15;
+    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.05;
+    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.05;
 
     const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.8;
     const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.8;
@@ -693,7 +693,6 @@ impl HydraulicCircuit {
 
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
 
-    const VALVE_MAX_FLOW_GAL_P_S: f64 = 10.;
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
     const RESERVOIR_MAX_VOLUME_GAL: f64 = 10.;
     const TARGET_PRESSURE_PSI: f64 = 3000.;
@@ -727,9 +726,17 @@ impl HydraulicCircuit {
         let mut pump_sections: Vec<Section> = Vec::new();
         let mut pump_to_system_checkvalves: Vec<CheckValve> = Vec::new();
 
+        let mut pump_id: Option<usize> = None;
+
         for pump_idx in 0..pump_sections_number {
+            if pump_sections_number > 1 {
+                pump_id = Some(pump_idx);
+            }
+
             pump_sections.push(Section::new(
-                format!("HYD_{}_PUMP_{}_SECTION", id, pump_idx).as_str(),
+                id,
+                "PUMP",
+                pump_id,
                 VolumeRate::new::<gallon_per_second>(Self::PUMP_SECTION_STATIC_LEAK_GAL_P_S),
                 Volume::new::<gallon>(
                     Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume_percent / 100.,
@@ -738,27 +745,24 @@ impl HydraulicCircuit {
                 None,
                 pump_pressure_switch_lo_hyst,
                 pump_pressure_switch_hi_hyst,
-                Some(FireValve::new(
-                    format!("HYD_{}_PUMP_{}", id, pump_idx).as_str(),
-                )),
+                Some(FireValve::new(id, &pump_id)),
                 false,
                 false,
             ));
 
-            pump_to_system_checkvalves.push(CheckValve::new(VolumeRate::new::<gallon_per_second>(
-                Self::VALVE_MAX_FLOW_GAL_P_S,
-            )));
+            pump_to_system_checkvalves.push(CheckValve::new());
         }
 
         let system_section_volume = high_pressure_max_volume
             - Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL)
                 * pump_sections_number as f64;
 
-        let system_section_id = format!("HYD_{}_{}", id, "SYSTEM_SECTION");
         Self {
             pump_sections,
             system_section: Section::new(
-                system_section_id.as_str(),
+                id,
+                "SYSTEM",
+                None,
                 VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
                 system_section_volume * priming_volume_percent / 100.,
                 system_section_volume,
@@ -976,7 +980,9 @@ pub struct Section {
 }
 impl Section {
     pub fn new(
-        id: &str,
+        loop_id: &str,
+        section_id: &str,
+        pump_id: Option<usize>,
         static_leak_at_max_press: VolumeRate,
         current_volume: Volume,
         max_high_press_volume: Volume,
@@ -987,9 +993,15 @@ impl Section {
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
     ) -> Self {
+        let section_name: String;
+        if pump_id.is_some() {
+            section_name = format!("HYD_{}_{}{}_SECTION", loop_id, section_id, pump_id.unwrap());
+        } else {
+            section_name = format!("HYD_{}_{}_SECTION", loop_id, section_id);
+        }
         Self {
-            pressure_id: format!("{}_PRESSURE", id),
-            pressure_switch_id: format!("{}_PRESSURE_SWITCH", id),
+            pressure_id: format!("{}_PRESSURE", section_name),
+            pressure_switch_id: format!("{}_PRESSURE_SWITCH", section_name),
             static_leak_at_max_press,
             current_volume,
             max_high_press_volume,
@@ -1270,9 +1282,19 @@ pub struct FireValve {
     is_opened: bool,
 }
 impl FireValve {
-    fn new(id: &str) -> Self {
+    fn new(hyd_loop_id: &str, pump_id: &Option<usize>) -> Self {
+        let opened_id: String;
+        if pump_id.is_some() {
+            opened_id = format!(
+                "HYD_{}_PUMP{}_FIRE_VALVE_OPENED",
+                hyd_loop_id,
+                pump_id.as_ref().unwrap()
+            );
+        } else {
+            opened_id = format!("HYD_{}_FIRE_VALVE_OPENED", hyd_loop_id);
+        }
         Self {
-            opened_id: format!("{}_FIRE_VALVE_OPENED", id),
+            opened_id,
             is_opened: true,
         }
     }
@@ -1291,18 +1313,14 @@ impl SimulationElement for FireValve {
     }
 }
 pub struct CheckValve {
-    max_flow: VolumeRate,
-
     current_volume: Volume,
     max_virtual_volume: Volume,
 }
 impl CheckValve {
     const DELTA_PRESSURE_FILTER_TIMECONST_S: f64 = 0.001;
 
-    pub fn new(max_flow: VolumeRate) -> Self {
+    pub fn new() -> Self {
         Self {
-            max_flow,
-
             current_volume: Volume::new::<gallon>(0.),
             max_virtual_volume: Volume::new::<gallon>(0.),
         }
@@ -1364,9 +1382,9 @@ pub struct Reservoir {
 impl Reservoir {
     const MIN_USABLE_VOLUME: f64 = 0.2; // Gallons
 
-    pub fn new(id: &str, max_capacity: Volume, current_level: Volume) -> Self {
+    pub fn new(hyd_loop_id: &str, max_capacity: Volume, current_level: Volume) -> Self {
         Self {
-            level_id: format!("HYD_{}_RESERVOIR_LEVEL", id),
+            level_id: format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id),
             max_capacity,
             current_level,
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME),
@@ -1999,6 +2017,7 @@ impl Default for RamAirTurbine {
 
 #[cfg(test)]
 mod tests {
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::UpdateContext;
     use uom::si::{
         acceleration::foot_per_second_squared,
@@ -2091,6 +2110,26 @@ mod tests {
     }
 
     #[test]
+    fn section_with_pump_number_writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(section("BROWN", "PUMP", Some(2)));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE_SWITCH"));
+    }
+
+    #[test]
+    fn section_without_pump_number_writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(section("BROWN", "SYSTEM", None));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE"));
+        assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE_SWITCH"));
+    }
+
+    #[test]
     /// Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn blue_loop_rat_deploy_simulation() {
         let mut rat = RamAirTurbine::new();
@@ -2176,6 +2215,25 @@ mod tests {
             }
             time += timestep;
         }
+    }
+
+    fn section(loop_id: &str, section_id: &str, pump_number: Option<usize>) -> Section {
+        Section::new(
+            loop_id,
+            section_id,
+            pump_number,
+            VolumeRate::new::<gallon_per_second>(
+                HydraulicCircuit::PUMP_SECTION_STATIC_LEAK_GAL_P_S,
+            ),
+            Volume::new::<gallon>(HydraulicCircuit::PUMP_SECTION_MAX_VOLUME_GAL),
+            Volume::new::<gallon>(HydraulicCircuit::PUMP_SECTION_MAX_VOLUME_GAL),
+            None,
+            Pressure::new::<psi>(1400.),
+            Pressure::new::<psi>(2000.),
+            Some(FireValve::new(loop_id, &pump_number)),
+            false,
+            false,
+        )
     }
 
     fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
