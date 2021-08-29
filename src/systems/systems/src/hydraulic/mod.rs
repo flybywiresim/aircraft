@@ -462,47 +462,29 @@ impl HydraulicCircuit {
         context: &UpdateContext,
         controller: &T,
     ) {
-        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
-            section.set_fire_valve_command(controller.should_open_fire_shutoff_valve(pump_idx));
-        }
+        self.update_shutoff_valves_states(controller);
 
-        for section in &mut self.pump_sections {
-            section
-                .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
-        }
-        self.system_section
-            .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
+        self.update_target_volumes_to_nominal_pressure();
 
-        for section in &mut self.pump_sections {
-            section.update_delta_vol(&mut self.reservoir, ptu, &context);
-        }
-        self.system_section
-            .update_delta_vol(&mut self.reservoir, ptu, &context);
+        self.update_flow_consumption(ptu, context);
 
-        for section in &mut self.pump_sections {
-            section.update_target_volume_after_consumer_pass();
-        }
-        self.system_section
-            .update_target_volume_after_consumer_pass();
+        self.update_target_volumes_after_flow_consumption();
 
-        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_max_pump_capacity(main_section_pumps[pump_idx]);
-        }
-        if !system_section_pump.is_empty() {
-            self.system_section
-                .update_max_pump_capacity(system_section_pump[0]);
-        }
+        self.update_maximum_pumping_capacities(main_section_pumps, system_section_pump);
 
-        for (pump_section_idx, valve) in self.pump_to_system_checkvalves.iter_mut().enumerate() {
-            valve.update_forward_pass(
-                &self.pump_sections[pump_section_idx],
-                &self.system_section,
-                &self.fluid,
-            );
-        }
+        self.update_maximum_valve_flows();
 
-        self.update_valves_flows();
+        self.update_final_valves_flows();
 
+        self.update_final_pumps_states(main_section_pumps, system_section_pump, context);
+    }
+
+    fn update_final_pumps_states(
+        &mut self,
+        main_section_pumps: &mut Vec<&mut impl PressureSource>,
+        system_section_pump: &mut Vec<&mut impl PressureSource>,
+        context: &UpdateContext,
+    ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_actual_pumping_states(
                 main_section_pumps[pump_idx],
@@ -524,7 +506,66 @@ impl HydraulicCircuit {
         );
     }
 
-    fn update_valves_flows(&mut self) {
+    fn update_maximum_valve_flows(&mut self) {
+        for (pump_section_idx, valve) in self.pump_to_system_checkvalves.iter_mut().enumerate() {
+            valve.update_forward_pass(
+                &self.pump_sections[pump_section_idx],
+                &self.system_section,
+                &self.fluid,
+            );
+        }
+    }
+
+    fn update_maximum_pumping_capacities(
+        &mut self,
+        main_section_pumps: &mut Vec<&mut impl PressureSource>,
+        system_section_pump: &mut Vec<&mut impl PressureSource>,
+    ) {
+        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
+            section.update_max_pump_capacity(main_section_pumps[pump_idx]);
+        }
+        if !system_section_pump.is_empty() {
+            self.system_section
+                .update_max_pump_capacity(system_section_pump[0]);
+        }
+    }
+
+    fn update_target_volumes_after_flow_consumption(&mut self) {
+        for section in &mut self.pump_sections {
+            section.update_target_volume_after_consumer_pass();
+        }
+        self.system_section
+            .update_target_volume_after_consumer_pass();
+    }
+
+    fn update_flow_consumption(
+        &mut self,
+        ptu: &Option<&PowerTransferUnit>,
+        context: &UpdateContext,
+    ) {
+        for section in &mut self.pump_sections {
+            section.update_delta_vol(&mut self.reservoir, ptu, &context);
+        }
+        self.system_section
+            .update_delta_vol(&mut self.reservoir, ptu, &context);
+    }
+
+    fn update_target_volumes_to_nominal_pressure(&mut self) {
+        for section in &mut self.pump_sections {
+            section
+                .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
+        }
+        self.system_section
+            .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
+    }
+
+    fn update_shutoff_valves_states<T: HydraulicLoopController>(&mut self, controller: &T) {
+        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
+            section.set_fire_valve_command(controller.should_open_fire_shutoff_valve(pump_idx));
+        }
+    }
+
+    fn update_final_valves_flows(&mut self) {
         let mut total_max_valves_volume = Volume::new::<gallon>(0.);
 
         for valve in &mut self.pump_to_system_checkvalves {
