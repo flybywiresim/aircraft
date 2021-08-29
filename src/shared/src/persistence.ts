@@ -19,7 +19,6 @@ export class NXDataStore {
 
     /**
      * Reads a value from persistent storage
-     *
      * @param key The property key
      * @param defaultVal The default value if the property is not set
      */
@@ -27,7 +26,9 @@ export class NXDataStore {
     static get(key: string, defaultVal?: string): string | undefined;
     static get(key: string, defaultVal?: string): any {
         const val = GetStoredData(`A32NX_${key}`);
-        if (val === null) {
+        // GetStoredData returns null on error, or empty string for keys that don't exist (why isn't that an error??)
+        // We could use SearchStoredData, but that spams the console with every key (somebody left their debug print in)
+        if (val === null || val.length === 0) {
             return defaultVal;
         }
         return val;
@@ -40,9 +41,7 @@ export class NXDataStore {
      * @param val The value to assign to the property
      */
     static set(key: string, val: string): void {
-        if (SetStoredData(`A32NX_${key}`, val) !== val) {
-            console.error(`NXDataStore: Failed to set ${key} = ${val}`);
-        }
+        SetStoredData(`A32NX_${key}`, val);
         this.listener.triggerToAllSubscribers('A32NX_NXDATASTORE_UPDATE', key, val);
     }
 
