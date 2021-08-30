@@ -39,6 +39,32 @@ export class GuidanceManager {
         return new RFLeg(from, to, center, segment);
     }
 
+    getPreviousLeg(): RFLeg | TFLeg | VMLeg | null {
+        const activeIndex = this.flightPlanManager.getActiveWaypointIndex(false, false, 0);
+
+        const from = this.flightPlanManager.getWaypoint(activeIndex - 2, 0);
+        const to = this.flightPlanManager.getWaypoint(activeIndex - 1, 0);
+        const segment = this.flightPlanManager.getSegmentFromWaypoint(to, 0).type;
+
+        if (!from || !to) {
+            return null;
+        }
+
+        if (from.endsInDiscontinuity) {
+            return null;
+        }
+
+        if (to.additionalData && to.additionalData.legType === 17) {
+            return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment);
+        }
+
+        if (to.isVectors) {
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment);
+        }
+
+        return GuidanceManager.tfBetween(from, to, segment);
+    }
+
     getActiveLeg(): RFLeg | TFLeg | VMLeg | null {
         const activeIndex = this.flightPlanManager.getActiveWaypointIndex(false, false, 0);
 
@@ -96,6 +122,7 @@ export class GuidanceManager {
      */
     // TODO Extract leg and transition building
     getActiveLegPathGeometry(): Geometry | null {
+        const prevLeg = this.getPreviousLeg();
         const activeLeg = this.getActiveLeg();
         const nextLeg = this.getNextLeg();
 
@@ -106,15 +133,25 @@ export class GuidanceManager {
         const legs = new Map<number, Leg>([[1, activeLeg]]);
         const transitions = new Map<number, Transition>();
 
+        if (prevLeg) {
+            if (prevLeg instanceof TFLeg && !(activeLeg instanceof RFLeg)) {
+                transitions.set(0, new Type1Transition(
+                    prevLeg,
+                    activeLeg,
+                ));
+            }
+        }
+
         // TODO generalise selection of transitions
         if (nextLeg) {
-            legs.set(2, nextLeg);
             if (activeLeg instanceof TFLeg && !(nextLeg instanceof RFLeg)) {
-                transitions.set(2, new Type1Transition(
+                transitions.set(1, new Type1Transition(
                     activeLeg,
                     nextLeg,
                 ));
             }
+
+            legs.set(2, nextLeg);
         }
 
         return new Geometry(transitions, legs);
@@ -142,7 +179,9 @@ export class GuidanceManager {
             : this.flightPlanManager.getCurrentFlightPlan().length;
         for (let i = wpCount - 1; (i >= activeIdx - 1); i--) {
             const nextLeg = legs.get(i + 1);
-            const isActive = i === activeIdx;
+
+            // We need to predict every path before the active leg + the active leg itself with the current speed
+            const predictWithCurrentSpeed = i <= activeIdx;
 
             const from = temp
                 ? this.flightPlanManager.getWaypoint(i - 1, 1)
@@ -188,7 +227,7 @@ export class GuidanceManager {
                 const transition = new Type1Transition(
                     currentLeg,
                     nextLeg,
-                    isActive,
+                    predictWithCurrentSpeed,
                 );
 
                 transitions.set(i, transition);
