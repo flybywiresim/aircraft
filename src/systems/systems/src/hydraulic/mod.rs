@@ -464,18 +464,27 @@ impl HydraulicCircuit {
     ) {
         self.update_shutoff_valves_states(controller);
 
+        // How many fluid needed to reach target pressure
         self.update_target_volumes_to_nominal_pressure();
 
+        // Taking care of leaks / consumers / actuators volumes
         self.update_flow_consumption(ptu, context);
 
+        // Adjusting volume target now we have a more precise flow value
         self.update_target_volumes_after_flow_consumption();
 
+        // Updating for each section its total maximum theoretical pumping capacity
+        // "what max volume it could pump considering current reservoir state and pump rpm"
         self.update_maximum_pumping_capacities(main_section_pumps, system_section_pump);
 
+        // What flow can come through each valve considering what is consumed downstream
         self.update_maximum_valve_flows();
 
+        // Update final flow that will go each valve
         self.update_final_valves_flows();
 
+        // We have all flow information, now we set pump parameters (displacement) to where it
+        // should be so we reach target pressure
         self.update_final_pumps_states(main_section_pumps, system_section_pump, context);
     }
 
