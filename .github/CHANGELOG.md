@@ -182,6 +182,7 @@
 1. [ECAM] ENG oil temperature amber while below takeoff minimum - @tracernz (Mike)
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
+1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
