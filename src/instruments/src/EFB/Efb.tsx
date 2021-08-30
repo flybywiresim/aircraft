@@ -121,7 +121,7 @@ const Efb = () => {
 
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
-    const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0)
+    const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 5000);
 
     // handle setting brightness if user is using autobrightness
