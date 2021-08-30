@@ -24,6 +24,15 @@ class CDU_OPTIONS_MCDU_KB {
             ["<RETURN"]
         ]);
 
+        const displayReloadNotifiers = () => {
+            const notif = new NXNotif();
+            const popup = new NXPopUp();
+            const showNotif = () => {
+                notif.showNotification({title: "RELOAD AIRCRAFT", theme: "GAMEPLAY", message:"Reload the aircraft to apply settings"});
+            };
+            popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Please reload the aircraft to apply your new settings.", style: "small"}, showNotif, showNotif);
+        };
+
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
@@ -32,6 +41,7 @@ class CDU_OPTIONS_MCDU_KB {
                 mcdu.clearFocus();
                 NXDataStore.set("MCDU_KB_INPUT", "ENABLED");
                 mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
+                displayReloadNotifiers();
                 CDU_OPTIONS_MCDU_KB.ShowPage(mcdu);
             }
         };
@@ -43,6 +53,7 @@ class CDU_OPTIONS_MCDU_KB {
                 mcdu.clearFocus();
                 NXDataStore.set("MCDU_KB_INPUT", "DISABLED");
                 mcdu.addNewMessage(NXFictionalMessages.reloadPlaneApply);
+                displayReloadNotifiers();
                 CDU_OPTIONS_MCDU_KB.ShowPage(mcdu);
             }
         };
