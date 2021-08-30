@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 // @ts-ignore
 import pkce from '@navigraph/pkce';
 
-import { NXDataStore } from '../../Common/persistence';
+import { NXDataStore } from '@shared/persistence';
 
 export interface ChartType {
     code: string,
@@ -92,7 +92,7 @@ export default class NavigraphClient {
         if (NavigraphClient.sufficientEnv()) {
             this.pkce = pkce();
 
-            const token = NXDataStore.get('NAVIGRAPH_REFRESH_TOKEN');
+            const token = NXDataStore.get<string>('NAVIGRAPH_REFRESH_TOKEN');
 
             if (token === undefined || token === null || token === '') {
                 this.authenticate();

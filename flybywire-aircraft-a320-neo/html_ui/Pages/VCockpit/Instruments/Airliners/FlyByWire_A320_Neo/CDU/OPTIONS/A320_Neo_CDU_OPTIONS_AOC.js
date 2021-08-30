@@ -6,29 +6,20 @@ class CDU_OPTIONS_AOC {
 
         mcdu.setTemplate([
             ["A32NX OPTIONS AOC"],
-            ["\xa0SOURCE", "FREE TEXT\xa0"],
-            ["<ATIS", telexStatus],
-            ["\xa0SOURCE"],
-            ["<METAR"],
-            ["\xa0SOURCE"],
-            ["<SIGMET[color]inop"],
-            ["\xa0SOURCE"],
-            ["<TAF"],
+            ["", "FREE TEXT\xa0"],
+            ["", telexStatus],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
             [""],
             ["<SIMBRIEF"],
             [""],
             ["<RETURN"]
         ]);
 
-        mcdu.onLeftInput[0] = () => {
-            CDU_OPTIONS_ATIS.ShowPage(mcdu);
-        };
-        mcdu.onLeftInput[1] = () => {
-            CDU_OPTIONS_METAR.ShowPage(mcdu);
-        };
-        mcdu.onLeftInput[3] = () => {
-            CDU_OPTIONS_TAF.ShowPage(mcdu);
-        };
         mcdu.onLeftInput[4] = () => {
             CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
         };
@@ -36,15 +27,6 @@ class CDU_OPTIONS_AOC {
             CDU_OPTIONS_TELEX.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };

@@ -178,7 +178,10 @@
 1. [SOUNDS] Replace all remaining Asobo sounds - @hotshotp (boris#8008)
 1. [SOUNDS] Implement an early version of closed vs open cockpit door sounds - @hotshotp (boris#8008)
 1. [OVHD] CVR ground test auto-resets on first engine start - @tracernz (Mike)
-1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022)
+1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022
+1. [ECAM] ENG oil temperature amber while below takeoff minimum - @tracernz (Mike)
+1. [MISC] Sync settings across instruments - @tracernz (Mike)
+1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -419,6 +422,9 @@
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
 1. [MISC] Added Marketplace Data - @kiwi2021 (kiwi2022#0001)
 1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
+1. [FBW] Improved pitch/C* law using streamlined pitch rate target - @aguther (Andreas Guther)
+1. [AP] Improved ALT* law that targets 0.05g capture - @aguther (Andreas Guther)
+1. [AP] Allow V/S push (level off) during ALT* - @aguther (Andreas Guther)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
