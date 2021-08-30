@@ -425,6 +425,7 @@
 1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
 1. [FBW] Improved pitch/C* law using streamlined pitch rate target - @aguther (Andreas Guther)
 1. [AP] Improved ALT* law that targets 0.05g capture - @aguther (Andreas Guther)
+1. [AP] Allow V/S push (level off) during ALT* - @aguther (Andreas Guther)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
