@@ -10,7 +10,7 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 /**
  * A type I transition uses a fixed turn radius between two fix-referenced legs.
  */
- export class Type1Transition extends Transition {
+export class Type1Transition extends Transition {
     public previousLeg: TFLeg;
 
     public nextLeg: TFLeg | VMLeg;
@@ -22,7 +22,7 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
     constructor(
         previousLeg: TFLeg,
         nextLeg: TFLeg | VMLeg, // FIXME this cannot happen, but what are you gonna do about it ?,
-        isActive: boolean = true,
+        predictWithCurrentSpeed: boolean = true,
     ) {
         super();
         this.previousLeg = previousLeg;
@@ -30,7 +30,7 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
         let kts: Knots;
         // TODO remove this hack when VNAV can provide a proper prediction
-        if (!isActive && this.previousLeg.to.additionalData.predictedSpeed) {
+        if (!predictWithCurrentSpeed && this.previousLeg.to.additionalData.predictedSpeed) {
             kts = this.previousLeg.to.additionalData.predictedSpeed;
         } else {
             kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
@@ -42,7 +42,7 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
         const minBankAngle = 5;
 
         // Start with half the track change
-        const bankAngle = Math.abs(courseChange) / 2
+        const bankAngle = Math.abs(courseChange) / 2;
 
         // Bank angle limits, always assume limit 2 for now @ 25 degrees between 150 and 300 knots
         let maxBankAngle = 25;
@@ -92,11 +92,15 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
     }
 
     isAbeam(ppos: LatLongAlt): boolean {
-        const [inbound] = this.getTurningPoints();
+        const [inbound, outbound] = this.getTurningPoints();
 
-        const bearingAC = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
-        const headingAC = Math.abs(MathUtils.diffAngle(this.previousLeg.bearing, bearingAC));
-        return headingAC <= 90;
+        const inBearingAc = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
+        const inHeadingAc = Math.abs(MathUtils.diffAngle(this.previousLeg.bearing, inBearingAc));
+
+        const outBearingAc = Avionics.Utils.computeGreatCircleHeading(outbound, ppos);
+        const outHeadingAc = Math.abs(MathUtils.diffAngle(this.nextLeg.bearing, outBearingAc));
+
+        return inHeadingAc <= 90 && outHeadingAc >= 90;
     }
 
     get distance(): NauticalMiles {
