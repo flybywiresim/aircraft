@@ -6,7 +6,7 @@ class CDU_OPTIONS_MainMenu {
         mcdu.setTemplate([
             ["A32NX OPTIONS"],
             [""],
-            ["<AOC", "REALISM>"],
+            ["<AOC"],
             [""],
             [""],
             [""],
@@ -23,14 +23,6 @@ class CDU_OPTIONS_MainMenu {
             CDU_OPTIONS_AOC.ShowPage(mcdu);
         };
         mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-
-        mcdu.onRightInput[0] = () => {
-            CDU_OPTIONS_REALISM.ShowPage(mcdu);
-        };
-
-        mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
 

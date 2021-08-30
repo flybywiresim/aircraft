@@ -168,6 +168,9 @@ const SimOptionsPage = () => {
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty<string>('CONFIG_INIT_BARO_UNIT', 'IN HG');
 
+    const [mcduInput, setMcduInput] = usePersistentProperty<string>('MCDU_KB_INPUT', 'DISABLED');
+    const [mcduTimeout, setMcduTimeout] = usePersistentProperty<string>('CONFIG_MCDU_KB_TIMEOUT', '60');
+
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
         { name: 'Fast', setting: 'FAST', simVarValue: 2 },
@@ -185,6 +188,49 @@ const SimOptionsPage = () => {
         { name: 'in Hg', setting: 'IN HG' },
         { name: 'hPa', setting: 'HPA' },
     ];
+
+    const mcduInputSetting = (
+        <div className="py-4 flex flex-row justify-between items-center">
+            <span>
+                <span className="text-lg text-gray-300">MCDU Keyboard Input</span>
+                <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
+            </span>
+            <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
+        </div>
+    );
+
+    const mcduTimeoutSetting = (mcduInput === 'ENABLED')
+        ? (
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span>
+                    <span className="text-lg text-gray-300">MCDU Focus Timeout (s)</span>
+                </span>
+                <SimpleInput
+                    className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                    value={mcduTimeout}
+                    noLabel
+                    onChange={(event) => {
+                        if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                            setMcduTimeout(event.trim());
+                        }
+                    }}
+                />
+            </div>
+        ) : (
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span>
+                    <span className="text-lg text-gray-500">MCDU Focus Timeout (s)</span>
+                </span>
+                <SimpleInput
+                    className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
+                    value={mcduTimeout}
+                    noLabel
+                    disabled
+                />
+            </div>
+        );
 
     useEffect(() => {
         setShowNavbar(!showThrottleSettings);
@@ -240,6 +286,8 @@ const SimOptionsPage = () => {
                             ))}
                         </SelectGroup>
                     </div>
+                    {mcduInputSetting}
+                    {mcduTimeoutSetting}
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />
             </>

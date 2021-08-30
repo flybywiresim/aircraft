@@ -15,6 +15,7 @@ type SimpleInputProps = {
     className?: string,
     maxLength?: number,
     noLabel?: boolean,
+    disabled?: boolean
 };
 
 const SimpleInput: FC<SimpleInputProps> = (props) => {
@@ -108,6 +109,7 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
                             onFocus={onFocus}
                             onBlur={onFocusOut}
                             maxLength={props.maxLength}
+                            disabled={props.disabled}
                         />
                     </>
                 )
@@ -125,6 +127,7 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
                                     onFocus={onFocus}
                                     onBlur={onFocusOut}
                                     maxLength={props.maxLength}
+                                    disabled={props.disabled}
                                 />
                             </div>
                         </div>
