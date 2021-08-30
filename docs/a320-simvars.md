@@ -1792,7 +1792,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 2
 
 - A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_PRESSURE:
-    - Pressure at precooler inlet for engine bleed system
+    - Pressure at the precooler inlet for engine bleed system
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_PRESSURE:
+    - Pressure at theh precooler outlet for engine bleed system
     - PSI
     - {number}
         - 1
@@ -1820,11 +1827,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 2
 
 - A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_TEMPERATURE:
-    - Temperature at precooler inlet for engine bleed system
+    - Temperature at the precooler inlet for engine bleed system
     - Degree celsius
     - {number}
         - 1
         - 2
+
+- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_TEMPERATURE:
+    - Temperature at the precooler outlet for engine bleed system
+        - Degree celsius
+        - {number}
+            - 1
+            - 2
 
 - A32NX_PNEU_ENG_{number}_IP_VALVE_OPEN:
     - Indicates whether the intermediate pressure bleed air valve is open

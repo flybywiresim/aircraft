@@ -223,7 +223,7 @@ impl SimulationElement for EngineCompressionChamberController {
     }
 }
 impl EngineCompressionChamberController {
-    const GAMMA: f64 = 1.4; // Adiabatic index of dry air
+    const HEAT_CAPACITY_RATIO: f64 = 1.4; // Adiabatic index of dry air
 
     pub fn new(
         n1_contribution_factor: f64,
@@ -263,7 +263,7 @@ impl EngineCompressionChamberController {
         // Static pressure + compressionfactor * dynamic pressure
         // Dynamic pressure from here: https://en.wikipedia.org/wiki/Mach_number
         let total_pressure = (1.
-            + (self.compression_factor * Self::GAMMA * corrected_mach.powi(2)) / 2.)
+            + (self.compression_factor * Self::HEAT_CAPACITY_RATIO * corrected_mach.powi(2)) / 2.)
             * context.ambient_pressure();
 
         self.target_pressure = total_pressure;
@@ -473,19 +473,19 @@ impl ControllerSignal<TargetPressureSignal> for ApuCompressionChamberController 
     }
 }
 
-struct HeatExchanger {
+pub struct HeatExchanger {
     coefficient: f64,
     internal_valve: DefaultValve,
 }
 impl HeatExchanger {
-    fn new(coefficient: f64) -> Self {
+    pub fn new(coefficient: f64) -> Self {
         Self {
             coefficient,
             internal_valve: DefaultValve::new_open(),
         }
     }
 
-    fn update(
+    pub fn update(
         &self,
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
@@ -497,14 +497,14 @@ impl HeatExchanger {
                 - from.temperature().get::<degree_celsius>(),
         );
 
-        self.internal_valve.update_move_fluid(context, from, to);
-
         supply.update_temperature(
             -self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
         );
-        to.update_temperature(
+        from.update_temperature(
             self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
         );
+
+        self.internal_valve.update_move_fluid(context, from, to);
     }
 }
 

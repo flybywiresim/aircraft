@@ -18,7 +18,8 @@ use systems::{
         ApuCompressionChamberController, CompressionChamber, ConstantConsumerController,
         ControllablePneumaticValve, ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob,
         CrossBleedValveSelectorMode, DefaultConsumer, DefaultPipe, DefaultValve,
-        EngineCompressionChamberController, EngineState, PneumaticContainer, TargetPressureSignal,
+        EngineCompressionChamberController, EngineState, HeatExchanger, PneumaticContainer,
+        TargetPressureSignal,
     },
     shared::{
         ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
@@ -150,6 +151,29 @@ impl ControlledPneumaticValveSignal for CrossBleedValveSignal {
     }
 }
 
+struct FanAirValveStarterSignal {
+    target_open_amount: Ratio,
+}
+impl FanAirValveStarterSignal {
+    fn new(target_open_amount: Ratio) -> Self {
+        Self { target_open_amount }
+    }
+
+    fn new_closed() -> Self {
+        Self::new(Ratio::new::<percent>(0.))
+    }
+
+    fn new_open() -> Self {
+        Self::new(Ratio::new::<percent>(100.))
+    }
+}
+
+impl ControlledPneumaticValveSignal for FanAirValveStarterSignal {
+    fn target_open_amount(&self) -> Ratio {
+        self.target_open_amount
+    }
+}
+
 pub struct A320Pneumatic {
     bmcs: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
@@ -226,6 +250,7 @@ impl A320Pneumatic {
                 &self.bmcs[index].main_channel,
                 &self.bmcs[index].main_channel,
                 &self.engine_starter_valve_controllers[index],
+                &self.bmcs[index].main_channel,
                 engines[index],
             );
         }
@@ -338,11 +363,13 @@ trait EngineBleedDataProvider {
     fn ip_pressure(&self) -> Pressure;
     fn hp_pressure(&self) -> Pressure;
     fn transfer_pressure(&self) -> Pressure;
-    fn regulated_pressure(&self) -> Pressure;
+    fn precooler_inlet_pressure(&self) -> Pressure;
+    fn precooler_outlet_pressure(&self) -> Pressure;
     fn ip_temperature(&self) -> ThermodynamicTemperature;
     fn hp_temperature(&self) -> ThermodynamicTemperature;
     fn transfer_temperature(&self) -> ThermodynamicTemperature;
-    fn regulated_temperature(&self) -> ThermodynamicTemperature;
+    fn precooler_inlet_temperature(&self) -> ThermodynamicTemperature;
+    fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature;
     fn prv_open_amount(&self) -> Ratio;
     fn hpv_open_amount(&self) -> Ratio;
     fn esv_is_open(&self) -> bool;
@@ -402,7 +429,7 @@ struct BleedMonitoringComputerChannel {
     // Pressure between IP/HP valves and the PRV
     transfer_pressure: Pressure,
     // Pressure after PRV
-    regulated_pressure: Pressure,
+    precooler_inlet_pressure: Pressure,
     prv_open_amount: Ratio,
     hpv_open_position: Ratio,
     esv_is_open: bool,
@@ -424,7 +451,7 @@ impl BleedMonitoringComputerChannel {
             ip_compressor_pressure: Pressure::new::<psi>(0.),
             hp_compressor_pressure: Pressure::new::<psi>(0.),
             transfer_pressure: Pressure::new::<psi>(0.),
-            regulated_pressure: Pressure::new::<psi>(0.),
+            precooler_inlet_pressure: Pressure::new::<psi>(0.),
             hpv_open_position: Ratio::new::<percent>(0.),
             prv_open_amount: Ratio::new::<percent>(0.),
             esv_is_open: false,
@@ -454,7 +481,7 @@ impl BleedMonitoringComputerChannel {
         self.ip_compressor_pressure = sensors.ip_pressure();
         self.hp_compressor_pressure = sensors.hp_pressure();
         self.transfer_pressure = sensors.transfer_pressure();
-        self.regulated_pressure = sensors.regulated_pressure();
+        self.precooler_inlet_pressure = sensors.precooler_inlet_pressure();
 
         self.hpv_output = self
             .hpv_pid
@@ -462,7 +489,7 @@ impl BleedMonitoringComputerChannel {
             .output;
         self.prv_output = self
             .prv_pid
-            .next_control_output(self.regulated_pressure.get::<psi>())
+            .next_control_output(self.precooler_inlet_pressure.get::<psi>())
             .output;
 
         self.prv_open_amount = sensors.prv_open_amount();
@@ -525,44 +552,70 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
         )))
     }
 }
+impl ControllerSignal<FanAirValveStarterSignal> for BleedMonitoringComputerChannel {
+    fn signal(&self) -> Option<FanAirValveStarterSignal> {
+        None
+    }
+}
 
 struct EngineBleedAirSystem {
     number: usize,
+    fan_compression_chamber_controller: EngineCompressionChamberController, // Controls pressure just behind the main fan
     ip_compression_chamber_controller: EngineCompressionChamberController,
     hp_compression_chamber_controller: EngineCompressionChamberController,
+    fan_compression_chamber: CompressionChamber,
     ip_compression_chamber: CompressionChamber,
     hp_compression_chamber: CompressionChamber,
     ip_valve: DefaultValve,
     hp_valve: DefaultValve,
     pr_valve: DefaultValve,
     transfer_pressure_pipe: DefaultPipe,
-    regulated_pressure_pipe: DefaultPipe,
+    precooler_inlet_pipe: DefaultPipe,
+    precooler_outlet_pipe: DefaultPipe,
+    precooler_cooling_pipe: DefaultPipe,
     engine_starter_consumer: DefaultConsumer,
     engine_starter_consumer_controller: ConstantConsumerController,
     es_valve: DefaultValve,
+    fan_air_valve: DefaultValve,
+    precooler: HeatExchanger,
 }
 impl EngineBleedAirSystem {
     fn new(number: usize) -> Self {
         Self {
             number,
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
             ip_compression_chamber_controller: EngineCompressionChamberController::new(3., 0., 2.),
             hp_compression_chamber_controller: EngineCompressionChamberController::new(
                 1.5, 2.5, 4.,
             ),
+            fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             ip_valve: DefaultValve::new(Ratio::new::<percent>(100.)),
             hp_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
             pr_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
+            fan_air_valve: DefaultValve::new(Ratio::new::<percent>(100.)),
             transfer_pressure_pipe: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            regulated_pressure_pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
+            precooler_inlet_pipe: DefaultPipe::new(
+                Volume::new::<cubic_meter>(0.5), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
+            precooler_outlet_pipe: DefaultPipe::new(
+                Volume::new::<cubic_meter>(0.5), // TODO: Figure out volume to use
+                Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
+            precooler_cooling_pipe: DefaultPipe::new(
+                Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
+                Fluid::new(Pressure::new::<pascal>(142000.)),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -571,6 +624,7 @@ impl EngineBleedAirSystem {
                 cubic_meter_per_second,
             >(0.1)),
             es_valve: DefaultValve::new(Ratio::new::<ratio>(0.)),
+            precooler: HeatExchanger::new(1.),
         }
     }
 
@@ -581,14 +635,19 @@ impl EngineBleedAirSystem {
         hpv_controller: &impl ControllerSignal<HighPressureValveSignal>,
         prv_controller: &impl ControllerSignal<PressureRegulatingValveSignal>,
         esv_controller: &impl ControllerSignal<EngineStarterValveSignal>,
+        fav_controller: &impl ControllerSignal<FanAirValveStarterSignal>,
         engine: &T,
     ) {
         // Update engines
+        self.fan_compression_chamber_controller
+            .update(context, engine);
         self.ip_compression_chamber_controller
             .update(context, engine);
         self.hp_compression_chamber_controller
             .update(context, engine);
 
+        self.fan_compression_chamber
+            .update(&self.fan_compression_chamber_controller);
         self.ip_compression_chamber
             .update(&self.ip_compression_chamber_controller);
         self.hp_compression_chamber
@@ -606,6 +665,7 @@ impl EngineBleedAirSystem {
         self.hp_valve.update_open_amount(hpv_controller);
         self.pr_valve.update_open_amount(prv_controller);
         self.es_valve.update_open_amount(esv_controller);
+        self.fan_air_valve.update_open_amount(fav_controller);
 
         // Update valves (fluid movement)
         self.ip_valve.update_move_fluid(
@@ -618,14 +678,25 @@ impl EngineBleedAirSystem {
             &mut self.hp_compression_chamber,
             &mut self.transfer_pressure_pipe,
         );
+        self.fan_air_valve.update_move_fluid(
+            context,
+            &mut self.fan_compression_chamber,
+            &mut self.precooler_cooling_pipe,
+        );
         self.pr_valve.update_move_fluid(
             context,
             &mut self.transfer_pressure_pipe,
-            &mut self.regulated_pressure_pipe,
+            &mut self.precooler_inlet_pipe,
+        );
+        self.precooler.update(
+            context,
+            &mut self.precooler_inlet_pipe,
+            &mut self.precooler_cooling_pipe,
+            &mut self.precooler_outlet_pipe,
         );
         self.es_valve.update_move_fluid(
             context,
-            &mut self.regulated_pressure_pipe,
+            &mut self.precooler_inlet_pipe,
             &mut self.engine_starter_consumer,
         );
     }
@@ -643,8 +714,12 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
         self.transfer_pressure_pipe.pressure()
     }
 
-    fn regulated_pressure(&self) -> Pressure {
-        self.regulated_pressure_pipe.pressure()
+    fn precooler_inlet_pressure(&self) -> Pressure {
+        self.precooler_inlet_pipe.pressure()
+    }
+
+    fn precooler_outlet_pressure(&self) -> Pressure {
+        self.precooler_outlet_pipe.pressure()
     }
 
     fn ip_temperature(&self) -> ThermodynamicTemperature {
@@ -659,8 +734,12 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
         self.transfer_pressure_pipe.temperature()
     }
 
-    fn regulated_temperature(&self) -> ThermodynamicTemperature {
-        self.regulated_pressure_pipe.temperature()
+    fn precooler_inlet_temperature(&self) -> ThermodynamicTemperature {
+        self.precooler_inlet_pipe.temperature()
+    }
+
+    fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature {
+        self.precooler_outlet_pipe.temperature()
     }
 
     fn prv_open_amount(&self) -> Ratio {
@@ -705,7 +784,12 @@ impl SimulationElement for EngineBleedAirSystem {
 
         writer.write(
             &format!("PNEU_ENG_{}_PRECOOLER_INLET_PRESSURE", self.number),
-            self.regulated_pressure(),
+            self.precooler_inlet_pressure(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_PRECOOLER_OUTLET_PRESSURE", self.number),
+            self.precooler_outlet_pressure(),
         );
 
         writer.write(
@@ -725,7 +809,12 @@ impl SimulationElement for EngineBleedAirSystem {
 
         writer.write(
             &format!("PNEU_ENG_{}_PRECOOLER_INLET_TEMPERATURE", self.number),
-            self.regulated_temperature(),
+            self.precooler_inlet_temperature(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_PRECOOLER_OUTLET_TEMPERATURE", self.number),
+            self.precooler_outlet_temperature(),
         );
 
         writer.write(
@@ -753,23 +842,23 @@ impl PneumaticContainer for EngineBleedAirSystem {
     // This implementation is to connect the two engine systems via the cross bleed valve
 
     fn pressure(&self) -> Pressure {
-        self.regulated_pressure_pipe.pressure()
+        self.precooler_outlet_pipe.pressure()
     }
 
     fn volume(&self) -> Volume {
-        self.regulated_pressure_pipe.volume()
+        self.precooler_outlet_pipe.volume()
     }
 
     fn temperature(&self) -> ThermodynamicTemperature {
-        self.regulated_pressure_pipe.temperature()
+        self.precooler_outlet_pipe.temperature()
     }
 
     fn change_volume(&mut self, volume: Volume) {
-        self.regulated_pressure_pipe.change_volume(volume)
+        self.precooler_outlet_pipe.change_volume(volume)
     }
 
     fn update_temperature(&mut self, temperature: TemperatureInterval) {
-        self.regulated_pressure_pipe.update_temperature(temperature);
+        self.precooler_outlet_pipe.update_temperature(temperature);
     }
 }
 
@@ -1076,8 +1165,12 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].transfer_pressure())
         }
 
-        fn regulated_pressure(&self, number: usize) -> Pressure {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_pressure())
+        fn precooler_inlet_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_inlet_pressure())
+        }
+
+        fn precooler_outlet_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_outlet_pressure())
         }
 
         fn ip_temperature(&self, number: usize) -> ThermodynamicTemperature {
@@ -1092,8 +1185,12 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].transfer_temperature())
         }
 
-        fn regulated_temperature(&self, number: usize) -> ThermodynamicTemperature {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_temperature())
+        fn precooler_inlet_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_inlet_temperature())
+        }
+
+        fn precooler_outlet_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_outlet_temperature())
         }
 
         fn ip_valve_is_open(&self, number: usize) -> bool {
@@ -1199,7 +1296,7 @@ mod tests {
     }
 
     fn pressure_tolerance() -> Pressure {
-        Pressure::new::<pascal>(100.)
+        Pressure::new::<psi>(0.5)
     }
 
     // Just a way for me to plot some graphs
@@ -1208,28 +1305,30 @@ mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .mach_number(MachNumber(0.))
             .in_isa_atmosphere(alt)
-            .idle_eng1()
-            .stop_eng2();
-        // .set_bleed_air_running();
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
+            .set_bleed_air_running();
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
         let mut ips = Vec::new();
         let mut c2s = Vec::new();
         let mut c1s = Vec::new();
+        let mut c0s = Vec::new();
         let mut ipts = Vec::new();
         let mut hpts = Vec::new();
         let mut c2ts = Vec::new();
         let mut c1ts = Vec::new();
+        let mut c0ts = Vec::new();
         let mut hpv_open = Vec::new();
         let mut prv_open = Vec::new();
         let mut ipv_open = Vec::new();
         let mut esv_open = Vec::new();
         let mut abv_open = Vec::new();
 
-        for i in 1..500 {
+        for i in 1..1000 {
             ts.push(i as f64 * 16.);
 
             // if i == 100 {
@@ -1239,12 +1338,22 @@ mod tests {
             hps.push(test_bed.hp_pressure(1).get::<psi>());
             ips.push(test_bed.ip_pressure(1).get::<psi>());
             c2s.push(test_bed.transfer_pressure(1).get::<psi>());
-            c1s.push(test_bed.regulated_pressure(1).get::<psi>());
+            c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
+            c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
 
             ipts.push(test_bed.ip_temperature(1).get::<degree_celsius>());
             hpts.push(test_bed.hp_temperature(1).get::<degree_celsius>());
             c2ts.push(test_bed.transfer_temperature(1).get::<degree_celsius>());
-            c1ts.push(test_bed.regulated_temperature(1).get::<degree_celsius>());
+            c1ts.push(
+                test_bed
+                    .precooler_inlet_temperature(1)
+                    .get::<degree_celsius>(),
+            );
+            c0ts.push(
+                test_bed
+                    .precooler_outlet_temperature(1)
+                    .get::<degree_celsius>(),
+            );
 
             hpv_open.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
@@ -1289,8 +1398,8 @@ mod tests {
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
-            ts, hps, ips, c2s, c1s, hpts, ipts, c2ts, c1ts, hpv_open, prv_open, ipv_open, esv_open,
-            abv_open,
+            ts, hps, ips, c2s, c1s, c0s, hpts, ipts, c2ts, c1ts, c0ts, hpv_open, prv_open,
+            ipv_open, esv_open, abv_open,
         ];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
 
@@ -1315,7 +1424,12 @@ mod tests {
             assert!((sys.ip_pressure() - ambient_pressure).abs() < pressure_tolerance());
             assert!((sys.hp_pressure() - ambient_pressure).abs() < pressure_tolerance());
             assert!((sys.transfer_pressure() - ambient_pressure).abs() < pressure_tolerance());
-            assert!((sys.regulated_pressure() - ambient_pressure).abs() < pressure_tolerance());
+            assert!(
+                (sys.precooler_inlet_pressure() - ambient_pressure).abs() < pressure_tolerance()
+            );
+            assert!(
+                (sys.precooler_outlet_pressure() - ambient_pressure).abs() < pressure_tolerance()
+            );
 
             assert!(sys.ip_valve.is_open());
             assert!(!sys.hp_valve.is_open());
@@ -1350,8 +1464,10 @@ mod tests {
         assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
         assert!((test_bed.transfer_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
 
-        assert!(test_bed.regulated_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.regulated_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert!(test_bed.precooler_inlet_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!(
+            (test_bed.precooler_inlet_pressure(2) - ambient_pressure).abs() < pressure_tolerance()
+        );
 
         assert!(!test_bed.ip_valve_is_open(1));
         assert!(test_bed.ip_valve_is_open(2));
@@ -1445,6 +1561,9 @@ mod tests {
         assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_INLET_PRESSURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_INLET_PRESSURE"));
 
+        assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_OUTLET_PRESSURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_OUTLET_PRESSURE"));
+
         assert!(test_bed.contains_key("PNEU_ENG_1_IP_TEMPERATURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_IP_TEMPERATURE"));
 
@@ -1456,6 +1575,9 @@ mod tests {
 
         assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_INLET_TEMPERATURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_INLET_TEMPERATURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_OUTLET_TEMPERATURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_OUTLET_TEMPERATURE"));
 
         assert!(test_bed.contains_key("PNEU_ENG_1_IP_PRESSURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_IP_PRESSURE"));
@@ -1618,14 +1740,13 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
 
+        let diff = test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(35.);
+
         assert!(
-            (test_bed.regulated_pressure(1) - Pressure::new::<psi>(35.)).abs()
+            (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(35.)).abs()
                 < pressure_tolerance()
         );
-        assert!(
-            (test_bed.regulated_pressure(2) - Pressure::new::<psi>(35.)).abs()
-                < pressure_tolerance()
-        )
+        assert!((diff).abs() < pressure_tolerance())
     }
 
     #[test]
@@ -1640,11 +1761,11 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
 
         assert!(
-            (test_bed.regulated_pressure(1) - Pressure::new::<psi>(35.)).abs()
+            (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(35.)).abs()
                 < pressure_tolerance()
         );
         assert!(
-            (test_bed.regulated_pressure(2) - Pressure::new::<psi>(14.7)).abs()
+            (test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(14.7)).abs()
                 < pressure_tolerance()
         )
     }
