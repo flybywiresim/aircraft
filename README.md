@@ -68,11 +68,11 @@ Please read the [known Issues and bug reporting](#known-issues-and-bug-reporting
 
 While many in the team dislike the term "study-level" as its use is mostly applicable to certified training devices, we are in fact very dedicated on bringing a high fidelity A320neo to the Microsoft Flight Simulator platform.
 
-### Is X feature from the A320neo going to be implemented?
+### Is feature X from the A320neo going to be implemented?
 
 Chances are, yes! While we do not guarantee every single detail of the aircraft will eventually be represented, our goal is to produce an extremely accurate simulation based on technical data and real-world testing. This means you can be almost certain every feature of the aircraft will eventually be simulated to the best of the simulator's ability as long as the technical data backs it up.
 
-### Why has X not been implemented yet?
+### Why has feature X not been implemented yet?
 
 It's very likely that the feature you are awaiting is already under development! However, we strive for the greatest accuracy possible when producing aircraft, and it is therefore likely that a great deal of time will be spent on developing a proper software design and gathering sufficient references before we are able to offer the feature. 
 
