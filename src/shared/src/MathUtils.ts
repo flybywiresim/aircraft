@@ -30,6 +30,43 @@ export class MathUtils {
        return diff;
    }
 
+   /**
+    * Calculates the inner angle of the small triangle formed by two intersecting lines
+    *
+    * This effectively returns the angle XYZ in the figure shown below:
+    *
+    * ```
+    * * Y
+    * |\
+    * | \
+    * |  \
+    * |   \
+    * |    \
+    * |     \
+    * |      \
+    * * X     * Z
+    * ```
+    *
+    * @param xyAngle {number} bearing of line XY
+    * @param zyAngle {number} bearing of line ZY
+    */
+   public static smallCrossingAngle(xyAngle: number, zyAngle: number): number {
+       // Rotate frame of reference to 0deg
+       let correctedXyBearing = xyAngle - zyAngle;
+       if (correctedXyBearing < 0) {
+           correctedXyBearing = 360 + correctedXyBearing;
+       }
+
+       let xyzAngle = 180 - correctedXyBearing;
+       if (xyzAngle < 0) {
+           // correctedXyBearing was > 180
+
+           xyzAngle = 360 + xyzAngle;
+       }
+
+       return xyzAngle;
+   }
+
    public static mod(x: number, n: number): number {
        return x - Math.floor(x / n) * n;
    }
