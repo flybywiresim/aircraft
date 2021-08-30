@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { WorldMagneticModel } from './WorldMagneticModel';
+import { NauticalMiles } from '../../../../typings';
 
 /** A class for geographical mathematics. */
 export class GeoMath {
@@ -93,5 +95,20 @@ export class GeoMath {
    */
   public static getMagvar(lat: number, lon: number): number {
       return GeoMath.magneticModel.declination(0, lat, lon, 2020);
+  }
+
+  public static directedDistanceToGo(from: Coordinates, to: Coordinates, acDirectedLineBearing: number): NauticalMiles {
+      const absDtg = Avionics.Utils.computeGreatCircleDistance(from, to);
+
+      // @todo should be abeam distance
+      if (acDirectedLineBearing >= 90 && acDirectedLineBearing <= 270) {
+          // Since a line perpendicular to the leg is formed by two 90 degree angles, an aircraftLegBearing outside
+          // (North - 90) and (North + 90) is in the lower quadrants of a plane centered at the TO fix. This means
+          // the aircraft is NOT past the TO fix, and DTG must be positive.
+
+          return absDtg;
+      }
+
+      return -absDtg;
   }
 }
