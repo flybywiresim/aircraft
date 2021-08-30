@@ -157,7 +157,7 @@ export const PressureComponent = () => {
                 <text className="Standard Cyan" x="530" y="335">FT</text>
             </g>
             <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
-                <GaugeComponentMemo x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs * 60 / 1000} className="Gauge" />
+                <GaugeComponentMemo x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs / 1000} className="Gauge" />
             </g>
 
             <text className="Standard" x="218" y="370">@P</text>
@@ -169,7 +169,7 @@ export const PressureComponent = () => {
             <text className="Standard Cyan" x="320" y="370">PSI</text>
 
             <text className="Standard" x="480" y="380">CAB V/S</text>
-            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{Math.abs(Math.round(cabinVs / 50) * 50)}</text>
+            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{manMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)}</text>
             <text className="Medium Cyan" x="525" y="405">FT/MIN</text>
 
             <text className="Standard" x="480" y="450">CAB ALT</text>

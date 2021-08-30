@@ -1,5 +1,6 @@
 import React, { FC, useState, useEffect } from 'react';
 import { render } from '@instruments/common/index';
+import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
@@ -11,14 +12,44 @@ import './Press.scss';
 setIsEcamPage('press_page');
 
 export const PressPage: FC = () => {
-    console.log('Pressure');
+    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
+    const vsx = 275;
+    const vsy = 165;
+    const radius = 50;
 
     return (
         <EcamPage name="main-press">
             <PageTitle x={6} y={18} text="CAB PRESS" />
             <PressureComponent />
 
-            <SvgGroup x={0} y={0}>
+            {/* Vertical speed gauge */}
+            <g id="VsIndicator">
+                <text className="Large Center" x={vsx + 15} y="80">V/S</text>
+                <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
+                <text className="Huge Green End" x={vsx + 85} y={vsy + 5}>{Math.round(cabinVs / 50) * 50}</text>
+                <GaugeComponent x={vsx} y={vsy} radius={radius} startAngle={10} endAngle={-190} manMode={1} className="Gauge">
+                    <GaugeMarkerComponent value={2} x={vsx} y={vsy} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={1} x={vsx} y={vsy} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
+                    <GaugeMarkerComponent value={0} x={vsx} y={vsy} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={-1} x={vsx} y={vsy} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
+                    <GaugeMarkerComponent value={-2} x={vsx} y={vsy} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent
+                        value={cabinVs / 1000}
+                        x={vsx}
+                        y={vsy}
+                        min={-2}
+                        max={2}
+                        radius={radius}
+                        startAngle={0}
+                        endAngle={180}
+                        className="GaugeIndicator"
+                        showValue={false}
+                        indicator
+                    />
+                </GaugeComponent>
+            </g>
+
+            <SvgGroup x={0} y={-25}>
                 <polyline className="AirPressureShape" points="140,460 140,450 75,450 75,280 540,280 540,300" />
                 <polyline className="AirPressureShape" points="180,457 180,450 265,450 265,457" />
                 <polyline className="AirPressureShape" points="305,460 305,450 380,450" />

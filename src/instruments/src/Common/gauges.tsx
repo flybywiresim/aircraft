@@ -1,4 +1,5 @@
 import React, { FC, memo } from 'react';
+import './gauges.scss';
 
 /**
  * Calculates the rotation needed to position an item at a certain value mark on a half-circle gauge
@@ -43,7 +44,7 @@ function polarToCartesian(centerX: number, centerY: number, radius: number, angl
     };
 }
 
-function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
+export function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
 
@@ -171,3 +172,96 @@ export const VerticalSegment: FC<VerticalSegmentProps> = ({ x, y, height, rangeS
         />
     );
 };
+
+export const valueRadianAngleConverter = (value, min, max, endAngle, startAngle) => {
+    const valuePercentage = (value - min) / (max - min);
+    let angle = (startAngle + 90 + (valuePercentage * (endAngle - startAngle)));
+    angle *= (Math.PI / 180.0);
+    return ({
+        x: Math.cos(angle),
+        y: Math.sin(angle),
+    });
+};
+
+type GaugeMarkerComponentType = {
+    value: number,
+    x: number,
+    y: number,
+    min: number,
+    max: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string,
+    showValue: boolean,
+    indicator: boolean,
+};
+
+const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator } : GaugeMarkerComponentType) => {
+    let textValue = value.toString();
+    const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
+
+    let start = {
+        x: x + (dir.x * radius * 0.9),
+        y: y + (dir.y * radius * 0.9),
+    };
+    let end = {
+        x: x + (dir.x * radius),
+        y: y + (dir.y * radius),
+    };
+
+    if (indicator) {
+        start = { x, y };
+
+        end = {
+            x: x + (dir.x * radius * 1.1),
+            y: y + (dir.y * radius * 1.1),
+        };
+    }
+
+    // Text
+
+    const pos = {
+        x: x + (dir.x * (radius * 0.7)),
+        y: y + (dir.y * (radius * 0.7)),
+    };
+
+    textValue = !showValue ? '' : Math.abs(value).toString();
+
+    return (
+        <>
+            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} className={className} />
+            <text x={pos.x} y={pos.y} className={className} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
+        </>
+    );
+};
+export const GaugeMarkerComponent = React.memo(GaugeMarkerComponentNoMemo);
+
+interface GaugeComponentProps {
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string,
+    manMode: boolean,
+    children: GaugeComponentProps
+}
+
+export const GaugeComponentNoMemo: React.FunctionComponent<GaugeComponentProps> = ({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
+    const startPos = polarToCartesian(x, y, radius, startAngle);
+    const endPos = polarToCartesian(x, y, radius, endAngle);
+    const largeArcFlag = ((startAngle - endAngle) <= 180) ? '0' : '1';
+    const d = ['M', startPos.x, startPos.y, 'A', radius, radius, 0, largeArcFlag, 0, endPos.x, endPos.y].join(' ');
+
+    return (
+        <>
+            <g id="HideOrShowGauge" className={manMode ? 'Show' : 'Hide'}>
+                <path d={d} className={className} />
+                {children}
+            </g>
+        </>
+    );
+};
+
+export const GaugeComponent = React.memo(GaugeComponentNoMemo);

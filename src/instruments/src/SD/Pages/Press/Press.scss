@@ -1,4 +1,5 @@
 @import "../../../Common/definitions";
+@import "../../../Common/gauges";
 
 #main-press {
     .pickMe {
@@ -10,20 +11,6 @@
     text {
         fill: $display-white;
 
-        &.Title {
-            font-size: 24px;
-            fill: $display-white;
-            text-decoration: underline;
-            text-anchor: middle !important;
-        }
-
-        &.SubTitle {
-            font-size: 22px;
-            fill: $display-white;
-            text-decoration: underline;
-            text-anchor: middle !important;
-        }
-
         &.Standard {
             font-size: 17px;
         }
@@ -34,6 +21,10 @@
 
         &.Large {
             font-size: 20px;
+        }
+
+        &.Huge {
+            font-size: 24px;
         }
 
         &.Cyan {
@@ -51,6 +42,10 @@
         &.Center {
             text-anchor: middle !important;
         }
+
+        &.End {
+            text-anchor: end !important;
+        }
     }
 
     .Show {
@@ -59,23 +54,6 @@
 
     .Hide {
         display: none;
-    }
-
-    .Gauge {
-        stroke: $display-white;
-        stroke-width: 2;
-        fill: none;
-    }
-
-    .GaugeText {
-        stroke: $display-white;
-        font-size: 17px;
-    }
-
-    .GaugeIndicator {
-        stroke: $display-green;
-        stroke-width: 2;
-        fill: none;
     }
 
     .VsIndicator {
