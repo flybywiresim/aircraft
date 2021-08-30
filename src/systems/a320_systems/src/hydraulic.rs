@@ -562,13 +562,13 @@ impl A320Hydraulic {
             context,
             &self.yellow_loop_controller,
         );
-        // println!(
-        //     "Yloop P={:.0} Gloop={:.0} Yedp={:.0} Gedp={:.0}",
-        //     self.yellow_loop.system_pressure().get::<psi>(),
-        //     self.green_loop.system_pressure().get::<psi>(),
-        //     self.yellow_loop.pump_pressure(0).get::<psi>(),
-        //     self.green_loop.pump_pressure(0).get::<psi>(),
-        // );
+        println!(
+            "Yloop P={:.0} Gloop={:.0} Yedp={:.0} Gedp={:.0}",
+            self.yellow_loop.system_pressure().get::<psi>(),
+            self.green_loop.system_pressure().get::<psi>(),
+            self.yellow_loop.pump_pressure(0).get::<psi>(),
+            self.green_loop.pump_pressure(0).get::<psi>(),
+        );
         // use systems::hydraulic::PressureSource;
         // println!(
         //     "Bloop P={:.0} Bepump={:.0} bdisp={:.2}",
@@ -590,6 +590,31 @@ impl A320Hydraulic {
             .update(context, self.green_loop.system_pressure());
         self.braking_circuit_altn
             .update(context, self.yellow_loop.system_pressure());
+    }
+
+    // Actual logic of HYD PTU memo computed here until done within FWS
+    fn hyd_ptu_ecam_logic(&self) -> bool {
+        let ptu_valve_ctrol_off = !self.power_transfer_unit_controller.should_enable();
+        let green_eng_pump_lo_pr = !self.green_loop.pump_section_switch_pressurised(0);
+        let yellow_sys_lo_pr = !self.yellow_loop.pump_section_switch_pressurised(0);
+        let yellow_sys_press_above_1450 =
+            self.yellow_loop.system_pressure() > Pressure::new::<psi>(1450.);
+
+        let green_sys_press_above_1450 =
+            self.green_loop.system_pressure() > Pressure::new::<psi>(1450.);
+        let green_sys_lo_pr = !self.green_loop.pump_section_switch_pressurised(0);
+        let yellow_eng_pump_lo_pr = !self.yellow_loop.pump_section_switch_pressurised(0);
+        let yellow_elec_pump_on = self.yellow_electric_pump_controller.should_pressurise();
+
+        let yellow_pump_state = yellow_eng_pump_lo_pr && !yellow_elec_pump_on;
+
+        let yellow_press_node = yellow_sys_press_above_1450 || !yellow_sys_lo_pr;
+        let green_press_node = green_sys_press_above_1450 || !green_sys_lo_pr;
+
+        let yellow_side_and = green_eng_pump_lo_pr && yellow_press_node && green_press_node;
+        let green_side_and = yellow_press_node && green_press_node && yellow_pump_state;
+
+        !ptu_valve_ctrol_off && (yellow_side_and || green_side_and)
     }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
@@ -632,6 +657,10 @@ impl SimulationElement for A320Hydraulic {
         self.braking_force.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write("HYD_PTU_ON_ECAM_MEMO", self.hyd_ptu_ecam_logic());
     }
 }
 

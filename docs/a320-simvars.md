@@ -824,6 +824,10 @@
         - GREEN
         - YELLOW
 
+- A32NX_HYD_PTU_ON_ECAM_MEMO"
+    - Bool
+    - HYD PTU memo indication should show on ecam if true
+
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
     - Electric pump of {loop_name} hydraulic circuit is active but pressure is too low
