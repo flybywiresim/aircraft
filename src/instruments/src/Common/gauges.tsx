@@ -48,7 +48,7 @@ export function describeArc(x: number, y: number, radius: number, startAngle: nu
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
 
-    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+    const largeArcFlag = Math.abs(endAngle - startAngle) <= 180 ? '0' : '1';
 
     return [
         'M', start.x, start.y,
@@ -173,9 +173,19 @@ export const VerticalSegment: FC<VerticalSegmentProps> = ({ x, y, height, rangeS
     );
 };
 
+export const splitDecimals = (value, type) => {
+    if (type === 'oil') {
+        value = value * 0.01 * 25;
+    } else if (type === 'vib') {
+        value = value < 0 ? 0.0 : value;
+    }
+    const decimalSplit = value.toFixed(1).split('.', 2);
+    return (decimalSplit);
+};
+
 export const valueRadianAngleConverter = (value, min, max, endAngle, startAngle) => {
     const valuePercentage = (value - min) / (max - min);
-    let angle = (startAngle + 90 + (valuePercentage * (endAngle - startAngle)));
+    let angle = (startAngle + 90 + (valuePercentage * (Math.abs(endAngle - startAngle))));
     angle *= (Math.PI / 180.0);
     return ({
         x: Math.cos(angle),
@@ -198,7 +208,6 @@ type GaugeMarkerComponentType = {
 };
 
 const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator } : GaugeMarkerComponentType) => {
-    let textValue = value.toString();
     const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
 
     let start = {
@@ -214,19 +223,20 @@ const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle,
         start = { x, y };
 
         end = {
-            x: x + (dir.x * radius * 1.1),
-            y: y + (dir.y * radius * 1.1),
+            x: x + (dir.x * radius * 1.15),
+            y: y + (dir.y * radius * 1.15),
         };
     }
 
     // Text
-
+    const multiplierX = value >= 8 ? 0.8 : 0.7;
+    const multiplierY = value >= 8 ? 0.52 : 0.7;
     const pos = {
-        x: x + (dir.x * (radius * 0.7)),
-        y: y + (dir.y * (radius * 0.7)),
+        x: x + (dir.x * (radius * multiplierX)),
+        y: y + (dir.y * (radius * multiplierY)),
     };
 
-    textValue = !showValue ? '' : Math.abs(value).toString();
+    const textValue = !showValue ? '' : Math.abs(value).toString();
 
     return (
         <>
@@ -249,10 +259,7 @@ interface GaugeComponentProps {
 }
 
 export const GaugeComponentNoMemo: React.FunctionComponent<GaugeComponentProps> = ({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
-    const startPos = polarToCartesian(x, y, radius, startAngle);
-    const endPos = polarToCartesian(x, y, radius, endAngle);
-    const largeArcFlag = ((startAngle - endAngle) <= 180) ? '0' : '1';
-    const d = ['M', startPos.x, startPos.y, 'A', radius, radius, 0, largeArcFlag, 0, endPos.x, endPos.y].join(' ');
+    const d = describeArc(x, y, radius, startAngle, endAngle);
 
     return (
         <>
