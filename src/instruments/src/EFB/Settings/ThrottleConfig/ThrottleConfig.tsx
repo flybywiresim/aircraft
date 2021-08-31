@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Toggle } from '@flybywiresim/react-components';
-import { usePersistentPropertyWithDefault } from '../../../Common/persistence';
+import { usePersistentProperty } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
@@ -14,7 +14,7 @@ interface Props {
 }
 
 const ThrottleConfig: React.FC<Props> = (props: Props) => {
-    const [isDualAxis, setDualAxis] = usePersistentPropertyWithDefault<string>('THROTTLE_DUAL_AXIS', '1');
+    const [isDualAxis, setDualAxis] = usePersistentProperty('THROTTLE_DUAL_AXIS', '1');
 
     const [selectedIndex, setSelectedIndex] = useState(0);
 

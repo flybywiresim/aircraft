@@ -28,7 +28,7 @@ export const CrzPage = () => (
 );
 
 export const FuelComponent = () => {
-    const [unit] = usePersistentProperty<string>('CONFIG_USING_METRIC_UNIT');
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000);
     const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
