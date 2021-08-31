@@ -180,10 +180,6 @@ class A32NX_Boarding {
             this.boardingState = "finished";
             await SimVar.SetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool", false);
 
-            SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
-            SimVar.SetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 0);
-            SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
-            SimVar.SetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 0);
         } else if (currentPax < paxTarget) {
             this.boardingState = "boarding";
         } else if (currentPax === paxTarget) {
