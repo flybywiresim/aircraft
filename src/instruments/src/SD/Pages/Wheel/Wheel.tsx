@@ -17,11 +17,12 @@ setIsEcamPage('wheel_page');
 const maxStaleness = 300;
 
 export const WheelPage = () => {
-    const temperatures: number[] = [];
-    for (let brakeNumber = 1; brakeNumber <= 4; brakeNumber++) {
-        const [temperature] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${brakeNumber}`, 'celsius', maxStaleness);
-        temperatures.push(temperature);
-    }
+    const [temperature1] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_1', 'celsius', maxStaleness);
+    const [temperature2] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_2', 'celsius', maxStaleness);
+    const [temperature3] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_3', 'celsius', maxStaleness);
+    const [temperature4] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', 'celsius', maxStaleness);
+
+    const temperatures: number[] = [temperature1, temperature2, temperature3, temperature4];
 
     const maxTemperatureIndex = temperatures.reduce((maxIndex, element, index, array) => (element > array[maxIndex] ? index : maxIndex), 0);
 

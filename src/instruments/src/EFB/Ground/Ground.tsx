@@ -2,7 +2,6 @@ import { connect } from 'react-redux';
 import React, { useEffect, useState } from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
 import './Ground.scss';
-import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 import { DoorToggle } from './DoorToggle';
@@ -12,6 +11,8 @@ import {
     setActiveButtons, addDisabledButton, removeDisabledButton,
     setPushBackWaitTimerHandle,
 } from '../Store/action-creator/ground-state';
+
+import fuselage from '../Assets/320neo-outline-upright.svg';
 
 type StatefulButton = {
     id: string,

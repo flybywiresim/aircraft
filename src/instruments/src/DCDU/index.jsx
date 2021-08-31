@@ -1,6 +1,5 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
-
 import {
     renderTarget,
     useInteractionEvent,
@@ -15,25 +14,21 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
-function SelfTest() {
-    return (
-        <svg className="text-wrapper">
-            <text x="246" y="170">SELF TEST IN PROGRESS</text>
-            <text x="246" y="210">(MAX 10 SECONDS)</text>
-        </svg>
-    );
-}
+const SelfTest = () => (
+    <svg className="text-wrapper">
+        <text x="246" y="170">SELF TEST IN PROGRESS</text>
+        <text x="246" y="210">(MAX 10 SECONDS)</text>
+    </svg>
+);
 
-function WaitingForData() {
-    return (
-        <svg className="text-wrapper">
-            <text x="246" y="170">WAITING FOR DATA</text>
-            <text x="246" y="210">(MAX 30 SECONDS)</text>
-        </svg>
-    );
-}
+const WaitingForData = () => (
+    <svg className="text-wrapper">
+        <text x="246" y="170">WAITING FOR DATA</text>
+        <text x="246" y="210">(MAX 30 SECONDS)</text>
+    </svg>
+);
 
-function Idle() {
+const Idle = () => {
     const [inop, setInop] = useState(false);
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
@@ -60,7 +55,8 @@ function Idle() {
             </svg>
         </>
     );
-}
+};
+
 function DCDU() {
     const [state, setState] = useState('DEFAULT');
 

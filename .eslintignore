@@ -1,5 +1,6 @@
 # Math JS External Library https://mathjs.org/
 flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/math.js
+flybywire-aircraft-a320-neo/html_ui/JS/generated/*
 build.*.js
 buildSrc/*
 igniter.config.mjs

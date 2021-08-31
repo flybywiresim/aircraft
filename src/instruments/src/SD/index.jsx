@@ -14,16 +14,14 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool');
 }
 
-function SelfTest() {
-    return (
-        <svg className="text-wrapper">
-            <text x="246" y="170">SELF TEST IN PROGRESS</text>
-            <text x="246" y="210">(MAX 10 SECONDS)</text>
-        </svg>
-    );
-}
+const SelfTest = () => (
+    <svg className="text-wrapper">
+        <text x="246" y="170">SELF TEST IN PROGRESS</text>
+        <text x="246" y="210">(MAX 10 SECONDS)</text>
+    </svg>
+);
 
-function Idle() {
+const Idle = () => {
     const [inop, setInop] = useState(false);
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
@@ -43,7 +41,7 @@ function Idle() {
             </svg>
         </>
     );
-}
+};
 
 function SD() {
     const [state, setState] = useState('DEFAULT');

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { getSimVar } from '../util.js';
 import { LagFilter } from './PFDUtils';
 
-export function LandingSystem({ LSButtonPressed }) {
+export const LandingSystem = ({ LSButtonPressed }) => {
     let showVDev = false;
 
     if (!LSButtonPressed) {
@@ -29,7 +29,7 @@ export function LandingSystem({ LSButtonPressed }) {
             )}
         </g>
     );
-}
+};
 
 const LandingSystemInfo = ({ displayed }) => {
     if (!displayed || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {

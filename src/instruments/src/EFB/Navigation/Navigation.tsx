@@ -11,9 +11,10 @@ import NavigraphClient, {
     useNavigraph,
 } from '../ChartsApi/Navigraph';
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
-import navigraphLogo from '../Assets/navigraph-logo.svg';
 import { usePersistentProperty } from '../../Common/persistence';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
+
+import navigraphLogo from '../Assets/navigraph-logo.svg';
 
 type Chart = NavigraphChart | ChartFoxChart;
 
@@ -154,19 +155,33 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
     };
 
     const handleZoomIn = () => {
-        const chart :any = document.getElementById('chart');
+        const chart = document.getElementById('chart');
+        if (!chart) {
+            return false;
+        }
         const currWidth = chart.clientWidth;
-        if (currWidth === 2500) return;
+        if (currWidth === 2500) {
+            return false;
+        }
 
         chart.style.width = `${currWidth + 100}px`;
+
+        return true;
     };
 
     const handleZoomOut = () => {
-        const chart :any = document.getElementById('chart');
+        const chart = document.getElementById('chart');
+        if (!chart) {
+            return false;
+        }
         const currWidth = chart.clientWidth;
-        if (currWidth === 100) return;
+        if (currWidth === 100) {
+            return false;
+        }
 
         chart.style.width = `${currWidth - 100}px`;
+
+        return true;
     };
 
     return (
@@ -412,7 +427,7 @@ const ChartsUi = (props: ChartsUiProps) => {
         props.setIcao(newValue);
     };
 
-    const onChartClick = (chartNameDay: string, chartNameNight: string, chartId: string) => {
+    const handleChartClick = (chartNameDay: string, chartNameNight: string, chartId: string) => {
         setSelectedChartId(chartId);
 
         setSelectedChartName({ light: chartNameDay, dark: chartNameNight });
@@ -425,20 +440,20 @@ const ChartsUi = (props: ChartsUiProps) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
 
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
     };
 
-    const mouseMoveHandler = (event) => {
+    const handleMouseMove = (event) => {
         const dy = event.clientY - position.current.y;
         if (ref.current) {
             ref.current.scrollTop = position.current.top - dy;
         }
     };
 
-    const mouseUpHandler = () => {
-        document.removeEventListener('mousemove', mouseMoveHandler);
-        document.removeEventListener('mouseup', mouseUpHandler);
+    const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
     };
 
     return (
@@ -493,7 +508,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                             <NavigraphChartSelector
                                                 selectedTab={selectedTab}
                                                 selectedChartId={selectedChartId}
-                                                onChartClick={onChartClick}
+                                                onChartClick={handleChartClick}
                                             />
                                         )
                                         : (

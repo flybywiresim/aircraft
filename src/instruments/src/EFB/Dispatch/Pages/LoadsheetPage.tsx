@@ -1,6 +1,6 @@
+import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { IconMinus, IconPlus } from '@tabler/icons';
-import React, { useRef, useState, useEffect } from 'react';
 
 type LoadsheetPageProps = {
     loadsheet: string,
@@ -33,20 +33,20 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
 
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
     };
 
-    const mouseMoveHandler = (event) => {
+    const handleMouseMove = (event) => {
         const dy = event.clientY - position.current.y;
         if (ref.current) {
             ref.current.scrollTop = position.current.top - dy;
         }
     };
 
-    const mouseUpHandler = () => {
-        document.removeEventListener('mousemove', mouseMoveHandler);
-        document.removeEventListener('mouseup', mouseUpHandler);
+    const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
     };
 
     const handleFontIncrease = () => {
