@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty, usePersistentPropertyWithDefault } from '../../../Common/persistence';
+import { usePersistentProperty } from '../../../Common/persistence';
 
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import Input from '../../Components/Form/Input/Input';
@@ -23,7 +23,7 @@ interface Props {
 const DetentConfig: React.FC<Props> = (props: Props) => {
     const [showWarning, setShowWarning] = useState(false);
 
-    const [deadZone, setDeadZone] = usePersistentPropertyWithDefault(`THROTTLE_${props.throttleNumber}DETENT_${props.index}_RANGE`, '0.05');
+    const [deadZone, setDeadZone] = usePersistentProperty(`THROTTLE_${props.throttleNumber}DETENT_${props.index}_RANGE`, '0.05');
 
     const [previousMode, setPreviousMode] = useState(props.expertMode);
     const [axisValue, setAxisValue] = usePersistentProperty(`THROTTLE_${props.throttleNumber}AXIS_${props.index}_VALUE`);
