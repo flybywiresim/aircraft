@@ -3,8 +3,7 @@ import { IconAccessPoint, IconBattery4, IconPower } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
 
-import {PowerContext} from '../index';
-import {ContentState} from '../index';
+import { PowerContext, ContentState } from '../index';
 
 type StatusBarProps = {
     initTime: Date,
