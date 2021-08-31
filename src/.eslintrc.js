@@ -96,6 +96,14 @@ module.exports = {
         'jsx-a11y/anchor-is-valid': 'off',
         'object-curly-newline': ['error', { multiline: true }],
         'linebreak-style': 'off',
+
+        // allow typescript overloads
+        'no-redeclare': 'off',
+        '@typescript-eslint/no-redeclare': ['error'],
+        'lines-between-class-members': 'off',
+        '@typescript-eslint/lines-between-class-members': ['error'],
+        'no-dupe-class-members': 'off',
+        '@typescript-eslint/no-dupe-class-members': ['error'],
     },
     globals: {
         Simplane: 'readonly',

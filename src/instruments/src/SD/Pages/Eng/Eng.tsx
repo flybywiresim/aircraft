@@ -14,7 +14,7 @@ import './Eng.scss';
 setIsEcamPage('eng_page');
 
 export const EngPage: FC = () => {
-    const [weightUnit] = usePersistentProperty<string>('CONFIG_USING_METRIC_UNIT', '1');
+    const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
 
     return (
