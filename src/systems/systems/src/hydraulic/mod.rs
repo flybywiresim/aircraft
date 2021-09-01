@@ -224,19 +224,17 @@ pub struct Accumulator {
     fluid_volume: Volume,
     current_flow: VolumeRate,
     current_delta_vol: Volume,
-    press_breakpoints: [f64; 10],
-    flow_carac: [f64; 10],
     has_control_valve: bool,
 }
 impl Accumulator {
-    const FLOW_DYNAMIC_LOW_PASS: f64 = 0.7;
+    const FLOW_DYNAMIC_LOW_PASS: f64 = 0.5;
 
     fn new(
         gas_precharge: Pressure,
         total_volume: Volume,
         fluid_vol_at_init: Volume,
-        press_breakpoints: [f64; 10],
-        flow_carac: [f64; 10],
+        _press_breakpoints: [f64; 10],
+        _flow_carac: [f64; 10],
         has_control_valve: bool,
     ) -> Self {
         // Taking care of case where init volume is maxed at accumulator capacity: we can't exceed max_volume minus a margin for gas to compress
@@ -253,8 +251,6 @@ impl Accumulator {
             fluid_volume: limited_volume,
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
             current_delta_vol: Volume::new::<gallon>(0.),
-            press_breakpoints,
-            flow_carac,
             has_control_valve,
         }
     }
@@ -267,11 +263,11 @@ impl Accumulator {
         max_volume_to_target: Volume,
     ) {
         let accumulator_delta_press = self.gas_pressure - loop_pressure;
-        let mut flow_variation = VolumeRate::new::<gallon_per_second>(interpolation(
-            &self.press_breakpoints,
-            &self.flow_carac,
-            accumulator_delta_press.get::<psi>().abs(),
-        ));
+
+        let mut flow_variation = VolumeRate::new::<gallon_per_second>(
+            accumulator_delta_press.get::<psi>().abs().sqrt() * 0.01,
+        );
+
         flow_variation = flow_variation * Self::FLOW_DYNAMIC_LOW_PASS
             + (1. - Self::FLOW_DYNAMIC_LOW_PASS) * self.current_flow;
 
