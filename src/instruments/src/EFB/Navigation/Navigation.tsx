@@ -39,7 +39,7 @@ type NavigraphChartComponentProps = {
 type NavigraphChartSelectorProps = {
     selectedTab: OrganizedChartType,
     selectedChartId: string,
-    handleChartClick: CallableFunction,
+    onChartClick: CallableFunction,
 }
 
 type OrganizedChartType = {
@@ -63,7 +63,7 @@ const Loading = () => {
     const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
 
     const handleResetRefreshToken = () => {
-        setRefreshToken(null);
+        setRefreshToken('');
         navigraph.authenticate();
     };
 
@@ -129,7 +129,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
     const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const mouseDownHandler = (event) => {
+    const handleMouseDown = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
         position.current.left = ref.current ? ref.current.scrollLeft : 0;
@@ -153,22 +153,20 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
         document.removeEventListener('mouseup', mouseUpHandler);
     };
 
-    const zoomin = () => {
+    const handleZoomIn = () => {
         const chart :any = document.getElementById('chart');
         const currWidth = chart.clientWidth;
-        if (currWidth === 2500) return false;
+        if (currWidth === 2500) return;
 
         chart.style.width = `${currWidth + 100}px`;
-        return console.log(chart.style.width);
     };
 
-    const zoomout = () => {
+    const handleZoomOut = () => {
         const chart :any = document.getElementById('chart');
         const currWidth = chart.clientWidth;
-        if (currWidth === 100) return false;
+        if (currWidth === 100) return;
 
         chart.style.width = `${currWidth - 100}px`;
-        return console.log(chart.style.width);
     };
 
     return (
@@ -177,7 +175,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
                 ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-full max-w-6xl mx-auto grabbable no-scrollbar'
                 : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3 max-w-3xl mx-auto grabbable no-scrollbar'}
             ref={ref}
-            onMouseDown={mouseDownHandler}
+            onMouseDown={handleMouseDown}
         >
             <div className="z-40 flex flex-col justify-end fixed top-40 right-12">
                 <div className="mb-2 bg-navy-lighter p-2 rounded-lg bg-opacity-50">
@@ -200,14 +198,14 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
             <div className="z-40 flex flex-col justify-end fixed bottom-16 right-12">
                 <button
                     type="button"
-                    onClick={zoomin}
+                    onClick={handleZoomIn}
                     className="mb-2 bg-navy-regular p-2 rounded-lg bg-opacity-50"
                 >
                     <IconPlus size={30} />
                 </button>
                 <button
                     type="button"
-                    onClick={zoomout}
+                    onClick={handleZoomOut}
                     className="bg-navy-regular p-2 rounded-lg bg-opacity-50"
                 >
                     <IconMinus size={30} />
@@ -284,7 +282,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                                 {item.charts.map((chart) => (
                                     <div
                                         className="flex flex-row bg-navy-medium"
-                                        onClick={() => props.handleChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
+                                        onClick={() => props.onChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                         key={(chart as NavigraphChart).id}
                                     >
                                         {(chart as NavigraphChart).id === props.selectedChartId
@@ -309,7 +307,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                         {props.selectedTab.charts.map((chart) => (
                             <div
                                 className="flex flex-row bg-navy-medium text-lg rounded-lg mr-4"
-                                onClick={() => props.handleChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
+                                onClick={() => props.onChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                 key={(chart as NavigraphChart).id}
                             >
                                 {(chart as NavigraphChart).id === props.selectedChartId
@@ -414,7 +412,7 @@ const ChartsUi = (props: ChartsUiProps) => {
         props.setIcao(newValue);
     };
 
-    const handleChartClick = (chartNameDay: string, chartNameNight: string, chartId: string) => {
+    const onChartClick = (chartNameDay: string, chartNameNight: string, chartId: string) => {
         setSelectedChartId(chartId);
 
         setSelectedChartName({ light: chartNameDay, dark: chartNameNight });
@@ -423,7 +421,7 @@ const ChartsUi = (props: ChartsUiProps) => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const mouseDownHandler = (event) => {
+    const handleMouseDown = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
 
@@ -488,14 +486,14 @@ const ChartsUi = (props: ChartsUiProps) => {
                                 <div
                                     className="mt-5 h-124 space-y-4 rounded-lg overflow-x-hidden overflow-y-scroll grabbable scrollbar"
                                     ref={ref}
-                                    onMouseDown={mouseDownHandler}
+                                    onMouseDown={handleMouseDown}
                                 >
                                     {props.enableNavigraph
                                         ? (
                                             <NavigraphChartSelector
                                                 selectedTab={selectedTab}
                                                 selectedChartId={selectedChartId}
-                                                handleChartClick={handleChartClick}
+                                                onChartClick={onChartClick}
                                             />
                                         )
                                         : (

@@ -61,7 +61,7 @@ export const LandingWidget = () => {
         displayedRunwayLength,
     } = performanceState.landing;
 
-    const calculateLanding = (): void => {
+    const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
         const landingDistances = calculator.calculateLandingDistances(
             weight ?? 0,
@@ -108,7 +108,7 @@ export const LandingWidget = () => {
         });
     };
 
-    const syncValues = async (): Promise<void> => {
+    const handleSyncValues = async (): Promise<void> => {
         if (!isValidIcao()) return;
         const metarResult = await Metar.get(icao);
         const parsedMetar: MetarParserType = metarParser(metarResult.metar);
@@ -311,7 +311,7 @@ export const LandingWidget = () => {
         });
     };
 
-    const clearInputs = (): void => {
+    const handleClearInputs = (): void => {
         performanceDispatch({
             type: EPerformanceActions.SET_LANDING,
             payload: { ...performanceInitialState },
@@ -509,14 +509,14 @@ export const LandingWidget = () => {
                         </div>
                         <div className="flex">
                             <button
-                                onClick={calculateLanding}
+                                onClick={handleCalculateLanding}
                                 className={calculateButtonClass}
                                 type="button"
                             >
                                 Calculate
                             </button>
                             <button
-                                onClick={syncValues}
+                                onClick={handleSyncValues}
                                 className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg
                                 focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
                                 type="button"
@@ -525,7 +525,7 @@ export const LandingWidget = () => {
                                 Get METAR
                             </button>
                             <button
-                                onClick={clearInputs}
+                                onClick={handleClearInputs}
                                 className="mx-2 w-1/4 text-lg font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
                                 type="button"
                             >

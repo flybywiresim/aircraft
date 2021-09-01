@@ -4,6 +4,7 @@ import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { splitDecimals, valueRadianAngleConverter, polarToCartesian } from './common';
+import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
 
@@ -27,15 +28,13 @@ export const CrzPage = () => (
 );
 
 export const FuelComponent = () => {
-    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT');
-
-    const fuelConsumptionForDisplay = (fuelConsumption, unitsC) => parseInt(((fuelConsumption * unitsC) - (fuelConsumption % 10)).toFixed(0));
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000);
     const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
 
-    const leftFuel = fuelConsumptionForDisplay(leftConsumption, unit);
-    const rightFuel = fuelConsumptionForDisplay(rightConsumption, unit);
+    const leftFuel = fuelForDisplay(leftConsumption, unit);
+    const rightFuel = fuelForDisplay(rightConsumption, unit);
 
     return (
         <>
@@ -154,14 +153,14 @@ export const PressureComponent = () => {
                 <text className="Standard Center" x="330" y="335">LDG ELEV</text>
                 <text id="LandingElevationMode" className="Standard Green" x="385" y="335">{ldgElevMode}</text>
 
-                <text id="LandingElevation" className={`large ${cssLdgElevName}`} x="525" y="335" textAnchor="end">{ldgElevValue}</text>
+                <text id="LandingElevation" className={`Large ${cssLdgElevName}`} x="525" y="335" textAnchor="end">{ldgElevValue}</text>
                 <text className="Standard Cyan" x="530" y="335">FT</text>
             </g>
             <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
                 <GaugeComponentMemo x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs * 60 / 1000} className="Gauge" />
             </g>
 
-            <text className="standard" x="218" y="370">@P</text>
+            <text className="Standard" x="218" y="370">@P</text>
             <text id="Large Green" className="Large Green" x="290" y="370" textAnchor="end">
                 {deltaPress[0]}
                 .

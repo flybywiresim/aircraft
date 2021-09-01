@@ -1,0 +1,27 @@
+{
+  "LocalisationPackage": {
+    "Language": "ja-JP",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "エアバスは1984年3月に最初のA320を発売しました。それから26年後の2010年に、エアバスは、世界トップレベルの双発ナローボディ機を復興させるために、エアバス・ファミリーの最新メンバーとしてA320neo (\"new engine option\")を発表しました。<\/br><\/br>長い開発プロセスを経て、A320neoは2016年初頭、ルフトハンザ航空において正式に運航を開始しました。すぐに史上最速ペースで売れた民間旅客機となり、今日までに115以上の航空会社によって7400機以上が発注されています。<\/br><\/br>A320neoは、コンコルド以外で通常の操縦系統にフライ・バイ・ワイヤを利用した初めての航空機であるA320を原型とし、そのA320によって創り上げられた伝統を継承しています。A320neoの機体構造は、先行モデルと95パーセントが共通です。しかしながら、A320neoは2種類の新世代エンジンおよびエアバス独自のウィングレット「シャークレット」を導入しており、これらがまさにA320neoをneoたらしめている所以です。<\/br><\/br>燃費の改善、航続距離の延長、最大積載量の増加、着陸距離の短縮、騒音およびCO₂排出量の劇的な削減などの重要な発展は、A320neoの商業的な成功だけではなく、より大きな環境への責任を担う、航空界の未来への重要な一歩でもあります。",
+      "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
+      "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "左 PFD の輝度を下げる",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "左 PFD の輝度を上げる",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "右側のPFDの輝度を下げる",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "右側のPFDの輝度を上げる",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "指定ヘディングを左に調整する (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "指定ヘディングを右に調整する (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "指定トラックを左に調整する (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "指定トラックを右に調整する (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU利用可能",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "禁煙サインをオートにする",
+      "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NXは数百名の個人の協力者によって作られました。",
+      "A32NX.LOADING.TIPS.A320NEO_002": "ご存じですか？A320は横風38ノットまで、追い風15ノットまで着陸可能です。",
+      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWireはAirbus A320で初めて導入されたフライ・バイ・ワイヤにちなんで名付けられました。",
+      "A32NX.LOADING.TIPS.A320NEO_004": "A320シリーズは9900機以上作られています！これはツバルの人口とほぼ同じです！",
+      "A32NX.LOADING.TIPS.A320NEO_005": "Airbus A320neoは3500海里、すなわち6500キロ飛行することができます。これはニューヨークからパリまで飛行するのに十分です！",
+      "A32NX.LOADING.TIPS.A320NEO_006": "ご存じですか？A320 familyはA318、A319、A320およびA321の4種類から成ります。"
+    }
+  }
+}
