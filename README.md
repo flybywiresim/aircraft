@@ -82,6 +82,10 @@ We have two mainline versions: stable and development. The stable version is a '
 
 You can read more about the differences between the versions we offer [on our documentation portal](https://docs.flybywiresim.com/fbw-a32nx/fbw-versions/).
 
+### Is there a list of features or a changelog available?
+
+We do not keep a list of features implemented, but a lengthy [changelog](https://github.com/flybywiresim/a32nx/blob/master/.github/CHANGELOG.md) of what has been implemented, and their associated [pull requests](https://github.com/flybywiresim/a32nx/pulls) can be [found here](https://github.com/flybywiresim/a32nx/blob/master/.github/CHANGELOG.md).
+
 ## License
 
 Original source code assets present in this repository are licensed under the GNU GPLv3.
