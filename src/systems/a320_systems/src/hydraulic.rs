@@ -160,7 +160,7 @@ impl A320Hydraulic {
         ElectricalBusType::DirectCurrentHot(2);
 
     // Refresh rate of hydraulic simulation
-    const HYDRAULIC_SIM_TIME_STEP_MILLISECONDS: u64 = 100;
+    const HYDRAULIC_SIM_TIME_STEP_MILLISECONDS: u64 = 50;
     // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update.
     const ACTUATORS_SIM_TIME_STEP_MULTIPLIER: u32 = 2;
 
@@ -562,13 +562,13 @@ impl A320Hydraulic {
             context,
             &self.yellow_loop_controller,
         );
-        println!(
-            "Yloop P={:.0} Gloop={:.0} Yedp={:.0} Gedp={:.0}",
-            self.yellow_loop.system_pressure().get::<psi>(),
-            self.green_loop.system_pressure().get::<psi>(),
-            self.yellow_loop.pump_pressure(0).get::<psi>(),
-            self.green_loop.pump_pressure(0).get::<psi>(),
-        );
+        // println!(
+        //     "Yloop P={:.0} Gloop={:.0} Yedp={:.0} Gedp={:.0}",
+        //     self.yellow_loop.system_pressure().get::<psi>(),
+        //     self.green_loop.system_pressure().get::<psi>(),
+        //     self.yellow_loop.pump_pressure(0).get::<psi>(),
+        //     self.green_loop.pump_pressure(0).get::<psi>(),
+        // );
         // use systems::hydraulic::PressureSource;
         // println!(
         //     "Bloop P={:.0} Bepump={:.0} bdisp={:.2}",
