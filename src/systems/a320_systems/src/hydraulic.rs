@@ -2352,12 +2352,12 @@ mod tests {
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
                 !Read::<bool>::read(self, "HYD_GREEN_FIRE_VALVE_OPENED")
-                    && !self.query(|a| a.hydraulics.green_loop.is_fire_shutoff_valve_opened())
+                    && !self.query(|a| a.hydraulics.green_loop.is_fire_shutoff_valve_opened(0))
             }
 
             fn is_fire_valve_eng2_closed(&mut self) -> bool {
                 !Read::<bool>::read(self, "HYD_YELLOW_FIRE_VALVE_OPENED")
-                    && !self.query(|a| a.hydraulics.yellow_loop.is_fire_shutoff_valve_opened())
+                    && !self.query(|a| a.hydraulics.yellow_loop.is_fire_shutoff_valve_opened(0))
             }
 
             fn engines_off(self) -> Self {

@@ -442,8 +442,8 @@ impl HydraulicCircuit {
     }
 
     // TODO should ask for pump section ID for multiple section planes
-    pub fn is_fire_shutoff_valve_opened(&self) -> bool {
-        self.pump_sections[0].fire_valve_is_opened()
+    pub fn is_fire_shutoff_valve_opened(&self, pump_id: usize) -> bool {
+        self.pump_sections[pump_id].fire_valve_is_opened()
     }
 
     pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &mut T) {
@@ -460,13 +460,10 @@ impl HydraulicCircuit {
     ) {
         self.update_shutoff_valves_states(controller);
 
-        // How many fluid needed to reach target pressure
-        self.update_target_volumes_to_nominal_pressure();
-
         // Taking care of leaks / consumers / actuators volumes
         self.update_flow_consumption(ptu, context);
 
-        // Adjusting volume target now we have a more precise flow value
+        // How many fluid needed to reach target pressure considering flow consumption
         self.update_target_volumes_after_flow_consumption();
 
         // Updating for each section its total maximum theoretical pumping capacity
@@ -537,10 +534,16 @@ impl HydraulicCircuit {
 
     fn update_target_volumes_after_flow_consumption(&mut self) {
         for section in &mut self.pump_sections {
-            section.update_target_volume_after_consumer_pass();
+            section.update_target_volume_after_consumer_pass(
+                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
+                &self.fluid,
+            );
         }
         self.system_section
-            .update_target_volume_after_consumer_pass();
+            .update_target_volume_after_consumer_pass(
+                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
+                &self.fluid,
+            );
     }
 
     fn update_flow_consumption(
@@ -553,15 +556,6 @@ impl HydraulicCircuit {
         }
         self.system_section
             .update_delta_vol(&mut self.reservoir, ptu, &context);
-    }
-
-    fn update_target_volumes_to_nominal_pressure(&mut self) {
-        for section in &mut self.pump_sections {
-            section
-                .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
-        }
-        self.system_section
-            .update_target_volume(&self.fluid, Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI));
     }
 
     fn update_shutoff_valves_states<T: HydraulicLoopController>(&mut self, controller: &T) {
@@ -737,16 +731,17 @@ impl Section {
         }
     }
 
-    pub fn update_target_volume(&mut self, fluid: &Fluid, target_pressure: Pressure) {
-        if self.current_volume >= self.max_high_press_volume {
+    pub fn update_target_volume_after_consumer_pass(
+        &mut self,
+        target_pressure: Pressure,
+        fluid: &Fluid,
+    ) {
+        if self.is_primed() {
             self.volume_target = self.volume_to_reach_target(target_pressure, fluid);
         } else {
             self.volume_target = self.max_high_press_volume - self.current_volume
                 + self.volume_to_reach_target(target_pressure, fluid);
         }
-    }
-
-    pub fn update_target_volume_after_consumer_pass(&mut self) {
         self.volume_target -= self.delta_vol_consumer_pass;
     }
 
