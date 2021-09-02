@@ -212,7 +212,7 @@ export const FuelPage = () => {
             setRefuelStartedByUser(!refuelStartedByUser);
         }
     };
-
+	
     return (
         <div className="text-white mt-6 h-efb-nav flex flex-col justify-between">
             <div className="z-40">
@@ -416,8 +416,8 @@ export const FuelPage = () => {
                         <span className="text-lg text-gray-300">Refuel Time</span>
                         <SelectGroup>
                             <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                            <SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                            <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                            <SelectItem enabled={airplaneCanRefuel()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                            <SelectItem enabled={airplaneCanRefuel()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
                         </SelectGroup>
                     </div>
                 </div>
