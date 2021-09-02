@@ -765,7 +765,7 @@
         - 1
         - 2
 
-- A32NX_HYD_{loop_name}_PRESSURE
+- A32NX_HYD_{loop_name}_SYSTEM_SECTION_PRESSURE
     - Psi
     - Current pressure in the {loop_name} hydraulic circuit
     - {loop_name}
