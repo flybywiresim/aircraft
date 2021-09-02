@@ -8,6 +8,7 @@ import { getInputs } from './igniter/tasks.mjs';
 process.chdir(Directories.src);
 
 export default getInputs()
+	.filter(({ name }) => name === 'EFB')
     .map(({ path, name, isInstrument }) => {
         const config = JSON.parse(fs.readFileSync(join(Directories.instruments, 'src', path, 'config.json')));
 
