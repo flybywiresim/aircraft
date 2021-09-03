@@ -6,6 +6,7 @@
 
 ## 0.8.0
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
+1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
