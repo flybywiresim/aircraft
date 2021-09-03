@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { IconAccessPoint, IconBattery4, IconPower } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
+
+import { PowerContext, ContentState } from '../index';
 
 type StatusBarProps = {
     initTime: Date,
@@ -39,6 +41,8 @@ export function dateFormat(date: number): string {
 
 const StatusBar = (props: StatusBarProps) => {
     const [currentTime, setCurrentTime] = useState(props.initTime);
+
+    const Power = useContext(PowerContext);
 
     function calculateTimeSinceStart(currentTime: Date) {
         const diff = currentTime.getTime() - props.initTime.getTime();
@@ -83,7 +87,7 @@ const StatusBar = (props: StatusBarProps) => {
                 <IconPower
                     onClick={() => {
                         efbClearState();
-                        SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
+                        Power.setContent(ContentState.OFF);
                     }}
                     className="ml-6"
                     size={25}
