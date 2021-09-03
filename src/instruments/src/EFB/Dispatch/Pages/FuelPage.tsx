@@ -64,12 +64,12 @@ export const FuelPage = () => {
     const getFuelBarPercent = (curr:number, max: number) => (Math.max(curr, 0) / max) * 100;
 
     const airplaneCanRefuel = () => {
-		if (refuelRate !== '2') {
-			if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
-				return false;
-			}
-		}
-		return true;
+        if (refuelRate !== '2') {
+           if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
+              return false;
+           }
+        }
+        return true;
     };
 
     const currentWingFuel = () => round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent)), 0));
@@ -87,7 +87,7 @@ export const FuelPage = () => {
         }
         return val;
     };
-	
+
     const formatRefuelStatusLabel = () => {
         if (airplaneCanRefuel()) {
             if (round(totalTarget) === totalCurrentGallon()) {
@@ -210,27 +210,27 @@ export const FuelPage = () => {
             setRefuelStartedByUser(!refuelStartedByUser);
         }
     };
-	
-	const refuelButtonStatus = () => {
-		if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
-			return (
-				<SelectGroup>
-					<SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-					<SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-					<SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
-				</SelectGroup>
-			);
-		} else {
-				return (
-				<SelectGroup>
-					<SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-					<SelectItem enabled={true} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-					<SelectItem enabled={true} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
-				</SelectGroup>
-			);
-		}
-	};
-	
+
+    const refuelButtonStatus = () => {
+        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
+            return (
+               <SelectGroup>
+                  <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                  <SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                  <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+               </SelectGroup>
+            );
+        } else {
+            return (
+               <SelectGroup>
+                  <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                  <SelectItem enabled={true} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                  <SelectItem enabled={true} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+               </SelectGroup>
+            );
+        }
+    };
+
     return (
         <div className="text-white mt-6 h-efb-nav flex flex-col justify-between">
             <div className="z-40">

@@ -11,11 +11,11 @@ export const Select: React.FC<SelectProps> = (props) => (
 export type SelectItemProps = {enabled?: boolean, selected?: boolean, onSelect?: () => void, classNames?: string };
 
 export const SelectItem: React.FC<SelectItemProps> = (props) => (
-	<span
-		onClick={props.onSelect || (() => {})}
-		className={`${props.classNames} text-lg font-medium ${props.enabled ? (props.selected ? 'bg-teal-light-contrast text-blue-darkest text-white' : 'text-white') : 'text-gray-600'} py-2 px-3.5 rounded-lg`}>
-		{props.children}
-	</span>
+    <span
+        onClick={props.onSelect || (() => {})}
+        className={`${props.classNames} text-lg font-medium ${props.enabled ? (props.selected ? 'bg-teal-light-contrast text-blue-darkest text-white' : 'text-white') : 'text-gray-600'} py-2 px-3.5 rounded-lg`}>
+        {props.children}
+    </span>
 );
 
 export const SelectGroup: React.FC = (props) => (
