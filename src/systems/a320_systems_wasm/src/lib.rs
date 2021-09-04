@@ -95,9 +95,6 @@ fn create_aircraft_variable_reader(
     reader.add("ACCELERATION BODY X", "feet per second squared", 0)?;
     reader.add("ACCELERATION BODY Y", "feet per second squared", 0)?;
 
-    reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
-    reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
-
     reader.add_with_additional_names(
         "APU GENERATOR SWITCH",
         "Bool",
