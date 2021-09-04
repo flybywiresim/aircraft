@@ -1270,7 +1270,7 @@ impl ElectricPump {
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.263, 0.263, 0.1, 0.0];
     // 1 == No filtering
-    const DISPLACEMENT_DYNAMICS: f64 = 1.0;
+    const DISPLACEMENT_DYNAMICS: f64 = 0.8;
 
     pub fn new(id: &str, bus_type: ElectricalBusType) -> Self {
         Self {
@@ -1373,7 +1373,7 @@ impl EngineDrivenPump {
     const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.2, 1.0, 0.0];
 
     // 0.1 == 90% filtering on max displacement transient
-    const DISPLACEMENT_DYNAMICS: f64 = 1.;
+    const DISPLACEMENT_DYNAMICS: f64 = 0.1;
 
     pub fn new(id: &str) -> Self {
         Self {
