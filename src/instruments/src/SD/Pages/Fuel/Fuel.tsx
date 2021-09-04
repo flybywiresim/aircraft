@@ -21,7 +21,7 @@ export const FuelPage = () => {
     const [leftOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
     const [rightOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
 
-    const [unit] = usePersistentProperty<string>('CONFIG_USING_METRIC_UNIT');
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000); // Note these values are in KG
     const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);

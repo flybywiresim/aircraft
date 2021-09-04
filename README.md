@@ -16,10 +16,13 @@ The A32NX Project is a community-driven open source project to create a free Air
 
 The following aircraft configuration is currently simulated:
 
+### A320neo
+
  ```
  Model       A320-251N
  Engine      CFM LEAP 1A-26
- FMGS        Honeywell Pegasus II
+ APU         APS3200
+ FMGS        Honeywell Release H3
  FWC Std.    H2F9C
  ```
 
@@ -43,7 +46,7 @@ Our [known issues](https://docs.flybywiresim.com/start/reported-issues) list con
 
 ### What liveries are available?
 
-Liveries for the A32NX can be found on [Flightsim.to](https://flightsim.to). However, default A320neo liveries are not compatible with the A32NX.
+Liveries for the A32NX can be found on [Flightsim.to](https://flightsim.to/c/liveries/flybywire-a32nx/).
 
 ### When is the next update?
 
@@ -61,9 +64,27 @@ No, it is a completely free aircraft, open-source.
 
 Please read the [known Issues and bug reporting](#known-issues-and-bug-reporting) section.
 
+### Is this going to be "study-level"?
+
+While many in the team dislike the term "study-level" as its use is mostly applicable to certified training devices, we are in fact very dedicated on bringing a high fidelity A320neo to the Microsoft Flight Simulator platform.
+
+### Is feature X from the A320neo going to be implemented?
+
+Chances are, yes! While we do not guarantee every single detail of the aircraft will eventually be represented, our goal is to produce an extremely accurate simulation based on technical data and real-world testing. This means you can be almost certain every feature of the aircraft will eventually be simulated to the best of the simulator's ability as long as the technical data backs it up.
+
+### Why has feature X not been implemented yet?
+
+It's very likely that the feature you are awaiting is already under development! However, we strive for the greatest accuracy possible when producing aircraft, and it is therefore likely that a great deal of time will be spent on developing a proper software design and gathering sufficient references before we are able to offer the feature. 
+
 ### Why is my version not the same as what I see others using?
 
-We have two versions: stable and development. The stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time.
+We have two mainline versions: stable and development. The stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time.
+
+You can read more about the differences between the versions we offer [on our documentation portal](https://docs.flybywiresim.com/fbw-a32nx/fbw-versions/).
+
+### Is there a list of features or a changelog available?
+
+We do not keep a list of features implemented, but a lengthy [changelog](https://github.com/flybywiresim/a32nx/blob/master/.github/CHANGELOG.md) of what has been implemented, and their associated [pull requests](https://github.com/flybywiresim/a32nx/pulls) can be [found here](https://github.com/flybywiresim/a32nx/blob/master/.github/CHANGELOG.md).
 
 ## License
 
@@ -74,6 +95,6 @@ Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A
 
 The contents of distribution packages built from the sources in this repository are therefore licensed as follows:
 
-- in the case of original source code from FBW or compiled binaries generated from it, under GPLv3.
+- in the case of original source code from FBW or compiled artifacts generated from it, under GPLv3.
 - in the case of original 3D assets from FBW, under CC BY-NC 4.0.
 - in the case of assets covered by the "Game Content Usage Rules", under the license granted by those rules.
