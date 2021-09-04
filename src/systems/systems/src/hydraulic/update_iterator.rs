@@ -22,10 +22,6 @@ impl FixedStepLoop {
         self.time_step
     }
 
-    fn _loop_number(&self) -> u32 {
-        self.number_of_loops_this_iteration
-    }
-
     pub fn update(&mut self, context: &UpdateContext) {
         // Time to catch up in our simulation = new delta + time not updated last iteration
         let time_to_catch = context.delta() + self.lag_time_accumulator;
