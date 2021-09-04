@@ -32,14 +32,16 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
     }, [props.value]);
 
     const onChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        let originalValue = event.currentTarget.value;
+        if (!props.disabled) {
+            let originalValue = event.currentTarget.value;
 
-        if (props.number) {
-            originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
+            if (props.number) {
+                originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
+            }
+
+            props.onChange?.(originalValue);
+            setDisplayValue(originalValue);
         }
-
-        props.onChange?.(originalValue);
-        setDisplayValue(originalValue);
     };
 
     const onFocus = (): void => {
