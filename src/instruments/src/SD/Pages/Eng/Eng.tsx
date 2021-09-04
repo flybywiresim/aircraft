@@ -14,7 +14,7 @@ import './Eng.scss';
 setIsEcamPage('eng_page');
 
 export const EngPage: FC = () => {
-    const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const [weightUnit] = usePersistentProperty<string>('CONFIG_USING_METRIC_UNIT', '1');
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
 
     return (
@@ -264,6 +264,7 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed * 2.20462 / 20) * 20;
 
     const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 250);
+    const OIL_TEMP_LOW_TAKEOFF = 38;
     const OIL_TEMP_HIGH_ADVISORY = 140;
     const OIL_TEMP_VHIGH_LIMIT = 155;
     const displayedEngineOilTemperature = Math.round(engineOilTemperature / 5) * 5; // Engine oil temperature has a step of 5
@@ -282,7 +283,7 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
             setShouldTemperaturePulse(false);
         }
 
-        if (displayedEngineOilTemperature >= OIL_TEMP_VHIGH_LIMIT) {
+        if (displayedEngineOilTemperature >= OIL_TEMP_VHIGH_LIMIT || engineOilTemperature < OIL_TEMP_LOW_TAKEOFF) {
             setTempAmber(true);
         } else {
             setTempAmber(false);

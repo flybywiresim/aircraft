@@ -2247,10 +2247,10 @@ var A320_Neo_UpperECAM;
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
     class LinesStyleInfo {
         constructor(_divMain, _bottomValue) {
-            this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
             const svgRoot = document.createElementNS(Avionics.SVG.NS, "svg");
             svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getTitle(), "Title", "50%", "65%", "bottom"));
-            svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getUnit(this.conversionWeight === 1), "Unit", "50%", "100%", "bottom"));
+            this.unitElement = A320_Neo_UpperECAM.createSVGText(this.getUnit(), "Unit", "50%", "100%", "bottom");
+            svgRoot.appendChild(this.unitElement);
             this.leftComponent = new LinesStyleComponent_Left(svgRoot);
             this.rightComponent = new LinesStyleComponent_Right(svgRoot);
             const div = A320_Neo_UpperECAM.createDiv("LineStyleInfos");
@@ -2264,6 +2264,9 @@ var A320_Neo_UpperECAM;
             }
             if (this.rightComponent != null) {
                 this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision(), false, this.getTitle(), this.getDisplayActiveEngine(2));
+            }
+            if (this.unitElement.textContent !== this.getUnit()) {
+                this.unitElement.textContent = this.getUnit();
             }
         }
         getValueStringPrecision() {
@@ -2305,17 +2308,16 @@ var A320_Neo_UpperECAM;
         constructor(_divMain, _bottomValue) {
             super(_divMain, _bottomValue);
             this.gallonToKG = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilogram");
-            this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
         }
         getTitle() {
             return "FF";
         }
-        getUnit(_isMetric = true) {
-            return _isMetric ? "KG/H" : "LBS/H";
+        getUnit() {
+            return NXUnits.userWeightUnit() + "/H";
         }
         getValue(_engine, _conversion) {
-            let ff = SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:" + _engine, "number") * this.conversionWeight;
-            if (this.conversionWeight == 1) {
+            let ff = NXUnits.kgToUser(SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:" + _engine, "number"));
+            if (NXUnits.metricWeight) {
                 if (ff % 20 > 0) {
                     ff = (ff - (ff % 20)) + 20;
                 }
@@ -2350,8 +2352,7 @@ var A320_Neo_UpperECAM;
                 fuelOnBoardDiv.appendChild(A320_Neo_UpperECAM.createDiv("Title", "", "FOB :"));
                 this.fobValue = A320_Neo_UpperECAM.createDiv("Value");
                 fuelOnBoardDiv.appendChild(this.fobValue);
-                this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-                this.fobUnit = A320_Neo_UpperECAM.createDiv("Unit", "", this.conversionWeight === 1 ? "KG" : "LBS");
+                this.fobUnit = A320_Neo_UpperECAM.createDiv("Unit", "", "");
                 fuelOnBoardDiv.appendChild(this.fobUnit);
                 this.divMain.appendChild(fuelOnBoardDiv);
             }
@@ -2395,7 +2396,10 @@ var A320_Neo_UpperECAM;
                 this.setFlexTemperature(false);
             }
 
-            this.setFuelOnBoard(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg") * this.conversionWeight);
+            this.setFuelOnBoard(NXUnits.kgToUser(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg")));
+            if (this.fobUnit.textContent !== NXUnits.userWeightUnit()) {
+                this.fobUnit.textContent = NXUnits.userWeightUnit();
+            }
         }
 
         /**

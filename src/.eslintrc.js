@@ -103,5 +103,7 @@ module.exports = {
         Utils: 'readonly',
         JSX: 'readonly',
         Coherent: 'readonly',
+        ViewListener: 'readonly',
+        RegisterViewListener: 'readonly',
     },
 };

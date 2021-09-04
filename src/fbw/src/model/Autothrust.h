@@ -6,17 +6,17 @@
 
 class AutothrustModelClass {
  public:
-  typedef struct {
+  struct rtDW_TimeSinceCondition_Autothrust_T {
     real_T eventTime;
     boolean_T eventTime_not_empty;
-  } rtDW_TimeSinceCondition_Autothrust_T;
+  };
 
-  typedef struct {
+  struct rtDW_RateLimiter_Autothrust_T {
     real_T pY;
     boolean_T pY_not_empty;
-  } rtDW_RateLimiter_Autothrust_T;
+  };
 
-  typedef struct {
+  struct D_Work_Autothrust_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_k;
     real_T Delay_DSTATE_j;
@@ -25,42 +25,42 @@ class AutothrustModelClass {
     real_T Delay_DSTATE_lz;
     real_T Delay_DSTATE_h;
     real_T eventTime;
-    real_T eventTime_i;
+    real_T eventTime_p;
     real_T prev_TLA_1;
     real_T prev_TLA_2;
-    real_T eventTime_o;
-    real_T eventTime_d;
+    real_T eventTime_l;
+    real_T eventTime_c;
     real_T pY;
     real_T pU;
-    real_T eventTime_du;
-    real_T eventTime_f;
+    real_T eventTime_o;
+    real_T eventTime_i;
     athr_mode pMode;
     athr_status pStatus;
     boolean_T Delay_DSTATE_a;
-    uint8_T icLoad;
-    uint8_T icLoad_c;
     uint8_T is_active_c5_Autothrust;
     uint8_T is_c5_Autothrust;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_m;
+    boolean_T icLoad;
+    boolean_T icLoad_c;
     boolean_T eventTime_not_empty;
-    boolean_T eventTime_not_empty_a;
+    boolean_T eventTime_not_empty_h;
     boolean_T ATHR_ENGAGED;
     boolean_T prev_TLA_1_not_empty;
     boolean_T prev_TLA_2_not_empty;
     boolean_T flightDirectorOffTakeOff;
-    boolean_T eventTime_not_empty_c;
+    boolean_T eventTime_not_empty_m;
     boolean_T pConditionAlphaFloor;
     boolean_T was_SRS_TO_active;
     boolean_T was_SRS_GA_active;
     boolean_T inhibitAboveThrustReductionAltitude;
     boolean_T condition_THR_LK;
-    boolean_T eventTime_not_empty_n;
+    boolean_T eventTime_not_empty_hl;
     boolean_T pThrustMemoActive;
     boolean_T pUseAutoThrustControl;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-    boolean_T eventTime_not_empty_b;
+    boolean_T eventTime_not_empty_a;
     boolean_T latch;
     boolean_T eventTime_not_empty_g;
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter_p;
@@ -70,15 +70,15 @@ class AutothrustModelClass {
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter;
     rtDW_TimeSinceCondition_Autothrust_T sf_TimeSinceCondition1;
     rtDW_TimeSinceCondition_Autothrust_T sf_TimeSinceCondition_o;
-  } D_Work_Autothrust_T;
+  };
 
-  typedef struct {
+  struct ExternalInputs_Autothrust_T {
     athr_in in;
-  } ExternalInputs_Autothrust_T;
+  };
 
-  typedef struct {
+  struct ExternalOutputs_Autothrust_T {
     athr_out out;
-  } ExternalOutputs_Autothrust_T;
+  };
 
   struct Parameters_Autothrust_T {
     athr_out athr_out_MATLABStruct;

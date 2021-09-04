@@ -14,7 +14,7 @@ interface Props {
 }
 
 const ThrottleConfig: React.FC<Props> = (props: Props) => {
-    const [isDualAxis, setDualAxis] = usePersistentPropertyWithDefault('THROTTLE_DUAL_AXIS', '1');
+    const [isDualAxis, setDualAxis] = usePersistentPropertyWithDefault<string>('THROTTLE_DUAL_AXIS', '1');
 
     const [selectedIndex, setSelectedIndex] = useState(0);
 

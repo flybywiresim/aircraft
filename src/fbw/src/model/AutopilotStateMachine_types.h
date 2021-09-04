@@ -5,17 +5,19 @@
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
 #define DEFINED_TYPEDEF_FOR_ap_raw_time_
 
-typedef struct {
+struct ap_raw_time
+{
   real_T dt;
   real_T simulation_time;
-} ap_raw_time;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_data_
 #define DEFINED_TYPEDEF_FOR_ap_raw_data_
 
-typedef struct {
+struct ap_raw_data
+{
   real_T Theta_deg;
   real_T Phi_deg;
   real_T q_rad_s;
@@ -70,14 +72,15 @@ typedef struct {
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
-} ap_raw_data;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_sm_input_
 #define DEFINED_TYPEDEF_FOR_ap_raw_sm_input_
 
-typedef struct {
+struct ap_raw_sm_input
+{
   boolean_T FD_active;
   boolean_T AP_ENGAGE_push;
   boolean_T AP_1_push;
@@ -107,35 +110,38 @@ typedef struct {
   boolean_T is_SPEED_managed;
   boolean_T FDR_event;
   real_T Phi_loc_c;
-} ap_raw_sm_input;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_sm_input_
 #define DEFINED_TYPEDEF_FOR_ap_sm_input_
 
-typedef struct {
+struct ap_sm_input
+{
   ap_raw_time time;
   ap_raw_data data;
   ap_raw_sm_input input;
-} ap_sm_input;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_lateral_armed_
 #define DEFINED_TYPEDEF_FOR_ap_lateral_armed_
 
-typedef struct {
+struct ap_lateral_armed
+{
   boolean_T NAV;
   boolean_T LOC;
-} ap_lateral_armed;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_lateral_condition_
 #define DEFINED_TYPEDEF_FOR_ap_lateral_condition_
 
-typedef struct {
+struct ap_lateral_condition
+{
   boolean_T NAV;
   boolean_T LOC_CPT;
   boolean_T LOC_TRACK;
@@ -143,14 +149,15 @@ typedef struct {
   boolean_T FLARE;
   boolean_T ROLL_OUT;
   boolean_T GA_TRACK;
-} ap_lateral_condition;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_data_
 #define DEFINED_TYPEDEF_FOR_ap_data_
 
-typedef struct {
+struct ap_data
+{
   real_T Theta_deg;
   real_T Phi_deg;
   real_T qk_deg_s;
@@ -207,14 +214,15 @@ typedef struct {
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
-} ap_data;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_sm_data_computed_
 #define DEFINED_TYPEDEF_FOR_ap_sm_data_computed_
 
-typedef struct {
+struct ap_sm_data_computed
+{
   real_T time_since_touchdown;
   real_T time_since_lift_off;
   real_T time_since_SRS;
@@ -225,7 +233,7 @@ typedef struct {
   real_T H_dot_radio_fpm;
   boolean_T V_fcu_in_selection;
   boolean_T ALT_soft_mode;
-} ap_sm_data_computed;
+};
 
 #endif
 
@@ -267,13 +275,14 @@ typedef enum {
 #ifndef DEFINED_TYPEDEF_FOR_ap_lateral_output_
 #define DEFINED_TYPEDEF_FOR_ap_lateral_output_
 
-typedef struct {
+struct ap_lateral_output
+{
   lateral_mode mode;
   boolean_T mode_reversion;
   boolean_T mode_reversion_TRK_FPA;
   lateral_law law;
   real_T Psi_c_deg;
-} ap_lateral_output;
+};
 
 #endif
 
@@ -335,31 +344,34 @@ typedef enum {
 #ifndef DEFINED_TYPEDEF_FOR_ap_lateral_
 #define DEFINED_TYPEDEF_FOR_ap_lateral_
 
-typedef struct {
+struct ap_lateral
+{
   ap_lateral_armed armed;
   ap_lateral_condition condition;
   ap_lateral_output output;
-} ap_lateral;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_vertical_armed_
 #define DEFINED_TYPEDEF_FOR_ap_vertical_armed_
 
-typedef struct {
+struct ap_vertical_armed
+{
   boolean_T ALT;
   boolean_T ALT_CST;
   boolean_T CLB;
   boolean_T DES;
   boolean_T GS;
-} ap_vertical_armed;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_vertical_condition_
 #define DEFINED_TYPEDEF_FOR_ap_vertical_condition_
 
-typedef struct {
+struct ap_vertical_condition
+{
   boolean_T ALT;
   boolean_T ALT_CPT;
   boolean_T ALT_CST;
@@ -375,14 +387,15 @@ typedef struct {
   boolean_T SRS_GA;
   boolean_T THR_RED;
   boolean_T H_fcu_active;
-} ap_vertical_condition;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_vertical_output_
 #define DEFINED_TYPEDEF_FOR_ap_vertical_output_
 
-typedef struct {
+struct ap_vertical_output
+{
   vertical_mode mode;
   athr_requested_mode mode_autothrust;
   boolean_T mode_reversion;
@@ -397,25 +410,27 @@ typedef struct {
   boolean_T speed_protection_mode;
   boolean_T FD_disconnect;
   boolean_T FD_connect;
-} ap_vertical_output;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_vertical_
 #define DEFINED_TYPEDEF_FOR_ap_vertical_
 
-typedef struct {
+struct ap_vertical
+{
   ap_vertical_armed armed;
   ap_vertical_condition condition;
   ap_vertical_output output;
-} ap_vertical;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_input_
 #define DEFINED_TYPEDEF_FOR_ap_raw_laws_input_
 
-typedef struct {
+struct ap_raw_laws_input
+{
   real_T enabled_AP1;
   real_T enabled_AP2;
   real_T lateral_law;
@@ -441,14 +456,15 @@ typedef struct {
   boolean_T EXPED_mode_active;
   boolean_T FD_disconnect;
   boolean_T FD_connect;
-} ap_raw_laws_input;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_ap_sm_output_
 #define DEFINED_TYPEDEF_FOR_ap_sm_output_
 
-typedef struct {
+struct ap_sm_output
+{
   ap_raw_time time;
   ap_data data;
   ap_sm_data_computed data_computed;
@@ -458,7 +474,7 @@ typedef struct {
   ap_vertical vertical;
   ap_vertical vertical_previous;
   ap_raw_laws_input output;
-} ap_sm_output;
+};
 
 #endif
 #endif

@@ -23,6 +23,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.lastInput = 0;
         this.clrStop = false;
         this.allSelected = false;
+        this.updateRequest = false;
         this.aocAirportList = new CDUAocAirportList;
         this.initB = false;
         this.PageTimeout = {
@@ -112,6 +113,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         // LCD OVERLAY
         this.lcdOverlay = document.querySelector("#LcdOverlay");
+
+        this.minPageUpdateThrottler = new UpdateThrottler(100);
 
         this.generateHTMLLayout(this.getChildById("Mainframe") || this);
         this.initKeyboardScratchpad();
@@ -333,6 +336,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     console.log("TELEX MSG FETCH FAILED");
                 });
         }, NXApi.updateRate);
+
+        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0).then();
+
+        NXDataStore.subscribe('*', () => {
+            this.requestUpdate();
+        });
+    }
+
+    requestUpdate() {
+        this.updateRequest = true;
     }
 
     onUpdate(_deltaTime) {
@@ -340,6 +353,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
 
+        if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
+            this.updateRequest = false;
+            if (this.pageRedrawCallback) {
+                this.pageRedrawCallback();
+            }
+        }
+
+        // TODO these other mechanisms are replaced in the MCDU split PR
         if (this.pageUpdate) {
             this.pageUpdate();
         }
@@ -706,6 +727,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onPrevPage = () => {};
         this.onNextPage = () => {};
         this.pageUpdate = () => {};
+        this.pageRedrawCallback = null;
         this.refreshPageCallback = undefined;
         if (this.page.Current === this.page.MenuPage) {
             this.forceClearScratchpad();
@@ -717,6 +739,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onDown = undefined;
         this.onLeft = undefined;
         this.onRight = undefined;
+        this.updateRequest = false;
     }
 
     generateHTMLLayout(parent) {

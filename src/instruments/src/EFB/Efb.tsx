@@ -135,7 +135,7 @@ const Efb = () => {
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
-    const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
+    const [simbriefUsername, setSimbriefUsername] = usePersistentProperty<string>('SimbriefUsername');
 
     const [timeState, setTimeState] = useState<TimeState>({
         currentTime: new Date(),
