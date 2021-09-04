@@ -174,7 +174,7 @@ const SimOptionsPage = () => {
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
 
-    const [mcduInput, setMcduInput] = usePersistentProperty('CONFIG_MCDU_KB_INPUT', '0');
+    const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
@@ -254,7 +254,7 @@ const SimOptionsPage = () => {
                             <span className="text-lg text-gray-300">MCDU Keyboard Input</span>
                             <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
                         </span>
-                        <Toggle value={mcduInput === '1'} onToggle={(value) => setMcduInput(value ? '1' : '0')} />
+                        <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
                     </div>
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span>
@@ -267,7 +267,7 @@ const SimOptionsPage = () => {
                             noLabel
                             min={5}
                             max={120}
-                            disabled={(mcduInput !== '1')}
+                            disabled={(mcduInput !== 'ENABLED')}
                             onChange={(event) => {
                                 if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
                                     setMcduTimeout(event.trim());
