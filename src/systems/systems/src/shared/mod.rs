@@ -6,9 +6,9 @@ use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
 
-mod pid;
-mod random;
+pub mod pid;
 
+mod random;
 pub use random::*;
 
 pub trait AuxiliaryPowerUnitElectrical:
