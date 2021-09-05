@@ -7,6 +7,7 @@
 ## 0.8.0
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [HYD] Hydraulic system updated. Multiple sections. Better regulation - @Crocket63 (crocket)
+1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
