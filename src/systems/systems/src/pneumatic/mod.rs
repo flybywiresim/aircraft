@@ -90,9 +90,19 @@ impl DefaultPipe {
     }
 
     fn update_temperature_for_volume_change(&mut self, volume: Volume) {
-        // There is no powf function for SI quantities (even without units)...
-        self.temperature *= (1. + volume.get::<cubic_meter>() / self.volume.get::<cubic_meter>())
+        let mut remaining_volume = volume;
+
+        // We do this to avoid moving more volume than available at once
+        while remaining_volume.abs() > Volume::new::<cubic_meter>(0.001) {
+            let volume_to_move = remaining_volume.max(-self.volume());
+
+            // There is no powf function for SI quantities (even without units)...
+            self.temperature *= (1.
+                + volume_to_move.get::<cubic_meter>() / self.volume.get::<cubic_meter>())
             .powf(Self::HEAT_CAPACITY_RATIO - 1.);
+
+            remaining_volume -= volume_to_move;
+        }
     }
 
     fn vol_to_target(&self, target_press: Pressure) -> Volume {
@@ -802,6 +812,30 @@ mod tests {
         valve.update_move_fluid(&context, &mut from, &mut to);
 
         assert!((from.pressure() - to.pressure()).abs() < pressure_tolerance());
+    }
+
+    #[test]
+    fn valve_moving_more_volume_than_available_does_not_cause_issues() {
+        let valve = DefaultValve::new_open();
+
+        let mut from = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(100.), // really high pressure
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+        let mut to = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(1.),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+
+        let context = context(Duration::from_secs(5), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context, &mut from, &mut to);
+
+        assert!(!from.temperature().is_nan());
+        assert!(!to.temperature().is_nan());
     }
 
     #[test]
