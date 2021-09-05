@@ -45,8 +45,7 @@ impl Pid {
     pub fn reset(&mut self, setpoint: f64) {
         self.output = 0.;
         self.change_setpoint(setpoint);
-        self.error_k_1 = None;
-        self.error_k_2 = None;
+        self.reset_error();
     }
 
     pub fn next_control_output(&mut self, measurement: f64, delta_time: Option<Duration>) -> f64 {
@@ -71,15 +70,24 @@ impl Pid {
             d_term =
                 (error - 2. * self.error_k_1.unwrap() + self.error_k_2.unwrap()) * self.kd / dt;
         }
-        let output = self.output + p_term + i_term + d_term;
 
-        self.error_k_2 = self.error_k_1;
-        self.error_k_1 = Some(error);
-
+        let unbound_output = self.output + p_term + i_term + d_term;
         // Limiting output to configured bounds
-        self.output = output.max(self.min_output).min(self.max_output);
+        self.output = unbound_output.max(self.min_output).min(self.max_output);
+
+        self.update_error(error);
 
         self.output
+    }
+
+    fn update_error(&mut self, error: f64) {
+        self.error_k_2 = self.error_k_1;
+        self.error_k_1 = Some(error);
+    }
+
+    fn reset_error(&mut self) {
+        self.error_k_2 = None;
+        self.error_k_1 = None;
     }
 }
 
@@ -88,7 +96,6 @@ mod tests {
 
     use super::*;
     #[test]
-    /// Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn pid_init() {
         let pid = Pid::new(1., 1., 1., 0., 1., 1.);
 
