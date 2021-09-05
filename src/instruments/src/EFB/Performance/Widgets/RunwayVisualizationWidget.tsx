@@ -40,99 +40,98 @@ type RunwayVisualizationProps = {
     runwayNumber?: number,
     stopMargin?: number
 };
-type RunwayVisualizationState = {};
 
-export default class RunwayVisualizationWidget extends React.Component<RunwayVisualizationProps, RunwayVisualizationState> {
-    private getStopMarginLabelHeightPercentage(): number {
-        if (!this.props.stopMargin) return 0;
+const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
+    function maxDist(): number {
+        const distances = props.labels?.map((label) => label.distance) ?? [];
 
-        return (Math.abs(this.props.stopMargin) / this.maxDist()) * 100;
+        return Math.max(props.mainLength ?? 0, props.asda ?? 0, props.toda ?? 0, ...distances);
     }
 
-    private getLabelBottomPercentage(label: DistanceLabel): number {
-        return (label.distance / this.maxDist()) * 100;
+    function getStopMarginLabelHeightPercentage(): number {
+        if (!props.stopMargin) return 0;
+
+        return (Math.abs(props.stopMargin) / maxDist()) * 100;
     }
 
-    private mainHeightPercentage(): number {
-        const mainLength = this.props.mainLength ?? 0;
-        const maxDist = this.maxDist();
+    function getLabelBottomPercentage(label: DistanceLabel): number {
+        return (label.distance / maxDist()) * 100;
+    }
 
-        if (mainLength === 0 || maxDist === 0) {
+    function mainHeightPercentage(): number {
+        const mainLength = props.mainLength ?? 0;
+        const maximumDist = maxDist();
+
+        if (mainLength === 0 || maximumDist === 0) {
             return 100;
         }
-        const percentage = (mainLength / this.maxDist()) * 100;
+        const percentage = (mainLength / maxDist()) * 100;
 
         return Math.max(percentage, 20);
     }
 
-    private asdaHeightPercentage(): number {
-        const asda = this.props.asda ?? 0;
-        const mainLength = this.props.mainLength ?? 0;
+    function asdaHeightPercentage(): number {
+        const asda = props.asda ?? 0;
+        const mainLength = props.mainLength ?? 0;
 
-        return Math.max(((asda - mainLength) / this.maxDist()) * 100, 0);
+        return Math.max(((asda - mainLength) / maxDist()) * 100, 0);
     }
 
-    private todaHeightPercentage(): number {
-        const toda = this.props.toda ?? 0;
-        const asda = this.props.asda ?? 0;
+    function todaHeightPercentage(): number {
+        const toda = props.toda ?? 0;
+        const asda = props.asda ?? 0;
 
-        return Math.max(((toda - asda) / this.maxDist()) * 100, 0);
+        return Math.max(((toda - asda) / maxDist()) * 100, 0);
     }
 
-    private maxDist(): number {
-        const distances = this.props.labels?.map((label) => label.distance) ?? [];
-
-        return Math.max(this.props.mainLength ?? 0, this.props.asda ?? 0, this.props.toda ?? 0, ...distances);
-    }
-
-    private isLabelOverDistance(label: DistanceLabel): boolean {
+    function isLabelOverDistance(label: DistanceLabel): boolean {
         switch (label.type) {
         case LabelType.Asda:
-            return label.distance > (this.props.asda ?? 0);
+            return label.distance > (props.asda ?? 0);
         case LabelType.Toda:
-            return label.distance > (this.props.toda ?? 0);
+            return label.distance > (props.toda ?? 0);
         default:
-            return label.distance > (this.props.mainLength ?? 0);
+            return label.distance > (props.mainLength ?? 0);
         }
     }
 
-    private runwayLengthLabel(): JSX.Element {
+    function runwayLengthLabel(): JSX.Element {
         return (
             <div className="text-white absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
-                { this.props.mainLength ?? 0 }
+                { props.mainLength ?? 0 }
                 m
             </div>
         );
     }
 
-    private stopMarginLabel(): JSX.Element | undefined {
-        if (this.props.stopMargin) {
+    function stopMarginLabel(): JSX.Element | undefined {
+        if (props.stopMargin) {
             return (
                 <div
-                    className={`text-center ml-1 pl-2 flex flex-col justify-center relative ${this.props.stopMargin > 0 ? 'text-green-500' : 'text-red-500'}`}
+                    className={`text-center ml-1 pl-2 flex flex-col justify-center relative ${props.stopMargin > 0 ? 'text-green-500' : 'text-red-500'}`}
                     style={{
-                        height: `${this.getStopMarginLabelHeightPercentage()}%`,
-                        top: `${100 - (this.mainHeightPercentage() + this.asdaHeightPercentage())}%`,
-                        transform: `translateY(${this.props.stopMargin < 0 ? '-100%' : '0'})`,
+                        height: `${getStopMarginLabelHeightPercentage()}%`,
+                        top: `${100 - (mainHeightPercentage() + asdaHeightPercentage())}%`,
+                        transform: `translateY(${props.stopMargin < 0 ? '-100%' : '0'})`,
                     }}
                 >
                     <div>
                         Stop Margin
                     </div>
                     <div>
-                        { Math.round(this.props.stopMargin)}
+                        { Math.round(props.stopMargin)}
                         m
                     </div>
-                    <div className={`border-l-4 h-full absolute top-0 left-0 ${this.props.stopMargin > 0 ? 'border-green-500' : 'border-red-500'}`} />
+                    <div className={`border-l-4 h-full absolute top-0 left-0 ${props.stopMargin > 0 ? 'border-green-500' : 'border-red-500'}`} />
                 </div>
             );
         }
         return undefined;
     }
 
-    private runwayNumber(): JSX.Element | undefined {
-        if (this.props.runwayNumber) {
-            const paddedNumber = this.props.runwayNumber.toString().padStart(2, '0');
+    function runwayNumber(): JSX.Element | undefined {
+        if (props.runwayNumber) {
+            const paddedNumber = props.runwayNumber.toString().padStart(2, '0');
             return (
                 <div className="runway-id text-white text-4xl absolute left-1/2 bottom-20 transform -translate-x-1/2 opacity-40">{paddedNumber}</div>
             );
@@ -140,26 +139,26 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
         return undefined;
     }
 
-    private labels(): JSX.Element[] {
+    function labels(): JSX.Element[] {
         const elements: JSX.Element[] = [];
 
-        for (const label of this.props.labels ?? []) {
-            const bottomPercentage = this.getLabelBottomPercentage(label);
+        for (const label of props.labels ?? []) {
+            const bottomPercentage = getLabelBottomPercentage(label);
 
-            const closestLabel = (this.props.labels ?? []).reduce((a, b) => {
+            const closestLabel = (props.labels ?? []).reduce((a, b) => {
                 if (a.label === label.label) return b;
                 if (b.label === label.label) return a;
 
-                return Math.abs(this.getLabelBottomPercentage(b) - bottomPercentage) < Math.abs(this.getLabelBottomPercentage(a) - bottomPercentage) ? b : a;
+                return Math.abs(getLabelBottomPercentage(b) - bottomPercentage) < Math.abs(getLabelBottomPercentage(a) - bottomPercentage) ? b : a;
             });
 
-            const showText = (Math.abs(this.getLabelBottomPercentage(closestLabel) - bottomPercentage) > 5);
+            const showText = (Math.abs(getLabelBottomPercentage(closestLabel) - bottomPercentage) > 5);
 
             elements.push(
                 (
                     <div
                         className={`w-32 h-1 bg-white text-white absolute left-1/2 transform -translate-x-1/2 ${
-                            (this.isLabelOverDistance(label)) ? 'error-label' : ''}`}
+                            (isLabelOverDistance(label)) ? 'error-label' : ''}`}
                         style={{ bottom: `${bottomPercentage}%` }}
                     >
 
@@ -179,40 +178,40 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
         return elements;
     }
 
-    public render() {
-        return (
-            <div className="h-full flex px-10">
-                <div className="h-full flex flex-col relative">
-                    <div className="flex-grow bg-red-900 opacity-30" />
-                    <div className="bg-green-200 opacity-50" style={{ height: `${this.todaHeightPercentage()}%` }} />
-                    <div className="bg-gray-700 opacity-50" style={{ height: `${this.asdaHeightPercentage()}%` }} />
-                    <div
-                        className="bg-black w-40 relative"
-                        style={{ height: `${this.mainHeightPercentage()}%` }}
-                    >
-                        {this.runwayLengthLabel()}
-                        <div className="w-1 h-full bg-white opacity-30 absolute left-0" />
-                        <div className="w-1 h-full bg-white opacity-30 absolute right-0" />
-                        <div className="flex absolute left-1/2 bottom-2 transform -translate-x-1/2">
-                            <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                            <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                            <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                            <div className="mr-5 w-2 h-14 bg-white opacity-30" />
-                            <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                            <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                            <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                            <div className="w-2 h-14 bg-white opacity-30" />
-                        </div>
-                        <div className="relative h-full overflow-hidden">
-                            <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-40 transform -translate-x-1/2" />
-                            <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-72 transform -translate-x-1/2" />
-                        </div>
-                        {this.runwayNumber()}
+    return (
+        <div className="h-full flex px-10">
+            <div className="h-full flex flex-col relative">
+                <div className="flex-grow bg-red-900 opacity-30" />
+                <div className="bg-green-200 opacity-50" style={{ height: `${todaHeightPercentage()}%` }} />
+                <div className="bg-gray-700 opacity-50" style={{ height: `${asdaHeightPercentage()}%` }} />
+                <div
+                    className="bg-black w-40 relative"
+                    style={{ height: `${mainHeightPercentage()}%` }}
+                >
+                    {runwayLengthLabel()}
+                    <div className="w-1 h-full bg-white opacity-30 absolute left-0" />
+                    <div className="w-1 h-full bg-white opacity-30 absolute right-0" />
+                    <div className="flex absolute left-1/2 bottom-2 transform -translate-x-1/2">
+                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
+                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
+                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
+                        <div className="mr-5 w-2 h-14 bg-white opacity-30" />
+                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
+                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
+                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
+                        <div className="w-2 h-14 bg-white opacity-30" />
                     </div>
-                    {this.labels()}
+                    <div className="relative h-full overflow-hidden">
+                        <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-40 transform -translate-x-1/2" />
+                        <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-72 transform -translate-x-1/2" />
+                    </div>
+                    {runwayNumber()}
                 </div>
-                {this.stopMarginLabel()}
+                {labels()}
             </div>
-        );
-    }
-}
+            {stopMarginLabel()}
+        </div>
+    );
+};
+
+export default RunwayVisualizationWidget;

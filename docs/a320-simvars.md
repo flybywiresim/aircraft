@@ -1614,6 +1614,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Throttle Mapping System
 
+- A32NX_THROTTLE_MAPPING_LOADED_CONFIG:{index}
+    - Bool
+    - Indicates if we are using a configured throttle mapping for throttle axis {index}, first axis has index 1
+
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
     - Number
     - Indicates the raw input values for throttle axis {index}, first axis has index 1

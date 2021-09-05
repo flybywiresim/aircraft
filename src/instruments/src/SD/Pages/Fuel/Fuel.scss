@@ -1,0 +1,207 @@
+@import "../../../Common/definitions";
+
+#sd-fuel-page {
+
+  .pickMe {
+    fill: red !important;
+    stroke: red !important;
+  }
+
+  .Hide {
+    display:none;
+  }
+
+  .PageTitle {
+    font-size: 24px;
+    text-decoration: underline;
+    fill: $display-white;
+    text-anchor: start !important;
+  }
+
+  .FuelUsed {
+    font-size: 19px;
+    text-anchor: middle;
+    stroke: white;
+    fill: white;
+  }
+
+  .EngineNumber {
+    font-size: 30px;
+    text-anchor: middle;
+  }
+
+  .EngineNumberOn {
+    stroke: $display-white;
+    fill: $display-white;
+  }
+
+  .EngineNumberOff {
+    stroke: $display-amber;
+    fill: $display-amber;
+  }
+
+  .EngineLine {
+    stroke: $display-white;
+    stroke-width: 2.5;
+  }
+
+  .UsedQuantity {
+    font-size: 25px;
+    text-anchor: middle;
+    stroke: $display-green;
+    fill: $display-green;
+  }
+
+  .ThickShape {
+    stroke: $display-light-grey;
+    stroke-width: 2.5;
+  }
+
+  .White {
+    stroke: $display-white;
+    fill: $display-white;
+  }
+
+  .Amber {
+    stroke: $display-amber;
+    fill: $display-amber;
+  }
+
+  .GreenLine {
+    stroke: $display-green;
+    stroke-width: 2;
+  }
+
+  .AmberLine {
+    stroke: $display-amber;
+    stroke-width: 2;
+  }
+
+  .FillAmber {
+    fill: $display-amber;
+  }
+
+  .WhiteLine {
+    stroke: $display-white;
+    stroke-width: 2;
+  }
+
+
+  #APU {
+    text {
+
+      font-size: $font-size-large;
+    }
+  }
+
+  .FlowShape {
+    fill-opacity: 0;
+    stroke: $display-green;
+    stroke-width: 2;
+  }
+
+  .ValveGreen {
+    fill-opacity: 0;
+    stroke: $display-green;
+    stroke-width: 2;
+  }
+
+  .ValveAmber {
+    fill-opacity: 0;
+    stroke: $display-amber;
+    stroke-width: 2;
+  }
+
+  .PumpActive {
+    fill-opacity: 0;
+    stroke: $display-green;
+    stroke-width: 2;
+  }
+
+  .PumpInactive {
+    fill-opacity: 0;
+    stroke: $display-amber;
+    stroke-width: 2;
+  }
+
+  .LoIndication {
+    stroke: $display-amber;
+    fill: $display-amber !important;
+    fill-opacity: 1;
+    font-size: 16px;
+
+    text-anchor: middle;
+  }
+
+  .TankQuantity {
+    fill: $display-green;
+    font-size: $font-size-huge;
+    text-anchor: end;
+    alignment-baseline: central;
+  }
+
+  .Unit {
+    fill: $display-cyan;
+    font-size: 16px;
+  }
+
+  .UnitTemp {
+    @extend .Unit;
+    letter-spacing: -2px !important;
+  }
+
+  .FuelFlowLabel {
+    font-size: $font-size-large;
+    stroke: $display-white;
+    fill: $display-white;
+
+    text-anchor: middle;
+  }
+
+  #FuelFlowColon {
+    font-size: $font-size-medium;
+    stroke: $display-white;
+    fill: $display-white;
+  }
+
+  #FuelFlowValue {
+    @extend .TankQuantity;
+
+    font-size: $font-size-medium;
+
+    alignment-baseline: middle;
+  }
+
+  #FuelFlowUnit {
+    @extend .Unit;
+
+    alignment-baseline: middle;
+    text-anchor: start;
+  }
+
+  #FobLabel {
+    font-size: $font-size-huge;
+    stroke: $display-white;
+    fill: $display-white;
+  }
+
+  #FobColon {
+    font-size: $font-size-huge;
+    stroke: $display-white;
+    fill: $display-white;
+  }
+
+  #FobValue {
+    @extend .TankQuantity;
+
+    alignment-baseline: middle;
+    text-anchor: end;
+  }
+
+  #FobUnit {
+    @extend .Unit;
+
+    alignment-baseline: middle;
+    text-anchor: start;
+  }
+}

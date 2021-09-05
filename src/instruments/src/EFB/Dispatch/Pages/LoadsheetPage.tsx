@@ -32,7 +32,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         }
     }, [fontSize]);
 
-    const mouseDownHandler = (event) => {
+    const handleMouseDown = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
 
@@ -52,7 +52,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         document.removeEventListener('mouseup', mouseUpHandler);
     };
 
-    const fontIncreaseHandler = () => {
+    const handleFontIncrease = () => {
         let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
@@ -63,7 +63,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         }
     };
 
-    const fontDecreaseHandler = () => {
+    const handleFontDecrease = () => {
         let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
@@ -88,14 +88,14 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             <div className="flex flex-col justify-end absolute bottom-6 right-16">
                                 <button
                                     type="button"
-                                    onClick={fontIncreaseHandler}
+                                    onClick={handleFontIncrease}
                                     className="z-10 mb-2 bg-navy-regular p-2 rounded-lg bg-opacity-50"
                                 >
                                     <IconPlus size={30} />
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={fontDecreaseHandler}
+                                    onClick={handleFontDecrease}
                                     className="z-10 bg-navy-regular p-2 rounded-lg bg-opacity-50"
                                 >
                                     <IconMinus size={30} />
@@ -104,7 +104,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             <div
                                 ref={ref}
                                 className="loadsheet-container grabbable scrollbar overflow-y-scroll"
-                                onMouseDown={mouseDownHandler}
+                                onMouseDown={handleMouseDown}
                                 // eslint-disable-next-line react/no-danger
                                 dangerouslySetInnerHTML={{ __html: props.loadsheet }}
                             />

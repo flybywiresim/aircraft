@@ -15,6 +15,7 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
   CONFIGURATION_SECTION_AXIS = CONFIGURATION_SECTION_AXIS.append(stringId);
   LVAR_INPUT_VALUE = LVAR_INPUT_VALUE.append(stringId);
   LVAR_THRUST_LEVER_ANGLE = LVAR_THRUST_LEVER_ANGLE.append(stringId);
+  LVAR_LOAD_CONFIG = LVAR_LOAD_CONFIG.append(stringId);
   LVAR_USE_REVERSE_ON_AXIS = LVAR_USE_REVERSE_ON_AXIS.append(stringId);
   LVAR_DETENT_REVERSE_LOW = LVAR_DETENT_REVERSE_LOW.append(stringId);
   LVAR_DETENT_REVERSE_HIGH = LVAR_DETENT_REVERSE_HIGH.append(stringId);
@@ -32,6 +33,7 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
   // register local variables
   idInputValue = make_unique<LocalVariable>(LVAR_INPUT_VALUE.c_str());
   idThrustLeverAngle = make_unique<LocalVariable>(LVAR_THRUST_LEVER_ANGLE.c_str());
+  idUsingConfig = make_unique<LocalVariable>(LVAR_LOAD_CONFIG.c_str());
   idUseReverseOnAxis = make_unique<LocalVariable>(LVAR_USE_REVERSE_ON_AXIS.c_str());
   idDetentReverseLow = make_unique<LocalVariable>(LVAR_DETENT_REVERSE_LOW.c_str());
   idDetentReverseHigh = make_unique<LocalVariable>(LVAR_DETENT_REVERSE_HIGH.c_str());
@@ -263,7 +265,7 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration(
       -0.50,  // idle low
       -0.40,  // idle high
       -0.03,  // climb low
-      -0.07,  // climb high
+      +0.07,  // climb high
       +0.42,  // flex/mct low
       +0.52,  // flex/mct high
       +0.95,  // toga low
@@ -272,6 +274,7 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration(
 }
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromLocalVariables() {
+  idUsingConfig->set(true);
   return {idUseReverseOnAxis->get() == 1, idDetentReverseLow->get(), idDetentReverseHigh->get(), idDetentReverseIdleLow->get(),
           idDetentReverseIdleHigh->get(), idDetentIdleLow->get(),    idDetentIdleHigh->get(),    idDetentClimbLow->get(),
           idDetentClimbHigh->get(),       idDetentFlexMctLow->get(), idDetentFlexMctHigh->get(), idDetentTogaLow->get(),
@@ -302,6 +305,7 @@ void ThrottleAxisMapping::storeConfigurationInLocalVariables(const Configuration
 }
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIniStructure(const INIStructure& structure) {
+  idUsingConfig->set(true);
   return {
       INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "REVERSE_ON_AXIS", false),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_LOW", -1.00),

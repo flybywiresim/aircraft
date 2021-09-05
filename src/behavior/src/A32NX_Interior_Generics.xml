@@ -386,7 +386,8 @@
             - SEQ3_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ3 emissive drives the visibility of the SEQ3 text
             - SEQ4_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ4 emissive drives the visibility of the SEQ4 text
             - INVERTED                          False           Whether or not the switch is OFF by default
-            - LEFT_SINGLE_CODE                  Not present    Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed, and when it's released
+            - LEFT_SINGLE_CODE                  Not present     Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed
+            - LEFT_LEAVE_CODE                   Not present     Overrides HOLD_SIMVAR, will execute the specified code when the button is released
     -->
     <Template Name="FBW_Push_Held">
         <DefaultTemplateParameters>
@@ -417,12 +418,28 @@
             <UseTemplate Name="ASOBO_GT_Push_Button_Held">
                 <Condition Valid="LEFT_SINGLE_CODE">
                     <True>
-                        <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
-                        <LEFT_LEAVE_CODE>#LEFT_SINGLE_CODE#</LEFT_LEAVE_CODE>
+                        <Condition Valid="LEFT_LEAVE_CODE">
+                            <True>
+                                <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                                <LEFT_LEAVE_CODE>#LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE>
+                            </True>
+                            <False>
+                                <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                                <LEFT_LEAVE_CODE></LEFT_LEAVE_CODE>
+                            </False>
+                        </Condition>
                     </True>
                     <False>
-                        <LEFT_SINGLE_CODE>1 (>#HOLD_SIMVAR#)</LEFT_SINGLE_CODE>
-                        <LEFT_LEAVE_CODE>0 (>#HOLD_SIMVAR#)</LEFT_LEAVE_CODE>
+                        <Condition Valid="LEFT_LEAVE_CODE">
+                            <True>
+                                <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+                                <LEFT_LEAVE_CODE>#LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE>
+                            </True>
+                            <False>
+                                <LEFT_SINGLE_CODE>1 (>#HOLD_SIMVAR#)</LEFT_SINGLE_CODE>
+                                <LEFT_LEAVE_CODE>0 (>#HOLD_SIMVAR#)</LEFT_LEAVE_CODE>
+                            </False>
+                        </Condition>
                     </False>
                 </Condition>
             </UseTemplate>

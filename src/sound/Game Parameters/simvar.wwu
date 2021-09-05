@@ -1469,6 +1469,12 @@ Unit : Percent</Comment>
 							</PropertyList>
 						</GameParameter>
 						<GameParameter Name="LOCALVAR_A32NX_LEFT_WIPER_SETTING" ID="{20E51AB4-7E07-49D6-B6E3-20F89B6E15E4}"/>
+						<GameParameter Name="LOCALVAR_A32NX_COCKPIT_DOOR_LOCKED" ID="{2F9A69DC-0ADD-4D3D-A520-983F2958A1BA}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
 					</ChildrenList>
 				</Folder>
 			</ChildrenList>

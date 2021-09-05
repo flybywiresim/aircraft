@@ -20,14 +20,22 @@
 
         <!-- EFB -->
 
-        <Component ID="EFB_L" Node="SCREEN_EFB">
-            <DefaultTemplateParameters>
-                <NODE_ID>SCREEN_EFB</NODE_ID>
-            </DefaultTemplateParameters>
+        <Component ID="EFB">
+            <Component ID="SCREEN_EFB" Node="SCREEN_EFB">
+                <DefaultTemplateParameters>
+                    <NODE_ID>SCREEN_EFB</NODE_ID>
+                </DefaultTemplateParameters>
 
-            <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
-                <EMISSIVE_CODE>(L:A32NX_EFB_BRIGHTNESS, number) 10 max 100 min 100 /</EMISSIVE_CODE>
-            </UseTemplate>
+                <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+                    <EMISSIVE_CODE>(L:A32NX_EFB_BRIGHTNESS, number) 10 max 100 min 100 /</EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="PUSH_EFB_SIDE" Node="PUSH_EFB_SIDE">
+                <UseTemplate Name="ASOBO_GT_Push_Button">
+                    <LEFT_SINGLE_CODE>(&gt;H:A32NX_EFB_POWER)</LEFT_SINGLE_CODE>
+                    <TOOLTIPID>EFB power</TOOLTIPID>
+                </UseTemplate>
+            </Component>
         </Component>
 
         <Component ID="MCDU">
@@ -1279,7 +1287,7 @@
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
                     <!-- TODO: Figure out how to add custom TT in .locPak and .loc files. -->
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_ON</ANIMTIP_0>
-                    <ANIMTIP_1>Set "no smoke" prompt light to AUTO</ANIMTIP_1>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_OFF</ANIMTIP_2>
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
@@ -2684,10 +2692,9 @@
                         </Component>
 
                         <Component ID="RCDR">
-                            <UseTemplate Name="FBW_Push_Toggle">
+                            <UseTemplate Name="FBW_CVR_Ground_Control_Pushbutton">
                                 <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
                                 <PART_ID>PUSH_OVHD_RCDR_GNDCTL</PART_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_RCDR_GROUND_CONTROL_ON</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ2_CODE>(L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
@@ -3952,6 +3959,7 @@
                 <WWISE_EVENT_2>SEToff</WWISE_EVENT_2>
                 <TOOLTIPID>Toggle clock date/time</TOOLTIPID>
                 <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_DATE)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>(&gt;H:A32NX_CHRONO_DATE)</LEFT_LEAVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">

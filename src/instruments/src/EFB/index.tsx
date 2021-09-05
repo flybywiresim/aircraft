@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MemoryRouter as Router } from 'react-router-dom';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
@@ -8,15 +8,7 @@ import './Assets/Reset.scss';
 import './Assets/Efb.scss';
 import { render } from '../Common/index';
 import { readSettingsFromPersistentStorage } from './Settings/sync';
-import { useSimVar } from '../Common/simVars';
-
-const ScreenBlank = () => {
-    const [, setTurnedOn] = useSimVar('L:A32NX_EFB_TURNED_ON', 'number');
-
-    return (
-        <div onClick={() => setTurnedOn(1)} style={{ width: '100vw', height: '100vh' }} />
-    );
-};
+import { useInteractionEvent } from '../util';
 
 const ScreenLoading = () => (
     <div className="loading-screen">
@@ -33,44 +25,52 @@ const ScreenLoading = () => (
     </div>
 );
 
-const EFBLoad = () => {
-    const [content, setContent] = useState('off');
-    const [isTurnedOn, setTurnedOn] = useSimVar('L:A32NX_EFB_TURNED_ON', 'number');
+export enum ContentState {
+    OFF,
+    LOADING,
+    LOADED
+}
 
-    useEffect(() => {
-        switch (isTurnedOn) {
-        case 0:
-            setContent('off');
-            break;
-        case 1:
-            if (content !== 'loading') {
-                setContent('loading');
-                setTimeout(() => {
-                    setTurnedOn(2);
-                }, 6000);
-            }
-            break;
-        case 2:
-            setContent('loaded');
-            break;
-        default:
-            throw new RangeError();
+interface PowerContextInterface {
+    content: ContentState,
+    setContent: (ContentState) => void
+}
+
+export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
+
+const EFBLoad = () => {
+    const [content, setContent] = useState<ContentState>(ContentState.OFF);
+
+    function offToLoaded() {
+        setContent(ContentState.LOADING);
+        setTimeout(() => {
+            setContent(ContentState.LOADED);
+        }, 6000);
+    }
+
+    useInteractionEvent('A32NX_EFB_POWER', () => {
+        if (content === ContentState.OFF) {
+            offToLoaded();
+        } else {
+            setContent(ContentState.OFF);
         }
-    }, [isTurnedOn]);
+    });
 
     switch (content) {
-    case 'off':
-        return <ScreenBlank />;
-    case 'loading':
+    case ContentState.OFF:
+        return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
+    case ContentState.LOADING:
         return <ScreenLoading />;
-    case 'loaded':
+    case ContentState.LOADED:
         return (
             <Router>
-                <Efb />
+                <PowerContext.Provider value={{ content, setContent }}>
+                    <Efb />
+                </PowerContext.Provider>
             </Router>
         );
     default:
-        throw new Error();
+        throw new Error('Invalid content state provided');
     }
 };
 

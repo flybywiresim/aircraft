@@ -5,24 +5,13 @@
 			<ChildrenList>
 				<Event Name="Play_Asobo_A320_NEO_light_switch_seatbelt" ID="{FCAF9BD1-3F13-4779-BD27-5C7D4BAE4AC9}">
 					<ChildrenList>
-						<Action Name="" ID="{54D794F2-E165-4732-961E-0D7D87B64423}" ShortID="342604536">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="12"/>
-								<Property Name="Volume" Type="Real64" Value="-4"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="seatbelt" ID="{9207D07D-554E-4478-98E7-2347C7C4E359}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
 						<Action Name="" ID="{4E83A951-2A8E-4EFC-866F-3437BFE0C0A4}" ShortID="158550068">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="1"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="seatbelt" ID="{9207D07D-554E-4478-98E7-2347C7C4E359}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+									<ObjectRef Name="seatbelt" ID="{ACEF131D-8D9A-4DBA-8B69-8B9F291CE198}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
@@ -30,24 +19,13 @@
 				</Event>
 				<Event Name="Play_Asobo_A320_NEO_cockpit_cabin_call_fwd" ID="{9DE4AF9A-E81F-4A93-8C1D-3E93DCBBFEC5}">
 					<ChildrenList>
-						<Action Name="" ID="{B264D8AF-9143-4AC0-8672-68A86F316730}" ShortID="598570066">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="12"/>
-								<Property Name="Volume" Type="Real64" Value="-10"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="cabincrewbell" ID="{01322D71-CD4B-43BC-AE3D-977B4495B791}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
 						<Action Name="" ID="{136F5DB1-5157-40A9-AA64-F9B80CFCEB19}" ShortID="295153840">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="1"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="cabincrewbell" ID="{01322D71-CD4B-43BC-AE3D-977B4495B791}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+									<ObjectRef Name="cabincall" ID="{8A4D9B80-EC0A-4A98-B6A5-ED3AD4A3372C}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
@@ -55,24 +33,13 @@
 				</Event>
 				<Event Name="Play_Asobo_A320_NEO_cockpit_cabin_call_aft" ID="{D9D1B1AD-43F3-4218-84B3-70417CCC74F2}">
 					<ChildrenList>
-						<Action Name="" ID="{52F3D980-0847-4F27-84A1-7C8AE84C27F8}" ShortID="491221372">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="12"/>
-								<Property Name="Volume" Type="Real64" Value="-30"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="cabincrewbell" ID="{01322D71-CD4B-43BC-AE3D-977B4495B791}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
 						<Action Name="" ID="{6C158A38-EC20-46F1-9280-A6846D3322CD}" ShortID="724233801">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="1"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="cabincrewbell" ID="{01322D71-CD4B-43BC-AE3D-977B4495B791}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+									<ObjectRef Name="cabincall" ID="{8A4D9B80-EC0A-4A98-B6A5-ED3AD4A3372C}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
@@ -292,7 +259,7 @@
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="4chimes" ID="{0D7D9287-CC49-464E-9DF7-E752244FB490}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+									<ObjectRef Name="CIDSchimes" ID="{73DFA546-7F42-4E01-BC32-E1EF0DBA8A32}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
@@ -334,7 +301,7 @@
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="cabincrewbell3" ID="{95ECBA39-D78D-4703-A5E3-4F84B20E7DF2}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+									<ObjectRef Name="emercabincall" ID="{95ECBA39-D78D-4703-A5E3-4F84B20E7DF2}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
@@ -1720,6 +1687,16 @@
 										</Reference>
 									</ReferenceList>
 								</Action>
+								<Action Name="" ID="{15CA1A5A-59C3-45DA-9D03-410B11C304EE}" ShortID="72362158">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="ExL_01" ID="{57AB96DF-5547-4865-8780-31517277DB06}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
 							</ChildrenList>
 						</Event>
 						<Event Name="Play_Asobo_A320_NEO_FlyOverR" ID="{BDD6378F-2B46-4DD4-9E1A-F12C68E76976}">
@@ -1751,6 +1728,16 @@
 									<ReferenceList>
 										<Reference Name="Target">
 											<ObjectRef Name="ExR" ID="{E35FDB4A-2012-490C-8E89-09AE061A04AF}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+								<Action Name="" ID="{455B80AC-BD1D-41EC-B17E-CBFD9DBBB63C}" ShortID="352148193">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="ExR_01" ID="{034DBF05-905F-4E0C-9362-CB12D237D218}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 										</Reference>
 									</ReferenceList>
 								</Action>
@@ -1918,6 +1905,16 @@
 										</Reference>
 									</ReferenceList>
 								</Action>
+								<Action Name="" ID="{F3EF4B89-7E0F-4D44-804D-E414FADAD26B}" ShortID="72439749">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="LSpool_03" ID="{566E6BFA-D0FF-4A7B-B4DD-7A745051BC46}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
 							</ChildrenList>
 						</Event>
 						<Event Name="Play_Asobo_A320_NEO_RSpoolB" ID="{6EFA99A9-DD93-4A17-B990-C79A8C820163}">
@@ -1939,6 +1936,16 @@
 									<ReferenceList>
 										<Reference Name="Target">
 											<ObjectRef Name="RSpool_02" ID="{C24090CF-695A-4217-8242-9067E5614F91}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+								<Action Name="" ID="{D120D908-5D3C-438A-97FC-AB49938A519B}" ShortID="958548915">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="RSpool_03" ID="{4F24A130-F4A3-4532-ACFF-6F79C648D9BD}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 										</Reference>
 									</ReferenceList>
 								</Action>
@@ -2689,6 +2696,48 @@
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="RSToff" ID="{7C378CED-A4D5-46D1-8BED-B1228DFC4A1D}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_firetestbutton" ID="{805B7750-7930-474F-8BAB-8039DD86011E}">
+					<ChildrenList>
+						<Action Name="" ID="{2C23F721-3F12-4C4A-B352-6856E0135EE2}" ShortID="445950528">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="firetestbutton" ID="{1C6D6C7E-A56E-45A4-BD8C-E526A0B50ED1}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_roundbutton" ID="{E5129742-7EBF-4B58-B8AE-C60B9001732F}">
+					<ChildrenList>
+						<Action Name="" ID="{2BBEF7A8-A93E-42B0-BAC2-B88E62EF68DA}" ShortID="855735135">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="roundbutton" ID="{ED1C70A7-C242-4362-8AD3-83A8DA93C1DD}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_aural_stall_new" ID="{B5730D77-9EDE-44E7-A6AB-5930F7463EB3}">
+					<ChildrenList>
+						<Action Name="" ID="{9A7F1302-DA40-4B57-A3FC-4D7078FE795D}" ShortID="127619685">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="stall" ID="{B769975B-E1D7-47E2-A4DE-92E5F6373C4F}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>

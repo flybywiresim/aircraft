@@ -3,7 +3,7 @@ import React, { useEffect, useState, useReducer } from 'react';
 import { Provider } from 'react-redux';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
-import { usePersistentProperty } from '../Common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from './StatusBar/StatusBar';
@@ -121,6 +121,7 @@ const Efb = () => {
 
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
+    const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 5000);
 
     // handle setting brightness if user is using autobrightness
@@ -130,8 +131,10 @@ const Efb = () => {
             // the below code defines a semicircular function.
             // eslint-disable-next-line no-restricted-properties
             setBrightness(((Math.sqrt(48 - Math.pow((localTime - 14), 2))) * 14.431) || 0);
+        } else {
+            setBrightness(brightnessSetting);
         }
-    }, [currentLocalTime]);
+    }, [currentLocalTime, usingAutobrightness]);
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
@@ -178,9 +181,7 @@ const Efb = () => {
             return;
         }
 
-        console.log('Fetching simbriefData');
         const returnedSimbriefData = await getSimbriefData(simbriefUsername);
-        console.info(returnedSimbriefData);
         setSimbriefData({
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,

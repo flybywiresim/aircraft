@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty, usePersistentPropertyWithDefault } from '../../../Common/persistence';
+import { usePersistentProperty } from '../../../Common/persistence';
 
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import Input from '../../Components/Form/Input/Input';
@@ -23,7 +23,7 @@ interface Props {
 const DetentConfig: React.FC<Props> = (props: Props) => {
     const [showWarning, setShowWarning] = useState(false);
 
-    const [deadZone, setDeadZone] = usePersistentPropertyWithDefault(`THROTTLE_${props.throttleNumber}DETENT_${props.index}_RANGE`, '0.05');
+    const [deadZone, setDeadZone] = usePersistentProperty(`THROTTLE_${props.throttleNumber}DETENT_${props.index}_RANGE`, '0.05');
 
     const [previousMode, setPreviousMode] = useState(props.expertMode);
     const [axisValue, setAxisValue] = usePersistentProperty(`THROTTLE_${props.throttleNumber}AXIS_${props.index}_VALUE`);
@@ -56,7 +56,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
             props.setInitialize(false);
         }
         setPreviousMode(props.expertMode);
-    });
+    }, [axisValue, props, setAxisValue, deadZone, setDeadZone]);
 
     return (
         <div className="mb-2 w-full h-96 justify-between items-center p-2 flex flex-row flex-shrink-0">
@@ -89,7 +89,6 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 && (
                     <div className="flex flex-col w-full">
                         <Input
-                            key={props.index}
                             label="Deadband +/-"
                             className=" w-52 dark-option mb-4"
                             value={deadZone}
@@ -119,7 +118,6 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 && (
                     <div>
                         <Input
-                            key={props.index}
                             label="Configure End"
                             className="dark-option w-36 mr-0"
                             value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
@@ -134,7 +132,6 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             }}
                         />
                         <Input
-                            key={props.index}
                             label={props.expertMode ? 'Configure Start' : 'Configure Range'}
                             className="dark-option mt-2 w-36"
                             value={!props.expertMode ? deadZone : props.lowerBoundDetentGetter.toFixed(2)}

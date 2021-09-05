@@ -2,19 +2,26 @@
   "LocalisationPackage": {
     "Language": "de-DE",
     "Strings": {
-      "AIRCRAFT.DESCRIPTION": "Die erste A320 von Airbus wurde 1984 der Weltöffentlichkeit präsentiert. 26 Jahre später, 2010, verkündete das Unternehmen, dass die Familie ein neues Mitglied in ihrer Mitte begrüßen kann, die A320neo (neo: neue Triebwerksoption), die dazu beitragen soll, die Unternehmenslinie der weltweit führenden Schmalrumpfflugzeuge mit Doppel-Mantelstromtriebwerk zu revitalisieren und in die Zukunft zu führen.<\/br><\/br>Nach einem ausgedehnten Entwicklungsprozess wurde die A320neo von der Lufthansa 2016 in Betrieb genommen und entwickelte sich rasch zum am meisten verkauften Flugzeug aller Zeiten, wobei bis zum heutigen Tag 115 verschiedene Airlines insgesamt 7.000 Flugzeuge orderten.<\/br><\/br>Ganz im Sinne der Tradition, die mit der ursprünglichen A320 begründet wurde – diese war die erste Passagiermaschine, mit Ausnahme der Concorde, die für normale Operationen auf die Fly-by-Wire-Steuerung setzte – teilt die A320neo eine mehr als 95 %ige Gemeinsamkeit der Flugzeugzelle mit ihren Vorgängern. Allerdings versteht es die A320neo ebenfalls, sich entsprechend abzugrenzen: und zwar durch die Einführung zweier Triebwerke der neuesten Generation, die mit den unternehmenseigenen „Sharklet“-Flügelspitzen kombiniert werden.<\/br><\/br>Zu den Schlüsselverbesserungen der neo zählen unter anderem Treibstoffersparnis, eine größere Reichweite und erhöhte max. Ladung sowie eine verkürzte Landedistanz als auch eine dramatische Reduzierung der Lautstärke und der Kohlenstoffdioxid-Emissionen. All dies bezeugt, dass die A320 nicht nur ein kommerzieller Erfolg, sondern auch ein wichtiger Schritt hin zu einem Kurs der Luftfahrt ist, bei dem es um eine größere Umweltverantwortlichkeit geht.",
+      "AIRCRAFT.DESCRIPTION": "Die erste A320 von Airbus wurde 1984 der Weltöffentlichkeit präsentiert. 26 Jahre später, 2010, verkündete das Unternehmen, dass die Familie ein neues Mitglied in ihrer Mitte begrüßen kann, die A320neo (neo: neue Triebwerksoption), die dazu beitragen soll, die Unternehmenslinie der weltweit führenden Schmalrumpfflugzeuge mit Doppel-Mantelstromtriebwerk zu revitalisieren und in die Zukunft zu führen.<\/br><\/br>Nach einem ausgedehnten Entwicklungsprozess wurde die A320neo von der Lufthansa 2016 in Betrieb genommen und entwickelte sich rasch zum am meisten verkauften Flugzeug aller Zeiten, wobei bis zum heutigen Tag 115 verschiedene Airlines insgesamt 7.000 Flugzeuge orderten.<\/br><\/br>Ganz im Sinne der Tradition, die mit der ursprünglichen A320 begründet wurde – diese war die erste Passagiermaschine, mit Ausnahme der Concorde, die für normale Operationen auf die Fly-by-Wire-Steuerung setzte – teilt die A320neo eine mehr als 95 %ige Gemeinsamkeit der Flugzeugzelle mit ihren Vorgängern. Allerdings versteht es die A320neo ebenfalls, sich entsprechend abzugrenzen: und zwar durch die Einführung zweier Triebwerke der neuesten Generation, die mit den unternehmenseigenen „Sharklet“-Flügelspitzen kombiniert werden.<\/br><\/br>Zu den Schlüsselverbesserungen der neo zählen unter anderem Treibstoffersparnis, eine größere Reichweite und erhöhte max. Ladung sowie eine verkürzte Landedistanz als auch eine dramatische Reduzierung der Lautstärke und der Kohlenstoffdioxid-Emissionen. All dies bezeugt, dass die A320 nicht nur ein kommerzieller Erfolg, sondern auch ein wichtiger Schritt hin zu einem Kurs der Luftfahrt ist, bei dem es um eine größere Umweltverantwortlichkeit geht.",
       "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
       "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
       "AIRCRAFT.UI_VARIATION": "Airbus",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ausgewählten Steuerkurs nach links anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ausgewählten Steuerkurs nach rechts anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Ausgewählten Kurs nach links anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Ausgewählten Kurs nach rechts anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ausgewählten Steuerkurs nach links anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ausgewählten Steuerkurs nach rechts anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "PFD-Helligkeit links verringern",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "PFD-Helligkeit links erhöhen",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "PFD-Helligkeit rechts verringern",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "PFD-Helligkeit rechts erhöhen",
       "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU verfügbar",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "\"Rauchen verboten\"-Leuchte auf automatisch stellen",
       "A32NX.LOADING.TIPS.A320NEO_001": "Der FlyByWire A32NX ist das Ergebnis der Zusammenarbeit von Hunderten von individuellen Mitwirkenden.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Wussten Sie schon? Der A320 kann bei Seitenwinden bis zu 38 Knoten und Rückenwinden von bis zu 15 Knoten landen!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire ist nach der Fly-by-Wire-Steuerung benannt, die im Airbus A320 erstmals eingeführt wurde.",
       "A32NX.LOADING.TIPS.A320NEO_004": "Es wurden bislang über 9900 Flugzeuge der A320-Familie gebaut! Das sind fast so viele wie die Bevölkerung von Tuvalu!",
       "A32NX.LOADING.TIPS.A320NEO_005": "Airbus A320neo Flugzeuge haben eine Reichweite von 3500 NM oder 6500 KM. Das ist genug, um von New York nach Paris zu fliegen!",
-      "A32NX.LOADING.TIPS.A320NEO_006": "Wussten Sie schon? Die A320-Familie hat 4 Varianten! Den A318, A319, A320 und A321."
+      "A32NX.LOADING.TIPS.A320NEO_006": "Wussten Sie schon? Die A320-Familie hat 4 Varianten: Den A318, A319, A320 und A321."
     }
   }
 }

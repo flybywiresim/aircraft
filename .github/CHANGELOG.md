@@ -4,6 +4,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.8.0
+1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
+1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
+
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
@@ -169,9 +173,20 @@
 1. [ARCH] Failures are supported - @davidwalschots (David Walschots)
 1. [HYD] Updated fix for autobrake rotating knob type controllers - @Crocket63 (crocket)
 1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
+1. [MISC] Added JP, FI, SE, NO and NL language support for tooltips. - @kpotschi (MelodyConnor)
+1. [ECAM] Rewrite fuel page for React - @Benjozork (Benjamin Dupont) and @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
 1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
 1. [GPWS] Fix "retard" callout so it plays at less than 20 ft radio altitude with autopilot off - @donstim (donbikes#4084)
+1. [FADAC] Fix "fuel used. Fuel used is reset to zero when an engine is restarted on the gound. - john P Maguire#9027
+1. [SOUNDS] Replace all remaining Asobo sounds - @hotshotp (boris#8008)
+1. [SOUNDS] Implement an early version of closed vs open cockpit door sounds - @hotshotp (boris#8008)
+1. [OVHD] CVR ground test auto-resets on first engine start - @tracernz (Mike)
+1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022
+1. [ECAM] ENG oil temperature amber while below takeoff minimum - @tracernz (Mike)
+1. [MISC] Sync settings across instruments - @tracernz (Mike)
+1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
+1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -412,6 +427,8 @@
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
 1. [MISC] Added Marketplace Data - @kiwi2021 (kiwi2022#0001)
 1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
+1. [FBW] Improved pitch/C* law using streamlined pitch rate target - @aguther (Andreas Guther)
+1. [AP] Improved ALT* law that targets 0.05g capture - @aguther (Andreas Guther)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

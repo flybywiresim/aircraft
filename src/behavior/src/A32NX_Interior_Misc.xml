@@ -645,4 +645,54 @@
                 </Default>
             </Switch>
     </Template>
+
+    <Template Name="FBW_CVR_Ground_Control_Pushbutton">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <GNDCTL_PERMISSIVES type="rnp" return="boolean">
+// from 801PP via CB 4RK
+alias ctlPower = (L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED, bool);
+
+// emulate 12KS1 and 12KS2
+alias eng1OilPressure = (A:GENERAL ENG OIL PRESSURE:1, psi);
+alias eng2OilPressure = (A:GENERAL ENG OIL PRESSURE:2, psi);
+let lowOilPressureThreshold = 18;
+let eng1Off = eng1OilPressure &lt; lowOilPressureThreshold;
+let eng2Off = eng2OilPressure &lt; lowOilPressureThreshold;
+
+// permissives for relay 12TU
+ctlPower and eng1Off and eng2Off
+            </GNDCTL_PERMISSIVES>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="FBW_Push_Held">
+            <LEFT_SINGLE_CODE type="rnp">
+let groundControlPermissives = #GNDCTL_PERMISSIVES, bool#;
+alias groundCtl = (L:A32NX_RCDR_GROUND_CONTROL_ON, bool);
+alias groundCtlWasOn = (O:GroundCtlWasOn, bool);
+
+groundCtlWasOn = groundCtl;
+if !groundCtlWasOn and groundControlPermissives {
+	groundCtl = true;
+}
+            </LEFT_SINGLE_CODE>
+            <LEFT_LEAVE_CODE type="rnp">
+alias groundCtl = (L:A32NX_RCDR_GROUND_CONTROL_ON, bool);
+alias groundCtlWasOn = (O:GroundCtlWasOn, bool);
+
+if groundCtlWasOn {
+	groundCtl = false;
+}
+            </LEFT_LEAVE_CODE>
+            <MOMENTARY/>
+        </UseTemplate>
+        <Update Frequency="2" type="rnp">
+let groundControlPermissives = #GNDCTL_PERMISSIVES, bool#;
+alias groundCtl = (L:A32NX_RCDR_GROUND_CONTROL_ON, bool);
+
+if groundCtl and !groundControlPermissives {
+    groundCtl = false;
+}
+        </Update>
+    </Template>
 </ModelBehaviors>
