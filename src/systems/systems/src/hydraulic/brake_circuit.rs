@@ -1,6 +1,7 @@
 use crate::{
     hydraulic::HydraulicLoop,
     overhead::PressSingleSignalButton,
+    shared::pid::Pid,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
@@ -402,10 +403,7 @@ impl Default for AutobrakePanel {
 /// Deceleration governor is the PI controller computing the expected brake force to reach the target
 /// it's been given by update caller
 pub struct AutobrakeDecelerationGovernor {
-    target: Acceleration,
-    i_gain: f64,
-    p_gain: f64,
-    last_error: f64,
+    pid_controller: Pid,
 
     current_output: f64,
     filtered_acceleration: Acceleration,
@@ -417,13 +415,11 @@ pub struct AutobrakeDecelerationGovernor {
 impl AutobrakeDecelerationGovernor {
     // Low pass filter for controller acceleration input, time constant in second
     const ACCELERATION_INPUT_FILTER: f64 = 0.1;
+    const RESET_ACCEL_VALUE_M_S_SQUARED: f64 = 10.;
 
     pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
-            target: Acceleration::new::<meter_per_second_squared>(10.),
-            i_gain: 0.018,
-            p_gain: 0.18,
-            last_error: 0.,
+            pid_controller: Pid::new(0.3, 0.25, 0., -1., 0., 0.),
 
             current_output: 0.,
             filtered_acceleration: Acceleration::new::<meter_per_second_squared>(0.),
@@ -448,7 +444,8 @@ impl AutobrakeDecelerationGovernor {
     fn disengage(&mut self) {
         self.is_engaged = false;
         self.time_engaged = Duration::from_secs(0);
-        self.target = Acceleration::new::<meter_per_second_squared>(10.);
+        self.pid_controller
+            .reset(Self::RESET_ACCEL_VALUE_M_S_SQUARED);
     }
 
     pub fn time_engaged(&self) -> Duration {
@@ -457,11 +454,14 @@ impl AutobrakeDecelerationGovernor {
 
     pub fn is_on_target(&self, percent_margin_to_target: Ratio) -> bool {
         self.is_engaged
-            && self.filtered_acceleration < self.target * percent_margin_to_target.get::<ratio>()
+            && self.filtered_acceleration
+                < Acceleration::new::<meter_per_second_squared>(self.pid_controller.setpoint())
+                    * percent_margin_to_target.get::<ratio>()
     }
 
     pub fn update(&mut self, context: &UpdateContext, target: Acceleration) {
-        self.target = target;
+        self.pid_controller
+            .change_setpoint(target.get::<meter_per_second_squared>());
 
         let accel = context.long_accel();
         self.filtered_acceleration = self.filtered_acceleration
@@ -471,19 +471,21 @@ impl AutobrakeDecelerationGovernor {
         if self.is_engaged {
             self.time_engaged += context.delta();
 
-            let target_error = self.filtered_acceleration.get::<meter_per_second_squared>()
-                - self.target.get::<meter_per_second_squared>();
+            self.current_output = -self.pid_controller.next_control_output(
+                self.filtered_acceleration.get::<meter_per_second_squared>(),
+                Some(context.delta()),
+            );
 
-            let p_term = self.p_gain * (target_error - self.last_error);
-            let i_term = self.i_gain * target_error;
-            self.current_output += p_term + i_term;
-
-            self.last_error = target_error;
-
-            self.current_output = self.current_output.min(1.).max(0.);
+            println!(
+                "{:.2},{:.2},{:.2}",
+                self.pid_controller.setpoint(),
+                self.filtered_acceleration.get::<meter_per_second_squared>(),
+                self.current_output
+            );
         } else {
-            self.last_error = 0.;
             self.current_output = 0.;
+            self.pid_controller
+                .reset(Self::RESET_ACCEL_VALUE_M_S_SQUARED);
         }
     }
 
