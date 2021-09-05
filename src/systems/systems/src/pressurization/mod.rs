@@ -1,5 +1,6 @@
 use self::{
     cabin_pressure_controller::CabinPressureController,
+    cabin_pressure_simulation::CabinPressure,
     pressure_valve::{PressureValve, PressureValveSignal},
 };
 use crate::{
@@ -20,13 +21,19 @@ use uom::si::{
     velocity::{foot_per_minute, knot},
 };
 mod cabin_pressure_controller;
+mod cabin_pressure_simulation;
 mod pressure_valve;
 
 trait OutflowValveActuator {
-    fn target_valve_position(&self, press_overhead: &PressurizationOverheadPanel) -> Ratio;
+    fn target_valve_position(
+        &self,
+        press_overhead: &PressurizationOverheadPanel,
+        cabin_pressure_simulation: &CabinPressure,
+    ) -> Ratio;
 }
 
 pub struct Pressurization {
+    cabin_pressure_simulation: CabinPressure,
     cpc: [CabinPressureController; 2],
     outflow_valve: PressureValve,
     safety_valve: PressureValve,
@@ -50,6 +57,7 @@ impl Pressurization {
         }
 
         Self {
+            cabin_pressure_simulation: CabinPressure::new(),
             cpc: [CabinPressureController::new(); 2],
             outflow_valve: PressureValve::new_open(),
             safety_valve: PressureValve::new_closed(),
@@ -72,12 +80,36 @@ impl Pressurization {
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
+        self.cabin_pressure_simulation.update(
+            context,
+            self.outflow_valve.open_amount(),
+            self.safety_valve.open_amount(),
+            self.packs_are_on,
+            self.lgciu_gear_compressed,
+            self.cpc[self.active_system - 1].is_ground(),
+        );
+
         if !press_overhead.ldg_elev_is_auto() {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob.value())
         }
         self.lgciu_gear_compressed = lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
+
+        for controller in self.cpc.iter_mut() {
+            controller.update(
+                context,
+                engines,
+                self.cabin_pressure_simulation.exterior_pressure(),
+                self.landing_elevation,
+                self.sea_level_pressure,
+                self.destination_qnh,
+                self.lgciu_gear_compressed,
+                self.cabin_pressure_simulation.cabin_pressure(),
+            );
+            controller.update_outflow_valve_state(&self.outflow_valve);
+            controller.update_safety_valve_state(&self.safety_valve);
+        }
 
         self.residual_pressure_controller.update(
             context,
@@ -87,22 +119,11 @@ impl Pressurization {
             self.lgciu_gear_compressed,
         );
 
-        for controller in self.cpc.iter_mut() {
-            controller.update(
-                context,
-                engines,
-                self.landing_elevation,
-                self.sea_level_pressure,
-                self.destination_qnh,
-                self.packs_are_on,
-                self.lgciu_gear_compressed,
-            );
-            controller.update_outflow_valve_state(&self.outflow_valve);
-            controller.update_safety_valve_state(&self.safety_valve);
-        }
-
-        self.outflow_valve
-            .calculate_outflow_valve_position(&self.cpc[self.active_system - 1], press_overhead);
+        self.outflow_valve.calculate_outflow_valve_position(
+            &self.cpc[self.active_system - 1],
+            press_overhead,
+            &self.cabin_pressure_simulation,
+        );
         if matches!(self.residual_pressure_controller.signal(), Some(_)) {
             self.outflow_valve
                 .update(context, &self.residual_pressure_controller);
@@ -151,13 +172,13 @@ impl SimulationElement for Pressurization {
         );
         writer.write(
             "PRESS_CABIN_VS",
-            self.cpc[self.active_system - 1]
+            self.cabin_pressure_simulation
                 .cabin_vs()
                 .get::<foot_per_minute>(),
         );
         writer.write(
             "PRESS_CABIN_DELTA_PRESSURE",
-            self.cpc[self.active_system - 1].cabin_delta_p(),
+            self.cabin_pressure_simulation.cabin_delta_p(),
         );
         writer.write(
             "PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE",
@@ -492,6 +513,8 @@ mod tests {
                 self.write("OVHD_PRESS_MAN_VS_CTL_SWITCH", 0);
             } else if position == 2 {
                 self.write("OVHD_PRESS_MAN_VS_CTL_SWITCH", 2);
+            } else {
+                self.write("OVHD_PRESS_MAN_VS_CTL_SWITCH", 1);
             }
             self
         }
@@ -528,6 +551,10 @@ mod tests {
                 ));
                 for _ in 1..10 {
                     self.run();
+                    self.run();
+                    self.run();
+                    self.run();
+                    self.run();
                 }
             }
             self.set_ambient_pressure(Pressure::new::<hectopascal>(
@@ -543,15 +570,15 @@ mod tests {
         }
 
         fn cabin_vs(&self) -> Velocity {
-            self.query(|a| a.pressurization.cpc[0].cabin_vs())
+            self.query(|a| a.pressurization.cabin_pressure_simulation.cabin_vs())
         }
 
         fn cabin_pressure(&self) -> Pressure {
-            self.query(|a| a.pressurization.cpc[0].cabin_pressure())
+            self.query(|a| a.pressurization.cabin_pressure_simulation.cabin_pressure())
         }
 
         fn cabin_delta_p(&self) -> Pressure {
-            self.query(|a| a.pressurization.cpc[0].cabin_delta_p())
+            self.query(|a| a.pressurization.cabin_pressure_simulation.cabin_delta_p())
         }
 
         fn outflow_valve_open_amount(&self) -> Ratio {
@@ -607,11 +634,11 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.run_with_delta(Duration::from_secs(10));
-        let last_cabin_pressure = test_bed.query(|a| a.pressurization.cpc[0].cabin_pressure());
+        let last_cabin_pressure = test_bed.cabin_pressure();
 
         test_bed =
             test_bed.command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.));
-        assert!(last_cabin_pressure > test_bed.query(|a| a.pressurization.cpc[0].cabin_pressure()));
+        assert!(last_cabin_pressure > test_bed.cabin_pressure());
     }
 
     #[test]
@@ -652,6 +679,7 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed = test_bed.iterate(5);
 
         assert!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
@@ -702,6 +730,8 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.run_with_delta(Duration::from_secs_f64(20.));
+        test_bed = test_bed.iterate(5);
+
         assert!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
                 < Ratio::new::<percent>(90.)
@@ -726,6 +756,7 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed = test_bed.iterate(5);
 
         assert!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
@@ -774,6 +805,7 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.run_with_delta(Duration::from_secs_f64(31.));
+        test_bed = test_bed.iterate(5);
 
         assert!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
@@ -1082,7 +1114,7 @@ mod tests {
 
         test_bed.run();
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
-        test_bed.run();
+        test_bed = test_bed.iterate(5);
 
         test_bed = test_bed
             .command_aircraft_climb(Length::new::<foot>(1000.), Length::new::<foot>(39000.));
@@ -1091,7 +1123,6 @@ mod tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
 
         test_bed = test_bed.iterate(10);
-
         assert!(test_bed.cabin_delta_p() < Pressure::new::<psi>(8.06));
     }
 
@@ -1172,7 +1203,7 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(465.67));
-        test_bed = test_bed.iterate(10);
+        test_bed = test_bed.iterate(40);
         let initial_cabin_pressure = test_bed.cabin_pressure();
         test_bed = test_bed.command_ditching_pb_on();
         test_bed = test_bed.command_packs_off();
@@ -1186,13 +1217,13 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.set_ambient_pressure(test_bed.cabin_pressure());
-        test_bed = test_bed.iterate(10);
+        test_bed = test_bed.iterate(40);
         let initial_cabin_pressure = test_bed.cabin_pressure();
         test_bed = test_bed.command_ditching_pb_on();
         test_bed = test_bed.command_packs_off();
-        test_bed = test_bed.iterate(10);
+        test_bed = test_bed.iterate(100);
 
-        assert!((test_bed.cabin_pressure() - initial_cabin_pressure) < Pressure::new::<psi>(0.01));
+        assert!((test_bed.cabin_pressure() - initial_cabin_pressure) < Pressure::new::<psi>(0.1));
     }
 
     #[test]

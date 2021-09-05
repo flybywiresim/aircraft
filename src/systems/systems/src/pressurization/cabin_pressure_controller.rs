@@ -4,10 +4,11 @@ use crate::{
 };
 
 use super::{
-    OutflowValveActuator, PressureValve, PressureValveSignal, PressurizationOverheadPanel,
+    CabinPressure, OutflowValveActuator, PressureValve, PressureValveSignal,
+    PressurizationOverheadPanel,
 };
 
-use std::{convert::TryInto, time::Duration};
+use std::time::Duration;
 use uom::si::{
     f64::*,
     length::{foot, meter},
@@ -20,18 +21,14 @@ use uom::si::{
 #[derive(Copy, Clone)]
 pub(super) struct CabinPressureController {
     pressure_schedule_manager: PressureScheduleManager,
-    previous_exterior_pressure: [Pressure; 20],
     exterior_pressure: Pressure,
     cabin_pressure: Pressure,
     cabin_alt: Length,
     departure_elev: Length,
     landing_elev: Length,
     cabin_target_vs: Velocity,
-    cabin_vs: Velocity,
     outflow_valve_open_amount: Ratio,
     safety_valve_open_amount: Ratio,
-    cabin_flow_in: VolumeRate,
-    cabin_flow_out: VolumeRate,
 }
 
 impl CabinPressureController {
@@ -44,10 +41,8 @@ impl CabinPressureController {
 
     // Aircraft constants
     const RHO: f64 = 1.225; // Cabin air density - Kg/m3
-    const AREA_LEAKAGE: f64 = 0.0003; // m2
     const CABIN_VOLUME: f64 = 400.; // m3
     const OFV_SIZE: f64 = 0.03; // m2
-    const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
     const C: f64 = 1.; // Flow coefficient
 
     // Vertical speed constraints
@@ -61,18 +56,14 @@ impl CabinPressureController {
     pub fn new() -> Self {
         Self {
             pressure_schedule_manager: PressureScheduleManager::new(),
-            previous_exterior_pressure: [Pressure::new::<hectopascal>(1013.25); 20],
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
             cabin_pressure: Pressure::new::<hectopascal>(1013.25),
             cabin_alt: Length::new::<meter>(0.),
             departure_elev: Length::new::<foot>(-5000.),
             landing_elev: Length::new::<meter>(0.),
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
-            cabin_vs: Velocity::new::<meter_per_second>(0.),
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
             safety_valve_open_amount: Ratio::new::<percent>(0.),
-            cabin_flow_in: VolumeRate::new::<cubic_meter_per_second>(0.),
-            cabin_flow_out: VolumeRate::new::<cubic_meter_per_second>(0.),
         }
     }
 
@@ -81,42 +72,24 @@ impl CabinPressureController {
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
+        exterior_pressure: Pressure,
         landing_elevation: Length,
         sea_level_pressure: Pressure,
         destination_qnh: Pressure,
-        packs_are_on: bool,
         lgciu_gear_compressed: bool,
+        cabin_pressure: Pressure,
     ) {
+        self.exterior_pressure = exterior_pressure;
+        self.cabin_pressure = cabin_pressure;
+        self.landing_elev = landing_elevation;
+
         self.pressure_schedule_manager =
             self.pressure_schedule_manager
                 .update(context, engines, lgciu_gear_compressed);
-        self.exterior_pressure = self.exterior_pressure_low_pass_filter(context);
+
         self.departure_elev = self.calculate_departure_elev(context);
-        self.landing_elev = landing_elevation;
         self.cabin_target_vs = self.calculate_cabin_vs(context);
-        self.cabin_flow_in = self.calculate_cabin_flow_in(packs_are_on, context);
-        self.cabin_flow_out = self.calculate_cabin_flow_out();
-        self.cabin_vs = self.set_cabin_vs();
-        self.cabin_pressure = self.calculate_cabin_pressure(context, lgciu_gear_compressed);
         self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
-    }
-
-    fn exterior_pressure_low_pass_filter(&mut self, context: &UpdateContext) -> Pressure {
-        let mut previous_pressure_vector: Vec<Pressure> = self.previous_exterior_pressure.to_vec();
-        previous_pressure_vector.remove(0);
-        previous_pressure_vector.push(context.ambient_pressure());
-
-        self.previous_exterior_pressure = previous_pressure_vector
-            .try_into()
-            .unwrap_or_else(|_| [context.ambient_pressure(); 20]);
-
-        let pressure_sum: f64 = self
-            .previous_exterior_pressure
-            .iter()
-            .map(|x| x.get::<hectopascal>())
-            .sum();
-
-        Pressure::new::<hectopascal>(pressure_sum / 20.)
     }
 
     fn calculate_departure_elev(&self, context: &UpdateContext) -> Length {
@@ -141,7 +114,7 @@ impl CabinPressureController {
                 }
             }
             PressureScheduleManager::TakeOff(_) => {
-                if self.cabin_delta_p() < Pressure::new::<psi>(0.1) {
+                if (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(0.1) {
                     Velocity::new::<foot_per_minute>(Self::TAKEOFF_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
@@ -156,7 +129,9 @@ impl CabinPressureController {
                     context.vertical_speed().get::<foot_per_minute>()
                         * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
                 );
-                if self.cabin_delta_p() >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT) {
+                if (self.cabin_pressure - self.exterior_pressure)
+                    >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT)
+                {
                     Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE)
                 } else if self.cabin_altitude() >= Length::new::<foot>(CABIN_ALTITUDE_LIMIT) {
                     Velocity::new::<foot_per_minute>(0.)
@@ -215,163 +190,6 @@ impl CabinPressureController {
         self.cabin_alt - self.landing_elev
     }
 
-    fn calculate_z(&self) -> f64 {
-        const Z_VALUE_FOR_RP_CLOSE_TO_1: f64 = 0.0011;
-        const Z_VALUE_FOR_RP_UNDER_053: f64 = 0.256;
-
-        let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
-
-        let margin = 0.004;
-        if (pressure_ratio - 1.).abs() <= margin {
-            Z_VALUE_FOR_RP_CLOSE_TO_1
-        } else if pressure_ratio > 0.53 {
-            (pressure_ratio.powf(2. / CabinPressureController::GAMMA)
-                - pressure_ratio
-                    .powf((CabinPressureController::GAMMA + 1.) / CabinPressureController::GAMMA))
-            .abs()
-        } else {
-            Z_VALUE_FOR_RP_UNDER_053
-        }
-    }
-
-    fn calculate_cabin_flow_in(&self, packs_are_on: bool, context: &UpdateContext) -> VolumeRate {
-        // Placeholder until Air Con system is simulated
-        const INTERNAL_FLOW_RATE_CHANGE: f64 = 0.1;
-        // Equivalent to 0.25kg of air per minute per passenger
-        const FLOW_RATE_WITH_PACKS_ON: f64 = 0.6;
-
-        let rate_of_change_for_delta = INTERNAL_FLOW_RATE_CHANGE * context.delta_as_secs_f64();
-
-        if packs_are_on {
-            if VolumeRate::new::<cubic_meter_per_second>(FLOW_RATE_WITH_PACKS_ON)
-                > self.cabin_flow_in
-            {
-                self.cabin_flow_in
-                    + VolumeRate::new::<cubic_meter_per_second>(rate_of_change_for_delta.min(
-                        FLOW_RATE_WITH_PACKS_ON
-                            - self.cabin_flow_in.get::<cubic_meter_per_second>(),
-                    ))
-            } else {
-                VolumeRate::new::<cubic_meter_per_second>(FLOW_RATE_WITH_PACKS_ON)
-            }
-        } else if self.cabin_flow_in > VolumeRate::new::<cubic_meter_per_second>(0.) {
-            self.cabin_flow_in
-                - VolumeRate::new::<cubic_meter_per_second>(
-                    rate_of_change_for_delta
-                        .min(self.cabin_flow_in.get::<cubic_meter_per_second>()),
-                )
-        } else {
-            VolumeRate::new::<cubic_meter_per_second>(0.)
-        }
-    }
-
-    fn calculate_cabin_flow_out(&self) -> VolumeRate {
-        let error_margin = Pressure::new::<hectopascal>(1.);
-        let z = self.calculate_z();
-        let area_leakage = CabinPressureController::AREA_LEAKAGE
-            + CabinPressureController::SAFETY_VALVE_SIZE
-                * self.safety_valve_open_amount.get::<ratio>();
-        let w_leakage = VolumeRate::new::<cubic_meter_per_second>(
-            CabinPressureController::C
-                * area_leakage
-                * ((2.
-                    * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
-                    * CabinPressureController::RHO
-                    * self.cabin_pressure.get::<pascal>()
-                    * z)
-                    .abs())
-                .sqrt(),
-        );
-        if (self.cabin_pressure - self.exterior_pressure).abs() > error_margin {
-            w_leakage
-        } else {
-            VolumeRate::new::<cubic_meter_per_second>(0.)
-        }
-    }
-
-    fn set_cabin_vs(&self) -> Velocity {
-        const Z_VALUE_FOR_RP_CLOSE_TO_1: f64 = 0.0011;
-
-        let equilibrium_ratio = self.calculate_equilibrium_outflow_valve_open_amount();
-        let error_margin = f64::EPSILON;
-        let z = self.calculate_z();
-
-        if (z - Z_VALUE_FOR_RP_CLOSE_TO_1).abs() < error_margin
-            && (self.outflow_valve_open_amount >= equilibrium_ratio
-                || (self.outflow_valve_open_amount == Ratio::new::<percent>(100.)
-                    && equilibrium_ratio > Ratio::new::<percent>(100.)))
-        {
-            // Create linear vs to avoid singularity at delta P = 0
-            if self.calculate_linear_vs().abs() < Velocity::new::<foot_per_minute>(0.1) {
-                Velocity::new::<foot_per_minute>(0.)
-            } else {
-                self.calculate_linear_vs()
-            }
-        } else {
-            let vertical_speed =
-                if (self.exterior_pressure / self.cabin_pressure).get::<ratio>() > 1. {
-                    (self.outflow_valve_open_amount.get::<ratio>()
-                        * CabinPressureController::OFV_SIZE
-                        * CabinPressureController::C
-                        * -((2.
-                            * (CabinPressureController::GAMMA
-                                / (CabinPressureController::GAMMA - 1.))
-                            * CabinPressureController::RHO
-                            * self.cabin_pressure.get::<pascal>()
-                            * z)
-                            .abs())
-                        .sqrt()
-                        - self.cabin_flow_in.get::<cubic_meter_per_second>()
-                        - self.cabin_flow_out.get::<cubic_meter_per_second>())
-                        / ((CabinPressureController::RHO
-                            * CabinPressureController::G
-                            * CabinPressureController::CABIN_VOLUME)
-                            / (CabinPressureController::R * CabinPressureController::T_0))
-                } else {
-                    (self.outflow_valve_open_amount.get::<ratio>()
-                        * CabinPressureController::OFV_SIZE
-                        * CabinPressureController::C
-                        * ((2.
-                            * (CabinPressureController::GAMMA
-                                / (CabinPressureController::GAMMA - 1.))
-                            * CabinPressureController::RHO
-                            * self.cabin_pressure.get::<pascal>()
-                            * z)
-                            .abs())
-                        .sqrt()
-                        - self.cabin_flow_in.get::<cubic_meter_per_second>()
-                        + self.cabin_flow_out.get::<cubic_meter_per_second>())
-                        / ((CabinPressureController::RHO
-                            * CabinPressureController::G
-                            * CabinPressureController::CABIN_VOLUME)
-                            / (CabinPressureController::R * CabinPressureController::T_0))
-                };
-            Velocity::new::<meter_per_second>(vertical_speed)
-        }
-    }
-
-    fn calculate_cabin_pressure(
-        &self,
-        context: &UpdateContext,
-        lgciu_gear_compressed: bool,
-    ) -> Pressure {
-        if self.is_ground() && !lgciu_gear_compressed {
-            // Formula to simulate pressure start state if starting in flight
-            let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
-            Pressure::new::<hectopascal>(
-                -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85,
-            )
-        } else {
-            // Convert cabin V/S to pressure/delta
-            self.cabin_pressure
-                * (1.
-                    - 2.25577e-5_f64
-                        * self.cabin_vs.get::<meter_per_second>()
-                        * context.delta_as_secs_f64())
-                .powf(5.2559)
-        }
-    }
-
     fn calculate_cabin_altitude(
         &self,
         sea_level_pressure: Pressure,
@@ -420,81 +238,6 @@ impl CabinPressureController {
         Length::new::<meter>(altitude)
     }
 
-    fn calculate_equilibrium_outflow_valve_open_amount(&self) -> Ratio {
-        let z = self.calculate_z();
-
-        // Ouflow valve open area for v/s = 0
-        let ofv_area = (self.cabin_flow_in.get::<cubic_meter_per_second>()
-            - self.cabin_flow_out.get::<cubic_meter_per_second>())
-            / (CabinPressureController::C
-                * ((2.
-                    * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
-                    * CabinPressureController::RHO
-                    * self.cabin_pressure.get::<pascal>()
-                    * z)
-                    .abs())
-                .sqrt());
-
-        let ofv_ratio = Ratio::new::<ratio>(ofv_area / CabinPressureController::OFV_SIZE);
-        if ofv_ratio > Ratio::new::<percent>(100.) {
-            Ratio::new::<percent>(100.)
-        } else {
-            ofv_ratio
-        }
-    }
-
-    fn calculate_linear_vs(&self) -> Velocity {
-        let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
-        let error_margin = f64::EPSILON;
-
-        let margin = if (pressure_ratio - 1.) < error_margin {
-            0.004
-        } else {
-            -0.004
-        };
-
-        let pressure_at_margin = self.exterior_pressure * (1. + margin);
-
-        let vs_at_margin = if (pressure_ratio - 1.) > error_margin {
-            (self.outflow_valve_open_amount.get::<ratio>()
-                * CabinPressureController::OFV_SIZE
-                * CabinPressureController::C
-                * -((2.
-                    * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
-                    * CabinPressureController::RHO
-                    * pressure_at_margin.get::<pascal>()
-                    * 0.0011)
-                    .abs())
-                .sqrt()
-                - self.cabin_flow_in.get::<cubic_meter_per_second>()
-                - self.cabin_flow_out.get::<cubic_meter_per_second>())
-                / ((CabinPressureController::RHO
-                    * CabinPressureController::G
-                    * CabinPressureController::CABIN_VOLUME)
-                    / (CabinPressureController::R * CabinPressureController::T_0))
-        } else {
-            (self.outflow_valve_open_amount.get::<ratio>()
-                * CabinPressureController::OFV_SIZE
-                * CabinPressureController::C
-                * ((2.
-                    * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
-                    * CabinPressureController::RHO
-                    * pressure_at_margin.get::<pascal>()
-                    * 0.0011)
-                    .abs())
-                .sqrt()
-                - self.cabin_flow_in.get::<cubic_meter_per_second>()
-                + self.cabin_flow_out.get::<cubic_meter_per_second>())
-                / ((CabinPressureController::RHO
-                    * CabinPressureController::G
-                    * CabinPressureController::CABIN_VOLUME)
-                    / (CabinPressureController::R * CabinPressureController::T_0))
-        };
-
-        let linear_vs = (-vs_at_margin / margin * (pressure_ratio - (1. - margin))) + vs_at_margin;
-        Velocity::new::<meter_per_second>(linear_vs)
-    }
-
     pub fn update_outflow_valve_state(&mut self, outflow_valve: &PressureValve) {
         self.outflow_valve_open_amount = outflow_valve.open_amount();
     }
@@ -507,14 +250,6 @@ impl CabinPressureController {
         self.cabin_alt
     }
 
-    pub fn cabin_vs(&self) -> Velocity {
-        self.cabin_vs
-    }
-
-    pub fn cabin_delta_p(&self) -> Pressure {
-        self.cabin_pressure - self.exterior_pressure
-    }
-
     pub fn should_switch_cpc(&self) -> bool {
         self.pressure_schedule_manager.should_switch_cpc()
     }
@@ -523,32 +258,30 @@ impl CabinPressureController {
         self.pressure_schedule_manager.reset_cpc_switch();
     }
 
-    fn is_ground(&self) -> bool {
+    pub fn is_ground(&self) -> bool {
         matches!(
             self.pressure_schedule_manager,
             PressureScheduleManager::Ground(_)
         )
     }
-
-    #[cfg(test)]
-    pub fn cabin_pressure(&self) -> Pressure {
-        self.cabin_pressure
-    }
 }
 
 impl OutflowValveActuator for CabinPressureController {
-    fn target_valve_position(&self, press_overhead: &PressurizationOverheadPanel) -> Ratio {
+    fn target_valve_position(
+        &self,
+        press_overhead: &PressurizationOverheadPanel,
+        cabin_pressure_simulation: &CabinPressure,
+    ) -> Ratio {
         // Calculation extracted from:
         // F. Y. Kurokawa, C. Regina de Andrade and E. L. Zaparoli
         // DETERMINATION OF THE OUTFLOW VALVE OPENING AREA OF THE AIRCRAFT CABIN PRESSURIZATION SYSTEM
         // 18th International Congress of Mechanical Engineering
         // November 6-11, 2005, Ouro Preto, MG
 
-        let z = self.calculate_z();
-
         // Ouflow valve target open area
-        let ofv_area = (self.cabin_flow_in.get::<cubic_meter_per_second>()
-            - self.cabin_flow_out.get::<cubic_meter_per_second>()
+        let ofv_area = (cabin_pressure_simulation.cabin_flow_properties()[0]
+            .get::<cubic_meter_per_second>()
+            - cabin_pressure_simulation.cabin_flow_properties()[1].get::<cubic_meter_per_second>()
             + ((CabinPressureController::RHO
                 * CabinPressureController::G
                 * CabinPressureController::CABIN_VOLUME)
@@ -559,8 +292,8 @@ impl OutflowValveActuator for CabinPressureController {
                     * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
                     * CabinPressureController::RHO
                     * self.cabin_pressure.get::<pascal>()
-                    * z)
-                    .abs())
+                    * cabin_pressure_simulation.z_coefficient())
+                .abs())
                 .sqrt());
 
         let ofv_open_ratio = Ratio::new::<ratio>(ofv_area / CabinPressureController::OFV_SIZE);
@@ -582,12 +315,12 @@ impl OutflowValveActuator for CabinPressureController {
 // Safety valve signal
 impl ControllerSignal<PressureValveSignal> for CabinPressureController {
     fn signal(&self) -> Option<PressureValveSignal> {
-        if self.cabin_delta_p() > Pressure::new::<psi>(8.6)
-            || self.cabin_delta_p() < Pressure::new::<psi>(-1.)
+        if (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(8.6)
+            || (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(-1.)
         {
             Some(PressureValveSignal::Open)
-        } else if (self.cabin_delta_p() < Pressure::new::<psi>(8.1)
-            || self.cabin_delta_p() > Pressure::new::<psi>(-0.5))
+        } else if ((self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(8.1)
+            || (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(-0.5))
             && self.safety_valve_open_amount > Ratio::new::<percent>(0.)
         {
             Some(PressureValveSignal::Close)
@@ -1040,11 +773,12 @@ mod pressure_schedule_manager_tests {
             self.cpc.update(
                 context,
                 [&self.engine_1, &self.engine_2],
+                Pressure::new::<hectopascal>(1013.),
                 Length::new::<meter>(0.),
                 Pressure::new::<hectopascal>(1013.),
                 Pressure::new::<hectopascal>(1013.),
-                true,
                 self.lgciu_gear_compressed,
+                Pressure::new::<hectopascal>(1013.),
             );
             self.outflow_valve.update(context, &self.press_overhead);
             self.cpc.update_outflow_valve_state(&self.outflow_valve);
