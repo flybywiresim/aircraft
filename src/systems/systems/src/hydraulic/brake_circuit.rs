@@ -144,11 +144,6 @@ pub struct BrakeCircuit {
 }
 impl BrakeCircuit {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
-    const ACCUMULATOR_PRESS_BREAKPTS: [f64; 10] = [
-        0.0, 5.0, 25.0, 40.0, 100.0, 200.0, 500.0, 1000.0, 3000., 10000.0,
-    ];
-    const ACCUMULATOR_FLOW_CARAC: [f64; 10] =
-        [0.0, 0.001, 0.004, 0.006, 0.02, 0.05, 0.15, 0.35, 0.5, 0.5];
 
     // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
     // Time constant of the filter used to measure brake circuit pressure
@@ -185,8 +180,6 @@ impl BrakeCircuit {
                 Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
                 accumulator_volume,
                 accumulator_fluid_volume_at_init,
-                Self::ACCUMULATOR_PRESS_BREAKPTS,
-                Self::ACCUMULATOR_FLOW_CARAC,
                 true,
             ),
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),

@@ -229,12 +229,14 @@ pub struct Accumulator {
 impl Accumulator {
     const FLOW_DYNAMIC_LOW_PASS: f64 = 0.5;
 
+    // Gain of the delta pressure to flow relation.
+    // Higher gain enables faster flow transient but brings instability.
+    const DELTA_PRESSURE_CHARACTERISTICS: f64 = 0.01;
+
     fn new(
         gas_precharge: Pressure,
         total_volume: Volume,
         fluid_vol_at_init: Volume,
-        _press_breakpoints: [f64; 10],
-        _flow_carac: [f64; 10],
         has_control_valve: bool,
     ) -> Self {
         // Taking care of case where init volume is maxed at accumulator capacity: we can't exceed max_volume minus a margin for gas to compress
@@ -265,7 +267,8 @@ impl Accumulator {
         let accumulator_delta_press = self.gas_pressure - loop_pressure;
 
         let mut flow_variation = VolumeRate::new::<gallon_per_second>(
-            accumulator_delta_press.get::<psi>().abs().sqrt() * 0.01,
+            accumulator_delta_press.get::<psi>().abs().sqrt()
+                * Self::DELTA_PRESSURE_CHARACTERISTICS,
         );
 
         flow_variation = flow_variation * Self::FLOW_DYNAMIC_LOW_PASS
@@ -352,12 +355,6 @@ impl HydraulicCircuit {
     // in gallons
     const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.264;
 
-    const ACCUMULATOR_PRESS_BREAKPTS_PSI: [f64; 10] = [
-        0.0, 1., 5.0, 50.0, 100., 200.0, 500.0, 1000., 2000.0, 10000.0,
-    ];
-    const ACCUMULATOR_FLOW_CARAC_GAL_P_S: [f64; 10] =
-        [0.0, 0.001, 0.005, 0.05, 0.08, 0.15, 0.25, 0.35, 0.5, 0.5];
-
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &str,
@@ -421,8 +418,6 @@ impl HydraulicCircuit {
                     Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
                     Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
                     Volume::new::<gallon>(0.),
-                    Self::ACCUMULATOR_PRESS_BREAKPTS_PSI,
-                    Self::ACCUMULATOR_FLOW_CARAC_GAL_P_S,
                     false,
                 )),
                 system_pressure_switch_lo_hyst,
