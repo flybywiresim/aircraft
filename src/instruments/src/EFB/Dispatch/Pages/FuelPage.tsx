@@ -65,9 +65,9 @@ export const FuelPage = () => {
 
     const airplaneCanRefuel = () => {
         if (refuelRate !== '2') {
-           if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
-              return false;
-           }
+            if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
+                return false;
+            }
         }
         return true;
     };
@@ -214,21 +214,20 @@ export const FuelPage = () => {
     const refuelButtonStatus = () => {
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
             return (
-               <SelectGroup>
-                  <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                  <SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                  <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                <SelectGroup>
+                    <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                    <SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                    <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                </SelectGroup>
+            );
+        } 
+		return (
+                <SelectGroup>
+                    <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                    <SelectItem enabled={true} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                    <SelectItem enabled={true} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
                </SelectGroup>
             );
-        } else {
-            return (
-               <SelectGroup>
-                  <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                  <SelectItem enabled={true} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                  <SelectItem enabled={true} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
-               </SelectGroup>
-            );
-        }
     };
 
     return (
