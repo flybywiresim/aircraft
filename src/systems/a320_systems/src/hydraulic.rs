@@ -226,10 +226,13 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(0.13),
             ),
 
+            // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
+            // This is tuned down to 1.0 to match real world accumulator filling time
+            // as a faster accumulator response has too much unstability
             braking_circuit_altn: BrakeCircuit::new(
                 "ALTN",
-                Volume::new::<gallon>(1.5),
-                Volume::new::<gallon>(0.5),
+                Volume::new::<gallon>(1.0),
+                Volume::new::<gallon>(0.4),
                 Volume::new::<gallon>(0.13),
             ),
 
