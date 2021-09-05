@@ -955,7 +955,11 @@ mod tests {
 
     use std::{fs::File, time::Duration};
 
-    use uom::si::{length::foot, pressure::pascal, thermodynamic_temperature::degree_celsius};
+    use uom::si::{
+        length::foot,
+        pressure::{pascal, psi},
+        thermodynamic_temperature::degree_celsius,
+    };
 
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
@@ -1306,10 +1310,10 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .stop_eng1()
+            .idle_eng1()
             .stop_eng2()
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .set_bleed_air_running();
+            // .set_bleed_air_running()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
@@ -1447,13 +1451,9 @@ mod tests {
             .stop_eng2()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
-            .and_run();
+            .and_stabilize();
 
         let ambient_pressure = ISA::pressure_at_altitude(altitude);
-
-        // Three updates for now until propagation logic is fixed
-        test_bed.run_with_delta(Duration::from_secs(5));
-        test_bed.run_with_delta(Duration::from_secs(5));
 
         assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
         assert!((test_bed.ip_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
@@ -1464,9 +1464,9 @@ mod tests {
         assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
         assert!((test_bed.transfer_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
 
-        assert!(test_bed.precooler_inlet_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
         assert!(
-            (test_bed.precooler_inlet_pressure(2) - ambient_pressure).abs() < pressure_tolerance()
+            (test_bed.precooler_outlet_pressure(2) - ambient_pressure).abs() < pressure_tolerance()
         );
 
         assert!(!test_bed.ip_valve_is_open(1));
@@ -1474,9 +1474,6 @@ mod tests {
 
         assert!(test_bed.hp_valve_is_open(1));
         assert!(!test_bed.hp_valve_is_open(2));
-
-        assert!(test_bed.pr_valve_is_open(1));
-        assert!(!test_bed.pr_valve_is_open(2));
 
         test_bed.for_both_engine_systems(|sys| assert!(!sys.es_valve.is_open()));
         assert!(!test_bed.cross_bleed_valve_is_open());
