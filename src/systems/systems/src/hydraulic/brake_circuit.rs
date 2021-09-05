@@ -475,13 +475,6 @@ impl AutobrakeDecelerationGovernor {
                 self.filtered_acceleration.get::<meter_per_second_squared>(),
                 Some(context.delta()),
             );
-
-            println!(
-                "{:.2},{:.2},{:.2}",
-                self.pid_controller.setpoint(),
-                self.filtered_acceleration.get::<meter_per_second_squared>(),
-                self.current_output
-            );
         } else {
             self.current_output = 0.;
             self.pid_controller
