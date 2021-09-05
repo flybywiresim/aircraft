@@ -4,6 +4,9 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.8.0
+1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
+
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
@@ -425,7 +428,6 @@
 1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
 1. [FBW] Improved pitch/C* law using streamlined pitch rate target - @aguther (Andreas Guther)
 1. [AP] Improved ALT* law that targets 0.05g capture - @aguther (Andreas Guther)
-1. [AP] Allow V/S push (level off) during ALT* - @aguther (Andreas Guther)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

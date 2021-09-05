@@ -148,8 +148,6 @@ class FlyByWireModelClass {
   struct Parameters_FlyByWire_T {
     fbw_output fbw_output_MATLABStruct;
     real_T ScheduledGain_BreakpointsForDimension1[4];
-    real_T ScheduledGain_BreakpointsForDimension1_k[7];
-    real_T ScheduledGain1_BreakpointsForDimension1[7];
     real_T LagFilter_C1;
     real_T LagFilter_C1_a;
     real_T LagFilter_C1_n;
@@ -222,15 +220,12 @@ class FlyByWireModelClass {
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit_o;
     real_T ScheduledGain_Table[4];
-    real_T ScheduledGain_Table_k[7];
-    real_T ScheduledGain1_Table[7];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_c;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_d;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit_e;
     real_T CompareToConstant_const;
-    real_T CompareToConstant1_const;
     real_T CompareToConstant_const_g;
     real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterVariableTs3_lo;
@@ -487,8 +482,10 @@ class FlyByWireModelClass {
     real_T Saturation_LowerSat_lu;
     real_T Gain6_Gain_j;
     real_T Gain_Gain_cd;
+    real_T Gain_Gain_hk;
     real_T Saturation1_UpperSat_h;
     real_T Saturation1_LowerSat_g;
+    real_T Gain6_Gain_k;
     real_T Saturation2_UpperSat_e;
     real_T Saturation2_LowerSat_gp;
     real_T Saturation_UpperSat_d1;
