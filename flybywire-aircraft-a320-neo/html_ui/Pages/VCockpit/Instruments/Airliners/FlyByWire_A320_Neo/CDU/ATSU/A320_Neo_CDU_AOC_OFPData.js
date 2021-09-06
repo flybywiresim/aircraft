@@ -209,8 +209,8 @@ class CDUAocOfpData {
         }
 
         function buildStationValue(station) {
-            const targetPax = SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number");
-            const pax = SimVar.GetSimVarValue(station.simVar, "Number");
+            const targetPax = SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number");
+            const pax = SimVar.GetSimVarValue(`L:${station.simVar}`, "Number");
 
             const suffix = targetPax === pax ? "[color]green" : "[color]cyan";
 
@@ -225,7 +225,7 @@ class CDUAocOfpData {
                     maxValue: station.seats,
                 },
                 async (value) => {
-                    await SimVar.SetSimVarValue(`${station.simVar}_DESIRED`, "Number", value);
+                    await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", value);
                     updateView();
                 }
             );
@@ -240,7 +240,7 @@ class CDUAocOfpData {
                 const pax = Math.min(paxToFill, station.seats);
                 station.pax = pax;
 
-                await SimVar.SetSimVarValue(`${station.simVar}_DESIRED`, "Number", parseInt(pax));
+                await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(pax));
 
                 paxRemaining -= pax;
             }
@@ -262,8 +262,8 @@ class CDUAocOfpData {
         }
 
         function buildTotalPaxValue() {
-            const currentPax = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(station.simVar, "Number")).reduce((acc, cur) => acc + cur);
-            const paxTarget = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
+            const currentPax = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur);
+            const paxTarget = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
 
             const suffix = paxTarget === currentPax ? "[color]green" : "[color]cyan";
 
@@ -368,95 +368,9 @@ async function loadFuel(mcdu, updateView) {
     updateView();
 }
 
-const paxStations = {
-    rows1_6: {
-        name: 'ROWS [1-6]',
-        seats: 36,
-        weight: 3024,
-        stationIndex: 2 + 1,
-        position: 21.98,
-        seatsRange: [1, 36],
-        simVar: "L:A32NX_PAX_TOTAL_ROWS_1_6",
-    },
-    rows7_13: {
-        name: 'ROWS [7-13]',
-        seats: 42,
-        weight: 3530,
-        stationIndex: 3 + 1,
-        position: 2.86,
-        seatsRange: [37, 78],
-        simVar: "L:A32NX_PAX_TOTAL_ROWS_7_13",
-    },
-    rows14_21: {
-        name: 'ROWS [14-21]',
-        seats: 48,
-        weight: 4032,
-        stationIndex: 4 + 1,
-        position: -15.34,
-        seatsRange: [79, 126],
-        simVar: "L:A32NX_PAX_TOTAL_ROWS_14_21",
-    },
-    rows22_29: {
-        name: 'ROWS [22-29]',
-        seats: 48,
-        weight: 4032,
-        stationIndex: 5 + 1,
-        position: -32.81,
-        seatsRange: [127, 174],
-        simVar: "L:A32NX_PAX_TOTAL_ROWS_22_29",
-    },
-};
-
-const cargoStations = {
-    pilot: {
-        name: 'PILOT',
-        weight: 84,
-        stationIndex: 0 + 1,
-        position: 42.36,
-        visible: false,
-        simVar: 'PAYLOAD STATION WEIGHT:1',
-    },
-    firstOfficer: {
-        name: 'FIRST OFFICER',
-        weight: 84,
-        stationIndex: 1 + 1,
-        position: 42.36,
-        visible: false,
-        simVar: 'PAYLOAD STATION WEIGHT:2',
-    },
-    fwdBag: {
-        name: '[FWD BAGGAGE/CONTAINER]',
-        weight: 3402,
-        stationIndex: 6 + 1,
-        position: 18.28,
-        visible: true,
-        simVar: 'PAYLOAD STATION WEIGHT:7',
-    },
-    aftCont: {
-        name: '[AFT CONTAINER]',
-        weight: 2426,
-        stationIndex: 7 + 1,
-        position: -15.96,
-        visible: true,
-        simVar: 'PAYLOAD STATION WEIGHT:8',
-    },
-    aftBag: {
-        name: '[AFT BAGGAGE]',
-        weight: 2110,
-        stationIndex: 8 + 1,
-        position: -27.10,
-        visible: true,
-        simVar: 'PAYLOAD STATION WEIGHT:9',
-    },
-    aftBulk: {
-        name: '[AFT BULK/LOOSE]',
-        weight: 1497,
-        stationIndex: 9 + 1,
-        position: -37.35,
-        visible: true,
-        simVar: 'PAYLOAD STATION WEIGHT:10',
-    },
-};
+const payloadConstruct = new A32NX_PayloadConstructor();
+const paxStations = payloadConstruct.paxStations;
+const cargoStations = payloadConstruct.payloadStations;
 
 const MAX_SEAT_AVAILABLE = 174;
 const PAX_WEIGHT = 84;
@@ -475,11 +389,11 @@ function getZfwcg() {
     const emptyPosition = -8.75; // Value from flight_model.cfg
     const emptyMoment = emptyPosition * emptyWeight;
 
-    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
-    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number") * currentPaxWeight) * station.position).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number") * currentPaxWeight) * station.position).reduce((acc, cur) => acc + cur, 0);
 
-    const payloadTotalMass = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(station.simVar, "Number")).reduce((acc, cur) => acc + cur, 0);
-    const payloadTotalMoment = Object.values(cargoStations).map((station) => (SimVar.GetSimVarValue(station.simVar, "Number") * station.position)).reduce((acc, cur) => acc + cur, 0);
+    const payloadTotalMass = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur, 0);
+    const payloadTotalMoment = Object.values(cargoStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * station.position)).reduce((acc, cur) => acc + cur, 0);
 
     const totalMass = emptyWeight + paxTotalMass + payloadTotalMass;
     const totalMoment = emptyMoment + paxTotalMoment + payloadTotalMoment;
@@ -492,7 +406,7 @@ function getZfwcg() {
 }
 
 function getTotalCargo() {
-    const cargoTotalMass = Object.values(cargoStations).filter((station) => station.visible).map((station) => SimVar.GetSimVarValue(station.simVar, "Number")).reduce((acc, cur) => acc + cur, 0);
+    const cargoTotalMass = Object.values(cargoStations).filter((station) => station.visible).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur, 0);
 
     return cargoTotalMass;
 }
@@ -500,7 +414,7 @@ function getTotalCargo() {
 function getTotalPayload() {
     const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
 
-    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
     const cargoTotalMass = getTotalCargo();
 
     return paxTotalMass + cargoTotalMass;
