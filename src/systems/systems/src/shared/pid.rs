@@ -2,7 +2,7 @@ use std::time::Duration;
 
 // Pid controller implementation
 // Implementation in a recursive form
-// u(k+1) = u(k) + (e(k)-e(k-1))*Kp + e(k) * Ki * dt + (e(k)- 2*e(k-1) + e(k-2)) * Kd / dt
+// u(k+1) = u(k) + (e(k) - e(k-1)) * Kp + e(k) * Ki * dt + (e(k) - 2 * e(k-1) + e(k-2)) * Kd / dt
 // For variable dt add dt duration as argument, if fixed dt or scheduled synchronously with controlled system input None as dt
 pub struct Pid {
     kp: f64,
