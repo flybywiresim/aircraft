@@ -220,14 +220,14 @@ export const FuelPage = () => {
                     <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
                 </SelectGroup>
             );
-        } 
-		return (
-                <SelectGroup>
-                    <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                    <SelectItem enabled={true} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                    <SelectItem enabled={true} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
-               </SelectGroup>
-            );
+        }
+        return (
+            <SelectGroup>
+                <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                <SelectItem enabled={true} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                <SelectItem enabled={true} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+            </SelectGroup>
+        );
     };
 
     return (
