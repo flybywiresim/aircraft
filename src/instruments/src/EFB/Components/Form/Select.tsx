@@ -14,19 +14,21 @@ export const activeButtonRow = (props) => {
     if (props.enabled && props.selected) {
         return ('text-lg font-medium bg-teal-light-contrast text-blue-darkest text-white py-2 px-3.5 rounded-lg');
     }
-    if (props.enabled && !props.selected) {
+    else if (props.enabled && !props.selected) {
         return ('text-lg font-medium text-white py-2 px-3.5 rounded-lg');
     }
-    if (!props.enabled) {
+    else if (!props.enabled) {
         return ('text-lg font-medium text-gray-600 py-2 px-3.5 rounded-lg');
     }
-    return;
+    else {
+        return undefined;
+    }
 };
 
 export const SelectItem: React.FC<SelectItemProps> = (props) => (
     <span
         onClick={props.onSelect || (() => {})}
-        className={`${props.classNames} ` + activeButtonRow(props)}
+        className={`${props.classNames} ${activeButtonRow(props)}`}
     >
         {props.children}
     </span>
