@@ -215,7 +215,7 @@ export const FuelPage = () => {
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
             return (
                 <SelectGroup>
-                    <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                    <SelectItem enabled selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
                     <SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
                     <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
                 </SelectGroup>
@@ -223,9 +223,9 @@ export const FuelPage = () => {
         }
         return (
             <SelectGroup>
-                <SelectItem enabled={true} selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                <SelectItem enabled={true} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                <SelectItem enabled={true} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                <SelectItem enabled selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                <SelectItem enabled selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                <SelectItem enabled selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
             </SelectGroup>
         );
     };
