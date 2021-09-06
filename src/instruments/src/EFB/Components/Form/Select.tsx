@@ -17,8 +17,6 @@ export const activeButtonRow = (props) => {
         return ('text-lg font-medium text-white py-2 px-3.5 rounded-lg');
     } else if (!props.enabled) {
         return ('text-lg font-medium text-gray-600 py-2 px-3.5 rounded-lg');
-    } else {
-        return undefined;
     }
 };
 
