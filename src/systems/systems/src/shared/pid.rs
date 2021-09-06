@@ -41,7 +41,9 @@ impl Pid {
     pub fn setpoint(&self) -> f64 {
         self.setpoint
     }
-
+    pub fn output(&self) -> f64 {
+        self.output
+    }
     pub fn reset(&mut self, setpoint: f64) {
         self.output = 0.;
         self.change_setpoint(setpoint);
