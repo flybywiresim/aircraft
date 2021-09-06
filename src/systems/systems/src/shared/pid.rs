@@ -117,7 +117,7 @@ mod tests {
     fn derivative() {
         let mut pid = Pid::new(0.0, 0.0, 2.0, -100.0, 100., 10.0);
 
-        //No derivative term for first two updates
+        // No derivative term for first two updates
         assert!((pid.next_control_output(0.0, None) - 0.).abs() < f64::EPSILON);
         assert!((pid.next_control_output(0.0, None) - 0.).abs() < f64::EPSILON);
 
