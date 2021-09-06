@@ -65,8 +65,13 @@ export class FlightPlanAsoboSync {
                           await fpln.setDestination(data.waypoints[data.waypoints.length - 1].icao);
 
                           // set route
+
                           const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
-                          const enroute = data.waypoints.slice(enrouteStart);
+                          // Find out first approach waypoint, - 1 to skip destination
+                          const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 1 : data.arrivalWaypointsSize) - 1;
+                          const enroute = data.waypoints.slice(enrouteStart, enrouteEnd - 1);
+                          debugger;
+
                           for (let i = 0; i < enroute.length - 1; i++) {
                               const wpt = enroute[i];
                               console.log(wpt.icao);
@@ -91,6 +96,9 @@ export class FlightPlanAsoboSync {
                           await fpln.setArrivalEnRouteTransitionIndex(data.arrivalEnRouteTransitionIndex);
 
                           // set approach
+                          //  rwy index
+                          await fpln.setDestinationRunwayIndex(data.arrivalRunwayIndex);
+                          await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex);
                           //  approach index
                           await fpln.setApproachIndex(data.approachIndex);
                           //  approachtrans index
