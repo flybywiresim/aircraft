@@ -20,6 +20,7 @@ export const activeButtonRow = (props) => {
     if (!props.enabled) {
         return ('text-lg font-medium text-gray-600 py-2 px-3.5 rounded-lg');
     }
+    return undefined;
 };
 
 export const SelectItem: React.FC<SelectItemProps> = (props) => (
