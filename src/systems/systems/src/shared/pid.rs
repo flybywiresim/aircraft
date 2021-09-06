@@ -95,8 +95,8 @@ impl Pid {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
+
     #[test]
     fn pid_init() {
         let pid = Pid::new(1., 1., 1., 0., 1., 1.);
