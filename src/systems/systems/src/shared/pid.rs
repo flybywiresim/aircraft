@@ -124,7 +124,7 @@ mod tests {
         // Test that there's a derivative at 3rd update
         assert!((pid.next_control_output(5.0, None) - -10.).abs() < f64::EPSILON);
 
-        //Then no more derivative term
+        // Then no more derivative term
         assert!((pid.next_control_output(5.0, None) - 0.).abs() < f64::EPSILON);
         assert!((pid.next_control_output(5.0, None) - 0.).abs() < f64::EPSILON);
     }
