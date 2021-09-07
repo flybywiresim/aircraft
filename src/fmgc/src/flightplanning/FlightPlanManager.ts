@@ -137,9 +137,9 @@ export class FlightPlanManager {
      * @param {() => void} callback A callback to call when the update has completed.
      * @param {Boolean} log Whether or not to log the loaded flight plan value.
      */
-    public updateFlightPlan(callback: () => void = () => { }, log = false): void {
+    public updateFlightPlan(callback: () => void = () => { }, log = false, force = false): void {
         const flightPlanVersion = SimVar.GetSimVarValue('L:WT.FlightPlan.Version', 'number');
-        if (flightPlanVersion !== this._currentFlightPlanVersion) {
+        if (flightPlanVersion !== this._currentFlightPlanVersion || force) {
             this._loadFlightPlans();
             this._currentFlightPlanVersion = flightPlanVersion;
         }
