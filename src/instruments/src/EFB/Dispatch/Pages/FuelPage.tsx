@@ -63,9 +63,16 @@ export const FuelPage = () => {
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
     const getFuelBarPercent = (curr:number, max: number) => (Math.max(curr, 0) / max) * 100;
 
+    const isAirplaneCnD = () => {
+        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
+            return false;
+        }
+        return true;
+    };
+
     const airplaneCanRefuel = () => {
         if (refuelRate !== '2') {
-            if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
+            if (!isAirplaneCnD()) {
                 return false;
             }
         }
@@ -212,20 +219,20 @@ export const FuelPage = () => {
     };
 
     const refuelButtonStatus = () => {
-        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
+        if (isAirplaneCnD()) {
             return (
                 <SelectGroup>
                     <SelectItem enabled selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                    <SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                    <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                    <SelectItem enabled selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                    <SelectItem enabled selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
                 </SelectGroup>
             );
         }
         return (
             <SelectGroup>
                 <SelectItem enabled selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                <SelectItem enabled selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                <SelectItem enabled selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                <SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
             </SelectGroup>
         );
     };
