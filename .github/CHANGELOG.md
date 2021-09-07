@@ -9,7 +9,6 @@
 1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
 
-
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
