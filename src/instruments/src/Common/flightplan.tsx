@@ -32,8 +32,8 @@ export const useCurrentFlightPlan = (): ManagedFlightPlan => {
     useEffect(() => {
         flightPlanManager.updateFlightPlan(() => {
             setCurrentFlightPlan(flightPlanManager.getCurrentFlightPlan());
-        });
-    }, [flightPlanVersion]);
+        }, false, true);
+    }, [flightPlanManager, flightPlanVersion]);
 
     return currentFlightPlan;
 };
@@ -75,7 +75,7 @@ export const parseApproachName = (name: string): ApproachNameComponents | undefi
     return {
         type: match[1],
         runway: match[3],
-        designator: match[5]
+        designator: match[5],
     };
 };
 
@@ -89,6 +89,6 @@ export const normaliseApproachName = (name: string): string => {
     if (!appr) {
         return '';
     }
-    const suffix = appr.designator ? '-' + appr.designator : '';
+    const suffix = appr.designator ? `-${appr.designator}` : '';
     return `${appr.type}${Avionics.Utils.formatRunway(appr.runway)}${suffix}`;
-}
+};
