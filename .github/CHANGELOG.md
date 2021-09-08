@@ -7,6 +7,7 @@
 ## 0.8.0
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
+1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
 
 ## 0.7.0
