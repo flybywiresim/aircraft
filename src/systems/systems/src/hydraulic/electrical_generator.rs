@@ -89,7 +89,7 @@ struct HydraulicMotor {
     acceleration: AngularAcceleration,
     speed: AngularVelocity,
 
-    intertia: f64,
+    inertia: f64,
     generated_torque: Torque,
     total_torque: Torque,
     displacement: Volume,
@@ -111,7 +111,7 @@ impl HydraulicMotor {
             acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
             speed: AngularVelocity::new::<radian_per_second>(0.),
 
-            intertia: Self::MOTOR_INERTIA,
+            inertia: Self::MOTOR_INERTIA,
             generated_torque: Torque::new::<newton_meter>(0.),
             total_torque: Torque::new::<newton_meter>(0.),
             displacement,
@@ -140,9 +140,9 @@ impl HydraulicMotor {
 
     fn updateHydMotorTorque(&mut self, pressure: Pressure) {
         self.updateHydMotorDisplacement();
-        self.generated_torque = Torque::new::<pound_force_inch>(
-            pressure.get::<psi>() * self.virtual_displacement.get::<cubic_inch>() / 2.
-                * std::f64::consts::PI,
+        self.generated_torque = Torque::new::<newton_meter>(
+            0.112982933 * pressure.get::<psi>() * self.virtual_displacement.get::<cubic_inch>()
+                / (2. * std::f64::consts::PI),
         );
     }
 
@@ -158,7 +158,7 @@ impl HydraulicMotor {
         self.total_torque += self.generated_torque;
 
         self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
-            self.total_torque.get::<newton_meter>() / self.intertia,
+            self.total_torque.get::<newton_meter>() / self.inertia,
         );
         self.speed += AngularVelocity::new::<radian_per_second>(
             self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
@@ -272,7 +272,7 @@ mod tests {
     impl TestGeneratorControlUnit {
         fn commanding_full_open() -> Self {
             Self {
-                power_demand: Power::new::<watt>(3000.),
+                power_demand: Power::new::<watt>(30.),
                 valve_position_request: Ratio::new::<ratio>(1.),
             }
         }
@@ -323,7 +323,7 @@ mod tests {
         let mut indicated_airspeed = context.indicated_airspeed();
 
         let mut time = 0.0;
-        for x in 0..500{
+        for x in 0..500 {
             emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
 
             time += timestep;
