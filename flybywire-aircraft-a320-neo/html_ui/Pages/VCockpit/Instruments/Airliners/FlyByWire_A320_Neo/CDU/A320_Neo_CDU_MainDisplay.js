@@ -89,7 +89,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return "A320_Neo_CDU";
     }
     get isInteractive() {
-        return NXDataStore.get("MCDU_KB_INPUT", "DISABLED") === "ENABLED";
+        return true;
     }
     connectedCallback() {
         super.connectedCallback();
