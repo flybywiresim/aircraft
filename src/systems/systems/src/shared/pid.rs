@@ -16,6 +16,7 @@ pub struct Pid {
 
     error_k_1: Option<f64>,
     error_k_2: Option<f64>,
+
     output: f64,
 }
 
