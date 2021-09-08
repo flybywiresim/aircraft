@@ -5,7 +5,7 @@ use uom::si::{
     f64::*,
     pressure::{hectopascal, pascal},
     ratio::{percent, ratio},
-    velocity::{foot_per_minute, meter_per_second},
+    velocity::meter_per_second,
     volume_rate::cubic_meter_per_second,
 };
 
@@ -15,6 +15,7 @@ pub(crate) struct CabinPressure {
     outflow_valve_open_amount: Ratio,
     safety_valve_open_amount: Ratio,
     z_coefficient: f64,
+    flow_coefficient: f64,
     cabin_flow_in: VolumeRate,
     cabin_flow_out: VolumeRate,
     cabin_vs: Velocity,
@@ -34,7 +35,6 @@ impl CabinPressure {
     const CABIN_VOLUME: f64 = 400.; // m3
     const OFV_SIZE: f64 = 0.03; // m2
     const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
-    const C: f64 = 1.; // Flow coefficient
 
     pub fn new() -> Self {
         Self {
@@ -43,6 +43,7 @@ impl CabinPressure {
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
             safety_valve_open_amount: Ratio::new::<percent>(0.),
             z_coefficient: 0.0011,
+            flow_coefficient: 1.,
             cabin_flow_in: VolumeRate::new::<cubic_meter_per_second>(0.),
             cabin_flow_out: VolumeRate::new::<cubic_meter_per_second>(0.),
             cabin_vs: Velocity::new::<meter_per_second>(0.),
@@ -61,6 +62,7 @@ impl CabinPressure {
     ) {
         self.exterior_pressure = self.exterior_pressure_low_pass_filter(context);
         self.z_coefficient = self.calculate_z();
+        self.flow_coefficient = self.calculate_flow_coefficient(lgciu_gear_compressed);
         self.outflow_valve_open_amount = outflow_valve_open_amount;
         self.safety_valve_open_amount = safety_valve_open_amount;
         self.cabin_flow_in = self.calculate_cabin_flow_in(packs_are_on, context);
@@ -89,12 +91,13 @@ impl CabinPressure {
     }
 
     fn calculate_z(&self) -> f64 {
-        const Z_VALUE_FOR_RP_CLOSE_TO_1: f64 = 0.0011;
+        const Z_VALUE_FOR_RP_CLOSE_TO_1: f64 = 1e-5;
         const Z_VALUE_FOR_RP_UNDER_053: f64 = 0.256;
 
         let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
 
-        let margin = 0.004;
+        // Margin to avoid singularity at delta P = 0
+        let margin = 1e-5;
         if (pressure_ratio - 1.).abs() <= margin {
             Z_VALUE_FOR_RP_CLOSE_TO_1
         } else if pressure_ratio > 0.53 {
@@ -106,9 +109,25 @@ impl CabinPressure {
         }
     }
 
+    fn calculate_flow_coefficient(&self, lgciu_gear_compressed: bool) -> f64 {
+        let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
+
+        let margin = 0.02;
+        // Empirical smooth formula to avoid singularity at pressure ratio = 1
+        if (pressure_ratio - 1.).abs() < margin && !lgciu_gear_compressed {
+            -1e5 * pressure_ratio.powf(3.) + 3e5 * pressure_ratio.powf(2.)
+                - 300010. * pressure_ratio
+                + 100010.
+        } else if (pressure_ratio - 1.) > 0. {
+            -1.
+        } else {
+            1.
+        }
+    }
+
     fn calculate_cabin_flow_in(&self, packs_are_on: bool, context: &UpdateContext) -> VolumeRate {
         // Placeholder until Air Con system is simulated
-        const INTERNAL_FLOW_RATE_CHANGE: f64 = 0.1;
+        const INTERNAL_FLOW_RATE_CHANGE: f64 = 0.2;
         // Equivalent to 0.25kg of air per minute per passenger
         const FLOW_RATE_WITH_PACKS_ON: f64 = 0.6;
 
@@ -138,11 +157,10 @@ impl CabinPressure {
     }
 
     fn calculate_cabin_flow_out(&self) -> VolumeRate {
-        let error_margin = Pressure::new::<hectopascal>(1.);
         let area_leakage = Self::AREA_LEAKAGE
             + Self::SAFETY_VALVE_SIZE * self.safety_valve_open_amount.get::<ratio>();
-        let w_leakage = VolumeRate::new::<cubic_meter_per_second>(
-            Self::C
+        VolumeRate::new::<cubic_meter_per_second>(
+            self.flow_coefficient
                 * area_leakage
                 * ((2.
                     * (Self::GAMMA / (Self::GAMMA - 1.))
@@ -151,131 +169,24 @@ impl CabinPressure {
                     * self.z_coefficient)
                     .abs())
                 .sqrt(),
-        );
-        if (self.cabin_pressure - self.exterior_pressure).abs() > error_margin {
-            w_leakage
-        } else {
-            VolumeRate::new::<cubic_meter_per_second>(0.)
-        }
+        )
     }
 
     fn set_cabin_vs(&self) -> Velocity {
-        const Z_VALUE_FOR_RP_CLOSE_TO_1: f64 = 0.0011;
-
-        let equilibrium_ratio = self.calculate_equilibrium_outflow_valve_open_amount();
-        let error_margin = f64::EPSILON;
-
-        if (self.z_coefficient - Z_VALUE_FOR_RP_CLOSE_TO_1).abs() < error_margin
-            && (self.outflow_valve_open_amount >= equilibrium_ratio
-                || (self.outflow_valve_open_amount == Ratio::new::<percent>(100.)
-                    && equilibrium_ratio > Ratio::new::<percent>(100.)))
-        {
-            // Create linear vs to avoid singularity at delta P = 0
-            if self.calculate_linear_vs().abs() < Velocity::new::<foot_per_minute>(0.1) {
-                Velocity::new::<foot_per_minute>(0.)
-            } else {
-                self.calculate_linear_vs()
-            }
-        } else {
-            let vertical_speed =
-                if (self.exterior_pressure / self.cabin_pressure).get::<ratio>() > 1. {
-                    (self.outflow_valve_open_amount.get::<ratio>()
-                        * Self::OFV_SIZE
-                        * Self::C
-                        * -((2.
-                            * (Self::GAMMA / (Self::GAMMA - 1.))
-                            * Self::RHO
-                            * self.cabin_pressure.get::<pascal>()
-                            * self.z_coefficient)
-                            .abs())
-                        .sqrt()
-                        - self.cabin_flow_in.get::<cubic_meter_per_second>()
-                        - self.cabin_flow_out.get::<cubic_meter_per_second>())
-                        / ((Self::RHO * Self::G * Self::CABIN_VOLUME) / (Self::R * Self::T_0))
-                } else {
-                    (self.outflow_valve_open_amount.get::<ratio>()
-                        * Self::OFV_SIZE
-                        * Self::C
-                        * ((2.
-                            * (Self::GAMMA / (Self::GAMMA - 1.))
-                            * Self::RHO
-                            * self.cabin_pressure.get::<pascal>()
-                            * self.z_coefficient)
-                            .abs())
-                        .sqrt()
-                        - self.cabin_flow_in.get::<cubic_meter_per_second>()
-                        + self.cabin_flow_out.get::<cubic_meter_per_second>())
-                        / ((Self::RHO * Self::G * Self::CABIN_VOLUME) / (Self::R * Self::T_0))
-                };
-            Velocity::new::<meter_per_second>(vertical_speed)
-        }
-    }
-
-    fn calculate_equilibrium_outflow_valve_open_amount(&self) -> Ratio {
-        // Ouflow valve open area for v/s = 0
-        let ofv_area = (self.cabin_flow_in.get::<cubic_meter_per_second>()
-            - self.cabin_flow_out.get::<cubic_meter_per_second>())
-            / (Self::C
-                * ((2.
-                    * (Self::GAMMA / (Self::GAMMA - 1.))
-                    * Self::RHO
-                    * self.cabin_pressure.get::<pascal>()
-                    * self.z_coefficient)
-                    .abs())
-                .sqrt());
-
-        let ofv_ratio = Ratio::new::<ratio>(ofv_area / Self::OFV_SIZE);
-        if ofv_ratio > Ratio::new::<percent>(100.) {
-            Ratio::new::<percent>(100.)
-        } else {
-            ofv_ratio
-        }
-    }
-
-    fn calculate_linear_vs(&self) -> Velocity {
-        let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
-        let error_margin = f64::EPSILON;
-
-        let margin = if (pressure_ratio - 1.) < error_margin {
-            0.004
-        } else {
-            -0.004
-        };
-
-        let pressure_at_margin = self.exterior_pressure * (1. + margin);
-
-        let vs_at_margin = if (pressure_ratio - 1.) > error_margin {
-            (self.outflow_valve_open_amount.get::<ratio>()
-                * Self::OFV_SIZE
-                * Self::C
-                * -((2.
-                    * (Self::GAMMA / (Self::GAMMA - 1.))
-                    * Self::RHO
-                    * pressure_at_margin.get::<pascal>()
-                    * 0.0011)
-                    .abs())
-                .sqrt()
-                - self.cabin_flow_in.get::<cubic_meter_per_second>()
-                - self.cabin_flow_out.get::<cubic_meter_per_second>())
-                / ((Self::RHO * Self::G * Self::CABIN_VOLUME) / (Self::R * Self::T_0))
-        } else {
-            (self.outflow_valve_open_amount.get::<ratio>()
-                * Self::OFV_SIZE
-                * Self::C
-                * ((2.
-                    * (Self::GAMMA / (Self::GAMMA - 1.))
-                    * Self::RHO
-                    * pressure_at_margin.get::<pascal>()
-                    * 0.0011)
-                    .abs())
-                .sqrt()
-                - self.cabin_flow_in.get::<cubic_meter_per_second>()
-                + self.cabin_flow_out.get::<cubic_meter_per_second>())
-                / ((Self::RHO * Self::G * Self::CABIN_VOLUME) / (Self::R * Self::T_0))
-        };
-
-        let linear_vs = (-vs_at_margin / margin * (pressure_ratio - (1. - margin))) + vs_at_margin;
-        Velocity::new::<meter_per_second>(linear_vs)
+        let vertical_speed = (self.outflow_valve_open_amount.get::<ratio>()
+            * Self::OFV_SIZE
+            * self.flow_coefficient
+            * ((2.
+                * (Self::GAMMA / (Self::GAMMA - 1.))
+                * Self::RHO
+                * self.cabin_pressure.get::<pascal>()
+                * self.z_coefficient)
+                .abs())
+            .sqrt()
+            - self.cabin_flow_in.get::<cubic_meter_per_second>()
+            + self.cabin_flow_out.get::<cubic_meter_per_second>())
+            / ((Self::RHO * Self::G * Self::CABIN_VOLUME) / (Self::R * Self::T_0));
+        Velocity::new::<meter_per_second>(vertical_speed)
     }
 
     fn calculate_cabin_pressure(

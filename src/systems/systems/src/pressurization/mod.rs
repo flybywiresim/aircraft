@@ -617,9 +617,9 @@ mod tests {
     fn conversion_from_pressure_to_altitude_works() {
         let mut test_bed = test_bed_on_ground();
 
+        test_bed = test_bed.command_packs_off();
         //Equivalent to FL100 from tables
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(696.86));
-        test_bed.run_with_delta(Duration::from_secs(20));
         test_bed = test_bed.iterate(200);
         assert!(
             (test_bed.query(|a| a.pressurization.cpc[0].cabin_altitude())
@@ -848,7 +848,7 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.set_on_ground(false);
-        test_bed.run_with_delta(Duration::from_secs(3));
+        test_bed = test_bed.iterate(5);
 
         assert!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())
@@ -990,9 +990,9 @@ mod tests {
     fn aircraft_vs_starts_at_0() {
         let mut test_bed = test_bed_on_ground();
 
-        test_bed = test_bed.iterate(10);
+        test_bed = test_bed.iterate(20);
 
-        assert_eq!(test_bed.cabin_vs(), Velocity::new::<foot_per_minute>(0.));
+        assert!((test_bed.cabin_vs()).abs() < Velocity::new::<foot_per_minute>(1.));
     }
 
     #[test]
@@ -1016,13 +1016,15 @@ mod tests {
     fn cabin_vs_changes_to_takeoff() {
         let mut test_bed = test_bed_on_ground();
 
+        test_bed = test_bed.iterate(20);
+
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
-        test_bed = test_bed.iterate(10);
+        test_bed = test_bed.iterate(20);
 
         assert!(
             (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
-                < Velocity::new::<foot_per_minute>(10.)
+                < Velocity::new::<foot_per_minute>(35.)
         );
     }
 
