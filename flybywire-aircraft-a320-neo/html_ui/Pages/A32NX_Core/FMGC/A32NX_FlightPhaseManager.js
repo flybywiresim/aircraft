@@ -334,7 +334,7 @@ class A32NX_FlightPhase_Approach {
     }
 
     check(_deltaTime, _fmc) {
-        if (SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "number") === 50 && SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number") === 41) {
+        if (SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number") === 41) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.GOAROUND;
             return true;
         }
