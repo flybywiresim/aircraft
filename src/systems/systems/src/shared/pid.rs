@@ -59,11 +59,9 @@ impl Pid {
 
         let error = self.setpoint - measurement;
 
-        let p_term;
-        if self.error_k_1.is_some() {
-            p_term = (error - self.error_k_1.unwrap()) * self.kp;
-        } else {
-            p_term = error * self.kp;
+        let mut p_term = error * self.kp;
+        if let Some(error_k_1) = self.error_k_1 {
+            p_term -= error_k_1 * self.kp;
         }
 
         let i_term = error * self.ki * dt;
