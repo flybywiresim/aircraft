@@ -218,24 +218,15 @@ export const FuelPage = () => {
         }
     };
 
-    const refuelButtonStatus = () => {
-        if (isAirplaneCnD()) {
-            return (
-                <SelectGroup>
-                    <SelectItem enabled selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                    <SelectItem enabled selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                    <SelectItem enabled selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
-                </SelectGroup>
-            );
-        }
-        return (
+    const refuelButtonStatus = () => (
+        <>
             <SelectGroup>
                 <SelectItem enabled selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                <SelectItem enabled={false} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                <SelectItem enabled={false} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
-            </SelectGroup>
-        );
-    };
+                <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+            </SelectGroup> 
+        </>
+    );
 
     return (
         <div className="text-white mt-6 h-efb-nav flex flex-col justify-between">
