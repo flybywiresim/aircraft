@@ -6,6 +6,7 @@ import { GuidanceController } from './guidance/GuidanceController';
 import { NavRadioManager } from './radionav/NavRadioManager';
 import { initFmgcLoop, updateFmgcLoop } from './loop';
 import { FmsMessages } from './components/FmsMessages';
+import { DescentBuilder } from './guidance/vnav/descent/DescentBuilder';
 
 export {
     FlightPlanManager,
@@ -17,4 +18,5 @@ export {
     initFmgcLoop,
     updateFmgcLoop,
     FmsMessages,
+    DescentBuilder,
 };

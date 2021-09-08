@@ -368,7 +368,7 @@ export class Predictions {
         const fpaDegrees = fpaRadians * MathUtils.Rad2Deg;
         const midStepAltitude = (initialAltitude + finalAltitude) / 2;
 
-        const theta = Common.getTheta(altitude, isaDev);
+        const theta = Common.getTheta(midStepAltitude, isaDev);
         const delta = Common.getDelta(theta);
         let mach = Common.CAStoMach(econCAS, delta);
 
@@ -431,14 +431,14 @@ export class Predictions {
             iterations++;
         } while (iterations < 4 && Math.abs(previousMidStepWeight - midStepWeight) < 100);
 
-        let result: StepResults;
-        result.pathAngle = fpaDegrees;
-        result.verticalSpeed = verticalSpeed;
-        result.timeElapsed = stepTime;
-        result.distanceTraveled = distance;
-        result.fuelBurned = fuelBurned;
-        result.finalAltitude = finalAltitude;
-        return result;
+        return {
+            pathAngle: fpaDegrees,
+            verticalSpeed,
+            timeElapsed: stepTime,
+            distanceTraveled: distance,
+            fuelBurned,
+            finalAltitude,
+        };
     }
 
     /**
