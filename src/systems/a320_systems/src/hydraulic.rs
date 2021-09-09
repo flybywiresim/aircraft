@@ -3,11 +3,12 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angular_velocity::revolution_per_minute,
     f64::*,
+    power::watt,
     pressure::pascal,
     pressure::psi,
     ratio::{percent, ratio},
     velocity::knot,
-    volume::gallon,
+    volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
 };
 
@@ -17,6 +18,7 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
+        electrical_generator::{ElectricalEmergencyGenerator, GeneratorControlUnit},
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
@@ -76,6 +78,9 @@ pub(super) struct A320Hydraulic {
 
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
+
+    gcu: GeneratorControlUnit,
+    emergency_gen: ElectricalEmergencyGenerator,
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: usize = 5;
@@ -234,6 +239,17 @@ impl A320Hydraulic {
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
+
+            gcu: GeneratorControlUnit::new(
+                Power::new::<watt>(6000.),
+                AngularVelocity::new::<revolution_per_minute>(12000.),
+                [
+                    0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,
+                ],
+                [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.],
+            ),
+
+            emergency_gen: ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19)),
         }
     }
 
@@ -430,6 +446,8 @@ impl A320Hydraulic {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
+        self.gcu
+            .update_gcu_control(self.emergency_gen.speed(), emergency_elec_state, lgciu1);
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.brake_computer.update_brake_demands(
             context,
@@ -464,6 +482,9 @@ impl A320Hydraulic {
     fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
         self.ram_air_turbine
             .update_physics(&delta_time_physics, &context.indicated_airspeed());
+
+        self.emergency_gen
+            .update(self.blue_loop.pressure(), &self.gcu, context);
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -485,7 +506,10 @@ impl A320Hydraulic {
         self.braking_circuit_altn.reset_accumulators();
     }
 
-    fn update_blue_actuators_volume(&mut self) {}
+    fn update_blue_actuators_volume(&mut self) {
+        self.blue_loop.update_actuator_volumes(&self.emergency_gen);
+        self.emergency_gen.reset_accumulators();
+    }
 
     #[allow(clippy::too_many_arguments)]
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
@@ -662,6 +686,8 @@ impl SimulationElement for A320Hydraulic {
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
         self.braking_force.accept(visitor);
+
+        self.emergency_gen.accept(visitor);
 
         visitor.visit(self);
     }
