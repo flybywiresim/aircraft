@@ -10,16 +10,17 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
-use crate::shared::interpolation;
-use crate::simulation::UpdateContext;
+use crate::shared::{interpolation, EmergencyElectricalState, LgciuWeightOnWheels};
+
+use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 
 use super::brake_circuit::Actuator;
 
-trait GeneratorControlUnitInterface {
+pub trait GeneratorControlUnitInterface {
     fn valve_position_command(&self) -> Ratio;
     fn power_demand(&self) -> Power;
 }
-struct GeneratorControlUnit {
+pub struct GeneratorControlUnit {
     is_active: bool,
     power_demand: Power,
     power_target: Power,
@@ -30,7 +31,7 @@ struct GeneratorControlUnit {
     nominal_rpm: AngularVelocity,
 }
 impl GeneratorControlUnit {
-    fn new(
+    pub fn new(
         nominal_power: Power,
         nominal_rpm: AngularVelocity,
         max_allowed_power_rpm_breakpoints: [f64; 9],
@@ -47,10 +48,32 @@ impl GeneratorControlUnit {
             nominal_rpm,
         }
     }
-    fn update_gcu_control(&mut self, hydraulic_motor: &HydraulicMotor) {
-        if self.is_active {
+
+    // todo add lgciu input
+    fn update_active_state(
+        &mut self,
+        elec_emergency_state: &impl EmergencyElectricalState,
+        lgciu: &impl LgciuWeightOnWheels,
+    ) {
+        self.is_active = elec_emergency_state.is_in_emergency_elec()
+            && !lgciu.left_and_right_gear_compressed(false);
+    }
+
+    fn is_active(&self) -> bool {
+        self.is_active
+    }
+
+    pub fn update_gcu_control(
+        &mut self,
+        generator_speed_feedback: AngularVelocity,
+        elec_emergency_state: &impl EmergencyElectricalState,
+        lgciu: &impl LgciuWeightOnWheels,
+    ) {
+        self.update_active_state(elec_emergency_state, lgciu);
+
+        if self.is_active() {
             self.power_target = self.nominal_power;
-            let speed_error = self.nominal_rpm - hydraulic_motor.speed;
+            let speed_error = self.nominal_rpm - generator_speed_feedback;
 
             self.valve_position_request = Ratio::new::<ratio>(
                 (speed_error.get::<revolution_per_minute>() * 0.003)
@@ -61,7 +84,7 @@ impl GeneratorControlUnit {
             let max_power_allowed = Power::new::<watt>(interpolation(
                 &self.max_allowed_power_rpm_breakpoints,
                 &self.max_allowed_power,
-                hydraulic_motor.speed.get::<revolution_per_minute>(),
+                generator_speed_feedback.get::<revolution_per_minute>(),
             ));
 
             self.power_demand = self
@@ -140,13 +163,20 @@ impl HydraulicMotor {
     }
 
     fn updateHydMotorTorque(&mut self, pressure: Pressure) {
-        self.generated_torque = Torque::new::<pound_force_inch>(
-            pressure.get::<psi>()
-                * self
-                    .virtual_displacement_after_valve_inlet()
-                    .get::<cubic_inch>()
-                / (2. * std::f64::consts::PI),
-        );
+        self.virtual_displacement = self.virtual_displacement_after_valve_inlet();
+
+        if self.virtual_displacement > Volume::new::<cubic_inch>(0.001) {
+            self.generated_torque = Torque::new::<pound_force_inch>(
+                pressure.get::<psi>()
+                    * self
+                        .virtual_displacement_after_valve_inlet()
+                        .get::<cubic_inch>()
+                    / (2. * std::f64::consts::PI),
+            );
+        } else {
+            self.generated_torque =
+                Torque::new::<newton_meter>(-0.001 * self.speed().get::<revolution_per_minute>())
+        }
     }
 
     fn virtual_displacement_after_valve_inlet(&mut self) -> Volume {
@@ -244,21 +274,25 @@ impl Generator {
     }
 }
 
-struct ElectricalEmergencyGenerator {
+pub struct ElectricalEmergencyGenerator {
     hyd_motor: HydraulicMotor,
     generator: Generator,
 }
 impl ElectricalEmergencyGenerator {
     const EFFICIENCY: f64 = 0.92;
 
-    fn new(displacement: Volume) -> Self {
+    pub fn new(displacement: Volume) -> Self {
         Self {
             hyd_motor: HydraulicMotor::new(displacement),
             generator: Generator::new(Self::EFFICIENCY),
         }
     }
 
-    fn update(
+    pub fn speed(&self) -> AngularVelocity {
+        self.hyd_motor.speed()
+    }
+
+    pub fn update(
         &mut self,
         pressure: Pressure,
         gcu: &impl GeneratorControlUnitInterface,
@@ -274,18 +308,36 @@ impl ElectricalEmergencyGenerator {
         self.hyd_motor.updateHydMotorTorque(pressure);
         self.hyd_motor.updateHydMotorPhysics(context);
     }
+
+    pub fn reset_accumulators(&mut self) {
+        self.hyd_motor.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.hyd_motor.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
+    }
 }
 impl Actuator for ElectricalEmergencyGenerator {
     fn used_volume(&self) -> Volume {
-        Volume::new::<gallon>(0.)
+        self.hyd_motor.volume_to_actuator_accumulator
     }
     fn reservoir_return(&self) -> Volume {
-        Volume::new::<gallon>(0.)
+        self.hyd_motor.volume_to_res_accumulator
+    }
+}
+impl SimulationElement for ElectricalEmergencyGenerator {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            "HYD_EMERGENCY_GEN_RPM",
+            self.speed().get::<revolution_per_minute>(),
+        );
+
+        writer.write(
+            "HYD_EMERGENCY_GEN_POWER",
+            self.generator.elec_power_generated.get::<watt>(),
+        );
     }
 }
 
 mod tests {
-    use crate::shared::interpolation;
+    use crate::shared::{interpolation, LgciuGearExtension};
     use crate::simulation::UpdateContext;
     use std::time::Duration;
 
@@ -319,6 +371,70 @@ mod tests {
 
         fn power_demand(&self) -> Power {
             self.power_demand
+        }
+    }
+
+    struct TestEmergencyState {
+        is_emergency: bool,
+    }
+    impl TestEmergencyState {
+        fn in_emergency() -> Self {
+            Self { is_emergency: true }
+        }
+        fn not_in_emergency() -> Self {
+            Self {
+                is_emergency: false,
+            }
+        }
+    }
+    impl EmergencyElectricalState for TestEmergencyState {
+        fn is_in_emergency_elec(&self) -> bool {
+            self.is_emergency
+        }
+    }
+
+    struct TestLgciuInterface {
+        main_gear_compressed: bool,
+    }
+    impl TestLgciuInterface {
+        fn is_compressed() -> Self {
+            Self {
+                main_gear_compressed: true,
+            }
+        }
+        fn is_extended() -> Self {
+            Self {
+                main_gear_compressed: false,
+            }
+        }
+    }
+    impl LgciuWeightOnWheels for TestLgciuInterface {
+        fn right_gear_compressed(&self, _: bool) -> bool {
+            self.main_gear_compressed
+        }
+        fn right_gear_extended(&self, _: bool) -> bool {
+            !self.main_gear_compressed
+        }
+
+        fn left_gear_compressed(&self, _: bool) -> bool {
+            self.main_gear_compressed
+        }
+        fn left_gear_extended(&self, _: bool) -> bool {
+            !self.main_gear_compressed
+        }
+
+        fn left_and_right_gear_compressed(&self, _: bool) -> bool {
+            self.main_gear_compressed
+        }
+        fn left_and_right_gear_extended(&self, _: bool) -> bool {
+            !self.main_gear_compressed
+        }
+
+        fn nose_gear_compressed(&self, _: bool) -> bool {
+            self.main_gear_compressed
+        }
+        fn nose_gear_extended(&self, _: bool) -> bool {
+            !self.main_gear_compressed
         }
     }
 
@@ -424,13 +540,16 @@ mod tests {
         let mut context = context(Duration::from_secs_f64(timestep));
 
         let mut time = 0.0;
-        for _ in 0..500 {
-            gcu.update_gcu_control(&emergency_gen.hyd_motor);
-            emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
 
+        let mut emergency_state = TestEmergencyState::not_in_emergency();
+        let lgciu = TestLgciuInterface::is_extended();
+        for _ in 0..500 {
             if time > 2. {
-                gcu.is_active = true;
+                emergency_state = TestEmergencyState::in_emergency();
             }
+
+            gcu.update_gcu_control(&emergency_gen.hyd_motor, &emergency_state, &lgciu);
+            emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
 
             if time > 5. {
                 assert!(
@@ -474,13 +593,20 @@ mod tests {
         let mut context = context(Duration::from_secs_f64(timestep));
 
         let mut time = 0.0;
-        for _ in 0..500 {
-            gcu.update_gcu_control(&emergency_gen.hyd_motor);
-            emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
 
+        let mut emergency_state = TestEmergencyState::not_in_emergency();
+        let lgciu = TestLgciuInterface::is_extended();
+        for _ in 0..500 {
             if time > 2. {
-                gcu.is_active = true;
+                emergency_state = TestEmergencyState::in_emergency();
             }
+
+            if time > 10. {
+                emergency_state = TestEmergencyState::not_in_emergency();
+            }
+
+            gcu.update_gcu_control(&emergency_gen.hyd_motor, &emergency_state, &lgciu);
+            emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
 
             if time > 5. && time < 10. {
                 assert!(
@@ -499,8 +625,18 @@ mod tests {
                 );
             }
 
-            if time > 10. {
-                gcu.is_active = false;
+            if time > 10.5 {
+                assert!(!gcu.is_active);
+            }
+
+            if time > 15. {
+                assert!(
+                    emergency_gen
+                        .hyd_motor
+                        .speed()
+                        .get::<revolution_per_minute>()
+                        < 10000.
+                );
             }
 
             time += timestep;
