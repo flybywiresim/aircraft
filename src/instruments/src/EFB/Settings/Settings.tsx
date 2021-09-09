@@ -3,7 +3,7 @@ import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
-import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
@@ -28,11 +28,11 @@ const ControlSettings = ({ setShowSettings }) => (
 );
 
 const DefaultsPage = () => {
-    const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty<string>('CONFIG_THR_RED_ALT', '1500');
+    const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
     const [thrustReductionHeightSetting, setThrustReductionHeightSetting] = useState(thrustReductionHeight);
-    const [accelerationHeight, setAccelerationHeight] = usePersistentProperty<string>('CONFIG_ACCEL_ALT', '1500');
+    const [accelerationHeight, setAccelerationHeight] = usePersistentProperty('CONFIG_ACCEL_ALT', '1500');
     const [accelerationHeightSetting, setAccelerationHeightSetting] = useState(accelerationHeight);
-    const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty<string>('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
+    const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
     const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
 
     const handleSetThrustReductionAlt = (value: string) => {
@@ -77,6 +77,8 @@ const DefaultsPage = () => {
                         placeholder={thrustReductionHeight}
                         noLabel
                         value={thrustReductionHeightSetting}
+                        min={400}
+                        max={5000}
                         onChange={(event) => handleSetThrustReductionAlt(event)}
                     />
                 </div>
@@ -90,6 +92,8 @@ const DefaultsPage = () => {
                         placeholder={accelerationHeight}
                         noLabel
                         value={accelerationHeightSetting}
+                        min={400}
+                        max={10000}
                         onChange={(event) => handleSetAccelerationAlt(event)}
                     />
                 </div>
@@ -103,6 +107,8 @@ const DefaultsPage = () => {
                         placeholder={accelerationOutHeight}
                         noLabel
                         value={accelerationOutHeightSetting}
+                        min={400}
+                        max={10000}
                         onChange={(event) => handleSetAccelerationOutAlt(event)}
                     />
                 </div>
@@ -112,8 +118,8 @@ const DefaultsPage = () => {
 };
 
 const AircraftConfigurationPage = () => {
-    const [weightUnit, setWeightUnit] = usePersistentProperty<string>('CONFIG_USING_METRIC_UNIT', '1');
-    const [paxSigns, setPaxSigns] = usePersistentProperty<string>('CONFIG_USING_PORTABLE_DEVICES', '0');
+    const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -162,11 +168,14 @@ const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
     const { setShowNavbar } = useContext(SettingsNavbarContext);
 
-    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty<string>('CONFIG_ALIGN_TIME', 'REAL');
+    const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
-    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty<string>('CONFIG_SELF_TEST_TIME', '12');
+    const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
 
-    const [defaultBaro, setDefaultBaro] = usePersistentProperty<string>('CONFIG_INIT_BARO_UNIT', 'IN HG');
+    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
+
+    const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
+    const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -240,6 +249,32 @@ const SimOptionsPage = () => {
                             ))}
                         </SelectGroup>
                     </div>
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">MCDU Keyboard Input</span>
+                            <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
+                        </span>
+                        <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
+                    </div>
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">MCDU Focus Timeout (s)</span>
+                        </span>
+                        <SimpleInput
+                            className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
+                            value={mcduTimeout}
+                            noLabel
+                            min={5}
+                            max={120}
+                            disabled={(mcduInput !== 'ENABLED')}
+                            onChange={(event) => {
+                                if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                                    setMcduTimeout(event.trim());
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />
             </>
@@ -250,9 +285,9 @@ const SimOptionsPage = () => {
 };
 
 const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
-    const [atisSource, setAtisSource] = usePersistentProperty<string>('CONFIG_ATIS_SRC', 'FAA');
-    const [metarSource, setMetarSource] = usePersistentProperty<string>('CONFIG_METAR_SRC', 'MSFS');
-    const [tafSource, setTafSource] = usePersistentProperty<string>('CONFIG_TAF_SRC', 'NOAA');
+    const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+    const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -330,10 +365,10 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
 };
 
 const AudioPage = () => {
-    const [ptuAudible, setPtuAudible] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool', 'SOUND_PTU_AUDIBLE_COCKPIT');
-    const [exteriorVolume, setExteriorVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_EXTERIOR_MASTER', 'number', 'SOUND_EXTERIOR_MASTER');
-    const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
-    const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
+    const [ptuAudible, setPtuAudible] = usePersistentNumberProperty('SOUND_PTU_AUDIBLE_COCKPIT', 0);
+    const [exteriorVolume, setExteriorVolume] = usePersistentNumberProperty('SOUND_EXTERIOR_MASTER', 0);
+    const [engineVolume, setEngineVolume] = usePersistentNumberProperty('SOUND_INTERIOR_ENGINE', 0);
+    const [windVolume, setWindVolume] = usePersistentNumberProperty('SOUND_INTERIOR_WIND', 0);
 
     return (
         <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
@@ -370,15 +405,16 @@ const AudioPage = () => {
 };
 
 const FlyPadPage = () => {
-    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
-    const [usingAutobrightness, setUsingAutobrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 'EFB_USING_AUTOBRIGHTNESS');
+    const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
+    const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
+    const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
 
     return (
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Brightness</span>
                 <div className={`flex flex-row items-center py-1.5 ${usingAutobrightness && 'pointer-events-none filter saturate-0'}`}>
-                    <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                    <Slider className="w-60" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">

@@ -1,48 +1,26 @@
 import { NXDataStore } from '@shared/persistence';
 import { setSimVar } from '../../util.js';
 
-type SettingSync = { simVar: [name: string, type: string], propertyName: string }
+type SimVar = [name: string, type: string, defaultValue: string];
 
-function syncSetting(simVarName, propertyName) {
-    const propertyValue = NXDataStore.get<string>(propertyName);
-
-    try {
-        setSimVar(simVarName, Number.parseInt(propertyValue), 'number');
-    } catch (e) {
-        console.error(`Could not sync simvar '${simVarName}' because it was not of type number`);
-    }
+function syncSetting(simVar: SimVar, propertyName: string) {
+    NXDataStore.getAndSubscribe(propertyName, (prop, value) => {
+        setSimVar(simVar[0], parseInt(value), simVar[1]).catch((e) => console.log(propertyName, e));
+    }, simVar[2]);
 }
 
 /**
  * This contains a list of NXDataStore settings that must be synced to simvars on plane load
  */
-const settingsToSync: SettingSync[] = [
-    {
-        simVar: ['L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool'],
-        propertyName: 'SOUND_PTU_AUDIBLE_COCKPIT',
-    },
-    {
-        simVar: ['L:A32NX_SOUND_EXTERIOR_MASTER', 'number'],
-        propertyName: 'SOUND_EXTERIOR_MASTER',
-    },
-    {
-        simVar: ['L:A32NX_SOUND_INTERIOR_ENGINE', 'number'],
-        propertyName: 'SOUND_INTERIOR_ENGINE',
-    },
-    {
-        simVar: ['L:A32NX_SOUND_INTERIOR_WIND', 'number'],
-        propertyName: 'SOUND_INTERIOR_WIND',
-    },
-    {
-        simVar: ['L:A32NX_EFB_BRIGHTNESS', 'number'],
-        propertyName: 'EFB_BRIGHTNESS',
-    },
-    {
-        simVar: ['L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool'],
-        propertyName: 'EFB_USING_AUTOBRIGHTNESS',
-    },
-];
+const settingsToSync: Map<string, SimVar> = new Map([
+    ['SOUND_PTU_AUDIBLE_COCKPIT', ['L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'number', '0']],
+    ['SOUND_EXTERIOR_MASTER', ['L:A32NX_SOUND_EXTERIOR_MASTER', 'number', '0']],
+    ['SOUND_INTERIOR_ENGINE', ['L:A32NX_SOUND_INTERIOR_ENGINE', 'number', '0']],
+    ['SOUND_INTERIOR_WIND', ['L:A32NX_SOUND_INTERIOR_WIND', 'number', '0']],
+    ['EFB_BRIGHTNESS', ['L:A32NX_EFB_BRIGHTNESS', 'number', '0']],
+    ['EFB_USING_AUTOBRIGHTNESS', ['L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', '0']],
+]);
 
 export function readSettingsFromPersistentStorage() {
-    settingsToSync.forEach((setting) => syncSetting(setting.simVar[0], setting.simVar[1], setting.propertyName));
+    settingsToSync.forEach((simVar, propertyName) => syncSetting(simVar, propertyName));
 }

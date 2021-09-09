@@ -10,7 +10,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const [fontSize, setFontSize] = usePersistentProperty<string>('LOADSHEET_FONTSIZE', '14');
+    const [fontSize, setFontSize] = usePersistentProperty('LOADSHEET_FONTSIZE', '14');
     const [imageSize, setImageSize] = useState(60);
 
     useEffect(() => {
