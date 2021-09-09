@@ -151,10 +151,10 @@ impl ControlledPneumaticValveSignal for CrossBleedValveSignal {
     }
 }
 
-struct FanAirValveStarterSignal {
+struct FanAirValveSignal {
     target_open_amount: Ratio,
 }
-impl FanAirValveStarterSignal {
+impl FanAirValveSignal {
     fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
@@ -168,7 +168,7 @@ impl FanAirValveStarterSignal {
     }
 }
 
-impl ControlledPneumaticValveSignal for FanAirValveStarterSignal {
+impl ControlledPneumaticValveSignal for FanAirValveSignal {
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
     }
@@ -552,9 +552,11 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
         )))
     }
 }
-impl ControllerSignal<FanAirValveStarterSignal> for BleedMonitoringComputerChannel {
-    fn signal(&self) -> Option<FanAirValveStarterSignal> {
-        None
+impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
+    fn signal(&self) -> Option<FanAirValveSignal> {
+        // Some(FanAirValveSignal::new_open())
+        Some(FanAirValveSignal::new_closed())
+        // None
     }
 }
 
@@ -635,7 +637,7 @@ impl EngineBleedAirSystem {
         hpv_controller: &impl ControllerSignal<HighPressureValveSignal>,
         prv_controller: &impl ControllerSignal<PressureRegulatingValveSignal>,
         esv_controller: &impl ControllerSignal<EngineStarterValveSignal>,
-        fav_controller: &impl ControllerSignal<FanAirValveStarterSignal>,
+        fav_controller: &impl ControllerSignal<FanAirValveSignal>,
         engine: &T,
     ) {
         // Update engines
