@@ -221,7 +221,7 @@ export const FuelPage = () => {
     const refuelButtonStatus = () => (
         <>
             <SelectGroup>
-                <SelectItem enabled selected={refuelRate === '2'} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                <SelectItem enabled selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
                 <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
                 <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
             </SelectGroup>
