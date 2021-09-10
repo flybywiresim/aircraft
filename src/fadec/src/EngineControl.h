@@ -8,7 +8,7 @@
 class EngineControl {
  private:
   SimVars* simVars;
-  Ratios* ratios;
+  EngineRatios* ratios;
   Polynomial* poly;
 
   double EngTime;
@@ -26,7 +26,7 @@ class EngineControl {
   int OilQty_imbalance;
   int OilPSI_imbalance;
   int OilPSI_idle;
-  std::string imbalance;
+  std::string imbalanceCode;
   double EngineState;
   double engineStarter;
   double engineIgniter;
@@ -49,8 +49,8 @@ class EngineControl {
   double idleOil;
   double mach;
   double pressAltitude;
-  double cegtNX;
-  double cflowNX;
+  double correctedEGT;
+  double correctedFuelFlow;
   double oilQtyObjective;
   double oilQtyActual;
   double oilTotalActual;
@@ -102,12 +102,12 @@ class EngineControl {
   //
   ///////////////////////////////////////////////////////////////////////////////////////////
   void generateIdleParameters(double pressAltitude, double ambientTemp) {
-    idleCN1 = IdleCN1(pressAltitude, ambientTemp);
+    idleCN1 = iCN1(pressAltitude, ambientTemp);
     idleN1 = idleCN1 * sqrt(ratios->theta2(0, ambientTemp));
-    idleN2 = IdleCN2(pressAltitude, ambientTemp) * sqrt((273.15 + ambientTemp) / 288.15);
-    idleCFF = poly->cflowNX(idleCN1, 0, pressAltitude);  // lbs/hr
+    idleN2 = iCN2(pressAltitude) * sqrt((273.15 + ambientTemp) / 288.15);
+    idleCFF = poly->correctedFuelFlow(idleCN1, 0, pressAltitude);  // lbs/hr
     idleFF = idleCFF * 0.453592 * ratios->delta2(0, ambientTemp) * sqrt(ratios->theta2(0, ambientTemp));
-    idleEGT = poly->cegtNX(idleCN1, idleCFF, 0, pressAltitude) * ratios->theta2(0, ambientTemp);
+    idleEGT = poly->correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * ratios->theta2(0, ambientTemp);
 
     simVars->setEngineIdleN1(idleN1);
     simVars->setEngineIdleN2(idleN2);
@@ -151,12 +151,12 @@ class EngineControl {
       OilPSI_idle = (rand() % 12) + 1;
 
       // Zero Padding and Merging
-      imbalance = to_string_with_zero_padding(engine, 2) + to_string_with_zero_padding(egt_imbalance, 2) +
+      imbalanceCode = to_string_with_zero_padding(engine, 2) + to_string_with_zero_padding(egt_imbalance, 2) +
                   to_string_with_zero_padding(ff_imbalance, 2) + to_string_with_zero_padding(N2_imbalance, 2) +
                   to_string_with_zero_padding(OilQty_imbalance, 2) + to_string_with_zero_padding(OilPSI_imbalance, 2) +
                   to_string_with_zero_padding(OilPSI_idle, 2);
 
-      simVars->setEngineImbalance(stod(imbalance));
+      simVars->setEngineImbalance(stod(imbalanceCode));
     }
   }
 
@@ -271,13 +271,13 @@ class EngineControl {
     idleEGT = simVars->getEngineIdleEGT();
 
     // Engine Imbalance
-    EngineImbalanced = imbalance_extractor(Imbalance, 1);
+    EngineImbalanced = imbalanceExtractor(Imbalance, 1);
 
     // Checking engine imbalance
     if (EngineImbalanced == engine) {
-      ff_imbalance = imbalance_extractor(Imbalance, 3);
-      egt_imbalance = imbalance_extractor(Imbalance, 2);
-      n2_imbalance = imbalance_extractor(Imbalance, 4) / 100;
+      ff_imbalance = imbalanceExtractor(Imbalance, 3);
+      egt_imbalance = imbalanceExtractor(Imbalance, 2);
+      n2_imbalance = imbalanceExtractor(Imbalance, 4) / 100;
     }
 
     if (engine == 1) {
@@ -290,11 +290,11 @@ class EngineControl {
       } else {
         pre_n2NX = simVars->getEngine1N2();
         pre_egtNX = simVars->getEngine1EGT();
-        new_n2NX = poly->n2NX(simN2, pre_n2NX, idleN2 - n2_imbalance);
+        new_n2NX = poly->startN2(simN2, pre_n2NX, idleN2 - n2_imbalance);
         simVars->setEngine1N2(new_n2NX);
-        simVars->setEngine1N1(poly->n1NX(new_n2NX, idleN2 - n2_imbalance, idleN1));
-        simVars->setEngine1FF(poly->startFFNX(new_n2NX, idleN2 - n2_imbalance, idleFF - ff_imbalance));
-        simVars->setEngine1EGT(poly->startEGTNX(new_n2NX, pre_egtNX, idleN2 - n2_imbalance, ambientTemp, idleEGT - egt_imbalance));
+        simVars->setEngine1N1(poly->startN1(new_n2NX, idleN2 - n2_imbalance, idleN1));
+        simVars->setEngine1FF(poly->startFF(new_n2NX, idleN2 - n2_imbalance, idleFF - ff_imbalance));
+        simVars->setEngine1EGT(poly->startEGT(new_n2NX, pre_egtNX, idleN2 - n2_imbalance, ambientTemp, idleEGT - egt_imbalance));
       }
     } else {
       if (timer < 1.7) {
@@ -305,11 +305,11 @@ class EngineControl {
       } else {
         pre_n2NX = simVars->getEngine2N2();
         pre_egtNX = simVars->getEngine2EGT();
-        new_n2NX = poly->n2NX(simN2, pre_n2NX, idleN2 - n2_imbalance);
+        new_n2NX = poly->startN2(simN2, pre_n2NX, idleN2 - n2_imbalance);
         simVars->setEngine2N2(new_n2NX);
-        simVars->setEngine2N1(poly->n1NX(new_n2NX, idleN2 - n2_imbalance, idleN1));
-        simVars->setEngine2FF(poly->startFFNX(new_n2NX, idleN2 - n2_imbalance, idleFF - ff_imbalance));
-        simVars->setEngine2EGT(poly->startEGTNX(new_n2NX, pre_egtNX, idleN2 - n2_imbalance, ambientTemp, idleEGT - egt_imbalance));
+        simVars->setEngine2N1(poly->startN1(new_n2NX, idleN2 - n2_imbalance, idleN1));
+        simVars->setEngine2FF(poly->startFF(new_n2NX, idleN2 - n2_imbalance, idleFF - ff_imbalance));
+        simVars->setEngine2EGT(poly->startEGT(new_n2NX, pre_egtNX, idleN2 - n2_imbalance, ambientTemp, idleEGT - egt_imbalance));
       }
     }
   }
@@ -323,8 +323,8 @@ class EngineControl {
   // Updates Engine N1 and N2 with our own algorithm for start-up and shutdown
   void updatePrimaryParameters(int engine, double Imbalance, double simN1, double simN2) {
     // Engine Imbalance
-    EngineImbalanced = imbalance_extractor(Imbalance, 1);
-    paramImbalance = imbalance_extractor(Imbalance, 4) / 100;
+    EngineImbalanced = imbalanceExtractor(Imbalance, 1);
+    paramImbalance = imbalanceExtractor(Imbalance, 4) / 100;
 
     // Checking engine imbalance
     if (EngineImbalanced != engine) {
@@ -352,10 +352,10 @@ class EngineControl {
                  double pressAltitude,
                  double ambientTemp) {
     // Engine Imbalance
-    EngineImbalanced = imbalance_extractor(Imbalance, 1);
-    paramImbalance = imbalance_extractor(Imbalance, 2);
+    EngineImbalanced = imbalanceExtractor(Imbalance, 1);
+    paramImbalance = imbalanceExtractor(Imbalance, 2);
 
-    cegtNX = poly->cegtNX(simCN1, cffNX, mach, pressAltitude);
+    correctedEGT = poly->correctedEGT(simCN1, cffNX, mach, pressAltitude);
 
     // Checking engine imbalance
     if (EngineImbalanced != engine) {
@@ -366,13 +366,13 @@ class EngineControl {
       if (simOnGround == 1 && EngineState == 0) {
         simVars->setEngine1EGT(ambientTemp);
       } else {
-        simVars->setEngine1EGT((cegtNX * ratios->theta2(mach, ambientTemp) - paramImbalance));
+        simVars->setEngine1EGT((correctedEGT * ratios->theta2(mach, ambientTemp) - paramImbalance));
       }
     } else {
       if (simOnGround == 1 && EngineState == 0) {
         simVars->setEngine2EGT(ambientTemp);
       } else {
-        simVars->setEngine2EGT((cegtNX * ratios->theta2(mach, ambientTemp) - paramImbalance));
+        simVars->setEngine2EGT((correctedEGT * ratios->theta2(mach, ambientTemp) - paramImbalance));
       }
     }
   }
@@ -383,21 +383,21 @@ class EngineControl {
     flow_out = 0;
 
     // Engine Imbalance
-    EngineImbalanced = imbalance_extractor(Imbalance, 1);
-    paramImbalance = imbalance_extractor(Imbalance, 3);
+    EngineImbalanced = imbalanceExtractor(Imbalance, 1);
+    paramImbalance = imbalanceExtractor(Imbalance, 3);
 
-    cflowNX = poly->cflowNX(simCN1, mach, pressAltitude);  // in lbs/hr.
+    correctedFuelFlow = poly->correctedFuelFlow(simCN1, mach, pressAltitude);  // in lbs/hr.
 
     // Checking engine imbalance
-    if (EngineImbalanced != engine || cflowNX < 1) {
+    if (EngineImbalanced != engine || correctedFuelFlow < 1) {
       paramImbalance = 0;
     }
 
     // Checking Fuel Logic and final Fuel Flow
-    if (cflowNX < 1) {
+    if (correctedFuelFlow < 1) {
       flow_out = 0;
     } else {
-      flow_out = (cflowNX * 0.453592 * ratios->delta2(mach, ambientTemp) * sqrt(ratios->theta2(mach, ambientTemp))) - paramImbalance;
+      flow_out = (correctedFuelFlow * 0.453592 * ratios->delta2(mach, ambientTemp) * sqrt(ratios->theta2(mach, ambientTemp))) - paramImbalance;
     }
 
     if (engine == 1) {
@@ -406,7 +406,7 @@ class EngineControl {
       simVars->setEngine2FF(flow_out);
     }
 
-    return cflowNX;
+    return correctedFuelFlow;
   }
 
   // FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and º Celsius)
@@ -440,9 +440,9 @@ class EngineControl {
     // Oil Pressure
     //--------------------------------------------
     // Engine Imbalance
-    EngineImbalanced = imbalance_extractor(Imbalance, 1);
-    paramImbalance = imbalance_extractor(Imbalance, 6) / 10;
-    oilIdleRandom = imbalance_extractor(Imbalance, 7) - 6;
+    EngineImbalanced = imbalanceExtractor(Imbalance, 1);
+    paramImbalance = imbalanceExtractor(Imbalance, 6) / 10;
+    oilIdleRandom = imbalanceExtractor(Imbalance, 7) - 6;
 
     // Checking engine imbalance
     if (EngineImbalanced != engine) {
@@ -634,7 +634,7 @@ class EngineControl {
     // One-off Engine Imbalance
     generateEngineImbalance(1);
     Imbalance = simVars->getEngineImbalance();
-    EngineImbalanced = imbalance_extractor(Imbalance, 1);
+    EngineImbalanced = imbalanceExtractor(Imbalance, 1);
     
 
     // Checking engine imbalance
@@ -647,7 +647,7 @@ class EngineControl {
       EngTime = simVars->getEngineTime(engine) + EngTime;
 
        // Checking engine imbalance
-      paramImbalance = imbalance_extractor(Imbalance, 5) / 10;
+      paramImbalance = imbalanceExtractor(Imbalance, 5) / 10;
 
       if (EngineImbalanced != engine) {
         paramImbalance = 0;
@@ -744,4 +744,4 @@ class EngineControl {
   void terminate() {}
 };
 
-EngineControl EngCntrlInst;
+EngineControl EngineControlInstance;

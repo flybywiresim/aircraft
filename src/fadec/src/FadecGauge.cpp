@@ -1,5 +1,3 @@
-﻿// A32NX_FADEC.cpp
-
 #include "FadecGauge.h"
 
 FadecGauge FADEC_GAUGE;
@@ -12,14 +10,14 @@ __attribute__((export_name("FadecGauge_gauge_callback"))) extern "C" bool FadecG
       return true;
     } break;
     case PANEL_SERVICE_POST_INSTALL: {
-      return FADEC_GAUGE.InitializeFADEC();
+      return FADEC_GAUGE.initializeFADEC();
     } break;
     case PANEL_SERVICE_PRE_DRAW: {
       sGaugeDrawData* drawData = static_cast<sGaugeDrawData*>(pData);
-      return FADEC_GAUGE.OnUpdate(drawData->dt);
+      return FADEC_GAUGE.onUpdate(drawData->dt);
     } break;
     case PANEL_SERVICE_PRE_KILL: {
-      FADEC_GAUGE.KillFADEC();
+      FADEC_GAUGE.killFADEC();
       return true;
     } break;
   }
