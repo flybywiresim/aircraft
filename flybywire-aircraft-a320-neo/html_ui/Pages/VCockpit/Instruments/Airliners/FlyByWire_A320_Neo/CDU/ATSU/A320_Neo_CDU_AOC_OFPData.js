@@ -235,9 +235,9 @@ class CDUAocOfpData {
 
             let paxRemaining = parseInt(numberOfPax);
 
-            async function fillStation(station, paxToFill) {
+            async function fillStation(station, percent, paxToFill) {
 
-                const pax = Math.min(paxToFill, station.seats);
+                const pax = Math.min(Math.round(percent * paxToFill), station.seats);
                 station.pax = pax;
 
                 await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(pax));
@@ -245,13 +245,10 @@ class CDUAocOfpData {
                 paxRemaining -= pax;
             }
 
-            await fillStation(paxStations['rows22_29'], paxRemaining);
-            await fillStation(paxStations['rows14_21'], paxRemaining);
-
-            const remainingByTwo = Math.trunc(paxRemaining / 2);
-            await fillStation(paxStations['rows1_6'], remainingByTwo);
-            await fillStation(paxStations['rows7_13'], paxRemaining);
-
+            await fillStation(paxStations['rows22_29'], .275 , numberOfPax);
+            await fillStation(paxStations['rows14_21'], .275, numberOfPax);
+            await fillStation(paxStations['rows7_13'], .240 , numberOfPax);
+            await fillStation(paxStations['rows1_6'], 1 , paxRemaining);
             return;
         }
 
