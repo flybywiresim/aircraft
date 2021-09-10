@@ -65,7 +65,7 @@ export class Predictions {
         const correctedN1 = EngineModel.getCorrectedN1(commandedN1, theta2);
         const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, mach) * 2 * EngineModel.maxThrust;
         const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, midStepAltitude) * 2;
-        const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
+        const thrust = 82; // in lbf TODO placeholder value
         const fuelFlow = EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2); // in lbs/hour
 
         const weightEstimate = zeroFuelWeight + initialFuelWeight;
@@ -106,14 +106,14 @@ export class Predictions {
             iterations++;
         } while (iterations < 4 && Math.abs(previousMidStepWeight - midStepWeight) < 100);
 
-        let result: StepResults;
-        result.pathAngle = pathAngle * MathUtils.Rad2Deg;
-        result.verticalSpeed = verticalSpeed;
-        result.timeElapsed = stepTime;
-        result.distanceTraveled = distanceTraveled;
-        result.fuelBurned = fuelBurned;
-        result.finalAltitude = initialAltitude + stepSize;
-        return result;
+        return {
+            pathAngle: pathAngle * MathUtils.Rad2Deg,
+            verticalSpeed,
+            timeElapsed: stepTime,
+            distanceTraveled,
+            fuelBurned,
+            finalAltitude: initialAltitude + stepSize,
+        };
     }
 
     /**
