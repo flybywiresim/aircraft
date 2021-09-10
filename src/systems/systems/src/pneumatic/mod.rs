@@ -113,7 +113,7 @@ impl DefaultPipe {
         self.pressure *= (self.temperature.get::<degree_celsius>()
             / (self.temperature.get::<degree_celsius>()
                 + temperature_change.get::<temperature_interval::degree_celsius>()))
-        .powf(Self::HEAT_CAPACITY_RATIO / (Self::HEAT_CAPACITY_RATIO - 1.));
+        .powf(Self::HEAT_CAPACITY_RATIO / (1. - Self::HEAT_CAPACITY_RATIO));
     }
 }
 
@@ -1142,6 +1142,26 @@ mod tests {
 
         // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
         assert!(supply.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
+    }
+
+    #[test]
+    fn pressure_increases_for_temperature_increase() {
+        let mut pipe = DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(29.4),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+
+        pipe.update_temperature(TemperatureInterval::new::<
+            temperature_interval::degree_celsius,
+        >(15.));
+
+        assert_eq!(
+            pipe.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(30.)
+        );
+        assert!(pipe.pressure() > Pressure::new::<psi>(29.4));
     }
 
     mod cross_bleed_selector_knob {
