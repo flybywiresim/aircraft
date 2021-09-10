@@ -904,13 +904,13 @@ impl WindTurbine {
         self.torque_sum += air_speed_torque;
     }
 
-    fn update_friction_torque(&mut self, displacement_ratio: f64) {
+    fn update_friction_torque(&mut self, displacement: f64, pressure: Pressure) {
         let mut pump_torque = 0.;
         if self.rpm < Self::LOW_SPEED_PHYSICS_ACTIVATION {
-            pump_torque += (self.position * 4.).cos() * displacement_ratio.max(0.35) * 35.;
+            pump_torque += (self.position * 4.).cos() * displacement.max(0.35) * 35.;
             pump_torque += -self.speed * 15.;
         } else {
-            pump_torque += displacement_ratio.max(0.35) * 1. * -self.speed;
+            pump_torque -= pressure.get::<psi>() * displacement / (2. * 3.14)
         }
         pump_torque -= self.speed * 0.05;
         // Static air drag of the propeller
@@ -934,12 +934,13 @@ impl WindTurbine {
         delta_time: &Duration,
         indicated_speed: &Velocity,
         stow_pos: f64,
-        displacement_ratio: f64,
+        displacement: f64,
+        pressure: Pressure,
     ) {
         if stow_pos > 0.1 {
             // Do not update anything on the propeller if still stowed
             self.update_generated_torque(indicated_speed, stow_pos);
-            self.update_friction_torque(displacement_ratio);
+            self.update_friction_torque(displacement, pressure);
             self.update_physics(delta_time);
         }
     }
@@ -986,9 +987,9 @@ pub struct RamAirTurbine {
 }
 impl RamAirTurbine {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 3050.0, 3500.0,
+        0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 2700.0, 3500.0,
     ];
-    const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 0.5, 0.0, 0.0, 0.0];
+    const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 0.8, 0.0, 0.0];
 
     // 1 == no filtering. 0.1 == 90% filtering. 0.2==80%... !!Warning, filter frequency is time delta dependant.
     const DISPLACEMENT_DYNAMICS: f64 = 0.2;
@@ -1037,16 +1038,22 @@ impl RamAirTurbine {
         // Now forcing min to max to force a true real time regulation.
         // TODO: handle this properly by calculating who produced what volume at end of hyd loop update
         self.pump.delta_vol_min = self.pump.delta_vol_max;
+
+        let gpm_max = 60. * self.pump.delta_vol_max.get::<gallon>() / context.delta_as_secs_f64();
     }
 
-    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: &Velocity) {
-        // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
-        let displacement_ratio = self.delta_vol_max().get::<gallon>() / self.max_displacement;
+    pub fn update_physics(
+        &mut self,
+        delta_time: &Duration,
+        indicated_airspeed: &Velocity,
+        pressure: Pressure,
+    ) {
         self.wind_turbine.update(
             &delta_time,
             &indicated_airspeed,
             self.position,
-            displacement_ratio,
+            self.delta_vol_max().get::<gallon>(),
+            pressure,
         );
     }
 
@@ -1209,7 +1216,7 @@ mod tests {
                 assert!(rat.wind_turbine.rpm <= 2500.);
             }
 
-            rat.update_physics(&context.delta(), &indicated_airspeed);
+            rat.update_physics(&context.delta(), &indicated_airspeed, blue_loop.pressure());
             rat.update(&context, &blue_loop, &rat_controller);
             blue_loop.update(
                 &context,

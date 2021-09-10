@@ -336,7 +336,11 @@ impl A320Hydraulic {
             let delta_time_physics =
                 min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
             for _ in 0..num_of_actuators_update_loops {
-                self.update_fast_rate(&context, &delta_time_physics);
+                self.update_fast_rate(
+                    &context.with_delta(delta_time_physics),
+                    emergency_elec_state,
+                    lgciu1,
+                );
             }
         }
     }
@@ -458,8 +462,6 @@ impl A320Hydraulic {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
-        self.gcu
-            .update_gcu_control(self.emergency_gen.speed(), emergency_elec_state, lgciu1);
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.brake_computer.update_brake_demands(
             context,
@@ -491,9 +493,24 @@ impl A320Hydraulic {
     }
 
     // All the higher frequency updates like physics
-    fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
-        self.ram_air_turbine
-            .update_physics(&delta_time_physics, &context.indicated_airspeed());
+    fn update_fast_rate(
+        &mut self,
+        context: &UpdateContext,
+        emergency_elec_state: &impl EmergencyElectricalState,
+        lgciu1: &impl LgciuInterface,
+    ) {
+        self.gcu.update_gcu_control(
+            self.emergency_gen.speed(),
+            self.blue_loop.pressure(),
+            emergency_elec_state,
+            lgciu1,
+        );
+
+        self.ram_air_turbine.update_physics(
+            &context.delta(),
+            &context.indicated_airspeed(),
+            self.blue_loop.pressure(),
+        );
 
         self.emergency_gen
             .update(self.blue_loop.pressure(), &self.gcu, context);
@@ -2088,6 +2105,10 @@ mod tests {
                 self.hydraulics.ram_air_turbine_controller.should_deploy()
             }
 
+            fn is_emergency_gen_active(&self) -> bool {
+                self.hydraulics.emergency_gen.is_producing_power()
+            }
+
             fn is_green_edp_commanded_on(&self) -> bool {
                 self.hydraulics
                     .engine_driven_pump_1_controller
@@ -2417,8 +2438,16 @@ mod tests {
                 self.read("A32NX_HYD_RAT_RPM")
             }
 
+            fn get_emergency_gen_rpm(&mut self) -> f64 {
+                self.read("HYD_EMERGENCY_GEN_RPM")
+            }
+
             fn rat_deploy_commanded(&self) -> bool {
                 self.query(|a| a.is_rat_commanded_to_deploy())
+            }
+
+            fn is_emergency_gen_active(&self) -> bool {
+                self.query(|a| a.is_emergency_gen_active())
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -5253,6 +5282,32 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressurised());
+        }
+
+        #[test]
+        fn emergency_gen_is_started_on_both_ac_lost_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(!test_bed.is_emergency_gen_active());
+
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .run_waiting_for(Duration::from_secs(2));
+
+            assert!(!test_bed.is_emergency_gen_active());
+
+            // Now all AC off should deploy RAT in flight
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.is_emergency_gen_active());
         }
     }
 }

@@ -7,7 +7,7 @@ use uom::si::{
     ratio::ratio,
     torque::{newton_meter, pound_force_inch},
     volume::{cubic_inch, gallon},
-    volume_rate::gallon_per_second,
+    volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
 use crate::shared::{interpolation, EmergencyElectricalState, LgciuWeightOnWheels};
@@ -54,9 +54,11 @@ impl GeneratorControlUnit {
         &mut self,
         elec_emergency_state: &impl EmergencyElectricalState,
         lgciu: &impl LgciuWeightOnWheels,
+        pressure_feedback: Pressure,
     ) {
         self.is_active = elec_emergency_state.is_in_emergency_elec()
-            && !lgciu.left_and_right_gear_compressed(false);
+            && !lgciu.left_and_right_gear_compressed(false)
+            && pressure_feedback.get::<psi>() > 500.;
     }
 
     fn is_active(&self) -> bool {
@@ -66,10 +68,11 @@ impl GeneratorControlUnit {
     pub fn update_gcu_control(
         &mut self,
         generator_speed_feedback: AngularVelocity,
+        pressure_feedback: Pressure,
         elec_emergency_state: &impl EmergencyElectricalState,
         lgciu: &impl LgciuWeightOnWheels,
     ) {
-        self.update_active_state(elec_emergency_state, lgciu);
+        self.update_active_state(elec_emergency_state, lgciu, pressure_feedback);
 
         if self.is_active() {
             self.power_target = self.nominal_power;
@@ -167,15 +170,17 @@ impl HydraulicMotor {
 
         if self.virtual_displacement > Volume::new::<cubic_inch>(0.001) {
             self.generated_torque = Torque::new::<pound_force_inch>(
-                pressure.get::<psi>()
-                    * self
-                        .virtual_displacement_after_valve_inlet()
-                        .get::<cubic_inch>()
+                pressure.get::<psi>() * self.virtual_displacement.get::<cubic_inch>()
                     / (2. * std::f64::consts::PI),
             );
+
+            // println!(
+            //     "GEN TORQ Nm:{:.2}",
+            //     self.generated_torque.get::<newton_meter>()
+            // );
         } else {
             self.generated_torque =
-                Torque::new::<newton_meter>(-0.001 * self.speed().get::<revolution_per_minute>())
+                Torque::new::<newton_meter>(-0.0005 * self.speed().get::<revolution_per_minute>())
         }
     }
 
@@ -200,7 +205,7 @@ impl HydraulicMotor {
             .speed
             .max(AngularVelocity::new::<revolution_per_minute>(0.));
 
-        self.current_flow = self.calcHydMotorFlow();
+        self.current_flow = self.flow();
 
         let total_volume = self.current_flow * context.delta_as_time();
         self.volume_to_actuator_accumulator += total_volume;
@@ -209,8 +214,12 @@ impl HydraulicMotor {
         self.total_torque = Torque::new::<newton_meter>(0.);
     }
 
-    fn calcHydMotorFlow(&self) -> VolumeRate {
-        self.speed * self.virtual_displacement
+    fn flow(&self) -> VolumeRate {
+        VolumeRate::new::<gallon_per_minute>(
+            self.speed.get::<revolution_per_minute>()
+                * self.virtual_displacement.get::<cubic_inch>()
+                / 231.,
+        )
     }
 }
 
@@ -262,7 +271,7 @@ impl Generator {
 
     fn updatePowerResistantTorque(&mut self, power_demand: Power) {
         if self.speed < AngularVelocity::new::<radian_per_second>(1.) {
-            self.resistant_torque = Torque::new::<newton_meter>(1.);
+            self.resistant_torque = Torque::new::<newton_meter>(0.3);
             self.elec_power_generated = Power::new::<watt>(0.);
         } else {
             let elec_torque = Torque::new::<newton_meter>(
@@ -271,6 +280,11 @@ impl Generator {
             self.resistant_torque = elec_torque + (1. - self.efficiency) * elec_torque;
             self.elec_power_generated = elec_torque * self.speed;
         }
+    }
+
+    fn is_producing_power(&self) -> bool {
+        self.speed > AngularVelocity::new::<revolution_per_minute>(1000.)
+            && self.elec_power_generated > Power::new::<watt>(500.)
     }
 }
 
@@ -292,6 +306,10 @@ impl ElectricalEmergencyGenerator {
         self.hyd_motor.speed()
     }
 
+    pub fn is_producing_power(&self) -> bool {
+        self.generator.is_producing_power()
+    }
+
     pub fn update(
         &mut self,
         pressure: Pressure,
@@ -307,6 +325,14 @@ impl ElectricalEmergencyGenerator {
 
         self.hyd_motor.updateHydMotorTorque(pressure);
         self.hyd_motor.updateHydMotorPhysics(context);
+
+        // println!(
+        //     "Gen: speed:{:.0} power:{:.0} pressure:{:.0} flow GPM:{:.1}",
+        //     self.hyd_motor.speed().get::<revolution_per_minute>(),
+        //     self.generator.elec_power_generated.get::<watt>(),
+        //     pressure.get::<psi>(),
+        //     self.hyd_motor.current_flow.get::<gallon_per_second>() * 60.
+        // );
     }
 
     pub fn reset_accumulators(&mut self) {
@@ -548,7 +574,12 @@ mod tests {
                 emergency_state = TestEmergencyState::in_emergency();
             }
 
-            gcu.update_gcu_control(&emergency_gen.hyd_motor, &emergency_state, &lgciu);
+            gcu.update_gcu_control(
+                emergency_gen.speed(),
+                Pressure::new::<psi>(2500.),
+                &emergency_state,
+                &lgciu,
+            );
             emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
 
             if time > 5. {
@@ -567,6 +598,15 @@ mod tests {
                         < 15000.
                 );
             }
+
+            // Full load should be below 12 GPM
+            assert!(
+                emergency_gen
+                    .hyd_motor
+                    .current_flow
+                    .get::<gallon_per_minute>()
+                    < 12.
+            );
 
             time += timestep;
 
@@ -605,7 +645,12 @@ mod tests {
                 emergency_state = TestEmergencyState::not_in_emergency();
             }
 
-            gcu.update_gcu_control(&emergency_gen.hyd_motor, &emergency_state, &lgciu);
+            gcu.update_gcu_control(
+                emergency_gen.speed(),
+                Pressure::new::<psi>(2500.),
+                &emergency_state,
+                &lgciu,
+            );
             emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
 
             if time > 5. && time < 10. {
