@@ -35,7 +35,7 @@ export interface VerticalLeg {
 }
 
 export interface VerticalLegPrediction {
-    
+
 }
 
 export class Common {
@@ -152,9 +152,9 @@ export class Common {
     static getAccelFactorCAS(mach: number, aboveTropo: boolean, tempRatio?: number): number {
         const phi = (((1 + 0.2 * mach ** 2) ** 3.5) - 1) / ((0.7 * mach ** 2) * (1 + 0.2 * mach ** 2) ** 2.5);
         if (aboveTropo) {
-            return 0.7 * (mach ** 2) * phi;
+            return 1 + 0.7 * (mach ** 2) * phi;
         }
-        return 0.7 * (mach ** 2) * (phi - 0.190263 * tempRatio);
+        return 1 + 0.7 * (mach ** 2) * (phi - 0.190263 * tempRatio);
     }
 
     static getAccelFactorMach(mach: number, aboveTropo: boolean, tempRatio?: number): number {
