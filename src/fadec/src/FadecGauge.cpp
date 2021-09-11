@@ -1,5 +1,5 @@
 #include "FadecGauge.h"
- 
+
 FadecGauge FADEC_GAUGE;
 
 __attribute__((export_name("FadecGauge_gauge_callback"))) extern "C" bool FadecGauge_gauge_callback(FsContext ctx,
