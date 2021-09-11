@@ -306,8 +306,8 @@ fn hyd_circuit_basic(path: &str) {
         );
 
         hydraulic_loop.update(
-            &mut vec![&mut edp],
-            &mut vec![&mut epump],
+            &mut vec![Box::new(&mut edp)],
+            &mut vec![Box::new(&mut epump)],
             &None,
             &context,
             &TestHydraulicLoopController::commanding_open_fire_shutoff_valve(1),

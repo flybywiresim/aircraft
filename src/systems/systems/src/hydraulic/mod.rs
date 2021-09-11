@@ -40,19 +40,6 @@ pub trait PressureSource {
     }
 }
 
-pub struct DummyPump {}
-impl DummyPump {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-impl PressureSource for DummyPump {}
-impl Default for DummyPump {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 // TODO update method that can update physic constants from given temperature
 // This would change pressure response to volume
 pub struct Fluid {
@@ -446,8 +433,8 @@ impl HydraulicCircuit {
 
     pub fn update<T: HydraulicLoopController>(
         &mut self,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &mut Vec<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<Box<&mut dyn PressureSource>>,
+        system_section_pump: &mut Vec<Box<&mut dyn PressureSource>>,
         ptu: &Option<&PowerTransferUnit>,
         context: &UpdateContext,
         controller: &T,
@@ -477,13 +464,13 @@ impl HydraulicCircuit {
 
     fn update_final_pumps_states(
         &mut self,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &mut Vec<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<Box<&mut dyn PressureSource>>,
+        system_section_pump: &mut Vec<Box<&mut dyn PressureSource>>,
         context: &UpdateContext,
     ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_actual_pumping_states(
-                main_section_pumps[pump_idx],
+                &mut Some(*main_section_pumps[pump_idx]),
                 &Vec::new(),
                 &self.pump_to_system_checkvalves,
                 &mut self.reservoir,
@@ -492,14 +479,25 @@ impl HydraulicCircuit {
             );
         }
 
-        self.system_section.update_actual_pumping_states(
-            system_section_pump[0],
-            &self.pump_to_system_checkvalves,
-            &Vec::new(),
-            &mut self.reservoir,
-            &context,
-            &self.fluid,
-        );
+        if system_section_pump.len() > 0 {
+            self.system_section.update_actual_pumping_states(
+                &mut Some(*system_section_pump[0]),
+                &self.pump_to_system_checkvalves,
+                &Vec::new(),
+                &mut self.reservoir,
+                &context,
+                &self.fluid,
+            );
+        } else {
+            self.system_section.update_actual_pumping_states(
+                &mut None,
+                &self.pump_to_system_checkvalves,
+                &Vec::new(),
+                &mut self.reservoir,
+                &context,
+                &self.fluid,
+            );
+        }
     }
 
     fn update_maximum_valve_flows(&mut self) {
@@ -514,15 +512,15 @@ impl HydraulicCircuit {
 
     fn update_maximum_pumping_capacities(
         &mut self,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &mut Vec<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<Box<&mut dyn PressureSource>>,
+        system_section_pump: &mut Vec<Box<&mut dyn PressureSource>>,
     ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_max_pump_capacity(main_section_pumps[pump_idx]);
+            section.update_max_pump_capacity(*main_section_pumps[pump_idx]);
         }
         if !system_section_pump.is_empty() {
             self.system_section
-                .update_max_pump_capacity(system_section_pump[0]);
+                .update_max_pump_capacity(*system_section_pump[0]);
         }
     }
 
@@ -789,7 +787,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_max_pump_capacity(&mut self, pump: &mut impl PressureSource) {
+    pub fn update_max_pump_capacity(&mut self, pump: &mut dyn PressureSource) {
         if self.fire_valve_is_opened() {
             self.max_pumpable_volume = pump.delta_vol_max();
         } else {
@@ -799,7 +797,7 @@ impl Section {
 
     pub fn update_actual_pumping_states(
         &mut self,
-        pump: &mut impl PressureSource,
+        pump: &mut Option<&mut dyn PressureSource>,
         upstream_valves: &[CheckValve],
         downstream_valves: &[CheckValve],
         reservoir: &mut Reservoir,
@@ -821,14 +819,18 @@ impl Section {
 
         let mut delta_vol = self.delta_vol_consumer_pass + delta_vol_from_valves;
 
-        pump.update_actual_state_after_pressure_regulation(
-            final_volume_needed_to_reach_target_pressure,
-            reservoir,
-            self.fire_valve_is_opened(),
-            &context,
-        );
-
-        let total_volume_pumped = pump.flow() * context.delta_as_time();
+        let mut total_volume_pumped = Volume::new::<gallon>(0.);
+        if pump.is_some() {
+            pump.as_deref_mut()
+                .unwrap()
+                .update_actual_state_after_pressure_regulation(
+                    final_volume_needed_to_reach_target_pressure,
+                    reservoir,
+                    self.fire_valve_is_opened(),
+                    &context,
+                );
+            total_volume_pumped = pump.as_ref().unwrap().flow() * context.delta_as_time();
+        }
 
         delta_vol += total_volume_pumped;
 

@@ -15,7 +15,7 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
-        DummyPump, ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicLoopController,
+        ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PumpController, RamAirTurbine,
         RamAirTurbineController,
     },
@@ -550,8 +550,8 @@ impl A320Hydraulic {
 
         self.green_loop_controller.update(engine_fire_push_buttons);
         self.green_loop.update(
-            &mut vec![&mut self.engine_driven_pump_1],
-            &mut vec![&mut DummyPump::new()],
+            &mut vec![Box::new(&mut self.engine_driven_pump_1)],
+            &mut Vec::new(),
             &Some(&self.power_transfer_unit),
             &context,
             &self.green_loop_controller,
@@ -559,8 +559,8 @@ impl A320Hydraulic {
 
         self.yellow_loop_controller.update(engine_fire_push_buttons);
         self.yellow_loop.update(
-            &mut vec![&mut self.engine_driven_pump_2],
-            &mut vec![&mut self.yellow_electric_pump],
+            &mut vec![Box::new(&mut self.engine_driven_pump_2)],
+            &mut vec![Box::new(&mut self.yellow_electric_pump)],
             &Some(&self.power_transfer_unit),
             context,
             &self.yellow_loop_controller,
@@ -582,8 +582,8 @@ impl A320Hydraulic {
 
         self.blue_loop_controller.update(engine_fire_push_buttons);
         self.blue_loop.update(
-            &mut vec![&mut self.blue_electric_pump],
-            &mut vec![&mut self.ram_air_turbine],
+            &mut vec![Box::new(&mut self.blue_electric_pump)],
+            &mut vec![Box::new(&mut self.ram_air_turbine)],
             &None,
             context,
             &self.blue_loop_controller,
