@@ -1049,8 +1049,11 @@ export class ManagedFlightPlan {
     public getRunway(runways: OneWayRunway[], runwayName: string): OneWayRunway | null {
         if (runways.length > 0) {
             let runwayIndex;
-            runwayName = runwayName.replace('RW', '');
-            const runwayLetter = runwayName[runwayName.length - 1];
+            const match = runwayName.match(/^(RW)?([0-9]{1,2})([LCRT ])?$/);
+            if (match === null) {
+                return null;
+            }
+            const runwayLetter = match[3] ?? ' ';
             if (runwayLetter === ' ' || runwayLetter === 'C') {
                 const runwayDirection = runwayName.trim();
                 runwayIndex = runways.findIndex((r) => r.designation === runwayDirection || r.designation === `${runwayDirection}C`);
