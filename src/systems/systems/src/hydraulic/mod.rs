@@ -442,10 +442,10 @@ impl HydraulicCircuit {
         self.update_shutoff_valves_states(controller);
 
         // Taking care of leaks / consumers / actuators volumes
-        self.update_flow_consumption(ptu, context);
+        self.update_flows(ptu, context);
 
         // How many fluid needed to reach target pressure considering flow consumption
-        self.update_target_volumes_after_flow_consumption();
+        self.update_target_volumes_after_flow();
 
         // Updating for each section its total maximum theoretical pumping capacity
         // "what max volume it could pump considering current reservoir state and pump rpm"
@@ -454,22 +454,22 @@ impl HydraulicCircuit {
         // What flow can come through each valve considering what is consumed downstream
         self.update_maximum_valve_flows();
 
-        // Update final flow that will go each valve
+        // Update final flow that will go through each valve (spliting flow between multiple valves)
         self.update_final_valves_flows();
 
         // We have all flow information, now we set pump parameters (displacement) to where it
         // should be so we reach target pressure
-        self.update_final_pumps_states(main_section_pumps, system_section_pump, context);
+        self.update_pumps_states(main_section_pumps, system_section_pump, context);
     }
 
-    fn update_final_pumps_states(
+    fn update_pumps_states(
         &mut self,
         main_section_pumps: &mut Vec<&mut dyn PressureSource>,
         system_section_pump: &mut Option<&mut dyn PressureSource>,
         context: &UpdateContext,
     ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_actual_pumping_states(
+            section.update_pump_state(
                 &mut Some(main_section_pumps[pump_idx]),
                 &Vec::new(),
                 &self.pump_to_system_checkvalves,
@@ -479,7 +479,7 @@ impl HydraulicCircuit {
             );
         }
 
-        self.system_section.update_actual_pumping_states(
+        self.system_section.update_pump_state(
             system_section_pump,
             &self.pump_to_system_checkvalves,
             &Vec::new(),
@@ -491,7 +491,7 @@ impl HydraulicCircuit {
 
     fn update_maximum_valve_flows(&mut self) {
         for (pump_section_idx, valve) in self.pump_to_system_checkvalves.iter_mut().enumerate() {
-            valve.update_forward_pass(
+            valve.update_flow_forecast(
                 &self.pump_sections[pump_section_idx],
                 &self.system_section,
                 &self.fluid,
@@ -505,38 +505,33 @@ impl HydraulicCircuit {
         system_section_pump: &mut Option<&mut dyn PressureSource>,
     ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_max_pump_capacity(main_section_pumps[pump_idx]);
+            section.update_maximum_pumping_capacity(main_section_pumps[pump_idx]);
         }
 
         if let Some(pump) = system_section_pump {
-            self.system_section.update_max_pump_capacity(*pump);
+            self.system_section.update_maximum_pumping_capacity(*pump);
         }
     }
 
-    fn update_target_volumes_after_flow_consumption(&mut self) {
+    fn update_target_volumes_after_flow(&mut self) {
         for section in &mut self.pump_sections {
-            section.update_target_volume_after_consumer_pass(
+            section.update_target_volume_after_flow_update(
                 Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
                 &self.fluid,
             );
         }
-        self.system_section
-            .update_target_volume_after_consumer_pass(
-                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-                &self.fluid,
-            );
+        self.system_section.update_target_volume_after_flow_update(
+            Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
+            &self.fluid,
+        );
     }
 
-    fn update_flow_consumption(
-        &mut self,
-        ptu: &Option<&PowerTransferUnit>,
-        context: &UpdateContext,
-    ) {
+    fn update_flows(&mut self, ptu: &Option<&PowerTransferUnit>, context: &UpdateContext) {
         for section in &mut self.pump_sections {
-            section.update_delta_vol(&mut self.reservoir, ptu, &context);
+            section.update_flow(&mut self.reservoir, ptu, &context);
         }
         self.system_section
-            .update_delta_vol(&mut self.reservoir, ptu, &context);
+            .update_flow(&mut self.reservoir, ptu, &context);
     }
 
     fn update_shutoff_valves_states<T: HydraulicLoopController>(&mut self, controller: &T) {
@@ -712,7 +707,7 @@ impl Section {
         }
     }
 
-    pub fn update_target_volume_after_consumer_pass(
+    pub fn update_target_volume_after_flow_update(
         &mut self,
         target_pressure: Pressure,
         fluid: &Fluid,
@@ -733,7 +728,8 @@ impl Section {
             / Pressure::new::<psi>(3000.)
     }
 
-    pub fn update_delta_vol(
+    // Updates hydraulic flow from consumers like accumulator / ptu / any actuator
+    pub fn update_flow(
         &mut self,
         reservoir: &mut Reservoir,
         ptu: &Option<&PowerTransferUnit>,
@@ -776,7 +772,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_max_pump_capacity(&mut self, pump: &mut dyn PressureSource) {
+    pub fn update_maximum_pumping_capacity(&mut self, pump: &mut dyn PressureSource) {
         if self.fire_valve_is_opened() {
             self.max_pumpable_volume = pump.delta_vol_max();
         } else {
@@ -784,7 +780,7 @@ impl Section {
         }
     }
 
-    pub fn update_actual_pumping_states(
+    pub fn update_pump_state(
         &mut self,
         pump: &mut Option<&mut dyn PressureSource>,
         upstream_valves: &[CheckValve],
@@ -982,7 +978,9 @@ impl CheckValve {
         }
     }
 
-    pub fn update_forward_pass(
+    // Based on upstream pumping capacity if any and pressure difference, computes what flow could go through
+    // the valve
+    pub fn update_flow_forecast(
         &mut self,
         upstream_section: &Section,
         downstream_section: &Section,
