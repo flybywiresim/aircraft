@@ -49,11 +49,11 @@ export class FlightPlanManager {
 
     public static DEBUG_INSTANCE: FlightPlanManager;
 
-    public static FlightPlanKey = 'WT.FlightPlan';
+    public static FlightPlanKey = 'A32NX.FlightPlan';
 
-    public static FlightPlanCompressedKey = 'WT.FlightPlan.Compressed';
+    public static FlightPlanCompressedKey = 'A32NX.FlightPlan.Compressed';
 
-    public static FlightPlanVersionKey = 'L:WT.FlightPlan.Version';
+    public static FlightPlanVersionKey = 'L:A32NX.FlightPlan.Version';
 
     /**
      * The current stored flight plan data.
@@ -77,15 +77,17 @@ export class FlightPlanManager {
                 this._flightPlans = [];
                 this._flightPlans.push(plan);
                 // TODO Reenable this check once we set A32NX_FP_LOAD in options - will always sync with AsoboFP on init
-                // if (NXDataStore.get('A32NX_FP_LOAD', 0) !== 0) {
+                // if (NXDataStore.get('FP_LOAD', '0') !== '0') {
                 this.pauseSync();
-                await FlightPlanAsoboSync.LoadFromGame(this);
+                const loaded = await FlightPlanAsoboSync.LoadFromGame(this);
                 // }
                 this.resumeSync();
 
                 // ctd magic sauce?
-                Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0);
-                Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX');
+                if (loaded) {
+                    Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0);
+                    Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX');
+                }
             });
         }
 
@@ -138,7 +140,7 @@ export class FlightPlanManager {
      * @param {Boolean} log Whether or not to log the loaded flight plan value.
      */
     public updateFlightPlan(callback: () => void = () => { }, log = false, force = false): void {
-        const flightPlanVersion = SimVar.GetSimVarValue('L:WT.FlightPlan.Version', 'number');
+        const flightPlanVersion = SimVar.GetSimVarValue(FlightPlanManager.FlightPlanVersionKey, 'number');
         if (flightPlanVersion !== this._currentFlightPlanVersion || force) {
             this._loadFlightPlans();
             this._currentFlightPlanVersion = flightPlanVersion;
@@ -1637,10 +1639,12 @@ export class FlightPlanManager {
 
     public pauseSync(): void {
         this._isSyncPaused = true;
+        console.log('FlightPlan Sync Paused');
     }
 
     public resumeSync(): void {
         this._isSyncPaused = false;
         this._updateFlightPlanVersion();
+        console.log('FlightPlan Sync Resume');
     }
 }
