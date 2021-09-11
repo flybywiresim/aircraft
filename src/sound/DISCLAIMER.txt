@@ -1,3 +1,0 @@
-This project was generated from the MSFS SDK, making use of the Provided Wwise sample project, all added audios are royality free, or created by one of the people in the discords sound channel.
-Files including plane names or references are added by the MSFS SDK sample project as examples and are not against copyright.
-Pinned in the sound channel is guide for avoiding copyright. No copyrighted audio can be used in this project for legal reasons.
