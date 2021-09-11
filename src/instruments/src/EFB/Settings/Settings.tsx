@@ -77,6 +77,8 @@ const DefaultsPage = () => {
                         placeholder={thrustReductionHeight}
                         noLabel
                         value={thrustReductionHeightSetting}
+                        min={400}
+                        max={5000}
                         onChange={(event) => handleSetThrustReductionAlt(event)}
                     />
                 </div>
@@ -90,6 +92,8 @@ const DefaultsPage = () => {
                         placeholder={accelerationHeight}
                         noLabel
                         value={accelerationHeightSetting}
+                        min={400}
+                        max={10000}
                         onChange={(event) => handleSetAccelerationAlt(event)}
                     />
                 </div>
@@ -103,6 +107,8 @@ const DefaultsPage = () => {
                         placeholder={accelerationOutHeight}
                         noLabel
                         value={accelerationOutHeightSetting}
+                        min={400}
+                        max={10000}
                         onChange={(event) => handleSetAccelerationOutAlt(event)}
                     />
                 </div>
@@ -167,6 +173,9 @@ const SimOptionsPage = () => {
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
+
+    const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
+    const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -239,6 +248,32 @@ const SimOptionsPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
+                    </div>
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">MCDU Keyboard Input</span>
+                            <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
+                        </span>
+                        <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
+                    </div>
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">MCDU Focus Timeout (s)</span>
+                        </span>
+                        <SimpleInput
+                            className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
+                            value={mcduTimeout}
+                            noLabel
+                            min={5}
+                            max={120}
+                            disabled={(mcduInput !== 'ENABLED')}
+                            onChange={(event) => {
+                                if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                                    setMcduTimeout(event.trim());
+                                }
+                            }}
+                        />
                     </div>
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />

@@ -397,6 +397,18 @@ impl A320Hydraulic {
         estimated_yellow_epump_flow.max(VolumeRate::new::<gallon_per_second>(0.))
     }
 
+    // Placeholder function to trigger the high pitch PTU sound on specific PTU conditions
+    // Todo remove when PTU physical model is added
+    fn is_ptu_running_high_pitch_sound(&self) -> bool {
+        let is_ptu_rotating = self.power_transfer_unit.is_active_left_to_right()
+            || self.power_transfer_unit.is_active_right_to_left();
+
+        let absolute_delta_pressure =
+            (self.green_loop.pressure() - self.yellow_loop.pressure()).abs();
+
+        absolute_delta_pressure > Pressure::new::<psi>(2700.) && is_ptu_rotating
+    }
+
     fn green_edp_has_low_press_fault(&self) -> bool {
         self.engine_driven_pump_1_controller
             .has_pressure_low_fault()
@@ -742,6 +754,11 @@ impl SimulationElement for A320Hydraulic {
             "HYD_BLUE_EPUMP_FLOW",
             self.blue_electric_pump_estimated_flow()
                 .get::<gallon_per_second>(),
+        );
+
+        writer.write(
+            "HYD_PTU_HIGH_PITCH_SOUND",
+            self.is_ptu_running_high_pitch_sound(),
         );
     }
 }
