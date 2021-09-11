@@ -840,32 +840,6 @@ impl Section {
         self.current_flow = delta_vol / context.delta_as_time();
     }
 
-    pub fn update_actual_pumping_states_no_pump(
-        &mut self,
-        upstream_valves: &[CheckValve],
-        downstream_valves: &[CheckValve],
-        context: &UpdateContext,
-        fluid: &Fluid,
-    ) {
-        let mut delta_vol_from_valves = Volume::new::<gallon>(0.);
-
-        for up in upstream_valves {
-            delta_vol_from_valves += up.current_volume;
-        }
-
-        for down in downstream_valves {
-            delta_vol_from_valves -= down.current_volume;
-        }
-
-        let delta_vol = self.delta_vol_consumer_pass + delta_vol_from_valves;
-
-        self.current_volume += delta_vol;
-
-        self.update_pressure(fluid);
-
-        self.current_flow = delta_vol / context.delta_as_time();
-    }
-
     fn update_pressure(&mut self, fluid: &Fluid) {
         let fluid_volume_compressed = self.current_volume - self.max_high_press_volume;
 
