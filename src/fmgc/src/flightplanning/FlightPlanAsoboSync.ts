@@ -38,7 +38,7 @@ export class FlightPlanAsoboSync {
       }
   }
 
-  public static async LoadFromGame(fpln: FlightPlanManager): Promise<void> {
+  public static async LoadFromGame(fpln: FlightPlanManager): Promise<boolean> {
       return new Promise((resolve) => {
           this.init();
           setTimeout(() => {
@@ -51,8 +51,10 @@ export class FlightPlanAsoboSync {
 
                       // TODO: talk to matt about dirto
                       if (!isDirectTo) {
-                          if (data.waypoints.length === 0) {
-                              resolve();
+                          // TODO FIXME: better handling of mid-air spawning and syncing fpln
+                          if (data.waypoints.length === 0 || data.waypoints[0].ident === 'CUSTD') {
+                              fpln.resumeSync();
+                              resolve(false);
                               return;
                           }
 
@@ -70,7 +72,6 @@ export class FlightPlanAsoboSync {
                           // Find out first approach waypoint, - 1 to skip destination
                           const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 1 : data.arrivalWaypointsSize) - 1;
                           const enroute = data.waypoints.slice(enrouteStart, enrouteEnd - 1);
-                          debugger;
 
                           for (let i = 0; i < enroute.length - 1; i++) {
                               const wpt = enroute[i];
@@ -107,7 +108,7 @@ export class FlightPlanAsoboSync {
                           fpln.resumeSync();
 
                           this.fpChecksum = fpln.getCurrentFlightPlan().checksum;
-                          resolve();
+                          resolve(true);
                       }
                   });
               }, 500);
@@ -118,7 +119,7 @@ export class FlightPlanAsoboSync {
   public static async SaveToGame(fpln: FlightPlanManager): Promise<void> {
       return new Promise(() => {
           const plan = fpln.getCurrentFlightPlan();
-          if (NXDataStore.get('WT_CJ4_FPSYNC', 0) !== 0 && (plan.checksum !== this.fpChecksum)) {
+          if (NXDataStore.get('FP_LOAD', '0') !== '0' && (plan.checksum !== this.fpChecksum)) {
               // await Coherent.call("CREATE_NEW_FLIGHTPLAN");
               Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.log);
               Coherent.call('CLEAR_CURRENT_FLIGHT_PLAN').catch(console.log);
