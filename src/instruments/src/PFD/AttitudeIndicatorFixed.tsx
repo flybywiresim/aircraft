@@ -27,7 +27,7 @@ export const AttitudeIndicatorFixedUpper = ({ pitch, roll }) => {
                 <path d="m53.553 41.563-0.90818-2.4967 0.9466-0.34474 0.9466-0.34472 0.90818 2.4966" />
                 <path d="m46.973 44.827-1.8313-3.1738 1.7448-1.0079 1.8313 3.1738" />
             </g>
-            <path className="NormalStroke Yellow CornerRound" d="m68.906 38.741-2.5184-4.7373h5.0367l-2.5184 4.7373" />
+            <path className="NormalStroke Yellow CornerRound" d="m68.906 38.650-2.5184-3.7000h5.0367l-2.5184 3.7000" />
         </g>
     );
 };
