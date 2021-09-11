@@ -1,5 +1,5 @@
 #pragma once
- 
+
 /// <summary>
 /// SimConnect data types to send Sim Updated
 /// </summary>
