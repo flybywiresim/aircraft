@@ -1,5 +1,5 @@
 #pragma once
-
+ 
 #ifndef __INTELLISENSE__
 #define MODULE_EXPORT __attribute__((visibility("default")))
 #define MODULE_WASM_MODNAME(mod) __attribute__((import_module(mod)))
