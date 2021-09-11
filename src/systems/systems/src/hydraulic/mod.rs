@@ -433,7 +433,7 @@ impl HydraulicCircuit {
 
     pub fn update<T: HydraulicLoopController>(
         &mut self,
-        main_section_pumps: &mut Vec<Box<&mut dyn PressureSource>>,
+        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
         system_section_pump: &mut Option<&mut dyn PressureSource>,
         ptu: &Option<&PowerTransferUnit>,
         context: &UpdateContext,
@@ -464,13 +464,13 @@ impl HydraulicCircuit {
 
     fn update_final_pumps_states(
         &mut self,
-        main_section_pumps: &mut Vec<Box<&mut dyn PressureSource>>,
+        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
         system_section_pump: &mut Option<&mut dyn PressureSource>,
         context: &UpdateContext,
     ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_actual_pumping_states(
-                &mut Some(*main_section_pumps[pump_idx]),
+                &mut Some(main_section_pumps[pump_idx]),
                 &Vec::new(),
                 &self.pump_to_system_checkvalves,
                 &mut self.reservoir,
@@ -501,11 +501,11 @@ impl HydraulicCircuit {
 
     fn update_maximum_pumping_capacities(
         &mut self,
-        main_section_pumps: &mut Vec<Box<&mut dyn PressureSource>>,
+        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
         system_section_pump: &mut Option<&mut dyn PressureSource>,
     ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_max_pump_capacity(*main_section_pumps[pump_idx]);
+            section.update_max_pump_capacity(main_section_pumps[pump_idx]);
         }
 
         if let Some(pump) = system_section_pump {

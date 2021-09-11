@@ -306,7 +306,7 @@ fn hyd_circuit_basic(path: &str) {
         );
 
         hydraulic_loop.update(
-            &mut vec![Box::new(&mut edp)],
+            &mut vec![&mut edp],
             &mut Some(&mut epump),
             &None,
             &context,
