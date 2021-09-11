@@ -553,7 +553,7 @@ impl HydraulicCircuit {
             .max(Volume::new::<gallon>(0.));
 
         if used_system_volume >= total_max_valves_volume {
-            // If all the volume upstream is used by system section, each valve will provide it's max volume available
+            // If all the volume upstream is used by system section, each valve will provide its max volume available
             for valve in &mut self.pump_to_system_checkvalves {
                 valve.current_volume = valve.max_virtual_volume;
             }
