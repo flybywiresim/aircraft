@@ -436,7 +436,6 @@ impl HydraulicCircuit {
         }
     }
 
-    // TODO should ask for pump section ID for multiple section planes
     pub fn is_fire_shutoff_valve_opened(&self, pump_id: usize) -> bool {
         self.pump_sections[pump_id].fire_valve_is_opened()
     }
