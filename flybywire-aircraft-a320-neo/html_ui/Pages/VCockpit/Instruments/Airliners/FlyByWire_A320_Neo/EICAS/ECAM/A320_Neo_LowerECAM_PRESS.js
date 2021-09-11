@@ -273,11 +273,11 @@ var A320_Neo_LowerECAM_PRESS;
                 this.oldLandingElevText = this.updateValue(this.htmlLdgElevText, this.oldLandingElevText, "AUTO");
             }
 
-            if (activeSystem == 1 && this.oldActiveSystemValue != 1) {
+            if (activeSystem == 1 && this.oldActiveSystemValue != 1 && !manMode) {
                 this.htmlSYS1text.setAttribute("visibility", "visible");
                 this.htmlSYS2text.setAttribute("visibility", "hidden");
                 this.oldActiveSystemValue = 1;
-            } else if (activeSystem == 2 && this.oldActiveSystemValue != 2) {
+            } else if (activeSystem == 2 && this.oldActiveSystemValue != 2 && !manMode) {
                 this.htmlSYS2text.setAttribute("visibility", "visible");
                 this.htmlSYS1text.setAttribute("visibility", "hidden");
                 this.oldActiveSystemValue = 2;

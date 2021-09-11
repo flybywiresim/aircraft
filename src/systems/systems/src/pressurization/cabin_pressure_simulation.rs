@@ -51,6 +51,7 @@ impl CabinPressure {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -59,10 +60,11 @@ impl CabinPressure {
         packs_are_on: bool,
         lgciu_gear_compressed: bool,
         simulation_is_ground: bool,
+        should_open_outflow_valve: bool,
     ) {
         self.exterior_pressure = self.exterior_pressure_low_pass_filter(context);
         self.z_coefficient = self.calculate_z();
-        self.flow_coefficient = self.calculate_flow_coefficient(lgciu_gear_compressed);
+        self.flow_coefficient = self.calculate_flow_coefficient(should_open_outflow_valve);
         self.outflow_valve_open_amount = outflow_valve_open_amount;
         self.safety_valve_open_amount = safety_valve_open_amount;
         self.cabin_flow_in = self.calculate_cabin_flow_in(packs_are_on, context);
@@ -109,15 +111,23 @@ impl CabinPressure {
         }
     }
 
-    fn calculate_flow_coefficient(&self, lgciu_gear_compressed: bool) -> f64 {
+    fn calculate_flow_coefficient(&self, should_open_outflow_valve: bool) -> f64 {
         let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
 
-        let margin = 0.02;
-        // Empirical smooth formula to avoid singularity at pressure ratio = 1
-        if (pressure_ratio - 1.).abs() < margin && !lgciu_gear_compressed {
-            -1e5 * pressure_ratio.powf(3.) + 3e5 * pressure_ratio.powf(2.)
-                - 300010. * pressure_ratio
-                + 100010.
+        // Empirical smooth formula to avoid singularity at at delta P = 0
+        let mut margin: f64 = -1.205e-4 * self.exterior_pressure.get::<hectopascal>() + 0.124108;
+        let slope: f64 = -5000. * margin + 510.;
+        if should_open_outflow_valve {
+            margin = 0.1;
+            if (pressure_ratio - 1.).abs() < margin {
+                -5e2 * pressure_ratio + 5e2
+            } else if (pressure_ratio - 1.) > 0. {
+                -50.
+            } else {
+                50.
+            }
+        } else if (pressure_ratio - 1.).abs() < margin {
+            -slope * pressure_ratio + slope
         } else if (pressure_ratio - 1.) > 0. {
             -1.
         } else {
@@ -230,6 +240,10 @@ impl CabinPressure {
 
     pub fn z_coefficient(&self) -> f64 {
         self.z_coefficient
+    }
+
+    pub fn flow_coefficient(&self) -> f64 {
+        self.flow_coefficient
     }
 
     pub fn cabin_flow_properties(&self) -> [VolumeRate; 2] {

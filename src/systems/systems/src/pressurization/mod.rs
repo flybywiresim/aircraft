@@ -87,6 +87,8 @@ impl Pressurization {
             self.packs_are_on,
             self.lgciu_gear_compressed,
             self.cpc[self.active_system - 1].is_ground(),
+            self.cpc[self.active_system - 1].should_open_outflow_valve()
+                && !press_overhead.is_in_man_mode(),
         );
 
         if !press_overhead.ldg_elev_is_auto() {
@@ -298,7 +300,7 @@ impl ResidualPressureController {
         } else {
             self.timer = Duration::from_secs(0);
         }
-        self.should_open_outflow_valve = self.timer > Duration::from_secs(30);
+        self.should_open_outflow_valve = self.timer > Duration::from_secs(60);
     }
 }
 
@@ -617,8 +619,7 @@ mod tests {
     fn conversion_from_pressure_to_altitude_works() {
         let mut test_bed = test_bed_on_ground();
 
-        test_bed = test_bed.command_packs_off();
-        //Equivalent to FL100 from tables
+        // Equivalent to FL100 from tables
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(696.86));
         test_bed = test_bed.iterate(200);
         assert!(
@@ -848,6 +849,7 @@ mod tests {
         let mut test_bed = test_bed();
 
         test_bed.set_on_ground(false);
+        test_bed.run_with_delta(Duration::from_secs_f64(31.));
         test_bed = test_bed.iterate(5);
 
         assert!(
@@ -876,7 +878,7 @@ mod tests {
 
         // Ground
 
-        test_bed = test_bed.iterate(100);
+        test_bed = test_bed.iterate(200);
         assert_eq!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount()),
             Ratio::new::<percent>(100.)
@@ -1254,7 +1256,7 @@ mod tests {
     fn safety_valve_stays_closed_when_delta_p_is_less_than_8_6_psi() {
         let mut test_bed = test_bed();
 
-        //Equivalent to SL - 8.6 PSI
+        // Equivalent to SL - 8.6 PSI
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(421.));
         test_bed.run();
         assert_eq!(
@@ -1267,7 +1269,7 @@ mod tests {
     fn safety_valve_stays_closed_when_delta_p_is_less_than_minus_1_psi() {
         let mut test_bed = test_bed();
 
-        //Equivalent to SL + 1 PSI
+        // Equivalent to SL + 1 PSI
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1080.));
         test_bed.run();
         assert_eq!(
@@ -1287,7 +1289,7 @@ mod tests {
         test_bed = test_bed.command_packs_off();
         test_bed = test_bed.iterate(100);
 
-        //Equivalent to SL - 10 PSI
+        // Equivalent to SL - 10 PSI
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(323.));
         test_bed = test_bed.iterate(20);
         assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
@@ -1303,7 +1305,7 @@ mod tests {
         test_bed = test_bed.command_man_vs_switch_position(2);
         test_bed = test_bed.command_packs_off();
         test_bed = test_bed.iterate(100);
-        //Equivalent to SL + 2 PSI
+        // Equivalent to SL + 2 PSI
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1400.));
         test_bed = test_bed.iterate(20);
         assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
@@ -1320,7 +1322,7 @@ mod tests {
         test_bed = test_bed.command_packs_off();
         test_bed = test_bed.iterate(100);
 
-        //Equivalent to SL + 2 PSI
+        // Equivalent to SL + 2 PSI
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1400.));
         test_bed = test_bed.iterate(20);
         assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));

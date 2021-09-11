@@ -43,7 +43,6 @@ impl CabinPressureController {
     const RHO: f64 = 1.225; // Cabin air density - Kg/m3
     const CABIN_VOLUME: f64 = 400.; // m3
     const OFV_SIZE: f64 = 0.03; // m2
-    const C: f64 = 1.; // Flow coefficient
 
     // Vertical speed constraints
     const MAX_CLIMB_RATE: f64 = 750.;
@@ -225,7 +224,6 @@ impl CabinPressureController {
         };
 
         let pressure_ratio = (p / p_0).get::<ratio>();
-        // ISA constants for calculating cabin altitude
 
         // Hydrostatic equation with linear temp changes and constant R, g
         let altitude: f64 = ((CabinPressureController::T_0
@@ -252,6 +250,10 @@ impl CabinPressureController {
 
     pub fn should_switch_cpc(&self) -> bool {
         self.pressure_schedule_manager.should_switch_cpc()
+    }
+
+    pub fn should_open_outflow_valve(&self) -> bool {
+        self.pressure_schedule_manager.should_open_outflow_valve()
     }
 
     pub fn reset_cpc_switch(&mut self) {
@@ -287,7 +289,7 @@ impl OutflowValveActuator for CabinPressureController {
                 * CabinPressureController::CABIN_VOLUME)
                 / (CabinPressureController::R * CabinPressureController::T_0))
                 * self.cabin_target_vs.get::<meter_per_second>())
-            / (CabinPressureController::C
+            / (cabin_pressure_simulation.flow_coefficient()
                 * ((2.
                     * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
                     * CabinPressureController::RHO
@@ -300,12 +302,14 @@ impl OutflowValveActuator for CabinPressureController {
 
         if press_overhead.is_in_man_mode() {
             self.outflow_valve_open_amount
-        } else if (ofv_open_ratio <= Ratio::new::<percent>(0.)) || press_overhead.ditching.is_on() {
+        } else if press_overhead.ditching.is_on() {
             Ratio::new::<percent>(0.)
         } else if ofv_open_ratio >= Ratio::new::<percent>(100.)
             || (self.is_ground() && self.pressure_schedule_manager.should_open_outflow_valve())
         {
             Ratio::new::<percent>(100.)
+        } else if ofv_open_ratio <= Ratio::new::<percent>(0.) {
+            Ratio::new::<percent>(0.)
         } else {
             ofv_open_ratio
         }
@@ -315,14 +319,19 @@ impl OutflowValveActuator for CabinPressureController {
 // Safety valve signal
 impl ControllerSignal<PressureValveSignal> for CabinPressureController {
     fn signal(&self) -> Option<PressureValveSignal> {
-        if (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(8.6)
-            || (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(-1.)
-        {
-            Some(PressureValveSignal::Open)
-        } else if ((self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(8.1)
-            || (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(-0.5))
-            && self.safety_valve_open_amount > Ratio::new::<percent>(0.)
-        {
+        if (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(8.1) {
+            if (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(8.6) {
+                Some(PressureValveSignal::Open)
+            } else {
+                Some(PressureValveSignal::Neutral)
+            }
+        } else if (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(-0.5) {
+            if (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(-1.) {
+                Some(PressureValveSignal::Open)
+            } else {
+                Some(PressureValveSignal::Neutral)
+            }
+        } else if self.safety_valve_open_amount > Ratio::new::<percent>(0.) {
             Some(PressureValveSignal::Close)
         } else {
             Some(PressureValveSignal::Neutral)
