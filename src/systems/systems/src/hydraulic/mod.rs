@@ -875,7 +875,7 @@ impl Section {
         if self.connected_to_ptu_left_side {
             if ptu.flow_to_left > VolumeRate::new::<gallon_per_second>(0.0) {
                 // We are left side of PTU and positive flow so we receive flow using own reservoir
-                actual_flow = reservoir.get_flow(ptu.flow_to_left, context);
+                actual_flow = reservoir.try_take_flow(ptu.flow_to_left, context);
             } else {
                 // We are using own flow to power right side so we send that back
                 // to our own reservoir
@@ -886,7 +886,7 @@ impl Section {
         } else if self.connected_to_ptu_right_side {
             if ptu.flow_to_right > VolumeRate::new::<gallon_per_second>(0.0) {
                 // We are right side of PTU and positive flow so we receive flow using own reservoir
-                actual_flow = reservoir.get_flow(ptu.flow_to_right, context);
+                actual_flow = reservoir.try_take_flow(ptu.flow_to_right, context);
             } else {
                 // We are using own flow to power left side so we send that back
                 // to our own reservoir
@@ -1030,7 +1030,8 @@ impl Reservoir {
         }
     }
 
-    fn get_volume(&mut self, volume: Volume) -> Volume {
+    // Try to take volume from reservoir. Will return only what's currently available
+    fn try_take_volume(&mut self, volume: Volume) -> Volume {
         let volume_taken;
         if self.current_level > self.min_usable {
             let volume_available = self.current_level - self.min_usable;
@@ -1043,12 +1044,14 @@ impl Reservoir {
         volume_taken
     }
 
-    fn get_flow(&mut self, flow: VolumeRate, context: &UpdateContext) -> VolumeRate {
+    // Try to take flow from reservoir. Will return only what's currently available
+    fn try_take_flow(&mut self, flow: VolumeRate, context: &UpdateContext) -> VolumeRate {
         let desired_volume = flow * context.delta_as_time();
-        let volume_taken = self.get_volume(desired_volume);
+        let volume_taken = self.try_take_volume(desired_volume);
         volume_taken / context.delta_as_time()
     }
 
+    // Asks reservoir what's current flow available
     fn request_flow_availability(&self, flow: VolumeRate, context: &UpdateContext) -> VolumeRate {
         let desired_volume = flow * context.delta_as_time();
         let max_volume_available = self.current_level - self.min_usable;
@@ -1193,7 +1196,7 @@ impl PressureSource for Pump {
         let max_current_flow = self.get_max_flow();
 
         if is_pump_connected_to_reservoir {
-            self.current_flow = reservoir.get_flow(max_current_flow, &context);
+            self.current_flow = reservoir.try_take_flow(max_current_flow, &context);
         } else {
             self.current_flow = VolumeRate::new::<gallon_per_second>(0.);
         }
@@ -1725,7 +1728,7 @@ mod tests {
             Volume::new::<gallon>(5.),
         );
 
-        assert!(Volume::new::<gallon>(1.) == reservoir.get_volume(Volume::new::<gallon>(1.)));
+        assert!(Volume::new::<gallon>(1.) == reservoir.try_take_volume(Volume::new::<gallon>(1.)));
         assert!(
             reservoir.current_level > Volume::new::<gallon>(3.99)
                 && reservoir.current_level < Volume::new::<gallon>(4.01)
@@ -1740,7 +1743,7 @@ mod tests {
             Volume::new::<gallon>(5.),
         );
 
-        let drawn_volume = reservoir.get_volume(Volume::new::<gallon>(10.));
+        let drawn_volume = reservoir.try_take_volume(Volume::new::<gallon>(10.));
         assert!(drawn_volume.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME);
     }
 
