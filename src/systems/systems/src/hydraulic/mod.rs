@@ -18,26 +18,19 @@ pub mod brake_circuit;
 pub trait PressureSource {
     /// Gives the maximum available volume at that time as if it is a variable displacement
     /// pump it can be adjusted by pump regulation.
-    fn delta_vol_max(&self) -> Volume {
-        Volume::new::<gallon>(0.)
-    }
+    fn delta_vol_max(&self) -> Volume;
 
     fn update_actual_state_after_pressure_regulation(
         &mut self,
-        _volume_required: Volume,
-        _reservoir: &mut Reservoir,
-        _is_pump_connected_to_reservoir: bool,
-        _context: &UpdateContext,
-    ) {
-    }
+        volume_required: Volume,
+        reservoir: &mut Reservoir,
+        is_pump_connected_to_reservoir: bool,
+        context: &UpdateContext,
+    );
 
-    fn flow(&self) -> VolumeRate {
-        VolumeRate::new::<gallon_per_second>(0.)
-    }
+    fn flow(&self) -> VolumeRate;
 
-    fn displacement(&self) -> Volume {
-        Volume::new::<gallon>(0.)
-    }
+    fn displacement(&self) -> Volume;
 }
 
 // TODO update method that can update physic constants from given temperature
@@ -991,12 +984,12 @@ impl CheckValve {
 
         let mut available_volume_from_upstream = (upstream_section.max_pumpable_volume
             - upstream_section.volume_target)
-            .max(physical_volume_transfered);
+            .max(physical_volume_transferred);
 
         if !downstream_section.is_primed() {
             available_volume_from_upstream = upstream_section
                 .max_pumpable_volume
-                .max(physical_volume_transfered);
+                .max(physical_volume_transferred);
         }
 
         if available_volume_from_upstream.get::<gallon>() > 0. {
