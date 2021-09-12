@@ -1758,6 +1758,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
 
+- A32NX_PRESS_EXCESS_CAB_ALT
+    - Bool
+    - True when FWC condition for "EXCESS CAB ALT" is met
+
+- A32NX_PRESS_EXCESS_RESIDUAL_PR
+    - Bool
+    - True when FWC condition for "EXCES RESIDUAL PR" is met
+
+- A32NX_PRESS_LOW_DIFF_PR
+    - Bool
+    - True when FWC condition for "LO DIFF PR" is met
+
 - A32NX_OVHD_PRESS_LDG_ELEV_KNOB
     - Feet
     - Manual landing elevation as selected on the overhead LDG ELEV knob

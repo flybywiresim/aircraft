@@ -22,6 +22,7 @@ use uom::si::{
 pub(super) struct CabinPressureController {
     pressure_schedule_manager: PressureScheduleManager,
     exterior_pressure: Pressure,
+    exterior_vertical_speed: Velocity,
     cabin_pressure: Pressure,
     cabin_alt: Length,
     departure_elev: Length,
@@ -29,6 +30,7 @@ pub(super) struct CabinPressureController {
     cabin_target_vs: Velocity,
     outflow_valve_open_amount: Ratio,
     safety_valve_open_amount: Ratio,
+    engines_running: bool,
 }
 
 impl CabinPressureController {
@@ -56,6 +58,7 @@ impl CabinPressureController {
         Self {
             pressure_schedule_manager: PressureScheduleManager::new(),
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
+            exterior_vertical_speed: Velocity::new::<foot_per_minute>(0.),
             cabin_pressure: Pressure::new::<hectopascal>(1013.25),
             cabin_alt: Length::new::<meter>(0.),
             departure_elev: Length::new::<foot>(-5000.),
@@ -63,6 +66,7 @@ impl CabinPressureController {
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
             safety_valve_open_amount: Ratio::new::<percent>(0.),
+            engines_running: false,
         }
     }
 
@@ -73,30 +77,25 @@ impl CabinPressureController {
         engines: [&impl EngineCorrectedN1; 2],
         exterior_pressure: Pressure,
         landing_elevation: Length,
+        departure_elevation: Length,
         sea_level_pressure: Pressure,
         destination_qnh: Pressure,
         lgciu_gear_compressed: bool,
         cabin_pressure: Pressure,
     ) {
         self.exterior_pressure = exterior_pressure;
+        self.exterior_vertical_speed = context.vertical_speed();
         self.cabin_pressure = cabin_pressure;
         self.landing_elev = landing_elevation;
+        self.departure_elev = departure_elevation;
+        self.engines_running = self.is_engines_running(engines);
 
         self.pressure_schedule_manager =
             self.pressure_schedule_manager
                 .update(context, engines, lgciu_gear_compressed);
 
-        self.departure_elev = self.calculate_departure_elev(context);
         self.cabin_target_vs = self.calculate_cabin_vs(context);
         self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
-    }
-
-    fn calculate_departure_elev(&self, context: &UpdateContext) -> Length {
-        if self.is_ground() && self.departure_elev != context.indicated_altitude() {
-            context.indicated_altitude()
-        } else {
-            self.departure_elev
-        }
     }
 
     fn calculate_cabin_vs(&mut self, context: &UpdateContext) -> Velocity {
@@ -125,7 +124,7 @@ impl CabinPressureController {
 
                 // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
                 let target_vs = Velocity::new::<foot_per_minute>(
-                    context.vertical_speed().get::<foot_per_minute>()
+                    self.exterior_vertical_speed.get::<foot_per_minute>()
                         * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
                 );
                 if (self.cabin_pressure - self.exterior_pressure)
@@ -144,7 +143,7 @@ impl CabinPressureController {
             PressureScheduleManager::DescentInternal(_) => {
                 let target_vs = Velocity::new::<foot_per_minute>(
                     self.get_int_diff_with_ldg_elev().get::<foot>()
-                        * context.vertical_speed().get::<foot_per_minute>()
+                        * self.exterior_vertical_speed.get::<foot_per_minute>()
                         / self.get_ext_diff_with_ldg_elev(context).get::<foot>(),
                 );
                 if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
@@ -265,6 +264,32 @@ impl CabinPressureController {
             self.pressure_schedule_manager,
             PressureScheduleManager::Ground(_)
         )
+    }
+
+    fn is_engines_running(&self, engines: [&impl EngineCorrectedN1; 2]) -> bool {
+        engines
+            .iter()
+            .all(|&x| x.corrected_n1() > Ratio::new::<percent>(15.))
+    }
+
+    // FWC warning signals
+    pub fn is_excessive_alt(&self, lgciu_gear_compressed: bool) -> bool {
+        self.cabin_alt > Length::new::<foot>(9550.)
+            && self.cabin_alt > (self.departure_elev + Length::new::<foot>(1000.))
+            && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1000.))
+            && !lgciu_gear_compressed
+    }
+
+    pub fn is_excessive_residual_pressure(&self, lgciu_gear_compressed: bool) -> bool {
+        lgciu_gear_compressed
+            && !self.engines_running
+            && (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(0.01)
+    }
+
+    pub fn is_low_diff_pressure(&self) -> bool {
+        (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(1.45)
+            && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1500.))
+            && self.exterior_vertical_speed < Velocity::new::<foot_per_minute>(-500.)
     }
 }
 
@@ -783,6 +808,7 @@ mod pressure_schedule_manager_tests {
                 context,
                 [&self.engine_1, &self.engine_2],
                 Pressure::new::<hectopascal>(1013.),
+                Length::new::<meter>(0.),
                 Length::new::<meter>(0.),
                 Pressure::new::<hectopascal>(1013.),
                 Pressure::new::<hectopascal>(1013.),

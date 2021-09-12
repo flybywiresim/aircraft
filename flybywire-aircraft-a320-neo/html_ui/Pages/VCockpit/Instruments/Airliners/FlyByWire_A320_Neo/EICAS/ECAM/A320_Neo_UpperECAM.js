@@ -719,11 +719,7 @@ var A320_Neo_UpperECAM;
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
                                 page: "PRESS",
                                 isActive: () => (
-                                    !Simplane.getIsGrounded() &&
-                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > 9550 &&
-                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > (this.getCachedSimVar("L:A32NX_DEPARTURE_ELEVATION", "feet") + 1000) &&
-                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > (this.getCachedSimVar("L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB", "feet") + 1000
-                                        || this.getCachedSimVar("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet") + 1000)
+                                    this.getCachedSimVar("L:A32NX_PRESS_EXCESS_CAB_ALT", "bool")
                                 ),
                                 actions: [
                                     {
@@ -772,13 +768,11 @@ var A320_Neo_UpperECAM;
                                 ]
                             },
                             {
-                                message: "EXCESS RESIDUAL PR",
+                                message: "EXCES RESIDUAL PR",
                                 level: 2,
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9],
                                 isActive: () => (
-                                    Simplane.getIsGrounded() &&
-                                    !this.isEngineRunning(1) && !this.isEngineRunning(2) &&
-                                    Math.abs(this.getCachedSimVar("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI")) > 0.01
+                                    this.getCachedSimVar("L:A32NX_PRESS_EXCESS_RESIDUAL_PR", "bool")
                                 ),
                                 actions: [
                                     {
@@ -804,10 +798,7 @@ var A320_Neo_UpperECAM;
                                 flightPhasesInhib: [2, 3, 4, 5, 7, 8, 9, 10],
                                 page: "PRESS",
                                 isActive: () => (
-                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI") < 1.45 &&
-                                    this.getCachedSimVar("VERTICAL SPEED", "feet per minute") < -500 &&
-                                    this.getCachedSimVar("L:A32NX_PRESS_CABIN_ALTITUDE", "feet") > (this.getCachedSimVar("L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB", "feet") + 1500
-                                        || this.getCachedSimVar("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet") + 1500)
+                                    this.getCachedSimVar("L:A32NX_PRESS_LOW_DIFF_PR", "bool")
                                 ),
                                 actions: [
                                     {

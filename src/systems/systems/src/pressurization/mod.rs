@@ -40,6 +40,7 @@ pub struct Pressurization {
     residual_pressure_controller: ResidualPressureController,
     active_system: usize,
     landing_elevation: Length,
+    departure_elevation: Length,
     sea_level_pressure: Pressure,
     destination_qnh: Pressure,
     is_in_man_mode: bool,
@@ -64,6 +65,7 @@ impl Pressurization {
             residual_pressure_controller: ResidualPressureController::new(),
             active_system: active,
             landing_elevation: Length::new::<foot>(0.),
+            departure_elevation: Length::new::<foot>(0.),
             sea_level_pressure: Pressure::new::<hectopascal>(1013.25),
             destination_qnh: Pressure::new::<hectopascal>(0.),
             is_in_man_mode: false,
@@ -104,6 +106,7 @@ impl Pressurization {
                 engines,
                 self.cabin_pressure_simulation.exterior_pressure(),
                 self.landing_elevation,
+                self.departure_elevation,
                 self.sea_level_pressure,
                 self.destination_qnh,
                 self.lgciu_gear_compressed,
@@ -190,10 +193,26 @@ impl SimulationElement for Pressurization {
             "PRESS_SAFETY_VALVE_OPEN_PERCENTAGE",
             self.safety_valve.open_amount(),
         );
+
+        // FWC warning signals
+        writer.write(
+            "PRESS_EXCESS_CAB_ALT",
+            self.cpc[self.active_system - 1].is_excessive_alt(self.lgciu_gear_compressed),
+        );
+        writer.write(
+            "PRESS_EXCESS_RESIDUAL_PR",
+            self.cpc[self.active_system - 1]
+                .is_excessive_residual_pressure(self.lgciu_gear_compressed),
+        );
+        writer.write(
+            "PRESS_LOW_DIFF_PR",
+            self.cpc[self.active_system - 1].is_low_diff_pressure(),
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.landing_elevation = reader.read("PRESS_AUTO_LANDING_ELEVATION");
+        self.departure_elevation = reader.read("DEPARTURE_ELEVATION");
         self.sea_level_pressure = Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE"));
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH"));
         self.packs_are_on = reader.read("PACKS_1_IS_SUPPLYING");
