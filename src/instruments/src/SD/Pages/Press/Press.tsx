@@ -21,11 +21,20 @@ export const PressPage: FC = () => {
     const dpx = 110;
     const y = 165;
     const radius = 50;
+    const [systemNumber, setSystemNumber] = useState(0);
+
+    useEffect(() => {
+        setSystemNumber(Math.random() < 0.5 ? 1 : 2);
+    }, []);
 
     return (
         <EcamPage name="main-press">
             <PageTitle x={6} y={18} text="CAB PRESS" />
             <PressureComponent />
+
+            {/* System */}
+            <SystemComponent id={1} x={180} y={290} visible={systemNumber === 1} />
+            <SystemComponent id={2} x={350} y={290} visible={systemNumber === 2} />
 
             {/* Delta pressure gauge  */}
             <g id="DeltaPressure">
@@ -135,7 +144,7 @@ export const PressPage: FC = () => {
                 </GaugeComponent>
             </g>
 
-            <SvgGroup x={0} y={-25}>
+            <SvgGroup x={-5} y={-25}>
                 <polyline className="AirPressureShape" points="140,460 140,450 75,450 75,280 540,280 540,300" />
                 <polyline className="AirPressureShape" points="180,457 180,450 265,450 265,457" />
                 <polyline className="AirPressureShape" points="305,460 305,450 380,450" />
@@ -179,6 +188,33 @@ const PressureComponent = () => {
 
                 <text id="LandingElevation" className={`Large ${cssLdgElevName}`} x="510" y="25" textAnchor="end">{ldgElevValue}</text>
                 <text className="Medium Cyan" x="525" y="25">FT</text>
+            </g>
+
+        </>
+    );
+};
+
+type SystemComponentType = {
+    id: number,
+    visible: boolean,
+    x: number,
+    y: number
+}
+
+const SystemComponent = ({ id, visible, x, y }: SystemComponentType) => {
+    // When failures are introduced can override visible variable
+    console.log('Visible');
+    const systemFault = false;
+    const systemColour = systemFault ? 'Amber' : 'Green';
+
+    return (
+        <>
+            <g id="LandingElevation" className={visible ? 'Show' : 'Hide'}>
+                <text className={`Large ${systemColour}`} x={x} y={y}>
+                    SYS
+                    {' '}
+                    {id}
+                </text>
             </g>
 
         </>
