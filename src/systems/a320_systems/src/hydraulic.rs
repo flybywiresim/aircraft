@@ -619,6 +619,17 @@ impl A320Hydraulic {
 
         !ptu_valve_ctrol_off && (yellow_side_and || green_side_and)
     }
+
+    // Function dedicated to sound so it triggers the high pitch PTU sound on specific PTU conditions
+    fn is_ptu_running_high_pitch_sound(&self) -> bool {
+        let is_ptu_rotating = self.power_transfer_unit.is_active_left_to_right()
+            || self.power_transfer_unit.is_active_right_to_left();
+
+        let absolute_delta_pressure =
+            (self.green_loop.system_pressure() - self.yellow_loop.system_pressure()).abs();
+
+        absolute_delta_pressure > Pressure::new::<psi>(2700.) && is_ptu_rotating
+    }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
     fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
@@ -664,6 +675,11 @@ impl SimulationElement for A320Hydraulic {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write("HYD_PTU_ON_ECAM_MEMO", self.hyd_ptu_ecam_logic());
+
+        writer.write(
+            "HYD_PTU_HIGH_PITCH_SOUND",
+            self.is_ptu_running_high_pitch_sound(),
+        );
     }
 }
 
