@@ -1324,7 +1324,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "HYD PTU",
                         isActive: () => {
-                            // Info computed in hydraulic system while witing for FWS implementation
+                            // Info computed in hydraulic system while waiting for FWS implementation
                             return SimVar.GetSimVarValue("L:A32NX_HYD_PTU_ON_ECAM_MEMO", "Bool");
                         }
                     },
