@@ -1626,10 +1626,19 @@
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_takeoff" LocalVar="A32NX_TO_CONFIG_NORMAL" NodeName="PEDALS_LEFT" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_takeoff" LocalVar="A32NX_CABIN_READY" NodeName="PEDALS_LEFT" Continuous="false">
             <Range LowerBound="1" />
-            <Requires LocalVar="A32NX_CABIN_READY">
-                <Range LowerBound="1" />
+            <Requires LocalVar="A32NX_ENGINE_N1:1">
+                <Range LowerBound="17" />
+            </Requires>
+            <Requires LocalVar="A32NX_ENGINE_N1:2">
+                <Range LowerBound="17" />
+            </Requires>
+            <Requires SimVar="AIRSPEED INDICATED" Units="knots" Index="1">
+                <Range UpperBound="50" />
+            </Requires>
+            <Requires LocalVar="AIRLINER_FLIGHT_PHASE">
+                <Range LowerBound="1" UpperBound="3" />
             </Requires>
         </Sound>
 
