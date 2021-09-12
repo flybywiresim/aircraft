@@ -132,6 +132,7 @@ const AircraftConfigurationPage = () => {
                 <SelectGroup>
                     {weightUnitButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setWeightUnit(button.setting)}
                             selected={weightUnit === button.setting}
                         >
@@ -146,6 +147,7 @@ const AircraftConfigurationPage = () => {
                 <SelectGroup>
                     {paxSignsButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setPaxSigns(button.setting)}
                             selected={paxSigns === button.setting}
                         >
@@ -201,6 +203,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {adirsAlignTimeButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => {
                                         setAdirsAlignTime(button.setting);
                                         setAdirsAlignTimeSimVar(button.simVarValue);
@@ -218,6 +221,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {dmcSelfTestTimeButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => setDmcSelfTestTime(button.setting)}
                                     selected={dmcSelfTestTime === button.setting}
                                 >
@@ -232,6 +236,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => setDefaultBaro(button.setting)}
                                     selected={defaultBaro === button.setting}
                                 >
@@ -280,6 +285,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setAtisSource(button.setting)}
                             selected={atisSource === button.setting}
                         >
@@ -293,6 +299,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setMetarSource(button.setting)}
                             selected={metarSource === button.setting}
                         >
@@ -306,6 +313,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setTafSource(button.setting)}
                             selected={tafSource === button.setting}
                         >
