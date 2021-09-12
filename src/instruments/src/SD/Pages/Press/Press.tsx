@@ -14,7 +14,7 @@ setIsEcamPage('press_page');
 export const PressPage: FC = () => {
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
-    const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);
+    const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const deltaPress = splitDecimals(deltaPsi, '');
     const vsx = 275;
     const cax = 455;
@@ -152,6 +152,13 @@ export const PressPage: FC = () => {
                 <line className="AirPressureShape" x1="540" y1="340" x2="547" y2="340" />
             </SvgGroup>
 
+            {/* Safety and vent valves */}
+
+            <text className="Large White" x={490} y={305}>SAFETY</text>
+            <text className="Large White" x={185} y={380}>VENT</text>
+            <text className="Large White" x={120} y={417}>INLET</text>
+            <text className="Large White" x={240} y={417}>OUTLET</text>
+
         </EcamPage>
     );
 };
@@ -189,6 +196,7 @@ const PressureComponent = () => {
                 <text id="LandingElevation" className={`Large ${cssLdgElevName}`} x="510" y="25" textAnchor="end">{ldgElevValue}</text>
                 <text className="Medium Cyan" x="525" y="25">FT</text>
             </g>
+            <text className={`Large Green ${manMode ? 'Show' : 'Hide'}`} x="420" y="340">MAN</text>
 
         </>
     );
