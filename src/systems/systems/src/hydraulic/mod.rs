@@ -986,7 +986,7 @@ impl CheckValve {
         downstream_section: &Section,
         fluid: &Fluid,
     ) {
-        let physical_volume_transfered =
+        let physical_volume_transferred =
             self.volume_to_equalize_pressures(upstream_section, downstream_section, fluid);
 
         let mut available_volume_from_upstream = (upstream_section.max_pumpable_volume
