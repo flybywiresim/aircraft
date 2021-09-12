@@ -824,7 +824,7 @@
         - GREEN
         - YELLOW
 
-- A32NX_HYD_PTU_ON_ECAM_MEMO"
+- A32NX_HYD_PTU_ON_ECAM_MEMO
     - Bool
     - HYD PTU memo indication should show on ecam if true
 
