@@ -145,34 +145,36 @@ impl PowerTransferUnit {
         } else if delta_p.get::<psi>() > 500. || (self.is_active_left && delta_p.get::<psi>() > 5.)
         {
             // Left sends flow to right
-            let mut vr = 16.0f64.min(loop_left_pressure.get::<psi>() * 0.0058) / 60.0;
+            // Flow computed as a function of pressure  min(16gal per minute,pressure * 0.0058)
+            let mut new_flow = 16.0f64.min(loop_left_pressure.get::<psi>() * 0.0058) / 60.0;
 
             // Low pass on flow
-            vr = Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE * vr
+            new_flow = Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE * new_flow
                 + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE)
                     * self.last_flow.get::<gallon_per_second>();
 
-            self.flow_to_left = VolumeRate::new::<gallon_per_second>(-vr);
+            self.flow_to_left = VolumeRate::new::<gallon_per_second>(-new_flow);
             self.flow_to_right =
-                VolumeRate::new::<gallon_per_second>(vr * Self::EFFICIENCY_LEFT_TO_RIGHT);
-            self.last_flow = VolumeRate::new::<gallon_per_second>(vr);
+                VolumeRate::new::<gallon_per_second>(new_flow * Self::EFFICIENCY_LEFT_TO_RIGHT);
+            self.last_flow = VolumeRate::new::<gallon_per_second>(new_flow);
 
             self.is_active_left = true;
         } else if delta_p.get::<psi>() < -500.
             || (self.is_active_right && delta_p.get::<psi>() < -5.)
         {
             // Right sends flow to left
-            let mut vr = 34.0f64.min(loop_right_pressure.get::<psi>() * 0.0125) / 60.0;
+            // Flow computed as a function of pressure  min(34gal per minute,pressure * 0.00125)
+            let mut new_flow = 34.0f64.min(loop_right_pressure.get::<psi>() * 0.0125) / 60.0;
 
             // Low pass on flow
-            vr = Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE * vr
+            new_flow = Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE * new_flow
                 + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE)
                     * self.last_flow.get::<gallon_per_second>();
 
             self.flow_to_left =
-                VolumeRate::new::<gallon_per_second>(vr * Self::EFFICIENCY_RIGHT_TO_LEFT);
-            self.flow_to_right = VolumeRate::new::<gallon_per_second>(-vr);
-            self.last_flow = VolumeRate::new::<gallon_per_second>(vr);
+                VolumeRate::new::<gallon_per_second>(new_flow * Self::EFFICIENCY_RIGHT_TO_LEFT);
+            self.flow_to_right = VolumeRate::new::<gallon_per_second>(-new_flow);
+            self.last_flow = VolumeRate::new::<gallon_per_second>(new_flow);
 
             self.is_active_right = true;
         }
@@ -1688,26 +1690,6 @@ mod tests {
     impl PumpController for TestPumpController {
         fn should_pressurise(&self) -> bool {
             self.should_pressurise
-        }
-    }
-
-    struct TestRamAirTurbineController {
-        should_deploy: bool,
-    }
-    impl TestRamAirTurbineController {
-        fn _new() -> Self {
-            Self {
-                should_deploy: false,
-            }
-        }
-
-        fn _command_deployment(&mut self) {
-            self.should_deploy = true;
-        }
-    }
-    impl RamAirTurbineController for TestRamAirTurbineController {
-        fn should_deploy(&self) -> bool {
-            self.should_deploy
         }
     }
 
