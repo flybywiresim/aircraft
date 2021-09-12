@@ -12,7 +12,6 @@
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
 
 ## 0.7.0
-1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
@@ -191,6 +190,7 @@
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
 1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
+1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
