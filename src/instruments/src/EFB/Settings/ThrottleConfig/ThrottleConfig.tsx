@@ -90,11 +90,12 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const navigationBar = (
         <div className="h-80 flex flex-row">
             <VerticalSelectGroup>
-                <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
-                <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-                <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-                <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+                <SelectItem enabled onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+                <SelectItem enabled onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
+                <SelectItem enabled onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
+                <SelectItem enabled onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
                 <SelectItem
+                    enabled
                     classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
                     onSelect={() => {
                         if (reverserOnAxis1) {
@@ -106,6 +107,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                     Reverse Idle
                 </SelectItem>
                 <SelectItem
+                    enabled
                     classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
                     onSelect={() => {
                         if (reverserOnAxis1) {
