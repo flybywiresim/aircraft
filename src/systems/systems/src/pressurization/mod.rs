@@ -197,12 +197,11 @@ impl SimulationElement for Pressurization {
         // FWC warning signals
         writer.write(
             "PRESS_EXCESS_CAB_ALT",
-            self.cpc[self.active_system - 1].is_excessive_alt(self.lgciu_gear_compressed),
+            self.cpc[self.active_system - 1].is_excessive_alt(),
         );
         writer.write(
             "PRESS_EXCESS_RESIDUAL_PR",
-            self.cpc[self.active_system - 1]
-                .is_excessive_residual_pressure(self.lgciu_gear_compressed),
+            self.cpc[self.active_system - 1].is_excessive_residual_pressure(),
         );
         writer.write(
             "PRESS_LOW_DIFF_PR",

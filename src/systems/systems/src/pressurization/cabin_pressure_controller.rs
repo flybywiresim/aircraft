@@ -30,7 +30,6 @@ pub(super) struct CabinPressureController {
     cabin_target_vs: Velocity,
     outflow_valve_open_amount: Ratio,
     safety_valve_open_amount: Ratio,
-    engines_running: bool,
 }
 
 impl CabinPressureController {
@@ -66,7 +65,6 @@ impl CabinPressureController {
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
             safety_valve_open_amount: Ratio::new::<percent>(0.),
-            engines_running: false,
         }
     }
 
@@ -88,7 +86,6 @@ impl CabinPressureController {
         self.cabin_pressure = cabin_pressure;
         self.landing_elev = landing_elevation;
         self.departure_elev = departure_elevation;
-        self.engines_running = self.is_engines_running(engines);
 
         self.pressure_schedule_manager =
             self.pressure_schedule_manager
@@ -266,24 +263,15 @@ impl CabinPressureController {
         )
     }
 
-    fn is_engines_running(&self, engines: [&impl EngineCorrectedN1; 2]) -> bool {
-        engines
-            .iter()
-            .all(|&x| x.corrected_n1() > Ratio::new::<percent>(15.))
-    }
-
     // FWC warning signals
-    pub fn is_excessive_alt(&self, lgciu_gear_compressed: bool) -> bool {
+    pub fn is_excessive_alt(&self) -> bool {
         self.cabin_alt > Length::new::<foot>(9550.)
             && self.cabin_alt > (self.departure_elev + Length::new::<foot>(1000.))
             && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1000.))
-            && !lgciu_gear_compressed
     }
 
-    pub fn is_excessive_residual_pressure(&self, lgciu_gear_compressed: bool) -> bool {
-        lgciu_gear_compressed
-            && !self.engines_running
-            && (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(0.01)
+    pub fn is_excessive_residual_pressure(&self) -> bool {
+        (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(0.01)
     }
 
     pub fn is_low_diff_pressure(&self) -> bool {

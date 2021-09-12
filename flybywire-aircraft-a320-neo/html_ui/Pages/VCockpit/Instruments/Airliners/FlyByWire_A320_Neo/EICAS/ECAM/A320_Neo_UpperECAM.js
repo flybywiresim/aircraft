@@ -719,7 +719,7 @@ var A320_Neo_UpperECAM;
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
                                 page: "PRESS",
                                 isActive: () => (
-                                    this.getCachedSimVar("L:A32NX_PRESS_EXCESS_CAB_ALT", "bool")
+                                    !Simplane.getIsGrounded() && this.getCachedSimVar("L:A32NX_PRESS_EXCESS_CAB_ALT", "bool")
                                 ),
                                 actions: [
                                     {
@@ -772,6 +772,8 @@ var A320_Neo_UpperECAM;
                                 level: 2,
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9],
                                 isActive: () => (
+                                    Simplane.getIsGrounded() &&
+                                    !this.isEngineRunning(1) && !this.isEngineRunning(2) &&
                                     this.getCachedSimVar("L:A32NX_PRESS_EXCESS_RESIDUAL_PR", "bool")
                                 ),
                                 actions: [
