@@ -10,6 +10,7 @@
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
 1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
+1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
@@ -190,7 +191,6 @@
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
 1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
-1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
