@@ -687,7 +687,7 @@ impl A320HydraulicLoopController {
 }
 impl HydraulicLoopController for A320HydraulicLoopController {
     fn should_open_fire_shutoff_valve(&self, _pump_idx: usize) -> bool {
-        // A320 only has one main pump per pump section thus index not usefull
+        // A320 only has one main pump per pump section thus index not useful
         self.should_open_fire_shutoff_valve
     }
 }
