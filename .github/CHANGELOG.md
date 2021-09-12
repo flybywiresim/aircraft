@@ -5,7 +5,8 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.8.0
-1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
+1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
+1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
