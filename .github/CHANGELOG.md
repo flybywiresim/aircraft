@@ -10,6 +10,7 @@
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
 1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
+1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 1. [PRESS] Introduce manual functionality of cabin pressurization system - @MJuhe (Miquel)
 
 ## 0.7.0
