@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
   string delimiter = ",";
   bool noCompression = false;
   bool printStructSize = false;
+  bool printGetFileInterfaceVersion = false;
   bool oPrintHelp = false;
 
   // configuration of command line parameters
@@ -32,6 +33,7 @@ int main(int argc, char* argv[]) {
   args.addArgument({"-d", "--delimiter"}, &delimiter, "Delimiter");
   args.addArgument({"-n", "--no-compression"}, &noCompression, "Input file is not compressed");
   args.addArgument({"-p", "--print-struct-size"}, &printStructSize, "Print struct size");
+  args.addArgument({"-g", "--get-input-file-version"}, &printGetFileInterfaceVersion, "Print interface version of input file");
   args.addArgument({"-h", "--help"}, &oPrintHelp, "Print help message");
 
   // parse command line
@@ -63,7 +65,7 @@ int main(int argc, char* argv[]) {
     cout << "Input file does not exist!" << endl;
     return 1;
   }
-  if (outFilePath.empty()) {
+  if (outFilePath.empty() && !printGetFileInterfaceVersion) {
     cout << "Output file parameter missing!" << endl;
     return 1;
   }
@@ -85,8 +87,12 @@ int main(int argc, char* argv[]) {
   // read file version
   uint64_t fileFormatVersion = {};
   in->read(reinterpret_cast<char*>(&fileFormatVersion), sizeof(INTERFACE_VERSION));
-  // check versions
-  if (INTERFACE_VERSION != fileFormatVersion) {
+
+  // print file version if requested and return
+  if (printGetFileInterfaceVersion) {
+    cout << fileFormatVersion << endl;
+    return 0;
+  } else if (INTERFACE_VERSION != fileFormatVersion) {
     cout << "ERROR: mismatch between converter and file version ( ";
     cout << INTERFACE_VERSION;
     cout << " <> " << fileFormatVersion << " )" << endl;
