@@ -45,8 +45,6 @@ export class ManagedFlightPlan {
     /** Whether or not the flight plan has a destination airfield. */
     public destinationAirfield?: WayPoint;
 
-    public destinationAirfieldIndex?: number;
-
     /** The cruise altitude for this flight plan. */
     public cruiseAltitude = 0;
 
@@ -451,7 +449,8 @@ export class ManagedFlightPlan {
             beforeRemoved.discontinuityCanBeCleared = true;
         }
 
-        if (index < this.activeWaypointIndex) {
+        // if (index < this.activeWaypointIndex) {
+        if (this.activeWaypointIndex === this.waypoints.length) {
             this.activeWaypointIndex--;
         }
     }
@@ -648,7 +647,7 @@ export class ManagedFlightPlan {
         planCopy.activeWaypointIndex = this.activeWaypointIndex;
         planCopy.destinationAirfield = this.destinationAirfield && copyAirfield(this.destinationAirfield);
         planCopy.originAirfield = this.originAirfield && copyAirfield(this.originAirfield);
-        // planCopy.persistentOriginAirfield = this.persistentOriginAirfield && copyAirfield(this.persistentOriginAirfield);
+        planCopy.persistentOriginAirfield = this.persistentOriginAirfield && copyAirfield(this.persistentOriginAirfield);
 
         planCopy.procedureDetails = { ...this.procedureDetails };
         planCopy.directTo = { ...this.directTo };

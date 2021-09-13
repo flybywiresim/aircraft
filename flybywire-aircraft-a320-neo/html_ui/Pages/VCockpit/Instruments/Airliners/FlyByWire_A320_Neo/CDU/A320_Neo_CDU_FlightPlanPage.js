@@ -85,7 +85,7 @@ class CDUFlightPlanPage {
             if (wp.endsInDiscontinuity) {
                 waypointsAndMarkers.push({ marker: Markers.FPLN_DISCONTINUITY, fpIndex: i});
             }
-            if (i === fpm.getWaypointsCount() - 1) {
+            if (i === fpm.getDestinationIndex()) {
                 waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i});
                 // TODO: Rewrite once alt fpln exists
                 waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, fpIndex: i});
@@ -114,35 +114,36 @@ class CDUFlightPlanPage {
         }
 
         // Only examine first 5 (or less) waypoints/markers
-        // TODO FIXME: Proper sequencing implementation AMM 22-72-00:59-61 > FROM field (when offset is 0)
         const scrollWindow = [];
         for (let rowI = 0, winI = offset; rowI < rowsCount; rowI++, winI++) {
             winI = winI % (waypointsAndMarkers.length);
 
-            if (waypointsAndMarkers[winI].wp) {
+            const {wp, marker, fpIndex} = waypointsAndMarkers[winI];
+            const {wp: prevWp, fpIndex: prevFpIndex} = (winI > 0) ? waypointsAndMarkers[winI - 1] : { wp: null, fpIndex: null};
+
+            if (wp) {
                 // Waypoint
-                if (waypointsAndMarkers[winI].fpIndex === (fpm.getActiveWaypointIndex() - 1) && offset === 0) {
+                if (offset === 0) {
                     showFrom = true;
                 }
 
-                const wpPrev = fpm.getWaypoint(waypointsAndMarkers[winI].fpIndex - 1);
-                const activeIndex = fpm.getActiveWaypointIndex();
-                const wpActive = (waypointsAndMarkers[winI].fpIndex >= activeIndex);
-                let ident = waypointsAndMarkers[winI].wp.ident;
-                const isOverfly = waypointsAndMarkers[winI].wp.additionalData && waypointsAndMarkers[winI].wp.additionalData.overfly;
+                const wpPrev = fpm.getWaypoint(fpIndex - 1);
+                const wpActive = (fpIndex >= fpm.getActiveWaypointIndex());
+                let ident = wp.ident;
+                const isOverfly = wp.additionalData && wp.additionalData.overfly;
 
                 // Time
                 let time;
                 let timeCell = "----[s-text]";
                 if (ident !== "MANUAL") {
                     if (isFlying) {
-                        if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveUTCTo) || isFinite(waypointsAndMarkers[winI].wp.waypointReachedAt)) {
-                            time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).etaFromPpos : waypointsAndMarkers[winI].wp.waypointReachedAt;
+                        if (fpIndex === fpm.getDestinationIndex() || isFinite(wp.liveUTCTo) || isFinite(wp.waypointReachedAt)) {
+                            time = (fpIndex === fpm.getDestinationIndex() || wpActive || ident === "(DECEL)") ? stats.get(fpIndex).etaFromPpos : wp.waypointReachedAt;
                             timeCell = `${FMCMainDisplay.secondsToUTC(time)}[s-text]`;
                         }
                     } else {
-                        if (waypointsAndMarkers[winI].wp === fpm.getDestination() || isFinite(waypointsAndMarkers[winI].wp.liveETATo)) {
-                            time = (waypointsAndMarkers[winI].wp === fpm.getDestination() || wpActive || ident === "(DECEL)") ? stats.get(waypointsAndMarkers[winI].fpIndex).timeFromPpos : 0;
+                        if (fpIndex === fpm.getDestinationIndex() || isFinite(wp.liveETATo)) {
+                            time = (fpIndex === fpm.getDestinationIndex() || wpActive || ident === "(DECEL)") ? stats.get(fpIndex).timeFromPpos : 0;
                             timeCell = `${FMCMainDisplay.secondsTohhmm(time)}[s-text]`;
                         }
                     }
@@ -152,34 +153,31 @@ class CDUFlightPlanPage {
                 let color = "green";
                 if (fpm.isCurrentFlightPlanTemporary()) {
                     color = "yellow";
-                } else if (waypointsAndMarkers[winI].wp === fpm.getActiveWaypoint() && waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
+                } else if (fpIndex === fpm.getActiveWaypointIndex()) {
                     color = "white";
                 }
 
                 // Fix Header
                 let fixAnnotation;
                 const currentApproach = fpm.getApproach();
-                if (winI > 0 &&
-                    fpm.getDepartureRunway() &&
-                    waypointsAndMarkers[winI - 1].wp &&
-                    waypointsAndMarkers[winI - 1].wp === fpm.getOrigin()) {
-                    fixAnnotation = `${waypointsAndMarkers[winI - 1].wp.ident.substring(0,3)}${fpm.getDepartureRunway().direction.toFixed(0)}`;
-                } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                if (fpm.getDepartureRunway() && prevWp === fpm.getOrigin() && prevFpIndex === 0) {
+                    fixAnnotation = `${prevWp.ident.substring(0,3)}${fpm.getDepartureRunway().direction.toFixed(0)}`;
+                } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === wp)) {
                     const departureName = fpm.getDepartureName();
                     fixAnnotation = departureName ? departureName : undefined;
-                } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === wp)) {
                     const arrival = fpm.getArrival();
                     fixAnnotation = arrival ? arrival.name : undefined;
-                } else if (currentApproach !== undefined && fpm.getApproachWaypoints().some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                } else if (currentApproach !== undefined && fpm.getApproachWaypoints().some(fix => fix === wp)) {
                     const finalLegs = currentApproach.finalLegs;
                     if (finalLegs.length > 0) {
                         const finalLegIdents = finalLegs.map(fl => fl.fixIcao.substring(7, 12).trim());
                         const validFinalWaypoints = fpm.getApproachWaypoints().filter(wp => finalLegIdents.includes(wp.ident));
                         if (validFinalWaypoints.length > 0) {
-                            if (validFinalWaypoints[0] === waypointsAndMarkers[winI].wp) {
+                            if (fpIndex === fpm.getLastIndexBeforeApproach() + 1 && validFinalWaypoints[0] === wp) {
                                 fixAnnotation = Avionics.Utils.formatRunway(currentApproach.name.replace(/\s+/g, ''));
                             } else if (fpm.getArrivalProcIndex() !== -1
-                                    && !validFinalWaypoints.some(fix => fix === waypointsAndMarkers[winI].wp)) {
+                                    && !validFinalWaypoints.some(fix => fpIndex > fpm.getLastIndexBeforeApproach() && fix === wp)) {
                                 const arrival = fpm.getArrival();
                                 fixAnnotation = arrival ? arrival.name : undefined;
                             }
@@ -188,12 +186,12 @@ class CDUFlightPlanPage {
                 } else {
                     // Show airway
                     let airwayName = "";
-                    if (wpPrev && waypointsAndMarkers[winI].wp) {
+                    if (wpPrev && wp) {
                         let airway = undefined;
-                        if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === waypointsAndMarkers[winI].wp.infos.airwayIn) {
+                        if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === wp.infos.airwayIn) {
                             airway = {name: wpPrev.infos.airwayOut };
-                        } else if (waypointsAndMarkers[winI].wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
-                            airway = {name: waypointsAndMarkers[winI].wp.infos.airwayIn };
+                        } else if (wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
+                            airway = {name: wp.infos.airwayIn };
                         }
                         if (airway) {
                             airwayName = airway.name;
@@ -202,51 +200,46 @@ class CDUFlightPlanPage {
                     fixAnnotation = airwayName;
                 }
 
-                if (waypointsAndMarkers[winI].wp.additionalData) {
+                if (wp.additionalData) {
                     // ARINC Leg Types - R1A 610
-                    switch (waypointsAndMarkers[winI].wp.additionalData.legType) {
+                    switch (wp.additionalData.legType) {
                         case 2: // CA
-                            fixAnnotation = `C${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
+                            fixAnnotation = `C${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                         case 19: // VA
-                            fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
+                            fixAnnotation = `H${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                         case 11: // FM
-                            const prevWp = waypointsAndMarkers[winI - 1].wp;
                             if (prevWp) {
-                                fixAnnotation = `${prevWp.ident.substring(0,3)}${waypointsAndMarkers[winI].wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}`;
+                                fixAnnotation = `${prevWp.ident.substring(0,3)}${wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}`;
                             }
                             break;
                         case 17: // RF
-                            fixAnnotation = `${("" + Math.round(waypointsAndMarkers[winI].wp.additionalData.radius)).padStart(2, "0")}\xa0ARC`;
+                            fixAnnotation = `${("" + Math.round(wp.additionalData.radius)).padStart(2, "0")}\xa0ARC`;
                             break;
                         case 22: // VM
-                            fixAnnotation = `H${waypointsAndMarkers[winI].wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
+                            fixAnnotation = `H${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                     }
                 }
 
-                const prevWp = waypointsAndMarkers[winI - 1];
-                if (!fixAnnotation && prevWp && prevWp.wp && waypointsAndMarkers[winI].wp.ident !== fpm.getDestination().ident) {
-                    const magVar = Facilities.getMagVar(prevWp.wp.infos.coordinates);
-                    const courseBetween = Avionics.Utils.computeGreatCircleHeading(prevWp.wp.infos.coordinates, waypointsAndMarkers[winI].wp.infos.coordinates);
+                if (!fixAnnotation && prevWp && fpIndex !== fpm.getDestinationIndex()) {
+                    const magVar = Facilities.getMagVar(prevWp.infos.coordinates);
+                    const courseBetween = Avionics.Utils.computeGreatCircleHeading(prevWp.infos.coordinates, wp.infos.coordinates);
                     const course = A32NX_Util.trueToMagnetic(courseBetween, magVar);
                     fixAnnotation = `C${course.toFixed(0).padStart(3,"0")}\u00b0`;
                 }
 
                 // Bearing/Track
                 let bearingTrack = "";
-                if (waypointsAndMarkers[winI] &&
-                    waypointsAndMarkers[winI].wp &&
-                    waypointsAndMarkers[winI - 1] &&
-                    waypointsAndMarkers[winI - 1].wp) {
-                    const magVar = Facilities.getMagVar(waypointsAndMarkers[winI - 1].wp.infos.coordinates);
-                    if (fpm.getActiveWaypoint() === waypointsAndMarkers[winI].wp && rowI === 1) {
+                if (wp && prevWp) {
+                    const magVar = Facilities.getMagVar(prevWp.infos.coordinates);
+                    if (fpm.getActiveWaypointIndex() === fpIndex && rowI === 1) {
                         const br = fpm.getBearingToActiveWaypoint();
                         const bearing = A32NX_Util.trueToMagnetic(br, magVar);
                         bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
                     } else if (rowI === 2) {
-                        const tr = Avionics.Utils.computeGreatCircleHeading(waypointsAndMarkers[winI - 1].wp.infos.coordinates, waypointsAndMarkers[winI].wp.infos.coordinates);
+                        const tr = Avionics.Utils.computeGreatCircleHeading(prevWp.infos.coordinates, wp.infos.coordinates);
                         const track = A32NX_Util.trueToMagnetic(tr, magVar);
                         bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
                     }
@@ -256,11 +249,11 @@ class CDUFlightPlanPage {
 
                 // Active waypoint is live distance, others are distances in the flight plan
                 // TODO FIXME: actually use the correct prediction
-                if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
-                    if (waypointsAndMarkers[winI].wp === fpm.getActiveWaypoint()) {
-                        distance = stats.get(waypointsAndMarkers[winI].fpIndex).distanceFromPpos.toFixed(0);
+                if (fpIndex !== fpm.getDestinationIndex()) {
+                    if (fpIndex === fpm.getActiveWaypointIndex()) {
+                        distance = stats.get(fpIndex).distanceFromPpos.toFixed(0);
                     } else {
-                        distance = stats.get(waypointsAndMarkers[winI].fpIndex).distanceInFP.toFixed(0);
+                        distance = stats.get(fpIndex).distanceInFP.toFixed(0);
                     }
                     if (distance > 9999) {
                         distance = 9999;
@@ -269,8 +262,8 @@ class CDUFlightPlanPage {
                 }
 
                 let speedConstraint = "---";
-                if (waypointsAndMarkers[winI].wp.speedConstraint > 10 && ident !== "MANUAL") {
-                    speedConstraint = `{magenta}*{end}${waypointsAndMarkers[winI].wp.speedConstraint.toFixed(0)}`;
+                if (wp.speedConstraint > 10 && ident !== "MANUAL") {
+                    speedConstraint = `{magenta}*{end}${wp.speedConstraint.toFixed(0)}`;
                 }
 
                 let altColor = color;
@@ -280,7 +273,7 @@ class CDUFlightPlanPage {
                 // Altitude
                 let altitudeConstraint = "-----";
                 let altPrefix = "\xa0";
-                if (waypointsAndMarkers[winI].wp === fpm.getDestination()) {
+                if (fpIndex === fpm.getDestinationIndex()) {
                     // Only for destination waypoint, show runway elevation.
                     altColor = "white";
                     spdColor = "white";
@@ -293,7 +286,9 @@ class CDUFlightPlanPage {
                     }
                     altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
 
-                } else if (waypointsAndMarkers[winI].wp === fpm.getOrigin()) {
+                } else if (
+                    wp === fpm.getOrigin() &&
+                    fpIndex === 0) {
                     const [rwTxt, rwAlt] = getRunwayInfo(fpm.getDepartureRunway());
                     if (rwTxt && rwAlt) {
                         ident += rwTxt;
@@ -304,30 +299,30 @@ class CDUFlightPlanPage {
                 } else if (ident !== "MANUAL") {
                     const firstRouteIndex = 1 + fpm.getDepartureWaypointsCount();
                     const lastRouteIndex = fpm.getLastIndexBeforeApproach();
-                    //const departureWp = firstRouteIndex > 1 && fpm.getDepartureWaypoints().indexOf(waypointsAndMarkers[winI].wp) !== -1;
+                    //const departureWp = firstRouteIndex > 1 && fpm.getDepartureWaypoints().indexOf(wp) !== -1;
 
-                    if (mcdu.transitionAltitude >= 100 && waypointsAndMarkers[winI].wp.legAltitude1 > mcdu.transitionAltitude) {
-                        altitudeConstraint = (waypointsAndMarkers[winI].wp.legAltitude1 / 100).toFixed(0).toString();
+                    if (mcdu.transitionAltitude >= 100 && wp.legAltitude1 > mcdu.transitionAltitude) {
+                        altitudeConstraint = (wp.legAltitude1 / 100).toFixed(0).toString();
                         altitudeConstraint = `FL${altitudeConstraint.padStart(3,"0")}`;
                     } else {
-                        altitudeConstraint = waypointsAndMarkers[winI].wp.legAltitude1.toFixed(0).toString().padStart(5,"\xa0");
+                        altitudeConstraint = wp.legAltitude1.toFixed(0).toString().padStart(5,"\xa0");
                     }
 
-                    if (waypointsAndMarkers[winI].wp.legAltitudeDescription !== 0 && ident !== "(DECEL)") {
+                    if (wp.legAltitudeDescription !== 0 && ident !== "(DECEL)") {
                         altPrefix = "{magenta}*{end}";
-                        if (waypointsAndMarkers[winI].wp.legAltitudeDescription === 4) {
-                            altitudeConstraint = ((waypointsAndMarkers[winI].wp.legAltitude1 + waypointsAndMarkers[winI].wp.legAltitude2) * 0.5).toFixed(0).toString();
+                        if (wp.legAltitudeDescription === 4) {
+                            altitudeConstraint = ((wp.legAltitude1 + wp.legAltitude2) * 0.5).toFixed(0).toString();
                             altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                         }
                         // TODO FIXME: remove this and replace with proper altitude constraint implementation
                         // Predict altitude for STAR when constraints are missing
                         /*
                     } else if (departureWp) {
-                        altitudeConstraint = Math.floor(waypointsAndMarkers[winI].wp.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toString();
+                        altitudeConstraint = Math.floor(wp.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toString();
                         altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                         // Waypoint is the first or the last of the actual route
                         */
-                    } else if ((waypointsAndMarkers[winI].fpIndex === firstRouteIndex - 1) || (waypointsAndMarkers[winI].fpIndex === lastRouteIndex + 1)) {
+                    } else if ((fpIndex === firstRouteIndex - 1) || (fpIndex === lastRouteIndex + 1)) {
                         if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
                             altitudeConstraint = "-----";
                         } else {
@@ -335,14 +330,14 @@ class CDUFlightPlanPage {
                         }
 
                     // Waypoint is in between on the route
-                    } else if (waypointsAndMarkers[winI].fpIndex <= lastRouteIndex && waypointsAndMarkers[winI].fpIndex >= firstRouteIndex) {
+                    } else if (fpIndex <= lastRouteIndex && fpIndex >= firstRouteIndex) {
                         if (Object.is(NaN, mcdu.cruiseFlightLevel)) {
                             altitudeConstraint = "-----";
                         } else {
                             altitudeConstraint = `FL${mcdu.cruiseFlightLevel.toString().padStart(3,"0")}`;
                         }
                     // Waypoint with no alt constraint
-                    } else if (!waypointsAndMarkers[winI].wp.legAltitude1 && !waypointsAndMarkers[winI].wp.legAltitudeDescription) {
+                    } else if (!wp.legAltitude1 && !wp.legAltitudeDescription) {
                         altitudeConstraint = "-----";
                     }
                 }
@@ -355,14 +350,14 @@ class CDUFlightPlanPage {
                     altColor = "white";
                 }
 
-                if (waypointsAndMarkers[winI].wp === fpm.getDestination()) {
+                if (fpIndex === fpm.getDestinationIndex()) {
                     timeColor = color;
                 } else {
                     timeColor = "white";
                 }
 
                 scrollWindow[rowI] = {
-                    fpIndex: waypointsAndMarkers[winI].fpIndex,
+                    fpIndex: fpIndex,
                     active: wpActive,
                     ident: ident,
                     color: color,
@@ -378,10 +373,10 @@ class CDUFlightPlanPage {
                     isOverfly: isOverfly,
                 };
 
-                if (waypointsAndMarkers[winI].wp !== fpm.getDestination()) {
+                if (fpIndex !== fpm.getDestinationIndex()) {
                     addLskAt(rowI, (value) => {
                         if (value === "") {
-                            if (waypointsAndMarkers[winI].wp) {
+                            if (wp) {
                                 return mcdu.getDelaySwitchPage();
                             }
                         }
@@ -389,27 +384,47 @@ class CDUFlightPlanPage {
                     },
                     (value) => {
                         if (value === "") {
-                            if (waypointsAndMarkers[winI].wp) {
-                                CDULateralRevisionPage.ShowPage(mcdu, waypointsAndMarkers[winI].wp, waypointsAndMarkers[winI].fpIndex);
+                            if (wp) {
+                                CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex);
                             }
                         } else if (value === FMCMainDisplay.clrValue) {
-                            mcdu.removeWaypoint(waypointsAndMarkers[winI].fpIndex, () => {
+                            // AMM 22-72-00:67
+                            // Stop clearing TO or FROM waypoints when NAV is engaged
+                            switch (rowI) {
+                                case 0:
+                                case 1:
+                                    const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
+                                    switch (lateralMode) {
+                                        case 20:
+                                        case 30:
+                                        case 31:
+                                        case 32:
+                                        case 33:
+                                        case 34:
+                                        case 50:
+                                            mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
+                                            return;
+                                        default:
+                                    }
+                                default:
+                            }
+                            mcdu.removeWaypoint(fpIndex, () => {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
                             }, !fpm.isCurrentFlightPlanTemporary());
                         } else if (value === FMCMainDisplay.ovfyValue) {
-                            if (waypointsAndMarkers[winI].wp) {
-                                if (waypointsAndMarkers[winI].wp.additionalData.overfly) {
-                                    mcdu.removeWaypointOverfly(waypointsAndMarkers[winI].fpIndex, () => {
+                            if (wp) {
+                                if (wp.additionalData.overfly) {
+                                    mcdu.removeWaypointOverfly(fpIndex, () => {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                                     }, !fpm.isCurrentFlightPlanTemporary());
                                 } else {
-                                    mcdu.addWaypointOverfly(waypointsAndMarkers[winI].fpIndex, () => {
+                                    mcdu.addWaypointOverfly(fpIndex, () => {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                                     }, !fpm.isCurrentFlightPlanTemporary());
                                 }
                             }
                         } else if (value.length > 0) {
-                            mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex, () => {
+                            mcdu.insertWaypoint(value, fpIndex, () => {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
                             }, !fpm.isCurrentFlightPlanTemporary());
                         }
@@ -418,9 +433,9 @@ class CDUFlightPlanPage {
                     addLskAt(rowI, () => mcdu.getDelaySwitchPage(),
                         (value) => {
                             if (value === "") {
-                                CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), waypointsAndMarkers[winI].fpIndex);
+                                CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), fpIndex);
                             } else if (value.length > 0) {
-                                mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex, () => {
+                                mcdu.insertWaypoint(value, fpIndex, () => {
                                     CDUFlightPlanPage.ShowPage(mcdu, offset);
                                 }, true);
                             }
@@ -429,24 +444,24 @@ class CDUFlightPlanPage {
 
                 addRskAt(rowI, () => mcdu.getDelaySwitchPage(),
                     async (_value) => {
-                        if (waypointsAndMarkers[winI].wp) {
-                            CDUVerticalRevisionPage.ShowPage(mcdu, waypointsAndMarkers[winI].wp);
+                        if (wp) {
+                            CDUVerticalRevisionPage.ShowPage(mcdu, wp);
                         }
                     });
 
-            } else if (waypointsAndMarkers[winI].marker) {
+            } else if (marker) {
 
                 // Marker
                 scrollWindow[rowI] = waypointsAndMarkers[winI];
                 addLskAt(rowI, 0, (value) => {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.clearDiscontinuity(waypointsAndMarkers[winI].fpIndex, () => {
+                        mcdu.clearDiscontinuity(fpIndex, () => {
                             CDUFlightPlanPage.ShowPage(mcdu, offset);
                         }, !fpm.isCurrentFlightPlanTemporary());
                         return;
                     }
 
-                    mcdu.insertWaypoint(value, waypointsAndMarkers[winI].fpIndex + 1, () => {
+                    mcdu.insertWaypoint(value, fpIndex + 1, () => {
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                     }, !fpm.isCurrentFlightPlanTemporary());
                 });
@@ -467,56 +482,48 @@ class CDUFlightPlanPage {
 
         // Render scrolling data to text >> add ditto marks
 
-        let nmCount = 0;
+        let firstWp = scrollWindow.length;
         const scrollText = [];
         for (let rowI = 0; rowI < scrollWindow.length; rowI++) {
-            const currRow = scrollWindow[rowI];
-            let spdRepeat = false;
-            let altRepeat = false;
+            const { marker: cMarker, speedConstraint: cSpd, altitudeConstraint: cAlt } = scrollWindow[rowI];
+            let spdRpt = false;
+            let altRpt = false;
+            let showFix = true;
+            let showDist = true;
+            let showNm = false;
 
-            if (rowI > 0 && currRow && !currRow.marker) {
-                let dstnc = currRow.distance;
-                if (nmCount === 0 && currRow.distance) {
-                    dstnc += "NM";
-                    nmCount++;
-                } else {
-                    dstnc += "\xa0\xa0";
-                }
-                for (let z = 0; z < 9 - dstnc.length; z++) {
-                    dstnc += "\xa0";
-                }
-                dstnc = `${dstnc}[color]${currRow.color}`;
-                currRow.distance = dstnc;
-            }
+            // Waypoint
+            if (!cMarker) {
+                if (rowI > 0) {
+                    const { marker: pMarker, speedConstraint: pSpd, altitudeConstraint: pAlt} = scrollWindow[rowI - 1];
+                    if (!pMarker) {
+                        firstWp = Math.min(firstWp, rowI);
+                        if (rowI === firstWp) {
+                            showNm = true;
+                        }
+                        if (cSpd !== "---" && cSpd === pSpd) {
+                            spdRpt = true;
+                        }
 
-            const prevRow = scrollWindow[rowI - 1];
-            if (currRow && !currRow.marker && prevRow) {
-                if (!prevRow.marker) {
-                    if (currRow.speedConstraint !== "---" && currRow.speedConstraint === prevRow.speedConstraint) {
-                        spdRepeat = true;
+                        if (cAlt.alt !== "-----" &&
+                            cAlt.alt === pAlt.alt &&
+                            cAlt.altPrefix === pAlt.altPrefix) {
+                            altRpt = true;
+                        }
+                    // If previous row is a marker, clear all headers
+                    } else {
+                        showDist = false;
+                        showFix = false;
                     }
-
-                    if (currRow.altitudeConstraint.alt !== "-----" &&
-                        currRow.altitudeConstraint.alt === prevRow.altitudeConstraint.alt &&
-                        currRow.altitudeConstraint.altPrefix === prevRow.altitudeConstraint.altPrefix) {
-                        altRepeat = true;
-                    }
-                } else if (prevRow.marker) {
-                    if (currRow.distance.includes("NM")) {
-                        nmCount--;
-                    };
-                    currRow.distance = "";
-                    // TODO: investigate if this line should be removed to show fix annotation on first waypoint?
-                    currRow.fixAnnotation = "";
                 }
-            }
 
-            if (!currRow.marker) {
-                scrollText[(rowI * 2) - 1] = renderFixHeader(currRow);
-                scrollText[(rowI * 2)] = renderFixContent(currRow, spdRepeat, altRepeat);
+                scrollText[(rowI * 2) - 1] = renderFixHeader(scrollWindow[rowI], showNm, showDist, showFix);
+                scrollText[(rowI * 2)] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt);
+
+            // Marker
             } else {
                 scrollText[(rowI * 2) - 1] = [];
-                scrollText[(rowI * 2)] = currRow.marker;
+                scrollText[(rowI * 2)] = cMarker;
             }
         }
 
@@ -620,20 +627,22 @@ function renderFixTableHeader(isFlying) {
     ];
 }
 
-function renderFixHeader(rowObj) {
+function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true) {
+    const { fixAnnotation, color, distance, bearingTrack } = rowObj;
     return [
-        `{sp}${(rowObj.fixAnnotation) ? rowObj.fixAnnotation : ""}`,
-        rowObj.distance,
-        rowObj.bearingTrack,
+        `{sp}${(showFix) ? fixAnnotation : ""}`,
+        `${ showDist ? (showNm ? distance + "NM" : distance).padEnd(8, '\xa0') : ""}[color]${color}`,
+        bearingTrack,
     ];
 }
 
 function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
+    const {ident, isOverfly, color, spdColor, speedConstraint, altColor, altitudeConstraint, timeCell, timeColor} = rowObj;
 
     return [
-        `${rowObj.ident}${rowObj.isOverfly ? FMCMainDisplay.ovfyValue : ""}[color]${rowObj.color}`,
-        `{${rowObj.spdColor}}${spdRepeat ? "\xa0\"\xa0" : rowObj.speedConstraint}{end}{${rowObj.altColor}}/${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : rowObj.altitudeConstraint.altPrefix + rowObj.altitudeConstraint.alt}{end}[s-text]`,
-        `${rowObj.timeCell}{sp}{sp}[color]${rowObj.timeColor}`
+        `${ident}${isOverfly ? FMCMainDisplay.ovfyValue : ""}[color]${color}`,
+        `{${spdColor}}${spdRepeat ? "\xa0\"\xa0" : speedConstraint}{end}{${altColor}}/${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : altitudeConstraint.altPrefix + altitudeConstraint.alt}{end}[s-text]`,
+        `${timeCell}{sp}{sp}[color]${timeColor}`
     ];
 }
 
