@@ -15,9 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+/* global EmptyCallback */
 import React, { useState } from 'react';
 
-import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
+import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
+import { useSimVar } from '@instruments/common/simVars';
 import { SLEW_KEYS } from '../../../Components/Buttons';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
@@ -30,7 +32,7 @@ import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 
 const InitPage: React.FC = () => {
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
-    const mcduData = useMCDUSelector((state) => state.mcduData);
+    const fmgc = useMCDUSelector((state) => state.mcduData);
 
     const dispatch = useMCDUDispatch();
     const setZFW = (msg: number | undefined) => {
@@ -51,8 +53,20 @@ const InitPage: React.FC = () => {
     const clearScratchpad = () => {
         dispatch(scratchpadActions.clearScratchpad());
     };
-    const addMessage = (msg: scratchpadMessage) => {
+    const addMessage = (msg: ScratchpadMessage) => {
         dispatch(scratchpadActions.addScratchpadMessage(msg));
+    };
+
+    const [, setFplTemp] = useSimVar('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number');
+    const [, showTempFpl] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number');
+
+    // Move this to the page container
+    const eraseTemporaryFlightPlan = (callback = EmptyCallback.Void) => {
+        fmgc.flightPlanManager?.setCurrentFlightPlanIndex(0, () => {
+            setFplTemp(0);
+            showTempFpl(0);
+            callback();
+        });
     };
 
     const pages = {
@@ -61,11 +75,13 @@ const InitPage: React.FC = () => {
             clearScratchpad={clearScratchpad}
             addMessage={addMessage}
             setTitlebarText={setTitlebarText}
+            fmgc={fmgc}
+            eraseTempFpl={eraseTemporaryFlightPlan}
         />,
         B: <InitBPage
             addScratchpadMessage={addMessage}
             setTitlebarText={setTitlebarText}
-            mcduData={mcduData}
+            mcduData={fmgc}
             setScratchpad={setScratchpad}
             scratchpad={scratchpad}
             setZFW={setZFW}

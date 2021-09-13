@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-
+import { Provider } from 'react-redux';
 import { render } from '@instruments/common/index';
+import { store } from './redux/configureStore';
 import { useUpdate, getSimVar } from '../util.js';
 import MCDU from './Mcdu';
 
@@ -32,7 +33,11 @@ const MCDULoad = () => {
     case 'OFF':
         return <></>;
     case 'ON':
-        return <MCDU />;
+        return (
+            <Provider store={store}>
+                <MCDU />
+            </Provider>
+        );
     default:
         throw new RangeError();
     }

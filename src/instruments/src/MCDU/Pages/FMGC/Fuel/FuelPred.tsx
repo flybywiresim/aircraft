@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 import { useSimVar } from '@instruments/common/simVars';
 
+import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 import InteractiveSplitField, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
-import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
+import { scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
@@ -108,7 +109,7 @@ type zfwLineProps = {
     lsk: LINESELECT_KEYS,
     // Redux
     setScratchpad: (msg: any) => any
-    addMessage: (msg: scratchpadMessage) => any
+    addMessage: (msg: ScratchpadMessage) => any
     scratchpad: scratchpadState
 }
 export const ZfwLine: React.FC<zfwLineProps> = (
@@ -474,7 +475,7 @@ const FuelPredPage: React.FC = () => {
         dispatch(scratchpadActions.setScratchpad(msg));
     };
 
-    const addScratchpadMessage = (msg: scratchpadMessage) => {
+    const addScratchpadMessage = (msg: ScratchpadMessage) => {
         dispatch(scratchpadActions.addScratchpadMessage(msg));
     };
     const clearScratchpad = () => {

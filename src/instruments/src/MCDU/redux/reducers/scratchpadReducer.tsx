@@ -1,13 +1,6 @@
+import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
 import { lineArrow, lineColors } from '../../Components/Lines/LineProps';
 import * as scratchpadActions from '../types/scratchpadActionTypes';
-
-export type scratchpadMessage = {
-    text: string,
-    isAmber: Boolean,
-    isTypeTwo: Boolean,
-    c? : () => {},
-    f? : () => {},
-}
 
 const MAX_LEN = 24;
 const MAX_LEN_ARROW = 22;
@@ -18,7 +11,7 @@ const MAX_LEN_ARROW = 22;
  * @param msg The message to be added to the scratchpad
  * @returns The updated state
  */
-const addTypeOneMessage = (state: scratchpadState, msg: scratchpadMessage) => {
+const addTypeOneMessage = (state: scratchpadState, msg: ScratchpadMessage) => {
     if (!state.isDisplayingErrorMessage && !state.isDisplayingTypeTwoMessage && !state.lastUserInput) {
         return {
             ...state,
@@ -43,7 +36,7 @@ const addTypeOneMessage = (state: scratchpadState, msg: scratchpadMessage) => {
  * @param msg The type II message to add to the que
  * @returns the updated scratchpad state
  */
-const addTypeTwoMessage = (state: scratchpadState, msg: scratchpadMessage) => ({
+const addTypeTwoMessage = (state: scratchpadState, msg: ScratchpadMessage) => ({
     ...state,
     messageQueue: [...state.messageQueue, msg],
 });
@@ -54,7 +47,7 @@ const addTypeTwoMessage = (state: scratchpadState, msg: scratchpadMessage) => ({
  * @param msg the message to add to the messaging system
  * @returns the updated state
  */
-const addMessage = (state: scratchpadState, msg: scratchpadMessage) => {
+const addMessage = (state: scratchpadState, msg: ScratchpadMessage) => {
     if (msg.isTypeTwo) {
         return addTypeTwoMessage(state, msg);
     }
@@ -221,7 +214,7 @@ export type scratchpadState = {
     isDisplayingErrorMessage: Boolean,
     isDisplayingTypeTwoMessage: Boolean,
     lastUserInput: string,
-    messageQueue: (Array<scratchpadMessage>),
+    messageQueue: (Array<ScratchpadMessage>),
     arrow: lineArrow,
 }
 

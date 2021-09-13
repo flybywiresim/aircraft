@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
+import { NXFictionalMessages, NXSystemMessages } from '@fmgc/lib/NXSystemMessages';
+import { mcduState } from 'instruments/src/MCDU/redux/reducers/mcduReducer';
 import { useSimVar } from '../../../../Common/simVars';
 import './styles.scss';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
@@ -9,7 +12,7 @@ import StringInputField from '../../../Components/Fields/Interactive/StringInput
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
-import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
+import { scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import InteractiveSplitField, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
 
 // TODO when FMGS is in place then event and color management to these components
@@ -27,28 +30,82 @@ const CoRouteLine: React.FC = () => (
 );
 
 type fromToLineProps = {
-    addMessage: (msg: scratchpadMessage) => void
+    addMessage: (msg: ScratchpadMessage) => void,
+    fmgc: mcduState,
+    eraseTempFpl: (callback?: () => void) => void
+    fromToSet: () => Boolean
 }
-const FromToLine: React.FC<fromToLineProps> = ({ addMessage }) => {
+const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl, fromToSet }) => {
+    const [fromTo, setFromTo] = useState<undefined | string>(undefined);
+    const [, setUseFplDecelPoint] = useSimVar('L:FLIGHTPLAN_USE_DECEL_WAYPOINT', 'number');
+    useEffect(() => {
+        if (fmgc.flightPlanManager !== undefined && fromToSet()) {
+            setFromTo(`${fmgc.flightPlanManager.getPersistentOrigin().ident}/${fmgc.flightPlanManager.getDestination().ident}`);
+        }
+    }, [fmgc]);
     const setNewValue = (value: string | undefined) => {
-        console.log(`Inserting FROM/TO ${value}`);
+        if (value !== undefined) {
+            if (value === 'CLR') {
+                addMessage(NXSystemMessages.notAllowed);
+            } else {
+                const [from, to] = value.split('/');
+                fmgc.fmcDataManager?.GetAirportByIdent(from).then((airportFrom) => {
+                    if (airportFrom) {
+                        fmgc.fmcDataManager?.GetAirportByIdent(to).then((airportTo) => {
+                            if (airportTo) {
+                                eraseTempFpl();
+                                fmgc.flightPlanManager?.setOrigin(airportFrom.icao, () => {
+                                    // Set temp origin
+                                    fmgc.flightPlanManager?.setDestination(airportTo.icao, () => {
+                                        if (fmgc.flightPlanManager !== undefined) {
+                                            fmgc.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
+                                            fmgc.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
+                                            // init aocAirportList
+                                            setUseFplDecelPoint(1);
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        }
     };
     const validateEntry = (value: string) => {
         if (value === '') {
-            addMessage({
-                text: 'FORMAT ERROR',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.formatError);
             return false;
         }
+        const [from, to] = value.split('/');
+        fmgc.fmcDataManager?.GetAirportByIdent(from).then((airportFrom) => {
+            console.log(airportFrom);
+            if (airportFrom) {
+                fmgc.fmcDataManager?.GetAirportByIdent(to).then((airportTo) => {
+                    if (airportTo) {
+                        return true;
+                    }
+                    addMessage(NXSystemMessages.notInDatabase);
+                    return false;
+                }).then(() => {
+                    addMessage(NXFictionalMessages.internalError);
+                    return false;
+                });
+            }
+            addMessage(NXSystemMessages.notInDatabase);
+            return false;
+        }).catch(() => {
+            addMessage(NXFictionalMessages.internalError);
+            return false;
+        });
+
         return true;
     };
     return (
         <div className="line-holder-two">
             <LabelField lineSide={lineSides.right} value={'FROM/TO\xa0\xa0'} color={lineColors.white} />
             <StringInputField
-                value=""
+                value={fromTo}
                 lineSide={lineSides.right}
                 nullValue="____|____"
                 color={lineColors.amber}
@@ -61,7 +118,7 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage }) => {
     );
 };
 type altDestLineProps = {
-    addMessage: (msg: scratchpadMessage) => void
+    addMessage: (msg: ScratchpadMessage) => void
 }
 const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
     const [value, setValue] = useState<string>();
@@ -103,7 +160,7 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
 };
 
 type flightNoLineProps = {
-    addMessage: (msg: scratchpadMessage) => void
+    addMessage: (msg: ScratchpadMessage) => void
 }
 const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
     const [flightNo, setFlightNo] = useSimVar('ATC FLIGHT NUMBER', 'string');
@@ -197,7 +254,7 @@ const CostIndexLine: React.FC = () => {
 
 type cruiseFLTempProps = {
     scratchpad: scratchpadState
-    addMessage: (msg: scratchpadMessage) => any
+    addMessage: (msg: ScratchpadMessage) => any
 }
 const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ scratchpad, addMessage }) => {
     const maxCruiseFL = 390;
@@ -374,21 +431,28 @@ const RequestLine: React.FC = () => (
 type InitAPageProps = {
 
     // REDUX
-    setTitlebarText : (text: any) => void
+    setTitlebarText : (text: string) => void
     clearScratchpad: () => void
-    addMessage: (msg: scratchpadMessage) => void
-    scratchpad: scratchpadState
+    addMessage: (msg: ScratchpadMessage) => void
+    scratchpad: scratchpadState,
+    fmgc: mcduState,
+    eraseTempFpl: (callback?: () => void) => void
 }
-const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, addMessage }) => {
+const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, addMessage, fmgc, eraseTempFpl }) => {
     useEffect(() => {
         setTitlebarText('INIT');
     }, []);
+
+    const fromToSet = () => (
+        fmgc.flightPlanManager?.getPersistentOrigin() && fmgc.flightPlanManager.getPersistentOrigin().ident
+         && fmgc.flightPlanManager.getDestination() && fmgc.flightPlanManager.getDestination().ident
+    );
 
     return (
         <>
             <div className="row-holder">
                 <CoRouteLine />
-                <FromToLine addMessage={addMessage} />
+                <FromToLine addMessage={addMessage} fmgc={fmgc} eraseTempFpl={eraseTempFpl} fromToSet={fromToSet} />
             </div>
             <div className="row-holder">
                 <AltDestLine addMessage={addMessage} />

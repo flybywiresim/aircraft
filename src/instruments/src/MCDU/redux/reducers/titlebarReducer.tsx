@@ -7,7 +7,7 @@ export type titleBarState = {
     orientation: lineSides,
 };
 
-const setText = (state: titleBarState, msg: titleBarState) => ({
+const setText = (state: titleBarState, msg: string) => ({
     ...state,
     text: msg,
 });

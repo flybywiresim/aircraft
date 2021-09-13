@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
+import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
 import { mcduState } from '../../../redux/reducers/mcduReducer';
-import { scratchpadMessage, scratchpadState } from '../../../redux/reducers/scratchpadReducer';
+import { scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import SplitField from '../../../Components/Fields/NonInteractive/Split/SplitField';
 import InteractiveSplitField, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
@@ -250,7 +251,7 @@ type InitBPageProps = {
     mcduData: mcduState,
     scratchpad: scratchpadState,
     setTitlebarText: (msg: string) => void,
-    addScratchpadMessage: (msg: scratchpadMessage) => void,
+    addScratchpadMessage: (msg: ScratchpadMessage) => void,
     setScratchpad: (msg: string) => void,
     setZFW: (msg: number | undefined) => void,
     setZFWCG: (msg: number | undefined) => void,
