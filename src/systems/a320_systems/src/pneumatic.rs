@@ -1,13 +1,16 @@
 use core::panic;
 
-use crate::UpdateContext;
+use crate::{
+    hydraulic::{A320Hydraulic, FakeHydraulicReservoir},
+    UpdateContext,
+};
 
 use uom::si::{
     f64::*,
     pressure::{pascal, psi},
     ratio::{percent, ratio},
     thermodynamic_temperature::degree_celsius,
-    volume::cubic_meter,
+    volume::{cubic_meter, gallon},
     volume_rate::cubic_meter_per_second,
 };
 
@@ -19,7 +22,7 @@ use systems::{
         ControllablePneumaticValve, ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob,
         CrossBleedValveSelectorMode, DefaultConsumer, DefaultPipe, DefaultValve,
         EngineCompressionChamberController, EngineState, HeatExchanger, PneumaticContainer,
-        TargetPressureSignal,
+        PneumaticContainerWithValve, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
         ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
@@ -188,6 +191,10 @@ pub struct A320Pneumatic {
     apu: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
     apu_bleed_air_controller: ApuCompressionChamberController,
+
+    green_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
+    blue_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
+    yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
 }
 impl A320Pneumatic {
     pub fn new() -> Self {
@@ -207,15 +214,42 @@ impl A320Pneumatic {
             apu: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
             apu_bleed_air_controller: ApuCompressionChamberController::new(),
+            // TODO: I don't like how I have to initialize these containers independently of the actual reservoirs.
+            // If the volumes of the reservoirs were to be changed in the hydraulics code, we would have to manually change them here as well
+            green_hydraulic_reservoir_with_valve: PneumaticContainerWithValve::new(
+                VariableVolumeContainer::new(
+                    Volume::new::<gallon>(10.),
+                    Fluid::new(Pressure::new::<pascal>(142000.)),
+                    Pressure::new::<psi>(14.7),
+                    ThermodynamicTemperature::new::<degree_celsius>(15.),
+                ),
+            ),
+            blue_hydraulic_reservoir_with_valve: PneumaticContainerWithValve::new(
+                VariableVolumeContainer::new(
+                    Volume::new::<gallon>(8.),
+                    Fluid::new(Pressure::new::<pascal>(142000.)),
+                    Pressure::new::<psi>(14.7),
+                    ThermodynamicTemperature::new::<degree_celsius>(15.),
+                ),
+            ),
+            yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithValve::new(
+                VariableVolumeContainer::new(
+                    Volume::new::<gallon>(10.),
+                    Fluid::new(Pressure::new::<pascal>(142000.)),
+                    Pressure::new::<psi>(14.7),
+                    ThermodynamicTemperature::new::<degree_celsius>(15.),
+                ),
+            ),
         }
     }
 
-    pub fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
+    pub(crate) fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
         &mut self,
         context: &UpdateContext,
         engines: [&T; 2],
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
+        hydraulics: &A320Hydraulic,
     ) {
         // Update cross bleed
         self.cross_bleed_valve_controller.update(
@@ -255,12 +289,26 @@ impl A320Pneumatic {
             );
         }
 
+        // Update consumers:
+        self.update_hydraulic_reservoir_spatial_volumes(
+            hydraulics.fake_green_reservoir(),
+            hydraulics.fake_blue_reservoir(),
+            hydraulics.fake_yellow_reservoir(),
+        );
+
         let (left, right) = self.engine_systems.split_at_mut(1);
         self.apu_bleed_air_valve
             .update_move_fluid(context, &mut self.apu, &mut left[0]);
 
         self.cross_bleed_valve
             .update_move_fluid(context, &mut left[0], &mut right[0]);
+
+        self.green_hydraulic_reservoir_with_valve
+            .update_flow_through_valve(context, &mut left[0]);
+        self.blue_hydraulic_reservoir_with_valve
+            .update_flow_through_valve(context, &mut left[0]);
+        self.yellow_hydraulic_reservoir_with_valve
+            .update_flow_through_valve(context, &mut left[0]);
     }
 
     // TODO: Returning a mutable reference here is not great. I was running into an issue with the update order:
@@ -270,6 +318,44 @@ impl A320Pneumatic {
     // For now, we just pass over control of the bleed valve to the APU, so it can be updated after the ECB update but before the turbine update.
     pub fn apu_bleed_air_valve(&mut self) -> &mut impl ControllablePneumaticValve {
         &mut self.apu_bleed_air_valve
+    }
+
+    fn update_hydraulic_reservoir_spatial_volumes(
+        &mut self,
+        fake_green_hydraulic_reservoir: &FakeHydraulicReservoir,
+        fake_blue_hydraulic_reservoir: &FakeHydraulicReservoir,
+        fake_yellow_hydraulic_reservoir: &FakeHydraulicReservoir,
+    ) {
+        self.green_hydraulic_reservoir_with_valve
+            .container()
+            .change_spatial_volume(
+                fake_green_hydraulic_reservoir.max_capacity()
+                    - fake_green_hydraulic_reservoir.level(),
+            );
+        self.blue_hydraulic_reservoir_with_valve
+            .container()
+            .change_spatial_volume(
+                fake_blue_hydraulic_reservoir.max_capacity()
+                    - fake_blue_hydraulic_reservoir.level(),
+            );
+        self.yellow_hydraulic_reservoir_with_valve
+            .container()
+            .change_spatial_volume(
+                fake_yellow_hydraulic_reservoir.max_capacity()
+                    - fake_yellow_hydraulic_reservoir.level(),
+            );
+    }
+
+    pub fn green_hydraulic_reservoir_pressure(&self) -> Pressure {
+        self.green_hydraulic_reservoir_with_valve.pressure()
+    }
+
+    pub fn blue_hydraulic_reservoir_pressure(&self) -> Pressure {
+        self.blue_hydraulic_reservoir_with_valve.pressure()
+    }
+
+    pub fn yellow_hydraulic_reservoir_pressure(&self) -> Pressure {
+        self.yellow_hydraulic_reservoir_with_valve.pressure()
     }
 }
 impl SimulationElement for A320Pneumatic {
@@ -1024,6 +1110,7 @@ mod tests {
         engine_2: LeapEngine,
         overhead_panel: A320PneumaticOverheadPanel,
         fire_pushbuttons: TestEngineFirePushButtons,
+        hydraulic: A320Hydraulic,
     }
     impl PneumaticTestAircraft {
         fn new() -> Self {
@@ -1034,6 +1121,7 @@ mod tests {
                 engine_2: LeapEngine::new(2),
                 overhead_panel: A320PneumaticOverheadPanel::new(),
                 fire_pushbuttons: TestEngineFirePushButtons::new(),
+                hydraulic: A320Hydraulic::new(),
             }
         }
     }
@@ -1045,6 +1133,7 @@ mod tests {
                 [&self.engine_1, &self.engine_2],
                 &self.overhead_panel,
                 &self.fire_pushbuttons,
+                &self.hydraulic,
             );
         }
     }
@@ -1309,6 +1398,18 @@ mod tests {
         fn engine_bleed_push_button_has_fault(&self, number: usize) -> bool {
             self.query(|a| a.overhead_panel.engine_bleed_pb_has_fault(number))
         }
+
+        fn green_hydraulic_reservoir_pressure(&self) -> Pressure {
+            self.query(|a| a.pneumatic.green_hydraulic_reservoir_pressure())
+        }
+
+        fn blue_hydraulic_reservoir_pressure(&self) -> Pressure {
+            self.query(|a| a.pneumatic.blue_hydraulic_reservoir_pressure())
+        }
+
+        fn yellow_hydraulic_reservoir_pressure(&self) -> Pressure {
+            self.query(|a| a.pneumatic.yellow_hydraulic_reservoir_pressure())
+        }
     }
 
     fn test_bed() -> PneumaticTestBed {
@@ -1434,6 +1535,42 @@ mod tests {
             prv_open, ipv_open, esv_open, abv_open,
         ];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
+
+        use std::io::Write;
+
+        writeln!(file, "{:?}", data).expect("Could not write file");
+    }
+
+    #[test]
+    fn hydraulic_reservoir_pressurization_graphs() {
+        let alt = Length::new::<foot>(0.);
+
+        let mut test_bed = test_bed_with()
+            .in_isa_atmosphere(alt)
+            .stop_eng1()
+            .stop_eng2()
+            .set_bleed_air_running()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
+
+        let mut ts = Vec::new();
+        let mut green_pressures = Vec::new();
+        let mut blue_pressures = Vec::new();
+        let mut yellow_pressures = Vec::new();
+
+        for i in 1..1000 {
+            ts.push(i as f64 * 16.);
+
+            green_pressures.push(test_bed.green_hydraulic_reservoir_pressure().get::<psi>());
+            blue_pressures.push(test_bed.blue_hydraulic_reservoir_pressure().get::<psi>());
+            yellow_pressures.push(test_bed.yellow_hydraulic_reservoir_pressure().get::<psi>());
+
+            test_bed.run_with_delta(Duration::from_millis(16));
+        }
+
+        // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
+        let data = vec![ts, green_pressures, blue_pressures, yellow_pressures];
+        let mut file =
+            File::create("hydraulic_reservoir_pressures_data.txt").expect("Could not create file");
 
         use std::io::Write;
 

@@ -518,6 +518,82 @@ impl HeatExchanger {
     }
 }
 
+pub struct VariableVolumeContainer {
+    pipe: DefaultPipe,
+}
+impl VariableVolumeContainer {
+    pub fn new(
+        starting_volume: Volume,
+        fluid: Fluid,
+        pressure: Pressure,
+        temperature: ThermodynamicTemperature,
+    ) -> Self {
+        Self {
+            pipe: DefaultPipe::new(starting_volume, fluid, pressure, temperature),
+        }
+    }
+
+    pub fn change_spatial_volume(&mut self, new_volume: Volume) {
+        self.change_volume(self.volume() - new_volume);
+        self.pipe.volume = new_volume;
+    }
+}
+impl PneumaticContainer for VariableVolumeContainer {
+    fn pressure(&self) -> Pressure {
+        self.pipe.pressure()
+    }
+
+    fn volume(&self) -> Volume {
+        self.pipe.volume()
+    }
+
+    fn temperature(&self) -> ThermodynamicTemperature {
+        self.pipe.temperature()
+    }
+
+    fn change_volume(&mut self, volume: Volume) {
+        self.pipe.change_volume(volume);
+    }
+
+    fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
+        self.pipe.update_temperature(temperature_change);
+    }
+}
+
+pub struct PneumaticContainerWithValve<T: PneumaticContainer> {
+    container: T,
+    valve: DefaultValve,
+}
+impl<T: PneumaticContainer> PneumaticContainerWithValve<T> {
+    pub fn new(container: T) -> Self {
+        Self {
+            container,
+            valve: DefaultValve::new_open(),
+        }
+    }
+
+    pub fn update_flow_through_valve(
+        &mut self,
+        context: &UpdateContext,
+        connected_container: &mut impl PneumaticContainer,
+    ) {
+        self.valve
+            .update_move_fluid(context, connected_container, &mut self.container);
+    }
+
+    pub fn container(&mut self) -> &mut T {
+        &mut self.container
+    }
+
+    pub fn pressure(&self) -> Pressure {
+        self.container.pressure()
+    }
+
+    pub fn temperature(&self) -> ThermodynamicTemperature {
+        self.container.temperature()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

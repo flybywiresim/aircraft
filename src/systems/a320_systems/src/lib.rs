@@ -172,6 +172,7 @@ impl Aircraft for A320 {
             [&self.engine_1, &self.engine_2],
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
+            &self.hydraulic,
         );
     }
 }
