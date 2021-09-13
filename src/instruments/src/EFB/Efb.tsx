@@ -138,7 +138,7 @@ const Efb = () => {
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
-    const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
 
     const [timeState, setTimeState] = useState<TimeState>({
         currentTime: new Date(),
@@ -177,11 +177,11 @@ const Efb = () => {
     }, [currentPageIndex]);
 
     const fetchSimbriefData = async () => {
-        if (!simbriefUsername) {
+        if (!simbriefUserId) {
             return;
         }
 
-        const returnedSimbriefData = await getSimbriefData(simbriefUsername);
+        const returnedSimbriefData = await getSimbriefData(simbriefUserId);
         setSimbriefData({
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,
@@ -298,7 +298,7 @@ const Efb = () => {
                                         <Failures />
                                     </Route>
                                     <Route path="/settings">
-                                        <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
+                                        <Settings simbriefUsername={simbriefUserId} setSimbriefUsername={setSimbriefUserId} />
                                     </Route>
                                 </Switch>
                             </div>
