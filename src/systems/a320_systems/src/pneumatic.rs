@@ -365,11 +365,13 @@ trait EngineBleedDataProvider {
     fn transfer_pressure(&self) -> Pressure;
     fn precooler_inlet_pressure(&self) -> Pressure;
     fn precooler_outlet_pressure(&self) -> Pressure;
+    fn precooler_supply_pressure(&self) -> Pressure;
     fn ip_temperature(&self) -> ThermodynamicTemperature;
     fn hp_temperature(&self) -> ThermodynamicTemperature;
     fn transfer_temperature(&self) -> ThermodynamicTemperature;
     fn precooler_inlet_temperature(&self) -> ThermodynamicTemperature;
     fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature;
+    fn precooler_supply_temperature(&self) -> ThermodynamicTemperature;
     fn prv_open_amount(&self) -> Ratio;
     fn hpv_open_amount(&self) -> Ratio;
     fn esv_is_open(&self) -> bool;
@@ -626,7 +628,7 @@ impl EngineBleedAirSystem {
                 cubic_meter_per_second,
             >(0.1)),
             es_valve: DefaultValve::new(Ratio::new::<ratio>(0.)),
-            precooler: HeatExchanger::new(1.),
+            precooler: HeatExchanger::new(1e1),
         }
     }
 
@@ -724,6 +726,10 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
         self.precooler_outlet_pipe.pressure()
     }
 
+    fn precooler_supply_pressure(&self) -> Pressure {
+        self.precooler_cooling_pipe.pressure()
+    }
+
     fn ip_temperature(&self) -> ThermodynamicTemperature {
         self.ip_compression_chamber.temperature()
     }
@@ -742,6 +748,10 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
 
     fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature {
         self.precooler_outlet_pipe.temperature()
+    }
+
+    fn precooler_supply_temperature(&self) -> ThermodynamicTemperature {
+        self.precooler_cooling_pipe.temperature()
     }
 
     fn prv_open_amount(&self) -> Ratio {
@@ -1179,6 +1189,10 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_outlet_pressure())
         }
 
+        fn precooler_supply_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_supply_pressure())
+        }
+
         fn ip_temperature(&self, number: usize) -> ThermodynamicTemperature {
             self.query(|a| a.pneumatic.engine_systems[number - 1].ip_temperature())
         }
@@ -1197,6 +1211,10 @@ mod tests {
 
         fn precooler_outlet_temperature(&self, number: usize) -> ThermodynamicTemperature {
             self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_outlet_temperature())
+        }
+
+        fn precooler_supply_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_supply_temperature())
         }
 
         fn ip_valve_is_open(&self, number: usize) -> bool {
@@ -1312,22 +1330,24 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .idle_eng1()
+            .stop_eng1()
             .stop_eng2()
-            // .set_bleed_air_running()
+            .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
         let mut ips = Vec::new();
-        let mut c2s = Vec::new();
-        let mut c1s = Vec::new();
-        let mut c0s = Vec::new();
+        let mut c2s = Vec::new(); // Transfer pressure (before PRV)
+        let mut c1s = Vec::new(); // Precooler inlet pressure
+        let mut c0s = Vec::new(); // Precooler outlet pressure
+        let mut pcss = Vec::new(); // Precooler cooling air pressure
         let mut ipts = Vec::new();
-        let mut hpts = Vec::new();
-        let mut c2ts = Vec::new();
-        let mut c1ts = Vec::new();
-        let mut c0ts = Vec::new();
+        let mut hpts = Vec::new(); // Transfer temperature (before PRV)
+        let mut c2ts = Vec::new(); // Precooler inlet temperature
+        let mut c1ts = Vec::new(); // Precooler outlet temperature
+        let mut c0ts = Vec::new(); // Precooler cooling air temperature
+        let mut pcsts = Vec::new();
         let mut hpv_open = Vec::new();
         let mut prv_open = Vec::new();
         let mut ipv_open = Vec::new();
@@ -1346,6 +1366,7 @@ mod tests {
             c2s.push(test_bed.transfer_pressure(1).get::<psi>());
             c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
             c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
+            pcss.push(test_bed.precooler_supply_pressure(1).get::<psi>());
 
             ipts.push(test_bed.ip_temperature(1).get::<degree_celsius>());
             hpts.push(test_bed.hp_temperature(1).get::<degree_celsius>());
@@ -1358,6 +1379,11 @@ mod tests {
             c0ts.push(
                 test_bed
                     .precooler_outlet_temperature(1)
+                    .get::<degree_celsius>(),
+            );
+            pcsts.push(
+                test_bed
+                    .precooler_supply_temperature(1)
                     .get::<degree_celsius>(),
             );
 
@@ -1404,8 +1430,8 @@ mod tests {
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
-            ts, hps, ips, c2s, c1s, c0s, hpts, ipts, c2ts, c1ts, c0ts, hpv_open, prv_open,
-            ipv_open, esv_open, abv_open,
+            ts, hps, ips, c2s, c1s, c0s, pcss, hpts, ipts, c2ts, c1ts, c0ts, pcsts, hpv_open,
+            prv_open, ipv_open, esv_open, abv_open,
         ];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
 
@@ -1739,7 +1765,8 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
 
-        let diff = test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(35.);
+        let diff = test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(35.);
+        println!("diff: {} psi", diff.get::<psi>());
 
         assert!(
             (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(35.)).abs()
