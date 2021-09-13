@@ -146,7 +146,7 @@ impl LinearActuator {
             max_flow: actual_max_flow,
 
             // For the same displacement speed there is less flow needed in retraction direction because
-            // volume of the fluid is divided by the extensio ratio
+            // volume of the fluid is divided by the extension ratio
             min_flow: -actual_max_flow / volume_extension_ratio,
 
             delta_displacement: Length::new::<meter>(0.),
