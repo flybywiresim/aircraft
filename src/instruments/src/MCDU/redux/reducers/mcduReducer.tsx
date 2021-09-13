@@ -38,6 +38,6 @@ export const mcduReducer = (state = initialState, payload) => {
     case mcduActions.SET_ZFW_ENTERED:
         return setZFWCGEntered(state, payload.entered);
     default:
-        return { ...state };
+        return state;
     }
 };

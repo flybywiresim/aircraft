@@ -252,6 +252,6 @@ export const scratchpadReducer = (state = initialState, { type, msg }) => {
     case scratchpadActions.ADD_ARROW_SCRATCHPAD:
         return addArrow(state, msg);
     default:
-        return { ...state };
+        return state;
     }
 };
