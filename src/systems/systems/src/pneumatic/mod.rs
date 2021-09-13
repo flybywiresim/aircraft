@@ -705,6 +705,20 @@ mod tests {
         Fluid::new(Pressure::new::<pascal>(142000.))
     }
 
+    // It's a bit of a pain to initialize all the units manually
+    fn quick_container(
+        volume_in_cubic_meter: f64,
+        pressure_in_psi: f64,
+        temperature_in_celsius: f64,
+    ) -> DefaultPipe {
+        DefaultPipe::new(
+            Volume::new::<cubic_meter>(1.),
+            air(),
+            Pressure::new::<psi>(pressure_in_psi),
+            ThermodynamicTemperature::new::<degree_celsius>(temperature_in_celsius),
+        )
+    }
+
     #[test]
     fn valve_open_command() {
         let mut valve = DefaultValve::new(Ratio::new::<percent>(0.));
@@ -1318,6 +1332,48 @@ mod tests {
         assert!((from.pressure() - to.pressure()).abs() < pressure_tolerance());
 
         assert!(supply.pressure() < Pressure::new::<psi>(2.));
+    }
+
+    #[test]
+    fn variable_volume_container_increases_pressure_for_volume_decrease() {
+        let mut container = VariableVolumeContainer::new(
+            Volume::new::<gallon>(10.),
+            Fluid::new(Pressure::new::<pascal>(142000.)),
+            Pressure::new::<psi>(14.7),
+            ThermodynamicTemperature::new::<degree_celsius>(15.),
+        );
+
+        assert_eq!(container.volume(), Volume::new::<gallon>(10.));
+        assert_eq!(container.pressure(), Pressure::new::<psi>(14.7));
+
+        container.change_spatial_volume(Volume::new::<gallon>(8.));
+
+        assert_eq!(container.volume(), Volume::new::<gallon>(8.));
+        assert!(container.pressure() > Pressure::new::<psi>(14.7));
+    }
+
+    #[test]
+    fn container_with_valve_behaves_like_open_valve() {
+        // System 1
+        let mut source_one = quick_container(1., 20., 15.);
+        let valve_one = DefaultValve::new_open();
+        let mut target_one = quick_container(1., 10., 15.);
+
+        // System 2
+        let mut source_two = quick_container(1., 20., 15.);
+        let mut container_with_valve =
+            PneumaticContainerWithValve::new(quick_container(1., 10., 15.));
+
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+
+        valve_one.update_move_fluid(&context, &mut source_one, &mut target_one);
+        container_with_valve.update_flow_through_valve(&context, &mut source_two);
+
+        assert_eq!(source_one.pressure(), source_two.pressure());
+        assert_eq!(source_one.temperature(), source_two.temperature());
+
+        assert_eq!(target_one.pressure(), container_with_valve.pressure());
+        assert_eq!(target_one.temperature(), container_with_valve.temperature());
     }
 
     mod cross_bleed_selector_knob {

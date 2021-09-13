@@ -1180,9 +1180,7 @@ mod tests {
         }
 
         fn and_stabilize(mut self) -> Self {
-            for _ in 1..1000 {
-                self.run_with_delta(Duration::from_millis(16));
-            }
+            self.test_bed.run_multiple_frames(Duration::from_secs(16));
 
             self
         }
@@ -1910,6 +1908,29 @@ mod tests {
                 < pressure_tolerance()
         );
         assert!((diff).abs() < pressure_tolerance())
+    }
+
+    #[test]
+    fn hydraulic_reservoirs_get_pressurized() {
+        let test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
+            .set_bleed_air_running()
+            .and_stabilize();
+
+        assert!(
+            (test_bed.green_hydraulic_reservoir_pressure() - Pressure::new::<psi>(35.)).abs()
+                < pressure_tolerance()
+        );
+        assert!(
+            (test_bed.blue_hydraulic_reservoir_pressure() - Pressure::new::<psi>(35.)).abs()
+                < pressure_tolerance()
+        );
+        assert!(
+            (test_bed.yellow_hydraulic_reservoir_pressure() - Pressure::new::<psi>(35.)).abs()
+                < pressure_tolerance()
+        );
     }
 
     #[test]
