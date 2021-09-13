@@ -18,7 +18,6 @@ impl FixedStepLoop {
     }
 
     fn time_step(&self) -> Duration {
-        // println!("fixed::time_step: time{:.3}", self.time_step.as_secs_f64(),);
         self.time_step
     }
 
