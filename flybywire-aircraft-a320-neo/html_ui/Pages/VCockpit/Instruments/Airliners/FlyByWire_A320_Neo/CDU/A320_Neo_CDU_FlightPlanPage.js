@@ -98,6 +98,7 @@ class CDUFlightPlanPage {
         // fprow:   1      | 2     | 3 4   | 5 6   | 7 8   | 9 10  | 11 12   |
         // display: SPD/ALT| R0    | R1    | R2    | R3    | R4    | DEST    | SCRATCHPAD
         // functions:      | F[0]  | F[1]  | F[2]  | F[3]  | F[4]  | F[5]    |
+        //                 | FROM  | TO    |
         let rowsCount = 5;
 
         if (waypointsAndMarkers.length === 0) {
@@ -186,7 +187,7 @@ class CDUFlightPlanPage {
                 } else {
                     // Show airway
                     let airwayName = "";
-                    if (wpPrev && wp) {
+                    if (wpPrev) {
                         let airway = undefined;
                         if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === wp.infos.airwayIn) {
                             airway = {name: wpPrev.infos.airwayOut };
@@ -232,16 +233,21 @@ class CDUFlightPlanPage {
 
                 // Bearing/Track
                 let bearingTrack = "";
-                if (wp && wpPrev) {
+                if (wpPrev) {
                     const magVar = Facilities.getMagVar(wpPrev.infos.coordinates);
-                    if (fpm.getActiveWaypointIndex() === fpIndex && rowI === 1) {
-                        const br = fpm.getBearingToActiveWaypoint();
-                        const bearing = A32NX_Util.trueToMagnetic(br, magVar);
-                        bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
-                    } else if (rowI === 2) {
-                        const tr = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
-                        const track = A32NX_Util.trueToMagnetic(tr, magVar);
-                        bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
+                    switch (rowI) {
+                        case 1:
+                            if (fpm.getActiveWaypointIndex() === fpIndex) {
+                                const br = fpm.getBearingToActiveWaypoint();
+                                const bearing = A32NX_Util.trueToMagnetic(br, magVar);
+                                bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
+                            }
+                            break;
+                        case 2:
+                            const tr = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
+                            const track = A32NX_Util.trueToMagnetic(tr, magVar);
+                            bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
+                            break;
                     }
                 }
                 // Distance
@@ -286,9 +292,7 @@ class CDUFlightPlanPage {
                     }
                     altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
 
-                } else if (
-                    wp === fpm.getOrigin() &&
-                    fpIndex === 0) {
+                } else if (wp === fpm.getOrigin() && fpIndex === 0) {
                     const [rwTxt, rwAlt] = getRunwayInfo(fpm.getDepartureRunway());
                     if (rwTxt && rwAlt) {
                         ident += rwTxt;
@@ -374,61 +378,61 @@ class CDUFlightPlanPage {
                 };
 
                 if (fpIndex !== fpm.getDestinationIndex()) {
-                    addLskAt(rowI, (value) => {
-                        if (value === "") {
-                            if (wp) {
+                    addLskAt(rowI,
+                        (value) => {
+                            if (value === "") {
                                 return mcdu.getDelaySwitchPage();
                             }
-                        }
-                        return mcdu.getDelayBasic();
-                    },
-                    (value) => {
-                        if (value === "") {
-                            if (wp) {
-                                CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex);
-                            }
-                        } else if (value === FMCMainDisplay.clrValue) {
-                            // AMM 22-72-00:67
-                            // Stop clearing TO or FROM waypoints when NAV is engaged
-                            switch (rowI) {
-                                case 0:
-                                case 1:
-                                    const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
-                                    switch (lateralMode) {
-                                        case 20:
-                                        case 30:
-                                        case 31:
-                                        case 32:
-                                        case 33:
-                                        case 34:
-                                        case 50:
-                                            mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
-                                            return;
+                            return mcdu.getDelayBasic();
+                        },
+                        (value) => {
+                            switch (value) {
+                                case "":
+                                    CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex);
+                                    break;
+                                case FMCMainDisplay.clrValue:
+                                    switch (rowI) {
+                                        case 0:
+                                        case 1:
+                                            const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
+                                            switch (lateralMode) {
+                                                case 20:
+                                                case 30:
+                                                case 31:
+                                                case 32:
+                                                case 33:
+                                                case 34:
+                                                case 50:
+                                                    mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
+                                                    return;
+                                                default:
+                                            }
                                         default:
                                     }
+                                    mcdu.removeWaypoint(fpIndex, () => {
+                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                    }, !fpm.isCurrentFlightPlanTemporary());
+                                    break;
+                                case FMCMainDisplay.ovfyValue:
+                                    if (wp.additionalData.overfly) {
+                                        mcdu.removeWaypointOverfly(fpIndex, () => {
+                                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                        }, !fpm.isCurrentFlightPlanTemporary());
+                                    } else {
+                                        mcdu.addWaypointOverfly(fpIndex, () => {
+                                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                        }, !fpm.isCurrentFlightPlanTemporary());
+                                    }
+                                    break;
                                 default:
+                                    if (value.length > 0) {
+                                        mcdu.insertWaypoint(value, fpIndex, () => {
+                                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                        }, !fpm.isCurrentFlightPlanTemporary());
+                                    }
+                                    break;
                             }
-                            mcdu.removeWaypoint(fpIndex, () => {
-                                CDUFlightPlanPage.ShowPage(mcdu, offset);
-                            }, !fpm.isCurrentFlightPlanTemporary());
-                        } else if (value === FMCMainDisplay.ovfyValue) {
-                            if (wp) {
-                                if (wp.additionalData.overfly) {
-                                    mcdu.removeWaypointOverfly(fpIndex, () => {
-                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
-                                    }, !fpm.isCurrentFlightPlanTemporary());
-                                } else {
-                                    mcdu.addWaypointOverfly(fpIndex, () => {
-                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
-                                    }, !fpm.isCurrentFlightPlanTemporary());
-                                }
-                            }
-                        } else if (value.length > 0) {
-                            mcdu.insertWaypoint(value, fpIndex, () => {
-                                CDUFlightPlanPage.ShowPage(mcdu, offset);
-                            }, !fpm.isCurrentFlightPlanTemporary());
-                        }
-                    });
+                        });
                 } else {
                     addLskAt(rowI, () => mcdu.getDelaySwitchPage(),
                         (value) => {
@@ -444,9 +448,7 @@ class CDUFlightPlanPage {
 
                 addRskAt(rowI, () => mcdu.getDelaySwitchPage(),
                     async (_value) => {
-                        if (wp) {
-                            CDUVerticalRevisionPage.ShowPage(mcdu, wp);
-                        }
+                        CDUVerticalRevisionPage.ShowPage(mcdu, wp);
                     });
 
             } else if (marker) {
