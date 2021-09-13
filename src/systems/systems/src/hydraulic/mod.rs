@@ -894,7 +894,7 @@ impl WindTurbine {
     }
 
     fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
-        let cur_aplha = interpolation(
+        let cur_alpha = interpolation(
             &Self::RPM_GOVERNOR_BREAKPTS,
             &Self::PROP_ALPHA_MAP,
             self.rpm,
