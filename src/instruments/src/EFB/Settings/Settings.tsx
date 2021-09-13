@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
+import { HttpError } from '@flybywiresim/api-client';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
@@ -288,6 +289,65 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
+    const [simbriefError, setSimbriefError] = useState(false);
+    const [simbriefDisplay, setSimbriefDisplay] = useState(props.simbriefUsername);
+
+    function getSimbriefUserData(value: string): Promise<any> {
+        const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
+
+        if (!value) {
+            throw new Error('No SimBrief username/pilot ID provided');
+        }
+
+        // The SimBrief API will try both username and pilot ID if either one
+        // isn't valid, so request both if the input is plausibly a pilot ID.
+        let apiUrl = `${SIMBRIEF_URL}&username=${value}`;
+        if (/^\d{1,8}$/.test(value)) {
+            apiUrl += `&userid=${value}`;
+        }
+
+        return fetch(apiUrl)
+            .then((response) => {
+                // 400 status means request was invalid, probably invalid username so preserve to display error properly
+                if (!response.ok && response.status !== 400) {
+                    throw new HttpError(response.status);
+                }
+
+                return response.json();
+            });
+    }
+
+    function getSimbriefUserId(value: string):Promise<any> {
+        if (!value) {
+            throw new Error('No SimBrief username/pilot ID provided');
+        }
+        return new Promise((resolve, reject) => {
+            getSimbriefUserData(value)
+                .then((data) => {
+                    if (data.fetch.status === 'Error: Unknown UserID') {
+                        reject();
+                    }
+                    resolve(data.fetch.userid);
+                })
+                .catch((_error) => {
+                    reject();
+                });
+        });
+    }
+
+    function handleUsernameInput(value: string) {
+        getSimbriefUserId(value).then((response) => props.setSimbriefUsername(response)).catch(() => {
+            setSimbriefError(true);
+            setSimbriefDisplay(props.simbriefUsername);
+            setTimeout(() => {
+                setSimbriefError(false);
+            }, 4000);
+        });
+    }
+
+    useEffect(() => {
+        setSimbriefDisplay(props.simbriefUsername);
+    }, [props.simbriefUsername]);
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -350,13 +410,20 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 </SelectGroup>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Simbrief Username</span>
+                <span className="text-lg text-gray-300">
+                    Simbrief Username
+                    <span className={`${!simbriefError && 'hidden'} text-red-600`}>
+                        <span className="text-white"> | </span>
+                        Simbrief Error
+                    </span>
+                </span>
                 <div className="flex flex-row items-center">
                     <SimpleInput
                         className="w-30"
-                        value={props.simbriefUsername}
+                        value={simbriefDisplay}
                         noLabel
-                        onChange={(event) => props.setSimbriefUsername(event)}
+                        onBlur={(value) => handleUsernameInput(value)}
+                        onChange={(value) => setSimbriefDisplay(value)}
                     />
                 </div>
             </div>
