@@ -901,7 +901,7 @@ impl WindTurbine {
         );
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
-        let air_speed_torque = cur_aplha.to_radians().sin()
+        let air_speed_torque = cur_alpha.to_radians().sin()
             * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() / 100.)
             * 0.5
             * (std::f64::consts::PI / 2. * stow_pos).sin();
