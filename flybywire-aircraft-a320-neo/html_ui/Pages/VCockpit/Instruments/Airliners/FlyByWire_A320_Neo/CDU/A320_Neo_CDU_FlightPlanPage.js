@@ -119,7 +119,7 @@ class CDUFlightPlanPage {
             winI = winI % (waypointsAndMarkers.length);
 
             const {wp, marker, fpIndex} = waypointsAndMarkers[winI];
-            const {wp: prevWp, fpIndex: prevFpIndex} = (winI > 0) ? waypointsAndMarkers[winI - 1] : { wp: null, fpIndex: null};
+            const {fpIndex: prevFpIndex} = (winI > 0) ? waypointsAndMarkers[winI - 1] : { fpIndex: null};
 
             if (wp) {
                 // Waypoint
@@ -160,8 +160,8 @@ class CDUFlightPlanPage {
                 // Fix Header
                 let fixAnnotation;
                 const currentApproach = fpm.getApproach();
-                if (fpm.getDepartureRunway() && prevWp === fpm.getOrigin() && prevFpIndex === 0) {
-                    fixAnnotation = `${prevWp.ident.substring(0,3)}${fpm.getDepartureRunway().direction.toFixed(0)}`;
+                if (fpm.getDepartureRunway() && wpPrev === fpm.getOrigin() && prevFpIndex === 0) {
+                    fixAnnotation = `${wpPrev.ident.substring(0,3)}${fpm.getDepartureRunway().direction.toFixed(0)}`;
                 } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === wp)) {
                     const departureName = fpm.getDepartureName();
                     fixAnnotation = departureName ? departureName : undefined;
@@ -210,8 +210,8 @@ class CDUFlightPlanPage {
                             fixAnnotation = `H${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                         case 11: // FM
-                            if (prevWp) {
-                                fixAnnotation = `${prevWp.ident.substring(0,3)}${wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}`;
+                            if (wpPrev) {
+                                fixAnnotation = `${wpPrev.ident.substring(0,3)}${wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}`;
                             }
                             break;
                         case 17: // RF
@@ -222,24 +222,24 @@ class CDUFlightPlanPage {
                             break;
                     }
                 }
-
-                if (!fixAnnotation && prevWp && fpIndex !== fpm.getDestinationIndex()) {
-                    const magVar = Facilities.getMagVar(prevWp.infos.coordinates);
-                    const courseBetween = Avionics.Utils.computeGreatCircleHeading(prevWp.infos.coordinates, wp.infos.coordinates);
+                // Approach Fix Headers
+                if (!fixAnnotation && wpPrev && fpIndex !== fpm.getDestinationIndex()) {
+                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates);
+                    const courseBetween = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
                     const course = A32NX_Util.trueToMagnetic(courseBetween, magVar);
                     fixAnnotation = `C${course.toFixed(0).padStart(3,"0")}\u00b0`;
                 }
 
                 // Bearing/Track
                 let bearingTrack = "";
-                if (wp && prevWp) {
-                    const magVar = Facilities.getMagVar(prevWp.infos.coordinates);
+                if (wp && wpPrev) {
+                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates);
                     if (fpm.getActiveWaypointIndex() === fpIndex && rowI === 1) {
                         const br = fpm.getBearingToActiveWaypoint();
                         const bearing = A32NX_Util.trueToMagnetic(br, magVar);
                         bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
                     } else if (rowI === 2) {
-                        const tr = Avionics.Utils.computeGreatCircleHeading(prevWp.infos.coordinates, wp.infos.coordinates);
+                        const tr = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
                         const track = A32NX_Util.trueToMagnetic(tr, magVar);
                         bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
                     }
