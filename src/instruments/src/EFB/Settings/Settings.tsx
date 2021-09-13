@@ -318,25 +318,30 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
     }
 
     function getSimbriefUserId(value: string):Promise<any> {
-        if (!value) {
-            throw new Error('No SimBrief username/pilot ID provided');
-        }
         return new Promise((resolve, reject) => {
+            if (!value) {
+                reject(new Error('No SimBrief username/pilot ID provided'));
+            }
             getSimbriefUserData(value)
                 .then((data) => {
                     if (data.fetch.status === 'Error: Unknown UserID') {
-                        reject();
+                        reject(new Error('Error: Unknown UserID'));
                     }
                     resolve(data.fetch.userid);
                 })
                 .catch((_error) => {
-                    reject();
+                    reject(_error);
                 });
         });
     }
 
     function handleUsernameInput(value: string) {
-        getSimbriefUserId(value).then((response) => props.setSimbriefUsername(response)).catch(() => {
+        getSimbriefUserId(value).then((response) => {
+            if (response === props.simbriefUsername) {
+                setSimbriefDisplay(props.simbriefUsername);
+            }
+            props.setSimbriefUsername(response);
+        }).catch(() => {
             setSimbriefError(true);
             setSimbriefDisplay(props.simbriefUsername);
             setTimeout(() => {
