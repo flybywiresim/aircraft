@@ -9,6 +9,8 @@
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
 1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
+1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
+1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
 1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.7.0
