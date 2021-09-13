@@ -55,10 +55,8 @@ impl FixedStepLoop {
     }
 }
 impl Iterator for FixedStepLoop {
-    // we will be counting with usize
     type Item = Duration;
 
-    // next() is the only required method
     fn next(&mut self) -> Option<Self::Item> {
         // Check to see if we've finished counting or not.
         if self.number_of_loops_remaining > 0 {
@@ -108,10 +106,8 @@ impl MaxStepLoop {
     }
 }
 impl Iterator for MaxStepLoop {
-    // we will be counting with usize
     type Item = Duration;
 
-    // next() is the only required method
     fn next(&mut self) -> Option<Self::Item> {
         if self.num_of_max_step_loop > 0 {
             self.num_of_max_step_loop -= 1;
