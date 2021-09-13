@@ -48,7 +48,7 @@ pub struct RigidBodyOnHingeAxis {
     mass: Mass,
     inertia_at_hinge: f64,
 
-    natural_damping: f64,
+    natural_damping_constant: f64,
 
     lock_position_request: Ratio,
     is_lock_requested: bool,
@@ -69,7 +69,7 @@ impl RigidBodyOnHingeAxis {
         anchor_point: Vector3<f64>,
         min_angle: Angle,
         total_travel: Angle,
-        natural_damping: f64,
+        natural_damping_constant: f64,
         locked: bool,
         axis_direction: Vector3<f64>,
     ) -> Self {
@@ -101,7 +101,7 @@ impl RigidBodyOnHingeAxis {
             position_normalized_prev: Ratio::new::<ratio>(0.),
             mass,
             inertia_at_hinge,
-            natural_damping,
+            natural_damping_constant,
             lock_position_request: Ratio::new::<ratio>(0.),
             is_lock_requested: locked,
             is_locked: locked,
@@ -240,7 +240,9 @@ impl RigidBodyOnHingeAxis {
 
     // A global damping factor that simulates hinge friction and local air resistance
     fn natural_damping(&self) -> Torque {
-        Torque::new::<newton_meter>(-self.speed.get::<radian_per_second>() * self.natural_damping)
+        Torque::new::<newton_meter>(
+            -self.speed.get::<radian_per_second>() * self.natural_damping_constant,
+        )
     }
 
     pub fn update(&mut self, context: &UpdateContext) {

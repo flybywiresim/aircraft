@@ -80,7 +80,7 @@ pub struct LinearActuator {
 
     fluid_compression_spring_constant: f64,
     fluid_compression_damping_constant: f64,
-    active_damping_constant: f64,
+    active_hydraulic_damping_constant: f64,
 }
 impl LinearActuator {
     const DEFAULT_I_GAIN: f64 = 0.2;
@@ -93,9 +93,9 @@ impl LinearActuator {
         bore_side_diameter: Length,
         rod_diameter: Length,
         max_flow: VolumeRate,
-        spring: f64,
-        damping: f64,
-        active_damping: f64,
+        fluid_compression_spring_constant: f64,
+        fluid_compression_damping_constant: f64,
+        active_hydraulic_damping_constant: f64,
     ) -> Self {
         let max_pos = connected_body.max_linear_distance_to_anchor();
         let min_pos = connected_body.min_linear_distance_to_anchor();
@@ -159,9 +159,9 @@ impl LinearActuator {
             closed_valves_reference_position: Ratio::new::<ratio>(0.),
             opened_valves_target_position: Ratio::new::<ratio>(0.),
 
-            fluid_compression_spring_constant: spring,
-            fluid_compression_damping_constant: damping,
-            active_damping_constant: active_damping,
+            fluid_compression_spring_constant,
+            fluid_compression_damping_constant,
+            active_hydraulic_damping_constant,
         }
     }
 
@@ -243,7 +243,7 @@ impl LinearActuator {
             );
         } else if self.mode == LinearActuatorMode::Damping {
             self.force = Force::new::<newton>(
-                -self.speed.get::<meter_per_second>() * self.active_damping_constant,
+                -self.speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
             );
         } else {
             self.compute_control_force(hydraulic_pressure);
