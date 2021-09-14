@@ -255,17 +255,15 @@ class CDUFlightPlanPage {
 
                 // Active waypoint is live distance, others are distances in the flight plan
                 // TODO FIXME: actually use the correct prediction
-                if (fpIndex !== fpm.getDestinationIndex()) {
-                    if (fpIndex === fpm.getActiveWaypointIndex()) {
-                        distance = stats.get(fpIndex).distanceFromPpos.toFixed(0);
-                    } else {
-                        distance = stats.get(fpIndex).distanceInFP.toFixed(0);
-                    }
-                    if (distance > 9999) {
-                        distance = 9999;
-                    }
-                    distance = distance.toString();
+                if (fpIndex === fpm.getActiveWaypointIndex()) {
+                    distance = stats.get(fpIndex).distanceFromPpos.toFixed(0);
+                } else {
+                    distance = stats.get(fpIndex).distanceInFP.toFixed(0);
                 }
+                if (distance > 9999) {
+                    distance = 9999;
+                }
+                distance = distance.toString();
 
                 let speedConstraint = "---";
                 if (wp.speedConstraint > 10 && ident !== "MANUAL") {
