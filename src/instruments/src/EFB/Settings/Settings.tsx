@@ -345,7 +345,7 @@ const ATSUAOCPage = () => {
     function handleUsernameInput(value: string) {
         getSimbriefUserId(value).then((response) => {
             setSimbriefUserId(response);
-            setSimbriefDisplay(simbriefUserId);
+            setSimbriefDisplay(response);
         }).catch(() => {
             setSimbriefError(true);
             setSimbriefDisplay(simbriefUserId);
@@ -354,13 +354,6 @@ const ATSUAOCPage = () => {
             }, 4000);
         });
     }
-
-    useEffect(() => {
-        setSimbriefDisplay(simbriefUserId);
-    }, [simbriefUserId]);
-
-    console.log(`SimBrief UserID${simbriefUserId}`);
-    console.log(simbriefDisplay);
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
