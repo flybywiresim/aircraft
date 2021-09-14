@@ -54,15 +54,15 @@ class CDUFlightPlanPage {
 
         let showFrom = false;
         let showTMPY = false;
-        // TODO Replace with ADIRS getLatitude() getLongitude()
-        // TODO Account for no position data
+        // TODO FIXME: Correct FMS lateral position calculations and move logic from F-PLN A
+        // 22-70-00:11
         const ppos = {
-            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
-            long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+            lat: ADIRS.getLatitude(),
+            long: ADIRS.getLongitude(),
         };
         const stats = fpm.getCurrentFlightPlan().computeWaypointStatistics(ppos);
 
-        // TODO: Move from flightplanpage
+        // TODO FIXME: Move from F-PLN A
         const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         if (fpm.getOrigin()) {
             if (!isFlying) {
@@ -394,6 +394,8 @@ class CDUFlightPlanPage {
                                     switch (rowI) {
                                         case 0:
                                         case 1:
+                                            // 22-72-00:67
+                                            // Stop clearing TO or FROM waypoints when NAV is engaged
                                             const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
                                             switch (lateralMode) {
                                                 case 20:

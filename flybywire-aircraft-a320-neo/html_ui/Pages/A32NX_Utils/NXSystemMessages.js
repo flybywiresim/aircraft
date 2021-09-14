@@ -46,6 +46,7 @@ const NXSystemMessages = {
     noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
     notAllowed:             new McduMessage("NOT ALLOWED", false, false),
     notAllowedInNav:        new McduMessage("NOT ALLOWED IN NAV", false, false),
+    acPositionInvalid:      new McduMessage("A/C POSITION INVALID", false, false),
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
     selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
     uplinkInsertInProg:     new McduMessage("UPLINK INSERT IN PROG", false, true),

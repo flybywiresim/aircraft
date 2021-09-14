@@ -140,8 +140,17 @@ export class ManagedFlightPlan {
         }
 
         const bearingInFp = Avionics.Utils.computeGreatCircleHeading(ppos, this.activeWaypoint.infos.coordinates);
-        // TODO redo when we have a better solution for vector legs
-        const distanceFromPpos = (this.activeWaypoint.isVectors) ? 1 : Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
+
+        let distanceFromPpos;
+        if (Number.isNaN(ppos.lat) || Number.isNaN(ppos.long)) {
+            console.log(this.activeWaypoint.distanceInFP);
+            distanceFromPpos = this.activeWaypoint.distanceInFP;
+        } else if (this.activeWaypoint.isVectors) {
+            // TODO redo when we have a better solution for vector legs
+            distanceFromPpos = 1;
+        } else {
+            distanceFromPpos = Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
+        }
         const timeFromPpos = this.computeWaypointTime(distanceFromPpos);
         const etaFromPpos = this.computeWaypointEta(distanceFromPpos, timeFromPpos);
 
