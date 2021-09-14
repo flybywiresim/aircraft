@@ -418,10 +418,10 @@ const ATSUAOCPage = (props: {simbriefUserId, setSimbriefUserId}) => {
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">
-                    Simbrief Username
+                    SimBrief Username/Pilot ID
                     <span className={`${!simbriefError && 'hidden'} text-red-600`}>
                         <span className="text-white"> | </span>
-                        Simbrief Error
+                        SimBrief Error
                     </span>
                 </span>
                 <div className="flex flex-row items-center">

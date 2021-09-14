@@ -114,7 +114,7 @@ const SimpleInput = (props: SimpleInputProps) => {
                         <input
                             className={`px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
                             focus-within:border-teal-light-contrast ${props.className}`}
-                            value={props.value ?? displayValue}
+                            value={displayValue}
                             placeholder={props.placeholder ?? ''}
                             onChange={onChange}
                             onFocus={onFocus}
@@ -132,7 +132,7 @@ const SimpleInput = (props: SimpleInputProps) => {
                                 <input
                                     className={`px-5 py-1.5 text-lg text-white rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
                                     focus-within:border-teal-light-contrast ${props.className}`}
-                                    value={props.value ?? displayValue}
+                                    value={displayValue}
                                     placeholder={props.placeholder ?? ''}
                                     onChange={onChange}
                                     onFocus={onFocus}
