@@ -9,6 +9,7 @@ import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 import { Navbar } from '../Components/Navbar';
+import { SimbriefUserIdContext } from '../Efb';
 
 type ButtonType = {
     name: string,
@@ -290,12 +291,13 @@ const SimOptionsPage = () => {
     );
 };
 
-const ATSUAOCPage = (props: {simbriefUserId, setSimbriefUserId}) => {
+const ATSUAOCPage = () => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
     const [simbriefError, setSimbriefError] = useState(false);
-    const [simbriefDisplay, setSimbriefDisplay] = useState(props.simbriefUserId);
+    const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
+    const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
     function getSimbriefUserData(value: string): Promise<any> {
         const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -342,16 +344,23 @@ const ATSUAOCPage = (props: {simbriefUserId, setSimbriefUserId}) => {
 
     function handleUsernameInput(value: string) {
         getSimbriefUserId(value).then((response) => {
-            props.setSimbriefUserId(response);
-            setSimbriefDisplay(props.simbriefUserId);
+            setSimbriefUserId(response);
+            setSimbriefDisplay(simbriefUserId);
         }).catch(() => {
             setSimbriefError(true);
-            setSimbriefDisplay(props.simbriefUserId);
+            setSimbriefDisplay(simbriefUserId);
             setTimeout(() => {
                 setSimbriefError(false);
             }, 4000);
         });
     }
+
+    useEffect(() => {
+        setSimbriefDisplay(simbriefUserId);
+    }, [simbriefUserId]);
+
+    console.log(`SimBrief UserID${simbriefUserId}`);
+    console.log(simbriefDisplay);
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -508,7 +517,7 @@ interface SettingsNavbarContextInterface {
 
 const SettingsNavbarContext = React.createContext<SettingsNavbarContextInterface>(undefined as any);
 
-const Settings = (props: {simbriefUserId, setSimbriefUserId}) => {
+const Settings = () => {
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
     const [subPageIndex, setSubPageIndex] = useState(0);
     const [showNavbar, setShowNavbar] = useState(true);
@@ -518,7 +527,7 @@ const Settings = (props: {simbriefUserId, setSimbriefUserId}) => {
         case 0: return [<DefaultsPage />];
         case 1: return [<AircraftConfigurationPage />];
         case 2: return [<SimOptionsPage />];
-        case 3: return [<ATSUAOCPage simbriefUserId={props.simbriefUserId} setSimbriefUserId={props.setSimbriefUserId} />];
+        case 3: return [<ATSUAOCPage />];
         case 4: return [<AudioPage />];
         case 5: return [<FlyPadPage />];
         default: return [<AircraftConfigurationPage />];
