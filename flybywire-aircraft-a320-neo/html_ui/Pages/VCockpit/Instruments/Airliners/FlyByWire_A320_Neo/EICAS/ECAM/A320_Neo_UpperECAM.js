@@ -769,7 +769,7 @@ var A320_Neo_UpperECAM;
                             },
                             {
                                 message: "EXCES RESIDUAL PR",
-                                level: 2,
+                                level: 3,
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9],
                                 isActive: () => (
                                     Simplane.getIsGrounded() &&
