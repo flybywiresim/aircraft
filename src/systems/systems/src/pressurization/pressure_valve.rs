@@ -19,7 +19,7 @@ pub(super) struct PressureValve {
 }
 
 impl PressureValve {
-    pub fn new_open() -> Self {
+    pub fn new_outflow_valve() -> Self {
         Self {
             open_amount: Ratio::new::<percent>(100.),
             target_open: Ratio::new::<percent>(100.),
@@ -28,7 +28,7 @@ impl PressureValve {
         }
     }
 
-    pub fn new_closed() -> Self {
+    pub fn new_safety_valve() -> Self {
         Self {
             open_amount: Ratio::new::<percent>(0.),
             target_open: Ratio::new::<percent>(0.),
@@ -112,7 +112,7 @@ mod pressure_valve_tests {
     impl TestAircraft {
         fn new() -> Self {
             Self {
-                valve: PressureValve::new_open(),
+                valve: PressureValve::new_outflow_valve(),
                 actuator: TestValveActuator::new(),
             }
         }

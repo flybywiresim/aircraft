@@ -729,7 +729,7 @@ mod pressure_schedule_manager_tests {
         fn new() -> Self {
             let mut test_aircraft = Self {
                 cpc: CabinPressureController::new(),
-                outflow_valve: PressureValve::new_open(),
+                outflow_valve: PressureValve::new_outflow_valve(),
                 press_overhead: PressurizationOverheadPanel::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
