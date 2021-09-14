@@ -9,7 +9,7 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
-use super::rigid_body::RigidBodyOnHingeAxis;
+use super::rigid_body::LinearActuatedRigidBodyOnHingeAxis;
 
 use crate::simulation::UpdateContext;
 
@@ -88,7 +88,7 @@ impl LinearActuator {
 
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        connected_body: &RigidBodyOnHingeAxis,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         number_of_actuators: u8,
         bore_side_diameter: Length,
         rod_diameter: Length,
@@ -167,7 +167,7 @@ impl LinearActuator {
 
     fn update_before_rigid_body(
         &mut self,
-        connected_body: &mut RigidBodyOnHingeAxis,
+        connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
         requested_mode: LinearActuatorMode,
         available_pressure: Pressure,
     ) {
@@ -188,7 +188,7 @@ impl LinearActuator {
 
     fn update_after_rigid_body(
         &mut self,
-        connected_body: &RigidBodyOnHingeAxis,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         context: &UpdateContext,
     ) {
         self.update_speed_position(connected_body, context);
@@ -198,7 +198,7 @@ impl LinearActuator {
 
     fn update_speed_position(
         &mut self,
-        connected_body: &RigidBodyOnHingeAxis,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         context: &UpdateContext,
     ) {
         self.last_position = self.position;
@@ -323,10 +323,13 @@ pub trait HydraulicAssemblyController {
 }
 pub struct HydraulicActuatorAssembly {
     linear_actuator: LinearActuator,
-    rigid_body: RigidBodyOnHingeAxis,
+    rigid_body: LinearActuatedRigidBodyOnHingeAxis,
 }
 impl HydraulicActuatorAssembly {
-    pub fn new(linear_actuator: LinearActuator, rigid_body: RigidBodyOnHingeAxis) -> Self {
+    pub fn new(
+        linear_actuator: LinearActuator,
+        rigid_body: LinearActuatedRigidBodyOnHingeAxis,
+    ) -> Self {
         Self {
             linear_actuator,
             rigid_body,
@@ -671,14 +674,14 @@ mod tests {
         )
     }
 
-    fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
+    fn cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
         let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
 
         let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
         let anchor = Vector3::new(-0.7596, -0.086, 0.);
 
-        RigidBodyOnHingeAxis::new(
+        LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
             size,
             cg_offset,
@@ -692,7 +695,7 @@ mod tests {
         )
     }
 
-    fn cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
+    fn cargo_door_actuator(rigid_body: &LinearActuatedRigidBodyOnHingeAxis) -> LinearActuator {
         LinearActuator::new(
             &rigid_body,
             2,

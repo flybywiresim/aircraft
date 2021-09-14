@@ -20,7 +20,7 @@ use crate::simulation::UpdateContext;
 //
 // All coordinates references are from the hinge axis. So (0,0,0) is the hinge rotation axis center
 #[derive(PartialEq, Clone, Copy)]
-pub struct RigidBodyOnHingeAxis {
+pub struct LinearActuatedRigidBodyOnHingeAxis {
     total_travel: Angle,
     min_angle: Angle,
     max_angle: Angle,
@@ -56,7 +56,7 @@ pub struct RigidBodyOnHingeAxis {
 
     axis_direction: Vector3<f64>,
 }
-impl RigidBodyOnHingeAxis {
+impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
     const DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR: f64 = 0.3;
 
@@ -82,7 +82,7 @@ impl RigidBodyOnHingeAxis {
         let inertia_at_hinge =
             inertia_at_cog + mass.get::<kilogram>() * center_of_gravity_offset.norm_squared();
 
-        let mut new_body = RigidBodyOnHingeAxis {
+        let mut new_body = LinearActuatedRigidBodyOnHingeAxis {
             total_travel,
             min_angle,
             max_angle: min_angle + total_travel,
@@ -470,14 +470,14 @@ mod tests {
         )
     }
 
-    fn cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
+    fn cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
         let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
 
         let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
         let anchor = Vector3::new(-0.759, -0.086, 0.);
 
-        RigidBodyOnHingeAxis::new(
+        LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
             size,
             cg_offset,
