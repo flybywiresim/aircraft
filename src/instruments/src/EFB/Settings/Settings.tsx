@@ -290,12 +290,12 @@ const SimOptionsPage = () => {
     );
 };
 
-const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
+const ATSUAOCPage = (props: {simbriefUserId, setSimbriefUserId}) => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
     const [simbriefError, setSimbriefError] = useState(false);
-    const [simbriefDisplay, setSimbriefDisplay] = useState(props.simbriefUsername);
+    const [simbriefDisplay, setSimbriefDisplay] = useState(props.simbriefUserId);
 
     function getSimbriefUserData(value: string): Promise<any> {
         const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -342,22 +342,16 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
 
     function handleUsernameInput(value: string) {
         getSimbriefUserId(value).then((response) => {
-            if (response === props.simbriefUsername) {
-                setSimbriefDisplay(props.simbriefUsername);
-            }
-            props.setSimbriefUsername(response);
+            props.setSimbriefUserId(response);
+            setSimbriefDisplay(props.simbriefUserId);
         }).catch(() => {
             setSimbriefError(true);
-            setSimbriefDisplay(props.simbriefUsername);
+            setSimbriefDisplay(props.simbriefUserId);
             setTimeout(() => {
                 setSimbriefError(false);
             }, 4000);
         });
     }
-
-    useEffect(() => {
-        setSimbriefDisplay(props.simbriefUsername);
-    }, [props.simbriefUsername]);
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -514,7 +508,7 @@ interface SettingsNavbarContextInterface {
 
 const SettingsNavbarContext = React.createContext<SettingsNavbarContextInterface>(undefined as any);
 
-const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
+const Settings = (props: {simbriefUserId, setSimbriefUserId}) => {
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
     const [subPageIndex, setSubPageIndex] = useState(0);
     const [showNavbar, setShowNavbar] = useState(true);
@@ -524,7 +518,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
         case 0: return [<DefaultsPage />];
         case 1: return [<AircraftConfigurationPage />];
         case 2: return [<SimOptionsPage />];
-        case 3: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
+        case 3: return [<ATSUAOCPage simbriefUserId={props.simbriefUserId} setSimbriefUserId={props.setSimbriefUserId} />];
         case 4: return [<AudioPage />];
         case 5: return [<FlyPadPage />];
         default: return [<AircraftConfigurationPage />];

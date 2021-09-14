@@ -298,7 +298,7 @@ const Efb = () => {
                                         <Failures />
                                     </Route>
                                     <Route path="/settings">
-                                        <Settings simbriefUsername={simbriefUserId} setSimbriefUsername={setSimbriefUserId} />
+                                        <Settings simbriefUserId={simbriefUserId} setSimbriefUserId={setSimbriefUserId} />
                                     </Route>
                                 </Switch>
                             </div>
