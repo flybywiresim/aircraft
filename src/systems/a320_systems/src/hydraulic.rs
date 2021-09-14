@@ -24,10 +24,10 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
         linear_actuator::{
-            Actuator, HydraulicActuatorAssembly, HydraulicAssemblyController, LinearActuator,
+            Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuator,
             LinearActuatorMode,
         },
-        rigid_body::RigidBodyOnHingeAxis,
+        rigid_body::LinearActuatedRigidBodyOnHingeAxis,
         update_iterator::{FixedStepLoop, MaxStepLoop},
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
@@ -50,9 +50,10 @@ use systems::{
 
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
-    fn a320_cargo_door_actuator(rigid_body: &RigidBodyOnHingeAxis) -> LinearActuator {
+    fn a320_cargo_door_actuator(rigid_body: &LinearActuatedRigidBodyOnHingeAxis) -> LinearActuator {
         LinearActuator::new(
-            &rigid_body,
+            rigid_body.max_linear_distance_to_anchor(),
+            rigid_body.min_linear_distance_to_anchor(),
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),
@@ -64,14 +65,14 @@ impl A320CargoDoorFactory {
     }
 
     // Builds a cargo door body for A320 Neo
-    fn a320_cargo_door_body(is_locked: bool) -> RigidBodyOnHingeAxis {
+    fn a320_cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
         let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
 
         let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
         let anchor = Vector3::new(-0.7596, -0.086, 0.);
         let axis_direction = Vector3::new(0., 0., 1.);
-        RigidBodyOnHingeAxis::new(
+        LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
             size,
             cg_offset,
@@ -87,10 +88,10 @@ impl A320CargoDoorFactory {
 
     // Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     // to it
-    fn a320_cargo_door_assembly() -> HydraulicActuatorAssembly {
+    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly {
         let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
         let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
-        HydraulicActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
+        HydraulicLinearActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
     }
 
     fn new_a320_cargo_door(id: &str) -> CargoDoor {
@@ -1708,7 +1709,7 @@ impl SimulationElement for A320DoorController {
 }
 
 struct CargoDoor {
-    hydraulic_assembly: HydraulicActuatorAssembly,
+    hydraulic_assembly: HydraulicLinearActuatorAssembly,
 
     position_id: String,
     locked_id: String,
@@ -1717,7 +1718,7 @@ struct CargoDoor {
     is_locked: bool,
 }
 impl CargoDoor {
-    fn new(id: &str, hydraulic_assembly: HydraulicActuatorAssembly) -> Self {
+    fn new(id: &str, hydraulic_assembly: HydraulicLinearActuatorAssembly) -> Self {
         Self {
             hydraulic_assembly,
             position_id: format!("{}_DOOR_CARGO_POSITION", id),

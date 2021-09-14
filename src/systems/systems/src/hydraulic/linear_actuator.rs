@@ -50,8 +50,8 @@ pub struct LinearActuator {
     speed: Velocity,
     force: Force,
 
-    max_position: Length,
-    min_position: Length,
+    max_absolute_length: Length,
+    min_absolute_length: Length,
 
     total_travel: Length,
 
@@ -88,7 +88,8 @@ impl LinearActuator {
 
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
+        max_absolute_length: Length,
+        min_absolute_length: Length,
         number_of_actuators: u8,
         bore_side_diameter: Length,
         rod_diameter: Length,
@@ -97,9 +98,7 @@ impl LinearActuator {
         fluid_compression_damping_constant: f64,
         active_hydraulic_damping_constant: f64,
     ) -> Self {
-        let max_pos = connected_body.max_linear_distance_to_anchor();
-        let min_pos = connected_body.min_linear_distance_to_anchor();
-        let total_travel = max_pos - min_pos;
+        let total_travel = max_absolute_length - min_absolute_length;
 
         let bore_side_area_single_actuator = Area::new::<square_meter>(
             std::f64::consts::PI * (bore_side_diameter.get::<meter>() / 2.).powi(2),
@@ -122,14 +121,14 @@ impl LinearActuator {
             number_of_actuators,
 
             position_normalized: Ratio::new::<ratio>(0.),
-            position: min_pos,
-            last_position: min_pos,
+            position: min_absolute_length,
+            last_position: min_absolute_length,
 
             speed: Velocity::new::<meter_per_second>(0.),
             force: Force::new::<newton>(0.),
 
-            max_position: max_pos,
-            min_position: min_pos,
+            max_absolute_length,
+            min_absolute_length,
 
             total_travel,
 
@@ -204,7 +203,7 @@ impl LinearActuator {
         self.last_position = self.position;
         self.position = connected_body.linear_extension_to_anchor();
 
-        self.position_normalized = (self.position - self.min_position) / self.total_travel;
+        self.position_normalized = (self.position - self.min_absolute_length) / self.total_travel;
 
         self.delta_displacement = self.position - self.last_position;
 
@@ -321,11 +320,12 @@ pub trait HydraulicAssemblyController {
     fn should_lock(&self) -> bool;
     fn lock_position_request(&self) -> Ratio;
 }
-pub struct HydraulicActuatorAssembly {
+
+pub struct HydraulicLinearActuatorAssembly {
     linear_actuator: LinearActuator,
     rigid_body: LinearActuatedRigidBodyOnHingeAxis,
 }
-impl HydraulicActuatorAssembly {
+impl HydraulicLinearActuatorAssembly {
     pub fn new(
         linear_actuator: LinearActuator,
         rigid_body: LinearActuatedRigidBodyOnHingeAxis,
@@ -697,7 +697,8 @@ mod tests {
 
     fn cargo_door_actuator(rigid_body: &LinearActuatedRigidBodyOnHingeAxis) -> LinearActuator {
         LinearActuator::new(
-            &rigid_body,
+            rigid_body.max_linear_distance_to_anchor(),
+            rigid_body.min_linear_distance_to_anchor(),
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),
