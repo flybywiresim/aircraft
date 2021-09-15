@@ -155,6 +155,8 @@ class SimConnectInterface {
     SPOILERS_ARM_OFF,
     SPOILERS_ARM_TOGGLE,
     SPOILERS_ARM_SET,
+    SIM_RATE_INCR,
+    SIM_RATE_DECR,
   };
 
   SimConnectInterface() = default;

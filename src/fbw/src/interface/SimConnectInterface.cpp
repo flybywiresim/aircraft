@@ -382,6 +382,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_ARM_TOGGLE, "SPOILERS_ARM_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_ARM_SET, "SPOILERS_ARM_SET", true);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SIM_RATE_INCR, "SIM_RATE_INCR", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SIM_RATE_DECR, "SIM_RATE_DECR", false);
+
   return result;
 }
 
@@ -1814,6 +1817,16 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
 
     case Events::SPOILERS_ARM_SET: {
       spoilersHandler->onEventSpoilersArmSet(static_cast<long>(event->dwData) == 1);
+      break;
+    }
+
+    case Events::SIM_RATE_INCR: {
+      cout << "WASM: Simulation Rate set to " << simData.simulation_rate * 2 << endl;
+      break;
+    }
+
+    case Events::SIM_RATE_DECR: {
+      cout << "WASM: Simulation Rate set to " << simData.simulation_rate / 2 << endl;
       break;
     }
 
