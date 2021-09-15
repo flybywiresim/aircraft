@@ -123,6 +123,8 @@ export class LnavDriver implements GuidanceComponent {
                 available = true;
             }
 
+            SimVar.SetSimVarValue('L:A32NX_GPS_WP_DISTANCE', 'nautical miles', geometry.getDistanceToGo(this.ppos));
+
             if (!this.guidanceController.flightPlanManager.isActiveWaypointAtEnd(false, false, 0) && geometry.shouldSequenceLeg(this.ppos)) {
                 const currentLeg = geometry.legs.get(1);
                 const nextLeg = geometry.legs.get(2);
@@ -154,8 +156,8 @@ export class LnavDriver implements GuidanceComponent {
 
     sequenceLeg(_leg?: Leg): void {
         let wpIndex = this.guidanceController.flightPlanManager.getActiveWaypointIndex(false, false, 0);
-        console.log(`[FMGC/Guidance] LNAV - sequencing leg. Active WP Index: ${wpIndex}`);
         const wp = this.guidanceController.flightPlanManager.getActiveWaypoint(false, false, 0);
+        console.log(`[FMGC/Guidance] LNAV - sequencing leg. [WP: ${wp.ident} Active WP Index: ${wpIndex}]`);
         wp.waypointReachedAt = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
         this.guidanceController.flightPlanManager.setActiveWaypointIndex(++wpIndex, () => {}, 0);
