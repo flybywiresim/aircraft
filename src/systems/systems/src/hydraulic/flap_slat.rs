@@ -1,5 +1,5 @@
 use super::brake_circuit::Actuator;
-use crate::simulation::UpdateContext;
+use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 use uom::si::{
     angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -63,6 +63,8 @@ impl Actuator for FlapSlatHydraulicMotor {
 }
 
 pub struct FlapSlatAssembly {
+    position_id: String,
+
     synchro_gear_position: Angle,
 
     max_synchro_gear_position: Angle,
@@ -84,6 +86,7 @@ impl FlapSlatAssembly {
     const ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S: f64 = 0.05;
 
     pub fn new(
+        id: &str,
         motor_displacement: Volume,
         full_pressure_max_speed: AngularVelocity,
         max_synchro_gear_position: Angle,
@@ -91,6 +94,7 @@ impl FlapSlatAssembly {
         gearbox_ratio: Ratio,
     ) -> Self {
         Self {
+            position_id: format!("HYD_{}_POSITION", id),
             synchro_gear_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
             current_speed: AngularVelocity::new::<radian_per_second>(0.),
@@ -248,6 +252,14 @@ impl FlapSlatAssembly {
         self.left_motor._reset_accumulators();
     }
 }
+impl SimulationElement for FlapSlatAssembly {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.position_id,
+            self.position_feedback() / self.max_synchro_gear_position,
+        );
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -264,6 +276,7 @@ mod tests {
     #[test]
     fn flap_slat_assembly_init() {
         let mut flap_system = FlapSlatAssembly::new(
+            "FLAPS",
             Volume::new::<cubic_inch>(0.32),
             AngularVelocity::new::<radian_per_second>(0.4),
             Angle::new::<degree>(231.24),
@@ -282,6 +295,7 @@ mod tests {
     #[test]
     fn flap_slat_assembly_full_pressure() {
         let mut flap_system = FlapSlatAssembly::new(
+            "FLAPS",
             Volume::new::<cubic_inch>(0.32),
             AngularVelocity::new::<radian_per_second>(0.4),
             Angle::new::<degree>(231.24),
@@ -326,6 +340,7 @@ mod tests {
     #[test]
     fn flap_slat_assembly_half_pressure_left() {
         let mut flap_system = FlapSlatAssembly::new(
+            "FLAPS",
             Volume::new::<cubic_inch>(0.32),
             AngularVelocity::new::<radian_per_second>(0.4),
             Angle::new::<degree>(231.24),
@@ -359,6 +374,7 @@ mod tests {
     #[test]
     fn flap_slat_assembly_half_pressure_right() {
         let mut flap_system = FlapSlatAssembly::new(
+            "FLAPS",
             Volume::new::<cubic_inch>(0.32),
             AngularVelocity::new::<radian_per_second>(0.4),
             Angle::new::<degree>(231.24),
@@ -392,6 +408,7 @@ mod tests {
     #[test]
     fn flap_slat_assembly_goes_to_req_position() {
         let mut flap_system = FlapSlatAssembly::new(
+            "FLAPS",
             Volume::new::<cubic_inch>(0.32),
             AngularVelocity::new::<radian_per_second>(0.4),
             Angle::new::<degree>(231.24),
@@ -438,6 +455,7 @@ mod tests {
     #[test]
     fn flap_slat_assembly_stops_at_max_position() {
         let mut flap_system = FlapSlatAssembly::new(
+            "FLAPS",
             Volume::new::<cubic_inch>(0.32),
             AngularVelocity::new::<radian_per_second>(0.4),
             Angle::new::<degree>(231.24),
@@ -480,6 +498,7 @@ mod tests {
     #[test]
     fn flap_slat_assembly_goes_back_from_max_position() {
         let mut flap_system = FlapSlatAssembly::new(
+            "FLAPS",
             Volume::new::<cubic_inch>(0.32),
             AngularVelocity::new::<radian_per_second>(0.4),
             Angle::new::<degree>(231.24),

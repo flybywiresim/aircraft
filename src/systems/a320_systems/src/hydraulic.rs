@@ -1,13 +1,14 @@
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angular_velocity::revolution_per_minute,
+    angle::degree,
+    angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     pressure::pascal,
     pressure::psi,
     ratio::{percent, ratio},
     velocity::knot,
-    volume::gallon,
+    volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
 };
 
@@ -17,6 +18,7 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
+        flap_slat::FlapSlatAssembly,
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
@@ -73,6 +75,8 @@ pub(super) struct A320Hydraulic {
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
+
+    flap_system: FlapSlatAssembly,
 
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
@@ -231,6 +235,15 @@ impl A320Hydraulic {
             ),
 
             braking_force: A320BrakingForce::new(),
+
+            flap_system: FlapSlatAssembly::new(
+                "FLAPS",
+                Volume::new::<cubic_inch>(0.32),
+                AngularVelocity::new::<radian_per_second>(0.4),
+                Angle::new::<degree>(231.24),
+                Ratio::new::<ratio>(1. / 140.),
+                Ratio::new::<ratio>(16.632),
+            ),
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
@@ -470,6 +483,15 @@ impl A320Hydraulic {
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
         );
+
+        // TODO Here input the flap computer position request
+        // Degrees are in synchrodrive degrees, so from 0 to 231.24°
+        self.flap_system.update(
+            Angle::new::<degree>(0.),
+            self.green_loop.pressure(),
+            self.yellow_loop.pressure(),
+            context,
+        )
     }
 
     // All the higher frequency updates like physics
@@ -489,12 +511,20 @@ impl A320Hydraulic {
         self.green_loop
             .update_actuator_volumes(&self.braking_circuit_norm);
         self.braking_circuit_norm.reset_accumulators();
+
+        self.green_loop
+            .update_actuator_volumes(self.flap_system.left_motor());
+        self.flap_system.reset_left_accumulators();
     }
 
     fn update_yellow_actuators_volume(&mut self) {
         self.yellow_loop
             .update_actuator_volumes(&self.braking_circuit_altn);
         self.braking_circuit_altn.reset_accumulators();
+
+        self.yellow_loop
+            .update_actuator_volumes(self.flap_system.right_motor());
+        self.flap_system.reset_right_accumulators();
     }
 
     fn update_blue_actuators_volume(&mut self) {}
@@ -674,6 +704,8 @@ impl SimulationElement for A320Hydraulic {
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
         self.braking_force.accept(visitor);
+
+        self.flap_system.accept(visitor);
 
         visitor.visit(self);
     }
