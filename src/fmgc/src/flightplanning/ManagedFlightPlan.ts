@@ -754,7 +754,9 @@ export class ManagedFlightPlan {
 
         if (departureIndex !== -1 && runwayIndex !== -1) {
             const runwayTransition = airportInfo.departures[departureIndex].runwayTransitions[runwayIndex];
-            legs.push(...runwayTransition.legs);
+            if (runwayTransition) {
+                legs.push(...runwayTransition.legs);
+            }
         }
 
         if (departureIndex !== -1) {
@@ -855,7 +857,9 @@ export class ManagedFlightPlan {
 
         if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1) {
             const runwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
-            legs.push(...runwayTransition.legs);
+            if (runwayTransition) {
+                legs.push(...runwayTransition.legs);
+            }
             // console.log('MFP: buildArrival - pushing VIA legs ->', legs);
         }
 
