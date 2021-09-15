@@ -82,6 +82,12 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 
+  // in performance issues: if simulation rate is higher than 1 reduce it
+  if (simConnectInterface.getSimData().simulation_rate > 1 && sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME) {
+    execute_calculator_code("(>K:SIM_RATE_DECR)", nullptr, nullptr, nullptr);
+    cout << "WASM: WARNING Reducing simulation rate due to performance issues!" << endl;
+  }
+
   // do not process laws in pause or slew
   if (simConnectInterface.getSimData().slew_on) {
     wasInSlew = true;
