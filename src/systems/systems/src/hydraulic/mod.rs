@@ -14,6 +14,7 @@ use uom::si::{
 };
 
 pub mod brake_circuit;
+pub mod flap_slat;
 
 pub trait PressureSource {
     /// Gives the maximum available volume at that time as if it is a variable displacement
