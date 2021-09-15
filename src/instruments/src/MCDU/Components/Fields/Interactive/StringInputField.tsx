@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
@@ -9,7 +9,7 @@ import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
 
 type StringFieldProps = {
-    value: string | undefined,
+    defaultValue: string | undefined,
     nullValue: string,
     color: lineColors,
     fieldSide?: fieldSides,
@@ -21,8 +21,8 @@ type StringFieldProps = {
 }
 const StringInputField: React.FC<StringFieldProps> = (
     {
-        value,
         nullValue,
+        defaultValue,
         color,
         fieldSide,
         lineSide,
@@ -32,8 +32,12 @@ const StringInputField: React.FC<StringFieldProps> = (
         lsk,
     },
 ) => {
+    const [value, setValue] = useState<string | undefined>(defaultValue);
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
     const dispatch = useMCDUDispatch();
+
+    useEffect(() => setValue(defaultValue), [defaultValue])
+
     const clearScratchpad = () => {
         dispatch(scratchpadActions.clearScratchpad());
     };
@@ -49,7 +53,7 @@ const StringInputField: React.FC<StringFieldProps> = (
 
     return (
         <p className={lineSide}>
-            <span className={`${color} ${fieldSide} ${size}`}>{value === '' || value === undefined ? nullValue : value}</span>
+            <span className={`${color} ${fieldSide} ${size}`}>{value ?? nullValue}</span>
         </p>
     );
 };

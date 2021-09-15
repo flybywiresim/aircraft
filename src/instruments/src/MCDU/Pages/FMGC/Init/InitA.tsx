@@ -33,43 +33,42 @@ type fromToLineProps = {
     addMessage: (msg: ScratchpadMessage) => void,
     fmgc: mcduState,
     eraseTempFpl: (callback?: () => void) => void
-    fromToSet: () => Boolean
 }
-const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl, fromToSet }) => {
-    const [fromTo, setFromTo] = useState<undefined | string>(undefined);
+const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl }) => {
+    const [from, setFrom] = useState(fmgc.flightPlanManager?.getPersistentOrigin().ident)
+    const [to, setTo] = useState(fmgc.flightPlanManager?.getDestination().ident)
     const [, setUseFplDecelPoint] = useSimVar('L:FLIGHTPLAN_USE_DECEL_WAYPOINT', 'number');
+
     useEffect(() => {
-        if (fmgc.flightPlanManager !== undefined && fromToSet()) {
-            setFromTo(`${fmgc.flightPlanManager.getPersistentOrigin().ident}/${fmgc.flightPlanManager.getDestination().ident}`);
-        }
-    }, [fmgc]);
+        setFrom(fmgc.flightPlanManager?.getPersistentOrigin().ident)
+        setTo(fmgc.flightPlanManager?.getDestination().ident)
+    }, [fmgc.flightPlanManager]);
+
     const setNewValue = (value: string | undefined) => {
-        if (value !== undefined) {
-            if (value === 'CLR') {
-                addMessage(NXSystemMessages.notAllowed);
-            } else {
-                const [from, to] = value.split('/');
-                fmgc.fmcDataManager?.GetAirportByIdent(from).then((airportFrom) => {
-                    if (airportFrom) {
-                        fmgc.fmcDataManager?.GetAirportByIdent(to).then((airportTo) => {
-                            if (airportTo) {
-                                eraseTempFpl();
-                                fmgc.flightPlanManager?.setOrigin(airportFrom.icao, () => {
-                                    // Set temp origin
-                                    fmgc.flightPlanManager?.setDestination(airportTo.icao, () => {
-                                        if (fmgc.flightPlanManager !== undefined) {
-                                            fmgc.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
-                                            fmgc.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
-                                            // init aocAirportList
-                                            setUseFplDecelPoint(1);
-                                        }
-                                    });
+        if (value === undefined) {
+            addMessage(NXSystemMessages.notAllowed);
+        } else {
+            const [from, to] = value.split('/');
+            fmgc.fmcDataManager?.GetAirportByIdent(from).then((airportFrom) => {
+                if (airportFrom) {
+                    fmgc.fmcDataManager?.GetAirportByIdent(to).then((airportTo) => {
+                        if (airportTo) {
+                            eraseTempFpl();
+                            fmgc.flightPlanManager?.setOrigin(airportFrom.icao, () => {
+                                // Set temp origin
+                                fmgc.flightPlanManager?.setDestination(airportTo.icao, () => {
+                                    if (fmgc.flightPlanManager !== undefined) {
+                                        fmgc.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
+                                        fmgc.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
+                                        // init aocAirportList
+                                        setUseFplDecelPoint(1);
+                                    }
                                 });
-                            }
-                        });
-                    }
-                });
-            }
+                            });
+                        }
+                    });
+                }
+            });
         }
     };
     const validateEntry = (value: string) => {
@@ -79,7 +78,6 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl,
         }
         const [from, to] = value.split('/');
         fmgc.fmcDataManager?.GetAirportByIdent(from).then((airportFrom) => {
-            console.log(airportFrom);
             if (airportFrom) {
                 fmgc.fmcDataManager?.GetAirportByIdent(to).then((airportTo) => {
                     if (airportTo) {
@@ -105,14 +103,14 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl,
         <div className="line-holder-two">
             <LabelField lineSide={lineSides.right} value={'FROM/TO\xa0\xa0'} color={lineColors.white} />
             <StringInputField
-                value={fromTo}
+                defaultValue={from && to ? `${from}/${to}` : undefined}
                 lineSide={lineSides.right}
                 nullValue="____|____"
                 color={lineColors.amber}
                 size={lineSizes.regular}
                 lsk={LINESELECT_KEYS.R1}
                 selectedCallback={(value) => setNewValue(value)}
-                selectedValidation={(value) => validateEntry(value)} // For now returns true
+                selectedValidation={(value) => validateEntry(value)}
             />
         </div>
     );
@@ -121,7 +119,7 @@ type altDestLineProps = {
     addMessage: (msg: ScratchpadMessage) => void
 }
 const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
-    const [value, setValue] = useState<string>();
+    const [value, setValue] = useState<string | undefined>(undefined);
 
     const setNewValue = (value: string | undefined) => {
         if (value === undefined) {
@@ -133,11 +131,7 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
 
     const validateEntry = (value) => {
         if (value === '') {
-            addMessage({
-                text: 'FORMAT ERROR',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.formatError);
             return false;
         }
         return true;
@@ -147,11 +141,11 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
             <LabelField lineSide={lineSides.left} value="ALTN/CO RTE" color={lineColors.white} />
             <StringInputField
                 lineSide={lineSides.left}
-                value={value}
+                defaultValue={value}
                 nullValue="----|----------"
                 color={value !== undefined ? lineColors.cyan : lineColors.amber}
                 lsk={LINESELECT_KEYS.L2}
-                selectedCallback={(value) => setNewValue(value)}
+                selectedCallback={(value) => setNewValue(undefined)}
                 selectedValidation={((value) => validateEntry(value))}
                 size={lineSizes.regular}
             />
@@ -175,21 +169,13 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
 
     const validateEntry = (value) => {
         if (value === '') {
-            addMessage({
-                text: 'FORMAT ERROR',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.formatError);
             return false;
         }
         if (value.length <= 7) {
             return true;
         }
-        addMessage({
-            text: 'FORMAT ERROR',
-            isAmber: false,
-            isTypeTwo: false,
-        });
+        addMessage(NXSystemMessages.formatError);
         return false;
     };
 
@@ -198,7 +184,7 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
             <LabelField lineSide={lineSides.left} value="FLT NBR" color={lineColors.white} />
             <StringInputField
                 lineSide={lineSides.left}
-                value={flightNo !== undefined ? flightNo : '_____'}
+                defaultValue={flightNo !== '' ? flightNo : undefined}
                 nullValue="________"
                 color={flightNo !== undefined ? lineColors.cyan : lineColors.amber}
                 size={lineSizes.regular}
@@ -443,16 +429,11 @@ const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, addM
         setTitlebarText('INIT');
     }, []);
 
-    const fromToSet = () => (
-        fmgc.flightPlanManager?.getPersistentOrigin() && fmgc.flightPlanManager.getPersistentOrigin().ident
-         && fmgc.flightPlanManager.getDestination() && fmgc.flightPlanManager.getDestination().ident
-    );
-
     return (
         <>
             <div className="row-holder">
                 <CoRouteLine />
-                <FromToLine addMessage={addMessage} fmgc={fmgc} eraseTempFpl={eraseTempFpl} fromToSet={fromToSet} />
+                <FromToLine addMessage={addMessage} fmgc={fmgc} eraseTempFpl={eraseTempFpl} />
             </div>
             <div className="row-holder">
                 <AltDestLine addMessage={addMessage} />

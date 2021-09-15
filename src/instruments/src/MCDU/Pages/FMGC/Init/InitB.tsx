@@ -190,7 +190,7 @@ const TripWindLine : React.FC = () => (
         <LabelField lineSide={lineSides.right} value="TRIP WIND" color={lineColors.white} />
         <StringInputField
             lineSide={lineSides.right}
-            value={undefined}
+            defaultValue={undefined}
             nullValue="HD000"
             color={lineColors.cyan}
             size={lineSizes.regular}
