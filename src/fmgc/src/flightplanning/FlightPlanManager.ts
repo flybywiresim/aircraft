@@ -687,6 +687,7 @@ export class FlightPlanManager {
         currentFlightPlan.addWaypoint(waypoint);
 
         // make the waypoint before a discontinuity
+        /*
         const { waypoints } = currentFlightPlan;
         if (waypoints.length > 0 && destinationIndex > 0) {
             const previous = currentFlightPlan.waypoints[destinationIndex - 1];
@@ -696,6 +697,7 @@ export class FlightPlanManager {
                 previous.discontinuityCanBeCleared = true;
             }
         }
+        */
 
         this._updateFlightPlanVersion();
         callback();
