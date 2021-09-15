@@ -44,12 +44,12 @@ impl FlapSlatHydraulicMotor {
         0.113 * pressure.get::<psi>() * self.displacement.get::<cubic_inch>() / 6.28
     }
 
-    fn reset_accumulators(&mut self) {
+    fn _reset_accumulators(&mut self) {
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
         self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
     }
 
-    fn flow(&self) -> VolumeRate{
+    fn _flow(&self) -> VolumeRate {
         self.current_flow
     }
 }
@@ -194,12 +194,12 @@ impl FlapSlatAssembly {
         self.synchro_gear_position
     }
 
-    pub fn left_motor(&mut self) -> &mut FlapSlatHydraulicMotor {
-        &mut self.left_motor
+    pub fn left_motor(&mut self) -> &FlapSlatHydraulicMotor {
+        &self.left_motor
     }
 
-    pub fn right_motor(&mut self) -> &mut FlapSlatHydraulicMotor {
-        &mut self.right_motor
+    pub fn right_motor(&mut self) -> &FlapSlatHydraulicMotor {
+        &self.right_motor
     }
 }
 
@@ -211,20 +211,9 @@ mod tests {
     use uom::si::angle::degree;
 
     use uom::si::{
-        acceleration::foot_per_second_squared,
-        length::foot,
-        pressure::{pascal, psi},
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
-        volume::gallon,
+        acceleration::foot_per_second_squared, length::foot, pressure::psi,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
-    // use uom::si::{
-    //     angle::radian,
-    //     angularvelocity::{radian_per_second, revolution_per_minute},
-    //     pressure::psi,
-    //     volume::{cubic_inch, gallon},
-    //     volumerate::gallon_per_second,
-    // };
 
     #[test]
     fn flap_slat_assembly_init() {
@@ -283,14 +272,12 @@ mod tests {
         );
 
         assert!(
-            flap_system.left_motor().flow() >= VolumeRate::new::<gallon_per_minute>(3.)
-                && flap_system.left_motor().flow()
-                    <= VolumeRate::new::<gallon_per_minute>(8.)
+            flap_system.left_motor()._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.left_motor()._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
         );
         assert!(
-            flap_system.right_motor().flow() >= VolumeRate::new::<gallon_per_minute>(3.)
-                && flap_system.right_motor().flow()
-                <= VolumeRate::new::<gallon_per_minute>(8.)
+            flap_system.right_motor()._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.right_motor()._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
         );
     }
 
@@ -322,13 +309,10 @@ mod tests {
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
+        assert!(flap_system.left_motor()._flow() == VolumeRate::new::<gallon_per_minute>(0.));
         assert!(
-            flap_system.left_motor().flow() == VolumeRate::new::<gallon_per_minute>(0.)
-        );
-        assert!(
-            flap_system.right_motor().flow() >= VolumeRate::new::<gallon_per_minute>(3.)
-                && flap_system.right_motor().flow()
-                <= VolumeRate::new::<gallon_per_minute>(8.)
+            flap_system.right_motor()._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.right_motor()._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
         );
     }
 
@@ -360,14 +344,152 @@ mod tests {
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
+        assert!(flap_system.right_motor()._flow() == VolumeRate::new::<gallon_per_minute>(0.));
         assert!(
-            flap_system.right_motor().flow() == VolumeRate::new::<gallon_per_minute>(0.)
+            flap_system.left_motor()._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.left_motor()._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
         );
-        assert!(
-            flap_system.left_motor().flow() >= VolumeRate::new::<gallon_per_minute>(3.)
-                && flap_system.left_motor().flow()
-                <= VolumeRate::new::<gallon_per_minute>(8.)
+    }
+
+    #[test]
+    fn flap_slat_assembly_goes_to_req_position() {
+        let mut flap_system = FlapSlatAssembly::new(
+            Volume::new::<cubic_inch>(0.32),
+            AngularVelocity::new::<radian_per_second>(0.4),
+            Angle::new::<degree>(231.24),
+            Ratio::new::<ratio>(1. / 140.),
+            Ratio::new::<ratio>(16.632),
         );
+
+        assert!(flap_system.position_feedback().get::<degree>() == 0.);
+
+        flap_system.update(
+            Angle::new::<degree>(150.),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            &context(Duration::from_millis(100)),
+        );
+
+        let mut time = Duration::from_millis(0);
+        let mut last_position = flap_system.position_feedback();
+        for _ in 0..200 {
+            flap_system.update(
+                Angle::new::<degree>(150.),
+                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                &context(Duration::from_millis(100)),
+            );
+            if flap_system.position_feedback() != Angle::new::<degree>(150.) {
+                assert!(flap_system.position_feedback() > last_position);
+            }
+            assert!(flap_system.position_feedback() <= Angle::new::<degree>(150.));
+
+            last_position = flap_system.position_feedback();
+            println!(
+                "Time: {:.1}s  -> Position {:.1}/150",
+                time.as_secs_f64(),
+                last_position.get::<degree>()
+            );
+            time += Duration::from_millis(100);
+        }
+
+        assert!(flap_system.position_feedback() == Angle::new::<degree>(150.));
+    }
+
+    #[test]
+    fn flap_slat_assembly_stops_at_max_position() {
+        let mut flap_system = FlapSlatAssembly::new(
+            Volume::new::<cubic_inch>(0.32),
+            AngularVelocity::new::<radian_per_second>(0.4),
+            Angle::new::<degree>(231.24),
+            Ratio::new::<ratio>(1. / 140.),
+            Ratio::new::<ratio>(16.632),
+        );
+
+        assert!(flap_system.position_feedback().get::<degree>() == 0.);
+
+        flap_system.update(
+            Angle::new::<degree>(800.),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            Pressure::new::<psi>(0.),
+            &context(Duration::from_millis(100)),
+        );
+
+        let mut time = Duration::from_millis(0);
+        let mut last_position = flap_system.position_feedback();
+        for _ in 0..300 {
+            flap_system.update(
+                Angle::new::<degree>(800.),
+                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(0.),
+                &context(Duration::from_millis(100)),
+            );
+
+            assert!(flap_system.position_feedback() <= Angle::new::<degree>(231.24));
+
+            last_position = flap_system.position_feedback();
+            println!(
+                "Time: {:.1}s  -> Position {:.1}/150",
+                time.as_secs_f64(),
+                last_position.get::<degree>()
+            );
+            time += Duration::from_millis(100);
+        }
+    }
+
+    #[test]
+    fn flap_slat_assembly_goes_back_from_max_position() {
+        let mut flap_system = FlapSlatAssembly::new(
+            Volume::new::<cubic_inch>(0.32),
+            AngularVelocity::new::<radian_per_second>(0.4),
+            Angle::new::<degree>(231.24),
+            Ratio::new::<ratio>(1. / 140.),
+            Ratio::new::<ratio>(16.632),
+        );
+
+        let mut time = Duration::from_millis(0);
+        let mut last_position = flap_system.position_feedback();
+        for _ in 0..300 {
+            flap_system.update(
+                Angle::new::<degree>(800.),
+                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                &context(Duration::from_millis(100)),
+            );
+
+            assert!(flap_system.position_feedback() <= Angle::new::<degree>(231.24));
+
+            last_position = flap_system.position_feedback();
+            println!(
+                "Time: {:.1}s  -> Position {:.1}/150",
+                time.as_secs_f64(),
+                last_position.get::<degree>()
+            );
+            time += Duration::from_millis(100);
+        }
+
+        assert!(flap_system.position_feedback() == Angle::new::<degree>(231.24));
+
+        for _ in 0..300 {
+            flap_system.update(
+                Angle::new::<degree>(-100.),
+                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                &context(Duration::from_millis(100)),
+            );
+
+            assert!(flap_system.position_feedback() <= Angle::new::<degree>(231.24));
+
+            last_position = flap_system.position_feedback();
+            println!(
+                "Time: {:.1}s  -> Position {:.1}/150",
+                time.as_secs_f64(),
+                last_position.get::<degree>()
+            );
+            time += Duration::from_millis(100);
+        }
+
+        assert!(flap_system.position_feedback() == Angle::new::<degree>(0.));
     }
 
     fn context(delta_time: Duration) -> UpdateContext {
