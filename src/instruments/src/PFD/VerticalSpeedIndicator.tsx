@@ -1,7 +1,13 @@
+import { Arinc429Word } from '@instruments/common/arinc429';
 import React from 'react';
 
-export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }) => {
-    if (Number.isNaN(verticalSpeed)) {
+interface VerticalSpeedIndicatorProps {
+    radioAlt: number,
+    verticalSpeed: Arinc429Word
+}
+
+export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpeedIndicatorProps) => {
+    if (!verticalSpeed.isNormal()) {
         return (
             <>
                 <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
@@ -14,22 +20,23 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }) => {
         );
     }
 
+    const absVSpeed = Math.abs(verticalSpeed.value);
+
     let isAmber = false;
-    if ((Math.abs(verticalSpeed) > 6000 || (radioAlt < 2500 && radioAlt > 1000 && verticalSpeed < -2000) || (radioAlt < 1000 && verticalSpeed < -1200))) {
+    if (absVSpeed > 6000 || (radioAlt < 2500 && radioAlt > 1000 && verticalSpeed.value < -2000) || (radioAlt < 1000 && verticalSpeed.value < -1200)) {
         isAmber = true;
     }
 
-    const absVSpeed = Math.abs(verticalSpeed);
-    const sign = Math.sign(verticalSpeed);
+    const sign = Math.sign(verticalSpeed.value);
 
     let yOffset = 0;
 
     if (absVSpeed < 1000) {
-        yOffset = verticalSpeed / 1000 * -27.22;
+        yOffset = verticalSpeed.value / 1000 * -27.22;
     } else if (absVSpeed < 2000) {
-        yOffset = (verticalSpeed - sign * 1000) / 1000 * -10.1 - sign * 27.22;
+        yOffset = (verticalSpeed.value - sign * 1000) / 1000 * -10.1 - sign * 27.22;
     } else if (absVSpeed < 6000) {
-        yOffset = (verticalSpeed - sign * 2000) / 4000 * -10.1 - sign * 37.32;
+        yOffset = (verticalSpeed.value - sign * 2000) / 4000 * -10.1 - sign * 37.32;
     } else {
         yOffset = sign * -47.37;
     }

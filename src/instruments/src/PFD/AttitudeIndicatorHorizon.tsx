@@ -1,4 +1,5 @@
 import React from 'react';
+import { Arinc429Word } from '@instruments/common/arinc429';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -27,35 +28,33 @@ const HeadingBug = (offset: number) => (
 );
 
 interface HorizonProps {
-    pitch: number;
-    roll: number;
-    heading: number;
+    pitch: Arinc429Word;
+    roll: Arinc429Word;
+    heading: Arinc429Word;
     isOnGround: boolean;
     radioAlt: number;
     decisionHeight: number;
-    selectedHeading: number | null;
+    selectedHeading: number;
     FDActive: boolean;
     isAttExcessive: boolean;
     deltaTime: number;
 }
 
 export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive, deltaTime }: HorizonProps) => {
-    if (Number.isNaN(pitch) || Number.isNaN(roll)) {
+    if (!pitch.isNormal() || !roll.isNormal()) {
         return null;
     }
 
-    const headingAvailable = !Number.isNaN(heading);
+    const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(-pitch.value), 31.563), -31.563);
 
-    const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch), 31.563), -31.563);
-
-    const bugs: [(offset: number) => JSX.Element, (number | null)][] = [];
+    const bugs: [(offset: number) => JSX.Element, number][] = [];
     if (!Number.isNaN(selectedHeading) && !FDActive) {
         bugs.push([HeadingBug, selectedHeading]);
     }
 
     return (
-        <g id="RollGroup" transform={`rotate(${roll} 68.814 80.730)`}>
-            <g id="PitchGroup" transform={`translate(0 ${calculateHorizonOffsetFromPitch(pitch)})`}>
+        <g id="RollGroup" transform={`rotate(${roll.value} 68.814 80.730)`}>
+            <g id="PitchGroup" transform={`translate(0 ${calculateHorizonOffsetFromPitch(-pitch.value)})`}>
                 <path d="m23.906 80.823v-160h90v160z" className="SkyFill" />
                 <path d="m113.91 223.82h-90v-143h90z" className="EarthFill" />
 
@@ -144,7 +143,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White" />
             <SideslipIndicator isOnGround={isOnGround} roll={roll} deltaTime={deltaTime} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
-            {headingAvailable
+            {heading.isNormal()
             && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={DisplayRange} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing} heading={heading} />}
             {!isAttExcessive
             && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}
@@ -239,9 +238,15 @@ const TailstrikeIndicator = () => {
     );
 };
 
-const RadioAltAndDH = ({ radioAlt, decisionHeight, roll }) => {
+interface RadioAltAndDHProps {
+    radioAlt: number;
+    decisionHeight: number;
+    roll: Arinc429Word;
+}
+
+const RadioAltAndDH = ({ radioAlt, decisionHeight, roll }: RadioAltAndDHProps) => {
     if (radioAlt <= 2500) {
-        const verticalOffset = calculateVerticalOffsetFromRoll(roll);
+        const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
         const size = (radioAlt > 400 ? 'FontLarge' : 'FontLargest');
         const DHValid = decisionHeight >= 0;
         const color = (radioAlt > 400 || (radioAlt > decisionHeight + 100 && DHValid) ? 'Green' : 'Amber');
@@ -266,10 +271,16 @@ const RadioAltAndDH = ({ radioAlt, decisionHeight, roll }) => {
     return null;
 };
 
-const SideslipIndicator = ({ isOnGround, roll, deltaTime }) => {
+interface SideslipIndicatorProps {
+    isOnGround: boolean;
+    roll: Arinc429Word;
+    deltaTime: number;
+}
+
+const SideslipIndicator = ({ isOnGround, roll, deltaTime }: SideslipIndicatorProps) => {
     let SIIndexOffset = 0;
 
-    const verticalOffset = calculateVerticalOffsetFromRoll(roll);
+    const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
 
     if (isOnGround) {
         // on ground, lateral g is indicated. max 0.3g, max deflection is 15mm
@@ -290,10 +301,15 @@ const SideslipIndicator = ({ isOnGround, roll, deltaTime }) => {
     );
 };
 
-const RisingGround = ({ radioAlt, pitch }) => {
+interface RisingGroundProps {
+    radioAlt: number;
+    pitch: Arinc429Word;
+}
+
+const RisingGround = ({ radioAlt, pitch }: RisingGroundProps) => {
     const targetPitch = -0.1 * radioAlt;
 
-    const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch - targetPitch) - 31.563, 0), -63.093);
+    const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-pitch.value) - targetPitch) - 31.563, 0), -63.093);
 
     return (
         <g id="HorizonGroundRectangle" transform={`translate(0 ${targetOffset})`}>

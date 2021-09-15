@@ -1,8 +1,14 @@
+import { Arinc429Word } from '@instruments/common/arinc429.js';
 import React from 'react';
 import { getSimVar } from '../util.js';
 
-export const AttitudeIndicatorFixedUpper = ({ pitch, roll }) => {
-    if (Number.isNaN(pitch) || Number.isNaN(roll)) {
+interface AttitudeIndicatorFixedUpperProps {
+    pitch: Arinc429Word;
+    roll: Arinc429Word;
+}
+
+export const AttitudeIndicatorFixedUpper = ({ pitch, roll }: AttitudeIndicatorFixedUpperProps) => {
+    if (!pitch.isNormal() || !roll.isNormal()) {
         return null;
     }
 
@@ -32,8 +38,16 @@ export const AttitudeIndicatorFixedUpper = ({ pitch, roll }) => {
     );
 };
 
-export const AttitudeIndicatorFixedCenter = ({ pitch, roll, isOnGround, FDActive, isAttExcessive }) => {
-    if (Number.isNaN(pitch) || Number.isNaN(roll)) {
+interface AttitudeIndicatorFixedCenterProps {
+    pitch: Arinc429Word;
+    roll: Arinc429Word;
+    isOnGround: boolean;
+    FDActive: boolean;
+    isAttExcessive: boolean;
+}
+
+export const AttitudeIndicatorFixedCenter = ({ pitch, roll, isOnGround, FDActive, isAttExcessive }: AttitudeIndicatorFixedCenterProps) => {
+    if (!pitch.isNormal() || !roll.isNormal()) {
         return (
             <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
         );

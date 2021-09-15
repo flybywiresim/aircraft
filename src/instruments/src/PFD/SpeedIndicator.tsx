@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Arinc429Word } from '@instruments/common/arinc429';
 import { VerticalTape, BarberpoleIndicator } from './PFDUtils';
 import { getSimVar } from '../util.js';
 
@@ -74,7 +75,17 @@ const VProtBug = (offset: number) => (
     </g>
 );
 
-export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars }) => {
+interface AirspeedIndicatorProps {
+    airspeed: number;
+    airspeedAcc: number;
+    FWCFlightPhase: number;
+    altitude: Arinc429Word;
+    VLs: number;
+    VMax: number;
+    showBars: boolean;
+}
+
+export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars }: AirspeedIndicatorProps) => {
     if (Number.isNaN(airspeed)) {
         return (
             <>
@@ -88,7 +99,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
     const ValphaProtection = getSimVar('L:A32NX_SPEEDS_ALPHA_PROTECTION', 'number');
     const ValphaMax = getSimVar('L:A32NX_SPEEDS_ALPHA_MAX', 'number');
 
-    const bugs: any[] = [];
+    const bugs: [(offset: number) => JSX.Element, number][] = [];
 
     if (showBars) {
         bugs.push(...BarberpoleIndicator(airspeed, ValphaProtection, false, DisplayRange, VAlphaProtBar, 2.923));
@@ -127,7 +138,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
         bugs.push([FlapRetractBugElement, FlapRetractSpeed]);
     }
 
-    if (altitude < 15000 && flapsHandleIndex < 4) {
+    if (altitude.isNormal() && altitude.value < 15000 && flapsHandleIndex < 4) {
         const VFENext = getSimVar('L:A32NX_SPEEDS_VFEN', 'number');
         bugs.push([VFENextBugElement, VFENext]);
     }
@@ -228,19 +239,24 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
     );
 };
 
-export const MachNumber = ({ mach, airspeedAcc }) => {
-    if (Number.isNaN(mach)) {
+interface MachNumberProps {
+    mach: Arinc429Word,
+    airspeedAcc: number,
+}
+
+export const MachNumber = ({ mach, airspeedAcc }: MachNumberProps) => {
+    if (!mach.isNormal()) {
         return (
             <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
         );
     }
 
-    if ((airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
+    if ((airspeedAcc >= 0 && mach.value < 0.5) || (airspeedAcc < 0 && mach.value <= 0.45)) {
         return null;
     }
 
     return (
-        <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.4257932" y="136.88908">{`.${Math.round(mach * 1000)}`}</text>
+        <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.4257932" y="136.88908">{`.${Math.round(mach.value * 1000)}`}</text>
     );
 };
 

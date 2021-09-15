@@ -18,10 +18,6 @@ class Arinc429Word {
         return this._value;
     }
 
-    ssm() {
-        return this._ssm;
-    }
-
     isNormal() {
         return this._ssm === Arinc429Word.SignStatusMatrix.NormalOperation;
     }

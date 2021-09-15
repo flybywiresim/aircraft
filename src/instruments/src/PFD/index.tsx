@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
+import { useArinc429Var } from '@instruments/common/arinc429';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
 import { LandingSystem } from './LandingSystemIndicator';
@@ -94,20 +95,6 @@ class PFD extends Component {
         return knobValue === adirs3ToFO ? 3 : 2;
     }
 
-    getAdirsValue(name: string, type: string) {
-        const value = getSimVar(name, type);
-        const unavailable = -1000000;
-        return Math.abs(value - unavailable) < 0.0001 ? NaN : value;
-    }
-
-    getVerticalSpeed(inertialReferenceSource, airDataReferenceSource) {
-        // When available, the IR V/S has priority over the ADR barometric V/S.
-        const verticalSpeed = this.getAdirsValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_VERTICAL_SPEED`, 'feet per minute');
-        return !Number.isNaN(verticalSpeed)
-            ? verticalSpeed
-            : this.getAdirsValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_BAROMETRIC_VERTICAL_SPEED`, 'feet per minute');
-    }
-
     isCaptainSide() {
         return this.displayIndex === 1;
     }
@@ -127,25 +114,29 @@ class PFD extends Component {
         const inertialReferenceSource = this.getSupplier(getSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Enum'));
         const airDataReferenceSource = this.getSupplier(getSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum'));
 
-        const pitch = -this.getAdirsValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_PITCH`, 'degrees');
-        const roll = this.getAdirsValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_ROLL`, 'degrees');
-        const heading = this.getAdirsValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`, 'degrees');
+        const pitch = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_PITCH`);
+        const roll = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_ROLL`);
 
-        if (!this.isAttExcessive && (pitch > 25 || pitch < -13 || Math.abs(roll) > 45)) {
+        if (!this.isAttExcessive && ((pitch.isNormal() && (-pitch.value > 25 || -pitch.value < -13)) || (roll.isNormal() && Math.abs(roll.value) > 45))) {
             this.isAttExcessive = true;
-        } else if (this.isAttExcessive && pitch < 22 && pitch > -10 && Math.abs(roll) < 40) {
+        } else if (this.isAttExcessive && pitch.isNormal() && -pitch.value < 22 && -pitch.value > -10 && roll.isNormal() && Math.abs(roll.value) < 40) {
             this.isAttExcessive = false;
         }
 
-        const groundTrack = this.getAdirsValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`, 'degrees');
+        const heading = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`);
+        const groundTrack = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
 
         const isOnGround = getSimVar('SIM ON GROUND', 'Bool');
 
         const radioAlt = getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
         const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
-        const altitude = this.getAdirsValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_ALTITUDE`, 'feet');
-        const verticalSpeed = this.getVerticalSpeed(inertialReferenceSource, airDataReferenceSource);
+        const altitude = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_ALTITUDE`);
+
+        // When available, the IR V/S has priority over the ADR barometric V/S.
+        const inertialVerticalSpeed = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_VERTICAL_SPEED`);
+        const barometricVerticalSpeed = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_BAROMETRIC_VERTICAL_SPEED`);
+        const verticalSpeed = inertialVerticalSpeed.isNormal() ? inertialVerticalSpeed : barometricVerticalSpeed;
 
         const mda = getSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
@@ -154,15 +145,15 @@ class PFD extends Component {
         // eslint-disable-next-line no-undef
         const pressureMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
 
-        const computedAirspeed = this.getAdirsValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_COMPUTED_AIRSPEED`, 'knots');
-        const clampedAirspeed = Math.max(computedAirspeed, 30);
+        const computedAirspeed = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_COMPUTED_AIRSPEED`);
+        const clampedAirspeed = computedAirspeed.isNormal() ? Math.max(computedAirspeed.value, 30) : NaN;
         const airspeedAcc = (clampedAirspeed - this.prevAirspeed) / this.deltaTime * 1000;
         this.prevAirspeed = clampedAirspeed;
 
         const rateLimitedAirspeedAcc = this.AirspeedAccRateLimiter.step(airspeedAcc, this.deltaTime / 1000);
         const filteredAirspeedAcc = this.AirspeedAccFilter.step(rateLimitedAirspeedAcc, this.deltaTime / 1000);
 
-        const mach = this.getAdirsValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_MACH`, 'mach');
+        const mach = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_MACH`);
 
         const VMax = getSimVar('L:A32NX_SPEEDS_VMAX', 'number');
         const VLs = getSimVar('L:A32NX_SPEEDS_VLS', 'number');
@@ -186,7 +177,7 @@ class PFD extends Component {
         const altArmed = (armedVerticalBitmask >> 1) & 1;
         const clbArmed = (armedVerticalBitmask >> 2) & 1;
         const navArmed = (armedLateralBitmask >> 0) & 1;
-        const isManaged = altArmed || activeVerticalMode === 21 || activeVerticalMode === 20 || (!!cstnAlt && fmgcFlightPhase < 2 && clbArmed && navArmed);
+        const isManaged = !!(altArmed || activeVerticalMode === 21 || activeVerticalMode === 20 || (!!cstnAlt && fmgcFlightPhase < 2 && clbArmed && navArmed));
         const targetAlt = isManaged ? cstnAlt : Simplane.getAutoPilotDisplayedAltitudeLockValue();
 
         let targetSpeed: number | null;
@@ -205,9 +196,9 @@ class PFD extends Component {
 
         const FDActive = getSimVar(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.displayIndex}`, 'Bool');
 
-        let selectedHeading: number | null = NaN;
+        let selectedHeading: number = NaN;
         if (getSimVar('L:A320_FCU_SHOW_SELECTED_HEADING', 'number')) {
-            selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
+            selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false) || 0;
         }
 
         let ILSCourse = NaN;

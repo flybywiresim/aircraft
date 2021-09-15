@@ -1,4 +1,5 @@
 import React from 'react';
+import { Arinc429Word } from '@instruments/common/arinc429';
 import { HorizontalTape, getSmallestAngle } from './PFDUtils';
 import { getSimVar } from '../util.js';
 
@@ -38,8 +39,12 @@ const GraduationElement = (heading: number, offset: number) => {
     );
 };
 
-export const HeadingTape = ({ heading }) => {
-    if (Number.isNaN(heading)) {
+interface HeadingTapeProps {
+    heading: Arinc429Word;
+}
+
+export const HeadingTape = ({ heading }: HeadingTapeProps) => {
+    if (!heading.isNormal()) {
         return null;
     }
 
@@ -54,8 +59,15 @@ export const HeadingTape = ({ heading }) => {
     );
 };
 
-export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse, groundTrack }) => {
-    if (Number.isNaN(heading)) {
+interface HeadingOfftapeProps {
+    selectedHeading: number;
+    heading: Arinc429Word;
+    ILSCourse: number;
+    groundTrack: Arinc429Word;
+}
+
+export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse, groundTrack }: HeadingOfftapeProps) => {
+    if (!heading.isNormal()) {
         return (
             <>
                 <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />
@@ -71,17 +83,22 @@ export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse, groundTrac
             <SelectedHeading heading={heading} selectedHeading={selectedHeading} />
             <QFUIndicator heading={heading} ILSCourse={ILSCourse} />
             <path className="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
-            { !Number.isNaN(groundTrack) ? <GroundTrackBug groundTrack={groundTrack} heading={heading} /> : null }
+            { groundTrack.isNormal() ? <GroundTrackBug groundTrack={groundTrack} heading={heading} /> : null }
         </g>
     );
 };
 
-const SelectedHeading = ({ selectedHeading, heading }) => {
+interface SelectedHeadingProps {
+    selectedHeading: number;
+    heading: Arinc429Word;
+}
+
+const SelectedHeading = ({ selectedHeading, heading }: SelectedHeadingProps) => {
     if (Number.isNaN(selectedHeading)) {
         return null;
     }
 
-    const headingDelta = getSmallestAngle(selectedHeading, heading);
+    const headingDelta = getSmallestAngle(selectedHeading, heading.value);
     const text = Math.round(selectedHeading).toString().padStart(3, '0');
     if (Math.abs(headingDelta) < DisplayRange) {
         const offset = headingDelta * DistanceSpacing / ValueSpacing;
@@ -99,8 +116,13 @@ const SelectedHeading = ({ selectedHeading, heading }) => {
     );
 };
 
-const GroundTrackBug = ({ heading, groundTrack }) => {
-    const offset = getSmallestAngle(groundTrack, heading) * DistanceSpacing / ValueSpacing;
+interface GroundTrackBugProps {
+    heading: Arinc429Word;
+    groundTrack: Arinc429Word;
+}
+
+const GroundTrackBug = ({ heading, groundTrack }: GroundTrackBugProps) => {
+    const offset = getSmallestAngle(groundTrack.value, heading.value) * DistanceSpacing / ValueSpacing;
     return (
         <g id="ActualTrackIndicator" transform={`translate(${offset} 0)`}>
             <path className="ThickOutline CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
@@ -109,12 +131,17 @@ const GroundTrackBug = ({ heading, groundTrack }) => {
     );
 };
 
-const QFUIndicator = ({ ILSCourse, heading }) => {
+interface QFUIndicatorProps {
+    ILSCourse: number;
+    heading: Arinc429Word;
+}
+
+const QFUIndicator = ({ ILSCourse, heading }: QFUIndicatorProps) => {
     if (Number.isNaN(ILSCourse) || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
         return null;
     }
 
-    const delta = getSmallestAngle(ILSCourse, heading);
+    const delta = getSmallestAngle(ILSCourse, heading.value);
     const text = Math.round(ILSCourse).toString().padStart(3, '0');
     if (Math.abs(delta) > DisplayRange) {
         if (delta > 0) {
@@ -133,7 +160,7 @@ const QFUIndicator = ({ ILSCourse, heading }) => {
         );
     }
 
-    const offset = getSmallestAngle(ILSCourse, heading) * DistanceSpacing / ValueSpacing;
+    const offset = getSmallestAngle(ILSCourse, heading.value) * DistanceSpacing / ValueSpacing;
     return (
         <g id="ILSCoursePointer" transform={`translate(${offset} 0)`}>
             <path className="ThickOutline" d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />

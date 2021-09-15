@@ -1,4 +1,5 @@
 /* eslint-disable max-classes-per-file */
+import { Arinc429Word } from '@instruments/common/arinc429';
 import React from 'react';
 
 export const calculateHorizonOffsetFromPitch = (pitch: number) => {
@@ -39,11 +40,21 @@ export const getSmallestAngle = (angle1: number, angle2: number): number => {
     return smallestAngle;
 };
 
-export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, heading, yOffset = 0 }) => {
+interface HorizontalTapeProps {
+    displayRange: number;
+    valueSpacing: number;
+    distanceSpacing: number;
+    graduationElementFunction: (elementHeading: number, offset: number) => JSX.Element;
+    bugs: [(offset: number) => JSX.Element, number][];
+    heading: Arinc429Word;
+    yOffset?: number;
+}
+
+export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, heading, yOffset = 0 }: HorizontalTapeProps) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
-    let leftmostHeading = Math.round((heading - displayRange) / valueSpacing) * valueSpacing;
-    if (leftmostHeading < heading - displayRange) {
+    let leftmostHeading = Math.round((heading.value - displayRange) / valueSpacing) * valueSpacing;
+    if (leftmostHeading < heading.value - displayRange) {
         leftmostHeading += valueSpacing;
     }
 
@@ -56,8 +67,8 @@ export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, gr
         graduationElements.push(graduationElementFunction(elementHeading, offset));
     }
 
-    bugs.forEach((currentElement: [(offset: number) => JSX.Element, number]) => {
-        const angleToZero = getSmallestAngle(heading, 0);
+    bugs.forEach((currentElement) => {
+        const angleToZero = getSmallestAngle(heading.value, 0);
         const smallestAngle = getSmallestAngle(currentElement[1], 0);
         let offset = currentElement[1];
         if (Math.abs(angleToZero) < 90 && Math.abs(smallestAngle) < 90) {
@@ -73,17 +84,28 @@ export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, gr
     });
 
     return (
-        <g transform={`translate(${-heading * distanceSpacing / valueSpacing} ${yOffset})`}>
+        <g transform={`translate(${-heading.value * distanceSpacing / valueSpacing} ${yOffset})`}>
             {graduationElements}
             {bugElements}
         </g>
     );
 };
 
+interface VerticalTapeProps {
+    displayRange: number;
+    valueSpacing: number;
+    distanceSpacing: number;
+    graduationElementFunction: (elementHeading: number, offset: number) => JSX.Element | null;
+    bugs: [(offset: number) => JSX.Element, number][];
+    tapeValue: number;
+    lowerLimit?: number;
+    upperLimit?: number;
+}
+
 export const VerticalTape = ({
     displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, tapeValue,
     lowerLimit = -Infinity, upperLimit = Infinity,
-}) => {
+}: VerticalTapeProps) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
     const clampedValue = Math.max(Math.min(tapeValue, upperLimit), lowerLimit);
@@ -100,15 +122,17 @@ export const VerticalTape = ({
         const elementValue = lowestValue + i * valueSpacing;
         if (elementValue <= upperLimit) {
             const offset = -elementValue * distanceSpacing / valueSpacing;
-            graduationElements.push(graduationElementFunction(elementValue, offset));
+            const element = graduationElementFunction(elementValue, offset);
+            if (element) {
+                graduationElements.push(element);
+            }
         }
     }
 
     bugs.forEach((currentElement) => {
         const value = currentElement[1];
-
         const offset = -value * distanceSpacing / valueSpacing;
-        bugElements.push(currentElement[0](offset, value));
+        bugElements.push(currentElement[0](offset));
     });
 
     return (

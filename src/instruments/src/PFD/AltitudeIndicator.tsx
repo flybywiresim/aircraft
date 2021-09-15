@@ -1,4 +1,5 @@
 import React from 'react';
+import { Arinc429Word } from '@instruments/common/arinc429';
 import { VerticalTape } from './PFDUtils';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { getSimVar } from '../util.js';
@@ -25,13 +26,18 @@ const GraduationElement = (alt, offset) => {
     );
 };
 
-const LandingElevationIndicator = ({ altitude, FWCFlightPhase }) => {
+interface LandingElevationIndicatorProps {
+    altitude: Arinc429Word;
+    FWCFlightPhase: number;
+}
+
+const LandingElevationIndicator = ({ altitude, FWCFlightPhase }: LandingElevationIndicatorProps) => {
     if (FWCFlightPhase !== 7 && FWCFlightPhase !== 8) {
         return null;
     }
 
     const landingElevation = getSimVar('C:fs9gps:FlightPlanDestinationAltitude', 'feet');
-    const delta = altitude - landingElevation;
+    const delta = altitude.value - landingElevation;
     if (delta > DisplayRange) {
         return null;
     }
@@ -53,8 +59,13 @@ const RadioAltIndicator = ({ radioAlt }) => {
     );
 };
 
-export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
-    if (Number.isNaN(altitude)) {
+interface AltitudeIndicatorProps {
+    altitude: Arinc429Word;
+    FWCFlightPhase: number;
+}
+
+export const AltitudeIndicator = ({ altitude, FWCFlightPhase }: AltitudeIndicatorProps) => {
+    if (!altitude.isNormal()) {
         return (
             <AltTapeBackground />
         );
@@ -67,13 +78,22 @@ export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
             <AltTapeBackground />
             <LandingElevationIndicator altitude={altitude} FWCFlightPhase={FWCFlightPhase} />
             {/* eslint-disable-next-line max-len */}
-            <VerticalTape tapeValue={altitude} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 30} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} lowerLimit={-1500} upperLimit={50000} />
+            <VerticalTape tapeValue={altitude.value} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 30} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} lowerLimit={-1500} upperLimit={50000} />
         </g>
     );
 };
 
-export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAlt }) => {
-    if (Number.isNaN(altitude)) {
+interface AltitudeIndicatorOfftapeProps {
+    altitude: Arinc429Word;
+    MDA: number;
+    targetAlt: number;
+    altIsManaged: boolean;
+    mode: '' | 'STD' | 'QFE' | 'QNH';
+    radioAlt: number;
+}
+
+export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAlt }: AltitudeIndicatorOfftapeProps) => {
+    if (!altitude.isNormal()) {
         return (
             <>
                 <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />
@@ -86,9 +106,9 @@ export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManage
     return (
         <g>
             <path id="AltTapeOutline" className="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
-            <LinearDeviationIndicator alt={altitude} linearDeviation={NaN} />
+            <LinearDeviationIndicator altitude={altitude} linearDeviation={NaN} />
             <SelectedAltIndicator currentAlt={altitude} targetAlt={targetAlt} altIsManaged={altIsManaged} mode={mode} />
-            <AltimeterIndicator mode={mode} alt={altitude} />
+            <AltimeterIndicator mode={mode} altitude={altitude} />
             <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
             <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
             <RadioAltIndicator radioAlt={radioAlt} />
@@ -101,7 +121,14 @@ const AltTapeBackground = () => (
     <path id="AltTapeBackground" d="m130.85 123.56h-13.096v-85.473h13.096z" className="TapeBackground" />
 );
 
-const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }) => {
+interface SelectedAltIndicatorProps {
+    currentAlt: Arinc429Word,
+    targetAlt: number,
+    altIsManaged: boolean,
+    mode: '' | 'STD' | 'QFE' | 'QNH';
+}
+
+const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }: SelectedAltIndicatorProps) => {
     const color = altIsManaged ? 'Magenta' : 'Cyan';
 
     const isSTD = mode === 'STD';
@@ -114,7 +141,7 @@ const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }) => 
         text = Math.round(targetAlt).toString().padStart(5, ' ');
     }
 
-    if (currentAlt - targetAlt > DisplayRange) {
+    if (currentAlt.value - targetAlt > DisplayRange) {
         return (
             <g id="SelectedAltLowerGroup">
                 <text id="SelectedAltLowerText" className={`FontMedium EndAlign ${color}`} x="135.41222" y="128.90233" xmlSpace="preserve">{text}</text>
@@ -122,7 +149,7 @@ const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }) => 
                 && <text id="SelectedAltLowerFLText" className={`FontSmall MiddleAlign ${color}`} x="120.83108" y="128.97597">FL</text>}
             </g>
         );
-    } if (currentAlt - targetAlt < -DisplayRange) {
+    } if (currentAlt.value - targetAlt < -DisplayRange) {
         return (
             <g id="SelectedAltUpperGroup">
                 <text id="SelectedAltUpperText" className={`FontMedium EndAlign ${color}`} x="135.41232" y="37.348804" xmlSpace="preserve">{text}</text>
@@ -131,7 +158,7 @@ const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }) => 
             </g>
         );
     }
-    const offset = (currentAlt - targetAlt) * DistanceSpacing / ValueSpacing;
+    const offset = (currentAlt.value - targetAlt) * DistanceSpacing / ValueSpacing;
 
     return (
         <g id="AltTapeTargetSymbol" transform={`translate(0 ${offset})`}>
@@ -142,34 +169,44 @@ const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }) => 
     );
 };
 
-const LinearDeviationIndicator = ({ linearDeviation, alt }) => {
+interface LinearDeviationIndicatorProps {
+    linearDeviation: number;
+    altitude: Arinc429Word;
+}
+
+const LinearDeviationIndicator = ({ linearDeviation, altitude }: LinearDeviationIndicatorProps) => {
     if (Number.isNaN(linearDeviation)) {
         return null;
     }
     const circleRadius = 30;
-    if (alt - linearDeviation > DisplayRange - circleRadius) {
+    if (altitude.value - linearDeviation > DisplayRange - circleRadius) {
         return (
             <path id="VDevDotLower" className="Fill Green" d="m116.24 121.85c4.9e-4 0.83465 0.67686 1.511 1.511 1.511 0.83418 0 1.5105-0.67636 1.511-1.511h-1.511z" />
         );
-    } if (alt - linearDeviation < -DisplayRange + circleRadius) {
+    } if (altitude.value - linearDeviation < -DisplayRange + circleRadius) {
         return (
             <path id="VDevDotUpper" className="Fill Green" d="m116.24 39.8c4.9e-4 -0.83466 0.67686-1.511 1.511-1.511 0.83418 0 1.5105 0.67635 1.511 1.511h-1.511z" />
         );
     }
-    const offset = (alt - linearDeviation) * DistanceSpacing / ValueSpacing;
+    const offset = (altitude.value - linearDeviation) * DistanceSpacing / ValueSpacing;
 
     return (
         <path id="VDevDot" className="Fill Green" transform={`translate(0 ${offset})`} d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z" />
     );
 };
 
-const AltimeterIndicator = ({ mode, alt }) => {
+interface AltimeterIndicatorProps {
+    mode: '' | 'STD' | 'QFE' | 'QNH';
+    altitude: Arinc429Word,
+}
+
+const AltimeterIndicator = ({ mode, altitude }: AltimeterIndicatorProps) => {
     const phase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const transAlt = getSimVar(phase <= 3 ? 'L:AIRLINER_TRANS_ALT' : 'L:AIRLINER_APPR_TRANS_ALT', 'number');
 
     if (mode === 'STD') {
         return (
-            <g id="STDAltimeterModeGroup" className={(phase > 3 && transAlt > alt && transAlt !== 0) ? 'BlinkInfinite' : ''}>
+            <g id="STDAltimeterModeGroup" className={(phase > 3 && transAlt > altitude.value && transAlt !== 0) ? 'BlinkInfinite' : ''}>
                 <path className="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
                 <text className="FontMedium Cyan AlignLeft" x="125.99706" y="137.20053">STD</text>
             </g>
@@ -190,7 +227,7 @@ const AltimeterIndicator = ({ mode, alt }) => {
     }
 
     return (
-        <g id="AltimeterGroup" className={(phase <= 3 && transAlt < alt && transAlt !== 0) ? 'BlinkInfinite' : ''}>
+        <g id="AltimeterGroup" className={(phase <= 3 && transAlt < altitude.value && transAlt !== 0) ? 'BlinkInfinite' : ''}>
             {mode === 'QFE'
             && <path className="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />}
             <text id="AltimeterModeText" className="FontMedium White" x="118.29047" y="138.03368">{mode}</text>
@@ -199,13 +236,20 @@ const AltimeterIndicator = ({ mode, alt }) => {
     );
 };
 
-const MetricAltIndicator = ({ altitude, MDA, targetAlt, altIsManaged }) => {
-    const currentMetricAlt = Math.round(altitude * 0.3048 / 10) * 10;
+interface MetricAltIndicatorProps {
+    altitude: Arinc429Word;
+    MDA: number;
+    targetAlt: number;
+    altIsManaged: boolean;
+}
+
+const MetricAltIndicator = ({ altitude, MDA, targetAlt, altIsManaged }: MetricAltIndicatorProps) => {
+    const currentMetricAlt = Math.round(altitude.value * 0.3048 / 10) * 10;
 
     const targetMetric = Math.round(targetAlt * 0.3048 / 10) * 10;
     const targetAltColor = altIsManaged ? 'Magenta' : 'Cyan';
 
-    const currentMetricAltColor = altitude > MDA ? 'Green' : 'Amber';
+    const currentMetricAltColor = altitude.value > MDA ? 'Green' : 'Amber';
 
     const showMetricAlt = getSimVar('L:A32NX_METRIC_ALT_TOGGLE', 'bool');
     if (!showMetricAlt) {
