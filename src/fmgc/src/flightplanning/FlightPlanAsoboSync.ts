@@ -75,7 +75,6 @@ export class FlightPlanAsoboSync {
 
                           for (let i = 0; i < enroute.length - 1; i++) {
                               const wpt = enroute[i];
-                              console.log(wpt.icao);
                               if (wpt.icao.trim() !== '') {
                                   fpln.addWaypoint(wpt.icao);
                               }
@@ -83,25 +82,35 @@ export class FlightPlanAsoboSync {
 
                           // set departure
                           //  rwy index
+                          console.log('[FP LOAD] Setting Origin...');
                           await fpln.setOriginRunwayIndex(data.originRunwayIndex);
+                          console.log('[FP LOAD] Setting Departure Runway...');
                           await fpln.setDepartureRunwayIndex(data.departureRunwayIndex);
                           //  proc index
+                          console.log('[FP LOAD] Setting Departure Procedure...');
                           await fpln.setDepartureProcIndex(data.departureProcIndex);
                           //  enroutetrans index
+                          console.log('[FP LOAD] Setting Departure En Route Transition...');
                           await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex);
 
                           // set arrival
                           //  arrivalproc index
+                          console.log('[FP LOAD] Setting Arrival Procedure...');
                           await fpln.setArrivalProcIndex(data.arrivalProcIndex);
                           //  arrivaltrans index
+                          console.log('[FP LOAD] Setting En Route Transition...');
                           await fpln.setArrivalEnRouteTransitionIndex(data.arrivalEnRouteTransitionIndex);
 
                           // set approach
                           //  rwy index
+                          console.log('[FP LOAD] Setting Destination Runway...');
                           await fpln.setDestinationRunwayIndex(data.arrivalRunwayIndex);
+                          console.log('[FP LOAD] Setting Arrival Runway...');
                           await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex);
                           //  approach index
+                          console.log('[FP LOAD] Setting Approach...');
                           await fpln.setApproachIndex(data.approachIndex);
+                          console.log('[FP LOAD] Setting Approach Transition...');
                           //  approachtrans index
                           await fpln.setApproachTransitionIndex(data.approachTransitionIndex);
 
