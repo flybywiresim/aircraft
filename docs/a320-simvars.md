@@ -1134,79 +1134,79 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
-    - Feet
-    - The altitude. Approximately -1000000 when unavailable.
+    - Arinc429<Feet>
+    - The altitude.
 
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
-    - Knots
-    - The computed airspeed (CAS). Approximately -1000000 when unavailable.
+    - Arinc429<Knots>
+    - The computed airspeed (CAS).
 
 - A32NX_ADIRS_ADR_{number}_MACH
-    - Mach
-    - The Mach number (M). Approximately -1000000 when unavailable.
+    - Arinc429<Mach>
+    - The Mach number (M).
 
 - A32NX_ADIRS_ADR_{number}_BAROMETRIC_VERTICAL_SPEED
-    - Feet per minute
-    - The vertical speed (V/S) based on barometric altitude data. Approximately -1000000 when unavailable.
+    - Arinc429<Feet per minute>
+    - The vertical speed (V/S) based on barometric altitude data.
 
 - A32NX_ADIRS_ADR_{number}_TRUE_AIRSPEED
-    - Knots
-    - The true airspeed (TAS). Approximately -1000000 when unavailable.
+    - Arinc429<Knots>
+    - The true airspeed (TAS).
 
 - A32NX_ADIRS_ADR_{number}_STATIC_AIR_TEMPERATURE
-    - Celsius
-    - The static air temperature (SAT). Approximately -1000000 when unavailable.
+    - Arinc429<Celsius>
+    - The static air temperature (SAT).
       {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
-    - Celsius
-    - The total air temperature (TAT). Approximately -1000000 when unavailable.
+    - Arinc429<Celsius>
+    - The total air temperature (TAT).
       {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
-    - Celsius
-    - The delta (deviation) from international standard atmosphere temperature. Approximately -1000000 when unavailable.
+    - Arinc429<Celsius>
+    - The delta (deviation) from international standard atmosphere temperature.
       {number}: 1 or 3
 
 - A32NX_ADIRS_IR_{number}_PITCH
-    - Degrees
-    - The pitch angle of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429<Degrees>
+    - The pitch angle of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_ROLL
-    - Degrees
-    - The roll angle of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429<Degrees>
+    - The roll angle of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_HEADING
-    - Degrees
-    - The inertial heading of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429<Degrees>
+    - The inertial heading of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_TRACK
-    - Degrees
-    - The inertial track of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429<Degrees>
+    - The inertial track of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_VERTICAL_SPEED
-    - Feet per minute
-    - The vertical speed (V/S) based on inertial reference data. Approximately -1000000 when unavailable.
+    - Arinc429<Feet per minute>
+    - The vertical speed (V/S) based on inertial reference data.
 
 - A32NX_ADIRS_IR_{number}_GROUND_SPEED
-    - Knots
-    - The ground speed (GS) of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429<Knots>
+    - The ground speed (GS) of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_WIND_DIRECTION
-    - Degrees
-    - The direction of the wind. Approximately -1000000 when unavailable.
+    - Arinc429<Degrees>
+    - The direction of the wind.
 
 - A32NX_ADIRS_IR_{number}_WIND_VELOCITY
-    - Degrees
-    - The velocity of the wind. Approximately -1000000 when unavailable.
+    - Arinc429<Degrees>
+    - The velocity of the wind.
 
 - A32NX_ADIRS_IR_{number}_LATITUDE
-    - Degrees
-    - The latitude of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429<Degrees>
+    - The latitude of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_LONGITUDE
-    - Degrees
-    - The longitude of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429<Degrees>
+    - The longitude of the aircraft.
 
 - A32NX_ADIRS_USES_GPS_AS_PRIMARY
     - Bool
