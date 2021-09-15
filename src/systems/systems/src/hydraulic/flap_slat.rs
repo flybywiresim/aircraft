@@ -1,7 +1,7 @@
 use super::brake_circuit::Actuator;
 use crate::simulation::UpdateContext;
 use uom::si::{
-    angle::radian,
+    angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     pressure::psi,
@@ -78,8 +78,10 @@ pub struct FlapSlatAssembly {
     right_motor: FlapSlatHydraulicMotor,
 }
 impl FlapSlatAssembly {
-    const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT: f64 = 800.;
+    const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 800.;
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
+    const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
+    const ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S: f64 = 0.05;
 
     pub fn new(
         motor_displacement: Volume,
@@ -108,8 +110,21 @@ impl FlapSlatAssembly {
         right_pressure: Pressure,
         context: &UpdateContext,
     ) {
-        self.update_current_max_speed(left_pressure, right_pressure);
+        //limiting input value
+        let synchro_gear_angle_request = synchro_gear_angle_request.max(Angle::new::<radian>(0.)).min(self.max_synchro_gear_position);
 
+        self.update_current_max_speed(synchro_gear_angle_request, left_pressure, right_pressure);
+
+        self.update_speed_and_position(synchro_gear_angle_request, context);
+
+        self.update_motor_flows(left_pressure, right_pressure, context);
+    }
+
+    fn update_speed_and_position(
+        &mut self,
+        synchro_gear_angle_request: Angle,
+        context: &UpdateContext,
+    ) {
         if synchro_gear_angle_request > self.position_feedback() {
             self.synchro_gear_position += Angle::new::<radian>(
                 self.current_max_speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
@@ -136,19 +151,30 @@ impl FlapSlatAssembly {
             .synchro_gear_position
             .max(Angle::new::<radian>(0.))
             .min(self.max_synchro_gear_position);
-
-        self.update_motor_flows(left_pressure, right_pressure, context);
     }
 
-    fn update_current_max_speed(&mut self, left_pressure: Pressure, right_pressure: Pressure) {
+    fn update_current_max_speed(
+        &mut self,
+        synchro_gear_angle_request: Angle,
+        left_pressure: Pressure,
+        right_pressure: Pressure,
+    ) {
         if left_pressure + right_pressure
-            > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT)
+            > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI)
         {
             self.current_max_speed = AngularVelocity::new::<radian_per_second>(
                 self.full_pressure_max_speed.get::<radian_per_second>()
                     * (left_pressure.get::<psi>() + right_pressure.get::<psi>())
                     / (Self::MAX_CIRCUIT_PRESSURE_PSI * 2.),
             );
+
+            if self.is_approaching_requested_position(synchro_gear_angle_request) {
+                self.current_max_speed = self.current_max_speed.min(AngularVelocity::new::<
+                    radian_per_second,
+                >(
+                    Self::ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S,
+                ))
+            }
         } else {
             self.current_max_speed = AngularVelocity::new::<radian_per_second>(0.);
         }
@@ -188,6 +214,15 @@ impl FlapSlatAssembly {
             ),
             context,
         );
+    }
+
+    fn is_approaching_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
+        self.current_speed.get::<radian_per_second>() > 0.
+            && synchro_gear_angle_request - self.position_feedback()
+                < Angle::new::<degree>(Self::ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES)
+            || self.current_speed.get::<radian_per_second>() < 0.
+                && self.position_feedback() - synchro_gear_angle_request
+                    < Angle::new::<degree>(Self::ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES)
     }
 
     pub fn position_feedback(&self) -> Angle {
@@ -386,9 +421,10 @@ mod tests {
 
             last_position = flap_system.position_feedback();
             println!(
-                "Time: {:.1}s  -> Position {:.1}/150",
+                "Time: {:.1}s  -> Position {:.1}/150 speed{:.3}",
                 time.as_secs_f64(),
-                last_position.get::<degree>()
+                last_position.get::<degree>(),
+                flap_system.current_speed.get::<radian_per_second>()
             );
             time += Duration::from_millis(100);
         }
@@ -429,9 +465,10 @@ mod tests {
 
             last_position = flap_system.position_feedback();
             println!(
-                "Time: {:.1}s  -> Position {:.1}/150",
+                "Time: {:.1}s  -> Position {:.1}/231.24 -> speed {:.3}",
                 time.as_secs_f64(),
-                last_position.get::<degree>()
+                last_position.get::<degree>(),
+                flap_system.current_speed.get::<radian_per_second>()
             );
             time += Duration::from_millis(100);
         }
