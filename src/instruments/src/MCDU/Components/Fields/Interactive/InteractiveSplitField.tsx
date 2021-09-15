@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useInteractionEvent } from '../../../../util';
 import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
@@ -8,11 +8,13 @@ import '../../styles.scss';
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 
 export type fieldProperties = {
-    lValue: string,
+    lValue: string | undefined,
+    lNullValue: string,
     lSide?: fieldSides,
     lColour: lineColors,
     lSize: lineSizes
-    rValue: string,
+    rValue: string | undefined,
+    rNullValue: string,
     rSide?: fieldSides,
     rColour: lineColors,
     rSize: lineSizes
@@ -45,6 +47,14 @@ const InteractiveSplitField: React.FC<InteractiveSplitFieldProps> = (
 ) => {
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
     const dispatch = useMCDUDispatch();
+    const [lVal, setLVal] = useState(properties.lValue)
+    const [rVal, setRVal] = useState(properties.rValue)
+
+    useEffect(() => {
+        setLVal(properties.lValue)
+        setRVal(properties.rValue)
+    }, [properties.lValue, properties.rValue])
+
     const clearScratchpad = () => {
         dispatch(scratchpadActions.clearScratchpad());
     };
@@ -78,9 +88,9 @@ const InteractiveSplitField: React.FC<InteractiveSplitFieldProps> = (
 
     return (
         <p className={`line ${side}`}>
-            <span className={`${properties.lColour} ${properties.lSide} ${properties.lSize}`}>{properties.lValue}</span>
+            <span className={`${properties.lColour} ${properties.lSide} ${properties.lSize}`}>{lVal ?? properties.lNullValue}</span>
             <span className={`${slashColor}`}>/</span>
-            <span className={`${properties.rColour} ${properties.rSide} ${properties.rSize}`}>{properties.rValue}</span>
+            <span className={`${properties.rColour} ${properties.rSide} ${properties.rSize}`}>{rVal ?? properties.rNullValue}</span>
         </p>
     );
 };

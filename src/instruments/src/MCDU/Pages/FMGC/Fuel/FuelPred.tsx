@@ -2,100 +2,107 @@ import React, { useEffect, useState } from 'react';
 
 import { useSimVar } from '@instruments/common/simVars';
 
+import { NXSystemMessages } from '@fmgc/lib/NXSystemMessages';
 import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 import InteractiveSplitField, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
 import { scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
-import SplitNumberField from '../../../Components/Fields/Interactive/Split/SplitNumberField';
-import InteractiveSplitLine from '../../../Components/Lines/InteractiveSplitLine';
-import { RowHolder } from '../../../Components/RowHolder';
+import SplitField from '../../../Components/Fields/NonInteractive/SplitField';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
-import { LineHolder } from '../../../Components/LineHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { Field, fieldSides } from '../../../Components/Fields/NonInteractive/Field';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
-import { SplitLine } from '../../../Components/Lines/SplitLine';
 
-import { Content } from '../../../Components/Content';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 import * as mcduActions from '../../../redux/actions/mcduActionCreators';
+
+import './styles.scss';
 
 /**
  * @todo retrieve Dest ICAO when CFPM ready
  */
 const DestICAOLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-one">
         <LabelField lineSide={lineSides.left} value="AT" color={lineColors.white} />
         <Field lineSide={lineSides.left} textSide={fieldSides.left} value="NONE" color={lineColors.green} size={lineSizes.regular} />
-    </LineHolder>
+    </div>
 );
 
 /**
  * @todo retrieve Dest UTC when CFPM ready
  */
 const DestTimeLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <LabelField lineSide={lineSides.center} value="UTC" color={lineColors.white} />
         <Field lineSide={lineSides.center} value="----" color={lineColors.white} size={lineSizes.regular} />
-    </LineHolder>
+    </div>
 );
 
 /**
  * @todo retrieve Dest EFOB when CFPM ready
  */
 const DestEFOBLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-three">
         <LabelField lineSide={lineSides.right} value="EFOB" color={lineColors.white} />
         <Field lineSide={lineSides.right} textSide={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />
-    </LineHolder>
+    </div>
 );
 
 /**
  * @todo retrieve Dest ICAO when CFPM ready
  */
 const AltICAOLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-one">
         <EmptyLine />
         <Field lineSide={lineSides.left} value="NONE" color={lineColors.green} size={lineSizes.regular} />
-    </LineHolder>
+    </div>
 );
 
 /**
  * @todo retrieve Dest UTC when CFPM ready
  */
 const AltTimeLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-two">
         <EmptyLine />
         <Field lineSide={lineSides.center} value="----" color={lineColors.white} size={lineSizes.regular} />
-    </LineHolder>
+    </div>
 );
 
 /**
  * @todo retrieve Dest EFOB when CFPM ready
  */
 const AltEFOBLine: React.FC = () => (
-    <LineHolder>
+    <div className="line-holder-three">
         <EmptyLine />
         <Field lineSide={lineSides.center} textSide={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />
-    </LineHolder>
+    </div>
 );
 
 const RteRsvLine: React.FC = () => {
-    const rteRsvWeight = '---.-';
-    const rteRsvPercent = '--.-';
+    const [rteRsvWeight] = useState();
+    const [rteRsvPercent] = useState();
+    const properties: fieldProperties = {
+        lValue: rteRsvWeight, // Temp until FMC
+        lNullValue: '---.-',
+        lColour: rteRsvWeight ? lineColors.green : lineColors.white,
+        lSize: lineSizes.regular,
+        rValue: rteRsvPercent, // Temp until FMC
+        rNullValue: '--.-',
+        rColour: lineColors.inop,
+        rSize: lineSizes.regular,
+    };
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.left} value="RTE RSV/ %" color={lineColors.white} />
-            <SplitLine
+            <SplitField
                 side={lineSides.left}
-                slashColor={lineColors.white}
-                leftSide={<Field lineSide={lineSides.left} value={rteRsvWeight} color={lineColors.white} size={lineSizes.small} />}
-                rightSide={<Field lineSide={lineSides.left} value={rteRsvPercent} color={lineColors.white} size={lineSizes.small} />}
+                slashColor={rteRsvWeight ? lineColors.green : lineColors.white}
+                properties={properties}
             />
-        </LineHolder>
+        </div>
     );
 };
 
@@ -127,20 +134,22 @@ export const ZfwLine: React.FC<zfwLineProps> = (
     },
 ) => {
     // TODO Move to util?
-    const [fuelQuantity, _] = useSimVar('FUEL TOTAL QUANTITY', 'gallons');
-    const [fuelWeight, __] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
-    const [totalWeight, ___] = useSimVar('TOTAL WEIGHT', 'kilograms');
-    const [calcZFWCG, ____] = useSimVar('CG PERCENT', 'percent');
+    const [fuelQuantity] = useSimVar('FUEL TOTAL QUANTITY', 'gallons');
+    const [fuelWeight] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
+    const [totalWeight] = useSimVar('TOTAL WEIGHT', 'kilograms');
+    const [calcZFWCG] = useSimVar('CG PERCENT', 'percent');
     const blockFuel = fuelQuantity * fuelWeight / 1000;
     const calcZFW = (totalWeight / 1000) - blockFuel;
 
     const properties: fieldProperties = {
-        lValue: fmgcZFW === undefined ? '___._' : fmgcZFW.toFixed(1),
+        lValue: fmgcZFW ? fmgcZFW.toFixed(1) : undefined,
         // lSide: fieldSides.left,
+        lNullValue: '___._',
         lColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
         lSize: lineSizes.regular,
-        rValue: fmgcZFWCG === undefined ? '__._ ' : `${fmgcZFWCG.toFixed(1)} `,
+        rValue: fmgcZFWCG ? `${fmgcZFWCG.toFixed(1)} ` : undefined,
         // rSide: fieldSides.right,
+        rNullValue: '__._ ',
         rColour: fmgcZFW === undefined ? lineColors.amber : lineColors.cyan,
         rSize: lineSizes.regular,
     };
@@ -158,32 +167,20 @@ export const ZfwLine: React.FC<zfwLineProps> = (
             if (isZFWInRange(newZFW) && isZFWCGInRange(newZFWCG)) {
                 return true;
             }
-            addMessage({
-                text: 'ENTRY OUT OF RANGE',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
 
         // If you've reached this point and not entered both zfw/zfwCG then, false
         if (!zeroFuelWeightZFWCGEntered) {
-            addMessage({
-                text: 'NOT ALLOWED',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.notAllowed);
             return false;
         }
         if (Number.isFinite(newZFW)) {
             if (isZFWInRange(newZFW)) {
                 return true;
             }
-            addMessage({
-                text: 'ENTRY OUT OF RANGE',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         // If right side contains a number (e.g /23.0)
@@ -191,28 +188,16 @@ export const ZfwLine: React.FC<zfwLineProps> = (
             if (isZFWCGInRange(newZFWCG)) {
                 return true;
             }
-            addMessage({
-                text: 'ENTRY OUT OF RANGE',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        addMessage({
-            text: 'FORMAT ERROR',
-            isAmber: false,
-            isTypeTwo: false,
-        });
+        addMessage(NXSystemMessages.entryOutOfRange);
         return false;
     };
 
     const updateFMGC = (lVal: string, rVal: string) => {
         if (scratchpad.currentMessage === 'CLR') {
-            addMessage({
-                text: 'NOT ALLOWED',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.notAllowed);
         } else {
             if (lVal !== '' && rVal !== '' && rVal !== undefined) {
                 setZeroFuelWeightZFWCGEntered(true);
@@ -229,7 +214,7 @@ export const ZfwLine: React.FC<zfwLineProps> = (
     };
 
     return (
-        <LineHolder>
+        <div className="line-holder-two">
             <LabelField lineSide={lineSides.right} value="ZFW/ZFWCG" color={lineColors.white} />
             <InteractiveSplitField
                 side={lineSides.right}
@@ -242,47 +227,40 @@ export const ZfwLine: React.FC<zfwLineProps> = (
                     setScratchpad(`${calcZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
                 }}
             />
-        </LineHolder>
+        </div>
     );
 };
 
-type altneLineProps = {
-    clearScratchpad: () => any,
-}
-/**
+/*
  * @todo set the max alternate fuel to block - trip fuel
  * @todo when connected to FMGC check if altn value has been enetered or not
  */
-const AltnLine: React.FC<altneLineProps> = ({ clearScratchpad }) => {
-    const [altnWeight, setAltnWeight] = useState<number>();
-    const altnTime = altnWeight === undefined ? '----' : '0000';
+const AltnLine: React.FC = () => {
+    const [altnWeight] = useState<string>('0.0');
+    const [altnTime] = useState('0000');
+
+    const properties: fieldProperties = {
+        lValue: altnWeight ? parseInt(altnWeight).toFixed(1) : undefined,
+        lNullValue: '---.-',
+        lColour: altnWeight ? lineColors.cyan : lineColors.white,
+        lSize: lineSizes.small,
+        rValue: altnTime ? `${altnTime.padEnd(4, '0')} ` : undefined,
+        rNullValue: '0000 ',
+        rColour: lineColors.green,
+        rSize: lineSizes.small,
+    };
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.right} value="ALTN /TIME" color={lineColors.white} />
-            <InteractiveSplitLine
+            <InteractiveSplitField
                 lsk={LINESELECT_KEYS.L4}
-                slashColor={lineColors.white}
-                leftSide={(
-                    <SplitNumberField
-                        nullValue="---.-"
-                        min={0}
-                        max={10}
-                        value={altnWeight}
-                        color={lineColors.white}
-                        size={altnWeight === undefined ? lineSizes.small : lineSizes.regular}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setAltnWeight(undefined);
-                            } else {
-                                setAltnWeight(+value);
-                            }
-                            clearScratchpad();
-                        }}
-                    />
-                )}
-                rightSide={<Field lineSide={lineSides.right} value={altnTime} color={altnWeight === undefined ? lineColors.white : lineColors.green} size={lineSizes.small} />}
+                side={lineSides.left}
+                slashColor={lineColors.green}
+                properties={properties}
+                selectedValidation={() => true}
+                selectedCallback={() => true}
             />
-        </LineHolder>
+        </div>
     );
 };
 
@@ -294,77 +272,60 @@ type fobLineProps = {
  */
 const FobLine: React.FC<fobLineProps> = ({ zfwEntered }) => {
     const [fob, _] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'POUND');
-    const fobWeight = zfwEntered ? ((fob * 0.453592) / 1000).toFixed(1) : '---.-';
+    const fobWeight = ((fob * 0.453592) / 1000).toFixed(1);
     const fobOther = zfwEntered ? '    FF' : '----';
     const color = zfwEntered ? lineColors.cyan : lineColors.white;
 
+    const properties: fieldProperties = {
+        lValue: fobWeight ?? undefined,
+        lNullValue: '---.-',
+        lColour: fobWeight ? lineColors.cyan : lineColors.white,
+        lSize: lineSizes.small,
+        rValue: fobOther ? `${fobOther.padEnd(4, '0')} ` : undefined,
+        rNullValue: '----',
+        rColour: fobOther ? lineColors.cyan : lineColors.white,
+        rSize: lineSizes.small, // Adjust this if the value has been entered and not generated
+    };
+
     return (
-        <LineHolder>
+        <div className="line-holder-two">
             <LabelField lineSide={lineSides.right} value="FOB    " color={lineColors.white} />
-            <SplitLine
+            <SplitField
                 side={lineSides.right}
                 slashColor={color}
-                leftSide={<Field lineSide={lineSides.right} value={fobWeight} color={color} size={lineSizes.small} />}
-                rightSide={<Field lineSide={lineSides.right} value={fobOther} color={color} size={lineSizes.small} />}
+                properties={properties}
             />
-        </LineHolder>
+        </div>
     );
 };
 
-type finalLineProps = {
-    // Redux
-    clearScratchpad: () => any
-}
-const FinalLine: React.FC<finalLineProps> = ({ clearScratchpad }) => {
-    const [fuelWeight, setFuelWeight] = useState<number>();
-    const [fuelTime, setFuelTime] = useState<number>();
+const FinalLine: React.FC = () => {
+    const [fuelWeight] = useState<string>();
+    const [fuelTime] = useState<string>();
+
+    const properties: fieldProperties = {
+        lValue: fuelWeight ? parseInt(fuelWeight).toFixed(1) : undefined,
+        lNullValue: '---.-',
+        lColour: fuelWeight ? lineColors.cyan : lineColors.white,
+        lSize: lineSizes.small,
+        rValue: fuelTime ? `${fuelTime.padEnd(4, '0')} ` : undefined,
+        rNullValue: '----',
+        rColour: fuelTime ? lineColors.cyan : lineColors.white,
+        rSize: lineSizes.small, // Adjust this if the value has been entered and not generated
+    };
 
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.right} value="FINAL/TIME" color={lineColors.white} />
-            <InteractiveSplitLine
+            <InteractiveSplitField
                 lsk={LINESELECT_KEYS.L5}
                 slashColor={lineColors.white}
-                leftSide={(
-                    <SplitNumberField
-                        side={fieldSides.right}
-                        value={fuelWeight?.toString(1)}
-                        nullValue="---.-"
-                        min={35.0}
-                        max={80.0}
-                        color={fuelWeight === undefined ? lineColors.white : lineColors.cyan}
-                        size={fuelWeight === undefined ? lineSizes.small : lineSizes.regular}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setFuelWeight(undefined);
-                            } else {
-                                setFuelWeight(+value);
-                            }
-                            clearScratchpad();
-                        }}
-                    />
-                )}
-                rightSide={(
-                    <SplitNumberField
-                        side={fieldSides.right}
-                        value={fuelTime?.toFixed(0)}
-                        nullValue="----"
-                        min={0}
-                        max={9999}
-                        color={fuelTime === undefined ? lineColors.white : lineColors.cyan}
-                        size={lineSizes.regular}
-                        selectedCallback={(value) => {
-                            if (value === undefined) {
-                                setFuelTime(undefined);
-                            } else {
-                                setFuelTime(+value);
-                            }
-                            clearScratchpad();
-                        }}
-                    />
-                )}
+                properties={properties}
+                side={lineSides.left}
+                selectedValidation={() => true}
+                selectedCallback={() => true}
             />
-        </LineHolder>
+        </div>
     );
 };
 type gWCGLineProps = {
@@ -377,21 +338,30 @@ const GWCGLine: React.FC<gWCGLineProps> = ({ zfwEntered: zfw }) => {
     const cgVal = zfw ? (cg * 100).toFixed(1) : '--.-';
     const color = zfw ? lineColors.green : lineColors.white;
 
+    const properties: fieldProperties = {
+        lValue: gwVal,
+        lNullValue: '---.-',
+        lColour: color,
+        lSize: lineSizes.small,
+        rValue: cgVal ? ` ${cgVal}` : undefined,
+        rNullValue: '--.-',
+        rColour: color,
+        rSize: lineSizes.small, // Adjust this if the value has been entered and not generated
+    };
     return (
-        <LineHolder>
+        <div className="line-holder-two">
             <LabelField lineSide={lineSides.right} value="GW    CG" color={lineColors.white} />
-            <SplitLine
+            <SplitField
                 side={lineSides.right}
                 slashColor={lineColors.white}
-                leftSide={<Field lineSide={lineSides.right} value={gwVal} color={color} size={lineSizes.small} />}
-                rightSide={<Field lineSide={lineSides.right} value={` ${cgVal}`} color={color} size={lineSizes.small} />}
+                properties={properties}
             />
-        </LineHolder>
+        </div>
     );
 };
 
 type minDestFobLineProps = {
-    zfwEntered: Boolean
+    zfwEntered: boolean
     // Redux
     clearScratchpad: () => any
 }
@@ -401,11 +371,11 @@ type minDestFobLineProps = {
 const MinDestFobLine: React.FC<minDestFobLineProps> = ({ zfwEntered }) => {
     const [minDestFob, setMinDestFob] = useState<string>();
     const [valEntered, setValEntered] = useState(false);
-    const color = minDestFob === undefined ? lineColors.white : lineColors.cyan;
-    const size = valEntered === false ? lineSizes.small : lineSizes.regular;
+    const color = minDestFob ? lineColors.white : lineColors.cyan;
+    const size = valEntered ? lineSizes.regular : lineSizes.small;
 
     return (
-        <LineHolder>
+        <div className="line-holder-one">
             <LabelField lineSide={lineSides.left} value="MIN DEST FOB" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.right}
@@ -414,7 +384,7 @@ const MinDestFobLine: React.FC<minDestFobLineProps> = ({ zfwEntered }) => {
                 min={0}
                 max={80.0}
                 nullValue="---.-"
-                value={minDestFob}
+                defaultValue={minDestFob}
                 color={color}
                 size={size}
                 prevEntered={zfwEntered}
@@ -429,7 +399,7 @@ const MinDestFobLine: React.FC<minDestFobLineProps> = ({ zfwEntered }) => {
                     }
                 })}
             />
-        </LineHolder>
+        </div>
     );
 };
 
@@ -441,16 +411,26 @@ const ExtraLine: React.FC<extraLineProps> = ({ zfwEntered }) => {
     const extraTime = zfwEntered ? '0000' : '---.-';
     const color = zfwEntered ? lineColors.green : lineColors.white;
 
+    const properties: fieldProperties = {
+        lValue: extraFuel,
+        lNullValue: '---.-',
+        lColour: color,
+        lSize: lineSizes.small,
+        rValue: extraTime,
+        rNullValue: '---.-',
+        rColour: color,
+        rSize: lineSizes.small, // Adjust this if the value has been entered and not generated
+    };
+
     return (
-        <LineHolder>
+        <div className="line-holder-two">
             <LabelField lineSide={lineSides.right} value="EXTRA TIME" color={lineColors.white} />
-            <SplitLine
+            <SplitField
                 side={lineSides.right}
                 slashColor={lineColors.white}
-                leftSide={<Field lineSide={lineSides.right} value={extraFuel} color={color} size={lineSizes.small} />}
-                rightSide={<Field lineSide={lineSides.right} value={extraTime} color={color} size={lineSizes.small} />}
+                properties={properties}
             />
-        </LineHolder>
+        </div>
     );
 };
 
@@ -501,45 +481,43 @@ const FuelPredPage: React.FC = () => {
     }, []);
     return (
         <>
-            <Content>
-                <RowHolder index={1}>
-                    <DestICAOLine />
-                    <DestTimeLine />
-                    <DestEFOBLine />
-                </RowHolder>
-                <RowHolder index={2}>
-                    <AltICAOLine />
-                    <AltTimeLine />
-                    <AltEFOBLine />
-                </RowHolder>
-                <RowHolder index={3}>
-                    <RteRsvLine />
-                    <ZfwLine
-                        lsk={LINESELECT_KEYS.R3}
-                        addMessage={addScratchpadMessage}
-                        setScratchpad={setScratchpad}
-                        fmgcZFW={mcduData.zfw}
-                        setFMGCZFW={setZFW}
-                        fmgcZFWCG={mcduData.zfwCG}
-                        setFMGCZFWCG={setZFWCG}
-                        scratchpad={scratchpad}
-                        zeroFuelWeightZFWCGEntered={mcduData.zfwCGEntered}
-                        setZeroFuelWeightZFWCGEntered={setZFWCGEntered}
-                    />
-                </RowHolder>
-                <RowHolder index={4}>
-                    <AltnLine clearScratchpad={clearScratchpad} />
-                    <FobLine zfwEntered={mcduData.zfwCGEntered} />
-                </RowHolder>
-                <RowHolder index={5}>
-                    <FinalLine clearScratchpad={clearScratchpad} />
-                    <GWCGLine zfwEntered={mcduData.zfwCGEntered} />
-                </RowHolder>
-                <RowHolder index={6}>
-                    <MinDestFobLine clearScratchpad={clearScratchpad} zfwEntered={mcduData.zfwCGEntered} />
-                    <ExtraLine zfwEntered={mcduData.zfwCGEntered} />
-                </RowHolder>
-            </Content>
+            <div className="row-holder-three">
+                <DestICAOLine />
+                <DestTimeLine />
+                <DestEFOBLine />
+            </div>
+            <div className="row-holder-three">
+                <AltICAOLine />
+                <AltTimeLine />
+                <AltEFOBLine />
+            </div>
+            <div className="row-holder-two">
+                <RteRsvLine />
+                <ZfwLine
+                    lsk={LINESELECT_KEYS.R3}
+                    addMessage={addScratchpadMessage}
+                    setScratchpad={setScratchpad}
+                    fmgcZFW={mcduData.zfw}
+                    setFMGCZFW={setZFW}
+                    fmgcZFWCG={mcduData.zfwCG}
+                    setFMGCZFWCG={setZFWCG}
+                    scratchpad={scratchpad}
+                    zeroFuelWeightZFWCGEntered={mcduData.zfwCGEntered}
+                    setZeroFuelWeightZFWCGEntered={setZFWCGEntered}
+                />
+            </div>
+            <div className="row-holder-two">
+                <AltnLine />
+                <FobLine zfwEntered={mcduData.zfwCGEntered} />
+            </div>
+            <div className="row-holder-two">
+                <FinalLine />
+                <GWCGLine zfwEntered={mcduData.zfwCGEntered} />
+            </div>
+            <div className="row-holder-two">
+                <MinDestFobLine clearScratchpad={clearScratchpad} zfwEntered={mcduData.zfwCGEntered} />
+                <ExtraLine zfwEntered={mcduData.zfwCGEntered} />
+            </div>
         </>
     );
 };

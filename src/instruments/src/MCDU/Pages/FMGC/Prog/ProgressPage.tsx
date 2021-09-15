@@ -1,22 +1,10 @@
 import React, { useEffect } from 'react';
 
-import { Content } from 'instruments/src/MCDU/Components/Content';
-import { RowHolder } from 'instruments/src/MCDU/Components/RowHolder';
-import { Line, lineColors, lineSides, lineSizes } from 'instruments/src/MCDU/Components/Lines/LineProps';
-import { LabelField } from 'instruments/src/MCDU/Components/Fields/NonInteractive/LabelField';
-import { LineHolder } from 'instruments/src/MCDU/Components/LineHolder';
-import { Field } from 'instruments/src/MCDU/Components/Fields/NonInteractive/Field';
+import { lineColors } from 'instruments/src/MCDU/Components/Lines/LineProps';
 
 import { useSimVar } from 'instruments/src/util';
 import { useMCDUDispatch } from 'instruments/src/MCDU/redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
-
-const FlightCruise: React.FC = () => (
-    <LineHolder>
-        <LabelField lineSide={lineSides.left} value={'\xa0CRZ\xa0'} color={lineColors.white} />
-        <Field lineSide={lineSides.left} value="-----" color={lineColors.white} size={lineSizes.regular} />
-    </LineHolder>
-);
 
 /**
  *
@@ -24,6 +12,7 @@ const FlightCruise: React.FC = () => (
  * @see TitleBar
  */
 const ProgressPage: React.FC = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [flightNo, _] = useSimVar('ATC FLIGHT NUMBER', 'string');
     const dispatch = useMCDUDispatch();
     const setTitlebar = (msg: any) => {
@@ -38,16 +27,7 @@ const ProgressPage: React.FC = () => {
     }, []);
     return (
         <>
-            <Content>
-                <RowHolder index={1}>
-                    <FlightCruise />
-                </RowHolder>
-                <RowHolder index={2} />
-                <RowHolder index={3} />
-                <RowHolder index={4} />
-                <RowHolder index={5} />
-                <RowHolder index={6} />
-            </Content>
+
         </>
     );
 };

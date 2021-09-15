@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
 import { mcduState } from '../../../redux/reducers/mcduReducer';
 import { scratchpadState } from '../../../redux/reducers/scratchpadReducer';
-import SplitField from '../../../Components/Fields/NonInteractive/Split/SplitField';
+import SplitField from '../../../Components/Fields/NonInteractive/SplitField';
 import InteractiveSplitField, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
@@ -32,7 +32,7 @@ const TaxiFuelLine: React.FC = () => {
                 lineSide={lineSides.left}
                 min={0}
                 max={9.9}
-                value={taxiVal}
+                defaultValue={taxiVal}
                 nullValue="0.0"
                 color={lineColors.cyan}
                 size={entered ? lineSizes.regular : lineSizes.small}
@@ -47,9 +47,11 @@ const TaxiFuelLine: React.FC = () => {
 const TripWeightLine: React.FC = () => {
     const tripProperties: fieldProperties = {
         lValue: '---.-',
+        lNullValue: '---.-',
         lSize: lineSizes.regular,
         lColour: lineColors.white,
         rValue: '----',
+        rNullValue: '----',
         rSize: lineSizes.regular,
         rColour: lineColors.white,
     };
@@ -80,7 +82,7 @@ const BlockWeightLine: React.FC = () => {
                 lineSide={lineSides.right}
                 min={0}
                 max={80}
-                value={undefined}
+                defaultValue={undefined}
                 nullValue="__._"
                 color={lineColors.amber}
                 size={lineSizes.regular}
@@ -94,9 +96,11 @@ const BlockWeightLine: React.FC = () => {
 const ReserveWeightLine: React.FC = () => {
     const reserveProperties: fieldProperties = {
         lValue: '---.-',
+        lNullValue: '---.-',
         lColour: lineColors.white,
         lSize: lineSizes.regular,
         rValue: '5.0',
+        rNullValue: '5.0',
         rColour: lineColors.cyan,
         rSize: lineSizes.regular,
     };
@@ -118,9 +122,11 @@ const ReserveWeightLine: React.FC = () => {
 const AlternateWeightLine: React.FC = () => {
     const alternateProperties: fieldProperties = {
         lValue: '---.-',
+        lNullValue: '---.-',
         lColour: lineColors.white,
         lSize: lineSizes.regular,
         rValue: '----',
+        rNullValue: '----',
         rColour: lineColors.white,
         rSize: lineSizes.regular,
     };
@@ -142,9 +148,11 @@ const AlternateWeightLine: React.FC = () => {
 const LwTwLine : React.FC = () => {
     const lwTwProperties: fieldProperties = {
         lValue: '---.-',
+        lNullValue: '---.-',
         lSize: lineSizes.regular,
         lColour: lineColors.white,
         rValue: '---.-',
+        rNullValue: '---.-',
         rSize: lineSizes.regular,
         rColour: lineColors.white,
     };
@@ -164,9 +172,11 @@ const LwTwLine : React.FC = () => {
 const FinalWeightCell : React.FC = () => {
     const alternateProperties: fieldProperties = {
         lValue: '---.-',
+        lNullValue: '---.-',
         lColour: lineColors.white,
         lSize: lineSizes.regular,
         rValue: '----',
+        rNullValue: '----',
         rColour: lineColors.white,
         rSize: lineSizes.regular,
     };
@@ -214,7 +224,7 @@ const MinDestFOBLine : React.FC = () => {
             <LabelField lineSide={lineSides.left} value="MIN DEST FOB" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.left}
-                value={undefined}
+                defaultValue={undefined}
                 nullValue="---.-"
                 min={0}
                 max={80}
@@ -230,9 +240,11 @@ const MinDestFOBLine : React.FC = () => {
 const ExtraWeightLine : React.FC = () => {
     const extraWeightProperties: fieldProperties = {
         lValue: '---.-',
+        lNullValue: '---.-',
         lColour: lineColors.white,
         lSize: lineSizes.regular,
         rValue: '----',
+        rNullValue: '----',
         rColour: lineColors.white,
         rSize: lineSizes.regular,
     };

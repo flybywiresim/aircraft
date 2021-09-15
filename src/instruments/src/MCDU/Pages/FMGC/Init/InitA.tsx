@@ -35,13 +35,13 @@ type fromToLineProps = {
     eraseTempFpl: (callback?: () => void) => void
 }
 const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl }) => {
-    const [from, setFrom] = useState(fmgc.flightPlanManager?.getPersistentOrigin().ident)
-    const [to, setTo] = useState(fmgc.flightPlanManager?.getDestination().ident)
+    const [from, setFrom] = useState(fmgc.flightPlanManager?.getPersistentOrigin().ident);
+    const [to, setTo] = useState(fmgc.flightPlanManager?.getDestination().ident);
     const [, setUseFplDecelPoint] = useSimVar('L:FLIGHTPLAN_USE_DECEL_WAYPOINT', 'number');
 
     useEffect(() => {
-        setFrom(fmgc.flightPlanManager?.getPersistentOrigin().ident)
-        setTo(fmgc.flightPlanManager?.getDestination().ident)
+        setFrom(fmgc.flightPlanManager?.getPersistentOrigin().ident);
+        setTo(fmgc.flightPlanManager?.getDestination().ident);
     }, [fmgc.flightPlanManager]);
 
     const setNewValue = (value: string | undefined) => {
@@ -145,7 +145,7 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
                 nullValue="----|----------"
                 color={value !== undefined ? lineColors.cyan : lineColors.amber}
                 lsk={LINESELECT_KEYS.L2}
-                selectedCallback={(value) => setNewValue(undefined)}
+                selectedCallback={(value) => setNewValue(value)}
                 selectedValidation={((value) => validateEntry(value))}
                 size={lineSizes.regular}
             />
@@ -219,7 +219,7 @@ const CostIndexLine: React.FC = () => {
             <LabelField lineSide={lineSides.left} value="COST INDEX" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.left}
-                value={costIndex !== undefined ? parseInt(costIndex).toFixed(0) : undefined}
+                defaultValue={costIndex ? parseInt(costIndex).toFixed(0) : undefined}
                 nullValue="___"
                 min={100}
                 max={999}
@@ -248,31 +248,25 @@ const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ scratchpad, addMessage }) =
     const [temp, setTemp] = useState<string>();
     const [cruiseEntered, setCruiseEntered] = useState(false);
     const properties: fieldProperties = {
-        lValue: flString === undefined ? '-----\xa0' : `FL${flString}\xa0`,
+        lValue: flString ? `FL${flString}\xa0` : undefined,
+        lNullValue: '-----\xa0',
         lColour: flString !== undefined ? lineColors.cyan : lineColors.amber,
         lSize: lineSizes.regular,
-        rValue: temp !== undefined ? `${temp}°` : '---°',
+        rValue: temp ? `${temp}°` : undefined,
+        rNullValue: '---°',
         rColour: lineColors.inop,
         rSize: lineSizes.regular,
     };
     const validateCruiseFL = (fl: number) => {
         if (!Number.isFinite(fl)) {
-            addMessage({
-                text: 'FORMAT ERROR',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.formatError);
             return false;
         }
         if (fl >= 1000) {
             fl = Math.floor(fl / 100);
         }
         if (fl <= 0 || fl > maxCruiseFL) {
-            addMessage({
-                text: 'ENTRY OUT OF RANGE',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         setCruiseEntered(true); // This is only done here so both values can be entered at once
@@ -284,25 +278,13 @@ const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ scratchpad, addMessage }) =
                 if (temp > 270 && temp < 100) {
                     return true;
                 }
-                addMessage({
-                    text: 'ENTRY OUT OF RANGE',
-                    isAmber: false,
-                    isTypeTwo: false,
-                });
+                addMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
-            addMessage({
-                text: 'FORMAT ERROR',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.formatError);
             return false;
         }
-        addMessage({
-            text: 'NOT ALLOWED',
-            isAmber: false,
-            isTypeTwo: false,
-        });
+        addMessage(NXSystemMessages.notAllowed);
         return false;
     };
     const validateEntry = (lVal: string, rVal: string) => {
@@ -368,7 +350,7 @@ const TropoLine: React.FC = () => {
             <LabelField lineSide={lineSides.right} value="TROPO" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.right}
-                value={tropo}
+                defaultValue={tropo}
                 nullValue="36090"
                 max={60000}
                 min={0}

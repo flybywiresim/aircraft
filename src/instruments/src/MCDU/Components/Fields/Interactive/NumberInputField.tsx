@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
+import { NXSystemMessages } from '@fmgc/lib/NXSystemMessages';
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 
@@ -7,10 +9,9 @@ import { useInteractionEvent } from '../../../../Common/hooks';
 import { lineColors, lineSides, lineSizes } from '../../Lines/LineProps';
 import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
-import { scratchpadMessage } from '../../../redux/reducers/scratchpadReducer';
 
 type NumberFieldProps = {
-    value: string | undefined,
+    defaultValue: string | undefined,
     nullValue: string,
     min: number,
     max: number,
@@ -20,11 +21,11 @@ type NumberFieldProps = {
     size: lineSizes,
     selectedCallback: (value?: string) => any,
     lsk: LINESELECT_KEYS,
-    prevEntered?: Boolean,
+    prevEntered?: boolean,
 }
 const NumberInputField: React.FC<NumberFieldProps> = (
     {
-        value,
+        defaultValue,
         nullValue,
         min,
         max,
@@ -38,21 +39,21 @@ const NumberInputField: React.FC<NumberFieldProps> = (
     },
 ) => {
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
+    const [value, setValue] = useState<string | undefined>(defaultValue);
     const dispatch = useMCDUDispatch();
-    const addMessage = (msg: scratchpadMessage) => {
+    const addMessage = (msg: ScratchpadMessage) => {
         dispatch(scratchpadActions.addScratchpadMessage(msg));
     };
     const clearScratchpad = () => {
         dispatch(scratchpadActions.clearScratchpad());
     };
+
+    useEffect(() => setValue(defaultValue), [defaultValue]);
+
     const valueIsInRange = (val: number) => min <= val && val <= max;
     const validateEntry = (val: string) => {
         if (prevEntered !== undefined && !prevEntered) {
-            addMessage({
-                text: 'NOT ALLOWED',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.notAllowed);
             return false;
         }
         const newVal = parseFloat(val);
@@ -60,18 +61,10 @@ const NumberInputField: React.FC<NumberFieldProps> = (
             if (valueIsInRange(newVal)) {
                 return true;
             }
-            addMessage({
-                text: 'ENTRY OUT OF RANGE',
-                isAmber: false,
-                isTypeTwo: false,
-            });
+            addMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        addMessage({
-            text: 'FORMAT ERROR',
-            isAmber: false,
-            isTypeTwo: false,
-        });
+        addMessage(NXSystemMessages.formatError);
         return false;
     };
 
@@ -89,7 +82,7 @@ const NumberInputField: React.FC<NumberFieldProps> = (
 
     return (
         <p className={lineSide}>
-            <span className={`${color} ${fieldSide} ${size}`}>{value === undefined ? nullValue : value}</span>
+            <span className={`${color} ${fieldSide} ${size}`}>{value ?? nullValue}</span>
         </p>
     );
 };

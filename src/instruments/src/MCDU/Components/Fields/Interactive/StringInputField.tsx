@@ -36,7 +36,7 @@ const StringInputField: React.FC<StringFieldProps> = (
     const scratchpad = useMCDUSelector((state) => state.scratchpad);
     const dispatch = useMCDUDispatch();
 
-    useEffect(() => setValue(defaultValue), [defaultValue])
+    useEffect(() => setValue(defaultValue), [defaultValue]);
 
     const clearScratchpad = () => {
         dispatch(scratchpadActions.clearScratchpad());
