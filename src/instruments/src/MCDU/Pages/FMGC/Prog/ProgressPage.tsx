@@ -8,7 +8,7 @@ import * as titlebarActions from '../../../redux/actions/titlebarActionCreators'
 
 /**
  *
- * @deprecated
+ * @deprecated Need to allow titlebar to have multiple columns
  * @see TitleBar
  */
 const ProgressPage: React.FC = () => {
