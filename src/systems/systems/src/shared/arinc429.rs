@@ -11,6 +11,20 @@ impl<T: Copy> Arinc429Word<T> {
         self.value
     }
 
+    /// Returns the value when the SSM indicates normal operation and panics otherwise.
+    ///
+    /// Use this function in unit tests when you expect the value to represent a normal operation value.
+    /// Prefer using functions to determine the SSM over using this function when outside of unit tests.
+    pub fn unwrap(&self) -> T {
+        if !self.is_normal() {
+            panic!(
+                "Unwrapped an ARINC 429 value while the SSM does not indicate normal operation."
+            );
+        }
+
+        self.value
+    }
+
     pub fn ssm(&self) -> SignStatus {
         self.ssm
     }
