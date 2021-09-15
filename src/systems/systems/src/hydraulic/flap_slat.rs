@@ -19,6 +19,9 @@ pub struct FlapSlatHydraulicMotor {
     total_volume_returned_to_reservoir: Volume,
 }
 impl FlapSlatHydraulicMotor {
+    // Simulates rpm transients.
+    const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT_S: f64 = 0.5;
+
     fn new(displacement: Volume) -> Self {
         Self {
             speed: AngularVelocity::new::<radian_per_second>(0.),
@@ -30,7 +33,18 @@ impl FlapSlatHydraulicMotor {
     }
 
     fn update_speed(&mut self, speed: AngularVelocity, context: &UpdateContext) {
-        self.speed = speed;
+        // Low pass filter to simulate motors spool up and down. Will ease pressure impact on transients
+        self.speed = self.speed
+            + (speed - self.speed)
+                * (1.
+                    - std::f64::consts::E.powf(
+                        -context.delta_as_secs_f64() / Self::LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT_S,
+                    ));
+
+        if self.speed.get::<revolution_per_minute>() < 20. {
+            self.speed = AngularVelocity::new::<revolution_per_minute>(0.);
+        }
+
         self.current_flow = VolumeRate::new::<gallon_per_minute>(
             self.speed.get::<revolution_per_minute>() * self.displacement.get::<cubic_inch>()
                 / 231.,
@@ -44,7 +58,7 @@ impl FlapSlatHydraulicMotor {
         0.113 * pressure.get::<psi>() * self.displacement.get::<cubic_inch>() / 6.28
     }
 
-    fn _reset_accumulators(&mut self) {
+    fn reset_accumulators(&mut self) {
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
         self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
     }
@@ -245,18 +259,19 @@ impl FlapSlatAssembly {
 
     // Reset of accumulators will be moved to Actuator trait in other hydraulic overhaul PR
     pub fn reset_left_accumulators(&mut self) {
-        self.left_motor._reset_accumulators();
+        self.left_motor.reset_accumulators();
     }
 
     pub fn reset_right_accumulators(&mut self) {
-        self.left_motor._reset_accumulators();
+        self.right_motor.reset_accumulators();
     }
 }
 impl SimulationElement for FlapSlatAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.position_id,
-            self.position_feedback() / self.max_synchro_gear_position,
+            self.position_feedback().get::<degree>()
+                / self.max_synchro_gear_position.get::<degree>(),
         );
     }
 }
@@ -310,7 +325,7 @@ mod tests {
             Angle::new::<degree>(150.),
             Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
             Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-            &context(Duration::from_millis(100)),
+            &context(Duration::from_millis(2000)),
         );
 
         assert!(flap_system.current_speed.get::<radian_per_second>() >= 0.39);
@@ -354,7 +369,7 @@ mod tests {
             Angle::new::<degree>(150.),
             Pressure::new::<psi>(0.),
             Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-            &context(Duration::from_millis(100)),
+            &context(Duration::from_millis(2000)),
         );
 
         assert!(flap_system.left_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
@@ -388,7 +403,7 @@ mod tests {
             Angle::new::<degree>(150.),
             Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
             Pressure::new::<psi>(0.),
-            &context(Duration::from_millis(100)),
+            &context(Duration::from_millis(2000)),
         );
 
         assert!(flap_system.right_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
@@ -441,10 +456,11 @@ mod tests {
 
             last_position = flap_system.position_feedback();
             println!(
-                "Time: {:.1}s  -> Position {:.1}/150 speed{:.3}",
+                "Time: {:.1}s  -> Position {:.1}/150 speed{:.3} RightMotor rpm {:.0}",
                 time.as_secs_f64(),
                 last_position.get::<degree>(),
-                flap_system.current_speed.get::<radian_per_second>()
+                flap_system.current_speed.get::<radian_per_second>(),
+                flap_system.right_motor.speed.get::<revolution_per_minute>()
             );
             time += Duration::from_millis(100);
         }
