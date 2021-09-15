@@ -111,7 +111,9 @@ impl FlapSlatAssembly {
         context: &UpdateContext,
     ) {
         //limiting input value
-        let synchro_gear_angle_request = synchro_gear_angle_request.max(Angle::new::<radian>(0.)).min(self.max_synchro_gear_position);
+        let synchro_gear_angle_request = synchro_gear_angle_request
+            .max(Angle::new::<radian>(0.))
+            .min(self.max_synchro_gear_position);
 
         self.update_current_max_speed(synchro_gear_angle_request, left_pressure, right_pressure);
 
@@ -229,12 +231,21 @@ impl FlapSlatAssembly {
         self.synchro_gear_position
     }
 
-    pub fn left_motor(&mut self) -> &FlapSlatHydraulicMotor {
+    pub fn left_motor(&mut self) -> &impl Actuator {
         &self.left_motor
     }
 
-    pub fn right_motor(&mut self) -> &FlapSlatHydraulicMotor {
+    pub fn right_motor(&mut self) -> &impl Actuator {
         &self.right_motor
+    }
+
+    // Reset of accumulators will be moved to Actuator trait in other hydraulic overhaul PR
+    pub fn reset_left_accumulators(&mut self) {
+        self.left_motor._reset_accumulators();
+    }
+
+    pub fn reset_right_accumulators(&mut self) {
+        self.left_motor._reset_accumulators();
     }
 }
 
@@ -261,15 +272,11 @@ mod tests {
         );
 
         assert!(flap_system.position_feedback().get::<degree>() == 0.);
-        assert!(flap_system.left_motor().current_flow == VolumeRate::new::<gallon_per_minute>(0.));
-        assert!(flap_system.right_motor().current_flow == VolumeRate::new::<gallon_per_minute>(0.));
+        assert!(flap_system.left_motor.current_flow == VolumeRate::new::<gallon_per_minute>(0.));
+        assert!(flap_system.right_motor.current_flow == VolumeRate::new::<gallon_per_minute>(0.));
 
-        assert!(
-            flap_system.left_motor().speed == AngularVelocity::new::<revolution_per_minute>(0.)
-        );
-        assert!(
-            flap_system.right_motor().speed == AngularVelocity::new::<revolution_per_minute>(0.)
-        );
+        assert!(flap_system.left_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
+        assert!(flap_system.right_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
     }
 
     #[test]
@@ -296,23 +303,23 @@ mod tests {
         assert!(flap_system.current_speed.get::<radian_per_second>() <= 0.41);
 
         assert!(
-            flap_system.left_motor().speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
-                && flap_system.left_motor().speed
+            flap_system.left_motor.speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
+                && flap_system.left_motor.speed
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
         assert!(
-            flap_system.right_motor().speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
-                && flap_system.right_motor().speed
+            flap_system.right_motor.speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
+                && flap_system.right_motor.speed
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
         assert!(
-            flap_system.left_motor()._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
-                && flap_system.left_motor()._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+            flap_system.left_motor._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.left_motor._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
         );
         assert!(
-            flap_system.right_motor()._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
-                && flap_system.right_motor()._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+            flap_system.right_motor._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.right_motor._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
         );
     }
 
@@ -335,19 +342,17 @@ mod tests {
             &context(Duration::from_millis(100)),
         );
 
+        assert!(flap_system.left_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
         assert!(
-            flap_system.left_motor().speed == AngularVelocity::new::<revolution_per_minute>(0.)
-        );
-        assert!(
-            flap_system.right_motor().speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
-                && flap_system.right_motor().speed
+            flap_system.right_motor.speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
+                && flap_system.right_motor.speed
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
-        assert!(flap_system.left_motor()._flow() == VolumeRate::new::<gallon_per_minute>(0.));
+        assert!(flap_system.left_motor._flow() == VolumeRate::new::<gallon_per_minute>(0.));
         assert!(
-            flap_system.right_motor()._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
-                && flap_system.right_motor()._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+            flap_system.right_motor._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.right_motor._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
         );
     }
 
@@ -370,19 +375,17 @@ mod tests {
             &context(Duration::from_millis(100)),
         );
 
+        assert!(flap_system.right_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
         assert!(
-            flap_system.right_motor().speed == AngularVelocity::new::<revolution_per_minute>(0.)
-        );
-        assert!(
-            flap_system.left_motor().speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
-                && flap_system.left_motor().speed
+            flap_system.left_motor.speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
+                && flap_system.left_motor.speed
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
-        assert!(flap_system.right_motor()._flow() == VolumeRate::new::<gallon_per_minute>(0.));
+        assert!(flap_system.right_motor._flow() == VolumeRate::new::<gallon_per_minute>(0.));
         assert!(
-            flap_system.left_motor()._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
-                && flap_system.left_motor()._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+            flap_system.left_motor._flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.left_motor._flow() <= VolumeRate::new::<gallon_per_minute>(8.)
         );
     }
 
