@@ -45,8 +45,6 @@ export class ManagedFlightPlan {
     /** Whether or not the flight plan has a destination airfield. */
     public destinationAirfield?: WayPoint;
 
-    public destinationAirfieldIndex?: number;
-
     /** The cruise altitude for this flight plan. */
     public cruiseAltitude = 0;
 
@@ -142,8 +140,16 @@ export class ManagedFlightPlan {
         }
 
         const bearingInFp = Avionics.Utils.computeGreatCircleHeading(ppos, this.activeWaypoint.infos.coordinates);
-        // TODO redo when we have a better solution for vector legs
-        const distanceFromPpos = (this.activeWaypoint.isVectors) ? 1 : Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
+
+        let distanceFromPpos;
+        if (Number.isNaN(ppos.lat) || Number.isNaN(ppos.long)) {
+            distanceFromPpos = this.activeWaypoint.distanceInFP;
+        } else if (this.activeWaypoint.isVectors) {
+            // TODO redo when we have a better solution for vector legs
+            distanceFromPpos = 1;
+        } else {
+            distanceFromPpos = Avionics.Utils.computeGreatCircleDistance(ppos, this.activeWaypoint.infos.coordinates);
+        }
         const timeFromPpos = this.computeWaypointTime(distanceFromPpos);
         const etaFromPpos = this.computeWaypointEta(distanceFromPpos, timeFromPpos);
 
@@ -451,7 +457,8 @@ export class ManagedFlightPlan {
             beforeRemoved.discontinuityCanBeCleared = true;
         }
 
-        if (index < this.activeWaypointIndex) {
+        // if (index < this.activeWaypointIndex) {
+        if (this.activeWaypointIndex === this.waypoints.length) {
             this.activeWaypointIndex--;
         }
     }
@@ -577,7 +584,7 @@ export class ManagedFlightPlan {
                 const trueCourseToWaypoint = Avionics.Utils.computeGreatCircleHeading(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
                 referenceWaypoint.bearingInFP = trueCourseToWaypoint - GeoMath.getMagvar(prevWaypoint.infos.coordinates.lat, prevWaypoint.infos.coordinates.long);
                 referenceWaypoint.bearingInFP = referenceWaypoint.bearingInFP < 0 ? 360 + referenceWaypoint.bearingInFP : referenceWaypoint.bearingInFP;
-                if (prevWaypoint.endsInDiscontinuity) {
+                if (prevWaypoint.endsInDiscontinuity && !prevWaypoint.discontinuityCanBeCleared) {
                     referenceWaypoint.distanceInFP = 0;
                 } else if (referenceWaypoint.additionalData) {
                     switch (referenceWaypoint.additionalData.legType) {
@@ -648,7 +655,7 @@ export class ManagedFlightPlan {
         planCopy.activeWaypointIndex = this.activeWaypointIndex;
         planCopy.destinationAirfield = this.destinationAirfield && copyAirfield(this.destinationAirfield);
         planCopy.originAirfield = this.originAirfield && copyAirfield(this.originAirfield);
-        // planCopy.persistentOriginAirfield = this.persistentOriginAirfield && copyAirfield(this.persistentOriginAirfield);
+        planCopy.persistentOriginAirfield = this.persistentOriginAirfield && copyAirfield(this.persistentOriginAirfield);
 
         planCopy.procedureDetails = { ...this.procedureDetails };
         planCopy.directTo = { ...this.directTo };
