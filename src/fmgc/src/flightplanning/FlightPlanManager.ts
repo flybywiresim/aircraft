@@ -469,11 +469,26 @@ export class FlightPlanManager {
     }
 
     /**
+     * Gets the index of the destination airfield in the current flight plan, if any
+     * @param flightPlanIndex flight plan index
+     * @returns Index of destination
+     */
+    public getDestinationIndex(flightPlanIndex = NaN): number {
+        if (this.getDestination(flightPlanIndex)) {
+            return this.getWaypointsCount(flightPlanIndex) - 1;
+        }
+        return -1;
+    }
+
+    /**
      * Gets the currently selected departure information for the current flight plan.
      */
-    public getDeparture(): WayPoint | undefined {
+    public getDeparture(flightPlanIndex = NaN): WayPoint | undefined {
         const origin = this.getOrigin();
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        if (isNaN(flightPlanIndex)) {
+            flightPlanIndex = this._currentFlightPlanIndex;
+        }
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
 
         if (origin) {
             const originInfos = origin.infos as AirportInfo;
@@ -664,17 +679,16 @@ export class FlightPlanManager {
     public async setDestination(icao: string, callback = () => { }): Promise<void> {
         const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        const destinationIndex = currentFlightPlan.length - 1;
 
         if (currentFlightPlan.hasDestination) {
-            currentFlightPlan.removeWaypoint(currentFlightPlan.length - 1);
+            currentFlightPlan.removeWaypoint(destinationIndex);
         }
-
         currentFlightPlan.addWaypoint(waypoint);
 
         // make the waypoint before a discontinuity
         const { waypoints } = currentFlightPlan;
-        const destinationIndex = currentFlightPlan.destinationAirfieldIndex;
-        if (waypoints.length > 0 && destinationIndex && destinationIndex > 0) {
+        if (waypoints.length > 0 && destinationIndex > 0) {
             const previous = currentFlightPlan.waypoints[destinationIndex - 1];
             // ensure we do not overwrite a possible discontinuityCanBeCleared
             if (!previous.endsInDiscontinuity) {
