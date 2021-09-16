@@ -95,6 +95,7 @@ impl Pid {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ntest::assert_about_eq;
 
     #[test]
     fn pid_init() {
@@ -106,7 +107,7 @@ mod tests {
     #[test]
     fn proportional() {
         let mut pid = Pid::new(2.0, 0.0, 0.0, 0.0, 100.0, 10.0);
-        assert!((pid.setpoint - 10.).abs() < f64::EPSILON);
+        assert_about_eq!(pid.setpoint, 10.);
 
         // Test simple proportional
         assert!((pid.next_control_output(0.0, None) - 20.).abs() < f64::EPSILON);
@@ -117,15 +118,15 @@ mod tests {
         let mut pid = Pid::new(0.0, 0.0, 2.0, -100.0, 100., 10.0);
 
         // No derivative term for first two updates
-        assert!((pid.next_control_output(0.0, None) - 0.).abs() < f64::EPSILON);
-        assert!((pid.next_control_output(0.0, None) - 0.).abs() < f64::EPSILON);
+        assert_about_eq!(pid.next_control_output(0.0, None), 0.);
+        assert_about_eq!(pid.next_control_output(0.0, None), 0.);
 
         // Test that there's a derivative at 3rd update
-        assert!((pid.next_control_output(5.0, None) - -10.).abs() < f64::EPSILON);
+        assert_about_eq!(pid.next_control_output(5.0, None), -10.);
 
         // Then no more derivative term
-        assert!((pid.next_control_output(5.0, None) - 0.).abs() < f64::EPSILON);
-        assert!((pid.next_control_output(5.0, None) - 0.).abs() < f64::EPSILON);
+        assert_about_eq!(pid.next_control_output(5.0, None), 0.);
+        assert_about_eq!(pid.next_control_output(5.0, None), 0.);
     }
 
     #[test]
@@ -133,14 +134,14 @@ mod tests {
         let mut pid = Pid::new(0.0, 2.0, 0.0, 0., 100.0, 10.0);
 
         // Test basic integration
-        assert!((pid.next_control_output(0.0, None) - 20.).abs() < f64::EPSILON);
-        assert!((pid.next_control_output(0.0, None) - 40.).abs() < f64::EPSILON);
-        assert!((pid.next_control_output(5.0, None) - 50.).abs() < f64::EPSILON);
+        assert_about_eq!(pid.next_control_output(0.0, None), 20.);
+        assert_about_eq!(pid.next_control_output(0.0, None), 40.);
+        assert_about_eq!(pid.next_control_output(5.0, None), 50.);
 
         // Test that error integral accumulates negative values
         let mut pid2 = Pid::new(0.0, 2.0, 0.0, -100., 100.0, -10.0);
-        assert!((pid2.next_control_output(0.0, None) - -20.).abs() < f64::EPSILON);
-        assert!((pid2.next_control_output(0.0, None) - -40.).abs() < f64::EPSILON);
+        assert_about_eq!(pid2.next_control_output(0.0, None), -20.);
+        assert_about_eq!(pid2.next_control_output(0.0, None), -40.);
     }
 
     #[test]
@@ -152,7 +153,7 @@ mod tests {
 
         let out = pid.next_control_output(20.0, None);
 
-        assert!((out - -1.).abs() < f64::EPSILON);
+        assert_about_eq!(out, -1.);
     }
 
     #[test]
@@ -160,15 +161,15 @@ mod tests {
         let mut pid = Pid::new(1.0, 0.1, 1.0, -100.0, 100.0, 10.0);
 
         let out = pid.next_control_output(0.0, None);
-        assert!((out - 11.).abs() < f64::EPSILON);
+        assert_about_eq!(out, 11.);
 
         let out = pid.next_control_output(5.0, None);
-        assert!((out - 6.5).abs() < f64::EPSILON);
+        assert_about_eq!(out, 6.5);
 
         let out = pid.next_control_output(11.0, None);
-        assert!((out - -0.6).abs() < f64::EPSILON);
+        assert_about_eq!(out, -0.6);
 
         let out = pid.next_control_output(10.0, None);
-        assert!((out - 7.4).abs() < f64::EPSILON);
+        assert_about_eq!(out, 7.4);
     }
 }
