@@ -365,6 +365,7 @@ impl TestGenerator {
         }
     }
 
+    #[cfg(test)]
     fn from_gcu(gcu: &impl GeneratorControlUnitInterface) -> Self {
         let mut g = TestGenerator {
             speed: gcu.hydraulic_motor_speed(),
@@ -401,6 +402,11 @@ impl EmergencyGeneratorInterface for TestGenerator {
     }
     fn resistant_torque(&self) -> Torque {
         self.resistant_torque_from_power_gen
+    }
+}
+impl Default for TestGenerator {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -447,6 +453,8 @@ impl GeneratorControlUnitInterface for TestGeneratorControlUnit {
         self.current_speed
     }
 }
+
+#[cfg(test)]
 mod tests {
     // use crate::shared::LgciuGearExtension;
     //use crate::simulation::UpdateContext;
@@ -587,7 +595,7 @@ mod tests {
 
             time += timestep;
 
-            if time >= 3.0 && time <= 3.5 {
+            if (3.0..=3.5).contains(&time) {
                 // Check we reached a relevant speed threshold after 3s
                 assert!(
                     emergency_gen.hyd_motor.speed

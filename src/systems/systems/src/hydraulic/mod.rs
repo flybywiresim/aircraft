@@ -910,7 +910,7 @@ impl WindTurbine {
             pump_torque += (self.position * 4.).cos() * displacement.max(0.35) * 35.;
             pump_torque += -self.speed * 15.;
         } else {
-            pump_torque -= pressure.get::<psi>() * displacement / (2. * 3.14)
+            pump_torque -= pressure.get::<psi>() * displacement / (2. * std::f64::consts::PI)
         }
         pump_torque -= self.speed * 0.05;
         // Static air drag of the propeller

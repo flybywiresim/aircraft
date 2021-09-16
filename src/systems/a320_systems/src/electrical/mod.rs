@@ -428,7 +428,7 @@ mod a320_electrical_circuit_tests {
     };
 
     use uom::si::{
-        angular_velocity::revolution_per_minute, electric_potential::volt, f64::*, length::foot,
+        angular_velocity::revolution_per_minute, electric_potential::volt, length::foot,
         power::watt, ratio::percent, ratio::ratio, velocity::knot,
     };
 
