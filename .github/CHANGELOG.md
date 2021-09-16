@@ -12,6 +12,7 @@
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
 1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+1. [ARCH] Support ARINC 429 communication between aircraft components - @davidwalschots (David Walschots)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
@@ -192,7 +193,6 @@
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
 1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
-1. [ARCH] Support ARINC 429 communication between aircraft components - @davidwalschots (David Walschots)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
