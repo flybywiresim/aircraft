@@ -499,7 +499,7 @@ impl A320Hydraulic {
         emergency_elec_state: &impl EmergencyElectricalState,
         lgciu1: &impl LgciuInterface,
     ) {
-        self.gcu.update_gcu_control(
+        self.gcu.update(
             self.emergency_gen.speed(),
             self.blue_loop.pressure(),
             emergency_elec_state,
