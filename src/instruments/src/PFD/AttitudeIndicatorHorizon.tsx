@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Arinc429Word } from '@instruments/common/arinc429';
+import { useUpdate } from '@instruments/common/hooks';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -14,7 +15,6 @@ import { getSimVar } from '../util.js';
 const DisplayRange = 35;
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
-const SideslipIndicatorFilter = new LagFilter(0.8);
 
 const TickFunction = (_: any, offset: number) => (
     <path transform={`translate(${offset} 0)`} className="NormalStroke White" d="m68.906 80.823v1.8" />
@@ -37,10 +37,9 @@ interface HorizonProps {
     selectedHeading: number;
     FDActive: boolean;
     isAttExcessive: boolean;
-    deltaTime: number;
 }
 
-export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive, deltaTime }: HorizonProps) => {
+export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive }: HorizonProps) => {
     if (!pitch.isNormal() || !roll.isNormal()) {
         return null;
     }
@@ -141,7 +140,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
             </g>
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalOutline SkyFill" />
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White" />
-            <SideslipIndicator isOnGround={isOnGround} roll={roll} deltaTime={deltaTime} />
+            <SideslipIndicator isOnGround={isOnGround} roll={roll} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
             {heading.isNormal()
             && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={DisplayRange} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing} heading={heading} />}
@@ -274,24 +273,27 @@ const RadioAltAndDH = ({ radioAlt, decisionHeight, roll }: RadioAltAndDHProps) =
 interface SideslipIndicatorProps {
     isOnGround: boolean;
     roll: Arinc429Word;
-    deltaTime: number;
 }
 
-const SideslipIndicator = ({ isOnGround, roll, deltaTime }: SideslipIndicatorProps) => {
-    let SIIndexOffset = 0;
+const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
+    const [SIIndexOffset, setSIIndexOffset] = useState(0);
+    const [sideslipIndicatorFilter] = useState(() => new LagFilter(0.8));
 
     const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
 
-    if (isOnGround) {
-        // on ground, lateral g is indicated. max 0.3g, max deflection is 15mm
-        const latAcc = getSimVar('ACCELERATION BODY X', 'G Force');
-        const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
-        SIIndexOffset = -accInG * 15 / 0.3;
-    } else {
-        SIIndexOffset = Math.max(Math.min(getSimVar('INCIDENCE BETA', 'degrees'), 15), -15);
-    }
+    useUpdate((deltaTime) => {
+        let offset = 0;
+        if (isOnGround) {
+            // on ground, lateral g is indicated. max 0.3g, max deflection is 15mm
+            const latAcc = getSimVar('ACCELERATION BODY X', 'G Force');
+            const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
+            offset = -accInG * 15 / 0.3;
+        } else {
+            offset = Math.max(Math.min(getSimVar('INCIDENCE BETA', 'degrees'), 15), -15);
+        }
 
-    SIIndexOffset = SideslipIndicatorFilter.step(SIIndexOffset, deltaTime / 1000);
+        setSIIndexOffset(sideslipIndicatorFilter.step(offset, deltaTime / 1000));
+    });
 
     return (
         <g id="RollTriangleGroup" transform={`translate(0 ${verticalOffset})`} className="NormalStroke Yellow CornerRound">

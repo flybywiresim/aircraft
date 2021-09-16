@@ -1,11 +1,10 @@
-import React from 'react';
+import { useUpdate } from '@instruments/common/hooks.js';
+import { useSimVar } from '@instruments/common/simVars.js';
+import React, { useState } from 'react';
 import { getSimVar } from '../util.js';
 import { LagFilter } from './PFDUtils';
 
-const filterLocalizerIndicator = new LagFilter(1.5);
-const filterGlideslopeIndicator = new LagFilter(1.5);
-
-export function LandingSystem({ LSButtonPressed, deltaTime }) {
+export function LandingSystem({ LSButtonPressed }) {
     let showVDev = false;
 
     if (!LSButtonPressed) {
@@ -17,8 +16,8 @@ export function LandingSystem({ LSButtonPressed, deltaTime }) {
             <LandingSystemInfo displayed={LSButtonPressed} />
             {LSButtonPressed && (
                 <g id="LSGroup">
-                    <LocalizerIndicator deltaTime={deltaTime} />
-                    <GlideslopeIndicator deltaTime={deltaTime} />
+                    <LocalizerIndicator />
+                    <GlideslopeIndicator />
                     <MarkerBeaconIndicator />
                 </g>
             )}
@@ -80,25 +79,34 @@ const LandingSystemInfo = ({ displayed }) => {
     );
 };
 
-const LocalizerIndicator = ({ deltaTime }) => {
-    const hasLoc = getSimVar('NAV HAS LOCALIZER:3', 'Bool');
+const LocalizerIndicator = () => {
+    const [hasLoc] = useSimVar('NAV HAS LOCALIZER:3', 'Bool', 250);
+    const [radialError] = useSimVar('NAV RADIAL ERROR:3', 'degrees', 250);
+    const [filterLocalizerIndicator] = useState(() => new LagFilter(1.5));
+    const [diamond, setDiamond] = useState<JSX.Element | null>(null);
 
-    let diamond: JSX.Element | null = null;
+    useUpdate((deltaTime) => {
+        if (hasLoc) {
+            const deviation = filterLocalizerIndicator.step(radialError, deltaTime / 1000);
+            const dots = deviation / 0.8;
 
-    if (hasLoc) {
-        const deviation = filterLocalizerIndicator.step(getSimVar('NAV RADIAL ERROR:3', 'degrees'), deltaTime / 1000);
-        const dots = deviation / 0.8;
-
-        if (dots > 2) {
-            diamond = <path id="LocDiamondRight" className="NormalStroke Magenta" d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198" />;
-        } else if (dots < -2) {
-            diamond = <path id="LocDiamondLeft" className="NormalStroke Magenta" d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198" />;
+            if (dots > 2) {
+                setDiamond(<path id="LocDiamondRight" className="NormalStroke Magenta" d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198" />);
+            } else if (dots < -2) {
+                setDiamond(<path id="LocDiamondLeft" className="NormalStroke Magenta" d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198" />);
+            } else {
+                setDiamond(<path
+                    id="LocDiamond"
+                    className="NormalStroke Magenta"
+                    transform={`translate(${dots * 30.221 / 2} 0)`}
+                    d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
+                />);
+            }
         } else {
-            diamond = <path id="LocDiamond" className="NormalStroke Magenta" transform={`translate(${dots * 30.221 / 2} 0)`} d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z" />;
+            setDiamond(null);
+            filterLocalizerIndicator.reset();
         }
-    } else {
-        filterLocalizerIndicator.reset();
-    }
+    });
 
     return (
         <g id="LocalizerSymbolsGroup">
@@ -112,26 +120,34 @@ const LocalizerIndicator = ({ deltaTime }) => {
     );
 };
 
-const GlideslopeIndicator = ({ deltaTime }) => {
-    const hasGlideslope = getSimVar('NAV HAS GLIDE SLOPE:3', 'Bool');
+const GlideslopeIndicator = () => {
+    const [hasGlideslope] = useSimVar('NAV HAS GLIDE SLOPE:3', 'Bool', 250);
+    const [glideSlopeError] = useSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees', 250);
+    const [filterGlideslopeIndicator] = useState(() => new LagFilter(1.5));
+    const [diamond, setDiamond] = useState<JSX.Element | null>(null);
 
-    let diamond: JSX.Element | null = null;
+    useUpdate((deltaTime) => {
+        if (hasGlideslope) {
+            const deviation = filterGlideslopeIndicator.step(glideSlopeError, deltaTime / 1000);
+            const dots = deviation / 0.4;
 
-    if (hasGlideslope) {
-        const deviation = filterGlideslopeIndicator.step(getSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees'), deltaTime / 1000);
-        const dots = deviation / 0.4;
-
-        if (dots > 2) {
-            diamond = <path id="GlideSlopeDiamondLower" className="NormalStroke Magenta" d="m107.19 111.06 2.5184 3.7798 2.5184-3.7798" />;
-        } else if (dots < -2) {
-            diamond = <path id="GlideSlopeDiamondUpper" className="NormalStroke Magenta" d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798" />;
+            if (dots > 2) {
+                setDiamond(<path id="GlideSlopeDiamondLower" className="NormalStroke Magenta" d="m107.19 111.06 2.5184 3.7798 2.5184-3.7798" />);
+            } else if (dots < -2) {
+                setDiamond(<path id="GlideSlopeDiamondUpper" className="NormalStroke Magenta" d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798" />);
+            } else {
+                setDiamond(<path
+                    id="GlideSlopeDiamond"
+                    className="NormalStroke Magenta"
+                    transform={`translate(0 ${dots * 30.238 / 2})`}
+                    d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z"
+                />);
+            }
         } else {
-            // eslint-disable-next-line max-len
-            diamond = <path id="GlideSlopeDiamond" className="NormalStroke Magenta" transform={`translate(0 ${dots * 30.238 / 2})`} d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z" />;
+            setDiamond(null);
+            filterGlideslopeIndicator.reset();
         }
-    } else {
-        filterGlideslopeIndicator.reset();
-    }
+    });
 
     return (
         <g id="GlideslopeSymbolsGroup">

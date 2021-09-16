@@ -71,7 +71,7 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
                 </g>
                 <path className="Fill Yellow" d="m145.79 80.067h6.0476v1.5119h-6.0476z" />
                 <VSpeedNeedle isAmber={isAmber} yOffset={yOffset} />
-                <VSpeedText yOffset={yOffset} isAmber={isAmber} VSpeed={verticalSpeed} />
+                <VSpeedText yOffset={yOffset} isAmber={isAmber} VSpeed={verticalSpeed.value} />
             </g>
         </g>
     );
