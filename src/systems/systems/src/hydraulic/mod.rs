@@ -332,10 +332,14 @@ impl HydraulicCircuit {
     const RESERVOIR_MAX_VOLUME_GAL: f64 = 10.;
     const TARGET_PRESSURE_PSI: f64 = 3000.;
 
-    // Nitrogen PSI
+    // Nitrogen PSI precharge pressure
     const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
-    // in gallons
+
     const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.264;
+
+    // TODO firevalves are actually powered by a sub-bus (401PP DC ESS)
+    const DEFAULT_FIRE_VALVE_POWERING_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrentEssential;
 
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -375,7 +379,11 @@ impl HydraulicCircuit {
                 None,
                 pump_pressure_switch_lo_hyst,
                 pump_pressure_switch_hi_hyst,
-                Some(FireValve::new(id, &pump_id)),
+                Some(FireValve::new(
+                    id,
+                    &pump_id,
+                    Self::DEFAULT_FIRE_VALVE_POWERING_BUS,
+                )),
                 false,
                 false,
             ));
@@ -910,9 +918,11 @@ impl SimulationElement for Section {
 pub struct FireValve {
     opened_id: String,
     is_opened: bool,
+    bus_type: ElectricalBusType,
+    is_powered: bool,
 }
 impl FireValve {
-    fn new(hyd_loop_id: &str, pump_id: &Option<usize>) -> Self {
+    fn new(hyd_loop_id: &str, pump_id: &Option<usize>, bus_type: ElectricalBusType) -> Self {
         let opened_id: String;
         if pump_id.is_some() {
             opened_id = format!(
@@ -926,11 +936,15 @@ impl FireValve {
         Self {
             opened_id,
             is_opened: true,
+            bus_type,
+            is_powered: false,
         }
     }
 
     fn set_open_state(&mut self, valve_open_command: bool) {
-        self.is_opened = valve_open_command;
+        if self.is_powered {
+            self.is_opened = valve_open_command;
+        }
     }
 
     fn is_opened(&self) -> bool {
@@ -941,7 +955,13 @@ impl SimulationElement for FireValve {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.opened_id, self.is_opened());
     }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        // TODO is actually powered by a sub-bus (401PP DC ESS)
+        self.is_powered = buses.is_powered(self.bus_type);
+    }
 }
+
 pub struct CheckValve {
     current_volume: Volume,
     max_virtual_volume: Volume,
@@ -1797,7 +1817,11 @@ mod tests {
             None,
             Pressure::new::<psi>(1400.),
             Pressure::new::<psi>(2000.),
-            Some(FireValve::new(loop_id, &pump_number)),
+            Some(FireValve::new(
+                loop_id,
+                &pump_number,
+                HydraulicCircuit::DEFAULT_FIRE_VALVE_POWERING_BUS,
+            )),
             false,
             false,
         )
