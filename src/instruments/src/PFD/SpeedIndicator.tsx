@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { VerticalTape, BarberpoleIndicator } from './PFDUtils';
 import { getSimVar } from '../util.js';
 
@@ -228,19 +228,31 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
     );
 };
 
-export const MachNumber = ({ mach, airspeedAcc }) => {
+export const MachNumber = ({ mach }) => {
+    const machPermille = Math.round(mach * 1000);
+    const [showMach, setShowMach] = useState(machPermille > 500);
+
+    useEffect(() => {
+        if (showMach && machPermille < 450) {
+            setShowMach(false);
+        }
+        if (!showMach && machPermille > 500) {
+            setShowMach(true);
+        }
+    }, [showMach, machPermille]);
+
     if (Number.isNaN(mach)) {
         return (
             <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
         );
     }
 
-    if ((airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
+    if (!showMach) {
         return null;
     }
 
     return (
-        <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.4257932" y="136.88908">{`.${Math.round(mach * 1000)}`}</text>
+        <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.4257932" y="136.88908">{`.${machPermille}`}</text>
     );
 };
 
