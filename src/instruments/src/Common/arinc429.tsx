@@ -30,6 +30,13 @@ export class Arinc429Word {
     isNormal() {
         return this.ssm === Arinc429Word.SignStatusMatrix.NormalOperation;
     }
+
+    /**
+     * Returns the value when normal, the supplied default value otherwise.
+     */
+    valueOr(defaultValue: number) {
+        return this.isNormal() ? this.value : defaultValue;
+    }
 }
 
 export const useArinc429Var = (
