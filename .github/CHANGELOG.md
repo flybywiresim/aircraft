@@ -11,6 +11,9 @@
 1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
 1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
+1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
+1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
