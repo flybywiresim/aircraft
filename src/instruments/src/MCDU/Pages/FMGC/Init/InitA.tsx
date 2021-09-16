@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
 import { NXFictionalMessages, NXSystemMessages } from '@fmgc/lib/NXSystemMessages';
-import { mcduState } from 'instruments/src/MCDU/redux/reducers/mcduReducer';
+import { mcduState } from '../../../redux/reducers/mcduReducer';
+import { RowHolder } from '../../../Components/Holders/RowHolder';
 import { useSimVar } from '../../../../Common/simVars';
-import './styles.scss';
+import { LineHolder } from '../../../Components/Holders/LineHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LINESELECT_KEYS } from '../../../Components/Buttons';
@@ -18,7 +19,7 @@ import InteractiveSplitField, { fieldProperties } from '../../../Components/Fiel
 // TODO when FMGS is in place then event and color management to these components
 
 const CoRouteLine: React.FC = () => (
-    <div className="line-holder-one">
+    <LineHolder columnPosition={1}>
         <LabelField lineSide={lineSides.left} value="CO RTE" color={lineColors.white} />
         <Field
             lineSide={lineSides.left}
@@ -26,7 +27,7 @@ const CoRouteLine: React.FC = () => (
             color={lineColors.amber}
             size={lineSizes.regular}
         />
-    </div>
+    </LineHolder>
 );
 
 type fromToLineProps = {
@@ -100,7 +101,7 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl 
         return true;
     };
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value={'FROM/TO\xa0\xa0'} color={lineColors.white} />
             <StringInputField
                 defaultValue={from && to ? `${from}/${to}` : undefined}
@@ -112,7 +113,7 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl 
                 selectedCallback={(value) => setNewValue(value)}
                 selectedValidation={(value) => validateEntry(value)}
             />
-        </div>
+        </LineHolder>
     );
 };
 type altDestLineProps = {
@@ -137,7 +138,7 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
         return true;
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="ALTN/CO RTE" color={lineColors.white} />
             <StringInputField
                 lineSide={lineSides.left}
@@ -149,7 +150,7 @@ const AltDestLine: React.FC<altDestLineProps> = ({ addMessage }) => {
                 selectedValidation={((value) => validateEntry(value))}
                 size={lineSizes.regular}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -180,7 +181,7 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
     };
 
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="FLT NBR" color={lineColors.white} />
             <StringInputField
                 lineSide={lineSides.left}
@@ -192,12 +193,12 @@ const FlightNoLine: React.FC<flightNoLineProps> = ({ addMessage }) => {
                 lsk={LINESELECT_KEYS.L3}
                 selectedValidation={(value) => validateEntry(value)}
             />
-        </div>
+        </LineHolder>
     );
 };
 
 const WindTempLine: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <EmptyLine />
         <LineSelectField
             lineSide={lineSides.right}
@@ -209,13 +210,13 @@ const WindTempLine: React.FC = () => (
             lsk={LINESELECT_KEYS.R4}
             color={lineColors.white}
         />
-    </div>
+    </LineHolder>
 );
 
 const CostIndexLine: React.FC = () => {
     const [costIndex, setCostIndex] = useState<string>(); // Temp until FMGC in-place
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="COST INDEX" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.left}
@@ -234,7 +235,7 @@ const CostIndexLine: React.FC = () => {
                 }}
                 size={lineSizes.regular}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -321,7 +322,7 @@ const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ scratchpad, addMessage }) =
         }
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="CRZ FL/TEMP" color={lineColors.white} />
             <InteractiveSplitField
                 side={lineSides.left}
@@ -331,22 +332,22 @@ const CruiseFLTemp: React.FC<cruiseFLTempProps> = ({ scratchpad, addMessage }) =
                 selectedValidation={(lVal, rVal) => validateEntry(lVal, rVal)}
                 selectedCallback={(lVal, rVal) => updateFMGC(lVal, rVal)}
             />
-        </div>
+        </LineHolder>
     );
 };
 
 // TODO finish this
 const AlignOptionLine: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <EmptyLine />
         <EmptyLine />
-    </div>
+    </LineHolder>
 );
 
 const TropoLine: React.FC = () => {
     const [tropo, setTropo] = useState<string>();
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value="TROPO" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.right}
@@ -365,12 +366,12 @@ const TropoLine: React.FC = () => {
                     }
                 }}
             />
-        </div>
+        </LineHolder>
     );
 };
 
 const GndTempLine: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <LabelField lineSide={lineSides.right} value="GND TEMP" color={lineColors.white} />
         <Field
             lineSide={lineSides.right}
@@ -378,11 +379,11 @@ const GndTempLine: React.FC = () => (
             color={lineColors.inop}
             size={lineSizes.regular}
         />
-    </div>
+    </LineHolder>
 );
 
 const RequestLine: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <Field lineSide={lineSides.right} value="REQUEST*" color={lineColors.amber} size={lineSizes.regular} />
         <LineSelectField
             lineSide={lineSides.right}
@@ -394,7 +395,7 @@ const RequestLine: React.FC = () => (
                 console.log('Pretending to retrieve simbrief data');
             }}
         />
-    </div>
+    </LineHolder>
 );
 type InitAPageProps = {
 
@@ -413,29 +414,29 @@ const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, addM
 
     return (
         <>
-            <div className="row-holder">
+            <RowHolder columns={2}>
                 <CoRouteLine />
                 <FromToLine addMessage={addMessage} fmgc={fmgc} eraseTempFpl={eraseTempFpl} />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <AltDestLine addMessage={addMessage} />
                 <RequestLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <FlightNoLine addMessage={addMessage} />
                 <AlignOptionLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <WindTempLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <CostIndexLine />
                 <TropoLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <CruiseFLTemp scratchpad={scratchpad} addMessage={addMessage} />
                 <GndTempLine />
-            </div>
+            </RowHolder>
         </>
     );
 };

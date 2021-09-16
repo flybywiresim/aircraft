@@ -1,26 +1,26 @@
 import React, { useEffect } from 'react';
 import { calculateActiveDate, calculateSecDate } from '@instruments/common/Date';
+import { RowHolder } from '../../../Components/Holders/RowHolder';
 import { useMCDUDispatch } from '../../../redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
-import '../../../Components/styles.scss';
 
-import './styles.scss';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
+import { LineHolder } from '../../../Components/Holders/LineHolder';
 
 const EngineLine: React.FC = () => (
-    <div className="line-holder-left">
+    <LineHolder columnPosition={1}>
         <LabelField lineSide={lineSides.left} value={'\xa0ENG'} color={lineColors.white} />
         <Field lineSide={lineSides.left} value="LEAP-1A26" color={lineColors.green} size={lineSizes.regular} />
-    </div>
+    </LineHolder>
 );
 
 const ActiveNavDataLine: React.FC = () => {
     const [activeNavDate] = ['TODO'];
     return (
-        <div className="line-holder-left">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="ACTIVE DATA BASE" color={lineColors.white} />
             <Field
                 lineSide={lineSides.left}
@@ -28,14 +28,14 @@ const ActiveNavDataLine: React.FC = () => {
                 color={lineColors.cyan}
                 size={lineSizes.regular}
             />
-        </div>
+        </LineHolder>
     );
 };
 
 const SecondaryNavDataLine: React.FC = () => {
     const [secNavDate] = ['TODO'];
     return (
-        <div className="line-holder-left">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="SECOND DATA BASE" color={lineColors.white} />
             <Field
                 lineSide={lineSides.left}
@@ -43,12 +43,12 @@ const SecondaryNavDataLine: React.FC = () => {
                 color={lineColors.inop}
                 size={lineSizes.small}
             />
-        </div>
+        </LineHolder>
     );
 };
 
 const AiracLine: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <EmptyLine />
         <Field
             lineSide={lineSides.right}
@@ -56,11 +56,11 @@ const AiracLine: React.FC = () => (
             color={lineColors.green}
             size={lineSizes.regular}
         />
-    </div>
+    </LineHolder>
 );
 
 const ChgCodeLine: React.FC = () => (
-    <div className="line-holder-one">
+    <LineHolder columnPosition={1}>
         <LabelField lineSide={lineSides.left} value="CHG CODE" color={lineColors.white} />
         <Field
             lineSide={lineSides.left}
@@ -68,11 +68,11 @@ const ChgCodeLine: React.FC = () => (
             color={lineColors.inop}
             size={lineSizes.small}
         />
-    </div>
+    </LineHolder>
 );
 
 const TodoNameLine: React.FC = () => (
-    <div className="line-holder-one">
+    <LineHolder columnPosition={1}>
         <LabelField lineSide={lineSides.left} value="IDLE/PERF" color={lineColors.white} />
         <Field
             lineSide={lineSides.left}
@@ -80,11 +80,11 @@ const TodoNameLine: React.FC = () => (
             color={lineColors.green}
             size={lineSizes.regular}
         />
-    </div>
+    </LineHolder>
 );
 
 const SoftwareLine: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <LabelField lineSide={lineSides.right} value="SOFTWARE" color={lineColors.white} />
         <Field
             lineSide={lineSides.right}
@@ -92,7 +92,7 @@ const SoftwareLine: React.FC = () => (
             color={lineColors.inop}
             size={lineSizes.regular}
         />
-    </div>
+    </LineHolder>
 );
 
 const IdentPage: React.FC = () => {
@@ -107,23 +107,23 @@ const IdentPage: React.FC = () => {
 
     return (
         <>
-            <div className="row-holder">
+            <RowHolder columns={1}>
                 <EngineLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <ActiveNavDataLine />
                 <AiracLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <SecondaryNavDataLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <ChgCodeLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <TodoNameLine />
                 <SoftwareLine />
-            </div>
+            </RowHolder>
         </>
     );
 };

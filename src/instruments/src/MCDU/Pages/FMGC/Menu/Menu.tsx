@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-import '../../../Components/styles.scss';
-import './styles.scss';
-
+import { RowHolder } from '../../../Components/Holders/RowHolder';
+import { LineHolder } from '../../../Components/Holders/LineHolder';
 import { useMCDUDispatch } from '../../../redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
@@ -42,7 +41,7 @@ const FMGCText: React.FC<FMGCTextProps> = ({ activeSys, setActiveSys, setPage, s
     }
 
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <EmptyLine />
             <LineSelectField
                 lineSide={lineSides.left}
@@ -60,7 +59,7 @@ const FMGCText: React.FC<FMGCTextProps> = ({ activeSys, setActiveSys, setPage, s
                 })}
                 size={lineSizes.regular}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -100,7 +99,7 @@ const MenuLineText: React.FC<TextProps> = ({ lsk, side, system, activeSys, setAc
     }
 
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <EmptyLine />
             <LineSelectField
                 lineSide={lineSides.left}
@@ -115,19 +114,19 @@ const MenuLineText: React.FC<TextProps> = ({ lsk, side, system, activeSys, setAc
                     }
                 })}
             />
-        </div>
+        </LineHolder>
     );
 };
 
 const NAVBText: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <LabelField lineSide={lineSides.right} value={'SELECT\xa0'} color={lineColors.white} />
         <Field lineSide={lineSides.right} value="NAV B/UP" color={lineColors.white} size={lineSizes.regular} />
-    </div>
+    </LineHolder>
 );
 
 const OptionsText: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <EmptyLine />
         <Field
             lineSide={lineSides.right}
@@ -135,11 +134,11 @@ const OptionsText: React.FC = () => (
             size={lineSizes.regular}
             color={lineColors.inop}
         />
-    </div>
+    </LineHolder>
 );
 
 const ReturnText: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <EmptyLine />
         <Field
             lineSide={lineSides.right}
@@ -147,7 +146,7 @@ const ReturnText: React.FC = () => (
             size={lineSizes.regular}
             value="RETURN>"
         />
-    </div>
+    </LineHolder>
 );
 
 type MenuProps = {
@@ -167,11 +166,11 @@ const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
 
     return (
         <>
-            <div className="row-holder">
+            <RowHolder columns={2}>
                 <FMGCText activeSys={activeSys} setActiveSys={setActiveSys} setPage={setPage} selected={selected} setSelected={setSelected} />
                 <NAVBText />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <MenuLineText
                     lsk={LINESELECT_KEYS.L2}
                     system="ATSU"
@@ -181,8 +180,8 @@ const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
                     selected={selected}
                     setSelected={setSelected}
                 />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <MenuLineText
                     lsk={LINESELECT_KEYS.L3}
                     system="AIDS"
@@ -192,8 +191,8 @@ const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
                     selected={selected}
                     setSelected={setSelected}
                 />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <MenuLineText
                     lsk={LINESELECT_KEYS.L4}
                     system="CFDS"
@@ -203,13 +202,13 @@ const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
                     selected={selected}
                     setSelected={setSelected}
                 />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <OptionsText />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <ReturnText />
-            </div>
+            </RowHolder>
         </>
     );
 };

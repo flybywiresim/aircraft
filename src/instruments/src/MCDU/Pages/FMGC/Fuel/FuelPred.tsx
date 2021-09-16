@@ -4,6 +4,7 @@ import { useSimVar } from '@instruments/common/simVars';
 
 import { NXSystemMessages } from '@fmgc/lib/NXSystemMessages';
 import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
+import { RowHolder } from '../../../Components/Holders/RowHolder';
 import { useMCDUDispatch, useMCDUSelector } from '../../../redux/hooks';
 import InteractiveSplitField, { fieldProperties } from '../../../Components/Fields/Interactive/InteractiveSplitField';
 import { scratchpadState } from '../../../redux/reducers/scratchpadReducer';
@@ -12,6 +13,7 @@ import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import SplitField from '../../../Components/Fields/NonInteractive/SplitField';
 import { lineColors, lineSides, lineSizes } from '../../../Components/Lines/LineProps';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
+import { LineHolder } from '../../../Components/Holders/LineHolder';
 import { Field, fieldSides } from '../../../Components/Fields/NonInteractive/Field';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
 
@@ -19,66 +21,64 @@ import * as titlebarActions from '../../../redux/actions/titlebarActionCreators'
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 import * as mcduActions from '../../../redux/actions/mcduActionCreators';
 
-import './styles.scss';
-
 /**
  * @todo retrieve Dest ICAO when CFPM ready
  */
 const DestICAOLine: React.FC = () => (
-    <div className="line-holder-one">
+    <LineHolder columnPosition={1}>
         <LabelField lineSide={lineSides.left} value="AT" color={lineColors.white} />
         <Field lineSide={lineSides.left} textSide={fieldSides.left} value="NONE" color={lineColors.green} size={lineSizes.regular} />
-    </div>
+    </LineHolder>
 );
 
 /**
  * @todo retrieve Dest UTC when CFPM ready
  */
 const DestTimeLine: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <LabelField lineSide={lineSides.center} value="UTC" color={lineColors.white} />
         <Field lineSide={lineSides.center} value="----" color={lineColors.white} size={lineSizes.regular} />
-    </div>
+    </LineHolder>
 );
 
 /**
  * @todo retrieve Dest EFOB when CFPM ready
  */
 const DestEFOBLine: React.FC = () => (
-    <div className="line-holder-three">
+    <LineHolder columnPosition={3}>
         <LabelField lineSide={lineSides.right} value="EFOB" color={lineColors.white} />
         <Field lineSide={lineSides.right} textSide={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />
-    </div>
+    </LineHolder>
 );
 
 /**
  * @todo retrieve Dest ICAO when CFPM ready
  */
 const AltICAOLine: React.FC = () => (
-    <div className="line-holder-one">
+    <LineHolder columnPosition={1}>
         <EmptyLine />
         <Field lineSide={lineSides.left} value="NONE" color={lineColors.green} size={lineSizes.regular} />
-    </div>
+    </LineHolder>
 );
 
 /**
  * @todo retrieve Dest UTC when CFPM ready
  */
 const AltTimeLine: React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <EmptyLine />
         <Field lineSide={lineSides.center} value="----" color={lineColors.white} size={lineSizes.regular} />
-    </div>
+    </LineHolder>
 );
 
 /**
  * @todo retrieve Dest EFOB when CFPM ready
  */
 const AltEFOBLine: React.FC = () => (
-    <div className="line-holder-three">
+    <LineHolder columnPosition={3}>
         <EmptyLine />
         <Field lineSide={lineSides.center} textSide={fieldSides.right} value="---.-" color={lineColors.white} size={lineSizes.regular} />
-    </div>
+    </LineHolder>
 );
 
 const RteRsvLine: React.FC = () => {
@@ -95,14 +95,14 @@ const RteRsvLine: React.FC = () => {
         rSize: lineSizes.regular,
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="RTE RSV/ %" color={lineColors.white} />
             <SplitField
                 side={lineSides.left}
                 slashColor={rteRsvWeight ? lineColors.green : lineColors.white}
                 properties={properties}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -214,7 +214,7 @@ export const ZfwLine: React.FC<zfwLineProps> = (
     };
 
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value="ZFW/ZFWCG" color={lineColors.white} />
             <InteractiveSplitField
                 side={lineSides.right}
@@ -227,7 +227,7 @@ export const ZfwLine: React.FC<zfwLineProps> = (
                     setScratchpad(`${calcZFW.toFixed(1)}/${calcZFWCG.toFixed(1)}`);
                 }}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -250,7 +250,7 @@ const AltnLine: React.FC = () => {
         rSize: lineSizes.small,
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.right} value="ALTN /TIME" color={lineColors.white} />
             <InteractiveSplitField
                 lsk={LINESELECT_KEYS.L4}
@@ -260,7 +260,7 @@ const AltnLine: React.FC = () => {
                 selectedValidation={() => true}
                 selectedCallback={() => true}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -288,14 +288,14 @@ const FobLine: React.FC<fobLineProps> = ({ zfwEntered }) => {
     };
 
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value="FOB    " color={lineColors.white} />
             <SplitField
                 side={lineSides.right}
                 slashColor={color}
                 properties={properties}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -315,7 +315,7 @@ const FinalLine: React.FC = () => {
     };
 
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.right} value="FINAL/TIME" color={lineColors.white} />
             <InteractiveSplitField
                 lsk={LINESELECT_KEYS.L5}
@@ -325,7 +325,7 @@ const FinalLine: React.FC = () => {
                 selectedValidation={() => true}
                 selectedCallback={() => true}
             />
-        </div>
+        </LineHolder>
     );
 };
 type gWCGLineProps = {
@@ -349,14 +349,14 @@ const GWCGLine: React.FC<gWCGLineProps> = ({ zfwEntered: zfw }) => {
         rSize: lineSizes.small, // Adjust this if the value has been entered and not generated
     };
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value="GW    CG" color={lineColors.white} />
             <SplitField
                 side={lineSides.right}
                 slashColor={lineColors.white}
                 properties={properties}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -375,7 +375,7 @@ const MinDestFobLine: React.FC<minDestFobLineProps> = ({ zfwEntered }) => {
     const size = valEntered ? lineSizes.regular : lineSizes.small;
 
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="MIN DEST FOB" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.right}
@@ -399,7 +399,7 @@ const MinDestFobLine: React.FC<minDestFobLineProps> = ({ zfwEntered }) => {
                     }
                 })}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -423,14 +423,14 @@ const ExtraLine: React.FC<extraLineProps> = ({ zfwEntered }) => {
     };
 
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value="EXTRA TIME" color={lineColors.white} />
             <SplitField
                 side={lineSides.right}
                 slashColor={lineColors.white}
                 properties={properties}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -481,17 +481,17 @@ const FuelPredPage: React.FC = () => {
     }, []);
     return (
         <>
-            <div className="row-holder-three">
+            <RowHolder columns={3}>
                 <DestICAOLine />
                 <DestTimeLine />
                 <DestEFOBLine />
-            </div>
-            <div className="row-holder-three">
+            </RowHolder>
+            <RowHolder columns={3}>
                 <AltICAOLine />
                 <AltTimeLine />
                 <AltEFOBLine />
-            </div>
-            <div className="row-holder-two">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <RteRsvLine />
                 <ZfwLine
                     lsk={LINESELECT_KEYS.R3}
@@ -505,19 +505,19 @@ const FuelPredPage: React.FC = () => {
                     zeroFuelWeightZFWCGEntered={mcduData.zfwCGEntered}
                     setZeroFuelWeightZFWCGEntered={setZFWCGEntered}
                 />
-            </div>
-            <div className="row-holder-two">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <AltnLine />
                 <FobLine zfwEntered={mcduData.zfwCGEntered} />
-            </div>
-            <div className="row-holder-two">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <FinalLine />
                 <GWCGLine zfwEntered={mcduData.zfwCGEntered} />
-            </div>
-            <div className="row-holder-two">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <MinDestFobLine clearScratchpad={clearScratchpad} zfwEntered={mcduData.zfwCGEntered} />
                 <ExtraLine zfwEntered={mcduData.zfwCGEntered} />
-            </div>
+            </RowHolder>
         </>
     );
 };

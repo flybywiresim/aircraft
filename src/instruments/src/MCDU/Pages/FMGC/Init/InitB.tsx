@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
 import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
+import { LineHolder } from '../../../Components/Holders/LineHolder';
+import { RowHolder } from '../../../Components/Holders/RowHolder';
 import { mcduState } from '../../../redux/reducers/mcduReducer';
 import { scratchpadState } from '../../../redux/reducers/scratchpadReducer';
 import SplitField from '../../../Components/Fields/NonInteractive/SplitField';
@@ -26,7 +28,7 @@ const TaxiFuelLine: React.FC = () => {
         }
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="TAXI" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.left}
@@ -39,7 +41,7 @@ const TaxiFuelLine: React.FC = () => {
                 selectedCallback={(value) => setNewVal(value)}
                 lsk={LINESELECT_KEYS.L1}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -56,14 +58,14 @@ const TripWeightLine: React.FC = () => {
         rColour: lineColors.white,
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value={'TRIP\xa0/TIME'} color={lineColors.white} />
             <SplitField
                 side={lineSides.left}
                 slashColor={lineColors.white}
                 properties={tripProperties}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -76,7 +78,7 @@ const BlockWeightLine: React.FC = () => {
         }
     };
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value="BLOCK" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.right}
@@ -89,7 +91,7 @@ const BlockWeightLine: React.FC = () => {
                 selectedCallback={(value) => setNewVal(value)}
                 lsk={LINESELECT_KEYS.R2}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -105,7 +107,7 @@ const ReserveWeightLine: React.FC = () => {
         rSize: lineSizes.regular,
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="RTE RSV/%" color={lineColors.white} />
             <InteractiveSplitField
                 properties={reserveProperties}
@@ -115,7 +117,7 @@ const ReserveWeightLine: React.FC = () => {
                 selectedCallback={() => {}}
                 selectedValidation={() => true}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -131,7 +133,7 @@ const AlternateWeightLine: React.FC = () => {
         rSize: lineSizes.regular,
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value={'ALTN\xa0/TIME'} color={lineColors.white} />
             <InteractiveSplitField
                 properties={alternateProperties}
@@ -141,7 +143,7 @@ const AlternateWeightLine: React.FC = () => {
                 selectedCallback={() => {}}
                 selectedValidation={() => true}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -157,14 +159,14 @@ const LwTwLine : React.FC = () => {
         rColour: lineColors.white,
     };
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value={'TOW/\xa0\xa0\xa0LW'} color={lineColors.white} />
             <SplitField
                 side={lineSides.right}
                 slashColor={lineColors.white}
                 properties={lwTwProperties}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -181,7 +183,7 @@ const FinalWeightCell : React.FC = () => {
         rSize: lineSizes.regular,
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="FINAL/TIME" color={lineColors.white} />
             <InteractiveSplitField
                 properties={alternateProperties}
@@ -191,12 +193,12 @@ const FinalWeightCell : React.FC = () => {
                 selectedCallback={() => {}}
                 selectedValidation={() => true}
             />
-        </div>
+        </LineHolder>
     );
 };
 
 const TripWindLine : React.FC = () => (
-    <div className="line-holder-two">
+    <LineHolder columnPosition={2}>
         <LabelField lineSide={lineSides.right} value="TRIP WIND" color={lineColors.white} />
         <StringInputField
             lineSide={lineSides.right}
@@ -208,7 +210,7 @@ const TripWindLine : React.FC = () => (
             lsk={LINESELECT_KEYS.R5}
             selectedValidation={() => true}
         />
-    </div>
+    </LineHolder>
 );
 
 const MinDestFOBLine : React.FC = () => {
@@ -220,7 +222,7 @@ const MinDestFOBLine : React.FC = () => {
         }
     };
     return (
-        <div className="line-holder-one">
+        <LineHolder columnPosition={1}>
             <LabelField lineSide={lineSides.left} value="MIN DEST FOB" color={lineColors.white} />
             <NumberInputField
                 lineSide={lineSides.left}
@@ -233,7 +235,7 @@ const MinDestFOBLine : React.FC = () => {
                 selectedCallback={(value) => setNewVal(value)}
                 lsk={LINESELECT_KEYS.L6}
             />
-        </div>
+        </LineHolder>
     );
 };
 
@@ -249,14 +251,14 @@ const ExtraWeightLine : React.FC = () => {
         rSize: lineSizes.regular,
     };
     return (
-        <div className="line-holder-two">
+        <LineHolder columnPosition={2}>
             <LabelField lineSide={lineSides.right} value="EXTRA/TIME" color={lineColors.white} />
             <SplitField
                 side={lineSides.right}
                 slashColor={lineColors.white}
                 properties={extraWeightProperties}
             />
-        </div>
+        </LineHolder>
     );
 };
 type InitBPageProps = {
@@ -285,7 +287,7 @@ export const InitBPage: React.FC<InitBPageProps> = ({
 
     return (
         <>
-            <div className="row-holder">
+            <RowHolder columns={2}>
                 <TaxiFuelLine />
                 <ZfwLine
                     lsk={LINESELECT_KEYS.R1}
@@ -299,26 +301,26 @@ export const InitBPage: React.FC<InitBPageProps> = ({
                     zeroFuelWeightZFWCGEntered={mcduData.zfwCGEntered}
                     setZeroFuelWeightZFWCGEntered={setZFWCGEntered}
                 />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <TripWeightLine />
                 <BlockWeightLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <ReserveWeightLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <AlternateWeightLine />
                 <LwTwLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <FinalWeightCell />
                 <TripWindLine />
-            </div>
-            <div className="row-holder">
+            </RowHolder>
+            <RowHolder columns={2}>
                 <MinDestFOBLine />
                 <ExtraWeightLine />
-            </div>
+            </RowHolder>
         </>
     );
 };

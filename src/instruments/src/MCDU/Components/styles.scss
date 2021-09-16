@@ -21,12 +21,40 @@
   font-weight: 900;
 }
 
+//ROWS discuss using styled components so we can access props instead
+.row-holder-2 {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  grid-template-rows: 1fr;
+}
+
+.row-holder-3 {
+  @extend .row-holder;
+  grid-template-columns: repeat(3,auto)
+}
+
 //LINES
 .line-holder {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(2, 54px);
 }
+
+.line-holder-1 {
+  @extend .line-holder;
+  grid-column-start: 1;
+}
+
+.line-holder-2 {
+  @extend .line-holder;
+  grid-column-start: 2;
+}
+
+.line-holder-3 {
+  @extend .line-holder;
+  grid-column-start: 3;
+}
+
 
 .line {
   white-space: pre;
