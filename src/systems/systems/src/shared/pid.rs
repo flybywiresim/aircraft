@@ -42,9 +42,11 @@ impl Pid {
     pub fn setpoint(&self) -> f64 {
         self.setpoint
     }
+
     pub fn output(&self) -> f64 {
         self.output
     }
+
     pub fn reset(&mut self, setpoint: f64) {
         self.output = 0.;
         self.change_setpoint(setpoint);
@@ -73,6 +75,7 @@ impl Pid {
         }
 
         let unbound_output = self.output + p_term + i_term + d_term;
+
         // Limiting output to configured bounds
         self.output = unbound_output.max(self.min_output).min(self.max_output);
 
@@ -110,7 +113,7 @@ mod tests {
         assert_about_eq!(pid.setpoint, 10.);
 
         // Test simple proportional
-        assert!((pid.next_control_output(0.0, None) - 20.).abs() < f64::EPSILON);
+        assert_about_eq!(pid.next_control_output(0.0, None), 20.);
     }
 
     #[test]
