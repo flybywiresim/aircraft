@@ -2,6 +2,7 @@ import React, { FC, useState, useEffect } from 'react';
 import { render } from '@instruments/common/index';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { setIsEcamPage } from '@instruments/common/defaults';
+import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { useSimVar } from '../../../Common/simVars';
@@ -159,6 +160,11 @@ export const PressPage: FC = () => {
             <text className="Large White" x={120} y={417}>INLET</text>
             <text className="Large White" x={240} y={417}>OUTLET</text>
 
+            {/* Packs */}
+
+            <PackComponent id={1} x={47} y={495} />
+            <PackComponent id={2} x={448} y={495} />
+
         </EcamPage>
     );
 };
@@ -211,7 +217,6 @@ type SystemComponentType = {
 
 const SystemComponent = ({ id, visible, x, y }: SystemComponentType) => {
     // When failures are introduced can override visible variable
-    console.log('Visible');
     const systemFault = false;
     const systemColour = systemFault ? 'Amber' : 'Green';
 
@@ -225,6 +230,30 @@ const SystemComponent = ({ id, visible, x, y }: SystemComponentType) => {
                 </text>
             </g>
 
+        </>
+    );
+};
+
+type PackComponentType = {
+    id: number,
+    x: number,
+    y: number
+}
+
+const PackComponent = ({ id, x, y }: PackComponentType) => {
+    const [engN2] = useSimVar(`L:A32NX_ENGINE_N2:${id}`, 'number', 500);
+    const [packOff] = useSimVar(`L:A32NX_AIRCOND_PACK${id}_TOGGLE`, 'bool', 500);
+    const triangleColour = !packOff && engN2 >= 60 ? 'Amber' : 'Green';
+    const packWordColour = !packOff && engN2 >= 60 ? 'Amber' : 'White';
+
+    return (
+        <>
+            <Triangle x={x + 38} y={y - 45} colour={triangleColour} fill={0} orientation={0} />
+            <text className={`Large ${packWordColour}`} x={x} y={y}>
+                PACK
+                {' '}
+                {id}
+            </text>
         </>
     );
 };

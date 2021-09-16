@@ -56,6 +56,16 @@
         stroke: $display-amber !important;
     }
 
+    .AmberLine {
+        stroke: $display-amber !important;
+        stroke-width: 2;
+    }
+
+    .GreenLine {
+        stroke: $display-green !important;
+        stroke-width: 2;
+    }
+
     .Show {
         display:block;
     }
