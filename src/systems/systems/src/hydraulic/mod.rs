@@ -983,7 +983,6 @@ pub struct RamAirTurbine {
     pump_controller: AlwaysPressurisePumpController,
     wind_turbine: WindTurbine,
     position: f64,
-    max_displacement: f64,
 }
 impl RamAirTurbine {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
@@ -998,13 +997,6 @@ impl RamAirTurbine {
     const STOWING_SPEED: f64 = 1.;
 
     pub fn new() -> Self {
-        let mut max_disp = 0.;
-        for v in Self::DISPLACEMENT_MAP.iter() {
-            if v > &max_disp {
-                max_disp = *v;
-            }
-        }
-
         Self {
             deployment_commanded: false,
             pump: Pump::new(
@@ -1015,7 +1007,6 @@ impl RamAirTurbine {
             pump_controller: AlwaysPressurisePumpController::new(),
             wind_turbine: WindTurbine::new(),
             position: 0.,
-            max_displacement: max_disp,
         }
     }
 
@@ -1038,8 +1029,6 @@ impl RamAirTurbine {
         // Now forcing min to max to force a true real time regulation.
         // TODO: handle this properly by calculating who produced what volume at end of hyd loop update
         self.pump.delta_vol_min = self.pump.delta_vol_max;
-
-        let gpm_max = 60. * self.pump.delta_vol_max.get::<gallon>() / context.delta_as_secs_f64();
     }
 
     pub fn update_physics(

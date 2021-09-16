@@ -10,16 +10,15 @@ use uom::si::{
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
-use crate::shared::{interpolation, EmergencyElectricalState, LgciuWeightOnWheels};
+use crate::shared::{
+    interpolation, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+    EmergencyGeneratorInterface, GeneratorControlUnitInterface, LgciuWeightOnWheels,
+};
 
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 
 use super::brake_circuit::Actuator;
 
-pub trait GeneratorControlUnitInterface {
-    fn valve_position_command(&self) -> Ratio;
-    fn power_demand(&self) -> Power;
-}
 pub struct GeneratorControlUnit {
     is_active: bool,
     power_demand: Power,
@@ -29,6 +28,9 @@ pub struct GeneratorControlUnit {
     max_allowed_power: [f64; 9],
     nominal_power: Power,
     nominal_rpm: AngularVelocity,
+    current_speed: AngularVelocity,
+
+    emer_on_was_pressed: bool,
 }
 impl GeneratorControlUnit {
     pub fn new(
@@ -46,18 +48,24 @@ impl GeneratorControlUnit {
             max_allowed_power,
             nominal_power,
             nominal_rpm,
+            current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
+            emer_on_was_pressed: false,
         }
     }
 
     fn update_active_state(
         &mut self,
         elec_emergency_state: &impl EmergencyElectricalState,
+        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         lgciu: &impl LgciuWeightOnWheels,
         pressure_feedback: Pressure,
     ) {
+        self.emer_on_was_pressed = self.emer_on_was_pressed || rat_and_emer_gen_man_on.is_pressed();
+
         self.is_active = elec_emergency_state.is_in_emergency_elec()
-            && !lgciu.left_and_right_gear_compressed(false)
-            && pressure_feedback.get::<psi>() > 500.;
+            || self.emer_on_was_pressed
+                && !lgciu.left_and_right_gear_compressed(false)
+                && pressure_feedback.get::<psi>() > 500.;
     }
 
     fn is_active(&self) -> bool {
@@ -69,39 +77,47 @@ impl GeneratorControlUnit {
         generator_speed_feedback: AngularVelocity,
         pressure_feedback: Pressure,
         elec_emergency_state: &impl EmergencyElectricalState,
+        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         lgciu: &impl LgciuWeightOnWheels,
     ) {
-        self.update_active_state(elec_emergency_state, lgciu, pressure_feedback);
+        self.current_speed = generator_speed_feedback;
 
-        self.update_valve_control(generator_speed_feedback);
+        self.update_active_state(
+            elec_emergency_state,
+            rat_and_emer_gen_man_on,
+            lgciu,
+            pressure_feedback,
+        );
 
-        self.update_power_demand(generator_speed_feedback);
+        self.update_valve_control();
+
+        self.update_power_demand();
     }
 
-    fn max_allowed_power(&self, generator_speed_feedback: AngularVelocity) -> Power {
+    fn max_allowed_power(&self) -> Power {
         Power::new::<watt>(interpolation(
             &self.max_allowed_power_rpm_breakpoints,
             &self.max_allowed_power,
-            generator_speed_feedback.get::<revolution_per_minute>(),
+            self.current_speed.get::<revolution_per_minute>(),
         ))
     }
 
-    fn update_power_demand(&mut self, generator_speed_feedback: AngularVelocity) {
+    fn update_power_demand(&mut self) {
         if self.is_active() {
             self.power_target = self.nominal_power;
             self.power_demand = self
                 .power_target
                 .min(self.power_demand + Power::new::<watt>(100.))
-                .min(self.max_allowed_power(generator_speed_feedback));
+                .min(self.max_allowed_power());
         } else {
             self.power_demand = Power::new::<watt>(0.);
             self.power_target = Power::new::<watt>(0.);
         }
     }
 
-    fn update_valve_control(&mut self, generator_speed_feedback: AngularVelocity) {
+    fn update_valve_control(&mut self) {
         if self.is_active() {
-            let speed_error = self.nominal_rpm - generator_speed_feedback;
+            let speed_error = self.nominal_rpm - self.current_speed;
 
             self.valve_position_request = Ratio::new::<ratio>(
                 (speed_error.get::<revolution_per_minute>() * 0.003)
@@ -120,6 +136,10 @@ impl GeneratorControlUnitInterface for GeneratorControlUnit {
 
     fn power_demand(&self) -> Power {
         self.power_demand
+    }
+
+    fn hydraulic_motor_speed(&self) -> AngularVelocity {
+        self.current_speed
     }
 }
 
@@ -173,8 +193,8 @@ impl HydraulicMotor {
             .update(gcu_interface.valve_position_command(), context);
     }
 
-    fn update_resistant_torque(&mut self, electrical_generator: &Generator) {
-        self.total_torque -= electrical_generator.resistant_torque;
+    fn update_resistant_torque(&mut self, emergency_generator: &impl EmergencyGeneratorInterface) {
+        self.total_torque -= emergency_generator.resistant_torque();
     }
 
     fn update_generated_torque(&mut self, pressure: Pressure) {
@@ -217,12 +237,10 @@ impl HydraulicMotor {
             .speed
             .max(AngularVelocity::new::<revolution_per_minute>(0.));
 
-
-
         self.total_torque = Torque::new::<newton_meter>(0.);
     }
 
-    fn update_flow(&mut self, context: &UpdateContext){
+    fn update_flow(&mut self, context: &UpdateContext) {
         self.current_flow = self.flow();
 
         let total_volume = self.current_flow * context.delta_as_time();
@@ -265,56 +283,15 @@ impl MeteringValve {
     }
 }
 
-struct Generator {
-    speed: AngularVelocity,
-    efficiency: f64,
-    elec_power_generated: Power,
-    resistant_torque: Torque,
-}
-impl Generator {
-    fn new(efficiency: f64) -> Self {
-        Self {
-            speed: AngularVelocity::new::<radian_per_second>(0.),
-            efficiency,
-            elec_power_generated: Power::new::<watt>(0.),
-            resistant_torque: Torque::new::<newton_meter>(0.),
-        }
-    }
-
-    fn updatebeforeHydMotor(&mut self, hyd_motor_speed: AngularVelocity) {
-        self.speed = hyd_motor_speed;
-    }
-
-    fn updatePowerResistantTorque(&mut self, power_demand: Power) {
-        if self.speed < AngularVelocity::new::<radian_per_second>(1.) {
-            self.resistant_torque = Torque::new::<newton_meter>(0.3);
-            self.elec_power_generated = Power::new::<watt>(0.);
-        } else {
-            let elec_torque = Torque::new::<newton_meter>(
-                power_demand.get::<watt>() / self.speed.get::<radian_per_second>(),
-            );
-            self.resistant_torque = elec_torque + (1. - self.efficiency) * elec_torque;
-            self.elec_power_generated = elec_torque * self.speed;
-        }
-    }
-
-    fn is_producing_power(&self) -> bool {
-        self.speed > AngularVelocity::new::<revolution_per_minute>(1000.)
-            && self.elec_power_generated > Power::new::<watt>(500.)
-    }
-}
-
 pub struct ElectricalEmergencyGenerator {
     hyd_motor: HydraulicMotor,
-    generator: Generator,
+    produced_power: Power,
 }
 impl ElectricalEmergencyGenerator {
-    const EFFICIENCY: f64 = 0.92;
-
     pub fn new(displacement: Volume) -> Self {
         Self {
             hyd_motor: HydraulicMotor::new(displacement),
-            generator: Generator::new(Self::EFFICIENCY),
+            produced_power: Power::new::<watt>(0.),
         }
     }
 
@@ -323,24 +300,23 @@ impl ElectricalEmergencyGenerator {
     }
 
     pub fn is_producing_power(&self) -> bool {
-        self.generator.is_producing_power()
+        self.produced_power > Power::new::<watt>(100.)
     }
 
     pub fn update(
         &mut self,
         pressure: Pressure,
         gcu: &impl GeneratorControlUnitInterface,
+        emergency_generator: &impl EmergencyGeneratorInterface,
         context: &UpdateContext,
     ) {
         self.hyd_motor.update_valve_position(gcu, context);
-        self.generator.updatebeforeHydMotor(self.hyd_motor.speed());
-        self.generator
-            .updatePowerResistantTorque(gcu.power_demand());
-        self.hyd_motor.update_resistant_torque(&self.generator);
-
+        self.hyd_motor.update_resistant_torque(emergency_generator);
         self.hyd_motor.update_generated_torque(pressure);
         self.hyd_motor.update_speed(context);
         self.hyd_motor.update_flow(context);
+
+        self.produced_power = emergency_generator.power_generated();
 
         // println!(
         //     "Gen: speed:{:.0} power:{:.0} pressure:{:.0} flow GPM:{:.1}",
@@ -371,58 +347,127 @@ impl SimulationElement for ElectricalEmergencyGenerator {
             self.speed().get::<revolution_per_minute>(),
         );
 
-        writer.write(
-            "HYD_EMERGENCY_GEN_POWER",
-            self.generator.elec_power_generated.get::<watt>(),
-        );
+        writer.write("HYD_EMERGENCY_GEN_POWER", self.produced_power.get::<watt>());
     }
 }
 
+pub struct TestGenerator {
+    speed: AngularVelocity,
+    resistant_torque_from_power_gen: Torque,
+    generated_power: Power,
+}
+impl TestGenerator {
+    const EFFICIENCY: f64 = 0.95;
+
+    pub fn new() -> Self {
+        Self {
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
+            resistant_torque_from_power_gen: Torque::new::<newton_meter>(0.),
+            generated_power: Power::new::<watt>(0.),
+        }
+    }
+
+    fn from_gcu(gcu: &impl GeneratorControlUnitInterface) -> Self {
+        let mut g = TestGenerator {
+            speed: gcu.hydraulic_motor_speed(),
+            resistant_torque_from_power_gen: Torque::new::<newton_meter>(0.),
+            generated_power: Power::new::<watt>(0.),
+        };
+
+        g.update(gcu);
+        g
+    }
+
+    pub fn update(&mut self, gcu: &impl GeneratorControlUnitInterface) {
+        self.speed = gcu.hydraulic_motor_speed();
+        self.generated_power = gcu.power_demand();
+        self.update_resistant_torque(gcu);
+    }
+
+    fn update_resistant_torque(&mut self, gcu: &impl GeneratorControlUnitInterface) {
+        if gcu.hydraulic_motor_speed() < AngularVelocity::new::<radian_per_second>(1.) {
+            self.resistant_torque_from_power_gen = Torque::new::<newton_meter>(0.3);
+        } else {
+            let elec_torque = Torque::new::<newton_meter>(
+                gcu.power_demand().get::<watt>()
+                    / gcu.hydraulic_motor_speed().get::<radian_per_second>(),
+            );
+            self.resistant_torque_from_power_gen =
+                elec_torque + (1. - Self::EFFICIENCY) * elec_torque;
+        }
+    }
+}
+impl EmergencyGeneratorInterface for TestGenerator {
+    fn power_generated(&self) -> Power {
+        self.generated_power
+    }
+    fn resistant_torque(&self) -> Torque {
+        self.resistant_torque_from_power_gen
+    }
+}
+
+pub struct TestGeneratorControlUnit {
+    power_demand: Power,
+    valve_position_request: Ratio,
+    current_speed: AngularVelocity,
+}
+
+impl TestGeneratorControlUnit {
+    pub fn commanding_full_open() -> Self {
+        Self {
+            power_demand: Power::new::<watt>(50.),
+            valve_position_request: Ratio::new::<ratio>(1.),
+            current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
+        }
+    }
+    pub fn commanding_full_closed() -> Self {
+        Self {
+            power_demand: Power::new::<watt>(0.),
+            valve_position_request: Ratio::new::<ratio>(0.),
+            current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
+        }
+    }
+    pub fn _steady_state_generating_power() -> Self {
+        Self {
+            power_demand: Power::new::<watt>(5000.),
+            valve_position_request: Ratio::new::<ratio>(0.7),
+            current_speed: AngularVelocity::new::<revolution_per_minute>(12000.),
+        }
+    }
+}
+
+impl GeneratorControlUnitInterface for TestGeneratorControlUnit {
+    fn valve_position_command(&self) -> Ratio {
+        self.valve_position_request
+    }
+
+    fn power_demand(&self) -> Power {
+        self.power_demand
+    }
+
+    fn hydraulic_motor_speed(&self) -> AngularVelocity {
+        self.current_speed
+    }
+}
 mod tests {
-    use crate::shared::{ LgciuGearExtension};
-    use crate::simulation::UpdateContext;
+    // use crate::shared::LgciuGearExtension;
+    //use crate::simulation::UpdateContext;
     use std::time::Duration;
 
     use uom::si::{
-        acceleration::foot_per_second_squared, f64::*, length::foot, pressure::psi,
+        acceleration::foot_per_second_squared, f64::*, length::foot,
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
-
-    struct TestGeneratorControlUnit {
-        power_demand: Power,
-        valve_position_request: Ratio,
-    }
-    impl TestGeneratorControlUnit {
-        fn commanding_full_open() -> Self {
-            Self {
-                power_demand: Power::new::<watt>(50.),
-                valve_position_request: Ratio::new::<ratio>(1.),
-            }
-        }
-        fn commanding_full_closed() -> Self {
-            Self {
-                power_demand: Power::new::<watt>(3000.),
-                valve_position_request: Ratio::new::<ratio>(0.),
-            }
-        }
-    }
-    impl GeneratorControlUnitInterface for TestGeneratorControlUnit {
-        fn valve_position_command(&self) -> Ratio {
-            self.valve_position_request
-        }
-
-        fn power_demand(&self) -> Power {
-            self.power_demand
-        }
-    }
 
     struct TestEmergencyState {
         is_emergency: bool,
     }
     impl TestEmergencyState {
+        #[cfg(test)]
         fn in_emergency() -> Self {
             Self { is_emergency: true }
         }
+        #[cfg(test)]
         fn not_in_emergency() -> Self {
             Self {
                 is_emergency: false,
@@ -435,11 +480,33 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
+    struct TestRatManOn {
+        is_pressed: bool,
+    }
+
+    #[cfg(test)]
+    impl TestRatManOn {
+        fn _pressed() -> Self {
+            Self { is_pressed: true }
+        }
+        fn not_pressed() -> Self {
+            Self { is_pressed: false }
+        }
+    }
+
+    #[cfg(test)]
+    impl EmergencyElectricalRatPushButton for TestRatManOn {
+        fn is_pressed(&self) -> bool {
+            self.is_pressed
+        }
+    }
+
     struct TestLgciuInterface {
         main_gear_compressed: bool,
     }
     impl TestLgciuInterface {
-        fn is_compressed() -> Self {
+        fn _is_compressed() -> Self {
             Self {
                 main_gear_compressed: true,
             }
@@ -493,6 +560,7 @@ mod tests {
         emergency_gen.update(
             Pressure::new::<psi>(2500.),
             &gcu,
+            &TestGenerator::from_gcu(&gcu),
             &context(Duration::from_millis(50)),
         );
 
@@ -506,12 +574,16 @@ mod tests {
         let gcu = TestGeneratorControlUnit::commanding_full_open();
 
         let timestep = 0.05;
-        let mut context = context(Duration::from_secs_f64(timestep));
-        let mut indicated_airspeed = context.indicated_airspeed();
+        let context = context(Duration::from_secs_f64(timestep));
 
         let mut time = 0.0;
-        for x in 0..500 {
-            emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
+        for _ in 0..500 {
+            emergency_gen.update(
+                Pressure::new::<psi>(2500.),
+                &gcu,
+                &TestGenerator::from_gcu(&gcu),
+                &context,
+            );
 
             assert!(emergency_gen.hyd_motor.speed > AngularVelocity::new::<radian_per_second>(0.));
 
@@ -549,11 +621,16 @@ mod tests {
         assert!(!gcu.is_active);
 
         let timestep = 0.05;
-        let mut context = context(Duration::from_secs_f64(timestep));
+        let context = context(Duration::from_secs_f64(timestep));
 
         let mut time = 0.0;
         for _ in 0..50 {
-            emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
+            emergency_gen.update(
+                Pressure::new::<psi>(2500.),
+                &gcu,
+                &TestGenerator::from_gcu(&gcu),
+                &context,
+            );
 
             assert!(emergency_gen.hyd_motor.speed == AngularVelocity::new::<radian_per_second>(0.));
             assert!(!gcu.is_active);
@@ -579,7 +656,7 @@ mod tests {
         assert!(!gcu.is_active);
 
         let timestep = 0.05;
-        let mut context = context(Duration::from_secs_f64(timestep));
+        let context = context(Duration::from_secs_f64(timestep));
 
         let mut time = 0.0;
 
@@ -594,9 +671,15 @@ mod tests {
                 emergency_gen.speed(),
                 Pressure::new::<psi>(2500.),
                 &emergency_state,
+                &TestRatManOn::not_pressed(),
                 &lgciu,
             );
-            emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
+            emergency_gen.update(
+                Pressure::new::<psi>(2500.),
+                &gcu,
+                &TestGenerator::from_gcu(&gcu),
+                &context,
+            );
 
             if time > 5. {
                 assert!(
@@ -633,7 +716,7 @@ mod tests {
                     .hyd_motor
                     .speed()
                     .get::<revolution_per_minute>(),
-                emergency_gen.generator.elec_power_generated.get::<watt>()
+                emergency_gen.produced_power.get::<watt>()
             );
         }
     }
@@ -646,7 +729,7 @@ mod tests {
         assert!(!gcu.is_active);
 
         let timestep = 0.05;
-        let mut context = context(Duration::from_secs_f64(timestep));
+        let context = context(Duration::from_secs_f64(timestep));
 
         let mut time = 0.0;
 
@@ -665,9 +748,15 @@ mod tests {
                 emergency_gen.speed(),
                 Pressure::new::<psi>(2500.),
                 &emergency_state,
+                &TestRatManOn::not_pressed(),
                 &lgciu,
             );
-            emergency_gen.update(Pressure::new::<psi>(2500.), &gcu, &context);
+            emergency_gen.update(
+                Pressure::new::<psi>(2500.),
+                &gcu,
+                &TestGenerator::from_gcu(&gcu),
+                &context,
+            );
 
             if time > 5. && time < 10. {
                 assert!(
@@ -709,11 +798,12 @@ mod tests {
                     .hyd_motor
                     .speed()
                     .get::<revolution_per_minute>(),
-                emergency_gen.generator.elec_power_generated.get::<watt>()
+                emergency_gen.produced_power.get::<watt>()
             );
         }
     }
 
+    #[cfg(test)]
     fn context(delta_time: Duration) -> UpdateContext {
         UpdateContext::new(
             delta_time,
@@ -725,6 +815,7 @@ mod tests {
         )
     }
 
+    #[cfg(test)]
     fn gen_control_unit() -> GeneratorControlUnit {
         GeneratorControlUnit::new(
             Power::new::<watt>(6000.),

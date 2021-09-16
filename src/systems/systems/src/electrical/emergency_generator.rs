@@ -1,15 +1,20 @@
-use std::time::Duration;
-
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, ElectricitySource, Potential, PotentialOrigin, ProvideFrequency,
     ProvidePotential,
 };
 use crate::{
-    shared::{PowerConsumptionReport, RamAirTurbineHydraulicLoopPressurised},
+    shared::{EmergencyGeneratorInterface, GeneratorControlUnitInterface, PowerConsumptionReport},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
-use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
+use uom::si::{
+    angular_velocity::{radian_per_second, revolution_per_minute},
+    electric_potential::volt,
+    f64::*,
+    frequency::hertz,
+    power::watt,
+    torque::newton_meter,
+};
 
 pub struct EmergencyGenerator {
     identifier: ElectricalElementIdentifier,
@@ -17,10 +22,15 @@ pub struct EmergencyGenerator {
     supplying: bool,
     output_frequency: Frequency,
     output_potential: ElectricPotential,
-    time_since_start: Duration,
-    starting_or_started: bool,
+    generated_power: Power,
+    resistant_torque_from_power_gen: Torque,
 }
 impl EmergencyGenerator {
+    const MIN_RPM_TO_SUPPLY_POWER: f64 = 10000.;
+    const MIN_POWER_TO_DECLARE_SUPPLYING_WATT: f64 = 100.;
+    const EFFICIENCY: f64 = 0.95;
+    const STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM: f64 = 0.3;
+
     pub fn new(
         identifier_provider: &mut impl ElectricalElementIdentifierProvider,
     ) -> EmergencyGenerator {
@@ -30,34 +40,17 @@ impl EmergencyGenerator {
             supplying: false,
             output_frequency: Frequency::new::<hertz>(0.),
             output_potential: ElectricPotential::new::<volt>(0.),
-            time_since_start: Duration::from_secs(0),
-            starting_or_started: false,
+            generated_power: Power::new::<watt>(0.),
+            resistant_torque_from_power_gen: Torque::new::<newton_meter>(0.),
         }
     }
 
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
-    ) {
-        // TODO: All of this is a very simple implementation.
-        // Once hydraulics is available we should improve it.
-        if self.starting_or_started {
-            self.time_since_start += context.delta();
-        }
+    pub fn update(&mut self, gcu: &impl GeneratorControlUnitInterface) {
+        self.update_generated_power(gcu);
+        self.update_resistant_torque(gcu);
 
-        self.supplying = hydraulic.is_rat_hydraulic_loop_pressurised()
-            && self.starting_or_started
-            && self.time_since_start > Duration::from_secs(8);
-    }
-
-    pub fn start(&mut self) {
-        self.starting_or_started = true;
-    }
-
-    #[cfg(test)]
-    pub fn stop(&mut self) {
-        self.starting_or_started = false;
+        self.supplying =
+            self.generated_power > Power::new::<watt>(Self::MIN_POWER_TO_DECLARE_SUPPLYING_WATT);
     }
 
     /// Indicates if the provided electricity's potential and frequency
@@ -69,6 +62,30 @@ impl EmergencyGenerator {
 
     fn should_provide_output(&self) -> bool {
         self.supplying
+    }
+
+    fn update_generated_power(&mut self, gcu: &impl GeneratorControlUnitInterface) {
+        if gcu.hydraulic_motor_speed().get::<revolution_per_minute>()
+            > Self::MIN_RPM_TO_SUPPLY_POWER
+        {
+            self.generated_power = gcu.power_demand();
+        } else {
+            self.generated_power = Power::new::<watt>(0.)
+        }
+    }
+
+    fn update_resistant_torque(&mut self, gcu: &impl GeneratorControlUnitInterface) {
+        if gcu.hydraulic_motor_speed() < AngularVelocity::new::<radian_per_second>(1.) {
+            self.resistant_torque_from_power_gen =
+                Torque::new::<newton_meter>(Self::STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM);
+        } else {
+            let elec_torque = Torque::new::<newton_meter>(
+                gcu.power_demand().get::<watt>()
+                    / gcu.hydraulic_motor_speed().get::<radian_per_second>(),
+            );
+            self.resistant_torque_from_power_gen =
+                elec_torque + (1. - Self::EFFICIENCY) * elec_torque;
+        }
     }
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));
@@ -93,6 +110,14 @@ impl ElectricitySource for EmergencyGenerator {
         } else {
             Potential::none()
         }
+    }
+}
+impl EmergencyGeneratorInterface for EmergencyGenerator {
+    fn power_generated(&self) -> Power {
+        self.generated_power
+    }
+    fn resistant_torque(&self) -> Torque {
+        self.resistant_torque_from_power_gen
     }
 }
 impl SimulationElement for EmergencyGenerator {
@@ -121,6 +146,9 @@ impl SimulationElement for EmergencyGenerator {
 
 #[cfg(test)]
 mod emergency_generator_tests {
+    use std::time::Duration;
+    use uom::si::{f64::*, ratio::ratio};
+
     use super::*;
     use crate::{
         electrical::Electricity,
@@ -165,22 +193,32 @@ mod emergency_generator_tests {
     }
 
     struct TestHydraulicSystem {
-        is_rat_hydraulic_loop_pressurised: bool,
+        motor_speed: AngularVelocity,
     }
     impl TestHydraulicSystem {
         fn new() -> Self {
             Self {
-                is_rat_hydraulic_loop_pressurised: true,
+                motor_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             }
         }
 
-        fn set_rat_hydraulic_loop_pressurised(&mut self, pressurised: bool) {
-            self.is_rat_hydraulic_loop_pressurised = pressurised;
+        fn set_hydraulic_motor_speed(&mut self, speed: AngularVelocity) {
+            self.motor_speed = speed;
         }
     }
-    impl RamAirTurbineHydraulicLoopPressurised for TestHydraulicSystem {
-        fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
-            self.is_rat_hydraulic_loop_pressurised
+    impl GeneratorControlUnitInterface for TestHydraulicSystem {
+        fn valve_position_command(&self) -> Ratio {
+            Ratio::new::<ratio>(0.5)
+        }
+        fn power_demand(&self) -> Power {
+            if self.motor_speed.get::<revolution_per_minute>() > 10000. {
+                Power::new::<watt>(5000.)
+            } else {
+                Power::new::<watt>(0.)
+            }
+        }
+        fn hydraulic_motor_speed(&self) -> AngularVelocity {
+            self.motor_speed
         }
     }
 
@@ -203,16 +241,13 @@ mod emergency_generator_tests {
         }
 
         fn attempt_emer_gen_start(&mut self) {
-            self.emer_gen.start();
+            self.hydraulic
+                .set_hydraulic_motor_speed(AngularVelocity::new::<revolution_per_minute>(12000.));
         }
 
         fn stop_emer_gen(&mut self) {
-            self.emer_gen.stop();
-        }
-
-        fn set_rat_hydraulic_loop_pressurised(&mut self, pressurised: bool) {
             self.hydraulic
-                .set_rat_hydraulic_loop_pressurised(pressurised);
+                .set_hydraulic_motor_speed(AngularVelocity::new::<revolution_per_minute>(0.));
         }
 
         fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
@@ -230,10 +265,10 @@ mod emergency_generator_tests {
     impl Aircraft for TestAircraft {
         fn update_before_power_distribution(
             &mut self,
-            context: &UpdateContext,
+            _context: &UpdateContext,
             electricity: &mut Electricity,
         ) {
-            self.emer_gen.update(context, &self.hydraulic);
+            self.emer_gen.update(&self.hydraulic);
             electricity.supplied_by(&self.emer_gen);
 
             self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.emer_gen.output_within_normal_parameters();
@@ -271,7 +306,7 @@ mod emergency_generator_tests {
         let mut test_bed = EmergencyGeneratorTestBed::new();
 
         test_bed.command(|a| a.attempt_emer_gen_start());
-        test_bed.command(|a| a.set_rat_hydraulic_loop_pressurised(false));
+        //test_bed.command(|a| a.set_rat_hydraulic_loop_pressurised(false));
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(!test_bed.emer_gen_is_powered());

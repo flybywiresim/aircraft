@@ -29,8 +29,8 @@ use systems::{
     shared::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineFirePushButtons, LgciuInterface,
-        RamAirTurbineHydraulicLoopPressurised,
+        EmergencyElectricalState, EmergencyGeneratorInterface, EngineFirePushButtons,
+        GeneratorControlUnitInterface, LgciuInterface,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -266,6 +266,7 @@ impl A320Hydraulic {
         lgciu2: &impl LgciuInterface,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
+        emergency_generator: &impl EmergencyGeneratorInterface,
     ) {
         let min_hyd_loop_timestep =
             Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
@@ -339,6 +340,8 @@ impl A320Hydraulic {
                 self.update_fast_rate(
                     &context.with_delta(delta_time_physics),
                     emergency_elec_state,
+                    rat_and_emer_gen_man_on,
+                    emergency_generator,
                     lgciu1,
                 );
             }
@@ -424,6 +427,10 @@ impl A320Hydraulic {
         self.blue_electric_pump_controller.has_pressure_low_fault()
     }
 
+    pub fn generator_control_unit(&self) -> &impl GeneratorControlUnitInterface {
+        &self.gcu
+    }
+
     #[cfg(test)]
     fn should_pressurise_yellow_pump_for_cargo_door_operation(&self) -> bool {
         self.yellow_electric_pump_controller
@@ -436,6 +443,7 @@ impl A320Hydraulic {
             .nose_wheel_steering_pin_is_inserted()
     }
 
+    #[cfg(test)]
     fn is_blue_pressurised(&self) -> bool {
         self.blue_loop.is_pressurised()
     }
@@ -497,12 +505,15 @@ impl A320Hydraulic {
         &mut self,
         context: &UpdateContext,
         emergency_elec_state: &impl EmergencyElectricalState,
+        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
+        emergency_generator: &impl EmergencyGeneratorInterface,
         lgciu1: &impl LgciuInterface,
     ) {
         self.gcu.update(
             self.emergency_gen.speed(),
             self.blue_loop.pressure(),
             emergency_elec_state,
+            rat_and_emer_gen_man_on,
             lgciu1,
         );
 
@@ -512,8 +523,12 @@ impl A320Hydraulic {
             self.blue_loop.pressure(),
         );
 
-        self.emergency_gen
-            .update(self.blue_loop.pressure(), &self.gcu, context);
+        self.emergency_gen.update(
+            self.blue_loop.pressure(),
+            &self.gcu,
+            emergency_generator,
+            context,
+        );
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -675,11 +690,6 @@ impl A320Hydraulic {
 
         self.braking_circuit_norm.update(context, &self.green_loop);
         self.braking_circuit_altn.update(context, &self.yellow_loop);
-    }
-}
-impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
-    fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
-        self.is_blue_pressurised()
     }
 }
 impl SimulationElement for A320Hydraulic {
@@ -1932,6 +1942,7 @@ mod tests {
 
     mod a320_hydraulics {
         use super::*;
+        use ::systems::hydraulic::electrical_generator::TestGenerator;
         use systems::electrical::test::TestElectricitySource;
         use systems::electrical::ElectricalBus;
         use systems::electrical::Electricity;
@@ -1939,8 +1950,8 @@ mod tests {
         use systems::electrical::ExternalPowerSource;
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
         use systems::landing_gear::{LandingGear, LandingGearControlInterfaceUnit};
-        use systems::shared::EmergencyElectricalState;
         use systems::shared::PotentialOrigin;
+        use systems::shared::{EmergencyElectricalState, GeneratorControlUnitInterface};
         use systems::simulation::test::TestBed;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
@@ -1976,22 +1987,37 @@ mod tests {
         struct A320TestElectrical {
             airspeed: Velocity,
             all_ac_lost: bool,
+            emergency_generator: TestGenerator,
         }
         impl A320TestElectrical {
             pub fn new() -> Self {
                 A320TestElectrical {
                     airspeed: Velocity::new::<knot>(100.),
                     all_ac_lost: false,
+                    emergency_generator: TestGenerator::new(),
                 }
             }
 
-            fn update(&mut self, context: &UpdateContext) {
+            fn update(
+                &mut self,
+                gcu: &impl GeneratorControlUnitInterface,
+                context: &UpdateContext,
+            ) {
                 self.airspeed = context.indicated_airspeed();
+                self.emergency_generator.update(gcu);
             }
         }
         impl EmergencyElectricalState for A320TestElectrical {
             fn is_in_emergency_elec(&self) -> bool {
                 self.all_ac_lost && self.airspeed >= Velocity::new::<knot>(100.)
+            }
+        }
+        impl EmergencyGeneratorInterface for A320TestElectrical {
+            fn power_generated(&self) -> Power {
+                self.emergency_generator.power_generated()
+            }
+            fn resistant_torque(&self) -> Torque {
+                self.emergency_generator.resistant_torque()
             }
         }
         impl SimulationElement for A320TestElectrical {
@@ -2252,7 +2278,7 @@ mod tests {
             }
 
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-                self.electrical.update(context);
+                self.electrical.update(&self.hydraulics.gcu, context);
 
                 self.lgciu1.update(
                     &self.landing_gear,
@@ -2273,6 +2299,7 @@ mod tests {
                     &self.lgciu1,
                     &self.lgciu2,
                     &self.emergency_electrical_overhead,
+                    &self.electrical,
                     &self.electrical,
                 );
 
@@ -2438,7 +2465,7 @@ mod tests {
                 self.read("A32NX_HYD_RAT_RPM")
             }
 
-            fn get_emergency_gen_rpm(&mut self) -> f64 {
+            fn _get_emergency_gen_rpm(&mut self) -> f64 {
                 self.read("HYD_EMERGENCY_GEN_RPM")
             }
 

@@ -118,7 +118,7 @@ impl Aircraft for A320 {
             &self.apu_overhead,
             &self.engine_fire_overhead,
             [&self.engine_1, &self.engine_2],
-            &self.hydraulic,
+            self.hydraulic.generator_control_unit(),
             &self.landing_gear,
         );
 
@@ -153,6 +153,7 @@ impl Aircraft for A320 {
             &self.lgciu1,
             &self.lgciu2,
             &self.emergency_electrical_overhead,
+            &self.electrical,
             &self.electrical,
         );
 
