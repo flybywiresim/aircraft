@@ -1634,11 +1634,8 @@
             <Requires LocalVar="A32NX_ENGINE_N1:2">
                 <Range LowerBound="17" />
             </Requires>
-            <Requires SimVar="AIRSPEED INDICATED" Units="knots" Index="1">
-                <Range UpperBound="50" />
-            </Requires>
-            <Requires LocalVar="AIRLINER_FLIGHT_PHASE">
-                <Range LowerBound="1" UpperBound="3" />
+            <Requires LocalVar="A32NX_FMGC_FLIGHT_PHASE">
+                <Range LowerBound="0" UpperBound="1" />
             </Requires>
         </Sound>
 
