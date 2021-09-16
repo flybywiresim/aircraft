@@ -80,6 +80,8 @@ pub(super) struct A320Hydraulic {
 
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
+
+    flaps_position_request: Angle,
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: usize = 5;
@@ -247,6 +249,8 @@ impl A320Hydraulic {
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
+
+            flaps_position_request: Angle::new::<degree>(0.),
         }
     }
 
@@ -487,11 +491,22 @@ impl A320Hydraulic {
         // TODO Here input the flap computer position request
         // Degrees are in synchrodrive degrees, so from 0 to 231.24°
         self.flap_system.update(
-            Angle::new::<degree>(0.),
+            self.flaps_position_request,
             self.green_loop.pressure(),
             self.yellow_loop.pressure(),
             context,
-        )
+        );
+        println!(
+            "FlapReq {:.1} Pos {:.1} Gpress {:.0} Ypress {:.0}",
+            self.flaps_position_request.get::<degree>(),
+            self.flap_system.position_feedback().get::<degree>(),
+            self.green_loop.pressure().get::<psi>(),
+            self.yellow_loop.pressure().get::<psi>(),
+        );
+    }
+
+    fn set_flap_req(&mut self, angle_req: Angle) {
+        self.flaps_position_request = angle_req;
     }
 
     // All the higher frequency updates like physics
@@ -2189,6 +2204,10 @@ mod tests {
             fn set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ess_powered = bus_is_alive;
             }
+
+            fn set_flaps(&mut self, flaps_angle: Angle) {
+                self.hydraulics.set_flap_req(flaps_angle);
+            }
         }
 
         impl Aircraft for A320HydraulicsTestAircraft {
@@ -2608,6 +2627,11 @@ mod tests {
 
             fn set_ptu_state(mut self, is_auto: bool) -> Self {
                 self.write("OVHD_HYD_PTU_PB_IS_AUTO", is_auto);
+                self
+            }
+
+            fn set_flaps(mut self, flaps_angle: Angle) -> Self {
+                self.command(|a| a.set_flaps(flaps_angle));
                 self
             }
 
@@ -5259,6 +5283,27 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressurised());
+        }
+
+        // TODO Dummy test to try flap system. To complete with correct getters in test bench and asserts
+        #[test]
+        fn yellow_epump_can_deploy_flaps() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Yellow epump working
+            assert!(test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .set_flaps(Angle::new::<degree>(231.5))
+                .run_waiting_for(Duration::from_secs(24));
         }
     }
 }
