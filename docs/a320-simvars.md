@@ -868,6 +868,10 @@
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
 
+- A32NX_HYD_EMERGENCY_GEN_RPM
+    - Rpm
+    - Hydraulic emergency generator current rpm
+
 - A32NX_PARK_BRAKE_LEVER_POS
     - Bool
     - Current position of the parking brake lever

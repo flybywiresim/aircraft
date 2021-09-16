@@ -346,8 +346,6 @@ impl SimulationElement for ElectricalEmergencyGenerator {
             "HYD_EMERGENCY_GEN_RPM",
             self.speed().get::<revolution_per_minute>(),
         );
-
-        writer.write("HYD_EMERGENCY_GEN_POWER", self.produced_power.get::<watt>());
     }
 }
 
