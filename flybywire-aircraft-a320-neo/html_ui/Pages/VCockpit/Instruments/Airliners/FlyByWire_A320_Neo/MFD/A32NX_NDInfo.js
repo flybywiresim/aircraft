@@ -41,7 +41,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.VORRight = new VORDMENavAid(this.querySelector("#VORDMENavaid_Right"), 2);
         this.elapsedTime = this.querySelector("#ElapsedTime");
         this.elapsedTimeValue = this.querySelector("#ET_Value");
-        this.setWind(0, 0, 0, true);
+        this.setWind(Arinc429Word.empty(), Arinc429Word.empty(), Arinc429Word.empty(), true);
         this.setWaypoint("", 0, 0, 0, true);
         this.setMode(this._navMode, this._navSource, true);
     }
@@ -100,11 +100,11 @@ class Jet_MFD_NDInfo extends HTMLElement {
         }
     }
     updateSpeeds(airDataReferenceSource, inertialReferenceSource) {
-        const windDirection = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_WIND_DIRECTION`, "Degrees");
-        const windVelocity = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_WIND_VELOCITY`, "Knots");
-        const heading = ADIRS.getValue(`L:A32NX_ADIRS_IR_${airDataReferenceSource}_HEADING`, "Degrees");
+        const windDirection = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_WIND_DIRECTION`);
+        const windVelocity = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_WIND_VELOCITY`);
+        const heading = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${airDataReferenceSource}_HEADING`);
 
-        this.setWind(Math.round(windDirection), Math.round(windVelocity), heading);
+        this.setWind(windDirection, windVelocity, heading);
     }
     updateWaypoint() {
         const wpETE = SimVar.GetSimVarValue("GPS WP ETE", "seconds"); // ETE is not available in Simplane 🙄
@@ -113,10 +113,10 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.setWaypoint(Simplane.getNextWaypointName(), Math.round(Simplane.getNextWaypointTrack()), Simplane.getNextWaypointDistance(), utcETA, true);
     }
     setWind(_windAngle, _windStrength, _planeAngle, _force = false) {
-        const anyNaN = Number.isNaN(_windAngle) || Number.isNaN(_windStrength) || Number.isNaN(_planeAngle);
-        const windAngle = anyNaN ? 0 : _windAngle;
-        const windStrength = anyNaN ? 0 : _windStrength;
-        const planeAngle = anyNaN ? 0 : _planeAngle;
+        const anyAbnormal = !_windAngle.isNormal() || !_windStrength.isNormal() || !_planeAngle.isNormal();
+        const windAngle = anyAbnormal ? 0 : Math.round(_windAngle.value);
+        const windStrength = anyAbnormal ? 0 : Math.round(_windStrength.value);
+        const planeAngle = anyAbnormal ? 0 : _planeAngle.value;
         const refreshWindAngle = ((windAngle != this.currentWindAngle) || _force);
         const refreshWindStrength = ((windStrength != this.currentWindStrength) || _force);
         const refreshWindArrow = (refreshWindAngle || refreshWindStrength || (planeAngle != this.currentPlaneAngle) || _force);

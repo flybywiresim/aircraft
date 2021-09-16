@@ -108,10 +108,10 @@ var A320_Neo_LowerECAM_APU;
             }
 
             const lowFuelPressure = Arinc429Word.fromSimVarValue("L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT");
-            toggleVisibility(this.FuelLoPr, lowFuelPressure.isNormal() && lowFuelPressure.value());
+            toggleVisibility(this.FuelLoPr, lowFuelPressure.isNormal() && lowFuelPressure.value);
 
             const apuFlapFullyOpen = Arinc429Word.fromSimVarValue("L:A32NX_APU_FLAP_FULLY_OPEN");
-            toggleVisibility(this.APUFlapOpen, apuFlapFullyOpen.isNormal() && apuFlapFullyOpen.value());
+            toggleVisibility(this.APUFlapOpen, apuFlapFullyOpen.isNormal() && apuFlapFullyOpen.value);
         }
 
         shouldShowApuData() {
@@ -140,7 +140,7 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef1.currentValuePos.x = 0.8;
             gaugeDef1.currentValuePos.y = 0.74;
             gaugeDef1.currentValueFunction = () => {
-                return this.n.value();
+                return this.n.value;
             };
             this.apuNGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuNGauge.id = "APU_N_Gauge";
@@ -160,20 +160,20 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef2.currentValuePrecision = 0;
             gaugeDef2.minValue = 300;
             gaugeDef2.maxValue = 1100;
-            gaugeDef2.minRedValue = this.warningEgt.value();
+            gaugeDef2.minRedValue = this.warningEgt.value;
             gaugeDef2.maxRedValue = 1100;
-            gaugeDef2.warningRange[0] = this.cautionEgt.value();
-            gaugeDef2.warningRange[1] = this.warningEgt.value();
-            gaugeDef2.dangerRange[0] = this.warningEgt.value();
+            gaugeDef2.warningRange[0] = this.cautionEgt.value;
+            gaugeDef2.warningRange[1] = this.warningEgt.value;
+            gaugeDef2.dangerRange[0] = this.warningEgt.value;
             gaugeDef2.dangerRange[1] = 1100;
             gaugeDef2.currentValuePos.x = 0.8;
             gaugeDef2.currentValuePos.y = 0.74;
             gaugeDef2.currentValueFunction = () => {
-                return this.egt.value();
+                return this.egt.value;
             };
             gaugeDef2.roundDisplayValueToNearest = 5;
             gaugeDef2.outerDynamicMarkerFunction = () => {
-                return ["EGTCaution", this.cautionEgt.value()];
+                return ["EGTCaution", this.cautionEgt.value];
             };
             this.apuEGTGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuEGTGauge.id = "APU_EGT_Gauge";
@@ -210,10 +210,10 @@ var A320_Neo_LowerECAM_APU;
         }
 
         setCautionAndWarningRanges() {
-            this.apuEGTGauge.minRedValue = this.warningEgt.value();
-            this.apuEGTGauge.dangerRange[0] = this.warningEgt.value();
-            this.apuEGTGauge.warningRange[0] = this.cautionEgt.value();
-            this.apuEGTGauge.warningRange[1] = this.warningEgt.value();
+            this.apuEGTGauge.minRedValue = this.warningEgt.value;
+            this.apuEGTGauge.dangerRange[0] = this.warningEgt.value;
+            this.apuEGTGauge.warningRange[0] = this.cautionEgt.value;
+            this.apuEGTGauge.warningRange[1] = this.warningEgt.value;
         }
 
         shouldShowApuData() {

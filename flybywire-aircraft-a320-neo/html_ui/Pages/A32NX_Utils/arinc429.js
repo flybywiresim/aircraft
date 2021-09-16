@@ -2,8 +2,8 @@ class Arinc429Word {
     constructor(value) {
         Arinc429Word.f64View[0] = value;
 
-        this._ssm = Arinc429Word.u32View[0];
-        this._value = Arinc429Word.f32View[1];
+        this.ssm = Arinc429Word.u32View[0];
+        this.value = Arinc429Word.f32View[1];
     }
 
     static empty() {
@@ -14,12 +14,20 @@ class Arinc429Word {
         return new Arinc429Word(SimVar.GetSimVarValue(name, "number"));
     }
 
-    value() {
-        return this._value;
+    isNormal() {
+        return this.ssm === Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 
-    isNormal() {
-        return this._ssm === Arinc429Word.SignStatusMatrix.NormalOperation;
+    /**
+     * Returns the value when normal, the supplied default value otherwise.
+     */
+    valueOr(defaultValue) {
+        return this.isNormal() ? this.value : defaultValue;
+    }
+
+    equals(other) {
+        return this === other
+            || (typeof other !== "undefined" && other !== null && this.value === other.value && this.ssm === other.ssm);
     }
 }
 
