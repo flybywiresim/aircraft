@@ -109,7 +109,6 @@ export const PFD: React.FC = () => {
 
     const FlightPhase = getSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
-    // eslint-disable-next-line no-undef
     const pressureMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
 
     const mach = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_MACH`);
