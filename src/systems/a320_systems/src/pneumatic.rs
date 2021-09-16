@@ -1,4 +1,5 @@
 use core::panic;
+use std::time::Duration;
 
 use crate::{
     hydraulic::{A320Hydraulic, FakeHydraulicReservoir},
@@ -25,8 +26,8 @@ use systems::{
         PneumaticContainerWithValve, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
-        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
-        PneumaticValve,
+        ControllerSignal, DelayedTrueLogicGate, EngineCorrectedN1, EngineCorrectedN2,
+        EngineFirePushButtons, PneumaticValve,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
@@ -247,7 +248,7 @@ impl A320Pneumatic {
         &mut self,
         context: &UpdateContext,
         engines: [&T; 2],
-        overhead_panel: &A320PneumaticOverheadPanel,
+        overhead_panel: &mut A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         hydraulics: &A320Hydraulic,
     ) {
@@ -263,6 +264,7 @@ impl A320Pneumatic {
 
         for bmc in self.bmcs.iter_mut() {
             bmc.update(
+                context,
                 &self.engine_systems,
                 self.apu_bleed_air_valve.is_open(),
                 overhead_panel,
@@ -459,6 +461,7 @@ trait EngineBleedDataProvider {
     fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature;
     fn precooler_supply_temperature(&self) -> ThermodynamicTemperature;
     fn prv_open_amount(&self) -> Ratio;
+    fn prv_is_open(&self) -> bool;
     fn hpv_open_amount(&self) -> Ratio;
     fn esv_is_open(&self) -> bool;
 }
@@ -482,30 +485,29 @@ impl BleedMonitoringComputer {
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         sensors: &[EngineBleedAirSystem; 2],
         apu_bleed_valve_is_open: bool,
-        overhead_panel: &A320PneumaticOverheadPanel,
+        overhead_panel: &mut A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         cross_bleed_valve_is_open: bool,
     ) {
         self.main_channel.update(
+            context,
             &sensors[self.main_channel_engine_number - 1],
-            overhead_panel.engine_bleed_pb_is_auto(self.main_channel_engine_number),
             engine_fire_push_buttons.is_released(self.main_channel_engine_number),
-            overhead_panel.apu_bleed_is_on(),
             apu_bleed_valve_is_open,
-            overhead_panel.cross_bleed_mode(),
             cross_bleed_valve_is_open,
+            overhead_panel,
         );
 
         self.backup_channel.update(
+            context,
             &sensors[self.backup_channel_engine_number - 1],
-            overhead_panel.engine_bleed_pb_is_auto(self.backup_channel_engine_number),
             engine_fire_push_buttons.is_released(self.backup_channel_engine_number),
-            overhead_panel.apu_bleed_is_on(),
             apu_bleed_valve_is_open,
-            overhead_panel.cross_bleed_mode(),
             cross_bleed_valve_is_open,
+            overhead_panel,
         );
     }
 }
@@ -531,6 +533,7 @@ struct BleedMonitoringComputerChannel {
     prv_output: f64,
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
     cross_bleed_valve_is_open: bool,
+    engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor,
 }
 impl BleedMonitoringComputerChannel {
     fn new(engine_number: usize) -> Self {
@@ -553,18 +556,18 @@ impl BleedMonitoringComputerChannel {
             prv_output: 0.,
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
+            engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor::new(engine_number),
         }
     }
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         sensors: &impl EngineBleedDataProvider,
-        is_engine_bleed_pushbutton_auto: bool,
         is_engine_fire_pushbutton_released: bool,
-        is_apu_bleed_on: bool,
         apu_bleed_valve_is_open: bool,
-        cross_bleed_valve_selector: CrossBleedValveSelectorMode,
         cross_bleed_valve_is_open: bool,
+        overhead_panel: &mut A320PneumaticOverheadPanel,
     ) {
         self.ip_compressor_pressure = sensors.ip_pressure();
         self.hp_compressor_pressure = sensors.hp_pressure();
@@ -584,14 +587,35 @@ impl BleedMonitoringComputerChannel {
         self.hpv_open_position = sensors.hpv_open_amount();
         self.esv_is_open = sensors.esv_is_open();
 
-        self.is_engine_bleed_pushbutton_auto = is_engine_bleed_pushbutton_auto;
+        self.is_engine_bleed_pushbutton_auto =
+            overhead_panel.engine_bleed_pb_is_auto(self.engine_number);
         self.is_engine_fire_pushbutton_released = is_engine_fire_pushbutton_released;
 
         self.is_apu_bleed_valve_open = apu_bleed_valve_is_open;
-        self.is_apu_bleed_on = is_apu_bleed_on;
+        self.is_apu_bleed_on = overhead_panel.apu_bleed_is_on();
 
-        self.cross_bleed_valve_selector = cross_bleed_valve_selector;
+        self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
         self.cross_bleed_valve_is_open = cross_bleed_valve_is_open;
+
+        self.engine_bleed_fault_light_monitor.update(
+            context,
+            !sensors.prv_is_open(),
+            !sensors.esv_is_open(),
+            !apu_bleed_valve_is_open,
+            overhead_panel.apu_bleed_is_on(),
+            overhead_panel.cross_bleed_mode() == CrossBleedValveSelectorMode::Shut,
+            !cross_bleed_valve_is_open,
+            sensors.precooler_inlet_pressure(),
+            sensors.precooler_outlet_temperature(),
+        );
+
+        self.update_fault_lights(overhead_panel);
+    }
+
+    fn update_fault_lights(&self, overhead_panel: &mut A320PneumaticOverheadPanel) {
+        if let Some(signal) = self.engine_bleed_fault_light_monitor.signal() {
+            overhead_panel.set_engine_bleed_has_fault(self.engine_number, signal.fault_light_is_on);
+        }
     }
 }
 impl ControllerSignal<IntermediatePressureValveSignal> for BleedMonitoringComputerChannel {
@@ -645,6 +669,99 @@ impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
         // Some(FanAirValveSignal::new_open())
         Some(FanAirValveSignal::new_closed())
         // None
+    }
+}
+
+struct FaultLightSignal {
+    fault_light_is_on: bool,
+}
+impl FaultLightSignal {
+    fn new(fault_light_is_on: bool) -> Self {
+        Self { fault_light_is_on }
+    }
+}
+
+// Such a monitor does not exist in the real aircraft, I am only putting this in for code separation concerns
+struct EngineBleedFaultLightMonitor {
+    engine_number: usize,
+    prv_not_in_commanded_position_for_eight_seconds: DelayedTrueLogicGate,
+    overtemperature_for_55_seconds: DelayedTrueLogicGate,
+    overpressure_for_15_seconds: DelayedTrueLogicGate,
+}
+impl EngineBleedFaultLightMonitor {
+    fn new(engine_number: usize) -> Self {
+        Self {
+            engine_number,
+            prv_not_in_commanded_position_for_eight_seconds: DelayedTrueLogicGate::new(
+                Duration::from_secs(8),
+            ),
+            overtemperature_for_55_seconds: DelayedTrueLogicGate::new(Duration::from_secs(55)),
+            overpressure_for_15_seconds: DelayedTrueLogicGate::new(Duration::from_secs(15)),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        is_prv_fully_closed: bool,
+        is_esv_fully_closed: bool,
+        is_abv_fully_closed: bool,
+        is_apu_bleed_pb_on: bool,
+        is_cross_bleed_selector_shut: bool,
+        is_xbv_valve_fully_closed: bool,
+        precooler_inlet_pressure: Pressure,
+        precooler_outlet_temperature: ThermodynamicTemperature,
+    ) {
+        self.overtemperature_for_55_seconds.update(
+            context,
+            precooler_outlet_temperature > ThermodynamicTemperature::new::<degree_celsius>(257.),
+        );
+
+        self.overpressure_for_15_seconds.update(
+            context,
+            precooler_inlet_pressure > Pressure::new::<psi>(57.),
+        );
+
+        let should_prv_be_closed = self.should_prv_be_closed(
+            is_esv_fully_closed,
+            is_abv_fully_closed,
+            is_apu_bleed_pb_on,
+            is_cross_bleed_selector_shut,
+            is_xbv_valve_fully_closed,
+        );
+
+        self.prv_not_in_commanded_position_for_eight_seconds
+            .update(context, !is_prv_fully_closed && should_prv_be_closed);
+    }
+
+    fn should_prv_be_closed(
+        &self,
+        is_esv_fully_closed: bool,
+        is_abv_fully_closed: bool,
+        is_apu_bleed_pb_on: bool,
+        is_cross_bleed_selector_shut: bool,
+        is_xbv_valve_fully_closed: bool,
+    ) -> bool {
+        let is_apu_providing_air = !is_abv_fully_closed && is_apu_bleed_pb_on;
+        let apu_bleed_closure_condition = !is_cross_bleed_selector_shut && is_apu_providing_air;
+
+        let is_engine_one = self.engine_number == 1;
+        let cross_bleed_closure_condition = is_apu_providing_air
+            && is_engine_one
+            && is_cross_bleed_selector_shut
+            && is_xbv_valve_fully_closed;
+
+        return !is_esv_fully_closed
+            || apu_bleed_closure_condition
+            || cross_bleed_closure_condition;
+    }
+}
+impl ControllerSignal<FaultLightSignal> for EngineBleedFaultLightMonitor {
+    fn signal(&self) -> Option<FaultLightSignal> {
+        Some(FaultLightSignal::new(
+            self.prv_not_in_commanded_position_for_eight_seconds
+                .output(),
+        ))
     }
 }
 
@@ -851,6 +968,10 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
     fn esv_is_open(&self) -> bool {
         self.es_valve.is_open()
     }
+
+    fn prv_is_open(&self) -> bool {
+        self.pr_valve.is_open()
+    }
 }
 impl SimulationElement for EngineBleedAirSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
@@ -999,6 +1120,14 @@ impl A320PneumaticOverheadPanel {
             _ => panic!("Invalid engine number"),
         }
     }
+
+    pub fn set_engine_bleed_has_fault(&mut self, engine_number: usize, has_fault: bool) {
+        match engine_number {
+            1 => self.engine_1_bleed.set_fault(has_fault),
+            2 => self.engine_2_bleed.set_fault(has_fault),
+            _ => panic!("Invalid engine number"),
+        }
+    }
 }
 impl SimulationElement for A320PneumaticOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1131,7 +1260,7 @@ mod tests {
             self.pneumatic.update(
                 context,
                 [&self.engine_1, &self.engine_2],
-                &self.overhead_panel,
+                &mut self.overhead_panel,
                 &self.fire_pushbuttons,
                 &self.hydraulic,
             );
