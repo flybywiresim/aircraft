@@ -673,6 +673,7 @@ impl InertialReference {
     const LATITUDE: &'static str = "LATITUDE";
     const LONGITUDE: &'static str = "LONGITUDE";
     const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
+    const MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS: f64 = 50.;
 
     fn new(number: usize) -> Self {
         Self {
@@ -810,7 +811,18 @@ impl InertialReference {
             SignStatus::NoComputedData
         };
 
-        self.track.set_value(simulator_data.track, ssm);
+        let ground_speed_above_minimum_threshold = simulator_data.ground_speed
+            >= Velocity::new::<knot>(Self::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS);
+
+        self.track.set_value(
+            if ground_speed_above_minimum_threshold {
+                simulator_data.track
+            } else {
+                simulator_data.heading
+            },
+            ssm,
+        );
+
         self.vertical_speed
             .set_value(simulator_data.vertical_speed.get::<foot_per_minute>(), ssm);
         self.ground_speed
@@ -2059,9 +2071,33 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn track_is_supplied_by_ir(#[case] adiru_number: usize) {
+        fn track_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
+            #[case] adiru_number: usize,
+        ) {
             let angle = Angle::new::<degree>(160.);
-            let mut test_bed = all_adirus_aligned_test_bed_with().track_of(angle);
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .track_of(angle)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ));
+            test_bed.run();
+
+            assert_eq!(test_bed.track(adiru_number).unwrap(), angle);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn track_is_heading_when_ground_speed_less_than_50_knots(#[case] adiru_number: usize) {
+            let angle = Angle::new::<degree>(160.);
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .heading_of(angle)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
+                ));
             test_bed.run();
 
             assert_eq!(test_bed.track(adiru_number).unwrap(), angle);

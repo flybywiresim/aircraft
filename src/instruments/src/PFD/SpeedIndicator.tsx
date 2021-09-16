@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Arinc429Word } from '@instruments/common/arinc429';
 import { VerticalTape, BarberpoleIndicator } from './PFDUtils';
 import { getSimVar } from '../util.js';
@@ -241,22 +241,33 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
 
 interface MachNumberProps {
     mach: Arinc429Word,
-    airspeedAcc: number,
 }
 
-export const MachNumber = ({ mach, airspeedAcc }: MachNumberProps) => {
+export const MachNumber = ({ mach }: MachNumberProps) => {
+    const machPermille = Math.round(mach.valueOr(0) * 1000);
+    const [showMach, setShowMach] = useState(machPermille > 500);
+
+    useEffect(() => {
+        if (showMach && machPermille < 450) {
+            setShowMach(false);
+        }
+        if (!showMach && machPermille > 500) {
+            setShowMach(true);
+        }
+    }, [showMach, machPermille]);
+
     if (!mach.isNormal()) {
         return (
             <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
         );
     }
 
-    if ((airspeedAcc >= 0 && mach.value < 0.5) || (airspeedAcc < 0 && mach.value <= 0.45)) {
+    if (!showMach) {
         return null;
     }
 
     return (
-        <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.4257932" y="136.88908">{`.${Math.round(mach.value * 1000)}`}</text>
+        <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.4257932" y="136.88908">{`.${machPermille}`}</text>
     );
 };
 

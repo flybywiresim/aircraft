@@ -1015,7 +1015,6 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_ALT_CPT_during(void)
 void AutopilotStateMachineModelClass::AutopilotStateMachine_ALT_CPT(void)
 {
   real_T tmp;
-  boolean_T guard1 = false;
   boolean_T tmp_0;
   if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
       AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
@@ -1051,23 +1050,14 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_ALT_CPT(void)
       } else if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT) {
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_ALT;
         AutopilotStateMachine_ALT_entry();
+      } else if ((std::abs(AutopilotStateMachine_DWork.local_H_fcu_ft -
+                           AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft) > 250.0) ||
+                 AutopilotStateMachine_B.BusAssignment_g.input.Slew_trigger) {
+        AutopilotStateMachine_B.out.mode_reversion = true;
+        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
+        AutopilotStateMachine_VS_entry();
       } else {
-        guard1 = false;
-        if ((std::abs(AutopilotStateMachine_DWork.local_H_fcu_ft -
-                      AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft) > 250.0) ||
-            AutopilotStateMachine_B.BusAssignment_g.input.Slew_trigger) {
-          AutopilotStateMachine_B.out.mode_reversion = true;
-          guard1 = true;
-        } else if (AutopilotStateMachine_B.BusAssignment_g.input.VS_push) {
-          guard1 = true;
-        } else {
-          AutopilotStateMachine_ALT_CPT_during();
-        }
-
-        if (guard1) {
-          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
-          AutopilotStateMachine_VS_entry();
-        }
+        AutopilotStateMachine_ALT_CPT_during();
       }
     }
   }

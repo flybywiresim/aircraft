@@ -4,6 +4,15 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.8.0
+1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
+1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
+1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
+1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
+1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
+1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
+1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
@@ -426,7 +435,6 @@
 1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
 1. [FBW] Improved pitch/C* law using streamlined pitch rate target - @aguther (Andreas Guther)
 1. [AP] Improved ALT* law that targets 0.05g capture - @aguther (Andreas Guther)
-1. [AP] Allow V/S push (level off) during ALT* - @aguther (Andreas Guther)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
