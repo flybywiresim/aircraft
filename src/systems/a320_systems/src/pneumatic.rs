@@ -178,6 +178,29 @@ impl ControlledPneumaticValveSignal for FanAirValveSignal {
     }
 }
 
+struct PackFlowValveSignal {
+    target_open_amount: Ratio,
+}
+impl PackFlowValveSignal {
+    fn new(target_open_amount: Ratio) -> Self {
+        Self { target_open_amount }
+    }
+
+    fn new_closed() -> Self {
+        Self::new(Ratio::new::<percent>(0.))
+    }
+
+    fn new_open() -> Self {
+        Self::new(Ratio::new::<percent>(100.))
+    }
+}
+
+impl ControlledPneumaticValveSignal for PackFlowValveSignal {
+    fn target_open_amount(&self) -> Ratio {
+        self.target_open_amount
+    }
+}
+
 pub struct A320Pneumatic {
     bmcs: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
@@ -196,6 +219,8 @@ pub struct A320Pneumatic {
     green_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
     blue_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
     yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
+
+    packs: [PackComplex; 2],
 }
 impl A320Pneumatic {
     pub fn new() -> Self {
@@ -241,6 +266,7 @@ impl A320Pneumatic {
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
             ),
+            packs: [PackComplex::new(1), PackComplex::new(2)],
         }
     }
 
@@ -311,6 +337,9 @@ impl A320Pneumatic {
             .update_flow_through_valve(context, &mut left[0]);
         self.yellow_hydraulic_reservoir_with_valve
             .update_flow_through_valve(context, &mut left[0]);
+
+        self.packs[0].update(context, &mut left[0]);
+        self.packs[1].update(context, &mut right[0]);
     }
 
     // TODO: Returning a mutable reference here is not great. I was running into an issue with the update order:
@@ -359,6 +388,10 @@ impl A320Pneumatic {
     pub fn yellow_hydraulic_reservoir_pressure(&self) -> Pressure {
         self.yellow_hydraulic_reservoir_with_valve.pressure()
     }
+
+    pub fn pack_flow_valve_is_open(&self, number: usize) -> bool {
+        self.packs[number - 1].pack_flow_valve_is_open()
+    }
 }
 impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
@@ -372,6 +405,10 @@ impl SimulationElement for A320Pneumatic {
         }
 
         self.fadec.accept(visitor);
+
+        for pack in self.packs.iter_mut() {
+            pack.accept(visitor)
+        }
 
         visitor.visit(self);
     }
@@ -1167,6 +1204,100 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
     }
 }
 
+// Just sticking all of the pack related things into this.
+struct PackComplex {
+    consumer: DefaultConsumer,
+    consumer_controller: ConstantConsumerController,
+    pack_flow_valve: DefaultValve,
+    pack_flow_valve_controller: PackFlowValveController,
+}
+impl PackComplex {
+    fn new(engine_number: usize) -> Self {
+        Self {
+            consumer: DefaultConsumer::new(Volume::new::<cubic_meter>(5.)),
+            // TODO: This should be like 0.75 m^3/s which is a consumption rate of about 0.4 kg/s.
+            // Due to the way consumers work right now, this has been set to 0.
+            consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
+                cubic_meter_per_second,
+            >(0.)),
+            pack_flow_valve: DefaultValve::new_closed(),
+            pack_flow_valve_controller: PackFlowValveController::new(engine_number),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, from: &mut impl PneumaticContainer) {
+        self.pack_flow_valve
+            .update_open_amount(&self.pack_flow_valve_controller);
+
+        self.pack_flow_valve
+            .update_move_fluid(context, from, &mut self.consumer);
+
+        self.consumer_controller.update(context);
+        self.consumer.update(&self.consumer_controller);
+    }
+
+    pub fn pack_flow_valve_is_open(&self) -> bool {
+        self.pack_flow_valve.is_open()
+    }
+}
+impl PneumaticContainer for PackComplex {
+    fn pressure(&self) -> Pressure {
+        self.consumer.pressure()
+    }
+
+    fn volume(&self) -> Volume {
+        self.consumer.volume()
+    }
+
+    fn temperature(&self) -> ThermodynamicTemperature {
+        self.consumer.temperature()
+    }
+
+    fn change_volume(&mut self, volume: Volume) {
+        self.consumer.change_volume(volume);
+    }
+
+    fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
+        self.consumer.update_temperature(temperature_change);
+    }
+}
+impl SimulationElement for PackComplex {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        self.pack_flow_valve_controller.accept(visitor);
+    }
+}
+
+// This will probably be removed in the future, but
+struct PackFlowValveController {
+    engine_number: usize,
+    pack_pb_is_auto: bool,
+}
+impl PackFlowValveController {
+    fn new(engine_number: usize) -> Self {
+        Self {
+            engine_number,
+            pack_pb_is_auto: true,
+        }
+    }
+}
+impl ControllerSignal<PackFlowValveSignal> for PackFlowValveController {
+    fn signal(&self) -> Option<PackFlowValveSignal> {
+        Some(match self.pack_pb_is_auto {
+            true => PackFlowValveSignal::new_open(),
+            false => PackFlowValveSignal::new_closed(),
+        })
+    }
+}
+impl SimulationElement for PackFlowValveController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.pack_pb_is_auto =
+            reader.read(&format!("A32NX_AIRCOND_PACK{}_TOGGLE", self.engine_number));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1537,6 +1668,21 @@ mod tests {
         fn yellow_hydraulic_reservoir_pressure(&self) -> Pressure {
             self.query(|a| a.pneumatic.yellow_hydraulic_reservoir_pressure())
         }
+
+        fn set_pack_flow_pb_is_auto(mut self, number: usize, is_auto: bool) -> Self {
+            self.write(&format!("A32NX_AIRCOND_PACK{}_TOGGLE", number), is_auto);
+
+            self
+        }
+
+        fn pack_flow_valve_is_open(&self, number: usize) -> bool {
+            self.query(|a| a.pneumatic.pack_flow_valve_is_open(number))
+        }
+
+        fn both_packs_auto(mut self) -> Self {
+            self.set_pack_flow_pb_is_auto(1, true)
+                .set_pack_flow_pb_is_auto(2, true)
+        }
     }
 
     fn test_bed() -> PneumaticTestBed {
@@ -1558,9 +1704,10 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .stop_eng1()
+            .idle_eng1()
             .stop_eng2()
-            .set_bleed_air_running()
+            .both_packs_auto()
+            // .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
 
         let mut ts = Vec::new();
@@ -2081,6 +2228,22 @@ mod tests {
             (test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(14.7)).abs()
                 < pressure_tolerance()
         )
+    }
+
+    #[test]
+    fn pack_flow_valve_closes_with_pack_pb_off() {
+        let mut test_bed = test_bed_with()
+            .set_pack_flow_pb_is_auto(1, true)
+            .set_pack_flow_pb_is_auto(2, false)
+            .and_run();
+
+        assert!(test_bed.pack_flow_valve_is_open(1));
+        assert!(!test_bed.pack_flow_valve_is_open(2));
+
+        test_bed = test_bed.set_pack_flow_pb_is_auto(1, false).and_run();
+
+        assert!(!test_bed.pack_flow_valve_is_open(1));
+        assert!(!test_bed.pack_flow_valve_is_open(2));
     }
 
     mod ovhd {

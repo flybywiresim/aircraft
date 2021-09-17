@@ -381,7 +381,7 @@ impl DefaultConsumer {
             pipe: DefaultPipe::new(
                 volume,
                 Fluid::new(Pressure::new::<pascal>(142000.)),
-                Pressure::new::<psi>(1.),
+                Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
         }
