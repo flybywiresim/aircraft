@@ -1590,19 +1590,6 @@ mod tests {
             self
         }
 
-        fn set_engine_bleed_push_button_has_fault(
-            mut self,
-            number: usize,
-            has_fault: bool,
-        ) -> Self {
-            self.write(
-                &format!("OVHD_PNEU_ENG_{}_BLEED_PB_HAS_FAULT", number),
-                has_fault,
-            );
-
-            self
-        }
-
         fn set_apu_bleed_valve_signal(mut self, signal: ApuBleedAirValveSignal) -> Self {
             self.command(|a| a.apu.set_bleed_air_valve_signal(signal));
 
@@ -2263,22 +2250,6 @@ mod tests {
 
             assert!(!test_bed.engine_bleed_push_button_is_auto(1));
             assert!(!test_bed.engine_bleed_push_button_is_auto(2));
-        }
-
-        #[test]
-        fn ovhd_engine_bleed_push_buttons_fault_lights() {
-            let mut test_bed = test_bed().and_run();
-
-            assert!(!test_bed.engine_bleed_push_button_has_fault(1));
-            assert!(!test_bed.engine_bleed_push_button_has_fault(2));
-
-            test_bed = test_bed
-                .set_engine_bleed_push_button_has_fault(1, true)
-                .set_engine_bleed_push_button_has_fault(2, true)
-                .and_run();
-
-            assert!(test_bed.engine_bleed_push_button_has_fault(1));
-            assert!(test_bed.engine_bleed_push_button_has_fault(2));
         }
 
         #[test]
