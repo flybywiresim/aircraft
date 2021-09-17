@@ -748,7 +748,7 @@ export class ManagedFlightPlan {
         const airportInfo = origin.infos as AirportInfo;
 
         // Set origin fix coordinates to runway beginning coordinates
-        if (selectedOriginRunwayIndex !== -1) {
+        if (origin && selectedOriginRunwayIndex !== -1) {
             origin.infos.coordinates = airportInfo.oneWayRunways[selectedOriginRunwayIndex].beginningCoordinates;
         }
 
