@@ -1632,8 +1632,14 @@
 
         <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_takeoff" LocalVar="A32NX_CABIN_READY" NodeName="PEDALS_LEFT" Continuous="false">
             <Range LowerBound="1" />
-            <Requires LocalVar="AIRLINER_FLIGHT_PHASE">
-                <Range UpperBound="4" />
+            <Requires LocalVar="A32NX_ENGINE_N1:1">
+                <Range LowerBound="17" />
+            </Requires>
+            <Requires LocalVar="A32NX_ENGINE_N1:2">
+                <Range LowerBound="17" />
+            </Requires>
+            <Requires LocalVar="A32NX_FMGC_FLIGHT_PHASE">
+                <Range LowerBound="0" UpperBound="1" />
             </Requires>
         </Sound>
 
