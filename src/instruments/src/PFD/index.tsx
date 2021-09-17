@@ -51,7 +51,7 @@ export const PFD: React.FC = () => {
 
     const [vls, setVls] = useState(0);
 
-    const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+    const [_, forceUpdate] = useReducer((x) => (x > Number.MAX_SAFE_INTEGER ? 0 : x + 1), 0);
     useUpdate((deltaTime) => {
         failuresConsumer.update();
 
