@@ -7,18 +7,20 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { EfisOption } from '../index';
+import { EfisOption, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { Degrees } from '../../../../../typings';
 
 export interface PlanModeProps {
+    symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: number,
     ppos: LatLongData,
     efisOption: EfisOption,
+    side: EfisSide,
     mapHidden: boolean,
 }
 
-export const PlanMode: FC<PlanModeProps> = ({ adirsAlign, rangeSetting, ppos, efisOption, mapHidden }) => {
+export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting, ppos, efisOption, side, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
@@ -51,6 +53,8 @@ export const PlanMode: FC<PlanModeProps> = ({ adirsAlign, rangeSetting, ppos, ef
                 y={384}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
+                symbols={symbols}
+                side={side}
                 constraints={efisOption === EfisOption.Constraints}
                 debug={false}
                 temp
@@ -66,6 +70,8 @@ export const PlanMode: FC<PlanModeProps> = ({ adirsAlign, rangeSetting, ppos, ef
                     y={384}
                     flightPlanManager={flightPlanManager}
                     mapParams={mapParams}
+                    symbols={symbols}
+                    side={side}
                     constraints={efisOption === EfisOption.Constraints}
                     debug={false}
                     temp={false}

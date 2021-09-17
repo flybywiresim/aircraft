@@ -8,11 +8,12 @@ import { TuningMode } from '@fmgc/radionav';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { EfisOption, EfisSide, Mode } from '../index';
+import { Mode, EfisSide, EfisOption } from '@shared/NavigationDisplay';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface RoseModeProps {
+    symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: number,
     mode: Mode.ROSE_ILS | Mode.ROSE_VOR | Mode.ROSE_NAV,
@@ -22,7 +23,7 @@ export interface RoseModeProps {
     mapHidden: boolean,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, side, ppos, efisOption, mapHidden }) => {
+export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, efisOption, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -54,7 +55,9 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
                     x={384}
                     y={384}
                     flightPlanManager={flightPlanManager}
+                    symbols={symbols}
                     mapParams={mapParams}
+                    side={side}
                     constraints={efisOption === EfisOption.Constraints}
                     debug={false}
                     temp
@@ -70,7 +73,9 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
                                 x={384}
                                 y={384}
                                 flightPlanManager={flightPlanManager}
+                                symbols={symbols}
                                 mapParams={mapParams}
+                                side={side}
                                 constraints={efisOption === EfisOption.Constraints}
                                 debug={false}
                                 temp={false}

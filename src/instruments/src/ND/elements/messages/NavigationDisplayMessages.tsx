@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Mode } from '../../index';
+import { Mode } from '@shared/NavigationDisplay';
 
 export interface NavigationDisplayMessagesProps {
     adirsAlign: boolean,

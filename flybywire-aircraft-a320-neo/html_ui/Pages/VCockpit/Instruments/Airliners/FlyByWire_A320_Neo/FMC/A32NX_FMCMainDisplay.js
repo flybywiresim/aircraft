@@ -174,6 +174,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.zeroFuelWeightMassCenter = undefined;
         this.gpsPrimaryLostMessageAcknowledged = false;
         this.gpsPrimaryMessageAcknowledged = false;
+        this.efisSymbols = undefined;
     }
 
     Init() {
@@ -189,10 +190,12 @@ class FMCMainDisplay extends BaseAirliners {
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
         this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager);
         this.navRadioManager = new Fmgc.NavRadioManager(this);
+        this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager);
 
         Fmgc.initFmgcLoop();
 
         this.guidanceController.init();
+        this.efisSymbols.init();
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -558,6 +561,10 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (this.ilsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.updateIls();
+        }
+
+        if (this.efisSymbols) {
+            this.efisSymbols.update(_deltaTime);
         }
     }
 

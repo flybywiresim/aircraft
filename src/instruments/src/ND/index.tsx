@@ -15,31 +15,10 @@ import { FMMessages } from './elements/messages/FMMessages';
 import { TcasWxrMessages } from './elements/messages/TcasWxrMessages';
 import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
+import { Mode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
 
 import './styles.scss';
-
-export type RangeSetting = 10 | 20 | 40 | 80 | 160 | 320;
-
-export const rangeSettings: RangeSetting[] = [10, 20, 40, 80, 160, 320];
-
-export enum Mode {
-    ROSE_ILS,
-    ROSE_VOR,
-    ROSE_NAV,
-    ARC,
-    PLAN,
-}
-
-export type EfisSide = 'L' | 'R'
-
-export enum EfisOption {
-    None = 0,
-    Constraints = 1,
-    VorDmes = 2,
-    Waypoints = 3,
-    Ndbs = 4,
-    Airports = 5,
-}
+import { useCoherentEvent } from '@instruments/common/hooks';
 
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
@@ -113,6 +92,12 @@ const NavigationDisplay: React.FC = () => {
         return () => clearTimeout(timeout);
     }, [rangeIndex]);
 
+    const [symbols, setSymbols] = useState<NdSymbol[]>([]);
+
+    useCoherentEvent(`A32NX_EFIS_${side}_SYMBOLS`, (symbols) => {
+        setSymbols(symbols);
+    });
+
     return (
         <DisplayUnit
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
@@ -129,6 +114,8 @@ const NavigationDisplay: React.FC = () => {
                         <PlanMode
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
+                            symbols={symbols}
+                            side={side}
                             ppos={ppos}
                             efisOption={efisOption}
                             mapHidden={modeChangeShown || rangeChangeShown}
@@ -138,6 +125,7 @@ const NavigationDisplay: React.FC = () => {
                         <ArcMode
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
+                            symbols={symbols}
                             side={side}
                             ppos={ppos}
                             efisOption={efisOption}
@@ -149,6 +137,7 @@ const NavigationDisplay: React.FC = () => {
                         <RoseMode
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
+                            symbols={symbols}
                             side={side}
                             ppos={ppos}
                             mode={modeIndex}
@@ -160,7 +149,7 @@ const NavigationDisplay: React.FC = () => {
                     <Chrono side={side} />
 
                     <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
-                    {(adirsAlign) && (
+                    {(adirsAlign && modeIndex !== Mode.PLAN) && (
                         <>
                             <RadioNavInfo index={1} side={side} />
                             <RadioNavInfo index={2} side={side} />

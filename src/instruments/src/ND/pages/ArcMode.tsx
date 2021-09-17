@@ -8,10 +8,11 @@ import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { EfisSide, EfisOption, Mode, RangeSetting } from '../index';
+import { RangeSetting, Mode, EfisSide, EfisOption } from '@shared/NavigationDisplay';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface ArcModeProps {
+    symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: RangeSetting,
     side: EfisSide,
@@ -20,7 +21,7 @@ export interface ArcModeProps {
     mapHidden: boolean,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side, ppos, efisOption, mapHidden }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSetting, side, ppos, efisOption, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -52,7 +53,9 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
                     x={384}
                     y={620}
                     flightPlanManager={flightPlanManager}
+                    symbols={symbols}
                     mapParams={mapParams}
+                    side={side}
                     constraints={efisOption === EfisOption.Constraints}
                     debug={false}
                     temp
@@ -67,7 +70,9 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
                             x={384}
                             y={620}
                             flightPlanManager={flightPlanManager}
+                            symbols={symbols}
                             mapParams={mapParams}
+                            side={side}
                             constraints={efisOption === EfisOption.Constraints}
                             debug={false}
                             temp={false}

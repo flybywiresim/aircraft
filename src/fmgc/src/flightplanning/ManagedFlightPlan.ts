@@ -31,6 +31,7 @@ import { ProcedureDetails } from './ProcedureDetails';
 import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
+import { OneWayRunway } from '@fmgc/types/fstypes/FSTypes';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -1161,5 +1162,29 @@ export class ManagedFlightPlan {
             this.removeWaypoint(index);
         }
         this.addWaypoint(waypoint, waypointIndex, segment.type);
+    }
+
+    public getOriginRunway(): OneWayRunway {
+        if (!this.originAirfield) {
+            return;
+        }
+        const airportInfo = this.originAirfield.infos;
+        if (this.procedureDetails.originRunwayIndex !== -1) {
+            return airportInfo.oneWayRunways[this.procedureDetails.originRunwayIndex];
+        } else if (this.procedureDetails.departureRunwayIndex !== -1 && this.procedureDetails.departureIndex !== -1) {
+            return this.getRunway(airportInfo.oneWayRunways, airportInfo.departures[this.procedureDetails.departureIndex].runwayTransitions[this.procedureDetails.departureRunwayIndex].name);
+        }
+    }
+
+    public getDestinationRunway(): OneWayRunway {
+        if (!this.destinationAirfield) {
+            return;
+        }
+        const airportInfo = this.destinationAirfield.infos;
+        if (this.procedureDetails.approachIndex !== -1) {
+            return this.getRunway(airportInfo.oneWayRunways, airportInfo.approaches[this.procedureDetails.approachIndex].runway);
+        } else if (this.procedureDetails.destinationRunwayIndex !== -1) {
+            return airportInfo.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
+        }
     }
 }

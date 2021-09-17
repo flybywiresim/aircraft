@@ -27,6 +27,8 @@ export class FmsMessages implements FmgcComponent {
     private messageSelectors: FMMessageSelector[] = [
         new GpsPrimary(),
         new GpsPrimaryLost(),
+        new MapPartlyDisplayedLeft(),
+        new MapPartlyDisplayedRight(),
     ]
 
     // singleton
@@ -53,21 +55,33 @@ export class FmsMessages implements FmgcComponent {
 
             switch (newState) {
             case FMMessageUpdate.SEND:
-                this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
+                if (message.text) {
+                    this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
+                }
 
                 if (message.ndFlag > 0) {
-                    for (const side in this.ndMessageFlags) {
-                        this.ndMessageFlags[side] |= message.ndFlag;
+                    if (selector.ndSide) {
+                        this.ndMessageFlags[selector.ndSide] |= message.ndFlag;
+                    } else {
+                        for (const side in this.ndMessageFlags) {
+                            this.ndMessageFlags[side] |= message.ndFlag;
+                        }
                     }
                     didMutateNd = true;
                 }
                 break;
             case FMMessageUpdate.RECALL:
-                this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+                if (message.text) {
+                    this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+                }
 
                 if (message.ndFlag > 0) {
-                    for (const side in this.ndMessageFlags) {
-                        this.ndMessageFlags[side] &= ~message.ndFlag;
+                    if (selector.ndSide) {
+                        this.ndMessageFlags[selector.ndSide] &= ~message.ndFlag;
+                    } else {
+                        for (const side in this.ndMessageFlags) {
+                            this.ndMessageFlags[side] &= ~message.ndFlag;
+                        }
                     }
                     didMutateNd = true;
                 }
@@ -155,6 +169,7 @@ enum FMMessageUpdate {
  */
 abstract class FMMessageSelector {
     abstract message: FMMessage;
+    abstract ndSide?: 'L' | 'R';
 
     /**
      * This function allows per-tick processing of a message if implemented
@@ -221,3 +236,34 @@ class GpsPrimaryLost implements FMMessageSelector {
         return FMMessageUpdate.NO_ACTION;
     }
 }
+
+// TODO right side
+abstract class MapPartlyDisplayed implements FMMessageSelector {
+    message: FMMessage = FMMessageTypes.MapPartlyDisplayed;
+    abstract ndSide: 'L' | 'R';
+
+    trigRising = new Trigger(true);
+    trigFalling = new Trigger(true);
+
+    process(deltaTime: number): FMMessageUpdate {
+        const partlyDisplayed = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.ndSide}_MAP_PARTLY_DISPLAYED`, 'boolean');
+        this.trigRising.input = partlyDisplayed === 1;
+        this.trigRising.update(deltaTime);
+        this.trigFalling.input = partlyDisplayed === 0;
+        this.trigFalling.update(deltaTime);
+        if (this.trigRising.output) {
+            return FMMessageUpdate.SEND;
+        } else if (this.trigFalling.output) {
+            return FMMessageUpdate.RECALL;
+        }
+        return FMMessageUpdate.NO_ACTION;
+    }
+};
+
+class MapPartlyDisplayedLeft extends MapPartlyDisplayed {
+    ndSide: 'L' | 'R' = 'L';
+};
+
+class MapPartlyDisplayedRight extends MapPartlyDisplayed {
+    ndSide: 'L' | 'R' = 'R';
+};

@@ -9,7 +9,7 @@ export interface FMMessage {
     /**
      * Text on the MCDU scratchpad
      */
-    text: string,
+    text?: string,
 
     /**
      * ND message flag, if applicable
@@ -125,7 +125,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     MapPartlyDisplayed: {
         id: 8,
         ndFlag: NdFmMessageFlag.MapPartlyDisplayed,
-        text: 'MAP PARTLY DISPLAYED',
+        efisText: 'MAP PARTLY DISPLAYED',
         color: 'Amber',
         ndPriority: 2,
     },

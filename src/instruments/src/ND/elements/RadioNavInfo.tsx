@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { TuningMode } from '@fmgc/radionav';
-import { EfisSide } from '../index';
+import { EfisSide } from '@shared/NavigationDisplay';
 
 export enum NavAidMode {
     Off = 0,

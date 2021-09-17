@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
-import { EfisSide } from '../index';
+import { EfisSide } from '@shared/NavigationDisplay';
 
 // TODO need a font with the right H ' and " chars
 

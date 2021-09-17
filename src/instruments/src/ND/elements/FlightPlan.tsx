@@ -10,33 +10,34 @@ import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { RFLeg } from '@fmgc/guidance/lnav/legs/RF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { AltitudeConstraint, Leg, SpeedConstraint } from '@fmgc/guidance/lnav/legs';
+import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { Xy } from '@fmgc/flightplanning/data/geo';
-import { useCurrentFlightPlan, useTemporaryFlightPlan } from '@instruments/common/flightplan';
 import { MapParameters } from '../utils/MapParameters';
+import { EfisSide } from '@shared/NavigationDisplay';
+import { NdSymbol, NdSymbolTypeFlags } from "@shared/NavigationDisplay";
+import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 
 export type FlightPathProps = {
     x?: number,
     y?: number,
+    symbols: NdSymbol[],
     flightPlanManager: FlightPlanManager,
     mapParams: MapParameters,
     constraints: boolean,
+    side: EfisSide,
     debug: boolean,
     temp: boolean,
 }
 
-export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManager, mapParams, constraints, debug = false, temp = false }) => {
+export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightPlanManager, mapParams, constraints, side, debug = false, temp = false }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const [tempGeometry, setTempGeometry] = useState(() => guidanceManager.getMultipleLegGeometry(true));
     const [activeGeometry, setActiveGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
-    const temporaryFlightPlan = useTemporaryFlightPlan();
-    const currentFlightPlan = useCurrentFlightPlan();
 
     const [geometry, setGeometry] = temp
         ? [tempGeometry, setTempGeometry]
         : [activeGeometry, setActiveGeometry];
-    const flightPlan = temp ? temporaryFlightPlan : currentFlightPlan;
 
     useInterval(() => {
         if (temp) {
@@ -46,376 +47,206 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, flightPlanManage
         }
     }, 2_000);
 
+    let flightPath: JSX.Element | null = null;
     if (geometry) {
-        const legs = Array.from(geometry.legs.values());
-        const unslicedLegs = legs;
-
-        const origin = flightPlan.originAirfield;
-        const destination = flightPlan.destinationAirfield;
-
-        let destinationActive = false;
-        let destinationIdent = '';
-        if (destination) {
-            destinationIdent = destination.ident;
-            destinationActive = legs.length < 2;
-            const approachRunway = temp
-                ? flightPlanManager.getApproachRunway(1)
-                : flightPlanManager.getApproachRunway();
-            if (approachRunway) {
-                destinationIdent += Avionics.Utils.formatRunway(approachRunway.designation);
-            }
-
-            if (legs[0] instanceof TFLeg && legs[0].to.type === 'A') {
-                // console.log('Removing leg: ', legs[0]);
-                // legs = legs.slice(1);
-            }
-        }
-
-        let flightPath;
-
         if (temp) {
             flightPath = <path d={makePathFromGeometry(geometry, mapParams)} className="Yellow" strokeWidth={3} fill="none" strokeDasharray="15 10" />;
         } else {
             flightPath = <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" />;
         }
-
-        return (
-            <Layer x={x} y={y}>
-                {flightPath}
-                {origin && (
-                    <DepartureAirportMarkers
-                        flightPlanManager={flightPlanManager}
-                        mapParams={mapParams}
-                        temp={temp}
-                    />
-                )}
-                {destination && (
-                    <ArrivalAirportMarkers
-                        flightPlanManager={flightPlanManager}
-                        mapParams={mapParams}
-                        temp={temp}
-                    />
-                )}
-                {legs.map((leg, index) => (
-                    <LegWaypointMarkers
-                        leg={leg}
-                        nextLeg={legs[index - 1]}
-                        // nextLeg={unslicedLegs[index - 1]}
-                        index={index}
-                        isActive={index === legs.length - 1}
-                        constraints={constraints}
-                        mapParams={mapParams}
-                        flightPlanManager={flightPlanManager}
-                        debug={debug}
-                    />
-                ))}
-                {debug && (
-                    <>
-                        {
-                            Array.from(geometry.legs.values()).map((leg) => (
-                                <DebugLeg leg={leg} mapParams={mapParams} />
-                            ))
-                        }
-                        {
-                            Array.from(geometry.transitions.entries()).map(([index, transition]) => (
-                                <DebugTransition transition={transition} index={index} mapParams={mapParams} />
-                            ))
-                        }
-                    </>
-
-                )}
-            </Layer>
-        );
     }
+
+    const flightPlan = useCurrentFlightPlan();
+
+    return (
+        <Layer x={x} y={y}>
+            {flightPath}
+            {symbols.map((symbol) => (
+                <SymbolMarker
+                    ident={symbol.ident}
+                    position={mapParams.coordinatesToXYy({ lat: symbol.location.lat, long: symbol.location.long })}
+                    type={symbol.type}
+                    length={symbol.length}
+                    direction={symbol.direction}
+                    constraints={symbol.constraints}
+                    mapParams={mapParams}
+                />
+            ))}
+            {debug && !!geometry && (
+                <>
+                    {
+                        Array.from(geometry.legs.values()).map((leg) => (
+                            <DebugLeg leg={leg} mapParams={mapParams} />
+                        ))
+                    }
+                    {
+                        Array.from(geometry.transitions.values()).map((transition) => (
+                            <DebugTransition transition={transition} mapParams={mapParams} />
+                        ))
+                    }
+                </>
+
+            )}
+        </Layer>
+    );
 
     return null;
 };
 
-interface DepartureAirportMarkersProps {
-    mapParams: MapParameters,
-    flightPlanManager: FlightPlanManager,
-    temp: boolean,
-}
-
-const DepartureAirportMarkers: FC<DepartureAirportMarkersProps> = ({ flightPlanManager, mapParams, temp = false }) => {
-    const depRunway = temp ? flightPlanManager.getDepartureRunway(1) : flightPlanManager.getDepartureRunway();
-    const depAirfield = temp ? flightPlanManager.getOrigin(1) : flightPlanManager.getOrigin();
-
-    let adx;
-    let ady;
-
-    [adx, ady] = mapParams.coordinatesToXYy(depAirfield.infos.coordinates);
-
-    // Draw Runway, Star Symbol, or Block of Origin Airport
-    if (depRunway) {
-        let rdx;
-        let rdy;
-
-        [rdx, rdy] = mapParams.coordinatesToXYy(depRunway.beginningCoordinates);
-
-        return (
-            <RunwayMarker
-                position={[rdx, rdy]}
-                direction={depRunway.direction}
-                length={depRunway.length}
-                mapParams={mapParams}
-            />
-        );
-    }
-
-    return (
-        <AirportMarker
-            position={[adx, ady]}
-        />
-    );
+const VorMarker: FC<{ colour: string }> = ({ colour }) => {
+    return (<>
+        <line x1={0} x2={0} y1={-16} y2={16} className={colour} strokeWidth={2} />
+        <line x1={-16} x2={16} y1={0} y2={0} className={colour} strokeWidth={2} />
+    </>);
 };
 
-interface ArrivalAirportMarkersProps {
-    mapParams: MapParameters,
-    flightPlanManager: FlightPlanManager,
-    temp: boolean,
-}
-
-const ArrivalAirportMarkers: FC<ArrivalAirportMarkersProps> = ({ flightPlanManager, mapParams, temp = false }) => {
-    const arrRunway = temp ? flightPlanManager.getApproachRunway(1) : flightPlanManager.getApproachRunway();
-    const arrAirfield = temp ? flightPlanManager.getDestination(1) : flightPlanManager.getDestination();
-
-    let aax;
-    let aay;
-
-    [aax, aay] = mapParams.coordinatesToXYy(arrAirfield.infos.coordinates);
-
-    // Draw Runway, Star Symbol, or Block of Origin Airport
-    if (arrRunway) {
-        let rax;
-        let ray;
-
-        [rax, ray] = mapParams.coordinatesToXYy(arrRunway.beginningCoordinates);
-
-        return (
-            <RunwayMarker
-                position={[rax, ray]}
-                direction={arrRunway.direction}
-                length={arrRunway.length}
-                mapParams={mapParams}
-            />
-        );
-    }
-
-    return (
-        <AirportMarker
-            position={[aax, aay]}
-        />
-    );
+const VorDmeMarker: FC<{ colour: string }> = ({ colour }) => {
+    return (<>
+        <circle r={8} className={colour} strokeWidth={2} />
+        <line x1={0} x2={0} y1={-16} y2={-8} className={colour} strokeWidth={2} />
+        <line x1={0} x2={0} y1={16} y2={8} className={colour} strokeWidth={2} />
+        <line x1={-16} x2={-8} y1={0} y2={0} className={colour} strokeWidth={2} />
+        <line x1={16} x2={8} y1={0} y2={0} className={colour} strokeWidth={2} />
+    </>);
 };
 
-interface LegWaypointMarkersProps {
-    leg: Leg,
-    nextLeg: Leg,
-    index: number,
-    mapParams: MapParameters,
-    constraints: boolean,
-    isActive: boolean,
-    flightPlanManager: FlightPlanManager,
-    debug: boolean,
-}
-
-const LegWaypointMarkers: FC<LegWaypointMarkersProps> = ({ leg, nextLeg, index, mapParams, constraints, isActive, flightPlanManager, debug }) => {
-    let x;
-    let y;
-    let fx;
-    let fy;
-    if (leg instanceof TFLeg || leg instanceof RFLeg) {
-        [x, y] = mapParams.coordinatesToXYy(leg.to.infos.coordinates);
-
-        if (leg.to === flightPlanManager.getDestination()) {
-            return null;
-        }
-
-        // TODO: Find a more elegant fix for drawing waypoint (of next leg) after discontinuity
-        if (nextLeg instanceof TFLeg && leg.to.endsInDiscontinuity && leg.to.ident !== nextLeg.from.ident) {
-            // console.log('drawing waypoint after discontinuity. First leg: ', leg, ' Second leg: ', nextLeg);
-            [fx, fy] = mapParams.coordinatesToXYy(nextLeg.from.infos.coordinates);
-            return (
-                <>
-                    <WaypointMarker
-                        ident={leg.to.ident}
-                        position={[x, y]}
-                        altitudeConstraint={leg.altitudeConstraint}
-                        speedConstraint={leg.speedConstraint}
-                        index={index}
-                        isActive={isActive}
-                        constraints={constraints}
-                        debug={debug}
-                    />
-                    <WaypointMarker
-                        ident={nextLeg.from.ident}
-                        position={[fx, fy]}
-                        altitudeConstraint={nextLeg.initialAltitudeConstraint}
-                        speedConstraint={nextLeg.initialSpeedConstraint}
-                        index={index}
-                        isActive={false}
-                        constraints={constraints}
-                        debug={debug}
-                    />
-                </>
-            );
-        }
-    } else if (leg instanceof VMLeg) {
-        // TODO: Find a more elegant fix for drawing waypoint (of next leg) after manual
-        if (nextLeg instanceof TFLeg) {
-            [x, y] = mapParams.coordinatesToXYy(nextLeg.from.infos.coordinates);
-            return (
-                <WaypointMarker
-                    ident={nextLeg.from.ident}
-                    position={[x, y]}
-                    altitudeConstraint={nextLeg.initialAltitudeConstraint}
-                    speedConstraint={nextLeg.initialSpeedConstraint}
-                    index={index}
-                    isActive={isActive}
-                    constraints={constraints}
-                    debug={debug}
-                />
-            );
-        }
-        return null;
-    } else {
-        throw new Error(`Invalid leg type for leg '${leg}'.`);
-    }
-
-    return (
-        <WaypointMarker
-            ident={leg.to.ident}
-            position={[x, y]}
-            altitudeConstraint={leg.altitudeConstraint}
-            speedConstraint={leg.speedConstraint}
-            index={index}
-            isActive={isActive}
-            constraints={constraints}
-            debug={debug}
-        />
-    );
+const DmeMarker: FC<{ colour: string }> = ({ colour }) => {
+    return (<>
+        <circle r={8} className={colour} strokeWidth={2} />
+    </>);
 };
 
-interface RunwayMarkerProps {
-    position: Xy,
-    direction: number,
-    length: number,
-    mapParams: MapParameters,
-}
+const NdbMarker: FC<{ colour: string }> = ({ colour }) => {
+    return (<>
+        <path d="M-10,10 L0,-10 L10,10 L-10,10" className={colour} strokeWidth={2} />
+    </>);
+};
 
-const RunwayMarker: FC<RunwayMarkerProps> = ({ position, direction, length, mapParams }) => (
-    <Layer x={position[0]} y={position[1]}>
-        <g transform={`rotate(${mapParams.rotation(direction)})`}>
-            <line x1={-4.25} x2={-4.25} y1={0} y2={-length * mapParams.mToPx} className="White" strokeWidth={2} />
-            <line x1={4.25} x2={4.25} y1={0} y2={-length * mapParams.mToPx} className="White" strokeWidth={2} />
+const WaypointMarker: FC<{ colour: string }> = ({ colour }) => {
+    return (<>
+        <rect x={-4} y={-4} width={8} height={8} className={colour} strokeWidth={2} transform="rotate(45 0 0)" />
+    </>);
+};
+
+const AirportMarker: FC<{ colour: string }> = ({ colour }) => {
+    return (<>
+        <line x1={0} x2={0} y1={-16} y2={16} className={colour} strokeWidth={2} />
+        <line x1={0} x2={0} y1={-16} y2={16} className={colour} strokeWidth={2} transform="rotate(45)" />
+        <line x1={-16} x2={16} y1={0} y2={0} className={colour} strokeWidth={2} />
+        <line x1={-16} x2={16} y1={0} y2={0} className={colour} strokeWidth={2} transform="rotate(45)" />
+    </>);
+};
+
+const RunwayIdent: FC<{ ident: string, rotation: number }> = ({ ident, rotation }) => {
+    const airportIdent = ident.substring(0, 4);
+    const runwayIdent = ident.substring(4);
+
+    return (
+        <g transform={`rotate(${-rotation} 40 -20)`}>
+            <text x={40} y={-30} fontSize={20} textAnchor="middle" alignmentBaseline="central">
+                {airportIdent}
+            </text>
+            <text x={40} y={-10} fontSize={20} textAnchor="middle" alignmentBaseline="central">
+                {runwayIdent.padEnd(4, '\xa0')}
+            </text>
         </g>
-    </Layer>
-);
+    );
+};
 
-interface RunwayMarkerBlockProps {
-    position: Xy,
-    direction: number,
-    mapParams: MapParameters,
+const RunwayMarkerClose: FC<{ ident: string, rotation: number, lengthPx: number }> = ({ ident, rotation, lengthPx }) => {
+    // TODO proper size
+    return (
+        <g transform={`rotate(${rotation})`} className='White'>
+            <line x1={-5} x2={-5} y1={0} y2={-lengthPx} strokeWidth={2} />
+            <line x1={5} x2={5} y1={0} y2={-lengthPx} strokeWidth={2} />
+            <RunwayIdent ident={ident} rotation={rotation} />
+        </g>
+    );
 }
 
-const RunwayMarkerBlock: FC<RunwayMarkerBlockProps> = ({ position, direction, mapParams }) => (
-    <Layer x={position[0]} y={position[1]}>
-        <rect width="250" height="55" className="White Fill" />
-    </Layer>
-);
-
-interface AirportMarkerProps {
-    position: Xy,
+const RunwayMarkerFar: FC<{ ident: string, rotation: number }> = ({ ident, rotation }) => {
+    // TODO proper size
+    return (
+        <g transform={`rotate(${rotation})`} className='White'>
+            <rect x={-5} y={-25} width={10} height={25} strokeWidth={2} />
+            <RunwayIdent ident={ident} rotation={rotation} />
+        </g>
+    );
 }
 
-const AirportMarker: FC<AirportMarkerProps> = ({ position }) => (
-    <Layer x={position[0]} y={position[1]}>
-        <path
-            d="M60.326 5.096V55.13L24.947 19.752l-5.195 5.195 35.379 35.38H5.098v7.347H55.13l-35.379 35.379 5.195
-            5.195 35.38-35.379v50.035h7.347V72.87l35.379 35.379 5.195-5.195-35.379-35.38h50.033v-7.347H72.87l35.38-35.379-5.196-5.195-35.38
-            35.379V5.096zm0-1.832a1.833 1.833 0 00-1.832 1.832v45.61l-32.25-32.25a1.833 1.833 0 00-2.594 0l-5.195 5.194a1.833 1.833 0 000 2.594l32.25
-            32.25H5.098a1.833 1.833 0 00-1.832 1.832v7.348a1.833 1.833 0 001.832 1.832h45.607l-32.25 32.25a1.833 1.833 0 000 2.594l5.195 5.195a1.833
-            1.833 0 002.594 0l32.25-32.25v45.61a1.833 1.833 0 001.832 1.831h7.348a1.833 1.833 0 001.832-1.832v-45.61l32.25 32.25a1.833 1.833 0
-            002.594 0l5.195-5.194a1.833 1.833 0 000-2.594l-32.25-32.25h45.607a1.833 1.833 0 001.832-1.832v-7.348a1.833 1.833 0
-            00-1.832-1.832H77.295l32.25-32.25a1.833 1.833 0 000-2.594l-5.195-5.195a1.833 1.833 0 00-2.594 0l-32.25 32.25V5.095a1.833 1.833 0
-            00-1.832-1.831zm1.832 3.664h3.684V55.13a1.833 1.833 0 003.129 1.297l34.082-34.084 2.601 2.603L71.572 59.03a1.833 1.833 0 001.297
-            3.13h48.201v3.683h-48.2a1.833 1.833 0 00-1.298 3.129l34.082 34.082-2.601 2.601L68.97 71.572a1.833 1.833 0 00-3.13 1.297v48.203h-3.683V72.87a1.833
-            1.833 0 00-3.129-1.297l-34.082 34.082-2.603-2.601L56.428 68.97a1.833 1.833 0 00-1.297-3.13H6.93v-3.683h48.2a1.833 1.833 0 001.298-3.129L22.346
-            24.947l2.601-2.601L59.03 56.428a1.833 1.833 0 003.13-1.297z"
-            color="#000"
-            fontWeight={400}
-            fontFamily="sans-serif"
-            overflow="visible"
-            className="White Fill"
-            stroke="#000"
-            strokeWidth={3.78}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            paintOrder="markers stroke fill"
-            transform="scale(.26459)"
-        />
-    </Layer>
-);
-
-interface WaypointMarkerProps {
+interface SymbolMarkerProps {
     ident: string,
     position: Xy,
-    altitudeConstraint?: AltitudeConstraint,
-    speedConstraint?: SpeedConstraint,
-    index: number,
-    isActive?: boolean,
-    constraints: boolean,
-    debug: boolean,
+    type: NdSymbolTypeFlags,
+    constraints?: string[],
+    length?: number,
+    direction?: number,
+    mapParams: MapParameters,
 }
 
-const WaypointMarker: FC<WaypointMarkerProps> = ({ ident, position, altitudeConstraint, speedConstraint, index, isActive, constraints = false, debug = false }) => {
-    // TODO FL
+const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraints, length, direction, mapParams }) => {
+    let colour = "White";
+    // todo airport as well if in flightplan
+    if (type & NdSymbolTypeFlags.Runway) {
+        colour = "White";
+    } else if (type & NdSymbolTypeFlags.ActiveLegTermination) {
+        colour = "White";
+    } else if ((type & NdSymbolTypeFlags.Tuned) || (type & NdSymbolTypeFlags.FixInfo)) {
+        colour = "Cyan";
+    } else if (type & NdSymbolTypeFlags.FlightPlan) {
+        colour = "Green";
+    } else if (type & NdSymbolTypeFlags.EfisOption) {
+        colour = "Magenta";
+    }
 
-    // TODO VNAV to provide met/missed prediction => magenta if met, amber if missed
-    const constrainedAltitudeClass = (altitudeConstraint?.type ?? -1) > 0 ? 'White' : null;
-    let constraintY = -6;
-    const constraintText: string[] = [];
-    if (constraints && altitudeConstraint) {
-        // minus, plus, then speed
-        switch (altitudeConstraint.type) {
-        case 0:
-            constraintText.push(`${Math.round(altitudeConstraint.altitude1)}`);
-            break;
-        case 1:
-            constraintText.push(`+${Math.round(altitudeConstraint.altitude1)}`);
-            break;
-        case 2:
-            constraintText.push(`-${Math.round(altitudeConstraint.altitude1)}`);
-            break;
-        case 3:
-            constraintText.push(`-${Math.round(altitudeConstraint.altitude1)}`);
-            constraintText.push(`+${Math.round(altitudeConstraint.altitude2 ?? 0)}`);
-            break;
-        default:
-            throw new Error(`Invalid leg altitude constraint type for leg '${ident}'.`);
+    let constraintPrediction;
+    if (type & NdSymbolTypeFlags.ConstraintMet) {
+        constraintPrediction = "Magenta";
+    } else if (type & NdSymbolTypeFlags.ConstraintMissed) {
+        constraintPrediction = "Amber";
+    } else if (type & NdSymbolTypeFlags.ConstraintUnknown) {
+        constraintPrediction = "White";
+    }
+
+    let symbol;
+    if (type & NdSymbolTypeFlags.VorDme) {
+        symbol = <VorDmeMarker colour={colour} />;
+    } else if (type & NdSymbolTypeFlags.Vor) {
+        symbol = <VorMarker colour={colour} />;
+    } else if (type & NdSymbolTypeFlags.Dme) {
+        symbol = <DmeMarker colour={colour} />;
+    } else if (type & NdSymbolTypeFlags.Ndb) {
+        symbol = <NdbMarker colour={colour} />;
+    } else if (type & NdSymbolTypeFlags.Runway) {
+        if (mapParams.nmRadius >= 40) {
+            symbol = <RunwayMarkerFar ident={ident} rotation={mapParams.rotation(direction!)} />;
+        } else {
+            symbol = <RunwayMarkerClose ident={ident} rotation={mapParams.rotation(direction!)} lengthPx={mapParams.nmToPx * length!} />;
         }
+    } else if (type & NdSymbolTypeFlags.Airport) {
+        symbol = <AirportMarker colour={colour} />;
+    } else {
+        symbol = <WaypointMarker colour={colour} />;
     }
 
-    if (constraints && speedConstraint && speedConstraint.speed > 0) {
-        constraintText.push(`${Math.round(speedConstraint.speed)}KT`);
-    }
+    let constraintY = -6;
 
     return (
         <Layer x={position[0]} y={position[1]}>
-            <rect x={-4} y={-4} width={8} height={8} className={isActive ? 'White' : 'Green'} strokeWidth={2} transform="rotate(45 0 0)" />
-
-            <text x={15} y={-6} fontSize={20} className={isActive ? 'White' : 'Green'}>
-                {ident}
-                {debug && `(${index})`}
-            </text>
+            {symbol}
+            { /* TODO runway ident over two lines */ }
+            {(type & NdSymbolTypeFlags.Runway) === 0 && (
+                <text x={15} y={-6} fontSize={20} className={colour}>
+                    {ident}
+                </text>
+            )}
             {constraints && (
-                constraintText.map((t) => (
+                constraints.map((t) => (
                     <text x={15} y={constraintY += 20} className="Magenta" fontSize={20}>{t}</text>
                 ))
             )}
-            {constrainedAltitudeClass && (
-                <circle r={12} className={constrainedAltitudeClass} strokeWidth={2} />
+            {constraintPrediction && (
+                <circle r={12} className={constraintPrediction} strokeWidth={2} />
             )}
         </Layer>
     );
@@ -502,11 +333,10 @@ const DebugVMLeg: FC<DebugLegProps<VMLeg>> = ({ leg, mapParams }) => {
 
 export type DebugTransitionProps = {
     transition: Transition,
-    index: number,
     mapParams: MapParameters,
 }
 
-const DebugTransition: FC<DebugTransitionProps> = ({ transition, index, mapParams }) => {
+const DebugTransition: FC<DebugTransitionProps> = ({ transition, mapParams }) => {
     if (!(transition instanceof Type1Transition)) {
         return null;
     }
@@ -522,32 +352,16 @@ const DebugTransition: FC<DebugTransitionProps> = ({ transition, index, mapParam
         Math.round(Math.min(fromY, toY) + (Math.abs(toY - fromY) / 2)),
     ];
 
-    const transitionType = 'Type 1';
-    const fromLegType = 'TF';
-    const toLegType = (transition.nextLeg instanceof TFLeg) ? 'TF' : 'VM';
-
-    const [itp, ftp] = transition.getTurningPoints();
-    const [inX, inY] = mapParams.coordinatesToXYy(itp);
-    const [outX, outY] = mapParams.coordinatesToXYy(ftp);
+    let transitionType;
+    if (transition instanceof Type1Transition) {
+        transitionType = 'Type 1';
+    }
 
     return (
         <>
-            <text fill="yellow" x={infoX - 15} y={infoY} fontSize={16} textAnchor="end">
+            <text fill="yellow" x={infoX} y={infoY} fontSize={16}>
                 {transitionType}
-                {' '}
-                (
-                {fromLegType}
-                {' '}
-                -&gt;
-                {' '}
-                {toLegType}
-                ) (
-                {index}
-                )
             </text>
-
-            <circle cx={inX} cy={inY} r={5} fill="yellow" />
-            <circle cx={outX} cy={outY} r={5} fill="yellow" />
         </>
     );
 };
@@ -669,7 +483,7 @@ function makePathFromGeometry(geometry: Geometry, mapParams: MapParameters): str
             const cw = leg.clockwise;
 
             path.push(`A ${r} ${r} 0 ${leg.angle >= 180 ? 1 : 0} ${cw ? 1 : 0} ${x} ${y}`);
-        }
+        } // TODO CALeg
     }
 
     return path.join(' ');

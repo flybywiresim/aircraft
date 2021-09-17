@@ -1664,4 +1664,8 @@ export class FlightPlanManager {
         this._updateFlightPlanVersion().catch(console.error);
         console.log('FlightPlan Sync Resume');
     }
+
+    get currentFlightPlanVersion(): number {
+        return this._currentFlightPlanVersion;
+    }
 }

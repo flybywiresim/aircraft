@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Layer } from '@instruments/common/utils';
-import { Mode } from '../../index';
+import { Mode } from '@shared/NavigationDisplay';
 import { useSimVar } from '@instruments/common/simVars';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
 
@@ -20,7 +20,7 @@ export const FMMessages: FC<{ modeIndex: Mode, side: 'L' | 'R' }> = ({ modeIndex
                     newActiveMessages.push(message);
                     newActiveMessages.sort((a, b) => (b.ndPriority ?? 0) - (a.ndPriority ?? 0));
                 }
-            } if ((message.ndFlag ?? 0) > 0) {
+            } else if ((message.ndFlag ?? 0) > 0) {
                 const idx = newActiveMessages.findIndex(({ ndFlag }) => ndFlag === message.ndFlag);
                 if (idx !== -1) {
                     newActiveMessages.splice(idx, 1);
@@ -47,7 +47,7 @@ export const FMMessages: FC<{ modeIndex: Mode, side: 'L' | 'R' }> = ({ modeIndex
                 textAnchor="middle"
                 fontSize={25}
             >
-                {`${activeMessages[activeMessages.length - 1].text}`}
+                {`${activeMessages[activeMessages.length - 1].text ?? activeMessages[activeMessages.length - 1].efisText}`}
             </text>
 
             { activeMessages.length > 1 && (
