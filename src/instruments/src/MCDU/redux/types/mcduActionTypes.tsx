@@ -1,9 +1,3 @@
 export const SET_ZFW = 'SET_ZFW';
 export const SET_ZFW_ENTERED = 'SET_ZFW_ENTERED';
 export const SET_ZFW_CG = 'SET_ZFW_CG';
-export const SET_FPM = 'SET_FPM';
-export const SET_FP = 'SET_FP';
-export const SET_GC = 'SET_GC';
-export const SET_GM = 'SET_GM';
-export const SET_NRM = 'SET_NRM';
-export const SET_FMC_DM = 'SET_FMC_DM';
