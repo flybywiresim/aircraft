@@ -424,11 +424,10 @@ export class LegsProcedure {
       const arcCenterCoordinates = new LatLongAlt(arcCentreFix.lat, arcCentreFix.lon, 0);
 
       const toFix = this._facilities.get(leg.fixIcao);
-      const toIdent = toFix.icao.substring(7, 12).trim();
       const toCoordinates = new LatLongAlt(toFix.lat, toFix.lon, 0);
 
       const radius = Avionics.Utils.computeGreatCircleDistance(arcCenterCoordinates, toCoordinates);
-      const waypoint = this.buildWaypoint(toIdent, toCoordinates);
+      const waypoint = RawDataMapper.toWaypoint(toFix, this._instrument);
 
       waypoint.additionalData.radius = radius;
       waypoint.additionalData.center = arcCenterCoordinates;
