@@ -684,7 +684,7 @@ pub mod tests {
             loop {
                 self = self.run(Duration::from_secs(1));
 
-                if self.is_air_intake_flap_fully_open().unwrap() {
+                if self.is_air_intake_flap_fully_open().normal_value().unwrap() {
                     break;
                 }
             }
@@ -751,7 +751,7 @@ pub mod tests {
         fn unpower_start_motor_between(mut self, start: Ratio, end: Ratio) -> Self {
             loop {
                 self = self.run(Duration::from_millis(50));
-                let n = self.n().unwrap();
+                let n = self.n().normal_value().unwrap();
 
                 if start < n && n < end {
                     self = self.then_continue_with().unpowered_start_motor();
@@ -765,7 +765,7 @@ pub mod tests {
         fn unpower_dc_bat_bus_between(mut self, start: Ratio, end: Ratio) -> Self {
             loop {
                 self = self.run(Duration::from_millis(50));
-                let n = self.n().unwrap();
+                let n = self.n().normal_value().unwrap();
 
                 if start < n && n < end {
                     self = self.then_continue_with().unpowered_dc_bat_bus();
@@ -781,7 +781,7 @@ pub mod tests {
             loop {
                 self = self.run(delta_per_run);
 
-                let n = self.n().unwrap().get::<percent>();
+                let n = self.n().normal_value().unwrap().get::<percent>();
                 if n < previous_n {
                     break;
                 }
@@ -944,7 +944,13 @@ pub mod tests {
         fn when_apu_master_sw_turned_on_air_intake_flap_opens() {
             let mut test_bed = test_bed_with().master_on().run(Duration::from_secs(20));
 
-            assert_eq!(test_bed.is_air_intake_flap_fully_open().unwrap(), true)
+            assert_eq!(
+                test_bed
+                    .is_air_intake_flap_fully_open()
+                    .normal_value()
+                    .unwrap(),
+                true
+            )
         }
 
         #[test]
@@ -957,7 +963,7 @@ pub mod tests {
                 .start_on()
                 .run(Duration::from_secs(15));
 
-            assert_about_eq!(test_bed.n().unwrap().get::<percent>(), 0.);
+            assert_about_eq!(test_bed.n().normal_value().unwrap().get::<percent>(), 0.);
         }
 
         #[test]
@@ -967,7 +973,7 @@ pub mod tests {
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
-                n = test_bed.n().unwrap().get::<percent>();
+                n = test_bed.n().normal_value().unwrap().get::<percent>();
                 if n > 1. {
                     break;
                 }
@@ -978,7 +984,10 @@ pub mod tests {
                 .then_continue_with()
                 .master_off()
                 .run(Duration::from_millis(50));
-            assert!(test_bed.is_air_intake_flap_fully_open().unwrap());
+            assert!(test_bed
+                .is_air_intake_flap_fully_open()
+                .normal_value()
+                .unwrap());
         }
 
         #[test]
@@ -987,7 +996,7 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME));
 
-            assert_about_eq!(test_bed.n().unwrap().get::<percent>(), 100.);
+            assert_about_eq!(test_bed.n().normal_value().unwrap().get::<percent>(), 100.);
         }
 
         #[test]
@@ -996,13 +1005,15 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_millis(1500));
 
-            assert!((test_bed.n().unwrap().get::<percent>() - 0.).abs() < f64::EPSILON);
+            assert!(
+                (test_bed.n().normal_value().unwrap().get::<percent>() - 0.).abs() < f64::EPSILON
+            );
 
             // The first 35ms ignition started but N hasn't increased beyond 0 yet.
             test_bed = test_bed.run(Duration::from_millis(36));
 
             assert!(
-                test_bed.n().unwrap().get::<percent>() > 0.,
+                test_bed.n().normal_value().unwrap().get::<percent>() > 0.,
                 "Ignition started too late."
             );
         }
@@ -1021,7 +1032,11 @@ pub mod tests {
                 .run(Duration::from_secs(1));
 
             assert_about_eq!(
-                test_bed.egt().unwrap().get::<degree_celsius>(),
+                test_bed
+                    .egt()
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree_celsius>(),
                 AMBIENT_TEMPERATURE
             );
         }
@@ -1034,7 +1049,11 @@ pub mod tests {
             loop {
                 test_bed = test_bed.run(Duration::from_secs(1));
 
-                let egt = test_bed.egt().unwrap().get::<degree_celsius>();
+                let egt = test_bed
+                    .egt()
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree_celsius>();
                 if egt < max_egt {
                     break;
                 }
@@ -1055,10 +1074,12 @@ pub mod tests {
                 assert_about_eq!(
                     test_bed
                         .egt_warning_temperature()
+                        .normal_value()
                         .unwrap()
                         .get::<degree_celsius>(),
                     test_bed
                         .egt_caution_temperature()
+                        .normal_value()
                         .unwrap()
                         .get::<degree_celsius>()
                         + 33.
@@ -1091,7 +1112,10 @@ pub mod tests {
                 .run(Duration::from_secs(1));
 
             assert!(
-                !test_bed.is_air_intake_flap_fully_open().unwrap(),
+                !test_bed
+                    .is_air_intake_flap_fully_open()
+                    .normal_value()
+                    .unwrap(),
                 "The test assumes the air intake flap isn't fully open yet."
             );
             assert!(
@@ -1128,7 +1152,7 @@ pub mod tests {
             // APU N reduces below 95%.
             test_bed = test_bed.run(Duration::from_secs(5));
             assert!(
-                test_bed.n().unwrap().get::<percent>() < 95.,
+                test_bed.n().normal_value().unwrap().get::<percent>() < 95.,
                 "Didn't expect the N to still be at or above 95. The test assumes N < 95."
             );
 
@@ -1182,7 +1206,7 @@ pub mod tests {
             // APU N reduces below 95%.
             test_bed = test_bed.run(Duration::from_secs(5));
             assert!(
-                test_bed.n().unwrap().get::<percent>() < 95.,
+                test_bed.n().normal_value().unwrap().get::<percent>() < 95.,
                 "Didn't expect the N to still be at or above 95. The test assumes N < 95."
             );
 
@@ -1203,7 +1227,7 @@ pub mod tests {
             // APU N reduces below 95%.
             test_bed = test_bed.run(Duration::from_secs(5));
             assert!(
-                test_bed.n().unwrap().get::<percent>() < 95.,
+                test_bed.n().normal_value().unwrap().get::<percent>() < 95.,
                 "Didn't expect the N to still be at or above 95. The test assumes N < 95."
             );
 
@@ -1234,7 +1258,7 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME / 2));
 
-            assert!(test_bed.n().unwrap().get::<percent>() > 0.);
+            assert!(test_bed.n().normal_value().unwrap().get::<percent>() > 0.);
 
             test_bed = test_bed
                 .then_continue_with()
@@ -1243,7 +1267,7 @@ pub mod tests {
                 .start_off()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME / 2));
 
-            assert!(test_bed.n().unwrap().get::<percent>() > 90.);
+            assert!(test_bed.n().normal_value().unwrap().get::<percent>() > 90.);
 
             loop {
                 test_bed = test_bed.run(Duration::from_secs(1));
@@ -1261,7 +1285,7 @@ pub mod tests {
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
 
-                if test_bed.n().unwrap().get::<percent>() < 7. {
+                if test_bed.n().normal_value().unwrap().get::<percent>() < 7. {
                     break;
                 }
             }
@@ -1270,7 +1294,10 @@ pub mod tests {
             // thus this needs another run to update the air intake flap after the
             // turbine reaches n < 7.
             test_bed = test_bed.run(Duration::from_millis(1));
-            assert!(!test_bed.is_air_intake_flap_fully_open().unwrap());
+            assert!(!test_bed
+                .is_air_intake_flap_fully_open()
+                .normal_value()
+                .unwrap());
         }
 
         #[test]
@@ -1318,7 +1345,11 @@ pub mod tests {
                 .apu_gen_not_used()
                 .run(Duration::from_secs(1_000));
 
-            let egt = test_bed.egt().unwrap().get::<degree_celsius>();
+            let egt = test_bed
+                .egt()
+                .normal_value()
+                .unwrap()
+                .get::<degree_celsius>();
             assert!((340.0..=350.0).contains(&egt));
         }
 
@@ -1330,7 +1361,11 @@ pub mod tests {
                 .running_apu_without_bleed_air()
                 .run(Duration::from_secs(1_000));
 
-            let egt = test_bed.egt().unwrap().get::<degree_celsius>();
+            let egt = test_bed
+                .egt()
+                .normal_value()
+                .unwrap()
+                .get::<degree_celsius>();
             assert!((350.0..=365.0).contains(&egt));
         }
 
@@ -1343,7 +1378,11 @@ pub mod tests {
                 .apu_gen_not_used()
                 .run(Duration::from_secs(1_000));
 
-            let egt = test_bed.egt().unwrap().get::<degree_celsius>();
+            let egt = test_bed
+                .egt()
+                .normal_value()
+                .unwrap()
+                .get::<degree_celsius>();
             assert!((425.0..=445.0).contains(&egt));
         }
 
@@ -1354,7 +1393,11 @@ pub mod tests {
                 .running_apu_with_bleed_air()
                 .run(Duration::from_secs(1_000));
 
-            let egt = test_bed.egt().unwrap().get::<degree_celsius>();
+            let egt = test_bed
+                .egt()
+                .normal_value()
+                .unwrap()
+                .get::<degree_celsius>();
             assert!((435.0..=460.0).contains(&egt));
         }
 
@@ -1369,6 +1412,7 @@ pub mod tests {
             assert_about_eq!(
                 test_bed
                     .egt_warning_temperature()
+                    .normal_value()
                     .unwrap()
                     .get::<degree_celsius>(),
                 900.
@@ -1386,6 +1430,7 @@ pub mod tests {
             assert_about_eq!(
                 test_bed
                     .egt_warning_temperature()
+                    .normal_value()
                     .unwrap()
                     .get::<degree_celsius>(),
                 982.
@@ -1399,7 +1444,7 @@ pub mod tests {
             loop {
                 test_bed = test_bed.run(Duration::from_millis(10));
 
-                assert!(test_bed.n().unwrap().get::<percent>() >= 0.);
+                assert!(test_bed.n().normal_value().unwrap().get::<percent>() >= 0.);
 
                 if test_bed.apu_is_available() {
                     break;
@@ -1453,7 +1498,7 @@ pub mod tests {
             assert!(test_bed.should_close_start_contactors_commanded());
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
-                let n = test_bed.n().unwrap().get::<percent>();
+                let n = test_bed.n().normal_value().unwrap().get::<percent>();
 
                 if n < 55. {
                     assert!(test_bed.should_close_start_contactors_commanded());
@@ -1571,7 +1616,7 @@ pub mod tests {
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
-                let n = test_bed.n().unwrap().get::<percent>();
+                let n = test_bed.n().normal_value().unwrap().get::<percent>();
                 assert!((n > 99.5 && test_bed.apu_is_available()) || !test_bed.apu_is_available());
 
                 if (n - 100.).abs() < f64::EPSILON {
@@ -1630,7 +1675,13 @@ pub mod tests {
                 .run_until_n_decreases(Duration::from_millis(50));
 
             assert_eq!(test_bed.apu_is_available(), false);
-            assert_eq!(test_bed.has_fuel_low_pressure_fault().unwrap(), true);
+            assert_eq!(
+                test_bed
+                    .has_fuel_low_pressure_fault()
+                    .normal_value()
+                    .unwrap(),
+                true
+            );
             assert!(test_bed.master_has_fault());
             assert!(!test_bed.start_is_on());
         }
@@ -1645,7 +1696,13 @@ pub mod tests {
                 .run_until_n_decreases(Duration::from_millis(50));
 
             assert_eq!(test_bed.apu_is_available(), false);
-            assert_eq!(test_bed.has_fuel_low_pressure_fault().unwrap(), true);
+            assert_eq!(
+                test_bed
+                    .has_fuel_low_pressure_fault()
+                    .normal_value()
+                    .unwrap(),
+                true
+            );
             assert!(test_bed.master_has_fault());
             assert!(!test_bed.start_is_on());
         }
@@ -1730,7 +1787,7 @@ pub mod tests {
 
             for _ in 0..20 {
                 test_bed = test_bed.run(Duration::from_secs(5));
-                assert!(test_bed.egt().unwrap() >= ambient_temperature)
+                assert!(test_bed.egt().normal_value().unwrap() >= ambient_temperature)
             }
         }
 
@@ -1757,7 +1814,13 @@ pub mod tests {
                 .run_until_n_decreases(Duration::from_millis(50));
 
             assert_eq!(test_bed.apu_is_available(), false);
-            assert_eq!(test_bed.has_fuel_low_pressure_fault().unwrap(), true);
+            assert_eq!(
+                test_bed
+                    .has_fuel_low_pressure_fault()
+                    .normal_value()
+                    .unwrap(),
+                true
+            );
             assert!(test_bed.master_has_fault());
             assert!(!test_bed.start_is_on());
         }
@@ -1845,7 +1908,9 @@ pub mod tests {
                 .then_continue_with()
                 .run(Duration::from_secs(60));
 
-            assert!((test_bed.n().unwrap().get::<percent>() - 0.).abs() < f64::EPSILON);
+            assert!(
+                (test_bed.n().normal_value().unwrap().get::<percent>() - 0.).abs() < f64::EPSILON
+            );
         }
 
         #[test]
@@ -1940,7 +2005,7 @@ pub mod tests {
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
-                let n = test_bed.n().unwrap().get::<percent>();
+                let n = test_bed.n().normal_value().unwrap().get::<percent>();
 
                 if n > 55. && n <= 70. {
                     assert!(test_bed.power_consumption() > Power::new::<watt>(0.));
@@ -1959,7 +2024,7 @@ pub mod tests {
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
-                let n = test_bed.n().unwrap().get::<percent>();
+                let n = test_bed.n().normal_value().unwrap().get::<percent>();
 
                 if n > 70. {
                     assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
@@ -1999,12 +2064,14 @@ pub mod tests {
 
             let mut test_bed = test_bed_with().starting_apu();
 
-            while test_bed.n().unwrap().get::<percent>() < Aps3200ApuGenerator::APU_GEN_POWERED_N {
+            while test_bed.n().normal_value().unwrap().get::<percent>()
+                < Aps3200ApuGenerator::APU_GEN_POWERED_N
+            {
                 test_bed.run_with_delta(Duration::from_millis(50));
             }
 
             let mut powered: bool = test_bed.apu_generator_output_within_normal_parameters();
-            while test_bed.n().unwrap().get::<percent>() < 100. {
+            while test_bed.n().normal_value().unwrap().get::<percent>() < 100. {
                 let still_powered: bool = test_bed.apu_generator_output_within_normal_parameters();
                 assert!(!powered || (powered && still_powered));
                 powered = still_powered;

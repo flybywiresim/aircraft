@@ -1373,10 +1373,19 @@ mod tests {
 
         fn assert_wind_direction_and_velocity_zero(&mut self, adiru_number: usize) {
             assert_about_eq!(
-                self.wind_direction(adiru_number).unwrap().get::<degree>(),
+                self.wind_direction(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
                 0.
             );
-            assert_about_eq!(self.wind_velocity(adiru_number).unwrap().get::<knot>(), 0.);
+            assert_about_eq!(
+                self.wind_velocity(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<knot>(),
+                0.
+            );
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1741,7 +1750,7 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.altitude(adiru_number).unwrap(),
+                test_bed.altitude(adiru_number).normal_value().unwrap(),
                 Length::new::<foot>(10000.)
             );
         }
@@ -1757,7 +1766,10 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.computed_airspeed(adiru_number).unwrap(),
+                test_bed
+                    .computed_airspeed(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 Velocity::new::<knot>(250.)
             );
         }
@@ -1771,7 +1783,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().mach_of(mach);
             test_bed.run();
 
-            assert_about_eq!(test_bed.mach(adiru_number).unwrap().0, mach.0);
+            assert_about_eq!(
+                test_bed.mach(adiru_number).normal_value().unwrap().0,
+                mach.0
+            );
         }
 
         #[rstest]
@@ -1784,7 +1799,10 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.barometric_vertical_speed(adiru_number).unwrap(),
+                test_bed
+                    .barometric_vertical_speed(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 vertical_speed
             );
         }
@@ -1803,7 +1821,10 @@ mod tests {
             test_bed.set_indicated_airspeed(velocity);
             test_bed.run();
 
-            assert_eq!(test_bed.true_airspeed(adiru_number).unwrap(), velocity);
+            assert_eq!(
+                test_bed.true_airspeed(adiru_number).normal_value().unwrap(),
+                velocity
+            );
         }
 
         #[rstest]
@@ -1836,7 +1857,13 @@ mod tests {
             test_bed.set_ambient_temperature(sat);
             test_bed.run();
 
-            assert_eq!(test_bed.static_air_temperature(adiru_number).unwrap(), sat);
+            assert_eq!(
+                test_bed
+                    .static_air_temperature(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                sat
+            );
         }
 
         #[rstest]
@@ -1861,7 +1888,13 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().total_air_temperature_of(tat);
             test_bed.run();
 
-            assert_eq!(test_bed.total_air_temperature(adiru_number).unwrap(), tat);
+            assert_eq!(
+                test_bed
+                    .total_air_temperature(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                tat
+            );
         }
 
         #[rstest]
@@ -1893,6 +1926,7 @@ mod tests {
             assert_eq!(
                 test_bed
                     .international_standard_atmosphere_delta(adiru_number)
+                    .normal_value()
                     .unwrap(),
                 ThermodynamicTemperature::new::<degree_celsius>(deviation)
             );
@@ -2040,7 +2074,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().pitch_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.pitch(adiru_number).unwrap(), angle);
+            assert_eq!(test_bed.pitch(adiru_number).normal_value().unwrap(), angle);
         }
 
         #[rstest]
@@ -2052,7 +2086,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().roll_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.roll(adiru_number).unwrap(), angle);
+            assert_eq!(test_bed.roll(adiru_number).normal_value().unwrap(), angle);
         }
 
         #[rstest]
@@ -2064,7 +2098,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().heading_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.heading(adiru_number).unwrap(), angle);
+            assert_eq!(
+                test_bed.heading(adiru_number).normal_value().unwrap(),
+                angle
+            );
         }
 
         #[rstest]
@@ -2083,7 +2120,7 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.track(adiru_number).unwrap(), angle);
+            assert_eq!(test_bed.track(adiru_number).normal_value().unwrap(), angle);
         }
 
         #[rstest]
@@ -2100,7 +2137,7 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.track(adiru_number).unwrap(), angle);
+            assert_eq!(test_bed.track(adiru_number).normal_value().unwrap(), angle);
         }
 
         #[rstest]
@@ -2113,7 +2150,10 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.inertial_vertical_speed(adiru_number).unwrap(),
+                test_bed
+                    .inertial_vertical_speed(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 vertical_speed
             );
         }
@@ -2127,7 +2167,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().ground_speed_of(gs);
             test_bed.run();
 
-            assert_eq!(test_bed.ground_speed(adiru_number).unwrap(), gs);
+            assert_eq!(
+                test_bed.ground_speed(adiru_number).normal_value().unwrap(),
+                gs
+            );
         }
 
         #[rstest]
@@ -2147,8 +2190,17 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.wind_direction(adiru_number).unwrap(), wind_angle);
-            assert_eq!(test_bed.wind_velocity(adiru_number).unwrap(), wind_velocity);
+            assert_eq!(
+                test_bed
+                    .wind_direction(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                wind_angle
+            );
+            assert_eq!(
+                test_bed.wind_velocity(adiru_number).normal_value().unwrap(),
+                wind_velocity
+            );
         }
 
         #[rstest]
@@ -2194,7 +2246,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().latitude_of(latitude);
             test_bed.run();
 
-            assert_eq!(test_bed.latitude(adiru_number).unwrap(), latitude);
+            assert_eq!(
+                test_bed.latitude(adiru_number).normal_value().unwrap(),
+                latitude
+            );
         }
 
         #[rstest]
@@ -2206,7 +2261,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().longitude_of(longitude);
             test_bed.run();
 
-            assert_eq!(test_bed.longitude(adiru_number).unwrap(), longitude);
+            assert_eq!(
+                test_bed.longitude(adiru_number).normal_value().unwrap(),
+                longitude
+            );
         }
     }
 
