@@ -104,7 +104,7 @@ const OverviewPage = (props: OverviewPageProps) => {
                                 {' '}
                                 Max PAX
                             </h3>
-                            <span className="mt-2 text-lg">180</span>
+                            <span className="mt-2 text-lg">174</span>
                         </div>
                         <div className="w-1/2">
                             <h3 className="text-xl font-medium flex items-center">
@@ -133,7 +133,7 @@ const OverviewPage = (props: OverviewPageProps) => {
                                 {' '}
                                 Max Fuel Capacity
                             </h3>
-                            <span className="mt-2 text-lg">23,721 [l]</span>
+                            <span className="mt-2 text-lg">23,723 [l]</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6">
                                 <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
