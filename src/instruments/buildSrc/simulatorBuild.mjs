@@ -27,7 +27,7 @@ export default getInputs()
                     path,
                     imports: [
                         '/JS/dataStorage.js',
-                        '/Pages/VCockpit/Instruments/FlightElements/Waypoint.js',
+                        '/Pages/VCockpit/Instruments/FlightElements/A32NX_Waypoint.js',
                         ...additionalImports,
                     ],
                     config,
