@@ -16,6 +16,7 @@ use uom::si::{
     temperature_interval,
     thermodynamic_temperature::{degree_celsius, kelvin},
     volume::{cubic_inch, cubic_meter, gallon},
+    volume_rate::cubic_meter_per_second,
 };
 
 pub trait ControlledPneumaticValveSignal {
@@ -111,6 +112,8 @@ impl DefaultPipe {
 
 pub struct DefaultValve {
     open_amount: Ratio,
+    // This is not needed for the physics simulation. It is only used for information and possibly regulation logic at a later stage.
+    fluid_flow: VolumeRate,
 }
 impl PneumaticValve for DefaultValve {
     fn is_open(&self) -> bool {
@@ -121,7 +124,10 @@ impl DefaultValve {
     const TRANSFER_SPEED: f64 = 3.;
 
     pub fn new(open_amount: Ratio) -> Self {
-        Self { open_amount }
+        Self {
+            open_amount,
+            fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+        }
     }
 
     pub fn new_closed() -> Self {
@@ -146,7 +152,7 @@ impl DefaultValve {
     }
 
     pub fn update_move_fluid(
-        &self,
+        &mut self,
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
@@ -155,13 +161,13 @@ impl DefaultValve {
             / Pressure::new::<pascal>(142000.)
             / (from.volume() + to.volume());
 
-        self.move_volume(
-            from,
-            to,
-            self.open_amount()
-                * equalization_volume
-                * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
-        );
+        let fluid_to_move = self.open_amount()
+            * equalization_volume
+            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+
+        self.move_volume(from, to, fluid_to_move);
+
+        self.fluid_flow = fluid_to_move / context.delta_as_time();
     }
 
     fn move_volume(
@@ -172,6 +178,10 @@ impl DefaultValve {
     ) {
         from.change_volume(-volume);
         to.change_volume(volume);
+    }
+
+    pub fn fluid_flow(&self) -> VolumeRate {
+        self.fluid_flow
     }
 }
 impl ControllablePneumaticValve for DefaultValve {
@@ -496,7 +506,7 @@ impl HeatExchanger {
     }
 
     pub fn update(
-        &self,
+        &mut self,
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
         supply: &mut impl PneumaticContainer,
@@ -745,7 +755,7 @@ mod tests {
 
     #[test]
     fn valve_equal_pressure() {
-        let valve = DefaultValve::new(Ratio::new::<percent>(100.));
+        let mut valve = DefaultValve::new(Ratio::new::<percent>(100.));
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -774,11 +784,16 @@ mod tests {
             to.temperature(),
             ThermodynamicTemperature::new::<degree_celsius>(15.)
         );
+
+        assert_eq!(
+            valve.fluid_flow(),
+            VolumeRate::new::<cubic_meter_per_second>(0.)
+        );
     }
 
     #[test]
     fn valve_unequal_pressure() {
-        let valve = DefaultValve::new(Ratio::new::<percent>(100.));
+        let mut valve = DefaultValve::new(Ratio::new::<percent>(100.));
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -801,6 +816,8 @@ mod tests {
 
         assert!(to.pressure() > Pressure::new::<psi>(14.));
         assert!(to.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
+
+        assert!(valve.fluid_flow() > VolumeRate::new::<cubic_meter_per_second>(0.));
     }
 
     #[test]
@@ -837,7 +854,7 @@ mod tests {
 
     #[test]
     fn valve_two_small_updates_equal_one_big_update() {
-        let valve = DefaultValve::new(Ratio::new::<percent>(100.));
+        let mut valve = DefaultValve::new(Ratio::new::<percent>(100.));
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -880,7 +897,7 @@ mod tests {
 
     #[test]
     fn valve_equalizes_pressure_between_containers() {
-        let valve = DefaultValve::new_open();
+        let mut valve = DefaultValve::new_open();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -903,7 +920,7 @@ mod tests {
 
     #[test]
     fn valve_moving_more_volume_than_available_does_not_cause_issues() {
-        let valve = DefaultValve::new_open();
+        let mut valve = DefaultValve::new_open();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -992,7 +1009,7 @@ mod tests {
             ConstantPressureController::new(Pressure::new::<psi>(30.));
         let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(5.));
 
-        let valve = DefaultValve::new_open();
+        let mut valve = DefaultValve::new_open();
 
         let mut consumer_controller =
             ConstantConsumerController::new(VolumeRate::new::<cubic_meter_per_second>(1.));
@@ -1151,7 +1168,7 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
-        let heat_exchanger = HeatExchanger::new(1.);
+        let mut heat_exchanger = HeatExchanger::new(1.);
         heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
 
         assert_eq!(
@@ -1191,7 +1208,7 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
-        let heat_exchanger = HeatExchanger::new(1.);
+        let mut heat_exchanger = HeatExchanger::new(1.);
         heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
 
         // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
@@ -1224,7 +1241,7 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(200.),
         );
 
-        let heat_exchanger = HeatExchanger::new(1.);
+        let mut heat_exchanger = HeatExchanger::new(1.);
         heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
 
         // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
@@ -1272,7 +1289,7 @@ mod tests {
             Pressure::new::<psi>(2.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let valve = DefaultValve::new_open();
+        let mut valve = DefaultValve::new_open();
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
             air(),
@@ -1292,7 +1309,7 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
-        let precooler = HeatExchanger::new(5e-1);
+        let mut precooler = HeatExchanger::new(5e-1);
 
         for i in 1..1000 {
             ts.push(i as f64 * 16.);
@@ -1356,7 +1373,7 @@ mod tests {
     fn container_with_valve_behaves_like_open_valve() {
         // System 1
         let mut source_one = quick_container(1., 20., 15.);
-        let valve_one = DefaultValve::new_open();
+        let mut valve_one = DefaultValve::new_open();
         let mut target_one = quick_container(1., 10., 15.);
 
         // System 2
