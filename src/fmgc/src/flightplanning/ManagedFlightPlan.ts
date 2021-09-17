@@ -799,15 +799,13 @@ export class ManagedFlightPlan {
                 // console.error('bruh');
                 // Reference : AMM - 22-71-00 PB001, Page 4
                 if (departureIndex === -1 && transitionIndex === -1) {
-                    const TEMPORARY_VERTICAL_SPEED = 500.0;
+                    const TEMPORARY_VERTICAL_SPEED = 2000.0; // ft/min
+                    const TEMPORARY_GROUND_SPEED = 160; // knots
 
                     const altitudeFeet = (runway.elevation * 3.2808399) + 1500;
-                    const distanceInNM = altitudeFeet / TEMPORARY_VERTICAL_SPEED;
+                    const distanceInNM = altitudeFeet / TEMPORARY_VERTICAL_SPEED * (TEMPORARY_GROUND_SPEED / 60);
 
-                    const magvar = SimVar.GetSimVarValue('GPS MAGVAR', 'Degrees');
-                    console.error(`magvar: ${magvar}`);
-                    const course = runway.direction - magvar;
-                    const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, runway.endCoordinates);
+                    const coordinates = GeoMath.relativeBearingDistanceToCoords(runway.direction, distanceInNM, runway.endCoordinates);
 
                     const faLeg = procedure.buildWaypoint(`${Math.round(altitudeFeet)}`, coordinates);
                     // TODO should this check for unclr discont? (probs not)
