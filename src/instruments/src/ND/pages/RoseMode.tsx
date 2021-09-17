@@ -743,7 +743,7 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
             ) }
             <text x={-56} y={30} fontSize={25} className="White" textAnchor="end">CRS</text>
             <text x={20} y={30} fontSize={25} className="Cyan" textAnchor="end">
-                {vorCourse >= 0 ? (`${vorCourse}`).padStart(3, '0') : '---'}
+                {vorCourse >= 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
             { vorFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode === TuningMode.Manual ? 'M' : (tuningMode === TuningMode.Remote ? 'R' : '')}</text> }
@@ -775,7 +775,7 @@ const IlsInfo: FC = memo(() => {
             ) }
             <text x={-56} y={30} fontSize={25} className="White" textAnchor="end">CRS</text>
             <text x={20} y={30} fontSize={25} className="Magenta" textAnchor="end">
-                {locAvailable ? (`${ilsCourse}`).padStart(3, '0') : '---'}
+                {locAvailable ? (`${Math.round(ilsCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
             { ilsFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode === TuningMode.Manual ? 'M' : (tuningMode === TuningMode.Remote ? 'R' : '')}</text> }
