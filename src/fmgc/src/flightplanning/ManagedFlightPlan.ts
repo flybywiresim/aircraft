@@ -457,8 +457,7 @@ export class ManagedFlightPlan {
             beforeRemoved.discontinuityCanBeCleared = true;
         }
 
-        // if (index < this.activeWaypointIndex) {
-        if (this.activeWaypointIndex === this.waypoints.length) {
+        if (index < this.activeWaypointIndex || this.activeWaypointIndex === this.waypoints.length) {
             this.activeWaypointIndex--;
         }
     }
