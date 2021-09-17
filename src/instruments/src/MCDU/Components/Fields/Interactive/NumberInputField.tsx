@@ -11,18 +11,32 @@ import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
 
 type NumberFieldProps = {
+    /** The default value of the field */
     defaultValue: string | undefined,
+    /** The placeholder values used when the default value is undefined */
     nullValue: string,
+    /** The minimum the defaultValue can be */
     min: number,
+    /** the maximum the defaultValue can be */
     max: number,
+    /** The color of the text in the field */
     color: lineColors,
+    /** optional alignment of the text */
     fieldSide?: fieldSides,
+    /** alignment of the field itself */
     lineSide: lineSides
+    /** Size of the text */
     size: lineSizes,
+    /** callback function called when the number entry has been validated */
     selectedCallback: (value?: string) => any,
+    /** The LSK to be pressed */
     lsk: LINESELECT_KEYS,
+    /** Optional  check to see if the value has been previously entered,
+     *  usually used for entries that can't be overwritted once entered */
     prevEntered?: boolean,
 }
+
+/** LSK Interactive field for numbers with included number verification and scratchpad clearing on valid entry */
 const NumberInputField: React.FC<NumberFieldProps> = (
     {
         defaultValue,

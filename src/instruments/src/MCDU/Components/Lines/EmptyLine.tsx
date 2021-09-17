@@ -1,6 +1,6 @@
 import React from 'react';
 
-type EmptyLineProps = {}
-export const EmptyLine: React.FC<EmptyLineProps> = () => (
+/** Helper component for inserting an empty line  in a column */
+export const EmptyLine: React.FC = () => (
     <p />
 );

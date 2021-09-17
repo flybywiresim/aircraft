@@ -9,16 +9,27 @@ import { LINESELECT_KEYS } from '../../Buttons';
 import { fieldSides } from '../NonInteractive/Field';
 
 type StringFieldProps = {
+    /** The default value of the field */
     defaultValue: string | undefined,
+    /** The placeholder values used when the default value is undefined */
     nullValue: string,
+    /** The color of the text in the field */
     color: lineColors,
+    /** optional alignment of the text */
     fieldSide?: fieldSides,
+    /** alignment of the field itself */
     lineSide: lineSides,
+    /** Size of the text */
     size: lineSizes,
+    /** callback function called when the number entry has been validated */
     selectedCallback: (value: string | undefined) => any,
+    /** callback function called to verify the entry */
     selectedValidation: (value: string) => boolean,
+    /** The LSK to be pressed */
     lsk: LINESELECT_KEYS,
 }
+
+/** LSK Interactive field for strings with automatic scratchpad clearing on valid entry */
 const StringInputField: React.FC<StringFieldProps> = (
     {
         nullValue,

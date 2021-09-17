@@ -1,6 +1,8 @@
 import React from 'react';
 import { lineColors, lineSides, lineSizes } from '../../Lines/LineProps';
 
+import '../../styles.scss';
+
 export enum fieldSides {
     left= 'field-left',
     right= 'field-right',
