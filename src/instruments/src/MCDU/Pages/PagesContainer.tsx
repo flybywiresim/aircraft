@@ -17,6 +17,8 @@
  */
 import React, { useState } from 'react';
 
+import { useSimVar } from '@instruments/common/simVars';
+import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { useInteractionEvent } from '../../Common/hooks';
 
 import InitPage from './FMGC/Init/Init';
@@ -24,14 +26,39 @@ import MenuPage from './FMGC/Menu/Menu';
 import IdentPage from './FMGC/Ident/Ident';
 import { PAGE_KEYS } from '../Components/Buttons';
 import FuelPred from './FMGC/Fuel/FuelPred';
+import FplanHolder from './FMGC/Fplan/Fplan';
 
 const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState('MENU');
+    const [, setFMCFplanIsTemp] = useSimVar('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number');
+    const [, setMapShowTempFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number');
+
+    // FIXME: Can I use SetSimVarValue instead?
+    const eraseTemporaryFlightPlan = (fpm:FlightPlanManager) => {
+        fpm.setCurrentFlightPlanIndex(0, () => {
+            setFMCFplanIsTemp(0);
+            setMapShowTempFplan(0);
+        });
+    };
+
+    // TODO: move these into the FPM?
+    const insertTemporaryFlightPlan = (fpm:FlightPlanManager) => {
+        if (fpm.getCurrentFlightPlanIndex() === 1) {
+            fpm.copyCurrentFlightPlanInto(0, () => {
+                fpm.setCurrentFlightPlanIndex(0, () => {
+                    SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
+                    SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
+                });
+            });
+        }
+    };
+
     const pages = {
         INIT: <InitPage />,
         MENU: <MenuPage setPage={setCurrentPage} />,
         IDENT: <IdentPage />,
         FUEL: <FuelPred />,
+        FPLAN: <FplanHolder eraseTemporaryFlightPlan={eraseTemporaryFlightPlan} insertTemporaryFlightPlan={insertTemporaryFlightPlan} />,
     };
 
     useInteractionEvent(PAGE_KEYS.INIT, () => setCurrentPage('INIT'));
