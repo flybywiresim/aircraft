@@ -393,6 +393,8 @@ mod tests {
         pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
+    use crate::hydraulic::rigid_body::BoundedLinearLength;
+
     #[test]
     fn linear_actuator_not_moving_on_locked_rigid_body() {
         let mut rigid_body = cargo_door_body(true);
@@ -694,10 +696,10 @@ mod tests {
         )
     }
 
-    fn cargo_door_actuator(rigid_body: &LinearActuatedRigidBodyOnHingeAxis) -> LinearActuator {
+    fn cargo_door_actuator(rigid_body: &impl BoundedLinearLength) -> LinearActuator {
         LinearActuator::new(
-            rigid_body.max_linear_distance_to_anchor(),
-            rigid_body.min_linear_distance_to_anchor(),
+            rigid_body.max_absolute_length_to_anchor(),
+            rigid_body.min_absolute_length_to_anchor(),
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),
