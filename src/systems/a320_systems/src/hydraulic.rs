@@ -1629,42 +1629,33 @@ impl A320DoorController {
 
     fn determine_mode(&mut self, door: &CargoDoor, current_pressure: Pressure) -> DoorControlState {
         match self.state {
-            DoorControlState::DownLocked => {
-                if self.position_requested > Ratio::new::<ratio>(0.) {
-                    self.should_unlock = true;
-                    DoorControlState::NoControl
-                } else {
-                    DoorControlState::DownLocked
-                }
+            DoorControlState::DownLocked if self.position_requested > Ratio::new::<ratio>(0.) => {
+                self.should_unlock = true;
+                DoorControlState::NoControl
             }
-            DoorControlState::NoControl => {
-                if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL {
-                    DoorControlState::HydControl
-                } else {
-                    DoorControlState::NoControl
-                }
+            DoorControlState::NoControl
+                if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
+            {
+                DoorControlState::HydControl
             }
-            DoorControlState::HydControl => {
+            DoorControlState::HydControl if door.is_locked() => {
                 self.should_unlock = false;
-                if door.is_locked() {
-                    DoorControlState::DownLocked
-                } else if door.position() > Ratio::new::<ratio>(0.9)
-                    && self.position_requested > Ratio::new::<ratio>(0.5)
-                {
-                    DoorControlState::UpLocked
-                } else {
-                    DoorControlState::HydControl
-                }
+                DoorControlState::DownLocked
             }
-            DoorControlState::UpLocked => {
+            DoorControlState::HydControl
+                if door.position() > Ratio::new::<ratio>(0.9)
+                    && self.position_requested > Ratio::new::<ratio>(0.5) =>
+            {
+                self.should_unlock = false;
+                DoorControlState::UpLocked
+            }
+            DoorControlState::UpLocked
                 if self.position_requested < Ratio::new::<ratio>(1.)
-                    && current_pressure > Pressure::new::<psi>(1000.)
-                {
-                    DoorControlState::HydControl
-                } else {
-                    DoorControlState::UpLocked
-                }
+                    && current_pressure > Pressure::new::<psi>(1000.) =>
+            {
+                DoorControlState::HydControl
             }
+            _ => self.state,
         }
     }
 
