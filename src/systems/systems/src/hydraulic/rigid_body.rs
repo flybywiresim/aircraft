@@ -1,5 +1,4 @@
-extern crate nalgebra as na;
-use na::{Rotation3, Unit, Vector3};
+use nalgebra::{Rotation3, Unit, Vector3};
 
 use uom::si::{
     acceleration::meter_per_second_squared, angle::radian,

@@ -1,5 +1,4 @@
-extern crate nalgebra as na;
-use na::Vector3;
+use nalgebra::Vector3;
 
 use std::time::Duration;
 use uom::si::{
