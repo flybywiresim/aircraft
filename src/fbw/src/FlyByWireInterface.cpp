@@ -83,7 +83,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= readDataAndLocalVariables(sampleTime);
 
   // in performance issues: if simulation rate is higher than 1 reduce it
-  if (simConnectInterface.getSimData().simulation_rate > 1 && sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME) {
+  if (simConnectInterface.getSimData().simulation_rate > 1 && sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME_TIME_COMPRESSION) {
     execute_calculator_code("(>K:SIM_RATE_DECR)", nullptr, nullptr, nullptr);
     cout << "WASM: WARNING Reducing simulation rate due to performance issues!" << endl;
   }
@@ -97,25 +97,25 @@ bool FlyByWireInterface::update(double sampleTime) {
   }
 
   // update altimeter setting
-  result &= updateAltimeterSetting(sampleTime);
+  result &= updateAltimeterSetting(calculatedSampleTime);
 
   // update autopilot state machine
-  result &= updateAutopilotStateMachine(sampleTime);
+  result &= updateAutopilotStateMachine(calculatedSampleTime);
 
   // update autopilot laws
-  result &= updateAutopilotLaws(sampleTime);
+  result &= updateAutopilotLaws(calculatedSampleTime);
 
   // update fly-by-wire
-  result &= updateFlyByWire(sampleTime);
+  result &= updateFlyByWire(calculatedSampleTime);
 
   // get throttle data and process it
-  result &= updateAutothrust(sampleTime);
+  result &= updateAutothrust(calculatedSampleTime);
 
   // update engine data
-  result &= updateEngineData(sampleTime);
+  result &= updateEngineData(calculatedSampleTime);
 
   // update flaps and spoilers
-  result &= updateFlapsSpoilers(sampleTime);
+  result &= updateFlapsSpoilers(calculatedSampleTime);
 
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
@@ -430,6 +430,11 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   } else {
     pauseDetected = false;
   }
+
+  // calculate delta time (and ensure it does not get 0 -> max 500 fps)
+  calculatedSampleTime = max(0.002, simData.simulationTime - previousSimulationTime);
+
+  // store previous simulation time
   previousSimulationTime = simData.simulationTime;
 
   // success
