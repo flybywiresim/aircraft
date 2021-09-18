@@ -868,6 +868,14 @@
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
 
+- A32NX_FWD_DOOR_CARGO_POSITION
+    - Percent
+    - Real position of the forward cargo door
+
+- A32NX_FWD_DOOR_CARGO_LOCKED
+    - Bool
+    - Forward cargo door is locked in closed position
+
 - A32NX_PARK_BRAKE_LEVER_POS
     - Bool
     - Current position of the parking brake lever
