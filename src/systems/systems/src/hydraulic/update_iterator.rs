@@ -58,7 +58,6 @@ impl Iterator for FixedStepLoop {
     type Item = Duration;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // Check to see if we've finished counting or not.
         if self.number_of_loops_remaining > 0 {
             self.number_of_loops_remaining -= 1;
             Some(self.time_step)
