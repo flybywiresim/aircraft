@@ -60,9 +60,9 @@ struct SlatFlapControlComputer {
 impl SlatFlapControlComputer {
 
     //Place holder until implementing Davy's model
-    const FLAPS_SPEED: f64 = 1.;
-    const SLATS_SPEED: f64 = 1.5;
-    const ANGLE_DELTA: f64 = 0.01;
+    const FLAPS_SPEED: f64 = 10.;
+    const SLATS_SPEED: f64 = 10.5;
+    const ANGLE_DELTA: f64 = 0.1;
 
     fn new() -> Self {
         Self {
@@ -200,6 +200,8 @@ impl SlatFlapControlComputer {
             if self.flaps_angle < Angle::new::<degree>(0.) {
                 self.flaps_angle = Angle::new::<degree>(0.);
             }
+        } else {
+            self.flaps_angle = self.flaps_target_angle;
         }
         if slats_actual_minus_target.abs() > Self::ANGLE_DELTA {
             self.slats_angle += Angle::new::<degree>(
@@ -207,6 +209,8 @@ impl SlatFlapControlComputer {
             if self.slats_angle < Angle::new::<degree>(0.) {
                 self.slats_angle = Angle::new::<degree>(0.);
             }
+        } else {
+            self.slats_angle = self.slats_target_angle;
         }
     }
 }
@@ -281,9 +285,6 @@ impl SimulationElement for SlatFlapComplex {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("LEFT_FLAPS_POSITION_PERCENT_DUMMY", self.sfcc[0].get_flaps_angle_f64()*Self::FLAPS_DEGREE_TO_PERCENT * 100.);
-        writer.write("DUMMY_HANDLE_POSITION", self.flaps_handle.handle_position);
-
         writer.write("LEFT_FLAPS_POSITION_PERCENT", self.sfcc[0].get_flaps_angle_f64()*Self::FLAPS_DEGREE_TO_PERCENT * 100.);
         writer.write("RIGHT_FLAPS_POSITION_PERCENT", self.sfcc[1].get_flaps_angle_f64()*Self::FLAPS_DEGREE_TO_PERCENT * 100.);
         writer.write("LEFT_FLAPS_TARGET_ANGLE", self.sfcc[0].get_target_flaps_angle_f64());
@@ -307,7 +308,6 @@ impl SimulationElement for SlatFlapComplex {
         let left_slats_angle_percent: f64 = reader.read("LEFT_SLATS_POSITION_PERCENT");
         let right_slats_angle_percent: f64 = reader.read("RIGHT_SLATS_POSITION_PERCENT");
 
-        // self.flaps_handle_index = reader.read("FLAPS HANDLE INDEX");
 
         self.sfcc[0].set_flaps_angle_from_f64(
             Self::FLAPS_PERCENT_TO_DEGREE*left_flaps_angle_percent/100.);

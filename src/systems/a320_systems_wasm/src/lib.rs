@@ -120,8 +120,6 @@ fn create_aircraft_variable_reader(
     );
     reader.add("PLANE LATITUDE", "degree latitude", 0)?;
     reader.add("PLANE LONGITUDE", "degree longitude", 0)?;
-    reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
-    reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
 
     // reader.add("FLAPS HANDLE INDEX", "Number", 0)?;
     Ok(reader)
@@ -185,12 +183,12 @@ struct SlatsSurface {
     right_slat: f64,
 }
 
-#[sim_connect::data_definition]
-struct FlapsHandleIndex{
-    #[name = "FLAPS HANDLE INDEX"]
-    #[unit = "Number"]
-    flaps_handle_index: f64,
-}
+// #[sim_connect::data_definition]
+// struct FlapsHandleIndex{
+//     #[name = "FLAPS HANDLE INDEX"]
+//     #[unit = "Number"]
+//     flaps_handle_index: f64,
+// }
 
 struct Flaps {
     //IDs of the flaps handle events
@@ -210,10 +208,11 @@ struct Flaps {
     right_flaps_position_simvar: NamedVariable,
     left_slats_position_simvar: NamedVariable,
     right_slats_position_simvar: NamedVariable,
+    // flaps_conf_handle_index_simvar: NamedVariable,
 
     flaps_surface_simobject: FlapsSurface,
     slats_surface_simobject: SlatsSurface,
-    flaps_handle_index_simobject: FlapsHandleIndex,
+    // flaps_handle_index_simobject: FlapsHandleIndex,
 
     flaps_handle_position: u8,
     left_flaps_position: f64,
@@ -244,6 +243,7 @@ impl Flaps {
                 right_flaps_position_simvar: NamedVariable::from("A32NX_RIGHT_FLAPS_POSITION_PERCENT"),
                 left_slats_position_simvar: NamedVariable::from("A32NX_LEFT_SLATS_POSITION_PERCENT"),
                 right_slats_position_simvar: NamedVariable::from("A32NX_RIGHT_SLATS_POSITION_PERCENT"),
+                // flaps_conf_handle_index_simvar: NamedVariable::from("A32NX_FLAPS_CONF_HANDLE_INDEX_HELPER"),
 
                 flaps_surface_simobject: FlapsSurface {
                     left_flap: 0.,
@@ -254,7 +254,7 @@ impl Flaps {
                     right_slat: 0.,
                 },
 
-                flaps_handle_index_simobject: FlapsHandleIndex { flaps_handle_index: 0.},
+                // flaps_handle_index_simobject: FlapsHandleIndex { flaps_handle_index: 0.},
 
                 flaps_handle_position: 0,
                 left_flaps_position: 0.,
@@ -333,6 +333,7 @@ impl Flaps {
         self.right_flaps_position_simvar.set_value(self.right_flaps_position);
         self.left_slats_position_simvar.set_value(self.left_slats_position);
         self.right_slats_position_simvar.set_value(self.right_slats_position);
+        // self.flaps_conf_handle_index_simvar.set_value(self.flaps_conf_helper);
     }
 }
 
@@ -366,10 +367,10 @@ impl SimulatorAspect for Flaps {
                 self.right_slats_position = value;
                 true
             },
-            "FLAPS_CONF_HANDLE_INDEX_HELPER" => {
-                self.flaps_conf_helper = value;
-                true
-            },
+            // "FLAPS_CONF_HANDLE_INDEX_HELPER" => {
+            //     self.flaps_conf_helper = value;
+            //     true
+            // },
             _ => false,
         }
     }
@@ -391,13 +392,13 @@ impl SimulatorAspect for Flaps {
         self.flaps_surface_simobject.right_flap = self.right_flaps_position;
         self.slats_surface_simobject.left_slat = self.left_slats_position;
         self.slats_surface_simobject.right_slat = self.right_slats_position;
-        self.flaps_handle_index_simobject.flaps_handle_index = self.flaps_conf_helper;
+        // self.flaps_handle_index_simobject.flaps_handle_index = self.flaps_conf_helper;
 
         self.write_simvars();
 
         sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_simobject);
         sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_simobject);
-        sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_handle_index_simobject);
+        // sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_handle_index_simobject);
 
         Ok(())
     }
