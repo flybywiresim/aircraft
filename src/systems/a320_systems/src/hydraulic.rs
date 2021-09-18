@@ -1587,8 +1587,8 @@ impl A320DoorController {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, door: &CargoDoor, pressure_available: Pressure) {
-        self.state = self.determine_mode(door, pressure_available);
+    fn update(&mut self, context: &UpdateContext, door: &CargoDoor, current_pressure: Pressure) {
+        self.state = self.determine_mode(door, current_pressure);
         self.update_timers(context);
         self.update_actions_from_state();
     }
@@ -1629,11 +1629,7 @@ impl A320DoorController {
         }
     }
 
-    fn determine_mode(
-        &mut self,
-        door: &CargoDoor,
-        pressure_available: Pressure,
-    ) -> DoorControlState {
+    fn determine_mode(&mut self, door: &CargoDoor, current_pressure: Pressure) -> DoorControlState {
         match self.state {
             DoorControlState::DownLocked => {
                 if self.position_requested > Ratio::new::<ratio>(0.) {
@@ -1664,7 +1660,7 @@ impl A320DoorController {
             }
             DoorControlState::UpLocked => {
                 if self.position_requested < Ratio::new::<ratio>(1.)
-                    && pressure_available > Pressure::new::<psi>(1000.)
+                    && current_pressure > Pressure::new::<psi>(1000.)
                 {
                     DoorControlState::HydControl
                 } else {
@@ -1742,10 +1738,10 @@ impl CargoDoor {
         &mut self,
         cargo_door_controller: &impl HydraulicAssemblyController,
         context: &UpdateContext,
-        hydraulic_pressure: Pressure,
+        current_pressure: Pressure,
     ) {
         self.hydraulic_assembly
-            .update(cargo_door_controller, context, hydraulic_pressure);
+            .update(cargo_door_controller, context, current_pressure);
         self.is_locked = self.hydraulic_assembly.is_locked();
         self.position = self.hydraulic_assembly.position_normalized();
     }
