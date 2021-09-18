@@ -324,7 +324,6 @@ impl A320Hydraulic {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
 
-        // Here we update at the same rate as the sim or max time step if sim rate is too slow
         self.update_max_fixed_step(&context);
 
         self.update_every_frame(
@@ -454,8 +453,7 @@ impl A320Hydraulic {
         self.yellow_loop.is_pressurised()
     }
 
-    #[allow(clippy::too_many_arguments)]
-    // Update with same refresh rate as the sim
+    // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
     fn update_max_fixed_step(&mut self, context: &UpdateContext) {
         while let Some(cur_time_step) = self.physics_updater.next() {
             self.forward_cargo_door.update(
