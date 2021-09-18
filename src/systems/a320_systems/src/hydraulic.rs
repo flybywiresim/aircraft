@@ -63,7 +63,7 @@ impl A320CargoDoorFactory {
         )
     }
 
-    // Builds a cargo door body for A320 Neo
+    /// Builds a cargo door body for A320 Neo
     fn a320_cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
         let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
@@ -85,8 +85,8 @@ impl A320CargoDoorFactory {
         )
     }
 
-    // Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
-    // to it
+    /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
+    /// to it
     fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly {
         let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
         let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
