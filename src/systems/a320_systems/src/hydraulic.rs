@@ -241,10 +241,11 @@ impl A320Hydraulic {
             flap_system: FlapSlatAssembly::new(
                 "FLAPS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.4),
-                Angle::new::<degree>(231.24),
-                Ratio::new::<ratio>(1. / 140.),
+                AngularVelocity::new::<radian_per_second>(0.11),
+                Angle::new::<degree>(251.97),
+                Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
+                Ratio::new::<ratio>(314.98),
             ),
 
             total_sim_time_elapsed: Duration::new(0, 0),
@@ -5302,8 +5303,8 @@ mod tests {
             assert!(test_bed.is_yellow_pressurised());
 
             test_bed = test_bed
-                .set_flaps(Angle::new::<degree>(231.5))
-                .run_waiting_for(Duration::from_secs(24));
+                .set_flaps(Angle::new::<degree>(800.))
+                .run_waiting_for(Duration::from_secs(37));
         }
     }
 }

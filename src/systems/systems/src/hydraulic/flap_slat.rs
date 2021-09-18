@@ -79,16 +79,18 @@ impl Actuator for FlapSlatHydraulicMotor {
 pub struct FlapSlatAssembly {
     position_id: String,
 
-    synchro_gear_position: Angle,
+    flap_position: Angle,
 
     max_synchro_gear_position: Angle,
+    max_flap_position: Angle,
 
     current_speed: AngularVelocity,
     current_max_speed: AngularVelocity,
     full_pressure_max_speed: AngularVelocity,
 
     gearbox_ratio: Ratio,
-    synchro_gear_ratio: Ratio,
+    flap_to_synchro_gear_ratio: Ratio,
+    flap_gear_ratio: Ratio,
 
     left_motor: FlapSlatHydraulicMotor,
     right_motor: FlapSlatHydraulicMotor,
@@ -106,19 +108,28 @@ impl FlapSlatAssembly {
         max_synchro_gear_position: Angle,
         synchro_gear_ratio: Ratio,
         gearbox_ratio: Ratio,
+        flap_gear_ratio: Ratio,
     ) -> Self {
-        Self {
+        let mut new_obj = Self {
             position_id: format!("HYD_{}_POSITION", id),
-            synchro_gear_position: Angle::new::<radian>(0.),
+            flap_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
+            max_flap_position: Angle::new::<radian>(0.),
             current_speed: AngularVelocity::new::<radian_per_second>(0.),
             current_max_speed: AngularVelocity::new::<radian_per_second>(0.),
             full_pressure_max_speed,
             gearbox_ratio,
-            synchro_gear_ratio,
+            flap_to_synchro_gear_ratio: flap_gear_ratio / synchro_gear_ratio,
+            flap_gear_ratio,
             left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
-        }
+        };
+        new_obj.max_flap_position = new_obj.synchro_angle_to_flap_angle(max_synchro_gear_position);
+        new_obj
+    }
+
+    fn synchro_angle_to_flap_angle(&self, synchro_gear_angle: Angle) -> Angle {
+        synchro_gear_angle / self.flap_to_synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn update(
@@ -146,12 +157,12 @@ impl FlapSlatAssembly {
         context: &UpdateContext,
     ) {
         if synchro_gear_angle_request > self.position_feedback() {
-            self.synchro_gear_position += Angle::new::<radian>(
+            self.flap_position += Angle::new::<radian>(
                 self.current_max_speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
             self.current_speed = self.current_max_speed;
         } else if synchro_gear_angle_request < self.position_feedback() {
-            self.synchro_gear_position -= Angle::new::<radian>(
+            self.flap_position -= Angle::new::<radian>(
                 self.current_max_speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
             self.current_speed = -self.current_max_speed;
@@ -164,13 +175,13 @@ impl FlapSlatAssembly {
             || self.current_speed < AngularVelocity::new::<radian_per_second>(0.)
                 && synchro_gear_angle_request > self.position_feedback()
         {
-            self.synchro_gear_position = synchro_gear_angle_request;
+            self.flap_position = self.synchro_angle_to_flap_angle(synchro_gear_angle_request);
         }
 
-        self.synchro_gear_position = self
-            .synchro_gear_position
+        self.flap_position = self
+            .flap_position
             .max(Angle::new::<radian>(0.))
-            .min(self.max_synchro_gear_position);
+            .min(self.synchro_angle_to_flap_angle(self.max_synchro_gear_position));
     }
 
     fn update_current_max_speed(
@@ -207,7 +218,7 @@ impl FlapSlatAssembly {
         context: &UpdateContext,
     ) {
         let torque_shaft_speed = AngularVelocity::new::<radian_per_second>(
-            self.current_speed.get::<radian_per_second>() / self.synchro_gear_ratio.get::<ratio>(),
+            self.current_speed.get::<radian_per_second>() * self.flap_gear_ratio.get::<ratio>(),
         );
 
         let left_torque_nm = self.left_motor.torque_nm(left_pressure);
@@ -246,7 +257,7 @@ impl FlapSlatAssembly {
     }
 
     pub fn position_feedback(&self) -> Angle {
-        self.synchro_gear_position
+        self.flap_position * self.flap_to_synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn left_motor(&mut self) -> &impl Actuator {
@@ -290,14 +301,7 @@ mod tests {
 
     #[test]
     fn flap_slat_assembly_init() {
-        let mut flap_system = FlapSlatAssembly::new(
-            "FLAPS",
-            Volume::new::<cubic_inch>(0.32),
-            AngularVelocity::new::<radian_per_second>(0.4),
-            Angle::new::<degree>(231.24),
-            Ratio::new::<ratio>(1. / 140.),
-            Ratio::new::<ratio>(16.632),
-        );
+        let flap_system = flap_system();
 
         assert!(flap_system.position_feedback().get::<degree>() == 0.);
         assert!(flap_system.left_motor.current_flow == VolumeRate::new::<gallon_per_minute>(0.));
@@ -309,14 +313,7 @@ mod tests {
 
     #[test]
     fn flap_slat_assembly_full_pressure() {
-        let mut flap_system = FlapSlatAssembly::new(
-            "FLAPS",
-            Volume::new::<cubic_inch>(0.32),
-            AngularVelocity::new::<radian_per_second>(0.4),
-            Angle::new::<degree>(231.24),
-            Ratio::new::<ratio>(1. / 140.),
-            Ratio::new::<ratio>(16.632),
-        );
+        let mut flap_system = flap_system();
 
         assert!(flap_system.position_feedback().get::<degree>() == 0.);
         assert!(flap_system.current_speed.get::<radian_per_second>() == 0.);
@@ -328,16 +325,18 @@ mod tests {
             &context(Duration::from_millis(2000)),
         );
 
-        assert!(flap_system.current_speed.get::<radian_per_second>() >= 0.39);
-        assert!(flap_system.current_speed.get::<radian_per_second>() <= 0.41);
+        assert!(
+            (flap_system.current_speed - flap_system.full_pressure_max_speed).abs()
+                <= AngularVelocity::new::<radian_per_second>(0.1)
+        );
 
         assert!(
-            flap_system.left_motor.speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
+            flap_system.left_motor.speed >= AngularVelocity::new::<revolution_per_minute>(2000.)
                 && flap_system.left_motor.speed
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
         assert!(
-            flap_system.right_motor.speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
+            flap_system.right_motor.speed >= AngularVelocity::new::<revolution_per_minute>(2000.)
                 && flap_system.right_motor.speed
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
@@ -353,15 +352,8 @@ mod tests {
     }
 
     #[test]
-    fn flap_slat_assembly_half_pressure_left() {
-        let mut flap_system = FlapSlatAssembly::new(
-            "FLAPS",
-            Volume::new::<cubic_inch>(0.32),
-            AngularVelocity::new::<radian_per_second>(0.4),
-            Angle::new::<degree>(231.24),
-            Ratio::new::<ratio>(1. / 140.),
-            Ratio::new::<ratio>(16.632),
-        );
+    fn flap_slat_assembly_half_pressure_right() {
+        let mut flap_system = flap_system();
 
         assert!(flap_system.position_feedback().get::<degree>() == 0.);
 
@@ -374,7 +366,7 @@ mod tests {
 
         assert!(flap_system.left_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
         assert!(
-            flap_system.right_motor.speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
+            flap_system.right_motor.speed >= AngularVelocity::new::<revolution_per_minute>(2000.)
                 && flap_system.right_motor.speed
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
@@ -387,15 +379,8 @@ mod tests {
     }
 
     #[test]
-    fn flap_slat_assembly_half_pressure_right() {
-        let mut flap_system = FlapSlatAssembly::new(
-            "FLAPS",
-            Volume::new::<cubic_inch>(0.32),
-            AngularVelocity::new::<radian_per_second>(0.4),
-            Angle::new::<degree>(231.24),
-            Ratio::new::<ratio>(1. / 140.),
-            Ratio::new::<ratio>(16.632),
-        );
+    fn flap_slat_assembly_half_pressure_left() {
+        let mut flap_system = flap_system();
 
         assert!(flap_system.position_feedback().get::<degree>() == 0.);
 
@@ -408,7 +393,7 @@ mod tests {
 
         assert!(flap_system.right_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
         assert!(
-            flap_system.left_motor.speed >= AngularVelocity::new::<revolution_per_minute>(4000.)
+            flap_system.left_motor.speed >= AngularVelocity::new::<revolution_per_minute>(2000.)
                 && flap_system.left_motor.speed
                     <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
@@ -422,14 +407,7 @@ mod tests {
 
     #[test]
     fn flap_slat_assembly_goes_to_req_position() {
-        let mut flap_system = FlapSlatAssembly::new(
-            "FLAPS",
-            Volume::new::<cubic_inch>(0.32),
-            AngularVelocity::new::<radian_per_second>(0.4),
-            Angle::new::<degree>(231.24),
-            Ratio::new::<ratio>(1. / 140.),
-            Ratio::new::<ratio>(16.632),
-        );
+        let mut flap_system = flap_system();
 
         assert!(flap_system.position_feedback().get::<degree>() == 0.);
 
@@ -442,6 +420,8 @@ mod tests {
 
         let mut time = Duration::from_millis(0);
         let mut last_position = flap_system.position_feedback();
+
+        let synchro_gear_angle_request = Angle::new::<degree>(150.);
         for _ in 0..200 {
             flap_system.update(
                 Angle::new::<degree>(150.),
@@ -449,35 +429,29 @@ mod tests {
                 Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
                 &context(Duration::from_millis(100)),
             );
-            if flap_system.position_feedback() != Angle::new::<degree>(150.) {
+            if flap_system.position_feedback() < synchro_gear_angle_request {
                 assert!(flap_system.position_feedback() > last_position);
             }
-            assert!(flap_system.position_feedback() <= Angle::new::<degree>(150.));
+            assert!(flap_system.position_feedback() <= flap_system.max_synchro_gear_position);
 
             last_position = flap_system.position_feedback();
             println!(
-                "Time: {:.1}s  -> Position {:.1}/150 speed{:.3} RightMotor rpm {:.0}",
+                "Time: {:.1}s  -> Position {:.2}/{} speed{:.3} RightMotor rpm {:.0}",
                 time.as_secs_f64(),
                 last_position.get::<degree>(),
+                synchro_gear_angle_request.get::<degree>(),
                 flap_system.current_speed.get::<radian_per_second>(),
                 flap_system.right_motor.speed.get::<revolution_per_minute>()
             );
             time += Duration::from_millis(100);
         }
 
-        assert!(flap_system.position_feedback() == Angle::new::<degree>(150.));
+        assert!(flap_system.position_feedback() == synchro_gear_angle_request);
     }
 
     #[test]
-    fn flap_slat_assembly_stops_at_max_position() {
-        let mut flap_system = FlapSlatAssembly::new(
-            "FLAPS",
-            Volume::new::<cubic_inch>(0.32),
-            AngularVelocity::new::<radian_per_second>(0.4),
-            Angle::new::<degree>(231.24),
-            Ratio::new::<ratio>(1. / 140.),
-            Ratio::new::<ratio>(16.632),
-        );
+    fn flap_slat_assembly_stops_at_max_position_on_half_pressure_less_than_37_seconds() {
+        let mut flap_system = flap_system();
 
         assert!(flap_system.position_feedback().get::<degree>() == 0.);
 
@@ -490,7 +464,7 @@ mod tests {
 
         let mut time = Duration::from_millis(0);
         let mut last_position = flap_system.position_feedback();
-        for _ in 0..300 {
+        for _ in 0..370 {
             flap_system.update(
                 Angle::new::<degree>(800.),
                 Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
@@ -498,13 +472,14 @@ mod tests {
                 &context(Duration::from_millis(100)),
             );
 
-            assert!(flap_system.position_feedback() <= Angle::new::<degree>(231.24));
+            assert!(flap_system.position_feedback() <= flap_system.max_synchro_gear_position);
 
             last_position = flap_system.position_feedback();
             println!(
-                "Time: {:.1}s  -> Position {:.1}/231.24 -> speed {:.3}",
+                "Time: {:.1}s  -> Position {:.2}/{}-> speed {:.3}",
                 time.as_secs_f64(),
                 last_position.get::<degree>(),
+                flap_system.max_synchro_gear_position.get::<degree>(),
                 flap_system.current_speed.get::<radian_per_second>()
             );
             time += Duration::from_millis(100);
@@ -513,14 +488,7 @@ mod tests {
 
     #[test]
     fn flap_slat_assembly_goes_back_from_max_position() {
-        let mut flap_system = FlapSlatAssembly::new(
-            "FLAPS",
-            Volume::new::<cubic_inch>(0.32),
-            AngularVelocity::new::<radian_per_second>(0.4),
-            Angle::new::<degree>(231.24),
-            Ratio::new::<ratio>(1. / 140.),
-            Ratio::new::<ratio>(16.632),
-        );
+        let mut flap_system = flap_system();
 
         let mut time = Duration::from_millis(0);
         let mut last_position = flap_system.position_feedback();
@@ -532,18 +500,19 @@ mod tests {
                 &context(Duration::from_millis(100)),
             );
 
-            assert!(flap_system.position_feedback() <= Angle::new::<degree>(231.24));
+            assert!(flap_system.position_feedback() <= flap_system.max_synchro_gear_position);
 
             last_position = flap_system.position_feedback();
             println!(
-                "Time: {:.1}s  -> Position {:.1}/150",
+                "Time: {:.1}s  -> Position {:.2}/{}",
                 time.as_secs_f64(),
-                last_position.get::<degree>()
+                last_position.get::<degree>(),
+                flap_system.max_synchro_gear_position.get::<degree>()
             );
             time += Duration::from_millis(100);
         }
 
-        assert!(flap_system.position_feedback() == Angle::new::<degree>(231.24));
+        assert!(flap_system.position_feedback() == flap_system.max_synchro_gear_position);
 
         for _ in 0..300 {
             flap_system.update(
@@ -553,13 +522,14 @@ mod tests {
                 &context(Duration::from_millis(100)),
             );
 
-            assert!(flap_system.position_feedback() <= Angle::new::<degree>(231.24));
+            assert!(flap_system.position_feedback() <= flap_system.max_synchro_gear_position);
 
             last_position = flap_system.position_feedback();
             println!(
-                "Time: {:.1}s  -> Position {:.1}/150",
+                "Time: {:.1}s  -> Position {:.1}/{}",
                 time.as_secs_f64(),
-                last_position.get::<degree>()
+                last_position.get::<degree>(),
+                flap_system.max_synchro_gear_position.get::<degree>()
             );
             time += Duration::from_millis(100);
         }
@@ -575,6 +545,18 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+        )
+    }
+
+    fn flap_system() -> FlapSlatAssembly {
+        FlapSlatAssembly::new(
+            "FLAPS",
+            Volume::new::<cubic_inch>(0.32),
+            AngularVelocity::new::<radian_per_second>(0.11),
+            Angle::new::<degree>(251.97),
+            Ratio::new::<ratio>(140.),
+            Ratio::new::<ratio>(16.632),
+            Ratio::new::<ratio>(314.98),
         )
     }
 }
