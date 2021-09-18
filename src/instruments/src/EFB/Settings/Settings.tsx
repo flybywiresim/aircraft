@@ -431,7 +431,7 @@ const ATSUAOCPage = () => {
                         className="w-30"
                         value={simbriefDisplay}
                         noLabel
-                        onBlur={(value) => handleUsernameInput(value)}
+                        onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
                         onChange={(value) => setSimbriefDisplay(value)}
                     />
                 </div>
