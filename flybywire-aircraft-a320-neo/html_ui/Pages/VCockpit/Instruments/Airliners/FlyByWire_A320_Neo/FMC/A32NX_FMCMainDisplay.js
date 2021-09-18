@@ -804,24 +804,24 @@ class FMCMainDisplay extends BaseAirliners {
                         speed = Math.min(speed, this.managedSpeedLimit);
                     }
 
+                    speed = Math.min(speed, this.getSpeedConstraint());
+
                     [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedDescendMach);
                     vPfd = this.managedSpeedTarget;
                     break;
                 }
                 case FmgcFlightPhases.APPROACH: {
-                    const ctn = this.getSpeedConstraint(false);
+                    // the displayed target is Vapp (with GSmini)
+                    // the guidance target is lower limited by FAC manouvering speeds (O, S, F) unless in landing config
+                    // constraints are not considered
                     let speed = this.getAppManagedSpeed();
-                    let vls = this.getVApp();
+                    let vAppTarget = this.getVApp();
                     if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-                        vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
-                    }
-                    if (ctn !== Infinity) {
-                        vls = Math.max(vls, ctn);
-                        speed = Math.max(speed, ctn);
+                        vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
                     }
 
-                    vPfd = vls;
-                    this.managedSpeedTarget = Math.max(speed, vls);
+                    vPfd = vAppTarget;
+                    this.managedSpeedTarget = Math.max(speed, vAppTarget);
                     break;
                 }
                 case FmgcFlightPhases.GOAROUND: {
