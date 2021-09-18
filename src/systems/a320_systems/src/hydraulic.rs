@@ -474,7 +474,6 @@ impl A320Hydraulic {
     }
 
     #[allow(clippy::too_many_arguments)]
-    // Update with same refresh rate as the sim
     fn update_every_frame(
         &mut self,
         context: &UpdateContext,
