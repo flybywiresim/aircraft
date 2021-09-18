@@ -4,7 +4,6 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
-    angular_velocity::revolution_per_minute,
     f64::*,
     length::meter,
     mass::kilogram,
@@ -601,9 +600,7 @@ impl A320Hydraulic {
             self.engine_driven_pump_1.update(
                 context,
                 &self.green_loop,
-                engine1
-                    .hydraulic_pump_output_speed()
-                    .get::<revolution_per_minute>(),
+                engine1.hydraulic_pump_output_speed(),
                 &self.engine_driven_pump_1_controller,
             );
 
@@ -621,9 +618,7 @@ impl A320Hydraulic {
             self.engine_driven_pump_2.update(
                 context,
                 &self.yellow_loop,
-                engine2
-                    .hydraulic_pump_output_speed()
-                    .get::<revolution_per_minute>(),
+                engine2.hydraulic_pump_output_speed(),
                 &self.engine_driven_pump_2_controller,
             );
 

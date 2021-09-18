@@ -7,6 +7,7 @@ use crate::simulation::{
 use std::string::String;
 use std::time::Duration;
 use uom::si::{
+    angular_velocity::revolution_per_minute,
     f64::*,
     pressure::psi,
     velocity::knot,
@@ -836,11 +837,16 @@ impl EngineDrivenPump {
         &mut self,
         context: &UpdateContext,
         line: &HydraulicLoop,
-        pump_rpm: f64,
+        pump_speed: AngularVelocity,
         controller: &T,
     ) {
-        self.rpm = pump_rpm;
-        self.pump.update(context, line, pump_rpm, controller);
+        self.rpm = pump_speed.get::<revolution_per_minute>();
+        self.pump.update(
+            context,
+            line,
+            pump_speed.get::<revolution_per_minute>(),
+            controller,
+        );
         self.is_active = controller.should_pressurise();
     }
 
@@ -1356,11 +1362,16 @@ mod tests {
             edp.update(
                 &context.with_delta(Duration::from_secs(1)),
                 &line,
-                pump_rpm,
+                AngularVelocity::new::<revolution_per_minute>(pump_rpm),
                 &engine_driven_pump_controller,
             ); // Update 10 times to stabilize displacement
 
-            edp.update(context, &line, pump_rpm, &engine_driven_pump_controller);
+            edp.update(
+                context,
+                &line,
+                AngularVelocity::new::<revolution_per_minute>(pump_rpm),
+                &engine_driven_pump_controller,
+            );
             edp.delta_vol_max()
         }
 

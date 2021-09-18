@@ -8,6 +8,7 @@ use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
     acceleration::foot_per_second_squared,
     angle::radian,
+    angular_velocity::revolution_per_minute,
     f64::*,
     length::foot,
     pressure::{pascal, psi},
@@ -278,7 +279,12 @@ fn green_loop_edp_simulation(path: &str) {
             assert!(green_loop.pressure() <= Pressure::new::<psi>(250.0));
         }
 
-        edp1.update(&context, &green_loop, edp_rpm, &edp1_controller);
+        edp1.update(
+            &context,
+            &green_loop,
+            AngularVelocity::new::<revolution_per_minute>(edp_rpm),
+            &edp1_controller,
+        );
         green_loop.update(
             &context,
             Vec::new(),
@@ -509,7 +515,12 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
         }
 
         ptu.update(&green_loop, &yellow_loop, &ptu_controller);
-        edp1.update(&context, &green_loop, edp_rpm, &edp1_controller);
+        edp1.update(
+            &context,
+            &green_loop,
+            AngularVelocity::new::<revolution_per_minute>(edp_rpm),
+            &edp1_controller,
+        );
         epump.update(&context, &yellow_loop, &epump_controller);
 
         yellow_loop.update(
@@ -703,7 +714,12 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
             println!("Gpress={}", green_loop.pressure().get::<psi>());
         }
         ptu.update(&green_loop, &yellow_loop, &ptu_controller);
-        edp2.update(&context, &yellow_loop, edp_rpm, &edp2_controller);
+        edp2.update(
+            &context,
+            &yellow_loop,
+            AngularVelocity::new::<revolution_per_minute>(edp_rpm),
+            &edp2_controller,
+        );
         epump.update(&context, &yellow_loop, &epump_controller);
 
         yellow_loop.update(
