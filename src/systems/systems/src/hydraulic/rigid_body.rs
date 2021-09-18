@@ -8,9 +8,18 @@ use uom::si::{
 
 use crate::simulation::UpdateContext;
 
+/// BoundedLinearLength is linked to anything moving bounded between a min and maximum position.
+/// Those bounds implies that it will have a max and min distance from a fixed
+/// point in space to the position where we apply forces to it,
+/// for exemple a control arm where an actuator is attached
+pub trait BoundedLinearLength {
+    fn min_absolute_length_to_anchor(&self) -> Length;
+    fn max_absolute_length_to_anchor(&self) -> Length;
+}
+
 // RigidBodyOnHinge represent any physical object able to rotate on a hinge axis.
 // It can be a gear, elevator, cargo door...... Only one rotation degree of freedom is handled.
-// An actuator or multiple actuators can apply forces to its control arm
+// An linear actuator or multiple linear actuators can apply forces to its control arm
 //
 // Coordinates as follows:
 // on x (left->right looking at the plane from the back)
@@ -141,32 +150,12 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         Length::new::<meter>((self.anchor_point - self.control_arm_actual).norm())
     }
 
-    pub fn min_linear_distance_to_anchor(&self) -> Length {
-        let rotation_min = Rotation3::from_axis_angle(
-            &Unit::new_normalize(self.axis_direction),
-            self.min_angle.get::<radian>(),
-        );
-        let control_arm_min = rotation_min * self.control_arm;
-
-        Length::new::<meter>((self.anchor_point - control_arm_min).norm())
-    }
-
-    pub fn max_linear_distance_to_anchor(&self) -> Length {
-        let rotation_max = Rotation3::from_axis_angle(
-            &Unit::new_normalize(self.axis_direction),
-            self.max_angle.get::<radian>(),
-        );
-        let control_arm_max = rotation_max * self.control_arm;
-
-        Length::new::<meter>((self.anchor_point - control_arm_max).norm())
-    }
-
     // Initialises the object with correct direction of the rigid body when an actuator would be extending or compressing.
     // If compressing actuator would give a rising rigid body angle, sets TRUE
     // If extending actuator would give a lowering rigid body angle, sets FALSE
     fn initialize_actuator_force_direction(&mut self) {
         self.actuator_extension_gives_positive_angle =
-            self.max_linear_distance_to_anchor() < self.min_linear_distance_to_anchor();
+            self.max_absolute_length_to_anchor() < self.min_absolute_length_to_anchor();
     }
 
     // If compressing actuator would give a rising rigid body angle, returns TRUE
@@ -299,6 +288,27 @@ impl LinearActuatedRigidBodyOnHingeAxis {
 
     pub fn is_locked(&self) -> bool {
         self.is_locked
+    }
+}
+impl BoundedLinearLength for LinearActuatedRigidBodyOnHingeAxis {
+    fn min_absolute_length_to_anchor(&self) -> Length {
+        let rotation_min = Rotation3::from_axis_angle(
+            &Unit::new_normalize(self.axis_direction),
+            self.min_angle.get::<radian>(),
+        );
+        let control_arm_min = rotation_min * self.control_arm;
+
+        Length::new::<meter>((self.anchor_point - control_arm_min).norm())
+    }
+
+    fn max_absolute_length_to_anchor(&self) -> Length {
+        let rotation_max = Rotation3::from_axis_angle(
+            &Unit::new_normalize(self.axis_direction),
+            self.max_angle.get::<radian>(),
+        );
+        let control_arm_max = rotation_max * self.control_arm;
+
+        Length::new::<meter>((self.anchor_point - control_arm_max).norm())
     }
 }
 

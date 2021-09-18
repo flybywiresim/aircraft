@@ -25,7 +25,7 @@ use systems::{
             Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuator,
             LinearActuatorMode,
         },
-        rigid_body::LinearActuatedRigidBodyOnHingeAxis,
+        rigid_body::{BoundedLinearLength, LinearActuatedRigidBodyOnHingeAxis},
         update_iterator::{FixedStepLoop, MaxStepLoop},
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
@@ -48,10 +48,10 @@ use systems::{
 
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
-    fn a320_cargo_door_actuator(rigid_body: &LinearActuatedRigidBodyOnHingeAxis) -> LinearActuator {
+    fn a320_cargo_door_actuator(rigid_body: &impl BoundedLinearLength) -> LinearActuator {
         LinearActuator::new(
-            rigid_body.max_linear_distance_to_anchor(),
-            rigid_body.min_linear_distance_to_anchor(),
+            rigid_body.max_absolute_length_to_anchor(),
+            rigid_body.min_absolute_length_to_anchor(),
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),
@@ -1552,7 +1552,7 @@ enum DoorControlState {
 struct A320DoorController {
     requested_position_id: String,
 
-    state: DoorControlState,
+    control_state: DoorControlState,
 
     position_requested: Ratio,
 
@@ -1573,7 +1573,7 @@ impl A320DoorController {
     fn new(id: &str) -> Self {
         Self {
             requested_position_id: format!("{}_DOOR_CARGO_OPEN_REQ", id),
-            state: DoorControlState::DownLocked,
+            control_state: DoorControlState::DownLocked,
             position_requested: Ratio::new::<ratio>(0.),
 
             duration_in_no_control: Duration::from_secs(0),
@@ -1586,19 +1586,19 @@ impl A320DoorController {
     }
 
     fn update(&mut self, context: &UpdateContext, door: &CargoDoor, current_pressure: Pressure) {
-        self.state = self.determine_mode(door, current_pressure);
+        self.control_state = self.determine_control_state_and_lock_action(door, current_pressure);
         self.update_timers(context);
         self.update_actions_from_state();
     }
 
     fn update_timers(&mut self, context: &UpdateContext) {
-        if self.state == DoorControlState::NoControl {
+        if self.control_state == DoorControlState::NoControl {
             self.duration_in_no_control += context.delta();
         } else {
             self.duration_in_no_control = Duration::from_secs(0);
         }
 
-        if self.state == DoorControlState::HydControl {
+        if self.control_state == DoorControlState::HydControl {
             self.duration_in_hyd_control += context.delta();
         } else {
             self.duration_in_hyd_control = Duration::from_secs(0);
@@ -1606,7 +1606,7 @@ impl A320DoorController {
     }
 
     fn update_actions_from_state(&mut self) {
-        match self.state {
+        match self.control_state {
             DoorControlState::DownLocked => {}
             DoorControlState::NoControl => {
                 self.should_close_valves = true;
@@ -1627,8 +1627,12 @@ impl A320DoorController {
         }
     }
 
-    fn determine_mode(&mut self, door: &CargoDoor, current_pressure: Pressure) -> DoorControlState {
-        match self.state {
+    fn determine_control_state_and_lock_action(
+        &mut self,
+        door: &CargoDoor,
+        current_pressure: Pressure,
+    ) -> DoorControlState {
+        match self.control_state {
             DoorControlState::DownLocked if self.position_requested > Ratio::new::<ratio>(0.) => {
                 self.should_unlock = true;
                 DoorControlState::NoControl
@@ -1655,14 +1659,14 @@ impl A320DoorController {
             {
                 DoorControlState::HydControl
             }
-            _ => self.state,
+            _ => self.control_state,
         }
     }
 
     fn should_pressurise_hydraulics(&self) -> bool {
-        (self.state == DoorControlState::UpLocked
+        (self.control_state == DoorControlState::UpLocked
             && self.position_requested < Ratio::new::<ratio>(1.))
-            || self.state == DoorControlState::HydControl
+            || self.control_state == DoorControlState::HydControl
     }
 }
 impl HydraulicAssemblyController for A320DoorController {
@@ -2377,7 +2381,8 @@ mod tests {
             }
 
             fn is_cargo_fwd_door_locked_up(&self) -> bool {
-                self.hydraulics.forward_cargo_door_controller.state == DoorControlState::UpLocked
+                self.hydraulics.forward_cargo_door_controller.control_state
+                    == DoorControlState::UpLocked
             }
 
             fn set_ac_bus_1_is_powered(&mut self, bus_is_alive: bool) {
