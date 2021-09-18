@@ -1682,12 +1682,15 @@ impl HydraulicAssemblyController for A320DoorController {
             LinearActuatorMode::PositionControl
         }
     }
+
     fn position_request(&self) -> Ratio {
         self.control_position_request
     }
+
     fn should_lock(&self) -> bool {
         !self.should_unlock
     }
+
     fn lock_position_request(&self) -> Ratio {
         Ratio::new::<ratio>(0.)
     }
