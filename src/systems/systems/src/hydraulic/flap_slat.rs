@@ -79,10 +79,10 @@ impl Actuator for FlapSlatHydraulicMotor {
 pub struct FlapSlatAssembly {
     position_id: String,
 
-    flap_position: Angle,
+    flap_control_arm_position: Angle,
 
     max_synchro_gear_position: Angle,
-    max_flap_position: Angle,
+    max_flap_control_arm_position: Angle,
 
     current_speed: AngularVelocity,
     current_max_speed: AngularVelocity,
@@ -112,9 +112,9 @@ impl FlapSlatAssembly {
     ) -> Self {
         let mut new_obj = Self {
             position_id: format!("HYD_{}_POSITION", id),
-            flap_position: Angle::new::<radian>(0.),
+            flap_control_arm_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
-            max_flap_position: Angle::new::<radian>(0.),
+            max_flap_control_arm_position: Angle::new::<radian>(0.),
             current_speed: AngularVelocity::new::<radian_per_second>(0.),
             current_max_speed: AngularVelocity::new::<radian_per_second>(0.),
             full_pressure_max_speed,
@@ -124,7 +124,8 @@ impl FlapSlatAssembly {
             left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
         };
-        new_obj.max_flap_position = new_obj.synchro_angle_to_flap_angle(max_synchro_gear_position);
+        new_obj.max_flap_control_arm_position =
+            new_obj.synchro_angle_to_flap_angle(max_synchro_gear_position);
         new_obj
     }
 
@@ -157,12 +158,12 @@ impl FlapSlatAssembly {
         context: &UpdateContext,
     ) {
         if synchro_gear_angle_request > self.position_feedback() {
-            self.flap_position += Angle::new::<radian>(
+            self.flap_control_arm_position += Angle::new::<radian>(
                 self.current_max_speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
             self.current_speed = self.current_max_speed;
         } else if synchro_gear_angle_request < self.position_feedback() {
-            self.flap_position -= Angle::new::<radian>(
+            self.flap_control_arm_position -= Angle::new::<radian>(
                 self.current_max_speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
             self.current_speed = -self.current_max_speed;
@@ -175,11 +176,12 @@ impl FlapSlatAssembly {
             || self.current_speed < AngularVelocity::new::<radian_per_second>(0.)
                 && synchro_gear_angle_request > self.position_feedback()
         {
-            self.flap_position = self.synchro_angle_to_flap_angle(synchro_gear_angle_request);
+            self.flap_control_arm_position =
+                self.synchro_angle_to_flap_angle(synchro_gear_angle_request);
         }
 
-        self.flap_position = self
-            .flap_position
+        self.flap_control_arm_position = self
+            .flap_control_arm_position
             .max(Angle::new::<radian>(0.))
             .min(self.synchro_angle_to_flap_angle(self.max_synchro_gear_position));
     }
@@ -257,7 +259,7 @@ impl FlapSlatAssembly {
     }
 
     pub fn position_feedback(&self) -> Angle {
-        self.flap_position * self.flap_to_synchro_gear_ratio.get::<ratio>()
+        self.flap_control_arm_position * self.flap_to_synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn left_motor(&mut self) -> &impl Actuator {

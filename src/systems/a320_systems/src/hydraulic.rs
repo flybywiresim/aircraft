@@ -506,6 +506,7 @@ impl A320Hydraulic {
         );
     }
 
+    #[cfg(test)]
     fn set_flap_req(&mut self, angle_req: Angle) {
         self.flaps_position_request = angle_req;
     }
