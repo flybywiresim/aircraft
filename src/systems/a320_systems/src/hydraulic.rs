@@ -1613,12 +1613,12 @@ impl A320DoorController {
             }
             DoorControlState::HydControl => {
                 self.should_close_valves = false;
-                if self.position_requested > Ratio::new::<ratio>(0.)
+                self.control_position_request = if self.position_requested > Ratio::new::<ratio>(0.)
                     || self.duration_in_hyd_control < Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
                 {
-                    self.control_position_request = Ratio::new::<ratio>(1.);
+                    Ratio::new::<ratio>(1.)
                 } else {
-                    self.control_position_request = Ratio::new::<ratio>(0.);
+                    Ratio::new::<ratio>(0.)
                 }
             }
             DoorControlState::UpLocked => {
