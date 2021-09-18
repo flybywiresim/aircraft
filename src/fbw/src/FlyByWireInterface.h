@@ -229,6 +229,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlapsHandlePercent;
   std::shared_ptr<FlapsHandler> flapsHandler;
   std::unique_ptr<LocalVariable> flapsHandleIndexFlapConf;
+  std::unique_ptr<LocalVariable> flapsPosition;
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;

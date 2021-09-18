@@ -11,24 +11,24 @@ use uom::si::{
 
 
 #[derive(Debug,Copy,Clone,PartialEq)]
-enum FlapsState {
-    State0 = 0,
-    State1 = 1,
-    State1F = 2,
-    State2 = 3,
-    State3 = 4,
-    StateFull = 5,
+enum FlapsConf {
+    Conf0 = 0,
+    Conf1 = 1,
+    Conf1F = 2,
+    Conf2 = 3,
+    Conf3 = 4,
+    ConfFull = 5,
 }
 
-impl From<u8> for FlapsState {
+impl From<u8> for FlapsConf {
     fn from(value: u8) -> Self {
         match value {
-            0 => FlapsState::State0,
-            1 => FlapsState::State1,
-            2 => FlapsState::State1F,
-            3 => FlapsState::State2,
-            4 => FlapsState::State3,
-            _ => FlapsState::StateFull,
+            0 => FlapsConf::Conf0,
+            1 => FlapsConf::Conf1,
+            2 => FlapsConf::Conf1F,
+            3 => FlapsConf::Conf2,
+            4 => FlapsConf::Conf3,
+            _ => FlapsConf::ConfFull,
 
         }
     }
@@ -51,7 +51,7 @@ struct SlatFlapControlComputer {
     flaps_target_angle: Angle,
     slats_target_angle: Angle,
 
-    flaps_state: FlapsState,
+    flaps_conf: FlapsConf,
     air_speed: f64,
 
 
@@ -60,8 +60,8 @@ struct SlatFlapControlComputer {
 impl SlatFlapControlComputer {
 
     //Place holder until implementing Davy's model
-    const FLAPS_SPEED: f64 = 10.;
-    const SLATS_SPEED: f64 = 10.5;
+    const FLAPS_SPEED: f64 = 1.5;
+    const SLATS_SPEED: f64 = 2.;
     const ANGLE_DELTA: f64 = 0.1;
 
     fn new() -> Self {
@@ -70,7 +70,7 @@ impl SlatFlapControlComputer {
             slats_angle: Angle::new::<degree>(0.),
             flaps_target_angle: Angle::new::<degree>(0.),
             slats_target_angle: Angle::new::<degree>(0.),
-            flaps_state: FlapsState::State0,
+            flaps_conf: FlapsConf::Conf0,
             air_speed: 0.,
         }
     }
@@ -115,25 +115,33 @@ impl SlatFlapControlComputer {
         self.slats_angle.get::<degree>()
     }
 
-    fn target_flaps_angle_from_state(flap_state: FlapsState) -> Angle {
+    fn get_flaps_conf(&self) -> u8 {
+        self.flaps_conf as u8
+    }
+
+    fn get_flaps_conf_f64(&self) -> f64 {
+        self.get_flaps_conf() as f64
+    }
+
+    fn target_flaps_angle_from_state(flap_state: FlapsConf) -> Angle {
         match flap_state {
-            FlapsState::State0 => Angle::new::<degree>(0.),
-            FlapsState::State1 => Angle::new::<degree>(0.),
-            FlapsState::State1F => Angle::new::<degree>(10.),
-            FlapsState::State2 => Angle::new::<degree>(15.),
-            FlapsState::State3 => Angle::new::<degree>(20.),
-            FlapsState::StateFull => Angle::new::<degree>(40.),
+            FlapsConf::Conf0 => Angle::new::<degree>(0.),
+            FlapsConf::Conf1 => Angle::new::<degree>(0.),
+            FlapsConf::Conf1F => Angle::new::<degree>(10.),
+            FlapsConf::Conf2 => Angle::new::<degree>(15.),
+            FlapsConf::Conf3 => Angle::new::<degree>(20.),
+            FlapsConf::ConfFull => Angle::new::<degree>(40.),
         }
     }
 
-    fn target_slats_angle_from_state(flap_state: FlapsState) -> Angle {
+    fn target_slats_angle_from_state(flap_state: FlapsConf) -> Angle {
         match flap_state {
-            FlapsState::State0 => Angle::new::<degree>(0.),
-            FlapsState::State1 => Angle::new::<degree>(18.),
-            FlapsState::State1F => Angle::new::<degree>(18.),
-            FlapsState::State2 => Angle::new::<degree>(22.),
-            FlapsState::State3 => Angle::new::<degree>(22.),
-            FlapsState::StateFull => Angle::new::<degree>(27.),
+            FlapsConf::Conf0 => Angle::new::<degree>(0.),
+            FlapsConf::Conf1 => Angle::new::<degree>(18.),
+            FlapsConf::Conf1F => Angle::new::<degree>(18.),
+            FlapsConf::Conf2 => Angle::new::<degree>(22.),
+            FlapsConf::Conf3 => Angle::new::<degree>(22.),
+            FlapsConf::ConfFull => Angle::new::<degree>(27.),
         }
     }
 
@@ -146,44 +154,44 @@ impl SlatFlapControlComputer {
         match transition {
             "0->1" => {
                 if self.air_speed <= 100. {
-                    self.flaps_state = FlapsState::State1F;
+                    self.flaps_conf = FlapsConf::Conf1F;
                 } else {
-                    self.flaps_state = FlapsState::State1;
+                    self.flaps_conf = FlapsConf::Conf1;
                 }
             },
             "2->1" => {
                 if self.air_speed <= 210. {
-                    self.flaps_state = FlapsState::State1F;
+                    self.flaps_conf = FlapsConf::Conf1F;
                 } else {
-                    self.flaps_state = FlapsState::State1;
+                    self.flaps_conf = FlapsConf::Conf1;
                 }
             },
             "x->x" => {
-                if self.flaps_state == FlapsState::State1F 
+                if self.flaps_conf == FlapsConf::Conf1F 
                     && self.air_speed > 210. {
-                        self.flaps_state = FlapsState::State1;
+                        self.flaps_conf = FlapsConf::Conf1;
                 }
             },
             "x->y" => {
-                if self.flaps_state == FlapsState::State1 || self.flaps_state == FlapsState::State1F {
-                    self.flaps_state = FlapsState::State2;
+                if self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F {
+                    self.flaps_conf = FlapsConf::Conf2;
                 } else {
-                    self.flaps_state = FlapsState::from(self.flaps_state as u8 + 1);
+                    self.flaps_conf = FlapsConf::from(self.flaps_conf as u8 + 1);
                 }
             },
             "y->x" => {
-                if self.flaps_state == FlapsState::State1 || self.flaps_state == FlapsState::State1F {
-                    self.flaps_state = FlapsState::State0;
+                if self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F {
+                    self.flaps_conf = FlapsConf::Conf0;
                 } else {
-                    self.flaps_state = FlapsState::from(self.flaps_state as u8 - 1);
+                    self.flaps_conf = FlapsConf::from(self.flaps_conf as u8 - 1);
                 }
             }
             _ => {},
         }
 
         //Update target angle based on handle position
-        self.set_target_flaps_angle(Self::target_flaps_angle_from_state(self.flaps_state));
-        self.set_target_slats_angle(Self::target_slats_angle_from_state(self.flaps_state));
+        self.set_target_flaps_angle(Self::target_flaps_angle_from_state(self.flaps_conf));
+        self.set_target_slats_angle(Self::target_slats_angle_from_state(self.flaps_conf));
 
         //The handle position signals the computer a desired
         // flaps angle.
@@ -219,16 +227,14 @@ impl SimulationElement for SlatFlapControlComputer {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.air_speed = reader.read("AIRSPEED INDICATED");
     }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("FLAPS_CONF_HANDLE_INDEX_HELPER", self.flaps_state as u8 as f64);
-    }
 }
 
 pub struct SlatFlapComplex {
     sfcc: [SlatFlapControlComputer; 2],
     flaps_handle: FlapsHandle,
     old_flaps_handle_position: f64,
+
+    flaps_conf_handle_index_helper: f64,
 
     flaps_handle_index: f64,
 }
@@ -245,6 +251,7 @@ impl SlatFlapComplex {
             sfcc: [SlatFlapControlComputer::new(),SlatFlapControlComputer::new()],
             flaps_handle: FlapsHandle{ handle_position: 0. },
             old_flaps_handle_position: 0.,
+            flaps_conf_handle_index_helper: 0.,
             flaps_handle_index: 0.,
         }
     }
@@ -271,6 +278,10 @@ impl SlatFlapComplex {
                 }
             }
             self.old_flaps_handle_position = self.flaps_handle.handle_position;
+
+            if self.sfcc[0].get_flaps_conf() == self.sfcc[1].get_flaps_conf() {
+                self.flaps_conf_handle_index_helper = self.sfcc[0].get_flaps_conf_f64();
+            }
         }
 }
 
@@ -298,6 +309,8 @@ impl SimulationElement for SlatFlapComplex {
         writer.write("RIGHT_SLATS_TARGET_ANGLE", self.sfcc[0].get_target_slats_angle_f64());
         writer.write("LEFT_SLATS_ANGLE", self.sfcc[0].get_slats_angle_f64());
         writer.write("RIGHT_SLATS_ANGLE", self.sfcc[1].get_slats_angle_f64());
+
+        writer.write("FLAPS_CONF_HANDLE_INDEX_HELPER", self.flaps_conf_handle_index_helper);
         
 
     }

@@ -1473,8 +1473,8 @@ impl SimulationElement for A320BrakingForce {
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
-        let left_flap: f64 = state.read("TRAILING EDGE FLAPS LEFT PERCENT");
-        let right_flap: f64 = state.read("TRAILING EDGE FLAPS RIGHT PERCENT");
+        let left_flap: f64 = state.read("LEFT_FLAPS_POSITION_PERCENT");
+        let right_flap: f64 = state.read("RIGHT_FLAPS_POSITION_PERCENT");
         self.flap_position = (left_flap + right_flap) / 2.;
     }
 }
