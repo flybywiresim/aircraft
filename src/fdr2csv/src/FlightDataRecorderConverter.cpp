@@ -5,6 +5,9 @@ using namespace std;
 void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delimiter) {
   out << "ap_sm.time.dt" << delimiter;
   out << "ap_sm.time.simulation_time" << delimiter;
+  out << "ap_sm.data.aircraft_position.lat" << delimiter;
+  out << "ap_sm.data.aircraft_position.lon" << delimiter;
+  out << "ap_sm.data.aircraft_position.alt" << delimiter;
   out << "ap_sm.data.Theta_deg" << delimiter;
   out << "ap_sm.data.Phi_deg" << delimiter;
   out << "ap_sm.data.qk_deg_s" << delimiter;
@@ -15,6 +18,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.data.V_mach" << delimiter;
   out << "ap_sm.data.V_gnd_kn" << delimiter;
   out << "ap_sm.data.alpha_deg" << delimiter;
+  out << "ap_sm.data.beta_deg" << delimiter;
   out << "ap_sm.data.H_ft" << delimiter;
   out << "ap_sm.data.H_ind_ft" << delimiter;
   out << "ap_sm.data.H_radio_ft" << delimiter;
@@ -30,9 +34,20 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.data.nav_dme_valid" << delimiter;
   out << "ap_sm.data.nav_dme_nmi" << delimiter;
   out << "ap_sm.data.nav_loc_valid" << delimiter;
+  out << "ap_sm.data.nav_loc_magvar_deg" << delimiter;
   out << "ap_sm.data.nav_loc_error_deg" << delimiter;
+  out << "ap_sm.data.nav_loc_position.lat" << delimiter;
+  out << "ap_sm.data.nav_loc_position.lon" << delimiter;
+  out << "ap_sm.data.nav_loc_position.alt" << delimiter;
+  out << "ap_sm.data.nav_e_loc_valid" << delimiter;
+  out << "ap_sm.data.nav_e_loc_error_deg" << delimiter;
   out << "ap_sm.data.nav_gs_valid" << delimiter;
   out << "ap_sm.data.nav_gs_error_deg" << delimiter;
+  out << "ap_sm.data.nav_gs_position.lat" << delimiter;
+  out << "ap_sm.data.nav_gs_position.lon" << delimiter;
+  out << "ap_sm.data.nav_gs_position.alt" << delimiter;
+  out << "ap_sm.data.nav_e_gs_valid" << delimiter;
+  out << "ap_sm.data.nav_e_gs_error_deg" << delimiter;
   out << "ap_sm.data.flight_guidance_xtk_nmi" << delimiter;
   out << "ap_sm.data.flight_guidance_tae_deg" << delimiter;
   out << "ap_sm.data.flight_phase" << delimiter;
@@ -485,6 +500,9 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
                                               const EngineData& engine) {
   out << ap_sm.time.dt << delimiter;
   out << ap_sm.time.simulation_time << delimiter;
+  out << ap_sm.data.aircraft_position.lat << delimiter;
+  out << ap_sm.data.aircraft_position.lon << delimiter;
+  out << ap_sm.data.aircraft_position.alt << delimiter;
   out << ap_sm.data.Theta_deg << delimiter;
   out << ap_sm.data.Phi_deg << delimiter;
   out << ap_sm.data.qk_deg_s << delimiter;
@@ -495,6 +513,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << ap_sm.data.V_mach << delimiter;
   out << ap_sm.data.V_gnd_kn << delimiter;
   out << ap_sm.data.alpha_deg << delimiter;
+  out << ap_sm.data.beta_deg << delimiter;
   out << ap_sm.data.H_ft << delimiter;
   out << ap_sm.data.H_ind_ft << delimiter;
   out << ap_sm.data.H_radio_ft << delimiter;
@@ -510,9 +529,20 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.data.nav_dme_valid) << delimiter;
   out << ap_sm.data.nav_dme_nmi << delimiter;
   out << static_cast<unsigned int>(ap_sm.data.nav_loc_valid) << delimiter;
+  out << ap_sm.data.nav_loc_magvar_deg << delimiter;
   out << ap_sm.data.nav_loc_error_deg << delimiter;
+  out << ap_sm.data.nav_loc_position.lat << delimiter;
+  out << ap_sm.data.nav_loc_position.lon << delimiter;
+  out << ap_sm.data.nav_loc_position.alt << delimiter;
+  out << static_cast<unsigned int>(ap_sm.data.nav_e_loc_valid) << delimiter;
+  out << ap_sm.data.nav_e_loc_error_deg << delimiter;
   out << static_cast<unsigned int>(ap_sm.data.nav_gs_valid) << delimiter;
   out << ap_sm.data.nav_gs_error_deg << delimiter;
+  out << ap_sm.data.nav_gs_position.lat << delimiter;
+  out << ap_sm.data.nav_gs_position.lon << delimiter;
+  out << ap_sm.data.nav_gs_position.alt << delimiter;
+  out << static_cast<unsigned int>(ap_sm.data.nav_e_gs_valid) << delimiter;
+  out << ap_sm.data.nav_e_gs_error_deg << delimiter;
   out << ap_sm.data.flight_guidance_xtk_nmi << delimiter;
   out << ap_sm.data.flight_guidance_tae_deg << delimiter;
   out << ap_sm.data.flight_phase << delimiter;

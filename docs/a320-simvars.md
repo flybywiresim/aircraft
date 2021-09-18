@@ -1027,6 +1027,33 @@
         - 2
         - 3
 
+- A32NX_PAX_TOTAL_ROWS_{rows}
+    - Number
+    - Indicates the current number of pax in the selected rows
+    - {rows}
+        - 1_6
+        - 7_13
+        - 14_21
+        - 22_29
+
+- A32NX_PAX_TOTAL_ROWS_{rows}_DESIRED
+    - Number
+    - Indicates the target number of pax in the selected rows
+    - {rows}
+        - 1_6
+        - 7_13
+        - 14_21
+        - 22_29
+
+- PAYLOAD STATION WEIGHT:{stationIndex}
+    - Number (Kilograms)
+    - Indicates the weight of the selected payload station
+    - {stationIndex}
+        - 6 + 1 | FWD BAGGAGE/CONTAINER
+        - 7 + 1 | AFT CONTAINER
+        - 8 + 1 | AFT BAGGAGE
+        - 9 + 1 | AFT BULK/LOOSE
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X

@@ -199,7 +199,7 @@ const FlightPathDirector = ({ FDActive }) => {
 
     const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
     const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
-    const FDRollOffset = -FDRollOrder * 0.77;
+    const FDRollOffset = (FDRollOrder - currentRoll) * 0.77;
 
     const DA = getSmallestAngle(getSimVar('GPS GROUND TRUE TRACK', 'degrees'), getSimVar('GPS GROUND TRUE HEADING', 'degrees'));
 
@@ -210,7 +210,7 @@ const FlightPathDirector = ({ FDActive }) => {
     const AOA = getSimVar('INCIDENCE ALPHA', 'degrees');
     const FPA = currentPitch - (Math.cos(currentRoll * Math.PI / 180) * AOA);
 
-    const yOffset = calculateHorizonOffsetFromPitch(currentPitch) - calculateHorizonOffsetFromPitch(FPA) + (FDPitchOrder + currentPitch) * 0.44;
+    const yOffset = calculateHorizonOffsetFromPitch(currentPitch) - calculateHorizonOffsetFromPitch(FPA) + (FDPitchOrder) * 0.44;
 
     return (
         <g transform={`translate(${xOffset} ${yOffset})`}>

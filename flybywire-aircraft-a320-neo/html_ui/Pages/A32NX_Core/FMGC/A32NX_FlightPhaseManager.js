@@ -334,7 +334,7 @@ class A32NX_FlightPhase_Approach {
     }
 
     check(_deltaTime, _fmc) {
-        if (Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) === 45) {
+        if (SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number") === 41) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.GOAROUND;
             return true;
         }
