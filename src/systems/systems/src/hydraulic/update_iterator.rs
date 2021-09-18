@@ -1,6 +1,7 @@
 use crate::simulation::UpdateContext;
 use std::{iter::Iterator, time::Duration};
 
+#[derive(Clone, Copy)]
 pub struct FixedStepLoop {
     lag_time_accumulator: Duration,
     time_step: Duration,
@@ -67,6 +68,7 @@ impl Iterator for FixedStepLoop {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct MaxFixedStepLoop {
     max_time_step: Duration,
     num_of_max_step_loop: u32,
@@ -178,7 +180,7 @@ mod fixed_tests {
         fixed_step.update(&context(test_duration));
 
         let mut actual_loop_num = 0;
-        while let Some(cur_time_step) = fixed_step.next() {
+        for cur_time_step in fixed_step {
             assert!(cur_time_step == Duration::from_millis(100));
             actual_loop_num += 1;
         }

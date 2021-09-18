@@ -323,7 +323,7 @@ impl A320Hydraulic {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
 
-        while let Some(cur_time_step) = self.physics_updater.next() {
+        for cur_time_step in self.physics_updater {
             self.update_max_fixed_step(&context.with_delta(cur_time_step));
         }
 
@@ -337,7 +337,7 @@ impl A320Hydraulic {
             lgciu2,
         );
 
-        while let Some(cur_time_step) = self.core_hydraulic_updater.next() {
+        for cur_time_step in self.core_hydraulic_updater {
             self.update_fixed_step(
                 &context.with_delta(cur_time_step),
                 engine1,
