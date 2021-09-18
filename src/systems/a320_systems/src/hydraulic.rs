@@ -543,6 +543,9 @@ impl A320Hydraulic {
 
         self.yellow_loop
             .update_actuator_volumes(self.forward_cargo_door.actuator());
+
+        self.yellow_loop
+            .update_actuator_volumes(self.aft_cargo_door.actuator());
     }
 
     fn update_blue_actuators_volume(&mut self) {}
