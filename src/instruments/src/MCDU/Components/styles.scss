@@ -29,7 +29,7 @@
 }
 
 .row-holder-3 {
-  @extend .row-holder;
+  @extend .row-holder-2;
   grid-template-columns: repeat(3,auto)
 }
 
