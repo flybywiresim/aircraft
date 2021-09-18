@@ -28,11 +28,7 @@ import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
-
-enum WaypointConstraintType {
-    CLB = 1,
-    DES = 2,
-}
+import { WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
 
 /**
  * A system for managing flight plan data used by various instruments.
@@ -284,6 +280,10 @@ export class FlightPlanManager {
         if (airport) {
             await currentFlightPlan.clearPlan().catch(console.error);
             await currentFlightPlan.addWaypoint(airport, 0);
+            // clear pilot trans alt
+            this.setOriginTransitionAltitude(undefined, false);
+            // TODO get origin trans alt from database
+            this.setOriginTransitionAltitude(undefined, true);
             this._updateFlightPlanVersion().catch(console.error);
         }
         callback();
@@ -693,6 +693,11 @@ export class FlightPlanManager {
         }
         */
 
+        // clear pilot trans level
+        this.setDestinationTransitionLevel(undefined, false);
+        // TODO get destination trans level from database
+        this.setDestinationTransitionLevel(undefined, true);
+
         this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
@@ -782,6 +787,7 @@ export class FlightPlanManager {
             if (isDescentConstraint !== undefined && !waypoint.constraintType) {
                 waypoint.constraintType = isDescentConstraint ? WaypointConstraintType.DES : WaypointConstraintType.CLB;
             }
+            this._updateFlightPlanVersion();
         }
         callback();
     }
@@ -1201,6 +1207,9 @@ export class FlightPlanManager {
 
             this._updateFlightPlanVersion().catch(console.error);
         }
+
+        // TODO check for transition level coded in procedure...
+        // pick higher of procedure or destination airfield trans fl
 
         callback();
     }
@@ -1667,5 +1676,45 @@ export class FlightPlanManager {
 
     get currentFlightPlanVersion(): number {
         return this._currentFlightPlanVersion;
+    }
+
+    get originTransitionAltitude(): number | undefined {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        return currentFlightPlan.originTransitionAltitudePilot ?? currentFlightPlan.originTransitionAltitudeDb;
+    }
+
+    get originTransitionAltitudeFromDb(): boolean {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        return currentFlightPlan.originTransitionAltitudePilot === undefined;
+    }
+
+    public setOriginTransitionAltitude(altitude?: number, database: boolean = false) {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        if (database) {
+            currentFlightPlan.originTransitionAltitudeDb = altitude;
+        } else {
+            currentFlightPlan.originTransitionAltitudePilot = altitude;
+        }
+        this._updateFlightPlanVersion();
+    }
+
+    get destinationTransitionLevel(): number | undefined {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        return currentFlightPlan.destinationTransitionLevelPilot ?? currentFlightPlan.destinationTransitionLevelDb;
+    }
+
+    get destinationTransitionLevelFromDb(): boolean {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        return currentFlightPlan.destinationTransitionLevelPilot === undefined;
+    }
+
+    public setDestinationTransitionLevel(flightLevel?: number, database: boolean = false) {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        if (database) {
+            currentFlightPlan.destinationTransitionLevelDb = flightLevel;
+        } else {
+            currentFlightPlan.destinationTransitionLevelPilot = flightLevel;
+        }
+        this._updateFlightPlanVersion();
     }
 }

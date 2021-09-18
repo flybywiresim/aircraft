@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanManager } from "@fmgc/flightplanning/FlightPlanManager";
-import { RunwaySurface, VorType } from "@fmgc/types/fstypes/FSEnums";
+import { RunwaySurface, VorType, WaypointConstraintType } from "@fmgc/types/fstypes/FSEnums";
 import { OneWayRunway, RawAirport, RawVor, WayPoint } from "@fmgc/types/fstypes/FSTypes";
 import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from "@shared/NavigationDisplay";
 import { LatLongData } from "@typings/fs-base-ui";
@@ -184,11 +184,15 @@ export class EfisSymbols {
                 }
             }
 
-            const formatConstraintAlt = (alt: number, prefix: string = '') => {
-                const transAlt = 13000;
-                const transFl = 150;
-                // TODO transFl
-                if (alt >= transAlt) {
+            const formatConstraintAlt = (alt: number, descent: boolean, prefix: string = '') => {
+                const transAlt = activeFp?.originTransitionAltitudePilot ?? activeFp?.originTransitionAltitudeDb;
+                const transFl = activeFp?.destinationTransitionLevelPilot ?? activeFp?.destinationTransitionLevelDb;
+                if (descent) {
+                    const fl = Math.round(alt / 100);
+                    if (transFl && fl >= transFl) {
+                        return `${prefix}FL${fl}`;
+                    }
+                } else if (transAlt && alt >= transAlt) {
                     return `${prefix}FL${Math.round(alt / 100)}`;
                 }
                 return `${prefix}${Math.round(alt)}`;
@@ -228,19 +232,20 @@ export class EfisSymbols {
                 }
 
                 if (efisOption === EfisOption.Constraints) {
+                    const descent = wp.constraintType === WaypointConstraintType.DES;
                     switch (wp.legAltitudeDescription) {
                         case 1:
-                            constraints.push(formatConstraintAlt(wp.legAltitude1));
+                            constraints.push(formatConstraintAlt(wp.legAltitude1, descent));
                             break;
                         case 2:
-                            constraints.push(formatConstraintAlt(wp.legAltitude1, '+'));
+                            constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '+'));
                             break;
                         case 3:
-                            constraints.push(formatConstraintAlt(wp.legAltitude1, '-'));
+                            constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '-'));
                             break;
                         case 4:
-                            constraints.push(formatConstraintAlt(wp.legAltitude1, '-'));
-                            constraints.push(formatConstraintAlt(wp.legAltitude2, '+'));
+                            constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '-'));
+                            constraints.push(formatConstraintAlt(wp.legAltitude2, descent, '+'));
                             break;
                     }
 

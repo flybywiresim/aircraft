@@ -43,8 +43,20 @@ export class ManagedFlightPlan {
     // This is the same as originAirfield, but is not cleared when a direct-to occurs
     public persistentOriginAirfield?: WayPoint;
 
+    /** Transition altitude for the originAirfield from the nav database */
+    public originTransitionAltitudeDb?: number;
+
+    /** Transition altitude for the originAirfield from the pilot */
+    public originTransitionAltitudePilot?: number;
+
     /** Whether or not the flight plan has a destination airfield. */
     public destinationAirfield?: WayPoint;
+
+    /** Transition level for the destinationAirfield from the nav database */
+    public destinationTransitionLevelDb?: number;
+
+    /** Transition level for the destinationAirfield from the pilot */
+    public destinationTransitionLevelPilot?: number;
 
     /** The cruise altitude for this flight plan. */
     public cruiseAltitude = 0;
@@ -288,8 +300,12 @@ export class ManagedFlightPlan {
      */
     public async clearPlan(): Promise<void> {
         this.originAirfield = undefined;
+        this.originTransitionAltitudeDb = undefined;
+        this.originTransitionAltitudePilot = undefined;
         this.persistentOriginAirfield = undefined;
         this.destinationAirfield = undefined;
+        this.destinationTransitionLevelDb = undefined;
+        this.destinationTransitionLevelPilot = undefined;
 
         this.cruiseAltitude = 0;
         this.activeWaypointIndex = 0;

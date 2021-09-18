@@ -17,6 +17,7 @@ import {
     TurnDirection,
     VorClass,
     VorType,
+    WaypointConstraintType,
 } from "./FSEnums";
 
 export declare class WayPoint {
@@ -341,11 +342,6 @@ declare interface NearestSearch {
     searchId: number,
     added: string[],
     removed: string[],
-}
-
-declare enum WaypointConstraintType {
-    CLB = 1,
-    DES = 2,
 }
 
 declare function RegisterViewListener(handler: string): void

@@ -39,8 +39,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprTemp = undefined;
         this.perfApprWindHeading = undefined;
         this.perfApprWindSpeed = undefined;
-        this.perfApprTransAlt = undefined;
-        this.perfApprTransAltPilotEntered = undefined;
         this.v1Speed = undefined;
         this.vRSpeed = undefined;
         this.v2Speed = undefined;
@@ -299,7 +297,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.routeIndex = 0;
         this.coRoute = "";
         this.tmpOrigin = "";
-        this.transitionAltitude = 10000;
+        this.transitionAltitude = undefined;
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
@@ -315,8 +313,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
         this.perfApprWindSpeed = NaN;
-        this.perfApprTransAlt = NaN;
-        this.perfApprTransAltPilotEntered = false;
         this.v1Speed = undefined;
         this.vRSpeed = undefined;
         this.v2Speed = undefined;
@@ -2233,6 +2229,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (s === FMCMainDisplay.clrValue) {
             this.transitionAltitude = NaN;
             this.transitionAltitudeIsPilotEntered = false;
+            this.flightPlanManager.setOriginTransitionAltitude();
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
             return true;
         }
@@ -2251,6 +2248,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.transitionAltitude = value;
         this.transitionAltitudeIsPilotEntered = true;
+        this.flightPlanManager.setOriginTransitionAltitude(value);
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", value);
         return true;
     }
@@ -3024,8 +3022,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprTransAlt(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.perfApprTransAlt = NaN;
-            this.perfApprTransAltPilotEntered = false;
+            this.flightPlanManager.setDestinationTransitionLevel();
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
             return true;
         }
@@ -3040,8 +3037,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.perfApprTransAlt = value;
-        this.perfApprTransAltPilotEntered = true;
+        this.flightPlanManager.setDestinationTransitionLevel(Math.round(value / 100));
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", value);
         return true;
     }
