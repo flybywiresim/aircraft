@@ -1534,9 +1534,9 @@ impl SimulationElement for A320BrakingForce {
         writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
     }
 
-    fn read(&mut self, state: &mut SimulatorReader) {
-        let left_flap: f64 = state.read("TRAILING EDGE FLAPS LEFT PERCENT");
-        let right_flap: f64 = state.read("TRAILING EDGE FLAPS RIGHT PERCENT");
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let left_flap: f64 = reader.read("TRAILING EDGE FLAPS LEFT PERCENT");
+        let right_flap: f64 = reader.read("TRAILING EDGE FLAPS RIGHT PERCENT");
         self.flap_position = (left_flap + right_flap) / 2.;
     }
 }
@@ -1696,8 +1696,8 @@ impl HydraulicAssemblyController for A320DoorController {
     }
 }
 impl SimulationElement for A320DoorController {
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.position_requested = Ratio::new::<ratio>(state.read(&self.requested_position_id));
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
     }
 }
 
@@ -1797,10 +1797,10 @@ impl PushbackTug {
     }
 }
 impl SimulationElement for PushbackTug {
-    fn read(&mut self, state: &mut SimulatorReader) {
+    fn read(&mut self, reader: &mut SimulatorReader) {
         self.previous_angle = self.angle;
-        self.angle = state.read("PUSHBACK ANGLE");
-        self.state = state.read("PUSHBACK STATE");
+        self.angle = reader.read("PUSHBACK ANGLE");
+        self.state = reader.read("PUSHBACK STATE");
     }
 }
 
@@ -2023,13 +2023,13 @@ impl SimulationElement for A320AutobrakeController {
         writer.write("AUTOBRAKES_DECEL_LIGHT", self.is_decelerating());
     }
 
-    fn read(&mut self, state: &mut SimulatorReader) {
+    fn read(&mut self, reader: &mut SimulatorReader) {
         self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
-        self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
-        self.external_disarm_event = state.read("AUTOBRAKE_DISARM");
+        self.ground_spoilers_are_deployed = reader.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
+        self.external_disarm_event = reader.read("AUTOBRAKE_DISARM");
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        self.mode = state.read_f64("AUTOBRAKES_ARMED_MODE").into();
+        self.mode = reader.read_f64("AUTOBRAKES_ARMED_MODE").into();
     }
 }
 
