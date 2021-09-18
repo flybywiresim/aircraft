@@ -37,9 +37,12 @@ class FlyByWireInterface {
   uint32_t lowPerformanceCycleCounter = 0;
 
   double previousSimulationTime = 0;
+  double calculatedSampleTime = 0;
 
   int currentApproachCapability = 0;
   double previousApproachCapabilityUpdateTime = 0;
+
+  double maxSimulationRate = 4;
 
   bool flightDirectorSmoothingEnabled = false;
   double flightDirectorSmoothingFactor = 0;

@@ -174,7 +174,8 @@ class SimConnectInterface {
                double keyChangeAileron,
                double keyChangeElevator,
                double keyChangeRudder,
-               bool disableXboxCompatibilityRudderPlusMinus);
+               bool disableXboxCompatibilityRudderPlusMinus,
+               double maxSimulationRate);
 
   void disconnect();
 
@@ -203,6 +204,8 @@ class SimConnectInterface {
   bool sendEvent(Events eventId);
 
   bool sendEvent(Events eventId, DWORD data);
+
+  bool sendEvent(Events eventId, DWORD data, DWORD priority);
 
   bool setClientDataLocalVariables(ClientDataLocalVariables output);
 
@@ -245,6 +248,8 @@ class SimConnectInterface {
   HANDLE hSimConnect = 0;
 
   double sampleTime = 0;
+
+  double maxSimulationRate = 0;
 
   SimData simData = {};
   SimInput simInput = {};

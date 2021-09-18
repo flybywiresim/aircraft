@@ -37,7 +37,7 @@ bool FlyByWireInterface::connect() {
   return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis, flapsHandler,
                                      spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-                                     disableXboxCompatibilityRudderAxisPlusMinus);
+                                     disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate);
 }
 
 void FlyByWireInterface::disconnect() {
@@ -83,9 +83,15 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= readDataAndLocalVariables(sampleTime);
 
   // in performance issues: if simulation rate is higher than 1 reduce it
-  if (simConnectInterface.getSimData().simulation_rate > 1 && sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME) {
-    execute_calculator_code("(>K:SIM_RATE_DECR)", nullptr, nullptr, nullptr);
-    cout << "WASM: WARNING Reducing simulation rate due to performance issues!" << endl;
+  double simulationRate = simConnectInterface.getSimData().simulation_rate;
+  if (simulationRate > maxSimulationRate) {
+    simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+    cout << "WASM: WARNING Reducing simulation rate to " << simulationRate / 2;
+    cout << " (maximum allowed is " << maxSimulationRate << ")!" << endl;
+  } else if (simulationRate > 1 && sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME) {
+    simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+    cout << "WASM: WARNING Reducing simulation rate from " << simulationRate << " to " << simulationRate / 2;
+    cout << " due to performance issues!" << endl;
   }
 
   // do not process laws in pause or slew
@@ -97,25 +103,25 @@ bool FlyByWireInterface::update(double sampleTime) {
   }
 
   // update altimeter setting
-  result &= updateAltimeterSetting(sampleTime);
+  result &= updateAltimeterSetting(calculatedSampleTime);
 
   // update autopilot state machine
-  result &= updateAutopilotStateMachine(sampleTime);
+  result &= updateAutopilotStateMachine(calculatedSampleTime);
 
   // update autopilot laws
-  result &= updateAutopilotLaws(sampleTime);
+  result &= updateAutopilotLaws(calculatedSampleTime);
 
   // update fly-by-wire
-  result &= updateFlyByWire(sampleTime);
+  result &= updateFlyByWire(calculatedSampleTime);
 
   // get throttle data and process it
-  result &= updateAutothrust(sampleTime);
+  result &= updateAutothrust(calculatedSampleTime);
 
   // update engine data
-  result &= updateEngineData(sampleTime);
+  result &= updateEngineData(calculatedSampleTime);
 
   // update flaps and spoilers
-  result &= updateFlapsSpoilers(sampleTime);
+  result &= updateFlapsSpoilers(calculatedSampleTime);
 
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
@@ -149,6 +155,7 @@ void FlyByWireInterface::loadConfiguration() {
   flightDirectorSmoothingEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_ENABLED", true);
   flightDirectorSmoothingFactor = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_FACTOR", 2.5);
   flightDirectorSmoothingLimit = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_LIMIT", 20);
+  maxSimulationRate = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4);
 
   flightControlsKeyChangeAileron = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_AILERON", 0.02);
   flightControlsKeyChangeAileron = abs(flightControlsKeyChangeAileron);
@@ -170,6 +177,7 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED = " << flightDirectorSmoothingEnabled << endl;
   std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR  = " << flightDirectorSmoothingFactor << endl;
   std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT   = " << flightDirectorSmoothingLimit << endl;
+  std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE           = " << maxSimulationRate << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
@@ -430,6 +438,11 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   } else {
     pauseDetected = false;
   }
+
+  // calculate delta time (and ensure it does not get 0 -> max 500 fps)
+  calculatedSampleTime = max(0.002, simData.simulationTime - previousSimulationTime);
+
+  // store previous simulation time
   previousSimulationTime = simData.simulationTime;
 
   // success
