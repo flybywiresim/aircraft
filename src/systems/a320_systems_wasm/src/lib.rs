@@ -1,6 +1,7 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
+use msfs::sim_connect;
 use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
 use std::{
     pin::Pin,
@@ -20,6 +21,7 @@ use systems_wasm::{
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
+
     let mut simulation = Simulation::new(|electricity| A320::new(electricity));
     let mut msfs_simulation_handler = MsfsSimulationHandler::new(
         vec![
@@ -30,6 +32,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             )?),
             Box::new(Brakes::new(&mut sim_connect.as_mut())?),
             Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
+            Box::new(Flaps::new(&mut sim_connect.as_mut())?),
             Box::new(create_aircraft_variable_reader()?),
             Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
         ],
@@ -120,6 +123,7 @@ fn create_aircraft_variable_reader(
     reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
     reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
 
+    // reader.add("FLAPS HANDLE INDEX", "Number", 0)?;
     Ok(reader)
 }
 
@@ -156,6 +160,249 @@ fn create_failures() -> Failures {
 
     failures
 }
+
+
+//This allows us to set settable AVars
+#[sim_connect::data_definition]
+struct FlapsSurface {
+    #[name = "TRAILING EDGE FLAPS LEFT PERCENT"]
+    #[unit = "Percent"]
+    left_flap: f64,
+
+    #[name = "TRAILING EDGE FLAPS RIGHT PERCENT"]
+    #[unit = "Percent"]
+    right_flap: f64,
+}
+
+#[sim_connect::data_definition]
+struct SlatsSurface {
+    #[name = "LEADING EDGE FLAPS LEFT PERCENT"]
+    #[unit = "Percent"]
+    left_slat: f64,
+
+    #[name = "LEADING EDGE FLAPS RIGHT PERCENT"]
+    #[unit = "Percent"]
+    right_slat: f64,
+}
+
+#[sim_connect::data_definition]
+struct FlapsHandleIndex{
+    #[name = "FLAPS HANDLE INDEX"]
+    #[unit = "Number"]
+    flaps_handle_index: f64,
+}
+
+struct Flaps {
+    //IDs of the flaps handle events
+    id_flaps_incr: sys::DWORD,
+    id_flaps_decr: sys::DWORD,
+    id_flaps_0: sys::DWORD,
+    id_flaps_1: sys::DWORD,
+    id_flaps_2: sys::DWORD,
+    id_flaps_3: sys::DWORD,
+    id_flaps_4: sys::DWORD,
+
+    //LVars to communicate between the flap movement logic
+    //and the simulation animation
+    flaps_handle_index_simvar: NamedVariable,
+    flaps_handle_percent_simvar: NamedVariable,
+    left_flaps_position_simvar: NamedVariable,
+    right_flaps_position_simvar: NamedVariable,
+    left_slats_position_simvar: NamedVariable,
+    right_slats_position_simvar: NamedVariable,
+
+    flaps_surface_simobject: FlapsSurface,
+    slats_surface_simobject: SlatsSurface,
+    flaps_handle_index_simobject: FlapsHandleIndex,
+
+    flaps_handle_position: u8,
+    left_flaps_position: f64,
+    right_flaps_position: f64,
+
+    left_slats_position: f64,
+    right_slats_position: f64,
+
+    flaps_conf_helper: f64,
+}
+
+impl Flaps {
+    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok (
+            Self {
+                id_flaps_incr: sim_connect.map_client_event_to_sim_event("FLAPS_INCR", true)?,
+                id_flaps_decr: sim_connect.map_client_event_to_sim_event("FLAPS_DECR", true)?,
+                id_flaps_0: sim_connect.map_client_event_to_sim_event("FLAPS_0", true)?,
+                id_flaps_1: sim_connect.map_client_event_to_sim_event("FLAPS_1", true)?,
+                id_flaps_2: sim_connect.map_client_event_to_sim_event("FLAPS_2", true)?,
+                id_flaps_3: sim_connect.map_client_event_to_sim_event("FLAPS_3", true)?,
+                id_flaps_4: sim_connect.map_client_event_to_sim_event("FLAPS_4", true)?,
+
+
+                flaps_handle_index_simvar: NamedVariable::from("A32NX_FLAPS_HANDLE_INDEX"),
+                flaps_handle_percent_simvar: NamedVariable::from("A32NX_FLAPS_HANDLE_PERCENT"),
+                left_flaps_position_simvar: NamedVariable::from("A32NX_LEFT_FLAPS_POSITION_PERCENT"),
+                right_flaps_position_simvar: NamedVariable::from("A32NX_RIGHT_FLAPS_POSITION_PERCENT"),
+                left_slats_position_simvar: NamedVariable::from("A32NX_LEFT_SLATS_POSITION_PERCENT"),
+                right_slats_position_simvar: NamedVariable::from("A32NX_RIGHT_SLATS_POSITION_PERCENT"),
+
+                flaps_surface_simobject: FlapsSurface {
+                    left_flap: 0.,
+                    right_flap: 0.,
+                },
+                slats_surface_simobject: SlatsSurface {
+                    left_slat: 0.,
+                    right_slat: 0.,
+                },
+
+                flaps_handle_index_simobject: FlapsHandleIndex { flaps_handle_index: 0.},
+
+                flaps_handle_position: 0,
+                left_flaps_position: 0.,
+                right_flaps_position: 0.,
+
+                left_slats_position: 0.,
+                right_slats_position:0.,
+
+                flaps_conf_helper: 0.,
+
+            }
+        )
+    }
+
+    fn flaps_handle_position_f64(&self) -> f64 {
+        self.flaps_handle_position as f64
+    }
+
+    fn get_left_flaps_position(&self) -> f64 {
+        self.left_flaps_position
+    }
+    fn get_right_flaps_position(&self) -> f64 {
+        self.right_flaps_position
+    }
+
+    fn catch_event(&mut self, event_id: sys::DWORD) -> bool {
+        if event_id == self.id_flaps_incr {
+            self.flaps_handle_position += 1;
+            self.flaps_handle_position = self.flaps_handle_position.min(4);
+
+            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
+            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
+
+            true
+        } else if event_id == self.id_flaps_decr {
+            if self.flaps_handle_position > 0 {
+                self.flaps_handle_position -= 1;
+            }
+
+            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
+            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
+            true
+
+        } else if event_id == self.id_flaps_0 {
+            self.flaps_handle_position = 0;
+            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
+            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
+            true
+        } else if event_id == self.id_flaps_1 {
+            self.flaps_handle_position = 1;
+            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
+            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
+            true
+        } else if event_id == self.id_flaps_2 {
+            self.flaps_handle_position = 2;
+            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
+            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
+            true
+        } else if event_id == self.id_flaps_3 {
+            self.flaps_handle_position = 3;
+            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
+            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
+            true
+        } else if event_id == self.id_flaps_4 {
+            self.flaps_handle_position = 4;
+            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
+            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
+            true
+        } else {
+            false
+        }
+
+    }
+    fn write_simvars(&mut self) {
+        self.left_flaps_position_simvar.set_value(self.left_flaps_position);
+        self.right_flaps_position_simvar.set_value(self.right_flaps_position);
+        self.left_slats_position_simvar.set_value(self.left_slats_position);
+        self.right_slats_position_simvar.set_value(self.right_slats_position);
+    }
+}
+
+impl SimulatorAspect for Flaps {
+
+    fn read(&mut self, name: &str) -> Option<f64> {
+        match name {
+            "LEFT_FLAPS_POSITION_PERCENT" => Some(self.left_flaps_position),
+            "RIGHT_FLAPS_POSITION_PERCENT" => Some(self.right_flaps_position),
+            "LEFT_SLATS_POSITION_PERCENT" => Some(self.left_slats_position),
+            "RIGHT_SLATS_POSITION_PERCENT" => Some(self.right_slats_position),
+            _ => None,
+        }
+    }
+
+    fn write(&mut self, name: &str, value: f64) -> bool {
+        match name {
+            "LEFT_FLAPS_POSITION_PERCENT" => {
+                self.left_flaps_position = value;
+                true
+            },
+            "RIGHT_FLAPS_POSITION_PERCENT" => {
+                self.right_flaps_position = value;
+                true
+            },
+            "LEFT_SLATS_POSITION_PERCENT" => {
+                self.left_slats_position = value;
+                true
+            },
+            "RIGHT_SLATS_POSITION_PERCENT" => {
+                self.right_slats_position = value;
+                true
+            },
+            "FLAPS_CONF_HANDLE_INDEX_HELPER" => {
+                self.flaps_conf_helper = value;
+                true
+            },
+            _ => false,
+        }
+    }
+
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        if let SimConnectRecv::Event(e) = message {
+            self.catch_event(e.id())
+        } else {
+            false
+        }
+    }
+
+    fn post_tick(
+        &mut self,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+
+        self.flaps_surface_simobject.left_flap = self.left_flaps_position;
+        self.flaps_surface_simobject.right_flap = self.right_flaps_position;
+        self.slats_surface_simobject.left_slat = self.left_slats_position;
+        self.slats_surface_simobject.right_slat = self.right_slats_position;
+        self.flaps_handle_index_simobject.flaps_handle_index = self.flaps_conf_helper;
+
+        self.write_simvars();
+
+        sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_simobject);
+        sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_simobject);
+        sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_handle_index_simobject);
+
+        Ok(())
+    }
+}
+
 
 struct Autobrakes {
     id_mode_max: sys::DWORD,

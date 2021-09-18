@@ -1312,15 +1312,15 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   // update airspeed on flaps logic
   flapsHandler->setAirspeed(simData.V_ias_kn);
 
-  // determine if flaps setting has changed
-  if (flapsHandler->getSimPosition() != simData.flaps_handle_index) {
-    SimOutputFlaps out = {flapsHandler->getSimPosition()};
-    simConnectInterface.sendData(out);
-  }
+  // // determine if flaps setting has changed
+  // if (flapsHandler->getSimPosition() != simData.flaps_handle_index) {
+  //   SimOutputFlaps out = {flapsHandler->getSimPosition()};
+  //   simConnectInterface.sendData(out);
+  // }
 
-  // set 3D handle position
-  idFlapsHandleIndex->set(flapsHandler->getHandlePosition());
-  idFlapsHandlePercent->set(flapsHandler->getHandlePositionPercent());
+  // // set 3D handle position
+  // idFlapsHandleIndex->set(flapsHandler->getHandlePosition());
+  // idFlapsHandlePercent->set(flapsHandler->getHandlePositionPercent());
 
   // spoilers ---------------------------------------------------------------------------------------------------------
 
