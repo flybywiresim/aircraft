@@ -26,7 +26,7 @@ use systems::{
             LinearActuatorMode,
         },
         rigid_body::{BoundedLinearLength, LinearActuatedRigidBodyOnHingeAxis},
-        update_iterator::{FixedStepLoop, MaxStepLoop},
+        update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
@@ -99,7 +99,7 @@ impl A320CargoDoorFactory {
 
 pub(super) struct A320Hydraulic {
     core_hydraulic_updater: FixedStepLoop,
-    physics_updater: MaxStepLoop,
+    physics_updater: MaxFixedStepLoop,
 
     brake_computer: A320HydraulicBrakeComputerUnit,
 
@@ -183,7 +183,7 @@ impl A320Hydraulic {
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
             core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
-            physics_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
+            physics_updater: MaxFixedStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
 
             brake_computer: A320HydraulicBrakeComputerUnit::new(),
 
@@ -323,7 +323,9 @@ impl A320Hydraulic {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
 
-        self.update_max_fixed_step(&context);
+        while let Some(cur_time_step) = self.physics_updater.next() {
+            self.update_max_fixed_step(&context.with_delta(cur_time_step));
+        }
 
         self.update_every_frame(
             &context,
@@ -335,16 +337,17 @@ impl A320Hydraulic {
             lgciu2,
         );
 
-        // Here we update at a fixed rate only. Mainly core hydraulics
-        self.update_fixed_step(
-            &context,
-            engine1,
-            engine2,
-            overhead_panel,
-            engine_fire_push_buttons,
-            lgciu1,
-            lgciu2,
-        );
+        while let Some(cur_time_step) = self.core_hydraulic_updater.next() {
+            self.update_fixed_step(
+                &context.with_delta(cur_time_step),
+                engine1,
+                engine2,
+                overhead_panel,
+                engine_fire_push_buttons,
+                lgciu1,
+                lgciu2,
+            );
+        }
     }
 
     // Placeholder function to give an estimation of blue pump flow for sound purpose
@@ -454,22 +457,20 @@ impl A320Hydraulic {
 
     // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
     fn update_max_fixed_step(&mut self, context: &UpdateContext) {
-        while let Some(cur_time_step) = self.physics_updater.next() {
-            self.forward_cargo_door.update(
-                &self.forward_cargo_door_controller,
-                &context.with_delta(cur_time_step),
-                self.yellow_loop.pressure(),
-            );
+        self.forward_cargo_door.update(
+            &self.forward_cargo_door_controller,
+            &context,
+            self.yellow_loop.pressure(),
+        );
 
-            self.aft_cargo_door.update(
-                &self.aft_cargo_door_controller,
-                &context.with_delta(cur_time_step),
-                self.yellow_loop.pressure(),
-            );
+        self.aft_cargo_door.update(
+            &self.aft_cargo_door_controller,
+            &context,
+            self.yellow_loop.pressure(),
+        );
 
-            self.ram_air_turbine
-                .update_physics(&cur_time_step, context.indicated_airspeed());
-        }
+        self.ram_air_turbine
+            .update_physics(&context.delta(), context.indicated_airspeed());
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -554,7 +555,7 @@ impl A320Hydraulic {
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
     fn update_fixed_step<T: Engine, U: EngineFirePushButtons>(
         &mut self,
-        context_original_sim_delta: &UpdateContext,
+        context: &UpdateContext,
         engine1: &T,
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
@@ -562,134 +563,129 @@ impl A320Hydraulic {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
-        // Then run fixed update loop for main hydraulics
-        while let Some(cur_time_step) = self.core_hydraulic_updater.next() {
-            let context = &context_original_sim_delta.with_delta(cur_time_step);
+        // First update what is currently consumed and given back by each actuator
+        // Todo: might have to split the actuator volumes by expected number of loops
+        self.update_actuators_volume();
 
-            // First update what is currently consumed and given back by each actuator
-            // Todo: might have to split the actuator volumes by expected number of loops
-            self.update_actuators_volume();
+        self.brake_computer.send_brake_demands(
+            &mut self.braking_circuit_norm,
+            &mut self.braking_circuit_altn,
+        );
 
-            self.brake_computer.send_brake_demands(
-                &mut self.braking_circuit_norm,
-                &mut self.braking_circuit_altn,
-            );
+        self.power_transfer_unit_controller.update(
+            context,
+            overhead_panel,
+            &self.forward_cargo_door_controller,
+            &self.aft_cargo_door_controller,
+            &self.pushback_tug,
+            lgciu2,
+        );
+        self.power_transfer_unit.update(
+            &self.green_loop,
+            &self.yellow_loop,
+            &self.power_transfer_unit_controller,
+        );
 
-            self.power_transfer_unit_controller.update(
-                context,
-                overhead_panel,
-                &self.forward_cargo_door_controller,
-                &self.aft_cargo_door_controller,
-                &self.pushback_tug,
-                lgciu2,
-            );
-            self.power_transfer_unit.update(
-                &self.green_loop,
-                &self.yellow_loop,
-                &self.power_transfer_unit_controller,
-            );
+        self.engine_driven_pump_1_pressure_switch
+            .update(self.green_loop.pressure());
+        self.engine_driven_pump_1_controller.update(
+            overhead_panel,
+            engine_fire_push_buttons,
+            engine1.uncorrected_n2(),
+            engine1.oil_pressure(),
+            self.engine_driven_pump_1_pressure_switch.is_pressurised(),
+            lgciu1,
+        );
 
-            self.engine_driven_pump_1_pressure_switch
-                .update(self.green_loop.pressure());
-            self.engine_driven_pump_1_controller.update(
-                overhead_panel,
-                engine_fire_push_buttons,
-                engine1.uncorrected_n2(),
-                engine1.oil_pressure(),
-                self.engine_driven_pump_1_pressure_switch.is_pressurised(),
-                lgciu1,
-            );
+        self.engine_driven_pump_1.update(
+            context,
+            &self.green_loop,
+            engine1.hydraulic_pump_output_speed(),
+            &self.engine_driven_pump_1_controller,
+        );
 
-            self.engine_driven_pump_1.update(
-                context,
-                &self.green_loop,
-                engine1.hydraulic_pump_output_speed(),
-                &self.engine_driven_pump_1_controller,
-            );
+        self.engine_driven_pump_2_pressure_switch
+            .update(self.yellow_loop.pressure());
+        self.engine_driven_pump_2_controller.update(
+            overhead_panel,
+            engine_fire_push_buttons,
+            engine2.uncorrected_n2(),
+            engine2.oil_pressure(),
+            self.engine_driven_pump_2_pressure_switch.is_pressurised(),
+            lgciu2,
+        );
 
-            self.engine_driven_pump_2_pressure_switch
-                .update(self.yellow_loop.pressure());
-            self.engine_driven_pump_2_controller.update(
-                overhead_panel,
-                engine_fire_push_buttons,
-                engine2.uncorrected_n2(),
-                engine2.oil_pressure(),
-                self.engine_driven_pump_2_pressure_switch.is_pressurised(),
-                lgciu2,
-            );
+        self.engine_driven_pump_2.update(
+            context,
+            &self.yellow_loop,
+            engine2.hydraulic_pump_output_speed(),
+            &self.engine_driven_pump_2_controller,
+        );
 
-            self.engine_driven_pump_2.update(
-                context,
-                &self.yellow_loop,
-                engine2.hydraulic_pump_output_speed(),
-                &self.engine_driven_pump_2_controller,
-            );
+        self.blue_electric_pump_controller.update(
+            overhead_panel,
+            self.blue_loop.is_pressurised(),
+            engine1.oil_pressure(),
+            engine2.oil_pressure(),
+            engine1.is_above_minimum_idle(),
+            engine2.is_above_minimum_idle(),
+            lgciu1,
+            lgciu2,
+        );
+        self.blue_electric_pump.update(
+            context,
+            &self.blue_loop,
+            &self.blue_electric_pump_controller,
+        );
 
-            self.blue_electric_pump_controller.update(
-                overhead_panel,
-                self.blue_loop.is_pressurised(),
-                engine1.oil_pressure(),
-                engine2.oil_pressure(),
-                engine1.is_above_minimum_idle(),
-                engine2.is_above_minimum_idle(),
-                lgciu1,
-                lgciu2,
-            );
-            self.blue_electric_pump.update(
-                context,
-                &self.blue_loop,
-                &self.blue_electric_pump_controller,
-            );
+        self.yellow_electric_pump_controller.update(
+            context,
+            overhead_panel,
+            &self.forward_cargo_door_controller,
+            &self.aft_cargo_door_controller,
+            self.yellow_loop.is_pressurised(),
+        );
+        self.yellow_electric_pump.update(
+            context,
+            &self.yellow_loop,
+            &self.yellow_electric_pump_controller,
+        );
 
-            self.yellow_electric_pump_controller.update(
-                context,
-                overhead_panel,
-                &self.forward_cargo_door_controller,
-                &self.aft_cargo_door_controller,
-                self.yellow_loop.is_pressurised(),
-            );
-            self.yellow_electric_pump.update(
-                context,
-                &self.yellow_loop,
-                &self.yellow_electric_pump_controller,
-            );
+        self.ram_air_turbine
+            .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
 
-            self.ram_air_turbine
-                .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
+        self.green_loop_controller.update(engine_fire_push_buttons);
+        self.green_loop.update(
+            context,
+            Vec::new(),
+            vec![&self.engine_driven_pump_1],
+            Vec::new(),
+            vec![&self.power_transfer_unit],
+            &self.green_loop_controller,
+        );
 
-            self.green_loop_controller.update(engine_fire_push_buttons);
-            self.green_loop.update(
-                context,
-                Vec::new(),
-                vec![&self.engine_driven_pump_1],
-                Vec::new(),
-                vec![&self.power_transfer_unit],
-                &self.green_loop_controller,
-            );
+        self.yellow_loop_controller.update(engine_fire_push_buttons);
+        self.yellow_loop.update(
+            context,
+            vec![&self.yellow_electric_pump],
+            vec![&self.engine_driven_pump_2],
+            Vec::new(),
+            vec![&self.power_transfer_unit],
+            &self.yellow_loop_controller,
+        );
 
-            self.yellow_loop_controller.update(engine_fire_push_buttons);
-            self.yellow_loop.update(
-                context,
-                vec![&self.yellow_electric_pump],
-                vec![&self.engine_driven_pump_2],
-                Vec::new(),
-                vec![&self.power_transfer_unit],
-                &self.yellow_loop_controller,
-            );
+        self.blue_loop_controller.update(engine_fire_push_buttons);
+        self.blue_loop.update(
+            context,
+            vec![&self.blue_electric_pump],
+            Vec::new(),
+            vec![&self.ram_air_turbine],
+            Vec::new(),
+            &self.blue_loop_controller,
+        );
 
-            self.blue_loop_controller.update(engine_fire_push_buttons);
-            self.blue_loop.update(
-                context,
-                vec![&self.blue_electric_pump],
-                Vec::new(),
-                vec![&self.ram_air_turbine],
-                Vec::new(),
-                &self.blue_loop_controller,
-            );
-
-            self.braking_circuit_norm.update(context, &self.green_loop);
-            self.braking_circuit_altn.update(context, &self.yellow_loop);
-        }
+        self.braking_circuit_norm.update(context, &self.green_loop);
+        self.braking_circuit_altn.update(context, &self.yellow_loop);
     }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {

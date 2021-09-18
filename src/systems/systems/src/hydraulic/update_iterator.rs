@@ -67,13 +67,13 @@ impl Iterator for FixedStepLoop {
     }
 }
 
-pub struct MaxStepLoop {
+pub struct MaxFixedStepLoop {
     max_time_step: Duration,
     num_of_max_step_loop: u32,
     remaining_frame_duration: Option<Duration>,
     number_of_loops_this_iteration: u32,
 }
-impl MaxStepLoop {
+impl MaxFixedStepLoop {
     pub fn new(max_time_step: Duration) -> Self {
         Self {
             max_time_step,
@@ -104,7 +104,7 @@ impl MaxStepLoop {
         }
     }
 }
-impl Iterator for MaxStepLoop {
+impl Iterator for MaxFixedStepLoop {
     type Item = Duration;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -216,14 +216,14 @@ mod max_step_tests {
 
     #[test]
     fn no_step_after_init() {
-        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
+        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
 
         assert!(max_step.next() == None);
     }
 
     #[test]
     fn no_step_after_zero_time_update() {
-        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
+        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
 
         max_step.update(&context(Duration::from_secs(0)));
 
@@ -232,7 +232,7 @@ mod max_step_tests {
 
     #[test]
     fn one_step_after_exact_fixed_time_step_update() {
-        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
+        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
 
         max_step.update(&context(Duration::from_millis(100)));
 
@@ -245,7 +245,7 @@ mod max_step_tests {
     #[test]
     fn more_than_max_step_gives_correct_num_of_loops() {
         let timestep = Duration::from_millis(100);
-        let mut max_step = MaxStepLoop::new(timestep);
+        let mut max_step = MaxFixedStepLoop::new(timestep);
 
         let test_duration = Duration::from_secs_f64(0.320);
 
