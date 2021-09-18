@@ -95,14 +95,12 @@ const FlightDirector = ({ FDActive }) => {
 
     if (showLateralFD) {
         const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
-        const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
-        FDRollOffset = Math.min(Math.max(currentRoll - FDRollOrder, -45), 45) * 0.44;
+        FDRollOffset = Math.min(Math.max(FDRollOrder, -45), 45) * 0.44;
     }
 
     if (showVerticalFD) {
         const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
-        const currentPitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
-        FDPitchOffset = Math.min(Math.max(FDPitchOrder + currentPitch, -22.5), 22.5) * 0.89;
+        FDPitchOffset = Math.min(Math.max(FDPitchOrder, -22.5), 22.5) * 0.89;
     }
 
     return (

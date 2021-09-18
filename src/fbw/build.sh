@@ -91,6 +91,7 @@ clang++ \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/mod_tnBo173x.cpp" \
+  "${DIR}/src/model/mod_lHmooAo5.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
