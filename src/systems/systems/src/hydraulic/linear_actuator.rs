@@ -383,8 +383,7 @@ impl HydraulicLinearActuatorAssembly {
 
 #[cfg(test)]
 mod tests {
-    extern crate nalgebra as na;
-    use na::Vector3;
+    use nalgebra::Vector3;
 
     use super::*;
 
