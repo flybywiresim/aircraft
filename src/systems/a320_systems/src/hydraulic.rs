@@ -1539,7 +1539,7 @@ impl SimulationElement for A320BrakingForce {
 }
 
 #[derive(PartialEq, Clone, Copy)]
-pub enum DoorControlState {
+enum DoorControlState {
     DownLocked = 0,
     NoControl = 1,
     HydControl = 2,
