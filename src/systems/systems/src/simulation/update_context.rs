@@ -143,6 +143,7 @@ impl UpdateContext {
     pub fn bank(&self) -> Angle {
         self.bank
     }
+    
     pub fn with_delta(&self, delta: Duration) -> Self {
         let mut copy: UpdateContext = *self;
         copy.delta = delta;
