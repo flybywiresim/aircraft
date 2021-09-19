@@ -3156,7 +3156,7 @@ mod tests {
 
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.run_waiting_for(
-                Duration::from_secs(25)+A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
+                Duration::from_secs(25) + A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
             ); // Should re enabled after 40s
             assert!(test_bed.is_ptu_enabled());
         }
