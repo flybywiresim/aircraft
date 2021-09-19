@@ -188,11 +188,9 @@ struct Flaps {
     //IDs of the flaps handle events
     id_flaps_incr: sys::DWORD,
     id_flaps_decr: sys::DWORD,
-    id_flaps_0: sys::DWORD,
     id_flaps_1: sys::DWORD,
     id_flaps_2: sys::DWORD,
     id_flaps_3: sys::DWORD,
-    id_flaps_4: sys::DWORD,
     id_flaps_set: sys::DWORD,
     id_axis_flaps_set: sys::DWORD,
     id_flaps_down: sys::DWORD,
@@ -228,11 +226,9 @@ impl Flaps {
             Self {
                 id_flaps_incr: sim_connect.map_client_event_to_sim_event("FLAPS_INCR", true)?,
                 id_flaps_decr: sim_connect.map_client_event_to_sim_event("FLAPS_DECR", true)?,
-                id_flaps_0: sim_connect.map_client_event_to_sim_event("FLAPS_0", true)?,
                 id_flaps_1: sim_connect.map_client_event_to_sim_event("FLAPS_1", true)?,
                 id_flaps_2: sim_connect.map_client_event_to_sim_event("FLAPS_2", true)?,
                 id_flaps_3: sim_connect.map_client_event_to_sim_event("FLAPS_3", true)?,
-                id_flaps_4: sim_connect.map_client_event_to_sim_event("FLAPS_4", true)?,
                 id_flaps_set: sim_connect.map_client_event_to_sim_event("FLAPS_SET", true)?,
                 id_axis_flaps_set: sim_connect.map_client_event_to_sim_event("AXIS_FLAPS_SET", true)?,
                 id_flaps_down: sim_connect.map_client_event_to_sim_event("FLAPS_DOWN", true)?,
@@ -323,12 +319,6 @@ impl Flaps {
             self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
             self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
             true
-
-        } else if event_id == self.id_flaps_0 {
-            self.flaps_handle_position = 0;
-            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
-            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
-            true
         } else if event_id == self.id_flaps_1 {
             self.flaps_handle_position = 1;
             self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
@@ -341,11 +331,6 @@ impl Flaps {
             true
         } else if event_id == self.id_flaps_3 {
             self.flaps_handle_position = 3;
-            self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
-            self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
-            true
-        } else if event_id == self.id_flaps_4 {
-            self.flaps_handle_position = 4;
             self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
             self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
             true
