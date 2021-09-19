@@ -69,6 +69,8 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightP
                     length={symbol.length}
                     direction={symbol.direction}
                     constraints={symbol.constraints}
+                    radials={symbol.radials}
+                    radius={symbol.radius}
                     mapParams={mapParams}
                 />
             ))}
@@ -181,10 +183,12 @@ interface SymbolMarkerProps {
     constraints?: string[],
     length?: number,
     direction?: number,
+    radials?: number[],
+    radius?: number,
     mapParams: MapParameters,
 }
 
-const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraints, length, direction, mapParams }) => {
+const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraints, length, direction, radials, radius, mapParams }) => {
     let colour = "White";
     // todo airport as well if in flightplan
     if (type & NdSymbolTypeFlags.Runway) {
@@ -199,55 +203,77 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
         colour = "Magenta";
     }
 
-    let constraintPrediction;
-    if (type & NdSymbolTypeFlags.ConstraintMet) {
-        constraintPrediction = "Magenta";
-    } else if (type & NdSymbolTypeFlags.ConstraintMissed) {
-        constraintPrediction = "Amber";
-    } else if (type & NdSymbolTypeFlags.ConstraintUnknown) {
-        constraintPrediction = "White";
+    const elements: JSX.Element[] = [];
+
+    if (type & NdSymbolTypeFlags.FixInfo) {
+        if (radius !== undefined) {
+            const radiusPx = radius * mapParams.nmToPx;
+            elements.push(<path d={`m-${radiusPx},0 a${radiusPx},${radiusPx} 0 1,0 ${radiusPx * 2},0 a${radiusPx},${radiusPx} 0 1,0 -${radiusPx * 2},0`} strokeWidth={2} className='Cyan' strokeDasharray="15 10" />);
+        }
+        if (radials !== undefined) {
+            for (let bearing of radials) {
+                const rotation = mapParams.rotation(bearing) * Math.PI / 180;
+                // TODO how long should a piece of string be?
+                const x2 = Math.sin(rotation) * 9000;
+                const y2 = -Math.cos(rotation) * 9000;
+                elements.push(<line x2={x2} y2={y2} strokeWidth={2} className='Cyan' strokeDasharray="15 10" />);
+            }
+        }
     }
 
-    let symbol;
+    if (type & NdSymbolTypeFlags.ConstraintMet) {
+        elements.push(<circle r={12} className='Magenta' strokeWidth={2} />);
+    } else if (type & NdSymbolTypeFlags.ConstraintMissed) {
+        elements.push(<circle r={12} className='Amber' strokeWidth={2} />);
+    } else if (type & NdSymbolTypeFlags.ConstraintUnknown) {
+        elements.push(<circle r={12} className='White' strokeWidth={2} />);
+    }
+
+    if (constraints) {
+        let constraintY = -6;
+        elements.push(...constraints.map((t) => (
+            <text x={15} y={constraintY += 20} className="Magenta" fontSize={20}>{t}</text>
+        )));
+    }
+
+    let showIdent = false;
     if (type & NdSymbolTypeFlags.VorDme) {
-        symbol = <VorDmeMarker colour={colour} />;
+        elements.push(<VorDmeMarker colour={colour} />);
+        showIdent = true;
     } else if (type & NdSymbolTypeFlags.Vor) {
-        symbol = <VorMarker colour={colour} />;
+        elements.push(<VorMarker colour={colour} />);
+        showIdent = true;
     } else if (type & NdSymbolTypeFlags.Dme) {
-        symbol = <DmeMarker colour={colour} />;
+        elements.push(<DmeMarker colour={colour} />);
+        showIdent = true;
     } else if (type & NdSymbolTypeFlags.Ndb) {
-        symbol = <NdbMarker colour={colour} />;
+        elements.push(<NdbMarker colour={colour} />);
+        showIdent = true;
     } else if (type & NdSymbolTypeFlags.Runway) {
         if (mapParams.nmRadius >= 40) {
-            symbol = <RunwayMarkerFar ident={ident} rotation={mapParams.rotation(direction!)} />;
+            elements.push(<RunwayMarkerFar ident={ident} rotation={mapParams.rotation(direction!)} />);
         } else {
-            symbol = <RunwayMarkerClose ident={ident} rotation={mapParams.rotation(direction!)} lengthPx={mapParams.nmToPx * length!} />;
+            elements.push(<RunwayMarkerClose ident={ident} rotation={mapParams.rotation(direction!)} lengthPx={mapParams.nmToPx * length!} />);
         }
     } else if (type & NdSymbolTypeFlags.Airport) {
-        symbol = <AirportMarker colour={colour} />;
-    } else {
-        symbol = <WaypointMarker colour={colour} />;
+        showIdent = true;
+        elements.push(<AirportMarker colour={colour} />);
+    } else if (type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan)) {
+        showIdent = true;
+        elements.push(<WaypointMarker colour={colour} />);
     }
 
-    let constraintY = -6;
+    if (showIdent) {
+        elements.push(
+            <text x={15} y={-6} fontSize={20} className={colour}>
+                {ident}
+            </text>
+        );
+    }
 
     return (
         <Layer x={position[0]} y={position[1]}>
-            {symbol}
-            { /* TODO runway ident over two lines */ }
-            {(type & NdSymbolTypeFlags.Runway) === 0 && (
-                <text x={15} y={-6} fontSize={20} className={colour}>
-                    {ident}
-                </text>
-            )}
-            {constraints && (
-                constraints.map((t) => (
-                    <text x={15} y={constraintY += 20} className="Magenta" fontSize={20}>{t}</text>
-                ))
-            )}
-            {constraintPrediction && (
-                <circle r={12} className={constraintPrediction} strokeWidth={2} />
-            )}
+            {elements}
         </Layer>
     );
 };

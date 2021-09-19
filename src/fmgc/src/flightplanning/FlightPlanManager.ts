@@ -29,6 +29,7 @@ import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 import { WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
+import { FixInfo } from './FixInfo';
 
 /**
  * A system for managing flight plan data used by various instruments.
@@ -58,6 +59,8 @@ export class FlightPlanManager {
      */
     private _flightPlans: ManagedFlightPlan[] = [];
 
+    private _fixInfos: FixInfo[] = [];
+
     /**
      * Constructs an instance of the FlightPlanManager with the provided
      * parent instrument attached.
@@ -79,6 +82,9 @@ export class FlightPlanManager {
                 }
                 this.resumeSync();
             });
+            for (let i = 0; i < 4; i++) {
+                this._fixInfos.push(new FixInfo(this));
+            }
         }
 
         FlightPlanManager.DEBUG_INSTANCE = this;
@@ -244,6 +250,9 @@ export class FlightPlanManager {
      */
     public async clearFlightPlan(callback = EmptyCallback.Void): Promise<void> {
         await this._flightPlans[this._currentFlightPlanIndex].clearPlan().catch(console.error);
+        for (let fixInfo of this._fixInfos) {
+            fixInfo.setRefFix();
+        }
         this._updateFlightPlanVersion().catch(console.error);
 
         callback();
@@ -1716,5 +1725,9 @@ export class FlightPlanManager {
             currentFlightPlan.destinationTransitionLevelPilot = flightLevel;
         }
         this._updateFlightPlanVersion();
+    }
+
+    public getFixInfo(index: 0 | 1 | 2 | 3): FixInfo {
+        return this._fixInfos[index];
     }
 }

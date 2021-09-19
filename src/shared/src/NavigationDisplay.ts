@@ -53,4 +53,6 @@ export interface NdSymbol {
     length?: number, // nautical miles
     type: NdSymbolTypeFlags,
     constraints?: string[],
+    radials?: number[],
+    radius?: number,
 }

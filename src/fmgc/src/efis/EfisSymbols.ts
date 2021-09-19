@@ -184,6 +184,21 @@ export class EfisSymbols {
                 }
             }
 
+            for (let i = 0; i < 4; i++) {
+                const fixInfo = this.flightPlanManager.getFixInfo(i);
+                const refFix = fixInfo?.getRefFix();
+                if (refFix !== undefined) {
+                    upsertSymbol({
+                        databaseId: refFix.icao,
+                        ident: refFix.ident,
+                        location: refFix.infos.coordinates,
+                        type: NdSymbolTypeFlags.FixInfo,
+                        radials: fixInfo.getRadialTrueBearings(),
+                        radius: fixInfo.getRadiusValue(),
+                    });
+                }
+            }
+
             const formatConstraintAlt = (alt: number, descent: boolean, prefix: string = '') => {
                 const transAlt = activeFp?.originTransitionAltitudePilot ?? activeFp?.originTransitionAltitudeDb;
                 const transFl = activeFp?.destinationTransitionLevelPilot ?? activeFp?.destinationTransitionLevelDb;
