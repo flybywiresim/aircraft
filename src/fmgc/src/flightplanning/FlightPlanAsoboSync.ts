@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable require-yield */
 /*
  * MIT License
  *
@@ -58,13 +60,22 @@ export class FlightPlanAsoboSync {
                               return;
                           }
 
-                          await fpln._parentInstrument.facilityLoader.getFacilityRaw(data.waypoints[0].icao, 10000);
+                          await fpln._parentInstrument.facilityLoader.getFacilityRaw(data.waypoints[0].icao, 10000).catch((e) => {
+                              console.error('[FP LOAD] Error getting first wp data');
+                              console.error(e);
+                          });
 
                           // set origin
-                          await fpln.setOrigin(data.waypoints[0].icao);
+                          await fpln.setOrigin(data.waypoints[0].icao).catch((e) => {
+                              console.error('[FP LOAD] Error setting origin');
+                              console.error(e);
+                          });
 
                           // set dest
-                          await fpln.setDestination(data.waypoints[data.waypoints.length - 1].icao);
+                          await fpln.setDestination(data.waypoints[data.waypoints.length - 1].icao).catch((e) => {
+                              console.error('[FP LOAD] Error setting Destination');
+                              console.error(e);
+                          });
 
                           // set route
 
@@ -72,47 +83,84 @@ export class FlightPlanAsoboSync {
                           // Find out first approach waypoint, - 1 to skip destination
                           const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 1 : data.arrivalWaypointsSize) - 1;
                           const enroute = data.waypoints.slice(enrouteStart, enrouteEnd - 1);
-
                           for (let i = 0; i < enroute.length - 1; i++) {
                               const wpt = enroute[i];
                               if (wpt.icao.trim() !== '') {
-                                  fpln.addWaypoint(wpt.icao);
+                                  fpln.addWaypoint(wpt.icao, Infinity, () => console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`));
                               }
                           }
 
                           // set departure
                           //  rwy index
-                          console.log('[FP LOAD] Setting Origin...');
-                          await fpln.setOriginRunwayIndex(data.originRunwayIndex);
-                          console.log('[FP LOAD] Setting Departure Runway...');
-                          await fpln.setDepartureRunwayIndex(data.departureRunwayIndex);
+                          await fpln.setOriginRunwayIndex(data.originRunwayIndex)
+                              .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Origin ${data.originRunwayIndex} ... FAILED`);
+                                  console.error(e);
+                              });
+                          await fpln.setDepartureRunwayIndex(data.departureRunwayIndex)
+                              .then(() => console.log(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... SUCCESS`))
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... FAILED`);
+                                  console.error(e);
+                              });
                           //  proc index
-                          console.log('[FP LOAD] Setting Departure Procedure...');
-                          await fpln.setDepartureProcIndex(data.departureProcIndex);
+                          await fpln.setDepartureProcIndex(data.departureProcIndex)
+                              .then(() => console.log(`[FP LOAD] Setting Departure Procedure  ${data.departureProcIndex} ... SUCCESS`))
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Departure Procedure ${data.departureProcIndex} ... FAILED`);
+                                  console.error(e);
+                              });
                           //  enroutetrans index
-                          console.log('[FP LOAD] Setting Departure En Route Transition...');
-                          await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex);
-
+                          await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex)
+                              .then(() => console.log(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... SUCCESS`))
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... FAILED`);
+                                  console.error(e);
+                              });
                           // set arrival
                           //  arrivalproc index
-                          console.log('[FP LOAD] Setting Arrival Procedure...');
-                          await fpln.setArrivalProcIndex(data.arrivalProcIndex);
+                          await fpln.setArrivalProcIndex(data.arrivalProcIndex)
+                              .then(() => console.log(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... SUCCESS`))
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... FAILED`);
+                                  console.error(e);
+                              });
                           //  arrivaltrans index
-                          console.log('[FP LOAD] Setting En Route Transition...');
-                          await fpln.setArrivalEnRouteTransitionIndex(data.arrivalEnRouteTransitionIndex);
-
+                          await fpln.setArrivalEnRouteTransitionIndex(data.arrivalEnRouteTransitionIndex)
+                              .then(() => console.log(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... SUCCESS`))
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... FAILED`);
+                                  console.error(e);
+                              });
                           // set approach
                           //  rwy index
-                          console.log('[FP LOAD] Setting Destination Runway...');
-                          await fpln.setDestinationRunwayIndex(data.arrivalRunwayIndex);
-                          console.log('[FP LOAD] Setting Arrival Runway...');
-                          await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex);
+                          await fpln.setDestinationRunwayIndex(data.arrivalRunwayIndex)
+                              .then(() => console.log(`[FP LOAD] Setting Destination Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Destination Runway ${data.arrivalRunwayIndex} ... FAILED`);
+                                  console.error(e);
+                              });
+                          await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex)
+                              .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... FAILED`);
+                                  console.error(e);
+                              });
                           //  approach index
-                          console.log('[FP LOAD] Setting Approach...');
-                          await fpln.setApproachIndex(data.approachIndex);
-                          console.log('[FP LOAD] Setting Approach Transition...');
+                          await fpln.setApproachIndex(data.approachIndex)
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Approach ${data.approachIndex} ... FAILED`);
+                                  console.error(e);
+                              })
+                              .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`));
                           //  approachtrans index
-                          await fpln.setApproachTransitionIndex(data.approachTransitionIndex);
+                          await fpln.setApproachTransitionIndex(data.approachTransitionIndex)
+                              .catch((e) => {
+                                  console.error(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... FAILED`);
+                                  console.error(e);
+                              })
+                              .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`));
 
                           fpln.resumeSync();
 
@@ -125,51 +173,123 @@ export class FlightPlanAsoboSync {
       });
   }
 
-  public static async SaveToGame(fpln: FlightPlanManager): Promise<void> {
-      return new Promise(() => {
-          const plan = fpln.getCurrentFlightPlan();
-          if (NXDataStore.get('FP_LOAD', '0') !== '0' && (plan.checksum !== this.fpChecksum)) {
-              // await Coherent.call("CREATE_NEW_FLIGHTPLAN");
-              Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.log);
-              Coherent.call('CLEAR_CURRENT_FLIGHT_PLAN').catch(console.log);
-
-              if (plan.hasOrigin && plan.hasDestination) {
-                  if (plan.hasOrigin) {
-                      Coherent.call('SET_ORIGIN', plan.originAirfield.icao);
-                  }
-
-                  if (plan.hasDestination) {
-                      Coherent.call('SET_DESTINATION', plan.destinationAirfield.icao);
-                  }
-
-                  let coIndex = 1;
-                  for (let i = 0; i < plan.enroute.waypoints.length; i++) {
-                      const wpt = plan.enroute.waypoints[i];
-                      if (wpt.icao.trim() !== '') {
-                          Coherent.call('ADD_WAYPOINT', wpt.icao, coIndex, false);
-                          coIndex++;
+  public static async SaveToGame(fpln) {
+      return __awaiter(this, 0, 0, function* () {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          return new Promise((resolve, reject) => __awaiter(this, 0, 0, function* () {
+              FlightPlanAsoboSync.init();
+              const plan = fpln.getCurrentFlightPlan();
+              // TODO: Option to disable f-pln syncing
+              // if (NXDataStore.get('FP_LOAD', 0) !== 0 && (plan.checksum !== this.fpChecksum)) {
+              if ((plan.checksum !== this.fpChecksum)) {
+                  // await Coherent.call("CREATE_NEW_FLIGHTPLAN");
+                  yield Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.error).then;
+                  yield Coherent.call('CLEAR_CURRENT_FLIGHT_PLAN').catch(console.error);
+                  if (plan.hasPersistentOrigin && plan.hasDestination) {
+                      yield Coherent.call('SET_ORIGIN', plan.persistentOriginAirfield.icao, false).catch(console.error)
+                          .then(() => console.log('[FP SAVE] Setting Origin Airfield... SUCCESS'));
+                      yield Coherent.call('SET_DESTINATION', plan.destinationAirfield.icao, false).catch(console.error)
+                          .then(() => console.log('[FP SAVE] Setting Destination Airfield... SUCCESS'));
+                      let coIndex = 1;
+                      for (let i = 0; i < plan.enroute.waypoints.length; i++) {
+                          const wpt = plan.enroute.waypoints[i];
+                          if (wpt.icao.trim() !== '') {
+                              yield Coherent.call('ADD_WAYPOINT', wpt.icao, coIndex, false).catch(console.error);
+                              coIndex++;
+                          }
                       }
+                      yield Coherent.call('SET_ORIGIN_RUNWAY_INDEX', plan.procedureDetails.originRunwayIndex)
+                          .then(() => console.log(`[FP SAVE] Setting Origin Runway ${plan.procedureDetails.originRunwayIndex} ... SUCCESS`))
+                          .catch((e) => {
+                              console.error(`[FP SAVE] Setting Origin Runway ${plan.procedureDetails.originRunwayIndex} ... FAILED`);
+                              console.error(e);
+                          });
+                      yield Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', plan.procedureDetails.departureRunwayIndex)
+                          .then(() => console.log(`[FP SAVE] Setting Departure Runway ${plan.procedureDetails.departureRunwayIndex} ... SUCCESS`))
+                          .catch((e) => {
+                              console.error(`[FP SAVE] Setting Departure Runway ${plan.procedureDetails.departureRunwayIndex} ... FAILED`);
+                              console.error(e);
+                          });
+                      yield Coherent.call('SET_DEPARTURE_PROC_INDEX', plan.procedureDetails.departureIndex)
+                          .then(() => console.log(`[FP SAVE] Setting Departure Procedure ${plan.procedureDetails.departureIndex} ... SUCCESS`))
+                          .catch((e) => {
+                              console.error(`[FP SAVE] Setting Departure Procedure ${plan.procedureDetails.departureIndex} ... FAILED`);
+                              console.error(e);
+                          });
+                      yield Coherent.call('SET_DEPARTURE_ENROUTE_TRANSITION_INDEX', plan.procedureDetails.departureTransitionIndex)
+                          .then(() => console.log(`[FP SAVE] Setting Departure Transition ${plan.procedureDetails.departureTransitionIndex} ... SUCCESS`))
+                          .catch((e) => {
+                              console.error(`[FP SAVE] Setting Departure Transition ${plan.procedureDetails.departureTransitionIndex} ... FAILED`);
+                              console.error(e);
+                          });
+                      yield Coherent.call('SET_ARRIVAL_RUNWAY_INDEX', plan.procedureDetails.arrivalRunwayIndex)
+                          .then(() => console.log(`[FP SAVE] Setting Arrival Runway ${plan.procedureDetails.arrivalRunwayIndex} ... SUCCESS`))
+                          .catch((e) => {
+                              console.error(`[FP SAVE] Setting  Arrival Runway ${plan.procedureDetails.arrivalRunwayIndex} ... FAILED`);
+                              console.error(e);
+                          });
+                      yield Coherent.call('SET_ARRIVAL_PROC_INDEX', plan.procedureDetails.arrivalIndex)
+                          .then(() => console.log(`[FP SAVE] Setting Arrival Procedure ${plan.procedureDetails.arrivalIndex} ... SUCCESS`))
+                          .catch((e) => {
+                              console.error(`[FP SAVE] Setting Arrival Procedure ${plan.procedureDetails.arrivalIndex} ... FAILED`);
+                              console.error(e);
+                          });
+                      yield Coherent.call('SET_ARRIVAL_ENROUTE_TRANSITION_INDEX', plan.procedureDetails.arrivalTransitionIndex)
+                          .then(() => console.log(`[FP SAVE] Setting Arrival En Route Transition ${plan.procedureDetails.arrivalTransitionIndex} ... SUCCESS`))
+                          .catch((e) => {
+                              console.error(`[FP SAVE] Setting Arrival En Route Transition ${plan.procedureDetails.arrivalTransitionIndex} ... FAILED`);
+                              console.error(e);
+                          });
+                      yield Coherent.call('SET_APPROACH_INDEX', plan.procedureDetails.approachIndex)
+                          .then(() => {
+                              console.log(`[FP SAVE] Setting Approach ${plan.procedureDetails.approachIndex} ... SUCCESS`);
+                              Coherent.call('SET_APPROACH_TRANSITION_INDEX', plan.procedureDetails.approachTransitionIndex)
+                                  .then(() => console.log(`[FP SAVE] Setting Approach Transition ${plan.procedureDetails.approachTransitionIndex} ... SUCCESS`))
+                                  .catch((e) => {
+                                      console.error(`[FP SAVE] Setting Approach Transition ${plan.procedureDetails.approachTransitionIndex} ... FAILED`);
+                                      console.error(e);
+                                  });
+                          })
+                          .catch((e) => {
+                              console.error(`[FP SAVE] Setting Approach ${plan.procedureDetails.approachIndex} ... FAILED`);
+                              console.error(e);
+                          });
                   }
-
-                  Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', fpln.getActiveWaypointIndex());
-
-                  Coherent.call('SET_ORIGIN_RUNWAY_INDEX', plan.procedureDetails.originRunwayIndex).catch(console.log);
-                  Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', plan.procedureDetails.departureRunwayIndex);
-                  Coherent.call('SET_DEPARTURE_PROC_INDEX', plan.procedureDetails.departureIndex);
-                  Coherent.call('SET_DEPARTURE_ENROUTE_TRANSITION_INDEX', plan.procedureDetails.departureTransitionIndex);
-
-                  Coherent.call('SET_ARRIVAL_RUNWAY_INDEX', plan.procedureDetails.arrivalRunwayIndex);
-                  Coherent.call('SET_ARRIVAL_PROC_INDEX', plan.procedureDetails.arrivalIndex);
-                  Coherent.call('SET_ARRIVAL_ENROUTE_TRANSITION_INDEX', plan.procedureDetails.arrivalTransitionIndex);
-
-                  Coherent.call('SET_APPROACH_INDEX', plan.procedureDetails.approachIndex).then(() => {
-                      Coherent.call('SET_APPROACH_TRANSITION_INDEX', plan.procedureDetails.approachTransitionIndex);
-                  });
+                  this.fpChecksum = plan.checksum;
               }
-
-              this.fpChecksum = plan.checksum;
-              Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX');
-          }
+              Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
+                  .catch((e) => console.error('[FP SAVE] Setting Active Waypoint... ERROR'))
+                  .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'));
+          }));
       });
   }
+}
+
+function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) {
+        return value instanceof P ? value : new P((resolve) => {
+            resolve(value);
+        });
+    }
+    return new (P || (P = Promise))((resolve, reject) => {
+        function fulfilled(value) {
+            try {
+                step(generator.next(value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function rejected(value) {
+            try {
+                step(generator.throw(value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function step(result) {
+            // eslint-disable-next-line no-unused-expressions
+            result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 }
