@@ -1337,16 +1337,6 @@ var A320_Neo_UpperECAM;
                         )
                     },
                     {
-                        message: "CABIN READY",
-                        isActive: () => {
-                            return (
-                                (this.getCachedSimVar("L:A32NX_CABIN_READY", "Bool")) &&
-                                ((this.isInFlightPhase(2)) ||
-                                (this.isInFlightPhase(6, 7) && this.getCachedSimVar("GEAR CENTER POSITION", "Percent") > 80))
-                            );
-                        }
-                    },
-                    {
                         message: "PRED W/S OFF",
                         style: () => (
                             this.isInFlightPhase(3, 4, 5, 7, 8, 9) || this.predWsMemo.read()
