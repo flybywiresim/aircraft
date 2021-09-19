@@ -1,7 +1,6 @@
 use crate::simulation::UpdateContext;
 use std::{iter::Iterator, time::Duration};
 
-#[derive(Clone, Copy)]
 pub struct FixedStepLoop {
     lag_time_accumulator: Duration,
     time_step: Duration,
