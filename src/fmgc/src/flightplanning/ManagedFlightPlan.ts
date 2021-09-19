@@ -87,6 +87,11 @@ export class ManagedFlightPlan {
         return this.originAirfield;
     }
 
+    /** Whether the flight plan has a persistent origin airfield. */
+    public get hasPersistentOrigin() {
+        return this.persistentOriginAirfield;
+    }
+
     /** Whether the flight plan has a destination airfield. */
     public get hasDestination() {
         return this.destinationAirfield;
@@ -291,7 +296,7 @@ export class ManagedFlightPlan {
         this.procedureDetails = new ProcedureDetails();
         this.directTo = new DirectTo();
 
-        await GPS.clearPlan();
+        await GPS.clearPlan().catch(console.error);
         this._segments = [new FlightPlanSegment(SegmentType.Enroute, 0, [])];
     }
 
@@ -299,7 +304,7 @@ export class ManagedFlightPlan {
      * Syncs the flight plan to FS9GPS.
      */
     public async syncToGPS(): Promise<void> {
-        await GPS.clearPlan();
+        await GPS.clearPlan().catch(console.error);
         for (let i = 0; i < this.waypoints.length; i++) {
             const waypoint = this.waypoints[i];
 
@@ -314,8 +319,8 @@ export class ManagedFlightPlan {
             }
         }
 
-        await GPS.setActiveWaypoint(this.activeWaypointIndex);
-        await GPS.logCurrentPlan();
+        await GPS.setActiveWaypoint(this.activeWaypointIndex).catch(console.error);
+        await GPS.logCurrentPlan().catch(console.error);
     }
 
     /**
@@ -818,7 +823,7 @@ export class ManagedFlightPlan {
             let waypointIndex = segment.offset;
             while (procedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
-                const waypoint = await procedure.getNext();
+                const waypoint = await procedure.getNext().catch(console.error);
 
                 if (waypoint !== undefined) {
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
@@ -876,7 +881,7 @@ export class ManagedFlightPlan {
             // console.log('MFP: buildArrival - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
-                const waypoint = await procedure.getNext();
+                const waypoint = await procedure.getNext().catch(console.error);
 
                 if (waypoint !== undefined) {
                     // console.log('  ---- MFP: buildArrival: added waypoint ', waypoint.ident, ' to segment ', segment);
@@ -960,7 +965,7 @@ export class ManagedFlightPlan {
             // console.log('MFP: buildApproach - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
-                const waypoint = await procedure.getNext();
+                const waypoint = await procedure.getNext().catch(console.error);
 
                 if (waypoint !== undefined) {
                     // console.log('  ---- MFP: buildApproach: added waypoint', waypoint.ident, ' to segment ', segment);
