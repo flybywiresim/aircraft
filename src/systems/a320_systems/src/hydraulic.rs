@@ -337,7 +337,7 @@ impl A320Hydraulic {
             lgciu2,
         );
 
-        for cur_time_step in self.core_hydraulic_updater {
+        for cur_time_step in &mut self.core_hydraulic_updater {
             self.update_fixed_step(
                 &context.with_delta(cur_time_step),
                 engine1,

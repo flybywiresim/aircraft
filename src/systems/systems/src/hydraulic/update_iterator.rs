@@ -1,5 +1,5 @@
 use crate::simulation::UpdateContext;
-use std::{iter::Iterator, time::Duration};
+use std::time::Duration;
 
 pub struct FixedStepLoop {
     lag_time_accumulator: Duration,
@@ -70,7 +70,6 @@ impl IntoIterator for &mut FixedStepLoop {
     }
 }
 
-#[derive(Clone, Copy)]
 pub struct MaxFixedStepLoop {
     max_time_step: Duration,
     num_of_max_step_loop: u32,
@@ -108,22 +107,23 @@ impl MaxFixedStepLoop {
         }
     }
 }
-impl Iterator for MaxFixedStepLoop {
+impl IntoIterator for &mut MaxFixedStepLoop {
     type Item = Duration;
 
-    fn next(&mut self) -> Option<Self::Item> {
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let mut v = vec![];
+
         if self.num_of_max_step_loop > 0 {
             self.num_of_max_step_loop -= 1;
 
-            Some(self.max_time_step)
+            v.push(self.max_time_step);
         } else if self.remaining_frame_duration.is_some() {
-            let last_frame_duration = self.remaining_frame_duration.unwrap();
+            v.push(self.remaining_frame_duration.unwrap());
             self.remaining_frame_duration = None;
-
-            Some(last_frame_duration)
-        } else {
-            None
         }
+        IntoIterator::into_iter(v)
     }
 }
 
@@ -142,7 +142,7 @@ mod fixed_tests {
     fn no_step_after_init() {
         let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        assert!(fixed_step.next() == None);
+        assert!(fixed_step.into_iter().len() == 0);
     }
 
     #[test]
@@ -151,7 +151,7 @@ mod fixed_tests {
 
         fixed_step.update(&context(Duration::from_secs(0)));
 
-        assert!(fixed_step.next() == None);
+        assert!(fixed_step.into_iter().len() == 0);
     }
 
     #[test]
@@ -160,10 +160,7 @@ mod fixed_tests {
 
         fixed_step.update(&context(Duration::from_millis(100)));
 
-        let first_iter = fixed_step.next();
-        let second_iter = fixed_step.next();
-        assert!(first_iter == Some(Duration::from_millis(100)));
-        assert!(second_iter == None);
+        assert!(fixed_step.into_iter().len() == 1);
     }
 
     #[test]
@@ -182,7 +179,7 @@ mod fixed_tests {
         fixed_step.update(&context(test_duration));
 
         let mut actual_loop_num = 0;
-        for cur_time_step in fixed_step {
+        for cur_time_step in &mut fixed_step {
             assert!(cur_time_step == Duration::from_millis(100));
             actual_loop_num += 1;
         }
@@ -222,7 +219,7 @@ mod max_step_tests {
     fn no_step_after_init() {
         let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
 
-        assert!(max_step.next() == None);
+        assert!(max_step.into_iter().len() == 0);
     }
 
     #[test]
@@ -231,7 +228,7 @@ mod max_step_tests {
 
         max_step.update(&context(Duration::from_secs(0)));
 
-        assert!(max_step.next() == None);
+        assert!(max_step.into_iter().len() == 0);
     }
 
     #[test]
@@ -240,10 +237,7 @@ mod max_step_tests {
 
         max_step.update(&context(Duration::from_millis(100)));
 
-        let first_iter = max_step.next();
-        let second_iter = max_step.next();
-        assert!(first_iter == Some(Duration::from_millis(100)));
-        assert!(second_iter == None);
+        assert!(max_step.into_iter().len() == 1);
     }
 
     #[test]
@@ -257,7 +251,7 @@ mod max_step_tests {
 
         let mut actual_loop_num = 0;
         let mut time_simulated = Duration::from_secs(0);
-        while let Some(cur_time_step) = max_step.next() {
+        for cur_time_step in &mut max_step {
             time_simulated += cur_time_step;
             actual_loop_num += 1;
         }
