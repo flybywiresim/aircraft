@@ -1830,7 +1830,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       // calculate frame rate that will be seen by FBW / AP
       double theoreticalFrameRate = (1 / sampleTime) / (simData.simulation_rate * 2);
       // determine if an increase of simulation rate can be allowed
-      if ((simData.simulation_rate < maxSimulationRate && theoreticalFrameRate >= 14) || simData.simulation_rate < 1) {
+      if ((simData.simulation_rate < maxSimulationRate && theoreticalFrameRate >= 8) || simData.simulation_rate < 1) {
         sendEvent(Events::SIM_RATE_INCR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
         cout << "WASM: Simulation Rate set to " << simData.simulation_rate * 2;
         cout << " (frame rate for FBW/AP will be " << theoreticalFrameRate << ")" << endl;

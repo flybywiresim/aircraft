@@ -63,16 +63,17 @@ bool FlyByWireInterface::update(double sampleTime) {
   bool result = true;
 
   // check delta time for performance issues
-  if (sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME && lowPerformanceCycleCounter < LOW_PERFORMANCE_CYCLE_MAX) {
-    lowPerformanceCycleCounter++;
-  } else if (lowPerformanceCycleCounter > 0) {
-    lowPerformanceCycleCounter--;
+  if (calculatedSampleTime > MAX_ACCEPTABLE_SAMPLE_TIME && lowPerformanceTimer < LOW_PERFORMANCE_TIMER_THRESHOLD) {
+    lowPerformanceTimer++;
+  } else if (calculatedSampleTime < MAX_ACCEPTABLE_SAMPLE_TIME) {
+    lowPerformanceTimer = 0;
   }
-  if (lowPerformanceCycleCounter >= LOW_PERFORMANCE_CYCLE_THRESHOLD) {
+  if (lowPerformanceTimer >= LOW_PERFORMANCE_TIMER_THRESHOLD) {
     if (idPerformanceWarningActive->get() <= 0) {
       idPerformanceWarningActive->set(1);
     }
-    cout << "WASM: WARNING Performance issues detected, at least stable 17 fps or more are needed!" << endl;
+    cout << "WASM: WARNING Performance issues detected, at least stable " << round(simConnectInterface.getSimData().simulation_rate / MAX_ACCEPTABLE_SAMPLE_TIME) <<
+        " fps or more are needed at this simrate!" << endl;
   } else {
     if (idPerformanceWarningActive > 0) {
       idPerformanceWarningActive->set(0);
@@ -88,8 +89,9 @@ bool FlyByWireInterface::update(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     cout << "WASM: WARNING Reducing simulation rate to " << simulationRate / 2;
     cout << " (maximum allowed is " << maxSimulationRate << ")!" << endl;
-  } else if (simulationRate > 1 && sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME) {
+  } else if (simulationRate > 1 && lowPerformanceTimer >= LOW_PERFORMANCE_TIMER_THRESHOLD) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+    lowPerformanceTimer = 0;
     cout << "WASM: WARNING Reducing simulation rate from " << simulationRate << " to " << simulationRate / 2;
     cout << " due to performance issues!" << endl;
   }
