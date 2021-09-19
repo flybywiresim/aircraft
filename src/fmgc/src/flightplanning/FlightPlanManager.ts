@@ -79,14 +79,16 @@ export class FlightPlanManager {
                 // TODO Reenable this check once we set A32NX_FP_LOAD in options - will always sync with AsoboFP on init
                 // if (NXDataStore.get('FP_LOAD', '0') !== '0') {
                 this.pauseSync();
-                const loaded = await FlightPlanAsoboSync.LoadFromGame(this);
+                const loaded = await FlightPlanAsoboSync.LoadFromGame(this).catch(console.error);
                 // }
                 this.resumeSync();
 
                 // ctd magic sauce?
                 if (loaded) {
-                    Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0);
-                    Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX');
+                    Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0)
+                        .catch((e) => console.error('[FP INIT] Error when setting Active WP'));
+                    Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
+                        .catch((e) => console.error('[FP INIT] Error when recomputing Active WP'));
                 }
             });
         }
@@ -712,14 +714,19 @@ export class FlightPlanManager {
      */
     public async addWaypoint(icao: string, index = Infinity, callback = () => { }, setActive = true): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
-        currentFlightPlan.addWaypoint(waypoint, index);
-        if (setActive) {
-            // currentFlightPlan.activeWaypointIndex = index;
+        const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao)
+            .catch((e) => {
+                console.log(`addWaypoint: [${icao}] Error`);
+                console.error(e);
+            });
+        if (waypoint) {
+            currentFlightPlan.addWaypoint(waypoint, index);
+            if (setActive) {
+                // currentFlightPlan.activeWaypointIndex = index;
+            }
+            this._updateFlightPlanVersion();
+            callback();
         }
-
-        this._updateFlightPlanVersion();
-        callback();
     }
 
     /**
@@ -1102,7 +1109,7 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         if (currentFlightPlan.procedureDetails.originRunwayIndex !== index) {
             currentFlightPlan.procedureDetails.originRunwayIndex = index;
-            await currentFlightPlan.buildDeparture();
+            await currentFlightPlan.buildDeparture().catch(console.error);
 
             this._updateFlightPlanVersion();
         }
@@ -1128,7 +1135,7 @@ export class FlightPlanManager {
 
         if (currentFlightPlan.procedureDetails.departureTransitionIndex !== index) {
             currentFlightPlan.procedureDetails.departureTransitionIndex = index;
-            await currentFlightPlan.buildDeparture();
+            await currentFlightPlan.buildDeparture().catch(console.error);
 
             this._updateFlightPlanVersion();
         }
@@ -1158,7 +1165,7 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
         currentFlightPlan.procedureDetails.departureIndex = -1;
-        await currentFlightPlan.buildDeparture();
+        await currentFlightPlan.buildDeparture().catch(console.error);
 
         this._updateFlightPlanVersion();
         callback();
@@ -1198,7 +1205,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.arrivalIndex = index;
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
 
-            await currentFlightPlan.buildArrival();
+            await currentFlightPlan.buildArrival().catch(console.error);
 
             this._updateFlightPlanVersion();
         }
@@ -1246,11 +1253,11 @@ export class FlightPlanManager {
     public async setArrivalEnRouteTransitionIndex(index, callback = () => { }): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         // console.log('FPM: setArrivalEnRouteTransitionIndex: SET TRANSITION - ARRIVAL',
-        //     currentFlightPlan.destinationAirfield.infos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex].enRouteTransitions[index].name);
+        // currentFlightPlan.destinationAirfield.infos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex].enRouteTransitions[index].name);
 
         if (currentFlightPlan.procedureDetails.arrivalTransitionIndex !== index) {
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = index;
-            await currentFlightPlan.buildArrival();
+            await currentFlightPlan.buildArrival().catch(console.error);
 
             this._updateFlightPlanVersion();
         }
@@ -1274,7 +1281,7 @@ export class FlightPlanManager {
                 console.log('setArrivalRunwayIndex: Finishing at none');
             } */
             currentFlightPlan.procedureDetails.arrivalRunwayIndex = index;
-            await currentFlightPlan.buildArrival();
+            await currentFlightPlan.buildArrival().catch(console.error);
 
             this._updateFlightPlanVersion();
         }
@@ -1297,7 +1304,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.destinationRunwayIndex = index;
             currentFlightPlan.procedureDetails.destinationRunwayExtension = runwayExtension;
 
-            await currentFlightPlan.buildApproach();
+            await currentFlightPlan.buildApproach().catch(console.error);
             this._updateFlightPlanVersion();
         }
 
@@ -1328,7 +1335,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
             currentFlightPlan.procedureDetails.arrivalIndex = -1;
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = -1;
-            await currentFlightPlan.buildApproach();
+            await currentFlightPlan.buildApproach().catch(console.error);
 
             this._updateFlightPlanVersion();
         }
@@ -1362,7 +1369,7 @@ export class FlightPlanManager {
     public async activateApproach(callback = EmptyCallback.Void): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         if (!this.isActiveApproach()) {
-            await GPS.setActiveWaypoint(currentFlightPlan.approach.offset);
+            await GPS.setActiveWaypoint(currentFlightPlan.approach.offset).catch(console.error);
         }
 
         callback();
@@ -1482,7 +1489,7 @@ export class FlightPlanManager {
         if (currentFlightPlan.procedureDetails.approachTransitionIndex !== index) {
             // console.log(`setApproachIndex: APPR TRANS ${currentFlightPlan.destinationAirfield.infos.approaches[currentFlightPlan.procedureDetails.approachIndex].transitions[index].name}`);
             currentFlightPlan.procedureDetails.approachTransitionIndex = index;
-            await currentFlightPlan.buildApproach();
+            await currentFlightPlan.buildApproach().catch(console.error);
 
             this._updateFlightPlanVersion();
         }
@@ -1502,7 +1509,7 @@ export class FlightPlanManager {
         currentFlightPlan.procedureDetails.arrivalRunwayIndex = -1;
         currentFlightPlan.procedureDetails.arrivalTransitionIndex = -1;
 
-        await currentFlightPlan.buildArrival();
+        await currentFlightPlan.buildArrival().catch(console.error);
 
         this._updateFlightPlanVersion();
         callback();
@@ -1520,7 +1527,7 @@ export class FlightPlanManager {
         let waypointIndex = currentFlightPlan.waypoints.findIndex((w) => w.icao === icao);
         if (waypointIndex === -1) {
             // string, to the start of the flight plan, then direct to
-            const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
+            const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
             waypoint.endsInDiscontinuity = true;
             waypoint.discontinuityCanBeCleared = true;
             // TODO fix discontinuity
@@ -1650,7 +1657,7 @@ export class FlightPlanManager {
         }
         window.localStorage.setItem(FlightPlanManager.FlightPlanKey, fpJson);
         SimVar.SetSimVarValue(FlightPlanManager.FlightPlanVersionKey, 'number', ++this._currentFlightPlanVersion);
-        // FlightPlanAsoboSync.SaveToGame(this);
+        FlightPlanAsoboSync.SaveToGame(this);
     }
 
     public pauseSync(): void {
