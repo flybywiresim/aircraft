@@ -937,6 +937,72 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_LEFT_FLAPS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the left flaps out of 40 degrees
+
+- A32NX_RIGHT_FLAPS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the right flaps out of 40 degrees
+
+- A32NX_LEFT_SLATS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the left slats out of 27 degrees
+
+- A32NX_RIGHT_SLATS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the right slats out of 27 degrees
+
+- A32NX_LEFT_FLAPS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the left flaps
+    - according to the configuration.
+    
+- A32NX_RIGHT_FLAPS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the right flaps
+    - according to the configuration.
+
+- A32NX_LEFT_SLATS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the left slats
+    - according to the configuration.
+    
+- A32NX_RIGHT_SLATS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the right slats
+    - according to the configuration.
+
+- A32NX_LEFT_FLAPS_ANGLE
+    - Degrees
+    - The actual angle of the left flaps
+
+- A32NX_RIGHT_FLAPS_ANGLE
+    - Degrees
+    - The actual angle of the right flaps
+
+- A32NX_LEFT_SLATS_ANGLE
+    - Degrees
+    - The actual angle of the left slats
+
+- A32NX_RIGHT_SLATS_ANGLE
+    - Degrees
+    - The actual angle of the right slats
+    
+
+- A32NX_FLAPS_CONF_HANDLE_INDEX_HELPER
+    - Number
+    - A helper variable that indicates the flaps configuration
+    - Value | Meaning
+      --- | ---
+      0 | Conf0
+      1 | Conf1
+      2 | Conf1F
+      3 | Conf2
+      4 | Conf3
+      5 | ConfFull
+
+
 - A32NX_SPOILERS_ARMED
     - Bool
     - Indicates if the ground spoilers are armed
