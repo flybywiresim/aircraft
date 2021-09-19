@@ -231,6 +231,14 @@ class CDUAocOfpData {
             );
         }
 
+        async function loadFlightCrew() {
+            const PILOT_WEIGHT = 84;
+            const CREW_BAGGAGE = 20;
+            const FLIGHTCREW_WEIGHT = 104 * 2;
+            await SimVar.SetSimVarValue("PAYLOAD STATION WEIGHT:1", "kilograms", PILOT_WEIGHT + CREW_BAGGAGE);
+            await SimVar.SetSimVarValue("PAYLOAD STATION WEIGHT:2", "kilograms", PILOT_WEIGHT + CREW_BAGGAGE);
+        }
+
         async function setTargetPax(numberOfPax) {
 
             let paxRemaining = parseInt(numberOfPax);
@@ -314,6 +322,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[5] = async () => {
+            loadFlightCrew();
             await SimVar.SetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool", !boardingStartedByUser);
 
             updateView();
@@ -338,9 +347,9 @@ async function loadFuel(mcdu, updateView) {
     mcdu.aocWeight.loading = true;
     updateView();
 
-    const outerTankCapacity = 228 + (1 * 2); // Left and Right // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
-    const innerTankCapacity = 1816 + (7 * 2); // Left and Right // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
-    const centerTankCapacity = 2179 + 6; // Center // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
+    const outerTankCapacity = 228; // Left and Right // Value from flight_model.cfg (GALLONS)
+    const innerTankCapacity = 1816; // Left and Right // Value from flight_model.cfg (GALLONS)
+    const centerTankCapacity = 2179; // Center // Value from flight_model.cfg (GALLONS)
 
     const fuelWeightPerGallon = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
     let currentBlockFuelInGallons = +currentBlockFuel / +fuelWeightPerGallon;
@@ -379,8 +388,8 @@ const BAG_WEIGHT = 20;
 function getZfwcg() {
     const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
 
-    const leMacZ = -5.39; // Value from Debug Weight
-    const macSize = 13.45; // Value from Debug Aircraft Sim Tunning
+    const leMacZ = -5.386; // Accurate to 3 decimals, replaces debug weight values
+    const macSize = 13.454; // Accurate to 3 decimals, replaces debug weight values
 
     const emptyWeight = 101990 * 0.453592; // Value from flight_model.cfg to kgs
     const emptyPosition = -8.75; // Value from flight_model.cfg
