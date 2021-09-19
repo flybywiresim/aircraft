@@ -9,7 +9,7 @@ use uom::si::{
     angle::degree,
 };
 
-
+//The different flaps configurations
 #[derive(Debug,Copy,Clone,PartialEq)]
 enum FlapsConf {
     Conf0 = 0,
@@ -34,6 +34,9 @@ impl From<u8> for FlapsConf {
     }
 }
 
+//A struct to read the handle position
+//Should consider to just make this a part of the
+//SlatFlapComplex
 struct FlapsHandle {
     handle_position: f64,
 }
@@ -44,6 +47,10 @@ impl SimulationElement for FlapsHandle {
     }
 }
 
+
+//This is the basis of what will become
+//the SFCC. For now it just applies the simple
+//flaps logic implemented before.
 struct SlatFlapControlComputer {
     flaps_angle: Angle,
     slats_angle: Angle,
@@ -54,14 +61,18 @@ struct SlatFlapControlComputer {
     flaps_conf: FlapsConf,
     air_speed: f64,
 
+    hyd_green_pressure: f64,
+
 
 }
 
 impl SlatFlapControlComputer {
 
-    //Place holder until implementing Davy's model
+    //Place holder until implementing Davy's hydraulic model
+    //Just assuming linear animation.
     const FLAPS_SPEED: f64 = 1.5;
     const SLATS_SPEED: f64 = 2.;
+
     const ANGLE_DELTA: f64 = 0.1;
 
     fn new() -> Self {
@@ -72,6 +83,8 @@ impl SlatFlapControlComputer {
             slats_target_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
             air_speed: 0.,
+
+            hyd_green_pressure: 0.,
         }
     }
 
@@ -127,6 +140,12 @@ impl SlatFlapControlComputer {
         self.flaps_conf
     }
 
+    //This is just a placeholder for the system
+    //to not work when cold & dark
+    fn is_system_pressurized(&self) -> bool {
+        self.hyd_green_pressure > 2000.
+    }
+
     fn target_flaps_angle_from_state(flap_state: FlapsConf) -> Angle {
         match flap_state {
             FlapsConf::Conf0 => Angle::new::<degree>(0.),
@@ -155,90 +174,56 @@ impl SlatFlapControlComputer {
         transition: (u8,u8),
     ) {
         let (from, to) = transition;
-        println!("FT = {},{}", from,to);
-        match from {
-            0 => {
-                if to == 1 {
-                    if self.air_speed <= 100. {
-                        self.flaps_conf = FlapsConf::Conf1F;
+
+        if self.is_system_pressurized() {
+        //Handle the transitions between configurations
+            match from {
+                0 => {
+                    if to == 1 {
+                        if self.air_speed <= 100. {
+                            self.flaps_conf = FlapsConf::Conf1F;
+                        } else {
+                            self.flaps_conf = FlapsConf::Conf1;
+                        }
                     } else {
-                        self.flaps_conf = FlapsConf::Conf1;
+                        if to == 0 {
+                            self.flaps_conf = FlapsConf::from(0);
+                        } else {
+                            self.flaps_conf = FlapsConf::from(to+1);
+                        }
                     }
-                } else {
-                    if to == 0 {
-                        self.flaps_conf = FlapsConf::from(0);
+                },
+                1 => {
+                    if to == 1 {
+                        if self.air_speed > 210. {
+                            self.flaps_conf = FlapsConf::Conf1;
+                        }
                     } else {
-                        self.flaps_conf = FlapsConf::from(to+1);
+                        if to == 0 {
+                            self.flaps_conf = FlapsConf::from(to);
+                        } else {
+                            self.flaps_conf = FlapsConf::from(to+1);
+                        }
                     }
-                }
-            },
-            1 => {
-                if to == 1 {
-                    if self.air_speed > 210. {
-                        self.flaps_conf = FlapsConf::Conf1;
-                    }
-                } else {
-                    if to == 0 {
-                        self.flaps_conf = FlapsConf::from(to);
+                },
+                _ => {
+                    if to == 1 {
+                        if self.air_speed <= 210. {
+                            self.flaps_conf = FlapsConf::Conf1F;
+                        } else {
+                            self.flaps_conf = FlapsConf::Conf1;
+                        }
                     } else {
-                        self.flaps_conf = FlapsConf::from(to+1);
+                        if to == 0 {
+                            self.flaps_conf = FlapsConf::from(to);
+                        } else {
+                            self.flaps_conf = FlapsConf::from(to+1);
+                        }
                     }
-                }
-            },
-            _ => {
-                if to == 1 {
-                    if self.air_speed <= 210. {
-                        self.flaps_conf = FlapsConf::Conf1F;
-                    } else {
-                        self.flaps_conf = FlapsConf::Conf1;
-                    }
-                } else {
-                    if to == 0 {
-                        self.flaps_conf = FlapsConf::from(to);
-                    } else {
-                        self.flaps_conf = FlapsConf::from(to+1);
-                    }
-                }
-            },
+                },
+            }
         }
-        println!("FlapConf = {:?}", self.flaps_conf);
-        // match transition {
-        //     (0,1) => {
-        //         if self.air_speed <= 100. {
-        //             self.flaps_conf = FlapsConf::Conf1F;
-        //         } else {
-        //             self.flaps_conf = FlapsConf::Conf1;
-        //         }
-        //     },
-        //     (2,1) => {
-        //         if self.air_speed <= 210. {
-        //             self.flaps_conf = FlapsConf::Conf1F;
-        //         } else {
-        //             self.flaps_conf = FlapsConf::Conf1;
-        //         }
-        //     },
-        //     "x->x" => {
-        //         if self.flaps_conf == FlapsConf::Conf1F 
-        //             && self.air_speed > 210. {
-        //                 self.flaps_conf = FlapsConf::Conf1;
-        //         }
-        //     },
-        //     "x->y" => {
-        //         if self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F {
-        //             self.flaps_conf = FlapsConf::Conf2;
-        //         } else {
-        //             self.flaps_conf = FlapsConf::from(self.flaps_conf as u8 + 1);
-        //         }
-        //     },
-        //     "y->x" => {
-        //         if self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F {
-        //             self.flaps_conf = FlapsConf::Conf0;
-        //         } else {
-        //             self.flaps_conf = FlapsConf::from(self.flaps_conf as u8 - 1);
-        //         }
-        //     }
-        //     _ => {},
-        // }
+        //If the system is not pressurized, remain in the same configuration.
 
         //Update target angle based on handle position
         self.set_target_flaps_angle(Self::target_flaps_angle_from_state(self.flaps_conf));
@@ -277,6 +262,7 @@ impl SlatFlapControlComputer {
 impl SimulationElement for SlatFlapControlComputer {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.air_speed = reader.read("AIRSPEED INDICATED");
+        self.hyd_green_pressure = reader.read("HYD_GREEN_PRESSURE");
     }
 }
 
@@ -310,24 +296,6 @@ impl SlatFlapComplex {
     pub fn update(
         &mut self,
         context: &UpdateContext) {
-            // for n in 0..2 {
-            //     if self.old_flaps_handle_position as u8 == self.flaps_handle.handle_position as u8 {
-            //         self.sfcc[n].update(context,"x->x");
-            //     } else {
-            //         if self.old_flaps_handle_position as u8 == 0 {
-            //             self.sfcc[n].update(context,"0->1");
-            //         } else if self.old_flaps_handle_position as u8 == 2
-            //                     && self.flaps_handle.handle_position as u8 == 1 {
-            //             self.sfcc[n].update(context,"2->1");
-            //         } else {
-            //             if self.old_flaps_handle_position < self.flaps_handle.handle_position {
-            //                 self.sfcc[n].update(context,"x->y");
-            //             } else {
-            //                 self.sfcc[n].update(context,"y->x");
-            //             }
-            //         }
-            //     }
-            // }
             for n in 0..2 {
                 self.sfcc[n].update(context, 
                     (self.old_flaps_handle_position as u8 ,self.flaps_handle.handle_position as u8));
