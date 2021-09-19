@@ -1,31 +1,20 @@
-/**
- * Value is rounded to 1000 and fixed to 1 decimal
- * @param {number | string} value
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-function formatWeightInTons(value) {
-    return (+value / 1000).toFixed(1);
-}
-
-/**
- * @return {number | NaN} currentFwdBag
- */
-function getCurrentFwdBag(mcdu) {
-    return mcdu.aocWeight.fwdBag !== undefined ? +mcdu.aocWeight.fwdBag : +mcdu.aocWeight.estFwdBag; // number | NaN
-}
-
-/**
- * @return {number | NaN} currentRearBag
- */
-function getCurrentRearBag(mcdu) {
-    return mcdu.aocWeight.rearBag !== undefined ? +mcdu.aocWeight.rearBag : +mcdu.aocWeight.estRearBag;
-}
-
-/**
- * @return {number | NaN} currentPayload
- */
-function getCurrentPayload(mcdu) {
-    return mcdu.aocWeight.payload !== undefined ? +mcdu.aocWeight.payload : +mcdu.simbrief.payload;
-}
 
 /**
  * AOC - OFP WEIGHT
@@ -81,7 +70,7 @@ class CDUAocOfpData {
         }
 
         const display = [
-            ["PERF/W&B", "1", "2", "AOC"],
+            ["W/B", "1", "2", "AOC"],
             ["BLOCK FUEL"],
             [blockFuel],
             ["TAXI FUEL"],
@@ -194,214 +183,140 @@ class CDUAocOfpData {
         mcdu.page.Current = mcdu.page.AOCOfpData2;
         mcdu.activeSystem = 'ATSU';
 
-        const maxAllowablePayload = 34327; // in kilograms
-
-        setEstimatedBaggagePayload(mcdu);
-
-        let payload = "_____[color]amber";
-        let estZfw = "--.-[color]white";
-        let zfwcg = "__._[color]amber";
-        let fwdBag = "__._[color]amber";
-        let rearBag = "__._[color]amber";
-        let noPax = "---[color]white";
-        let requestButton = "SEND*[color]cyan";
-        let loadButton = "*LOAD[color]cyan";
-
-        if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
-            requestButton = "SEND [color]cyan";
-        }
-
-        if (mcdu.aocWeight.loading) {
-            loadButton = " LOAD[color]cyan";
-        }
-
-        const currentZfwcg = mcdu.aocWeight.zfwcg || getZfwcg(mcdu);
-        if (currentZfwcg) {
-            const cgColor = currentZfwcg >= 16 && currentZfwcg <= 40 ? 'cyan' : 'red';
-            const size = mcdu.aocWeight.zfwcg ? 'big' : 'small';
-            zfwcg = `{${size}}${currentZfwcg.toFixed(1)}{end}[color]${cgColor}`;
-        }
-
-        const currentNoPax = mcdu.aocWeight.noPax || mcdu.simbrief.paxCount;
-        if (currentNoPax) {
-            const size = mcdu.aocWeight.noPax ? 'big' : 'small';
-            noPax = `{${size}}${currentNoPax}{end}[color]green`;
-        }
-
-        const currentPayload = mcdu.aocWeight.payload || mcdu.simbrief.payload;
-        if (currentPayload) {
-            const size = mcdu.aocWeight.payload ? 'big' : 'small';
-            payload = `{${size}}${Math.round(NXUnits.kgToUser(currentPayload))}{end}[color]cyan`;
-
-            // Update ZFW as well
-            const emptyWeight = 41000;
-            const actualZfw = emptyWeight + (+currentPayload);
-            estZfw = `{${size}}${formatWeightInTons(NXUnits.kgToUser(actualZfw))}{end}[color]cyan`;
-        }
-
-        const currentfwdBag = getCurrentFwdBag(mcdu);
-        if (!isNaN(currentfwdBag)) {
-            const size = mcdu.aocWeight.fwdBag ? 'big' : 'small';
-            fwdBag = `{${size}}${Math.round(NXUnits.kgToUser(currentfwdBag))}{end}[color]cyan`;
-        }
-
-        const currentRearBag = getCurrentRearBag(mcdu);
-        if (!isNaN(currentRearBag)) {
-            const size = mcdu.aocWeight.rearBag ? 'big' : 'small';
-            rearBag = `{${size}}${Math.round(NXUnits.kgToUser(currentRearBag))}{end}[color]cyan`;
-        }
-
         function updateView() {
             if (mcdu.page.Current === mcdu.page.AOCOfpData2) {
                 CDUAocOfpData.ShowPage2(mcdu);
             }
         }
 
-        const display = [
-            ["PERF/W&B", "2", "2", "AOC"],
-            ["PAYLOAD", "ZFW"],
-            [payload, estZfw],
-            ["FWD BAG", "ZFWCG"],
-            [fwdBag, zfwcg],
-            ["REAR BAG", "NO PAX"],
-            [rearBag, noPax],
-            [""],
-            ["", "PRINT*[color]inop"],
-            ["PAYLOAD", "OFP REQUEST[color]cyan"],
-            [loadButton, requestButton],
-            [""],
-            ["<AOC MENU"]
-        ];
-        mcdu.setTemplate(display);
-
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.payload = undefined;
-                mcdu.aocWeight.fwdBag = undefined;
-                mcdu.aocWeight.rearBag = undefined;
-                updateView();
-                return true;
-            }
-            const enteredPayload = NXUnits.userToKg(Math.round(+value));
-            if (enteredPayload >= 0 && enteredPayload <= maxAllowablePayload) {
-                mcdu.aocWeight.payload = enteredPayload;
-                mcdu.aocWeight.fwdBag = undefined;
-                mcdu.aocWeight.rearBag = undefined;
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.fwdBag = undefined;
-                updateView();
-                return true;
-            }
-            const currentRearBag = !isNaN(getCurrentRearBag(mcdu)) ? getCurrentRearBag(mcdu) : 0;
-
-            const enteredFwdBag = NXUnits.userToKg(Math.round(+value));
-            const actualPayload = enteredFwdBag + (+currentRearBag);
-
-            if (enteredFwdBag >= 0 && actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
-                mcdu.aocWeight.fwdBag = enteredFwdBag;
-                mcdu.aocWeight.rearBag = currentRearBag;
-                mcdu.aocWeight.zfwcg = undefined;
-                updatePayloadValue();
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        function updatePayloadValue() {
-            const currentFwdBag = getCurrentFwdBag(mcdu);
-            const currentRearBag = getCurrentRearBag(mcdu);
-
-            const actualPayload = (+currentFwdBag) + (+currentRearBag);
-
-            mcdu.aocWeight.payload = actualPayload;
-
+        mcdu.refreshPageCallback = () => {
             updateView();
+        };
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+
+        const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");
+
+        let zfwcg = "__._[color]amber";
+        let requestButton = "SEND*[color]cyan";
+        let loadButton = "START*[color]cyan";
+
+        if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
+            requestButton = "SEND [color]cyan";
         }
 
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.rearBag = undefined;
-                updatePayloadValue();
-                updateView();
-                return true;
-            }
-            const currentFwdBag = !isNaN(getCurrentFwdBag(mcdu)) ? getCurrentFwdBag(mcdu) : 0;
+        if (boardingStartedByUser) {
+            loadButton = "STOP*[color]yellow";
+        }
 
-            const enteredRearBag = NXUnits.userToKg(Math.round(+value));
-            const actualPayload = enteredRearBag + (+currentFwdBag);
+        function buildStationValue(station) {
+            const targetPax = SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number");
+            const pax = SimVar.GetSimVarValue(`L:${station.simVar}`, "Number");
 
-            if (enteredRearBag >= 0 && actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
-                mcdu.aocWeight.rearBag = enteredRearBag;
-                mcdu.aocWeight.fwdBag = currentFwdBag;
-                mcdu.aocWeight.zfwcg = undefined;
-                updatePayloadValue();
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
+            const suffix = targetPax === pax ? "[color]green" : "[color]cyan";
 
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onRightInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.zfwcg = undefined;
-                setEstimatedBaggagePayload(mcdu);
-                updateView();
-                return true;
-            }
-            const minAllowableZfwcg = 16;
-            const maxAllowableZfwcg = 40;
+            return new CDU_SingleValueField(mcdu,
+                "int",
+                `${pax} (${targetPax})`,
+                {
+                    emptyValue: "__[color]amber",
+                    suffix: suffix,
+                    maxLength: 2,
+                    minValue: 0,
+                    maxValue: station.seats,
+                },
+                async (value) => {
+                    await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", value);
+                    updateView();
+                }
+            );
+        }
 
-            if (value >= minAllowableZfwcg && value <= maxAllowableZfwcg) {
-                mcdu.aocWeight.zfwcg = +value;
-                mcdu.aocWeight.rearBag = undefined;
-                mcdu.aocWeight.fwdBag = undefined;
-                setEstimatedBaggagePayload(mcdu);
-                updateView();
-                return true;
+        async function setTargetPax(numberOfPax) {
+
+            let paxRemaining = parseInt(numberOfPax);
+
+            async function fillStation(station, percent, paxToFill) {
+
+                const pax = Math.min(Math.round(percent * paxToFill), station.seats);
+                station.pax = pax;
+
+                await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(pax));
+
+                paxRemaining -= pax;
             }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
+
+            await fillStation(paxStations['rows22_29'], .275 , numberOfPax);
+            await fillStation(paxStations['rows14_21'], .275, numberOfPax);
+            await fillStation(paxStations['rows7_13'], .240 , numberOfPax);
+            await fillStation(paxStations['rows1_6'], 1 , paxRemaining);
+            return;
+        }
+
+        const currentZfwcg = getZfwcg();
+        if (currentZfwcg !== undefined) {
+            const cgColor = currentZfwcg >= 16 && currentZfwcg <= 40 ? 'green' : 'red';
+            zfwcg = `${currentZfwcg.toFixed(1)}{end}[color]${cgColor}`;
+        }
+
+        function buildTotalPaxValue() {
+            const currentPax = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur);
+            const paxTarget = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
+
+            const suffix = paxTarget === currentPax ? "[color]green" : "[color]cyan";
+
+            return new CDU_SingleValueField(mcdu,
+                "int",
+                `${currentPax} (${paxTarget})`,
+                {
+                    emptyValue: "__[color]amber",
+                    suffix: suffix,
+                    maxLength: 3,
+                    minValue: 0,
+                    maxValue: MAX_SEAT_AVAILABLE,
+                },
+                async (value) => {
+                    await setTargetPax(value);
+                    updateView();
+                }
+            );
+
+        }
+
+        const display = [
+            ["W/B", "2", "2", "AOC"],
+            ["TOTAL PAX", "PAYLOAD"],
+            [buildTotalPaxValue(), `${Math.round(NXUnits.kgToUser(getTotalPayload()))}[color]green`],
+            [paxStations.rows1_6.name, "ZFW"],
+            [buildStationValue(paxStations.rows1_6), `${Math.round(NXUnits.kgToUser(getZfw()))}[color]green`],
+            [paxStations.rows7_13.name, "ZFW CG"],
+            [buildStationValue(paxStations.rows7_13), zfwcg],
+            [paxStations.rows14_21.name, "CARGO"],
+            [buildStationValue(paxStations.rows14_21), `${Math.round(NXUnits.kgToUser(getTotalCargo()))} >[color]inop`],
+            [paxStations.rows22_29.name, "OFP REQUEST"],
+            [buildStationValue(paxStations.rows22_29), requestButton],
+            ["", "BOARDING"],
+            ["<AOC MENU", loadButton]
+        ];
+        mcdu.setTemplate(display);
 
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[4] = () => {
-            getSimBriefOfp(mcdu, updateView);
+            getSimBriefOfp(mcdu, updateView, () => {
+                setTargetPax(mcdu.simbrief.paxCount).then(() => {
+                    updateView();
+                });
+            });
         };
 
-        mcdu.leftInputDelay[4] = () => {
+        mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[4] = async () => {
-            if (currentPayload) {
-                await loadBaggagePayload(mcdu, updateView);
+        mcdu.onRightInput[5] = async () => {
+            await SimVar.SetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool", !boardingStartedByUser);
 
-                updateView();
-            }
+            updateView();
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -417,69 +332,15 @@ class CDUAocOfpData {
     }
 }
 
-function setEstimatedBaggagePayload(mcdu) {
-    if (mcdu.aocWeight.fwdBag !== undefined || mcdu.aocWeight.rearBag !== undefined) {
-        return;
-    }
-
-    const currentPayload = getCurrentPayload(mcdu);
-
-    if (isNaN(currentPayload)) {
-        return;
-    }
-
-    const {
-        forwardBaggageWeight,
-        rearBaggageWeight
-    } = getDistributedBaggagePayload(currentPayload, mcdu.aocWeight.zfwcg);
-
-    mcdu.aocWeight.estFwdBag = forwardBaggageWeight;
-    mcdu.aocWeight.estRearBag = rearBaggageWeight;
-}
-
-async function loadBaggagePayload(mcdu, updateView) {
-    const FORWARD_BAGGAGE_INDEX = 3 + 1; // Value from flight_model.cfg
-    const REAR_BAGGAGE_INDEX = 5 + 1; // Value from flight_model.cfg
-
-    const currentfwdBag = getCurrentFwdBag(mcdu);
-    const currentRearBag = getCurrentRearBag(mcdu);
-
-    mcdu.aocWeight.loading = true;
-    updateView();
-
-    const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
-    for (let i = 1; i <= payloadCount; i++) {
-        switch (i) {
-            case FORWARD_BAGGAGE_INDEX: {
-                await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "kilograms", +currentfwdBag);
-                break;
-            }
-            case REAR_BAGGAGE_INDEX: {
-                await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "kilograms", +currentRearBag);
-                break;
-            }
-            default: {
-                await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "kilograms", 0);
-                break;
-            }
-        }
-    }
-
-    mcdu.aocWeight.loading = false;
-    updateView();
-
-    return;
-}
-
 async function loadFuel(mcdu, updateView) {
     const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
 
     mcdu.aocWeight.loading = true;
     updateView();
 
-    const outerTankCapacity = 228; // Left and Right // Value from flight_model.cfg
-    const innerTankCapacity = 1816; // Left and Right // Value from flight_model.cfg
-    const centerTankCapacity = 2179; // Center // Value from flight_model.cfg
+    const outerTankCapacity = 228 + (1 * 2); // Left and Right // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
+    const innerTankCapacity = 1816 + (7 * 2); // Left and Right // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
+    const centerTankCapacity = 2179 + 6; // Center // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
 
     const fuelWeightPerGallon = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
     let currentBlockFuelInGallons = +currentBlockFuel / +fuelWeightPerGallon;
@@ -504,59 +365,59 @@ async function loadFuel(mcdu, updateView) {
     updateView();
 }
 
-/**
- * Calculate the baggage payload distribution to achieve target CG
- * @param {number} payload in pound
- * @param {number} percentMacTarget Target %MAC CG / 100
- */
-function getDistributedBaggagePayload(payload = 0, percentMacTarget = 30) {
-    const leMacZ = -5.233333; // Value from Debug Weight
-    const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
-    const EMPTY_AIRCRAFT_WEIGHT = 90400 * 0.453592; // Value from flight_model.cfg to kgs
-    const EMPTY_AIRCRAFT_POSITION = -9; // Value from flight_model.cfg
-    const FORWARD_BAGGAGE_POSITION = 21.825772; // Value from flight_model.cfg
-    const REAR_BAGGAGE_POSITION = -35.825745; // Value from flight_model.cfg
+const payloadConstruct = new A32NX_PayloadConstructor();
+const paxStations = payloadConstruct.paxStations;
+const cargoStations = payloadConstruct.payloadStations;
 
-    const cgTarget = leMacZ - (macSize * (percentMacTarget / 100));
-
-    const rearBaggageWeight = -1 * ((-(EMPTY_AIRCRAFT_WEIGHT * (EMPTY_AIRCRAFT_POSITION - cgTarget) + payload * (FORWARD_BAGGAGE_POSITION - cgTarget))) / (FORWARD_BAGGAGE_POSITION - REAR_BAGGAGE_POSITION));
-    const forwardBaggageWeight = -1 * ((EMPTY_AIRCRAFT_WEIGHT * (EMPTY_AIRCRAFT_POSITION - cgTarget) + payload * (REAR_BAGGAGE_POSITION - cgTarget))) / (FORWARD_BAGGAGE_POSITION - REAR_BAGGAGE_POSITION);
-
-    return {forwardBaggageWeight, rearBaggageWeight};
-}
+const MAX_SEAT_AVAILABLE = 174;
+const PAX_WEIGHT = 84;
+const BAG_WEIGHT = 20;
 
 /**
- * Calculate %MAC ZWFCG based on Empty and Baggage weight only*
- * TODO: Add passengers sections weight into account
- */
-function getZfwcg(mcdu) {
-    const leMacZ = -5.233333; // Value from Debug Weight
-    const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
+     * Calculate %MAC ZWFCG of all stations
+     */
+function getZfwcg() {
+    const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
 
-    const EMPTY_AIRCRAFT_WEIGHT = 90400 * 0.453592; // Value from flight_model.cfg to kgs
-    const EMPTY_AIRCRAFT_POSITION = -9; // Value from flight_model.cfg
-    const FORWARD_BAGGAGE_POSITION = 21.825772; // Value from flight_model.cfg
-    const REAR_BAGGAGE_POSITION = -35.825745; // Value from flight_model.cfg
+    const leMacZ = -5.39; // Value from Debug Weight
+    const macSize = 13.45; // Value from Debug Aircraft Sim Tunning
 
-    const currentfwdBag = getCurrentFwdBag(mcdu);
-    const currentRearBag = getCurrentRearBag(mcdu);
+    const emptyWeight = 101990 * 0.453592; // Value from flight_model.cfg to kgs
+    const emptyPosition = -8.75; // Value from flight_model.cfg
+    const emptyMoment = emptyPosition * emptyWeight;
 
-    if (isNaN(currentfwdBag) || isNaN(currentRearBag)) {
-        return null;
-    }
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number") * currentPaxWeight) * station.position).reduce((acc, cur) => acc + cur, 0);
 
-    const emptyAircraftMoment = EMPTY_AIRCRAFT_POSITION * EMPTY_AIRCRAFT_WEIGHT;
-    const forwardBaggageMoment = FORWARD_BAGGAGE_POSITION * currentfwdBag;
-    const rearBaggageMoment = REAR_BAGGAGE_POSITION * currentRearBag;
+    const payloadTotalMass = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur, 0);
+    const payloadTotalMoment = Object.values(cargoStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * station.position)).reduce((acc, cur) => acc + cur, 0);
 
-    const totalMass = EMPTY_AIRCRAFT_WEIGHT + currentfwdBag + currentRearBag;
-    const totalMoment = emptyAircraftMoment + forwardBaggageMoment + rearBaggageMoment;
+    const totalMass = emptyWeight + paxTotalMass + payloadTotalMass;
+    const totalMoment = emptyMoment + paxTotalMoment + payloadTotalMoment;
 
     const cgPosition = totalMoment / totalMass;
-
     const cgPositionToLemac = cgPosition - leMacZ;
-
-    const cgPercentMac = -100 * cgPositionToLemac / macSize;
+    const cgPercentMac = -100 * (cgPositionToLemac / macSize);
 
     return cgPercentMac;
+}
+
+function getTotalCargo() {
+    const cargoTotalMass = Object.values(cargoStations).filter((station) => station.visible).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur, 0);
+
+    return cargoTotalMass;
+}
+
+function getTotalPayload() {
+    const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
+
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
+    const cargoTotalMass = getTotalCargo();
+
+    return paxTotalMass + cargoTotalMass;
+}
+
+function getZfw() {
+    const emptyWeight = 101990 * 0.453592; // Value from flight_model.cfg to kgs
+    return emptyWeight + getTotalPayload();
 }
