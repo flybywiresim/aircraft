@@ -55,16 +55,19 @@ impl FixedStepLoop {
         self.number_of_loops_remaining = self.number_of_loops_this_iteration;
     }
 }
-impl Iterator for FixedStepLoop {
+impl IntoIterator for &mut FixedStepLoop {
     type Item = Duration;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.number_of_loops_remaining > 0 {
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let mut v = vec![];
+        while self.number_of_loops_remaining > 0 {
             self.number_of_loops_remaining -= 1;
-            Some(self.time_step)
-        } else {
-            None
+            v.push(self.time_step);
         }
+
+        IntoIterator::into_iter(v)
     }
 }
 
