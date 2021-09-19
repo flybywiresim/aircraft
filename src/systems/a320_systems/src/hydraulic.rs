@@ -323,7 +323,7 @@ impl A320Hydraulic {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
 
-        for cur_time_step in self.physics_updater {
+        for cur_time_step in &mut self.physics_updater {
             self.update_max_fixed_step(&context.with_delta(cur_time_step));
         }
 
