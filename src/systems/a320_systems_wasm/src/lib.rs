@@ -345,12 +345,12 @@ impl Flaps {
             self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
             true
         } else if event_id == self.id_flaps_down {
-            self.flaps_handle_position = 0;
+            self.flaps_handle_position = 4;
             self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
             self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
             true
         } else if event_id == self.id_flaps_up {
-            self.flaps_handle_position = 4;
+            self.flaps_handle_position = 0;
             self.flaps_handle_index_simvar.set_value(self.flaps_handle_position_f64());
             self.flaps_handle_percent_simvar.set_value(self.flaps_handle_position_f64() / 4.);
             true
