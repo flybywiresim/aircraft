@@ -1,9 +1,10 @@
-use systems::{simulation::{
-    Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-    UpdateContext, Write,},
-    shared::ControllerSignal
+use systems::{
+    shared::ControllerSignal,
+    simulation::{
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        UpdateContext, Write,
+    },
 };
-
 
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
@@ -36,7 +37,7 @@ impl From<u8> for FlapsConf {
 //SlatFlapComplex
 struct FlapsHandle {
     handle_position: u8,
-    old_handle_position: u8
+    old_handle_position: u8,
 }
 
 impl FlapsHandle {
@@ -47,14 +48,14 @@ impl FlapsHandle {
         }
     }
 
-    fn new_position(&self) -> Option<(u8,u8)> {
+    fn new_position(&self) -> Option<(u8, u8)> {
         if (self.handle_position == self.old_handle_position) {
-            match self.handle_position{
-                1 => Some((1,1)),
+            match self.handle_position {
+                1 => Some((1, 1)),
                 _ => None,
             }
         } else {
-            Some((self.old_handle_position,self.handle_position))
+            Some((self.old_handle_position, self.handle_position))
         }
     }
 
@@ -218,8 +219,7 @@ impl SlatFlapControl {
                 }
             }
         }
-        
-        
+
         //If the system is not pressurized, remain in the same configuration.
 
         //Update target angle based on handle position
@@ -283,10 +283,7 @@ impl SlatFlapComplex {
 
     pub fn new() -> Self {
         Self {
-            sfcc: [
-                SlatFlapControl::new(),
-                SlatFlapControl::new(),
-            ],
+            sfcc: [SlatFlapControl::new(), SlatFlapControl::new()],
             flaps_handle: FlapsHandle::new(),
             flaps_conf_handle_index_helper: 0.,
         }
@@ -294,7 +291,7 @@ impl SlatFlapComplex {
 
     pub fn update(&mut self, context: &UpdateContext) {
         for n in 0..2 {
-            self.sfcc[n].update(context,self.flaps_handle.new_position());
+            self.sfcc[n].update(context, self.flaps_handle.new_position());
         }
         self.flaps_handle.equilibrate_old_and_current();
 
