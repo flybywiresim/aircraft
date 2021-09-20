@@ -62,39 +62,14 @@ void FlyByWireInterface::disconnect() {
 bool FlyByWireInterface::update(double sampleTime) {
   bool result = true;
 
-  // check delta time for performance issues
-  if (calculatedSampleTime > MAX_ACCEPTABLE_SAMPLE_TIME && lowPerformanceTimer < LOW_PERFORMANCE_TIMER_THRESHOLD) {
-    lowPerformanceTimer++;
-  } else if (calculatedSampleTime < MAX_ACCEPTABLE_SAMPLE_TIME) {
-    lowPerformanceTimer = 0;
-  }
-  if (lowPerformanceTimer >= LOW_PERFORMANCE_TIMER_THRESHOLD) {
-    if (idPerformanceWarningActive->get() <= 0) {
-      idPerformanceWarningActive->set(1);
-    }
-    cout << "WASM: WARNING Performance issues detected, at least stable " << round(simConnectInterface.getSimData().simulation_rate / MAX_ACCEPTABLE_SAMPLE_TIME) <<
-        " fps or more are needed at this simrate!" << endl;
-  } else {
-    if (idPerformanceWarningActive > 0) {
-      idPerformanceWarningActive->set(0);
-    }
-  }
-
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 
-  // in performance issues: if simulation rate is higher than 1 reduce it
-  double simulationRate = simConnectInterface.getSimData().simulation_rate;
-  if (simulationRate > maxSimulationRate) {
-    simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
-    cout << "WASM: WARNING Reducing simulation rate to " << simulationRate / 2;
-    cout << " (maximum allowed is " << maxSimulationRate << ")!" << endl;
-  } else if (simulationRate > 1 && lowPerformanceTimer >= LOW_PERFORMANCE_TIMER_THRESHOLD) {
-    simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
-    lowPerformanceTimer = 0;
-    cout << "WASM: WARNING Reducing simulation rate from " << simulationRate << " to " << simulationRate / 2;
-    cout << " due to performance issues!" << endl;
-  }
+  // update performance monitoring
+  result &= updatePerformanceMonitoring(sampleTime);
+
+  // handle simulation rate reduction
+  result &= handleSimulationRate(sampleTime);
 
   // do not process laws in pause or slew
   if (simConnectInterface.getSimData().slew_on) {
@@ -158,6 +133,7 @@ void FlyByWireInterface::loadConfiguration() {
   flightDirectorSmoothingFactor = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_FACTOR", 2.5);
   flightDirectorSmoothingLimit = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_LIMIT", 20);
   maxSimulationRate = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4);
+  simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
   flightControlsKeyChangeAileron = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_AILERON", 0.02);
   flightControlsKeyChangeAileron = abs(flightControlsKeyChangeAileron);
@@ -180,6 +156,7 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR  = " << flightDirectorSmoothingFactor << endl;
   std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT   = " << flightDirectorSmoothingLimit << endl;
   std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE           = " << maxSimulationRate << endl;
+  std::cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED = " << simulationRateReductionEnabled << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
@@ -446,6 +423,91 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   // store previous simulation time
   previousSimulationTime = simData.simulationTime;
+
+  // success
+  return true;
+}
+
+bool FlyByWireInterface::updatePerformanceMonitoring(double sampleTime) {
+  // check calculated delta time for performance issues (to also take sim rate into account)
+  if (calculatedSampleTime > MAX_ACCEPTABLE_SAMPLE_TIME && lowPerformanceTimer < LOW_PERFORMANCE_TIMER_THRESHOLD) {
+    // performance is low -> increase counter
+    lowPerformanceTimer++;
+  } else if (calculatedSampleTime < MAX_ACCEPTABLE_SAMPLE_TIME) {
+    // performance is ok -> reset counter
+    lowPerformanceTimer = 0;
+  }
+
+  // if threshold has been reached / exceeded set performance warning
+  if (lowPerformanceTimer >= LOW_PERFORMANCE_TIMER_THRESHOLD) {
+    if (idPerformanceWarningActive->get() <= 0) {
+      idPerformanceWarningActive->set(1);
+      cout << "WASM: WARNING Performance issues detected, at least stable ";
+      cout << round(simConnectInterface.getSimData().simulation_rate / MAX_ACCEPTABLE_SAMPLE_TIME);
+      cout << " fps or more are needed at this simrate!";
+      cout << endl;
+    }
+  } else if (idPerformanceWarningActive > 0) {
+    idPerformanceWarningActive->set(0);
+  }
+
+  // success
+  return true;
+}
+
+bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // check if target simulation rate was modified and there is a mismatch
+  if (targetSimulationRateModified && simData.simulation_rate != targetSimulationRate) {
+    // wait until target simulation rate is reached
+    return true;
+  }
+
+  // set target to current simulation rate and reset modified flag
+  targetSimulationRate = simData.simulation_rate;
+  targetSimulationRateModified = false;
+
+  // nothing to do if simuation rate is '1x'
+  if (simData.simulation_rate == 1) {
+    return true;
+  }
+
+  // check if allowed simulation rate is exceeded
+  if (simData.simulation_rate > maxSimulationRate) {
+    // set target simulation rate
+    targetSimulationRateModified = true;
+    targetSimulationRate = max(1, simData.simulation_rate / 2);
+    // sed event to reduce simulation rate
+    simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+    // log event of reduction
+    cout << "WASM: WARNING Reducing simulation rate to " << simData.simulation_rate / 2;
+    cout << " (maximum allowed is " << maxSimulationRate << ")!" << endl;
+  }
+
+  // check if simulation rate reduction is enabled
+  if (!simulationRateReductionEnabled) {
+    return true;
+  }
+
+  // check if simulation rate should be reduced
+  if (idPerformanceWarningActive->get() == 1 || abs(simConnectInterface.getSimData().Phi_deg) > 33 ||
+      simConnectInterface.getSimData().Theta_deg < -20 || simConnectInterface.getSimData().Theta_deg > 10 ||
+      flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1 || flyByWireOutput.sim.data_computed.high_speed_prot_active == 1 ||
+      autopilotStateMachineOutput.speed_protection_mode == 1) {
+    // set target simulation rate
+    targetSimulationRateModified = true;
+    targetSimulationRate = max(1, simData.simulation_rate / 2);
+    // send event to reduce simulation rate
+    simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+    // reset low performance timer
+    lowPerformanceTimer = 0;
+    // log event of reduction
+    cout << "WASM: WARNING Reducing simulation rate from " << simData.simulation_rate;
+    cout << " to " << simData.simulation_rate / 2;
+    cout << " due to performance issues or abnormal situation!" << endl;
+  }
 
   // success
   return true;

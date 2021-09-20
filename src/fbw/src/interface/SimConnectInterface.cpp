@@ -387,6 +387,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::SIM_RATE_INCR, "SIM_RATE_INCR", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SIM_RATE_DECR, "SIM_RATE_DECR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SIM_RATE_SET, "SIM_RATE_SET", true);
 
   return result;
 }
@@ -1843,6 +1844,13 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
         sendEvent(Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
         cout << "WASM: Simulation Rate set to " << simData.simulation_rate / 2 << endl;
       }
+      break;
+    }
+
+    case Events::SIM_RATE_SET: {
+      long targetSimulationRate = min(maxSimulationRate, max(1, static_cast<long>(event->dwData)));
+      sendEvent(Events::SIM_RATE_SET, targetSimulationRate, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+      cout << "WASM: Simulation Rate set to " << targetSimulationRate << endl;
       break;
     }
 

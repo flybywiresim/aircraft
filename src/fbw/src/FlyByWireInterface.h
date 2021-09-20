@@ -42,6 +42,10 @@ class FlyByWireInterface {
   double previousApproachCapabilityUpdateTime = 0;
 
   double maxSimulationRate = 4;
+  bool simulationRateReductionEnabled = true;
+
+  double targetSimulationRate = 1;
+  bool targetSimulationRateModified = false;
 
   bool flightDirectorSmoothingEnabled = false;
   double flightDirectorSmoothingFactor = 0;
@@ -253,6 +257,9 @@ class FlyByWireInterface {
   void setupLocalVariables();
 
   bool readDataAndLocalVariables(double sampleTime);
+
+  bool updatePerformanceMonitoring(double sampleTime);
+  bool handleSimulationRate(double sampleTime);
 
   bool updateEngineData(double sampleTime);
 
