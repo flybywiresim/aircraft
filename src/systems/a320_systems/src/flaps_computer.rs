@@ -2,7 +2,7 @@ use systems::simulation::{
     Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
     UpdateContext, Write,
 };
-use uom::si::{angle::degree, f64::*};
+use uom::si::{angle::degree, f64::*, velocity::knot};
 
 //The different flaps configurations
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -147,6 +147,7 @@ impl SlatsFlapsControl {
 
     pub fn update(&mut self, context: &UpdateContext, transition: (u8, u8)) {
         let (from, to) = transition;
+        self.air_speed = context.indicated_airspeed().get::<knot>();
 
         if self.is_system_pressurized() {
             //Handle the transitions between configurations
@@ -233,7 +234,6 @@ impl SlatsFlapsControl {
 
 impl SimulationElement for SlatsFlapsControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.air_speed = reader.read("AIRSPEED INDICATED");
         self.hyd_green_pressure = reader.read("HYD_GREEN_PRESSURE");
     }
 }
