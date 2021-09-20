@@ -120,7 +120,6 @@ fn create_aircraft_variable_reader(
     reader.add("PLANE LATITUDE", "degree latitude", 0)?;
     reader.add("PLANE LONGITUDE", "degree longitude", 0)?;
 
-    // reader.add("FLAPS HANDLE INDEX", "Number", 0)?;
     Ok(reader)
 }
 
@@ -201,10 +200,8 @@ struct Flaps {
     right_flaps_position_simvar: NamedVariable,
     left_slats_position_simvar: NamedVariable,
     right_slats_position_simvar: NamedVariable,
-    // flaps_conf_handle_index_simvar: NamedVariable,
     flaps_surface_simobject: FlapsSurface,
     slats_surface_simobject: SlatsSurface,
-    // flaps_handle_index_simobject: FlapsHandleIndex,
     flaps_handle_position: u8,
     left_flaps_position: f64,
     right_flaps_position: f64,
