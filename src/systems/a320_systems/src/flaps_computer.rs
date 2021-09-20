@@ -1,7 +1,10 @@
-use systems::simulation::{
+use systems::{simulation::{
     Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-    UpdateContext, Write,
+    UpdateContext, Write,},
+    shared::ControllerSignal
 };
+
+
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
 //The different flaps configurations
@@ -32,7 +35,32 @@ impl From<u8> for FlapsConf {
 //Should consider to just make this a part of the
 //SlatFlapComplex
 struct FlapsHandle {
-    handle_position: f64,
+    handle_position: u8,
+    old_handle_position: u8
+}
+
+impl FlapsHandle {
+    fn new() -> Self {
+        Self {
+            handle_position: 0,
+            old_handle_position: 0,
+        }
+    }
+
+    fn new_position(&self) -> Option<(u8,u8)> {
+        if (self.handle_position == self.old_handle_position) {
+            match self.handle_position{
+                1 => Some((1,1)),
+                _ => None,
+            }
+        } else {
+            Some((self.old_handle_position,self.handle_position))
+        }
+    }
+
+    fn equilibrate_old_and_current(&mut self) {
+        self.old_handle_position = self.handle_position;
+    }
 }
 
 impl SimulationElement for FlapsHandle {
@@ -44,20 +72,18 @@ impl SimulationElement for FlapsHandle {
 //This is the basis of what will become
 //the SFCC. For now it just applies the simple
 //flaps logic implemented before.
-struct SlatsFlapsControl {
+struct SlatFlapControl {
     flaps_angle: Angle,
     slats_angle: Angle,
-
     flaps_target_angle: Angle,
     slats_target_angle: Angle,
-
     flaps_conf: FlapsConf,
     air_speed: f64,
 
     hyd_green_pressure: f64,
 }
 
-impl SlatsFlapsControl {
+impl SlatFlapControl {
     //Place holder until implementing Davy's hydraulic model
     //Just assuming linear animation.
     const FLAPS_SPEED: f64 = 1.5;
@@ -145,52 +171,55 @@ impl SlatsFlapsControl {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, transition: (u8, u8)) {
-        let (from, to) = transition;
+    pub fn update(&mut self, context: &UpdateContext, transition: Option<(u8, u8)>) {
         self.air_speed = context.indicated_airspeed().get::<knot>();
 
         if self.is_system_pressurized() {
             //Handle the transitions between configurations
-            match from {
-                0 => {
-                    if to == 1 {
-                        if self.air_speed <= 100. {
-                            self.flaps_conf = FlapsConf::Conf1F;
+            if let Some((from, to)) = transition {
+                match from {
+                    0 => {
+                        if to == 1 {
+                            if self.air_speed <= 100. {
+                                self.flaps_conf = FlapsConf::Conf1F;
+                            } else {
+                                self.flaps_conf = FlapsConf::Conf1;
+                            }
+                        } else if to == 0 {
+                            self.flaps_conf = FlapsConf::from(0);
                         } else {
-                            self.flaps_conf = FlapsConf::Conf1;
+                            self.flaps_conf = FlapsConf::from(to + 1);
                         }
-                    } else if to == 0 {
-                        self.flaps_conf = FlapsConf::from(0);
-                    } else {
-                        self.flaps_conf = FlapsConf::from(to + 1);
                     }
-                }
-                1 => {
-                    if to == 1 {
-                        if self.air_speed > 210. {
-                            self.flaps_conf = FlapsConf::Conf1;
-                        }
-                    } else if to == 0 {
-                        self.flaps_conf = FlapsConf::from(to);
-                    } else {
-                        self.flaps_conf = FlapsConf::from(to + 1);
-                    }
-                }
-                _ => {
-                    if to == 1 {
-                        if self.air_speed <= 210. {
-                            self.flaps_conf = FlapsConf::Conf1F;
+                    1 => {
+                        if to == 1 {
+                            if self.air_speed > 210. {
+                                self.flaps_conf = FlapsConf::Conf1;
+                            }
+                        } else if to == 0 {
+                            self.flaps_conf = FlapsConf::from(to);
                         } else {
-                            self.flaps_conf = FlapsConf::Conf1;
+                            self.flaps_conf = FlapsConf::from(to + 1);
                         }
-                    } else if to == 0 {
-                        self.flaps_conf = FlapsConf::from(to);
-                    } else {
-                        self.flaps_conf = FlapsConf::from(to + 1);
+                    }
+                    _ => {
+                        if to == 1 {
+                            if self.air_speed <= 210. {
+                                self.flaps_conf = FlapsConf::Conf1F;
+                            } else {
+                                self.flaps_conf = FlapsConf::Conf1;
+                            }
+                        } else if to == 0 {
+                            self.flaps_conf = FlapsConf::from(to);
+                        } else {
+                            self.flaps_conf = FlapsConf::from(to + 1);
+                        }
                     }
                 }
             }
         }
+        
+        
         //If the system is not pressurized, remain in the same configuration.
 
         //Update target angle based on handle position
@@ -232,16 +261,15 @@ impl SlatsFlapsControl {
     }
 }
 
-impl SimulationElement for SlatsFlapsControl {
+impl SimulationElement for SlatFlapControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.hyd_green_pressure = reader.read("HYD_GREEN_PRESSURE");
     }
 }
 
 pub struct SlatFlapComplex {
-    sfcc: [SlatsFlapsControl; 2],
+    sfcc: [SlatFlapControl; 2],
     flaps_handle: FlapsHandle,
-    old_flaps_handle_position: f64,
 
     flaps_conf_handle_index_helper: f64,
 }
@@ -255,26 +283,20 @@ impl SlatFlapComplex {
 
     pub fn new() -> Self {
         Self {
-            sfcc: [SlatsFlapsControl::new(), SlatsFlapsControl::new()],
-            flaps_handle: FlapsHandle {
-                handle_position: 0.,
-            },
-            old_flaps_handle_position: 0.,
+            sfcc: [
+                SlatFlapControl::new(),
+                SlatFlapControl::new(),
+            ],
+            flaps_handle: FlapsHandle::new(),
             flaps_conf_handle_index_helper: 0.,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
         for n in 0..2 {
-            self.sfcc[n].update(
-                context,
-                (
-                    self.old_flaps_handle_position as u8,
-                    self.flaps_handle.handle_position as u8,
-                ),
-            );
+            self.sfcc[n].update(context,self.flaps_handle.new_position());
         }
-        self.old_flaps_handle_position = self.flaps_handle.handle_position;
+        self.flaps_handle.equilibrate_old_and_current();
 
         if self.sfcc[0].get_flaps_conf() == self.sfcc[1].get_flaps_conf() {
             self.flaps_conf_handle_index_helper = self.sfcc[0].get_flaps_conf_f64();
