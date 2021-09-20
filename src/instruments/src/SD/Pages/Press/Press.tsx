@@ -41,39 +41,39 @@ export const PressPage: FC = () => {
             <g id="DeltaPressure">
                 <text className="Large Center" x={dpx - 5} y="80">@P</text>
                 <text className="Medium Center Cyan" x={dpx - 5} y="100">PSI</text>
-                <text className="Huge Green End" x={dpx + 38} y={y + 25}>
+                <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 38} y={y + 25}>
                     {deltaPress[0]}
                 </text>
-                <text className="Huge Green End" x={dpx + 53} y={y + 25}>.</text>
-                <text className="Standard Green End" x={dpx + 63} y={y + 25}>{deltaPress[1]}</text>
-                <GaugeComponent x={dpx} y={y} radius={radius} startAngle={-150} endAngle={50} manMode={1} className="Gauge">
-                    <GaugeComponent x={dpx} y={y} radius={radius} startAngle={37} endAngle={50} manMode={1} className="Gauge Amber" />
-                    <GaugeComponent x={dpx} y={y} radius={radius} startAngle={-150} endAngle={-137} manMode={1} className="Gauge Amber" />
-                    <GaugeMarkerComponent value={8} x={dpx} y={y} min={-0.5} max={8.5} radius={radius} startAngle={40} endAngle={-140} className="GaugeText" showValue indicator={false} />
+                <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 53} y={y + 25}>.</text>
+                <text className={`Standard End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 63} y={y + 25}>{deltaPress[1]}</text>
+                <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={50} manMode className="Gauge">
+                    <GaugeComponent x={dpx} y={y} radius={radius} startAngle={40} endAngle={50} manMode className="Gauge Amber" />
+                    <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={218} manMode className="Gauge Amber" />
+                    <GaugeMarkerComponent value={8} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
                     <GaugeMarkerComponent
                         value={4}
                         x={dpx}
                         y={y}
-                        min={-0.5}
-                        max={8.5}
+                        min={-1}
+                        max={9}
                         radius={radius}
-                        startAngle={40}
-                        endAngle={-140}
+                        startAngle={210}
+                        endAngle={50}
                         className="GaugeText"
                         showValue={false}
                         indicator={false}
                     />
-                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-0.5} max={8.5} radius={radius} startAngle={40} endAngle={-140} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
                     <GaugeMarkerComponent
-                        value={Math.round(deltaPsi)}
+                        value={deltaPsi}
                         x={dpx}
                         y={y}
-                        min={-0.5}
-                        max={8.5}
+                        min={-1}
+                        max={9}
                         radius={radius}
-                        startAngle={40}
-                        endAngle={-140}
-                        className="GaugeIndicator"
+                        startAngle={210}
+                        endAngle={50}
+                        className={`GaugeIndicator ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : ''}`}
                         showValue={false}
                         indicator
                     />
@@ -85,12 +85,12 @@ export const PressPage: FC = () => {
                 <text className="Large Center" x={vsx + 15} y="80">V/S</text>
                 <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
                 <text className="Huge Green End" x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
-                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={-190} endAngle={10} manMode={1} className="Gauge">
-                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
-                    <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
-                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
-                    <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
-                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} manMode className="Gauge">
+                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue={false} indicator={false} />
+                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue={false} indicator={false} />
+                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue indicator={false} />
                     <GaugeMarkerComponent
                         value={cabinVs / 1000}
                         x={vsx}
@@ -98,8 +98,8 @@ export const PressPage: FC = () => {
                         min={-2}
                         max={2}
                         radius={radius}
-                        startAngle={0}
-                        endAngle={180}
+                        startAngle={180}
+                        endAngle={0}
                         className="GaugeIndicator"
                         showValue={false}
                         indicator
@@ -111,34 +111,42 @@ export const PressPage: FC = () => {
             <g id="CaIndicator">
                 <text className="Large Center" x={cax + 15} y="80">CAB ALT</text>
                 <text className="Medium Center Cyan" x={cax + 20} y="100">FT</text>
-                <text className="Huge Green End" x={cax + 85} y={y + 25}>{Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}</text>
-                <GaugeComponent x={cax} y={y} radius={radius} startAngle={-150} endAngle={50} manMode={1} className="Gauge">
-                    <GaugeComponent x={cax} y={y} radius={radius} startAngle={30} endAngle={50} manMode={1} className="Gauge Red" />
-                    <GaugeMarkerComponent value={10} x={cax} y={y} min={0} max={10} radius={radius} startAngle={40} endAngle={-140} className="GaugeText" showValue indicator={false} />
+                <text
+                    className={`Huge End ${Math.round(cabinAlt / 50) * 50 >= 9550
+                        ? 'Red'
+                        : 'Green'}`}
+                    x={cax + 85}
+                    y={y + 25}
+                >
+                    {Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}
+                </text>
+                <GaugeComponent x={cax} y={y} radius={radius} startAngle={210} endAngle={50} manMode className="Gauge">
+                    <GaugeComponent x={cax} y={y} radius={radius} startAngle={30} endAngle={50} manMode className="Gauge Red" />
+                    <GaugeMarkerComponent value={10} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
                     <GaugeMarkerComponent
                         value={5}
                         x={cax}
                         y={y}
-                        min={0}
-                        max={10}
+                        min={-0.625}
+                        max={10.625}
                         radius={radius}
-                        startAngle={40}
-                        endAngle={-140}
+                        startAngle={210}
+                        endAngle={50}
                         className="GaugeText"
                         showValue={false}
                         indicator={false}
                     />
-                    <GaugeMarkerComponent value={0} x={cax} y={y} min={0} max={10} radius={radius} startAngle={40} endAngle={-140} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={0} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
                     <GaugeMarkerComponent
                         value={Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 / 1000 : 0}
                         x={cax}
                         y={y}
-                        min={0}
-                        max={10}
+                        min={-0.625}
+                        max={10.625}
                         radius={radius}
-                        startAngle={40}
-                        endAngle={-140}
-                        className="GaugeIndicator"
+                        startAngle={210}
+                        endAngle={50}
+                        className={`GaugeIndicator ${Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : ''}`}
                         showValue={false}
                         indicator
                     />

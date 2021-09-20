@@ -48,7 +48,8 @@ export function describeArc(x: number, y: number, radius: number, startAngle: nu
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
 
-    const largeArcFlag = Math.abs(endAngle - startAngle) <= 180 ? '0' : '1';
+    const arcSize = startAngle > endAngle ? 360 - endAngle + startAngle : endAngle - startAngle;
+    const largeArcFlag = arcSize <= 180 ? '0' : '1';
 
     return [
         'M', start.x, start.y,
@@ -185,11 +186,17 @@ export const splitDecimals = (value, type) => {
 
 export const valueRadianAngleConverter = (value, min, max, endAngle, startAngle) => {
     const valuePercentage = (value - min) / (max - min);
-    let angle = (startAngle + 90 + (valuePercentage * (Math.abs(endAngle - startAngle))));
-    angle *= (Math.PI / 180.0);
+    // const start = startAngle > 180 ? 360 - startAngle : startAngle;
+    let angleInRadians = startAngle > endAngle
+        ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - 90
+        : startAngle + (valuePercentage * (endAngle - startAngle)) - 90;
+    // let angleInRadians = angleInRadiansOne > 359 ? 360 - angleInRadiansOne : angleInRadiansOne;
+    console.log(`Angle is ${angleInRadians}`);
+    angleInRadians *= (Math.PI / 180.0);
+    console.log(`Angle is radians is ${angleInRadians}`);
     return ({
-        x: Math.cos(angle),
-        y: Math.sin(angle),
+        x: Math.cos(angleInRadians),
+        y: Math.sin(angleInRadians),
     });
 };
 
@@ -255,7 +262,7 @@ interface GaugeComponentProps {
     endAngle: number,
     className: string,
     manMode: boolean,
-    children: GaugeComponentProps
+    children?: React.ReactNode,
 }
 
 export const GaugeComponentNoMemo: React.FunctionComponent<GaugeComponentProps> = ({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
@@ -265,7 +272,7 @@ export const GaugeComponentNoMemo: React.FunctionComponent<GaugeComponentProps> 
         <>
             <g id="HideOrShowGauge" className={manMode ? 'Show' : 'Hide'}>
                 <path d={d} className={className} />
-                {children}
+                <>{children}</>
             </g>
         </>
     );
