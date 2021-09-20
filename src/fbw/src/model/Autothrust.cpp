@@ -107,12 +107,12 @@ void AutothrustModelClass::Autothrust_RateLimiter(real_T rtu_u, real_T rtu_up, r
   }
 
   u0 = rtu_u - localDW->pY;
-  u1 = rtu_up * rtu_Ts;
+  u1 = std::abs(rtu_up) * rtu_Ts;
   if (u0 < u1) {
     u1 = u0;
   }
 
-  u0 = rtu_lo * rtu_Ts;
+  u0 = -std::abs(rtu_lo) * rtu_Ts;
   if (u1 > u0) {
     u0 = u1;
   }
