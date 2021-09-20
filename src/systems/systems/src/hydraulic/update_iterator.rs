@@ -115,11 +115,13 @@ impl IntoIterator for &mut MaxFixedStepLoop {
     fn into_iter(self) -> Self::IntoIter {
         let mut v = vec![];
 
-        if self.num_of_max_step_loop > 0 {
+        while self.num_of_max_step_loop > 0 {
             self.num_of_max_step_loop -= 1;
 
             v.push(self.max_time_step);
-        } else if self.remaining_frame_duration.is_some() {
+        }
+
+        if self.remaining_frame_duration.is_some() {
             v.push(self.remaining_frame_duration.unwrap());
             self.remaining_frame_duration = None;
         }
