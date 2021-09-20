@@ -1,16 +1,12 @@
-use systems::{simulation::{
-    Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, UpdateContext, Write,
-}};
-use std::string::String;
-use std::time::Duration;
-use uom::si::{
-    f64::*,
-    angle::degree,
+use systems::simulation::{
+    Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+    UpdateContext, Write,
 };
 
+use uom::si::{f64::*,angle::degree};
+
 //The different flaps configurations
-#[derive(Debug,Copy,Clone,PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum FlapsConf {
     Conf0 = 0,
     Conf1 = 1,
@@ -29,7 +25,6 @@ impl From<u8> for FlapsConf {
             3 => FlapsConf::Conf2,
             4 => FlapsConf::Conf3,
             _ => FlapsConf::ConfFull,
-
         }
     }
 }
@@ -43,10 +38,9 @@ struct FlapsHandle {
 
 impl SimulationElement for FlapsHandle {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.handle_position = reader.read("FLAPS_HANDLE_INDEX"); 
+        self.handle_position = reader.read("FLAPS_HANDLE_INDEX");
     }
 }
-
 
 //This is the basis of what will become
 //the SFCC. For now it just applies the simple
@@ -62,12 +56,9 @@ struct SlatFlapControlComputer {
     air_speed: f64,
 
     hyd_green_pressure: f64,
-
-
 }
 
 impl SlatFlapControlComputer {
-
     //Place holder until implementing Davy's hydraulic model
     //Just assuming linear animation.
     const FLAPS_SPEED: f64 = 1.5;
@@ -104,21 +95,12 @@ impl SlatFlapControlComputer {
         self.slats_target_angle = angle;
     }
 
-    fn set_target_flaps_angle_from_f64(&mut self, angle: f64) {
-        self.flaps_target_angle = Angle::new::<degree>(angle);
-    }
-
-    fn set_target_slats_angle_from_f64(&mut self, angle: f64) {
-        self.slats_target_angle = Angle::new::<degree>(angle);
-    }
-
     fn get_target_flaps_angle_f64(&self) -> f64 {
         self.flaps_target_angle.get::<degree>()
     }
     fn get_target_slats_angle_f64(&self) -> f64 {
         self.slats_target_angle.get::<degree>()
     }
-
 
     fn get_flaps_angle_f64(&self) -> f64 {
         self.flaps_angle.get::<degree>()
@@ -134,10 +116,6 @@ impl SlatFlapControlComputer {
 
     fn get_flaps_conf_f64(&self) -> f64 {
         self.get_flaps_conf() as f64
-    }
-
-    fn get_flaps_conf_enum(&self) -> FlapsConf {
-        self.flaps_conf
     }
 
     //This is just a placeholder for the system
@@ -185,12 +163,10 @@ impl SlatFlapControlComputer {
                         } else {
                             self.flaps_conf = FlapsConf::Conf1;
                         }
+                    } else if to == 0{
+                        self.flaps_conf = FlapsConf::from(0);
                     } else {
-                        if to == 0 {
-                            self.flaps_conf = FlapsConf::from(0);
-                        } else {
-                            self.flaps_conf = FlapsConf::from(to+1);
-                        }
+                        self.flaps_conf = FlapsConf::from(to+1);
                     }
                 },
                 1 => {
@@ -198,12 +174,10 @@ impl SlatFlapControlComputer {
                         if self.air_speed > 210. {
                             self.flaps_conf = FlapsConf::Conf1;
                         }
+                    } else if to == 0 {
+                        self.flaps_conf = FlapsConf::from(to);
                     } else {
-                        if to == 0 {
-                            self.flaps_conf = FlapsConf::from(to);
-                        } else {
-                            self.flaps_conf = FlapsConf::from(to+1);
-                        }
+                        self.flaps_conf = FlapsConf::from(to+1);
                     }
                 },
                 _ => {
@@ -213,12 +187,10 @@ impl SlatFlapControlComputer {
                         } else {
                             self.flaps_conf = FlapsConf::Conf1;
                         }
+                    } else if to == 0 {
+                        self.flaps_conf = FlapsConf::from(to);
                     } else {
-                        if to == 0 {
-                            self.flaps_conf = FlapsConf::from(to);
-                        } else {
-                            self.flaps_conf = FlapsConf::from(to+1);
-                        }
+                        self.flaps_conf = FlapsConf::from(to+1);
                     }
                 },
             }
@@ -272,8 +244,6 @@ pub struct SlatFlapComplex {
     old_flaps_handle_position: f64,
 
     flaps_conf_handle_index_helper: f64,
-
-    flaps_handle_index: f64,
 }
 
 impl SlatFlapComplex {
@@ -289,7 +259,6 @@ impl SlatFlapComplex {
             flaps_handle: FlapsHandle{ handle_position: 0. },
             old_flaps_handle_position: 0.,
             flaps_conf_handle_index_helper: 0.,
-            flaps_handle_index: 0.,
         }
     }
 
@@ -305,14 +274,6 @@ impl SlatFlapComplex {
             if self.sfcc[0].get_flaps_conf() == self.sfcc[1].get_flaps_conf() {
                 self.flaps_conf_handle_index_helper = self.sfcc[0].get_flaps_conf_f64();
             }
-        }
-    
-    fn get_handle_position(&self) -> f64 {
-        self.flaps_handle.handle_position
-    }
-
-    fn get_old_handle_position(&self) -> f64 {
-        self.old_flaps_handle_position
     }
 }
 
@@ -372,6 +333,7 @@ mod tests {
     use super::*;
     use systems::simulation::test::TestBed;
     use systems::simulation::{test::SimulationTestBed, Aircraft};
+    use std::time::Duration;
 
     struct A320FlapsTestAircraft {
         slat_flap_complex: SlatFlapComplex,
@@ -403,7 +365,7 @@ mod tests {
     impl A320FlapsTestBed {
         const HYD_TIME_STEP_MILI: u64 = 100;
         fn new() -> Self {
-            Self {test_bed: SimulationTestBed::new(|a| {A320FlapsTestAircraft::new()}),}
+            Self {test_bed: SimulationTestBed::new(|_a| {A320FlapsTestAircraft::new()}),}
         }
 
         fn run_one_tick(mut self) -> Self {
@@ -445,19 +407,8 @@ mod tests {
             self.query(|a| a.slat_flap_complex.sfcc[0].get_target_slats_angle_f64())
         }
 
-        fn get_flaps_current_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.sfcc[0].get_flaps_angle_f64())
-        }
-
-        fn get_handle_position(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.get_handle_position())
-        }
-        fn get_old_handle_position(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.get_old_handle_position())
-        }
-
         fn get_flaps_conf(&self) -> FlapsConf {
-            self.query(|a| a.slat_flap_complex.sfcc[0].get_flaps_conf_enum())
+            self.query(|a| a.slat_flap_complex.sfcc[0].flaps_conf)
         }
     }
     impl TestBed for A320FlapsTestBed {
