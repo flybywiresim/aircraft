@@ -24,7 +24,6 @@
  * SOFTWARE.
  */
 
-import { NXDataStore } from '@shared/persistence';
 import { FlightPlanManager } from './FlightPlanManager';
 
 /** A class for syncing a flight plan with the game */
@@ -179,8 +178,6 @@ export class FlightPlanAsoboSync {
           return new Promise((resolve, reject) => __awaiter(this, 0, 0, function* () {
               FlightPlanAsoboSync.init();
               const plan = fpln.getCurrentFlightPlan();
-              // TODO: Option to disable f-pln syncing
-              // if (NXDataStore.get('FP_LOAD', 0) !== 0 && (plan.checksum !== this.fpChecksum)) {
               if ((plan.checksum !== this.fpChecksum)) {
                   // await Coherent.call("CREATE_NEW_FLIGHTPLAN");
                   yield Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.error).then;
@@ -194,7 +191,8 @@ export class FlightPlanAsoboSync {
                       for (let i = 0; i < plan.enroute.waypoints.length; i++) {
                           const wpt = plan.enroute.waypoints[i];
                           if (wpt.icao.trim() !== '') {
-                              yield Coherent.call('ADD_WAYPOINT', wpt.icao, coIndex, false).catch(console.error);
+                              yield Coherent.call('ADD_WAYPOINT', wpt.icao, coIndex, false).catch(console.error)
+                                  .then(() => console.log(`[FP SAVE] Adding Waypoint [${wpt.icao}]... SUCCESS`));
                               coIndex++;
                           }
                       }
