@@ -2,7 +2,6 @@ use systems::simulation::{
     Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
     UpdateContext, Write,
 };
-
 use uom::si::{angle::degree, f64::*};
 
 //The different flaps configurations
@@ -45,7 +44,7 @@ impl SimulationElement for FlapsHandle {
 //This is the basis of what will become
 //the SFCC. For now it just applies the simple
 //flaps logic implemented before.
-struct SlatFlapControlComputer {
+struct SlatsFlapsControl {
     flaps_angle: Angle,
     slats_angle: Angle,
 
@@ -58,7 +57,7 @@ struct SlatFlapControlComputer {
     hyd_green_pressure: f64,
 }
 
-impl SlatFlapControlComputer {
+impl SlatsFlapsControl {
     //Place holder until implementing Davy's hydraulic model
     //Just assuming linear animation.
     const FLAPS_SPEED: f64 = 1.5;
@@ -232,7 +231,7 @@ impl SlatFlapControlComputer {
     }
 }
 
-impl SimulationElement for SlatFlapControlComputer {
+impl SimulationElement for SlatsFlapsControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.air_speed = reader.read("AIRSPEED INDICATED");
         self.hyd_green_pressure = reader.read("HYD_GREEN_PRESSURE");
@@ -240,7 +239,7 @@ impl SimulationElement for SlatFlapControlComputer {
 }
 
 pub struct SlatFlapComplex {
-    sfcc: [SlatFlapControlComputer; 2],
+    sfcc: [SlatsFlapsControl; 2],
     flaps_handle: FlapsHandle,
     old_flaps_handle_position: f64,
 
@@ -257,8 +256,8 @@ impl SlatFlapComplex {
     pub fn new() -> Self {
         Self {
             sfcc: [
-                SlatFlapControlComputer::new(),
-                SlatFlapControlComputer::new(),
+                SlatsFlapsControl::new(),
+                SlatsFlapsControl::new(),
             ],
             flaps_handle: FlapsHandle {
                 handle_position: 0.,
