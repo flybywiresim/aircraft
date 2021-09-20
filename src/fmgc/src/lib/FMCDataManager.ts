@@ -1,6 +1,5 @@
 /* global BaseInstrument */
 /* eslint-disable no-underscore-dangle */
-// TODO deduce the returned types.
 export class FMCDataManager {
     fmc: BaseInstrument
 

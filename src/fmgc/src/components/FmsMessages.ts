@@ -1,3 +1,7 @@
+/* eslint-disable no-empty-function */
+/* eslint-disable no-useless-constructor */
+/* eslint-disable guard-for-in */
+/* eslint-disable no-underscore-dangle */
 import { FmgcComponent } from '@fmgc/lib/FmgcComponent';
 import { FMMessage, FMMessageTriggers, FMMessageTypes } from '@shared/FmMessages';
 import { ConfirmationNode, Trigger } from '@shared/logic';
@@ -20,8 +24,8 @@ export class FmsMessages implements FmgcComponent {
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     private ndMessageFlags: Record<'L' | 'R', number> = {
-        'L': 0,
-        'R': 0,
+        L: 0,
+        R: 0,
     };
 
     private messageSelectors: FMMessageSelector[] = [
@@ -30,9 +34,7 @@ export class FmsMessages implements FmgcComponent {
     ]
 
     // singleton
-    private constructor() {
-
-    }
+    private constructor() {}
 
     public static get instance(): FmsMessages {
         if (!this._instance) {

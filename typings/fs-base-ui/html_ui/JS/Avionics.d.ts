@@ -200,6 +200,7 @@ declare global {
 
     declare class BaseInstrument {
         addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        requestCall(call: () => void) : void
 
         facilityLoader: FacilityLoader;
 

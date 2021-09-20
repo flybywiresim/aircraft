@@ -183,7 +183,6 @@ export class A32NX_FWC {
         }
 
         const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
-        // FIXME: VV
         SimVar.SetSimVarValue('L:A32NX_FWC_INHIBOVRD', 'Bool', inhibOverride);
 
         if (SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') || SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool')) {
@@ -410,7 +409,6 @@ export class A32NX_FWC {
         const indicatedAltitude = Simplane.getAltitude();
         const shortAlert = SimVar.GetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool');
         if (shortAlert === 1) {
-            // FIXME: VV
             SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', false);
         }
 
@@ -418,13 +416,11 @@ export class A32NX_FWC {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
-            // FIXME: VV
             SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
             return;
         }
 
         if (Simplane.getIsGrounded()) {
-            // FIXME: VV
             SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
         }
 
@@ -440,9 +436,7 @@ export class A32NX_FWC {
             this._wasAboveThreshold = false;
             this._wasInRange = false;
             this._wasReach200ft = false;
-            // FIXME: VV
             SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', false);
-            // FIXME: VV
             SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
             return;
         }
@@ -461,9 +455,7 @@ export class A32NX_FWC {
             this._wasAboveThreshold = false;
             this._wasInRange = false;
             this._wasReach200ft = false;
-            // FIXME: VV
             SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', false);
-            // FIXME: VV
             SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
             return;
         }

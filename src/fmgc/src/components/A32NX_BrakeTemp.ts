@@ -87,15 +87,13 @@ export class A32NX_BrakeTemp {
                 SimVar.GetSimVarValue('L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', 'celsius'),
             ];
         }
-        // FIXME: What's wrong here?
         const GearLeftPosition = SimVar.GetSimVarValue('GEAR LEFT POSITION', 'Percent Over 100');
         const GearLeftExtended = GearLeftPosition >= 0.25;
-        // FIXME: What's wrong here?
         const GearRightExtended = SimVar.GetSimVarValue('GEAR RIGHT POSITION', 'Percent Over 100') >= 0.25;
         const currentBrakeFanState = SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'Bool');
         const brakeFanButtonIsPressed = SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN_BTN_PRESSED', 'Bool');
         // if the fan button is pressed down and the left main gear is down and locked, the fan is on
-        const brakeFanIsOn = brakeFanButtonIsPressed && (GearLeftPosition == 1);
+        const brakeFanIsOn = brakeFanButtonIsPressed && (GearLeftPosition === 1);
         let fanMultiplier = 1;
         let fanDifferentialFactor = 1;
         if (brakeFanIsOn) {
