@@ -69,7 +69,7 @@ export class Geometry {
                 const unTravelled = Avionics.Utils.computeGreatCircleDistance(itp, activeLeg.terminatorLocation);
                 const rad = this.getRollAnticipationDistance(gs, activeLeg, toTransition);
                 if ((activeLeg.getDistanceToGo(ppos) - unTravelled) <= rad) {
-                    console.log(`RAD for transition ${rad}`);
+                    // console.log(`RAD for transition ${rad}`);
                     const params = activeLeg.getGuidanceParameters(ppos, trueTrack);
                     const toParams = toTransition.getGuidanceParameters(ppos, trueTrack);
                     params.phiCommand = toParams.phiCommand ?? 0;
@@ -83,7 +83,7 @@ export class Geometry {
             if (nextLeg) {
                 const rad = this.getRollAnticipationDistance(gs, activeLeg, nextLeg);
                 if (activeLeg.getDistanceToGo(ppos) <= rad) {
-                    console.log(`RAD for next leg ${rad}`);
+                    // console.log(`RAD for next leg ${rad}`);
                     const params = activeLeg.getGuidanceParameters(ppos, trueTrack);
                     const toParams = nextLeg.getGuidanceParameters(ppos, trueTrack);
                     params.phiCommand = toParams.phiCommand ?? 0;
