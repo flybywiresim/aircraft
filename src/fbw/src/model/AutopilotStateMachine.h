@@ -46,6 +46,7 @@ class AutopilotStateMachineModelClass {
     real_T eventTimeTC;
     real_T eventTimeMR;
     real_T lastVsTarget;
+    real_T nav_gs_deg;
     real_T eventTime;
     real_T eventTime_j;
     real_T eventTime_g;
@@ -100,6 +101,7 @@ class AutopilotStateMachineModelClass {
     boolean_T sLandModeArmedOrActive;
     boolean_T sRollOutActive;
     boolean_T sGoAroundModeActive;
+    boolean_T nav_gs_deg_not_empty;
     boolean_T eventTime_not_empty;
     boolean_T eventTime_not_empty_k;
     boolean_T eventTime_not_empty_a;
