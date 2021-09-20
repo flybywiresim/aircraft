@@ -9,8 +9,8 @@ const getRequestData: RequestInit = {
     method: 'GET',
 };
 
-export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData> {
-    simbriefApiParams.append('username', simbriefUsername);
+export function getSimbriefData(simbriefUserId: string): Promise<ISimbriefData> {
+    simbriefApiParams.append('userid', simbriefUserId);
     simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
 

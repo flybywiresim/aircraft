@@ -116,6 +116,13 @@ const emptySimbriefData: SimbriefData = {
 
 const navigraph = new NavigraphClient();
 
+type SimbriefUserIdContextType = {
+    simbriefUserId: string | undefined,
+    setSimbriefUserId: (newValue: string) => void
+}
+
+export const SimbriefUserIdContext = React.createContext<SimbriefUserIdContextType>(undefined!);
+
 const Efb = () => {
     const history = useHistory();
 
@@ -138,7 +145,7 @@ const Efb = () => {
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
-    const [simbriefUsername, setSimbriefUsername] = usePersistentProperty('SimbriefUsername');
+    const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
 
     const [timeState, setTimeState] = useState<TimeState>({
         currentTime: new Date(),
@@ -177,11 +184,11 @@ const Efb = () => {
     }, [currentPageIndex]);
 
     const fetchSimbriefData = async () => {
-        if (!simbriefUsername) {
+        if (!simbriefUserId) {
             return;
         }
 
-        const returnedSimbriefData = await getSimbriefData(simbriefUsername);
+        const returnedSimbriefData = await getSimbriefData(simbriefUserId);
         setSimbriefData({
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,
@@ -251,59 +258,61 @@ const Efb = () => {
         <Provider store={store}>
             <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
                 <NavigraphContext.Provider value={navigraph}>
-                    <div className="flex flex-col">
-                        <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
-                        <div className="flex flex-row">
-                            <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
-                            <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
-                                <Switch>
-                                    <Route path="/dashboard">
-                                        <Dashboard
-                                            simbriefData={simbriefData}
-                                            fetchSimbrief={fetchSimbriefData}
-                                        />
-                                    </Route>
-                                    <Route path="/dispatch">
-                                        <Dispatch
-                                            loadsheet={simbriefData.loadsheet}
-                                            weights={simbriefData.weights}
-                                            fuels={simbriefData.fuels}
-                                            units={simbriefData.units}
-                                            arrivingAirport={simbriefData.arrivingAirport}
-                                            arrivingIata={simbriefData.arrivingIata}
-                                            departingAirport={simbriefData.departingAirport}
-                                            departingIata={simbriefData.departingIata}
-                                            altBurn={simbriefData.altBurn}
-                                            altIcao={simbriefData.altIcao}
-                                            altIata={simbriefData.altIata}
-                                            tripTime={simbriefData.tripTime}
-                                            contFuelTime={simbriefData.contFuelTime}
-                                            resFuelTime={simbriefData.resFuelTime}
-                                            taxiOutTime={simbriefData.taxiOutTime}
-                                        />
-                                    </Route>
-                                    <Route path="/ground">
-                                        <Ground />
-                                    </Route>
-                                    <Route path="/performance">
-                                        <Performance />
-                                    </Route>
-                                    <Route path="/navigation">
-                                        <Navigation />
-                                    </Route>
-                                    <Route path="/atc">
-                                        <ATC />
-                                    </Route>
-                                    <Route path="/failures">
-                                        <Failures />
-                                    </Route>
-                                    <Route path="/settings">
-                                        <Settings simbriefUsername={simbriefUsername} setSimbriefUsername={setSimbriefUsername} />
-                                    </Route>
-                                </Switch>
+                    <SimbriefUserIdContext.Provider value={{ simbriefUserId, setSimbriefUserId }}>
+                        <div className="flex flex-col">
+                            <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
+                            <div className="flex flex-row">
+                                <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
+                                <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
+                                    <Switch>
+                                        <Route path="/dashboard">
+                                            <Dashboard
+                                                simbriefData={simbriefData}
+                                                fetchSimbrief={fetchSimbriefData}
+                                            />
+                                        </Route>
+                                        <Route path="/dispatch">
+                                            <Dispatch
+                                                loadsheet={simbriefData.loadsheet}
+                                                weights={simbriefData.weights}
+                                                fuels={simbriefData.fuels}
+                                                units={simbriefData.units}
+                                                arrivingAirport={simbriefData.arrivingAirport}
+                                                arrivingIata={simbriefData.arrivingIata}
+                                                departingAirport={simbriefData.departingAirport}
+                                                departingIata={simbriefData.departingIata}
+                                                altBurn={simbriefData.altBurn}
+                                                altIcao={simbriefData.altIcao}
+                                                altIata={simbriefData.altIata}
+                                                tripTime={simbriefData.tripTime}
+                                                contFuelTime={simbriefData.contFuelTime}
+                                                resFuelTime={simbriefData.resFuelTime}
+                                                taxiOutTime={simbriefData.taxiOutTime}
+                                            />
+                                        </Route>
+                                        <Route path="/ground">
+                                            <Ground />
+                                        </Route>
+                                        <Route path="/performance">
+                                            <Performance />
+                                        </Route>
+                                        <Route path="/navigation">
+                                            <Navigation />
+                                        </Route>
+                                        <Route path="/atc">
+                                            <ATC />
+                                        </Route>
+                                        <Route path="/failures">
+                                            <Failures />
+                                        </Route>
+                                        <Route path="/settings">
+                                            <Settings />
+                                        </Route>
+                                    </Switch>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </SimbriefUserIdContext.Provider>
                 </NavigraphContext.Provider>
             </PerformanceContext.Provider>
         </Provider>
