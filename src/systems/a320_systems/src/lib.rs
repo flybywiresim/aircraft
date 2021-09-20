@@ -1,19 +1,19 @@
 #![allow(clippy::suspicious_operation_groupings)]
 
 mod electrical;
+mod flaps_computer;
 mod fuel;
 mod hydraulic;
 mod pneumatic;
 mod power_consumption;
-mod flaps_computer;
 
 use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
 use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
-use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use flaps_computer::SlatFlapComplex;
+use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use power_consumption::A320PowerConsumption;
 use systems::{
     apu::{
