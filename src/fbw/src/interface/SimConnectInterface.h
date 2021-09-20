@@ -155,6 +155,8 @@ class SimConnectInterface {
     SPOILERS_ARM_OFF,
     SPOILERS_ARM_TOGGLE,
     SPOILERS_ARM_SET,
+    SIM_RATE_INCR,
+    SIM_RATE_DECR,
   };
 
   SimConnectInterface() = default;
@@ -172,7 +174,8 @@ class SimConnectInterface {
                double keyChangeAileron,
                double keyChangeElevator,
                double keyChangeRudder,
-               bool disableXboxCompatibilityRudderPlusMinus);
+               bool disableXboxCompatibilityRudderPlusMinus,
+               double maxSimulationRate);
 
   void disconnect();
 
@@ -201,6 +204,8 @@ class SimConnectInterface {
   bool sendEvent(Events eventId);
 
   bool sendEvent(Events eventId, DWORD data);
+
+  bool sendEvent(Events eventId, DWORD data, DWORD priority);
 
   bool setClientDataLocalVariables(ClientDataLocalVariables output);
 
@@ -243,6 +248,8 @@ class SimConnectInterface {
   HANDLE hSimConnect = 0;
 
   double sampleTime = 0;
+
+  double maxSimulationRate = 0;
 
   SimData simData = {};
   SimInput simInput = {};
