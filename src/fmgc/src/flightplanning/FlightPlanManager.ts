@@ -23,6 +23,7 @@
  * SOFTWARE.
  */
 
+import { NXDataStore } from '@shared/persistence';
 import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
@@ -76,11 +77,11 @@ export class FlightPlanManager {
                 plan.setParentInstrument(_parentInstrument);
                 this._flightPlans = [];
                 this._flightPlans.push(plan);
-                // TODO Reenable this check once we set A32NX_FP_LOAD in options - will always sync with AsoboFP on init
-                // if (NXDataStore.get('FP_LOAD', '0') !== '0') {
-                this.pauseSync();
-                const loaded = await FlightPlanAsoboSync.LoadFromGame(this).catch(console.error);
-                // }
+                let loaded: boolean | void = false;
+                if (NXDataStore.get('FP_LOAD', '1') !== '0') {
+                    this.pauseSync();
+                    loaded = await FlightPlanAsoboSync.LoadFromGame(this).catch(console.error);
+                }
                 this.resumeSync();
 
                 // ctd magic sauce?
@@ -1657,7 +1658,9 @@ export class FlightPlanManager {
         }
         window.localStorage.setItem(FlightPlanManager.FlightPlanKey, fpJson);
         SimVar.SetSimVarValue(FlightPlanManager.FlightPlanVersionKey, 'number', ++this._currentFlightPlanVersion);
-        FlightPlanAsoboSync.SaveToGame(this);
+        if (NXDataStore.get('FP_SAVE', '1') !== '0') {
+            FlightPlanAsoboSync.SaveToGame(this);
+        }
     }
 
     public pauseSync(): void {
