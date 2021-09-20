@@ -255,10 +255,7 @@ impl SlatFlapComplex {
 
     pub fn new() -> Self {
         Self {
-            sfcc: [
-                SlatsFlapsControl::new(),
-                SlatsFlapsControl::new(),
-            ],
+            sfcc: [SlatsFlapsControl::new(), SlatsFlapsControl::new()],
             flaps_handle: FlapsHandle {
                 handle_position: 0.,
             },
