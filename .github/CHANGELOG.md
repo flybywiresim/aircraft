@@ -16,6 +16,7 @@
 1. [AP] improved G/S law - @aguther (Andreas Guther)
 1. [AP] Allow V/S push and pull during ALT CPT - @aguther (Andreas Guther)
 1. [AP] Soft Altitude mode uses now FMGC flight phase to detect cruise situation
+1. [MCDU] Fix GPS ground speed monitor to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
