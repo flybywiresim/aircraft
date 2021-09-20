@@ -389,25 +389,21 @@ class CDUFlightPlanPage {
                                     CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex);
                                     break;
                                 case FMCMainDisplay.clrValue:
-                                    switch (rowI) {
-                                        case 0:
-                                        case 1:
-                                            // 22-72-00:67
-                                            // Stop clearing TO or FROM waypoints when NAV is engaged
-                                            const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
-                                            switch (lateralMode) {
-                                                case 20:
-                                                case 30:
-                                                case 31:
-                                                case 32:
-                                                case 33:
-                                                case 34:
-                                                case 50:
-                                                    mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
-                                                    return;
-                                                default:
-                                            }
-                                        default:
+                                    if (fpIndex <= fpm.getActiveWaypointIndex()) {
+                                        // 22-72-00:67
+                                        // Stop clearing TO or FROM waypoints when NAV is engaged
+                                        const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
+                                        switch (lateralMode) {
+                                            case 20:
+                                            case 30:
+                                            case 31:
+                                            case 32:
+                                            case 33:
+                                            case 34:
+                                            case 50:
+                                                mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
+                                                return;
+                                        }
                                     }
                                     mcdu.removeWaypoint(fpIndex, () => {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
