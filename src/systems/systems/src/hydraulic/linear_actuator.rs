@@ -268,14 +268,16 @@ impl LinearActuator {
     fn compute_control_force(&mut self, current_pressure: Pressure) {
         let position_error = self.opened_valves_target_position - self.position_normalized;
 
-        let mut open_loop_flow_target = 0.;
-        if position_error >= Ratio::new::<ratio>(0.001) {
-            open_loop_flow_target = self.max_flow.get::<gallon_per_second>();
+        let open_loop_flow_target = if position_error >= Ratio::new::<ratio>(0.001) {
+            self.max_flow
         } else if position_error <= Ratio::new::<ratio>(-0.001) {
-            open_loop_flow_target = self.min_flow.get::<gallon_per_second>();
-        }
+            self.min_flow
+        } else {
+            VolumeRate::new::<gallon_per_second>(0.)
+        };
 
-        let flow_error = open_loop_flow_target - self.signed_flow.get::<gallon_per_second>();
+        let flow_error = open_loop_flow_target.get::<gallon_per_second>()
+            - self.signed_flow.get::<gallon_per_second>();
 
         let delta_error = flow_error - self.flow_error_prev.get::<gallon_per_second>();
         self.flow_error_prev = VolumeRate::new::<gallon_per_second>(flow_error);
