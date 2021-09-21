@@ -12,7 +12,6 @@ use std::time::Duration;
 pub struct FixedStepLoop {
     lag_time_accumulator: Duration,
     time_step: Duration,
-    number_of_loops_this_iteration: u32,
     number_of_loops_remaining: u32,
 }
 impl FixedStepLoop {
@@ -20,7 +19,6 @@ impl FixedStepLoop {
         Self {
             lag_time_accumulator: Duration::from_millis(0),
             time_step,
-            number_of_loops_this_iteration: 0,
             number_of_loops_remaining: 0,
         }
     }
@@ -47,19 +45,17 @@ impl FixedStepLoop {
             self.lag_time_accumulator = Duration::from_secs_f64(
                 number_of_steps_floating_point * self.time_step().as_secs_f64(),
             );
-            self.number_of_loops_this_iteration = 0;
+            self.number_of_loops_remaining = 0;
         } else {
             // Int part is the actual number of loops to do
             // rest of floating part goes into accumulator
-            self.number_of_loops_this_iteration = number_of_steps_floating_point.floor() as u32;
+            self.number_of_loops_remaining = number_of_steps_floating_point.floor() as u32;
 
             self.lag_time_accumulator = Duration::from_secs_f64(
-                (number_of_steps_floating_point - (self.number_of_loops_this_iteration as f64))
+                (number_of_steps_floating_point - (self.number_of_loops_remaining as f64))
                     * self.time_step().as_secs_f64(),
             ); // Keep track of time left after all fixed loop are done
         }
-
-        self.number_of_loops_remaining = self.number_of_loops_this_iteration;
     }
 }
 impl IntoIterator for &mut FixedStepLoop {
@@ -91,7 +87,6 @@ pub struct MaxFixedStepLoop {
     max_time_step: Duration,
     num_of_max_step_loop: u32,
     remaining_frame_duration: Option<Duration>,
-    number_of_loops_this_iteration: u32,
 }
 impl MaxFixedStepLoop {
     pub fn new(max_time_step: Duration) -> Self {
@@ -99,26 +94,22 @@ impl MaxFixedStepLoop {
             max_time_step,
             num_of_max_step_loop: 0,
             remaining_frame_duration: None,
-            number_of_loops_this_iteration: 0,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
         let max_fixed_seconds = self.max_time_step.as_secs_f64();
 
-        let number_of_steps_floating_point = context.delta_as_secs_f64() / max_fixed_seconds;
+        let number_of_steps = context.delta_as_secs_f64() / max_fixed_seconds;
 
-        self.num_of_max_step_loop = number_of_steps_floating_point.floor() as u32;
-        self.number_of_loops_this_iteration = self.num_of_max_step_loop;
+        self.num_of_max_step_loop = number_of_steps.floor() as u32;
 
         let remaining_time_step_update = Duration::from_secs_f64(
-            (number_of_steps_floating_point - (self.num_of_max_step_loop as f64))
-                * max_fixed_seconds,
+            (number_of_steps - (self.num_of_max_step_loop as f64)) * max_fixed_seconds,
         );
 
         if remaining_time_step_update > self.max_time_step / 10 {
             self.remaining_frame_duration = Some(remaining_time_step_update);
-            self.number_of_loops_this_iteration += 1;
         } else {
             self.remaining_frame_duration = None;
         }
@@ -275,7 +266,8 @@ mod max_step_tests {
             actual_loop_num += 1;
         }
 
-        assert!(actual_loop_num == max_step.number_of_loops_this_iteration);
+        //0.320 seconds with max of 0.100 we expect 3 max step duration plus 1 final step so 4
+        assert!(actual_loop_num == 4);
         assert!(
             time_simulated <= test_duration + Duration::from_millis(5)
                 && time_simulated >= test_duration - Duration::from_millis(5)
