@@ -584,7 +584,10 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
             println!("Iteration {}", x);
             println!("-------------------------------------------");
             println!("---PSI YELLOW: {}", yellow_loop.pressure().get::<psi>());
-            println!("---RPM YELLOW: {}", epump.speed());
+            println!(
+                "---RPM YELLOW: {}",
+                epump.speed().get::<revolution_per_minute>()
+            );
             println!(
                 "---Priming State: {}/{}",
                 yellow_loop.loop_fluid_volume().get::<gallon>(),
