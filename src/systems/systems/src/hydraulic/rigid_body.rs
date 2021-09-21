@@ -150,9 +150,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         Length::new::<meter>((self.anchor_point - self.control_arm_actual).norm())
     }
 
-    // Initialises the object with correct direction of the rigid body when an actuator would be extending or compressing.
-    // If compressing actuator would give a rising rigid body angle, sets TRUE
-    // If extending actuator would give a lowering rigid body angle, sets FALSE
+    /// Initialises the object with correct direction of the rigid body when an actuator would be extending or compressing.
+    /// If compressing actuator would give a rising rigid body angle, sets TRUE
+    /// If extending actuator would give a lowering rigid body angle, sets FALSE
     fn initialize_actuator_force_direction(&mut self) {
         self.actuator_extension_gives_positive_angle =
             self.max_absolute_length_to_anchor() < self.min_absolute_length_to_anchor();
