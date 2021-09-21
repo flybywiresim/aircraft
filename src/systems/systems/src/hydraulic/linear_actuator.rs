@@ -220,11 +220,11 @@ impl LinearActuator {
             volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
         }
 
-        if self.delta_displacement >= Length::new::<meter>(0.) {
-            self.signed_flow = volume_to_actuator / context.delta_as_time();
+        self.signed_flow = if self.delta_displacement >= Length::new::<meter>(0.) {
+            volume_to_actuator
         } else {
-            self.signed_flow = -volume_to_actuator / context.delta_as_time();
-        }
+            -volume_to_actuator
+        } / context.delta_as_time();
 
         self.volume_to_actuator_accumulator += volume_to_actuator;
         self.volume_to_res_accumulator += volume_to_reservoir;
