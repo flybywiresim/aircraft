@@ -4,6 +4,7 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
+    angular_velocity::revolution_per_minute,
     f64::*,
     length::meter,
     mass::kilogram,
@@ -374,7 +375,8 @@ impl A320Hydraulic {
     // Todo remove when hydraulics gives directly correct values of flow and displacement
     fn yellow_electric_pump_estimated_flow(&self) -> VolumeRate {
         // If EDP started pumping and has some RPM then we consider epump provides a fraction of the loop total flow
-        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
+        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.speed()
+            > AngularVelocity::new::<revolution_per_minute>(1500.)
             && self.engine_driven_pump_2_controller.should_pressurise();
 
         let mut estimated_yellow_epump_flow: VolumeRate;

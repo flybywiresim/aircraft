@@ -732,7 +732,7 @@ pub struct ElectricPump {
     is_active: bool,
     bus_type: ElectricalBusType,
     is_powered: bool,
-    rpm: f64,
+    speed: AngularVelocity,
     pump: Pump,
 }
 impl ElectricPump {
@@ -752,7 +752,7 @@ impl ElectricPump {
             is_active: false,
             bus_type,
             is_powered: false,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -761,8 +761,8 @@ impl ElectricPump {
         }
     }
 
-    pub fn rpm(&self) -> f64 {
-        self.rpm
+    pub fn speed(&self) -> AngularVelocity {
+        self.speed
     }
 
     pub fn update<T: PumpController>(
@@ -774,16 +774,33 @@ impl ElectricPump {
         self.is_active = controller.should_pressurise() && self.is_powered;
 
         // Pump startup/shutdown process
-        if self.is_active && self.rpm < Self::NOMINAL_SPEED {
-            self.rpm += (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64();
-        } else if !self.is_active && self.rpm > 0.0 {
-            self.rpm -= (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64();
+        if self.is_active
+            && self.speed < AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_SPEED)
+        {
+            self.speed += AngularVelocity::new::<revolution_per_minute>(
+                (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64(),
+            );
+        } else if !self.is_active && self.speed > AngularVelocity::new::<revolution_per_minute>(0.0)
+        {
+            self.speed -= AngularVelocity::new::<revolution_per_minute>(
+                (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64(),
+            );
         }
 
         // Limiting min and max speed
-        self.rpm = self.rpm.min(Self::NOMINAL_SPEED).max(0.0);
+        self.speed = self
+            .speed
+            .min(AngularVelocity::new::<revolution_per_minute>(
+                Self::NOMINAL_SPEED,
+            ))
+            .max(AngularVelocity::new::<revolution_per_minute>(0.0));
 
-        self.pump.update(context, line, self.rpm, controller);
+        self.pump.update(
+            context,
+            line,
+            self.speed.get::<revolution_per_minute>(),
+            controller,
+        );
     }
 }
 impl PressureSource for ElectricPump {
@@ -808,7 +825,7 @@ pub struct EngineDrivenPump {
     active_id: String,
 
     is_active: bool,
-    rpm: f64,
+    speed: AngularVelocity,
     pump: Pump,
 }
 impl EngineDrivenPump {
@@ -824,7 +841,7 @@ impl EngineDrivenPump {
         Self {
             active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
             is_active: false,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -840,7 +857,7 @@ impl EngineDrivenPump {
         pump_speed: AngularVelocity,
         controller: &T,
     ) {
-        self.rpm = pump_speed.get::<revolution_per_minute>();
+        self.speed = pump_speed;
         self.pump.update(
             context,
             line,
@@ -850,8 +867,8 @@ impl EngineDrivenPump {
         self.is_active = controller.should_pressurise();
     }
 
-    pub fn rpm(&self) -> f64 {
-        self.rpm
+    pub fn speed(&self) -> AngularVelocity {
+        self.speed
     }
 }
 impl PressureSource for EngineDrivenPump {

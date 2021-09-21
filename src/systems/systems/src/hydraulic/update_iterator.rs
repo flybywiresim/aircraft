@@ -78,7 +78,6 @@ impl IntoIterator for &mut FixedStepLoop {
     }
 }
 
-
 /// This is a structure that will handle a maximum fixed step like update.
 /// When update() is called, it will build an array of frame updates to do. If frame time is smaller than max fixed step,
 /// it will just consist of one update step of that exact duration.
