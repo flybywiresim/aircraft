@@ -1,9 +1,9 @@
 use nalgebra::{Rotation3, Unit, Vector3};
 
 use uom::si::{
-    acceleration::meter_per_second_squared, angle::radian,
-    angular_acceleration::radian_per_second_squared, angular_velocity::radian_per_second, f64::*,
-    force::newton, length::meter, mass::kilogram, ratio::ratio, torque::newton_meter,
+    angle::radian, angular_acceleration::radian_per_second_squared,
+    angular_velocity::radian_per_second, f64::*, force::newton, length::meter, mass::kilogram,
+    ratio::ratio, torque::newton_meter,
 };
 
 use crate::simulation::UpdateContext;
@@ -191,11 +191,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     // Computes local acceleration including world gravity and plane acceleration
     // Note that this does not compute acceleration due to angular velocity of the plane
     fn local_acceleration_and_gravity(&self, context: &UpdateContext) -> Torque {
-        let plane_acceleration_plane_reference = Vector3::new(
-            context.lat_accel().get::<meter_per_second_squared>(),
-            context.vert_accel().get::<meter_per_second_squared>(),
-            context.long_accel().get::<meter_per_second_squared>(),
-        );
+        let plane_acceleration_plane_reference = context.acceleration().to_ms2_vector();
 
         let pitch_rotation =
             Rotation3::from_axis_angle(&Vector3::x_axis(), context.pitch().get::<radian>());
