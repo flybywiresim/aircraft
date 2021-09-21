@@ -90,7 +90,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         let inertia_at_hinge =
             inertia_at_cog + mass.get::<kilogram>() * center_of_gravity_offset.norm_squared();
 
-        let mut new_body = LinearActuatedRigidBodyOnHingeAxis {
+        let mut new_body = Self {
             total_travel,
             min_angle,
             max_angle: min_angle + total_travel,
