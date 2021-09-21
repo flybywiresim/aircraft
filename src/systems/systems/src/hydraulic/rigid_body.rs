@@ -8,25 +8,25 @@ use uom::si::{
 
 use crate::simulation::UpdateContext;
 
-/// BoundedLinearLength is linked to anything moving bounded between a min and maximum position.
+/// BoundedLinearLength is linked to anything moving bounded between a minimum and maximum position.
 /// Those bounds implies that it will have a max and min distance from a fixed
 /// point in space to the position where we apply forces to it,
-/// for exemple a control arm where an actuator is attached
+/// for example a control arm where an actuator is attached.
 pub trait BoundedLinearLength {
     fn min_absolute_length_to_anchor(&self) -> Length;
     fn max_absolute_length_to_anchor(&self) -> Length;
 }
 
-// RigidBodyOnHinge represent any physical object able to rotate on a hinge axis.
-// It can be a gear, elevator, cargo door...... Only one rotation degree of freedom is handled.
-// An linear actuator or multiple linear actuators can apply forces to its control arm
-//
-// Coordinates as follows:
-// on x (left->right looking at the plane from the back)
-// on y (down->up)
-// on z (aft->fwd)
-//
-// All coordinates references are from the hinge axis. So (0,0,0) is the hinge rotation axis center
+/// LinearActuatedRigidBodyOnHingeAxis represent any physical object able to rotate on a hinge axis.
+/// It can be a gear, elevator, cargo door, etc. Only one rotation degree of freedom is handled.
+/// An linear actuator or multiple linear actuators can apply forces to its control arm.
+///
+/// Coordinates are as follows:
+/// on x (left->right looking at the plane from the back)
+/// on y (down->up)
+/// on z (aft->fwd)
+///
+/// All coordinate references are from the hinge axis. So (0,0,0) is the hinge rotation axis center.
 #[derive(PartialEq, Clone, Copy)]
 pub struct LinearActuatedRigidBodyOnHingeAxis {
     total_travel: Angle,
