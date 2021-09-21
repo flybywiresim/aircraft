@@ -32,29 +32,26 @@ impl FixedStepLoop {
         let time_to_catch = context.delta() + self.lag_time_accumulator;
 
         // Number of time steps (with floating part) to do according to required time step
-        let number_of_steps_floating_point =
-            time_to_catch.as_secs_f64() / self.time_step().as_secs_f64();
+        let number_of_steps = time_to_catch.as_secs_f64() / self.time_step().as_secs_f64();
 
-        if number_of_steps_floating_point < 1.0 {
+        if number_of_steps < 1.0 {
             // Can't do a full time step
             // we can decide either do an update with smaller step or wait next iteration
             // for now we only update lag accumulator and chose a hard fixed step: if smaller
             // than chosen time step we do nothing and wait next iteration
 
             // Time lag is float part only of num of steps (because is < 1.0 here) * fixed time step to get a result in time
-            self.lag_time_accumulator = Duration::from_secs_f64(
-                number_of_steps_floating_point * self.time_step().as_secs_f64(),
-            );
+            self.lag_time_accumulator =
+                Duration::from_secs_f64(number_of_steps * self.time_step().as_secs_f64());
             self.number_of_loops_remaining = 0;
         } else {
+            // Keep track of time left after all fixed loop are done
+            self.lag_time_accumulator =
+                Duration::from_secs_f64(number_of_steps.fract() * self.time_step().as_secs_f64());
+
             // Int part is the actual number of loops to do
             // rest of floating part goes into accumulator
-            self.number_of_loops_remaining = number_of_steps_floating_point.floor() as u32;
-
-            self.lag_time_accumulator = Duration::from_secs_f64(
-                (number_of_steps_floating_point - (self.number_of_loops_remaining as f64))
-                    * self.time_step().as_secs_f64(),
-            ); // Keep track of time left after all fixed loop are done
+            self.number_of_loops_remaining = number_of_steps.floor() as u32;
         }
     }
 }
