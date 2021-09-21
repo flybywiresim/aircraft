@@ -7,7 +7,7 @@ interface VerticalSpeedIndicatorProps {
 }
 
 export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpeedIndicatorProps) => {
-    if (!verticalSpeed.isNormal()) {
+    if (!verticalSpeed.isNormalOperation()) {
         return (
             <>
                 <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />

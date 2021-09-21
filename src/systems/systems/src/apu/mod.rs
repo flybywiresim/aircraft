@@ -1987,12 +1987,14 @@ pub mod tests {
         fn ecb_doesnt_write_some_variables_when_off() {
             let mut test_bed = test_bed_with().master_off().run(Duration::from_secs(1));
 
-            assert!(!test_bed.n().is_normal());
-            assert!(!test_bed.egt().is_normal());
-            assert!(!test_bed.egt_caution_temperature().is_normal());
-            assert!(!test_bed.egt_warning_temperature().is_normal());
-            assert!(!test_bed.has_fuel_low_pressure_fault().is_normal());
-            assert!(!test_bed.is_air_intake_flap_fully_open().is_normal());
+            assert!(!test_bed.n().is_normal_operation());
+            assert!(!test_bed.egt().is_normal_operation());
+            assert!(!test_bed.egt_caution_temperature().is_normal_operation());
+            assert!(!test_bed.egt_warning_temperature().is_normal_operation());
+            assert!(!test_bed.has_fuel_low_pressure_fault().is_normal_operation());
+            assert!(!test_bed
+                .is_air_intake_flap_fully_open()
+                .is_normal_operation());
         }
 
         #[test]

@@ -63,7 +63,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     }
 
     refreshTAT(tat) {
-        if (!tat.isNormal()) {
+        if (!tat.isNormalOperation()) {
             this.tatText.textContent = "XX";
             this.toggleWarning(true, this.tatText);
         } else {
@@ -73,7 +73,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     }
 
     refreshSAT(sat) {
-        if (!sat.isNormal()) {
+        if (!sat.isNormalOperation()) {
             this.satText.textContent = "XX";
             this.toggleWarning(true, this.satText);
         } else {
@@ -86,7 +86,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         const isInStdMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD";
         // As ISA relates to SAT, we cannot present ISA when SAT is unavailable. We might want to move this into
         // Rust ADIRS code itself.
-        const isaShouldBeVisible = isInStdMode && isa.isNormal() && sat.isNormal();
+        const isaShouldBeVisible = isInStdMode && isa.isNormalOperation() && sat.isNormalOperation();
         this.isaContainer.setAttribute("visibility", isaShouldBeVisible ? "visible" : "hidden");
 
         this.setValueOnTemperatureElement(Math.round(isa.value), this.isaText);

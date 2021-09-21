@@ -27,15 +27,27 @@ export class Arinc429Word {
         this.value = Arinc429Word.f32View[1];
     }
 
-    isNormal() {
+    isFailureWarning() {
+        return this.ssm === Arinc429Word.SignStatusMatrix.FailureWarning;
+    }
+
+    isNoComputedData() {
+        return this.ssm === Arinc429Word.SignStatusMatrix.NoComputedData;
+    }
+
+    isFunctionalTest() {
+        return this.ssm === Arinc429Word.SignStatusMatrix.FunctionalTest;
+    }
+
+    isNormalOperation() {
         return this.ssm === Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 
     /**
-     * Returns the value when normal, the supplied default value otherwise.
+     * Returns the value when normal operation, the supplied default value otherwise.
      */
     valueOr(defaultValue: number) {
-        return this.isNormal() ? this.value : defaultValue;
+        return this.isNormalOperation() ? this.value : defaultValue;
     }
 }
 

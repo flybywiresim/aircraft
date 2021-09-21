@@ -818,7 +818,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const trueAirSpeed = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TRUE_AIRSPEED`);
         if (!trueAirSpeed.equals(this.lastTrueAirSpeed)) {
             this.lastTrueAirSpeed = trueAirSpeed;
-            if (!trueAirSpeed.isNormal()) {
+            if (!trueAirSpeed.isNormalOperation()) {
                 tasElement.textContent = "";
             } else if (trueAirSpeed.value < 0.00001) {
                 tasElement.textContent = "---";
@@ -835,7 +835,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         if (!windVelocity.equals(this.lastWindVelocity) || !windDirection.equals(this.lastWindDirection)) {
             this.lastWindDirection = windDirection;
             this.lastWindVelocity = windVelocity;
-            if (!windVelocity.isNormal() || !windDirection.isNormal()) {
+            if (!windVelocity.isNormalOperation() || !windDirection.isNormalOperation()) {
                 windDirectionElement.textContent = "";
                 windVelocityElement.textContent = "";
                 windArrowElement.style.display = "none";
@@ -848,7 +848,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
                 windArrowElement.style.display = "block";
             }
 
-            if (!windVelocity.isNormal() || !windDirection.isNormal() || windVelocity.value <= 2) {
+            if (!windVelocity.isNormalOperation() || !windDirection.isNormalOperation() || windVelocity.value <= 2) {
                 windArrowElement.style.display = "none";
             }
         }
@@ -857,7 +857,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const groundSpeed = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
         if (!groundSpeed.equals(this.lastGroundSpeed)) {
             this.lastGroundSpeed = groundSpeed;
-            if (!groundSpeed.isNormal()) {
+            if (!groundSpeed.isNormalOperation()) {
                 gsElement.textContent = "";
             } else {
                 gsElement.textContent = Math.round(groundSpeed.value).toString().padStart(3);

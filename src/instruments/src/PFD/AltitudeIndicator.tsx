@@ -65,7 +65,7 @@ interface AltitudeIndicatorProps {
 }
 
 export const AltitudeIndicator = ({ altitude, FWCFlightPhase }: AltitudeIndicatorProps) => {
-    if (!altitude.isNormal()) {
+    if (!altitude.isNormalOperation()) {
         return (
             <AltTapeBackground />
         );
@@ -93,7 +93,7 @@ interface AltitudeIndicatorOfftapeProps {
 }
 
 export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAlt }: AltitudeIndicatorOfftapeProps) => {
-    if (!altitude.isNormal()) {
+    if (!altitude.isNormalOperation()) {
         return (
             <>
                 <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />

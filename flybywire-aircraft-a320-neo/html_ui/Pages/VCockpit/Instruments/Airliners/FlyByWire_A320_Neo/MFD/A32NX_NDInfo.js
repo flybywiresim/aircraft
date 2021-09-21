@@ -113,7 +113,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.setWaypoint(Simplane.getNextWaypointName(), Math.round(Simplane.getNextWaypointTrack()), Simplane.getNextWaypointDistance(), utcETA, true);
     }
     setWind(_windAngle, _windStrength, _planeAngle, _force = false) {
-        const anyAbnormal = !_windAngle.isNormal() || !_windStrength.isNormal() || !_planeAngle.isNormal();
+        const anyAbnormal = !_windAngle.isNormalOperation() || !_windStrength.isNormalOperation() || !_planeAngle.isNormalOperation();
         const windAngle = anyAbnormal ? 0 : Math.round(_windAngle.value);
         const windStrength = anyAbnormal ? 0 : Math.round(_windStrength.value);
         const planeAngle = anyAbnormal ? 0 : _planeAngle.value;

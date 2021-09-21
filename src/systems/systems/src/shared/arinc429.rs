@@ -13,7 +13,7 @@ impl<T: Copy> Arinc429Word<T> {
 
     /// Returns `Some` value when the SSM indicates normal operation, `None` otherwise.
     pub fn normal_value(&self) -> Option<T> {
-        if self.is_normal() {
+        if self.is_normal_operation() {
             Some(self.value)
         } else {
             None
@@ -24,8 +24,20 @@ impl<T: Copy> Arinc429Word<T> {
         self.ssm
     }
 
-    pub fn is_normal(&self) -> bool {
-        matches!(self.ssm, SignStatus::NormalOperation)
+    pub fn is_failure_warning(&self) -> bool {
+        self.ssm == SignStatus::FailureWarning
+    }
+
+    pub fn is_no_computed_data(&self) -> bool {
+        self.ssm == SignStatus::NoComputedData
+    }
+
+    pub fn is_functional_test(&self) -> bool {
+        self.ssm == SignStatus::FunctionalTest
+    }
+
+    pub fn is_normal_operation(&self) -> bool {
+        self.ssm == SignStatus::NormalOperation
     }
 }
 

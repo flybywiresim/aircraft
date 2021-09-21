@@ -40,7 +40,7 @@ interface HorizonProps {
 }
 
 export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive }: HorizonProps) => {
-    if (!pitch.isNormal() || !roll.isNormal()) {
+    if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return null;
     }
 
@@ -142,7 +142,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White" />
             <SideslipIndicator isOnGround={isOnGround} roll={roll} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
-            {heading.isNormal()
+            {heading.isNormalOperation()
             && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={DisplayRange} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing} heading={heading} />}
             {!isAttExcessive
             && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}

@@ -1863,7 +1863,7 @@ var A320_Neo_UpperECAM;
         isInAttAlign(number) {
             const knobValue = this.getCachedSimVar(`L:A32NX_OVHD_ADIRS_IR_${number}_MODE_SELECTOR_KNOB`, "Enum");
             const pitch = new Arinc429Word(this.getCachedSimVar(`L:A32NX_ADIRS_IR_${number}_PITCH`, "Degrees"));
-            return knobValue === 2 && !pitch.isNormal();
+            return knobValue === 2 && !pitch.isNormalOperation();
         }
     }
     A320_Neo_UpperECAM.Display = Display;

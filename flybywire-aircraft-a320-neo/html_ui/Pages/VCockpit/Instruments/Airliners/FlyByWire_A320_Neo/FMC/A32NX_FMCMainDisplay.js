@@ -3690,7 +3690,7 @@ class FMCMainDisplay extends BaseAirliners {
         const latitude = ADIRS.getLatitude();
         const longitude = ADIRS.getLongitude();
 
-        if (!latitude.isNormal() || !longitude.isNormal()) {
+        if (!latitude.isNormalOperation() || !longitude.isNormalOperation()) {
             this._progBrgDist.distance = -1;
             this._progBrgDist.bearing = -1;
             return;

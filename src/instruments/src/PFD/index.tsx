@@ -55,7 +55,7 @@ export const PFD: React.FC = () => {
     useUpdate((deltaTime) => {
         failuresConsumer.update();
 
-        const clamped = computedAirspeed.isNormal() ? Math.max(computedAirspeed.value, 30) : NaN;
+        const clamped = computedAirspeed.isNormalOperation() ? Math.max(computedAirspeed.value, 30) : NaN;
         const airspeedAcc = (clamped - previousAirspeed) / deltaTime * 1000;
         setPreviousAirspeed(clamped);
         setClampedAirspeed(clamped);
@@ -86,9 +86,9 @@ export const PFD: React.FC = () => {
     const pitch = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_PITCH`);
     const roll = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_ROLL`);
 
-    if (!isAttExcessive && ((pitch.isNormal() && (-pitch.value > 25 || -pitch.value < -13)) || (roll.isNormal() && Math.abs(roll.value) > 45))) {
+    if (!isAttExcessive && ((pitch.isNormalOperation() && (-pitch.value > 25 || -pitch.value < -13)) || (roll.isNormalOperation() && Math.abs(roll.value) > 45))) {
         setIsAttExcessive(true);
-    } else if (isAttExcessive && pitch.isNormal() && -pitch.value < 22 && -pitch.value > -10 && roll.isNormal() && Math.abs(roll.value) < 40) {
+    } else if (isAttExcessive && pitch.isNormalOperation() && -pitch.value < 22 && -pitch.value > -10 && roll.isNormalOperation() && Math.abs(roll.value) < 40) {
         setIsAttExcessive(false);
     }
 
@@ -103,7 +103,7 @@ export const PFD: React.FC = () => {
     // When available, the IR V/S has priority over the ADR barometric V/S.
     const inertialVerticalSpeed = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_VERTICAL_SPEED`);
     const barometricVerticalSpeed = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_BAROMETRIC_VERTICAL_SPEED`);
-    const verticalSpeed = inertialVerticalSpeed.isNormal() ? inertialVerticalSpeed : barometricVerticalSpeed;
+    const verticalSpeed = inertialVerticalSpeed.isNormalOperation() ? inertialVerticalSpeed : barometricVerticalSpeed;
 
     const mda = getSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 

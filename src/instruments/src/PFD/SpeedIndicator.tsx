@@ -138,7 +138,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
         bugs.push([FlapRetractBugElement, FlapRetractSpeed]);
     }
 
-    if (altitude.isNormal() && altitude.value < 15000 && flapsHandleIndex < 4) {
+    if (altitude.isNormalOperation() && altitude.value < 15000 && flapsHandleIndex < 4) {
         const VFENext = getSimVar('L:A32NX_SPEEDS_VFEN', 'number');
         bugs.push([VFENextBugElement, VFENext]);
     }
@@ -256,7 +256,7 @@ export const MachNumber = ({ mach }: MachNumberProps) => {
         }
     }, [showMach, machPermille]);
 
-    if (!mach.isNormal()) {
+    if (!mach.isNormalOperation()) {
         return (
             <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
         );

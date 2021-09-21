@@ -23,8 +23,8 @@ class ADIRS {
 
     static mapNotAvailable(displayIndex) {
         const inertialReferenceSource = ADIRS.getNdInertialReferenceSource(displayIndex);
-        return !Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LATITUDE`).isNormal() ||
-            !Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LONGITUDE`).isNormal();
+        return !Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LATITUDE`).isNormalOperation() ||
+            !Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LONGITUDE`).isNormalOperation();
     }
 
     static getLatitude() {
@@ -43,7 +43,7 @@ class ADIRS {
         const toAdiru = 3;
         for (let adiruNumber = fromAdiru; adiruNumber <= toAdiru; adiruNumber++) {
             const location = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${adiruNumber}_${type}`);
-            if (location.isNormal() || adiruNumber === toAdiru) {
+            if (location.isNormalOperation() || adiruNumber === toAdiru) {
                 return location;
             }
         }

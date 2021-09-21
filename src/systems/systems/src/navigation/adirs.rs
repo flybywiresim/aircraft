@@ -831,7 +831,7 @@ impl InertialReference {
         // The IR does not compute the wind if the TAS is less than 100 knots or unavailable.
         let true_airspeed_above_minimum_threshold = true_airspeed_source
             .true_airspeed()
-            .is_normal()
+            .is_normal_operation()
             && true_airspeed_source.true_airspeed().value()
                 >= Velocity::new::<knot>(Self::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS);
         self.wind_direction.set_value(
@@ -1317,52 +1317,74 @@ mod tests {
         }
 
         fn assert_adr_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.altitude(adiru_number).is_normal(), available);
-            assert_eq!(self.computed_airspeed(adiru_number).is_normal(), available);
-            assert_eq!(self.mach(adiru_number).is_normal(), available);
+            assert_eq!(self.altitude(adiru_number).is_normal_operation(), available);
             assert_eq!(
-                self.barometric_vertical_speed(adiru_number).is_normal(),
+                self.computed_airspeed(adiru_number).is_normal_operation(),
                 available
             );
-            assert_eq!(self.true_airspeed(adiru_number).is_normal(), available);
+            assert_eq!(self.mach(adiru_number).is_normal_operation(), available);
+            assert_eq!(
+                self.barometric_vertical_speed(adiru_number)
+                    .is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.true_airspeed(adiru_number).is_normal_operation(),
+                available
+            );
 
             if adiru_number == 1 || adiru_number == 3 {
                 assert_eq!(
-                    self.static_air_temperature(adiru_number).is_normal(),
+                    self.static_air_temperature(adiru_number)
+                        .is_normal_operation(),
                     available
                 );
                 assert_eq!(
-                    self.total_air_temperature(adiru_number).is_normal(),
+                    self.total_air_temperature(adiru_number)
+                        .is_normal_operation(),
                     available
                 );
                 assert_eq!(
                     self.international_standard_atmosphere_delta(adiru_number)
-                        .is_normal(),
+                        .is_normal_operation(),
                     available
                 );
             }
         }
 
         fn assert_ir_heading_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.heading(adiru_number).is_normal(), available);
+            assert_eq!(self.heading(adiru_number).is_normal_operation(), available);
         }
 
         fn assert_ir_non_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.track(adiru_number).is_normal(), available);
+            assert_eq!(self.track(adiru_number).is_normal_operation(), available);
             assert_eq!(
-                self.inertial_vertical_speed(adiru_number).is_normal(),
+                self.inertial_vertical_speed(adiru_number)
+                    .is_normal_operation(),
                 available
             );
-            assert_eq!(self.ground_speed(adiru_number).is_normal(), available);
-            assert_eq!(self.wind_direction(adiru_number).is_normal(), available);
-            assert_eq!(self.wind_velocity(adiru_number).is_normal(), available);
-            assert_eq!(self.latitude(adiru_number).is_normal(), available);
-            assert_eq!(self.longitude(adiru_number).is_normal(), available);
+            assert_eq!(
+                self.ground_speed(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.wind_direction(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.wind_velocity(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(self.latitude(adiru_number).is_normal_operation(), available);
+            assert_eq!(
+                self.longitude(adiru_number).is_normal_operation(),
+                available
+            );
         }
 
         fn assert_ir_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.pitch(adiru_number).is_normal(), available);
-            assert_eq!(self.roll(adiru_number).is_normal(), available);
+            assert_eq!(self.pitch(adiru_number).is_normal_operation(), available);
+            assert_eq!(self.roll(adiru_number).is_normal_operation(), available);
         }
 
         fn assert_all_ir_data_available(&mut self, available: bool, adiru_number: usize) {

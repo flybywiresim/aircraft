@@ -8,7 +8,7 @@ interface AttitudeIndicatorFixedUpperProps {
 }
 
 export const AttitudeIndicatorFixedUpper = ({ pitch, roll }: AttitudeIndicatorFixedUpperProps) => {
-    if (!pitch.isNormal() || !roll.isNormal()) {
+    if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return null;
     }
 
@@ -47,7 +47,7 @@ interface AttitudeIndicatorFixedCenterProps {
 }
 
 export const AttitudeIndicatorFixedCenter = ({ pitch, roll, isOnGround, FDActive, isAttExcessive }: AttitudeIndicatorFixedCenterProps) => {
-    if (!pitch.isNormal() || !roll.isNormal()) {
+    if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return (
             <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
         );

@@ -191,7 +191,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.flying = false;
             }
 
-            if (!this.apuProvidesBleed && currentApuN.isNormal() && currentApuN.value > 95) {
+            if (!this.apuProvidesBleed && currentApuN.isNormalOperation() && currentApuN.value > 95) {
                 this.apuProvidesBleed = true;
             }
 
@@ -395,8 +395,8 @@ var A320_Neo_LowerECAM_BLEED;
             const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Celsius");
             const eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2.9);
 
-            const apuTMPcomputed = parseInt(currentApuN.isNormal() ? 100 * 2.5 : 0);
-            const apuPSI = parseInt(currentApuN.isNormal() ? 100 * 0.35 : 0);
+            const apuTMPcomputed = parseInt(currentApuN.isNormalOperation() ? 100 * 2.5 : 0);
+            const apuPSI = parseInt(currentApuN.isNormalOperation() ? 100 * 0.35 : 0);
 
             let eng1TMPcomputed;
             let eng2TMPcomputed;

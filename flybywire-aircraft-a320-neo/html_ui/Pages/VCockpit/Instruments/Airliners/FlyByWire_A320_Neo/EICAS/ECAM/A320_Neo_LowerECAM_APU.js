@@ -108,10 +108,10 @@ var A320_Neo_LowerECAM_APU;
             }
 
             const lowFuelPressure = Arinc429Word.fromSimVarValue("L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT");
-            toggleVisibility(this.FuelLoPr, lowFuelPressure.isNormal() && lowFuelPressure.value);
+            toggleVisibility(this.FuelLoPr, lowFuelPressure.isNormalOperation() && lowFuelPressure.value);
 
             const apuFlapFullyOpen = Arinc429Word.fromSimVarValue("L:A32NX_APU_FLAP_FULLY_OPEN");
-            toggleVisibility(this.APUFlapOpen, apuFlapFullyOpen.isNormal() && apuFlapFullyOpen.value);
+            toggleVisibility(this.APUFlapOpen, apuFlapFullyOpen.isNormalOperation() && apuFlapFullyOpen.value);
         }
 
         shouldShowApuData() {
@@ -195,10 +195,10 @@ var A320_Neo_LowerECAM_APU;
 
         update(_deltaTime) {
             this.n = Arinc429Word.fromSimVarValue("L:A32NX_APU_N");
-            this.apuNGauge.active = this.n.isNormal();
+            this.apuNGauge.active = this.n.isNormalOperation();
 
             this.egt = Arinc429Word.fromSimVarValue("L:A32NX_APU_EGT");
-            this.apuEGTGauge.active = this.egt.isNormal();
+            this.apuEGTGauge.active = this.egt.isNormalOperation();
 
             this.warningEgt = Arinc429Word.fromSimVarValue("L:A32NX_APU_EGT_WARNING");
             this.cautionEgt = Arinc429Word.fromSimVarValue("L:A32NX_APU_EGT_CAUTION");
@@ -217,7 +217,7 @@ var A320_Neo_LowerECAM_APU;
         }
 
         shouldShowApuData() {
-            return this.n.isNormal() && this.egt.isNormal();
+            return this.n.isNormalOperation() && this.egt.isNormalOperation();
         }
     }
 

@@ -44,7 +44,7 @@ interface HeadingTapeProps {
 }
 
 export const HeadingTape = ({ heading }: HeadingTapeProps) => {
-    if (!heading.isNormal()) {
+    if (!heading.isNormalOperation()) {
         return null;
     }
 
@@ -67,7 +67,7 @@ interface HeadingOfftapeProps {
 }
 
 export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse, groundTrack }: HeadingOfftapeProps) => {
-    if (!heading.isNormal()) {
+    if (!heading.isNormalOperation()) {
         return (
             <>
                 <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />
@@ -83,7 +83,7 @@ export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse, groundTrac
             <SelectedHeading heading={heading} selectedHeading={selectedHeading} />
             <QFUIndicator heading={heading} ILSCourse={ILSCourse} />
             <path className="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
-            { groundTrack.isNormal() ? <GroundTrackBug groundTrack={groundTrack} heading={heading} /> : null }
+            { groundTrack.isNormalOperation() ? <GroundTrackBug groundTrack={groundTrack} heading={heading} /> : null }
         </g>
     );
 };

@@ -224,7 +224,7 @@ class Jet_NDCompass extends HTMLElement {
             }
 
             // This stuff makes the compass do a smooth spin to the actual heading after alignment finishes
-            const desiredRotationHeading = !heading.isNormal()
+            const desiredRotationHeading = !heading.isNormalOperation()
                 ? 0
                 : compass;
             const delta = ((desiredRotationHeading - this._delayedCompass + 540) % 360) - 180;
@@ -411,7 +411,7 @@ class Jet_NDCompass extends HTMLElement {
         this.setAttribute("heading_bug_rotation", roundedHeading);
 
         const groundSpeed = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
-        if (groundSpeed.isNormal() && groundSpeed.value <= 10) {
+        if (groundSpeed.isNormalOperation() && groundSpeed.value <= 10) {
             track = heading;
         }
         const roundedTracking = fastToFixed(track.valueOr(0), 3);
