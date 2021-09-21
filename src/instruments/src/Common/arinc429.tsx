@@ -1,4 +1,13 @@
+/* eslint-disable max-classes-per-file */
 import { useSimVarValue } from './simVars';
+
+type SignStatusMatrixRange = (typeof Arinc429Word.SignStatusMatrix)[keyof typeof Arinc429Word.SignStatusMatrix];
+
+class Arinc429WordSsmParseError extends Error {
+    constructor(public ssm: number) {
+        super();
+    }
+}
 
 export class Arinc429Word {
     static SignStatusMatrix = Object.freeze({
@@ -6,7 +15,7 @@ export class Arinc429Word {
         NoComputedData: 0b01,
         FunctionalTest: 0b10,
         NormalOperation: 0b11,
-    });
+    } as const);
 
     static f64View = new Float64Array(1);
 
@@ -14,15 +23,21 @@ export class Arinc429Word {
 
     static f32View = new Float32Array(Arinc429Word.f64View.buffer);
 
-    ssm: number;
+    ssm: SignStatusMatrixRange;
 
     value: number;
 
-    constructor(value: number) {
-        Arinc429Word.f64View[0] = value;
+    constructor(word: number) {
+        Arinc429Word.f64View[0] = word;
 
         // eslint-disable-next-line prefer-destructuring
-        this.ssm = Arinc429Word.u32View[0];
+        const ssm = Arinc429Word.u32View[0];
+        if (ssm >= 0b00 && ssm <= 0b11) {
+            this.ssm = ssm as SignStatusMatrixRange;
+        } else {
+            throw new Arinc429WordSsmParseError(ssm);
+        }
+
         // eslint-disable-next-line prefer-destructuring
         this.value = Arinc429Word.f32View[1];
     }
@@ -56,5 +71,13 @@ export const useArinc429Var = (
     maxStaleness = 0,
 ): Arinc429Word => {
     const value = useSimVarValue(name, 'number', maxStaleness);
-    return new Arinc429Word(value);
+    try {
+        return new Arinc429Word(value);
+    } catch (e) {
+        if (e instanceof Arinc429WordSsmParseError) {
+            throw new Error(`SimVar "${name}" has an ARINC 429 SSM value ${e.ssm}, which is outside of the valid range.`);
+        }
+
+        throw e;
+    }
 };
