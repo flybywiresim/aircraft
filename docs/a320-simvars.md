@@ -333,20 +333,20 @@
     - The selected flight path angle in the FCU
 
 - A32NX_APU_EGT_CAUTION
-    - `Arinc429<Celsius>`
+    - `Arinc429Word<Celsius>`
     - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit
 
 - A32NX_APU_EGT_WARNING
-    - `Arinc429<Celsius>`
+    - `Arinc429Word<Celsius>`
     - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit
 
 - A32NX_APU_EGT
-    - `Arinc429<Celsius>`
+    - `Arinc429Word<Celsius>`
     - The APU's exhaust gas temperature,
       when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_N
-    - `Arinc429<Percent>`
+    - `Arinc429Word<Percent>`
     - The APU's rotations per minute in percentage of the maximum RPM
 
 - A32NX_APU_N_RAW
@@ -359,7 +359,7 @@
     - Indicates if the APU bleed air valve is open
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
-    - `Arinc429<Bool>`
+    - `Arinc429Word<Bool>`
 
 - A32NX_APU_IS_AUTO_SHUTDOWN
     - Bool
@@ -378,7 +378,7 @@
     - Indicates the percentage the APU air intake flap is open
 
 - A32NX_APU_FLAP_FULLY_OPEN
-    - `Arinc429<Bool>`
+    - `Arinc429Word<Bool>`
 
 - A32NX_FIRE_BUTTON_APU
     - Bool
@@ -1134,78 +1134,78 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
-    - Arinc429<Feet>
+    - Arinc429Word<Feet>
     - The altitude.
 
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
-    - Arinc429<Knots>
+    - Arinc429Word<Knots>
     - The computed airspeed (CAS).
 
 - A32NX_ADIRS_ADR_{number}_MACH
-    - Arinc429<Mach>
+    - Arinc429Word<Mach>
     - The Mach number (M).
 
 - A32NX_ADIRS_ADR_{number}_BAROMETRIC_VERTICAL_SPEED
-    - Arinc429<Feet per minute>
+    - Arinc429Word<Feet per minute>
     - The vertical speed (V/S) based on barometric altitude data.
 
 - A32NX_ADIRS_ADR_{number}_TRUE_AIRSPEED
-    - Arinc429<Knots>
+    - Arinc429Word<Knots>
     - The true airspeed (TAS).
 
 - A32NX_ADIRS_ADR_{number}_STATIC_AIR_TEMPERATURE
-    - Arinc429<Celsius>
+    - Arinc429Word<Celsius>
     - The static air temperature (SAT).
       {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
-    - Arinc429<Celsius>
+    - Arinc429Word<Celsius>
     - The total air temperature (TAT).
       {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
-    - Arinc429<Celsius>
+    - Arinc429Word<Celsius>
     - The delta (deviation) from international standard atmosphere temperature.
       {number}: 1 or 3
 
 - A32NX_ADIRS_IR_{number}_PITCH
-    - Arinc429<Degrees>
+    - Arinc429Word<Degrees>
     - The pitch angle of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_ROLL
-    - Arinc429<Degrees>
+    - Arinc429Word<Degrees>
     - The roll angle of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_HEADING
-    - Arinc429<Degrees>
+    - Arinc429Word<Degrees>
     - The inertial heading of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_TRACK
-    - Arinc429<Degrees>
+    - Arinc429Word<Degrees>
     - The inertial track of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_VERTICAL_SPEED
-    - Arinc429<Feet per minute>
+    - Arinc429Word<Feet per minute>
     - The vertical speed (V/S) based on inertial reference data.
 
 - A32NX_ADIRS_IR_{number}_GROUND_SPEED
-    - Arinc429<Knots>
+    - Arinc429Word<Knots>
     - The ground speed (GS) of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_WIND_DIRECTION
-    - Arinc429<Degrees>
+    - Arinc429Word<Degrees>
     - The direction of the wind.
 
 - A32NX_ADIRS_IR_{number}_WIND_VELOCITY
-    - Arinc429<Degrees>
+    - Arinc429Word<Degrees>
     - The velocity of the wind.
 
 - A32NX_ADIRS_IR_{number}_LATITUDE
-    - Arinc429<Degrees>
+    - Arinc429Word<Degrees>
     - The latitude of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_LONGITUDE
-    - Arinc429<Degrees>
+    - Arinc429Word<Degrees>
     - The longitude of the aircraft.
 
 - A32NX_ADIRS_USES_GPS_AS_PRIMARY
