@@ -48,8 +48,8 @@ impl FlapsHandle {
         }
     }
 
-    fn new_position(&self) -> Option<(u8, u8)> {
-        if (self.handle_position == self.old_handle_position) {
+    fn signal_new_position(&self) -> Option<(u8, u8)> {
+        if self.handle_position == self.old_handle_position {
             match self.handle_position {
                 1 => Some((1, 1)),
                 _ => None,
@@ -73,18 +73,18 @@ impl SimulationElement for FlapsHandle {
 //This is the basis of what will become
 //the SFCC. For now it just applies the simple
 //flaps logic implemented before.
-struct SlatFlapControl {
+struct SlatFlapControlComputer {
     flaps_angle: Angle,
     slats_angle: Angle,
-    flaps_target_angle: Angle,
-    slats_target_angle: Angle,
+    flaps_demanded_angle: Angle,
+    slats_demanded_angle: Angle,
     flaps_conf: FlapsConf,
     air_speed: f64,
 
     hyd_green_pressure: f64,
 }
 
-impl SlatFlapControl {
+impl SlatFlapControlComputer {
     //Place holder until implementing Davy's hydraulic model
     //Just assuming linear animation.
     const FLAPS_SPEED: f64 = 1.5;
@@ -96,8 +96,8 @@ impl SlatFlapControl {
         Self {
             flaps_angle: Angle::new::<degree>(0.),
             slats_angle: Angle::new::<degree>(0.),
-            flaps_target_angle: Angle::new::<degree>(0.),
-            slats_target_angle: Angle::new::<degree>(0.),
+            flaps_demanded_angle: Angle::new::<degree>(0.),
+            slats_demanded_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
             air_speed: 0.,
 
@@ -114,18 +114,18 @@ impl SlatFlapControl {
     }
 
     fn set_target_flaps_angle(&mut self, angle: Angle) {
-        self.flaps_target_angle = angle;
+        self.flaps_demanded_angle = angle;
     }
 
     fn set_target_slats_angle(&mut self, angle: Angle) {
-        self.slats_target_angle = angle;
+        self.slats_demanded_angle = angle;
     }
 
     fn get_target_flaps_angle_f64(&self) -> f64 {
-        self.flaps_target_angle.get::<degree>()
+        self.flaps_demanded_angle.get::<degree>()
     }
     fn get_target_slats_angle_f64(&self) -> f64 {
-        self.slats_target_angle.get::<degree>()
+        self.slats_demanded_angle.get::<degree>()
     }
 
     fn get_flaps_angle_f64(&self) -> f64 {
@@ -172,52 +172,35 @@ impl SlatFlapControl {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, transition: Option<(u8, u8)>) {
+    fn generate_configuration(&self, handle_transition: Option<(u8,u8)>) -> Option<FlapsConf> {
+        if let Some((from, to)) = handle_transition {
+            match from {
+                0 => match to {
+                        1 => if self.air_speed <= 100. { Some(FlapsConf::Conf1F) } else { Some(FlapsConf::Conf1) },
+                        0 => Some(FlapsConf::from(0)),
+                        _ => Some(FlapsConf::from(to + 1)),
+                },
+                1 => match to {
+                        1 => if self.air_speed > 210. { Some(FlapsConf::Conf1) } else { None },
+                        0 => Some(FlapsConf::from(0)),
+                        _ => Some(FlapsConf::from(to + 1)),
+                    },
+                _ => match to {
+                        1 => if self.air_speed <= 210. { Some(FlapsConf::Conf1F)  } else { Some(FlapsConf::Conf1) },
+                        0 => Some(FlapsConf::from(0)),
+                        _ => Some(FlapsConf::from(to + 1)),
+                    }
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, handle_transition: Option<(u8, u8)>) {
         self.air_speed = context.indicated_airspeed().get::<knot>();
 
-        if self.is_system_pressurized() {
-            //Handle the transitions between configurations
-            if let Some((from, to)) = transition {
-                match from {
-                    0 => {
-                        if to == 1 {
-                            if self.air_speed <= 100. {
-                                self.flaps_conf = FlapsConf::Conf1F;
-                            } else {
-                                self.flaps_conf = FlapsConf::Conf1;
-                            }
-                        } else if to == 0 {
-                            self.flaps_conf = FlapsConf::from(0);
-                        } else {
-                            self.flaps_conf = FlapsConf::from(to + 1);
-                        }
-                    }
-                    1 => {
-                        if to == 1 {
-                            if self.air_speed > 210. {
-                                self.flaps_conf = FlapsConf::Conf1;
-                            }
-                        } else if to == 0 {
-                            self.flaps_conf = FlapsConf::from(to);
-                        } else {
-                            self.flaps_conf = FlapsConf::from(to + 1);
-                        }
-                    }
-                    _ => {
-                        if to == 1 {
-                            if self.air_speed <= 210. {
-                                self.flaps_conf = FlapsConf::Conf1F;
-                            } else {
-                                self.flaps_conf = FlapsConf::Conf1;
-                            }
-                        } else if to == 0 {
-                            self.flaps_conf = FlapsConf::from(to);
-                        } else {
-                            self.flaps_conf = FlapsConf::from(to + 1);
-                        }
-                    }
-                }
-            }
+        if let Some(new_config) = self.generate_configuration(handle_transition) {
+            self.flaps_conf = new_config;
         }
 
         //If the system is not pressurized, remain in the same configuration.
@@ -229,46 +212,88 @@ impl SlatFlapControl {
         //The handle position signals the computer a desired
         // flaps angle.
         let flaps_actual_minus_target: f64 =
-            self.flaps_target_angle.get::<degree>() - self.flaps_angle.get::<degree>();
+            self.flaps_demanded_angle.get::<degree>() - self.flaps_angle.get::<degree>();
         let slats_actual_minus_target: f64 =
-            self.slats_target_angle.get::<degree>() - self.slats_angle.get::<degree>();
+            self.slats_demanded_angle.get::<degree>() - self.slats_angle.get::<degree>();
 
-        //Placeholder animation
-        if flaps_actual_minus_target.abs() > Self::ANGLE_DELTA {
-            self.flaps_angle += Angle::new::<degree>(
-                flaps_actual_minus_target.signum()
-                    * context.delta_as_secs_f64()
-                    * Self::FLAPS_SPEED,
-            );
-            if self.flaps_angle < Angle::new::<degree>(0.) {
-                self.flaps_angle = Angle::new::<degree>(0.);
+        //Placeholder animation.
+        //Only runs when green is pressurized - just a placeholder
+        if self.is_system_pressurized() {
+            if flaps_actual_minus_target.abs() > Self::ANGLE_DELTA {
+                self.flaps_angle += Angle::new::<degree>(
+                    flaps_actual_minus_target.signum()
+                        * context.delta_as_secs_f64()
+                        * Self::FLAPS_SPEED,
+                );
+                if self.flaps_angle < Angle::new::<degree>(0.) {
+                    self.flaps_angle = Angle::new::<degree>(0.);
+                }
+            } else {
+                self.flaps_angle = self.flaps_demanded_angle;
             }
-        } else {
-            self.flaps_angle = self.flaps_target_angle;
-        }
-        if slats_actual_minus_target.abs() > Self::ANGLE_DELTA {
-            self.slats_angle += Angle::new::<degree>(
-                slats_actual_minus_target.signum()
-                    * context.delta_as_secs_f64()
-                    * Self::SLATS_SPEED,
-            );
-            if self.slats_angle < Angle::new::<degree>(0.) {
-                self.slats_angle = Angle::new::<degree>(0.);
+
+            if slats_actual_minus_target.abs() > Self::ANGLE_DELTA {
+                self.slats_angle += Angle::new::<degree>(
+                    slats_actual_minus_target.signum()
+                        * context.delta_as_secs_f64()
+                        * Self::SLATS_SPEED,
+                );
+                if self.slats_angle < Angle::new::<degree>(0.) {
+                    self.slats_angle = Angle::new::<degree>(0.);
+                }
+            } else {
+                self.slats_angle = self.slats_demanded_angle;
             }
-        } else {
-            self.slats_angle = self.slats_target_angle;
         }
     }
 }
 
-impl SimulationElement for SlatFlapControl {
+impl SimulationElement for SlatFlapControlComputer {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.hyd_green_pressure = reader.read("HYD_GREEN_PRESSURE");
     }
 }
 
+//A placeholder to animate the flaps and slats
+//until implementing Davy's hydraulics
+struct SlatFlapGear {
+    flaps_angle: Angle,
+    slats_angle: Angle,
+}
+
+impl SlatFlapGear {
+    const FLAPS_SPEED: f64 = 1.5;
+    const SLATS_SPEED: f64 = 2.;
+
+    const ANGLE_DELTA: f64 = 0.1;
+
+    fn new() -> Self {
+        Self {
+            flaps_angle: Angle::new::<degree>(0.),
+            slats_angle: Angle::new::<degree>(0.),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, sfcc_flaps_signal: Option<Angle>, sfcc_slats_signal: Option<Angle>) {
+        if let Some(flaps_demanded_angle) = sfcc_flaps_signal {
+            let flaps_actual_minus_target: Angle = flaps_demanded_angle - self.flaps_angle;
+            
+            if flaps_actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA {
+                self.flaps_angle += flaps_actual_minus_target.signum()
+                        * Self::FLAPS_SPEED
+                        * context.delta_as_secs_f64();
+                if self.flaps_angle < Angle::new::<degree>(0.) {
+                    self.flaps_angle = Angle::new::<degree>(0.);
+                }
+            } else {
+                self.flaps_angle = flaps_demanded_angle;
+            }
+        }
+    }
+}
+
 pub struct SlatFlapComplex {
-    sfcc: [SlatFlapControl; 2],
+    sfcc: [SlatFlapControlComputer; 2],
     flaps_handle: FlapsHandle,
 
     flaps_conf_handle_index_helper: f64,
@@ -283,7 +308,7 @@ impl SlatFlapComplex {
 
     pub fn new() -> Self {
         Self {
-            sfcc: [SlatFlapControl::new(), SlatFlapControl::new()],
+            sfcc: [SlatFlapControlComputer::new(), SlatFlapControlComputer::new()],
             flaps_handle: FlapsHandle::new(),
             flaps_conf_handle_index_helper: 0.,
         }
@@ -291,7 +316,7 @@ impl SlatFlapComplex {
 
     pub fn update(&mut self, context: &UpdateContext) {
         for n in 0..2 {
-            self.sfcc[n].update(context, self.flaps_handle.new_position());
+            self.sfcc[n].update(context, self.flaps_handle.signal_new_position());
         }
         self.flaps_handle.equilibrate_old_and_current();
 
@@ -455,16 +480,24 @@ mod tests {
             self
         }
 
-        fn get_flaps_target_angle(&self) -> f64 {
+        fn get_flaps_demanded_angle(&self) -> f64 {
             self.query(|a| a.slat_flap_complex.sfcc[0].get_target_flaps_angle_f64())
         }
 
-        fn get_slats_target_angle(&self) -> f64 {
+        fn get_slats_demanded_angle(&self) -> f64 {
             self.query(|a| a.slat_flap_complex.sfcc[0].get_target_slats_angle_f64())
         }
 
         fn get_flaps_conf(&self) -> FlapsConf {
             self.query(|a| a.slat_flap_complex.sfcc[0].flaps_conf)
+        }
+
+        fn get_flaps_angle(&self) -> f64 {
+            self.query(|a| a.slat_flap_complex.sfcc[0].get_flaps_angle_f64())
+        }
+
+        fn get_slats_angle(&self) -> f64 {
+            self.query(|a| a.slat_flap_complex.sfcc[0].get_slats_angle_f64())
         }
     }
     impl TestBed for A320FlapsTestBed {
@@ -499,8 +532,8 @@ mod tests {
             .run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 0);
-        assert!(test_bed.get_flaps_target_angle() == 0.);
-        assert!(test_bed.get_slats_target_angle() == 0.);
+        assert!(test_bed.get_flaps_demanded_angle() == 0.);
+        assert!(test_bed.get_slats_demanded_angle() == 0.);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
 
         test_bed = test_bed
@@ -508,8 +541,8 @@ mod tests {
             .run_waiting_for(Duration::from_millis(500));
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 1);
-        assert!((test_bed.get_flaps_target_angle() - 10.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 18.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 10.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 18.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1F);
 
         test_bed = test_bed
@@ -517,8 +550,8 @@ mod tests {
             .run_waiting_for(Duration::from_millis(500));
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 2);
-        assert!((test_bed.get_flaps_target_angle() - 15.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 22.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 15.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf2);
 
         test_bed = test_bed
@@ -526,8 +559,8 @@ mod tests {
             .run_waiting_for(Duration::from_millis(500));
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 3);
-        assert!((test_bed.get_flaps_target_angle() - 20.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 22.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 20.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf3);
 
         test_bed = test_bed
@@ -535,8 +568,8 @@ mod tests {
             .run_waiting_for(Duration::from_millis(500));
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 4);
-        assert!((test_bed.get_flaps_target_angle() - 40.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 27.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 40.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 27.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
     }
 
@@ -552,8 +585,8 @@ mod tests {
             .run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 0);
-        assert!(test_bed.get_flaps_target_angle() == 0.);
-        assert!(test_bed.get_slats_target_angle() == 0.);
+        assert!(test_bed.get_flaps_demanded_angle() == 0.);
+        assert!(test_bed.get_slats_demanded_angle() == 0.);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
 
         test_bed = test_bed
@@ -561,17 +594,17 @@ mod tests {
             .run_waiting_for(Duration::from_millis(500));
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 1);
-        assert!(test_bed.get_flaps_target_angle() == 0.);
-        assert!((test_bed.get_slats_target_angle() - 18.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1);
+        assert!(test_bed.get_flaps_demanded_angle() == 0.);
+        assert!((test_bed.get_slats_demanded_angle() - 18.).abs() < angle_delta);
 
         test_bed = test_bed
             .set_flaps_handle_position(2)
             .run_waiting_for(Duration::from_millis(500));
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 2);
-        assert!((test_bed.get_flaps_target_angle() - 15.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 22.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 15.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf2);
 
         test_bed = test_bed
@@ -579,8 +612,8 @@ mod tests {
             .run_waiting_for(Duration::from_millis(500));
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 3);
-        assert!((test_bed.get_flaps_target_angle() - 20.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 22.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 20.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf3);
 
         test_bed = test_bed
@@ -588,8 +621,8 @@ mod tests {
             .run_waiting_for(Duration::from_millis(500));
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 4);
-        assert!((test_bed.get_flaps_target_angle() - 40.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 27.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 40.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 27.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
     }
 
@@ -653,36 +686,36 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 4);
-        assert!((test_bed.get_flaps_target_angle() - 40.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 27.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 40.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 27.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 3);
-        assert!((test_bed.get_flaps_target_angle() - 20.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 22.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 20.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 2);
-        assert!((test_bed.get_flaps_target_angle() - 15.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 22.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 15.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 1);
-        assert!((test_bed.get_flaps_target_angle() - 10.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 18.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 10.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 18.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 0);
-        assert!((test_bed.get_flaps_target_angle() - 0.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 0.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 0.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 0.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
     }
 
@@ -700,36 +733,36 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 4);
-        assert!((test_bed.get_flaps_target_angle() - 40.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 27.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 40.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 27.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 3);
-        assert!((test_bed.get_flaps_target_angle() - 20.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 22.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 20.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 2);
-        assert!((test_bed.get_flaps_target_angle() - 15.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 22.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 15.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 1);
-        assert!((test_bed.get_flaps_target_angle() - 0.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 18.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 0.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 18.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
         assert!(test_bed.read_flaps_handle_position() as u8 == 0);
-        assert!((test_bed.get_flaps_target_angle() - 0.).abs() < angle_delta);
-        assert!((test_bed.get_slats_target_angle() - 0.).abs() < angle_delta);
+        assert!((test_bed.get_flaps_demanded_angle() - 0.).abs() < angle_delta);
+        assert!((test_bed.get_slats_demanded_angle() - 0.).abs() < angle_delta);
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
     }
 
@@ -1002,5 +1035,238 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
+    }
+
+    #[test]
+    fn flaps_test_movement_0_to_1f() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(0.)
+            .set_flaps_handle_position(0)
+            .run_one_tick();
+        
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
+
+        test_bed = test_bed.set_flaps_handle_position(1);
+
+        let mut previous_angle: f64 = test_bed.get_flaps_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_flaps_angle());
+            }
+            previous_angle = test_bed.get_flaps_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+    }
+
+    #[test]
+    fn flaps_test_movement_1f_to_2() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(0.)
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_flaps_handle_position(2);
+
+        let mut previous_angle: f64 = test_bed.get_flaps_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_flaps_angle());
+            }
+            previous_angle = test_bed.get_flaps_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+    }
+
+    #[test]
+    fn flaps_test_movement_2_to_3() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(0.)
+            .set_flaps_handle_position(2)
+            .run_one_tick();
+        
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf2);
+
+        test_bed = test_bed.set_flaps_handle_position(3);
+
+        let mut previous_angle: f64 = test_bed.get_flaps_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_flaps_angle());
+            }
+            previous_angle = test_bed.get_flaps_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+    }
+
+    #[test]
+    fn flaps_test_movement_3_to_full() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(0.)
+            .set_flaps_handle_position(3)
+            .run_one_tick();
+        
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf3);
+
+        test_bed = test_bed.set_flaps_handle_position(4);
+
+        let mut previous_angle: f64 = test_bed.get_flaps_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_flaps_angle());
+            }
+            previous_angle = test_bed.get_flaps_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+    }
+
+
+    #[test]
+    fn slats_test_movement_0_to_1f() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(0.)
+            .set_flaps_handle_position(0)
+            .run_one_tick();
+        
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
+
+        test_bed = test_bed.set_flaps_handle_position(1);
+
+        let mut previous_angle: f64 = test_bed.get_slats_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_slats_angle());
+            }
+            previous_angle = test_bed.get_slats_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+    }
+
+    #[test]
+    fn slats_test_movement_1f_to_2() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(0.)
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_flaps_handle_position(2);
+
+        let mut previous_angle: f64 = test_bed.get_slats_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_slats_angle());
+            }
+            previous_angle = test_bed.get_slats_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+    }
+
+    #[test]
+    fn slats_test_movement_2_to_3() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(0.)
+            .set_flaps_handle_position(2)
+            .run_one_tick();
+        
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf2);
+
+        test_bed = test_bed.set_flaps_handle_position(3);
+
+        let mut previous_angle: f64 = test_bed.get_slats_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_slats_angle());
+            }
+            previous_angle = test_bed.get_slats_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+    }
+
+    #[test]
+    fn slats_test_movement_3_to_full() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(0.)
+            .set_flaps_handle_position(3)
+            .run_one_tick();
+        
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf3);
+
+        test_bed = test_bed.set_flaps_handle_position(4);
+
+        let mut previous_angle: f64 = test_bed.get_slats_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_slats_angle());
+            }
+            previous_angle = test_bed.get_slats_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
     }
 }
