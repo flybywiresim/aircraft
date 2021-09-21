@@ -74,8 +74,6 @@ impl SimulationElement for FlapsHandle {
 //the SFCC. For now it just applies the simple
 //flaps logic implemented before.
 struct SlatFlapControlComputer {
-    flaps_angle: Angle,
-    slats_angle: Angle,
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
     flaps_conf: FlapsConf,
@@ -85,17 +83,10 @@ struct SlatFlapControlComputer {
 }
 
 impl SlatFlapControlComputer {
-    //Place holder until implementing Davy's hydraulic model
-    //Just assuming linear animation.
-    const FLAPS_SPEED: f64 = 1.5;
-    const SLATS_SPEED: f64 = 2.;
-
-    const ANGLE_DELTA: f64 = 0.1;
+    const EQUAL_ANGLE_DELTA: f64 = 0.01;
 
     fn new() -> Self {
         Self {
-            flaps_angle: Angle::new::<degree>(0.),
-            slats_angle: Angle::new::<degree>(0.),
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
@@ -103,14 +94,6 @@ impl SlatFlapControlComputer {
 
             hyd_green_pressure: 0.,
         }
-    }
-
-    fn set_flaps_angle_from_f64(&mut self, angle: f64) {
-        self.flaps_angle = Angle::new::<degree>(angle);
-    }
-
-    fn set_slats_angle_from_f64(&mut self, angle: f64) {
-        self.slats_angle = Angle::new::<degree>(angle);
     }
 
     fn set_target_flaps_angle(&mut self, angle: Angle) {
@@ -126,14 +109,6 @@ impl SlatFlapControlComputer {
     }
     fn get_target_slats_angle_f64(&self) -> f64 {
         self.slats_demanded_angle.get::<degree>()
-    }
-
-    fn get_flaps_angle_f64(&self) -> f64 {
-        self.flaps_angle.get::<degree>()
-    }
-
-    fn get_slats_angle_f64(&self) -> f64 {
-        self.slats_angle.get::<degree>()
     }
 
     fn get_flaps_conf(&self) -> u8 {
@@ -208,121 +183,149 @@ impl SlatFlapControlComputer {
         //Update target angle based on handle position
         self.set_target_flaps_angle(Self::target_flaps_angle_from_state(self.flaps_conf));
         self.set_target_slats_angle(Self::target_slats_angle_from_state(self.flaps_conf));
+    }
 
-        //The handle position signals the computer a desired
-        // flaps angle.
-        let flaps_actual_minus_target: f64 =
-            self.flaps_demanded_angle.get::<degree>() - self.flaps_angle.get::<degree>();
-        let slats_actual_minus_target: f64 =
-            self.slats_demanded_angle.get::<degree>() - self.slats_angle.get::<degree>();
+    fn signal_flap_movement(&self, position_feedback: Angle) -> Option<Angle> {
+        if (self.flaps_demanded_angle - position_feedback).get::<degree>().abs() 
+                    > Self::EQUAL_ANGLE_DELTA {
+            Some(self.flaps_demanded_angle)
+        } else {
+            None
+        }
+    }
 
-        //Placeholder animation.
-        //Only runs when green is pressurized - just a placeholder
-        if self.is_system_pressurized() {
-            if flaps_actual_minus_target.abs() > Self::ANGLE_DELTA {
-                self.flaps_angle += Angle::new::<degree>(
-                    flaps_actual_minus_target.signum()
-                        * context.delta_as_secs_f64()
-                        * Self::FLAPS_SPEED,
-                );
-                if self.flaps_angle < Angle::new::<degree>(0.) {
-                    self.flaps_angle = Angle::new::<degree>(0.);
-                }
-            } else {
-                self.flaps_angle = self.flaps_demanded_angle;
-            }
-
-            if slats_actual_minus_target.abs() > Self::ANGLE_DELTA {
-                self.slats_angle += Angle::new::<degree>(
-                    slats_actual_minus_target.signum()
-                        * context.delta_as_secs_f64()
-                        * Self::SLATS_SPEED,
-                );
-                if self.slats_angle < Angle::new::<degree>(0.) {
-                    self.slats_angle = Angle::new::<degree>(0.);
-                }
-            } else {
-                self.slats_angle = self.slats_demanded_angle;
-            }
+    fn signal_slat_movement(&self, position_feedback: Angle) -> Option<Angle> {
+        if (self.slats_demanded_angle - position_feedback).get::<degree>().abs() 
+                    > Self::EQUAL_ANGLE_DELTA {
+            Some(self.slats_demanded_angle)
+        } else {
+            None
         }
     }
 }
 
 impl SimulationElement for SlatFlapControlComputer {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.hyd_green_pressure = reader.read("HYD_GREEN_PRESSURE");
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            "LEFT_FLAPS_TARGET_ANGLE",
+            self.flaps_demanded_angle.get::<degree>(),
+        );
+        writer.write(
+            "RIGHT_FLAPS_TARGET_ANGLE",
+            self.flaps_demanded_angle.get::<degree>(),
+        );
+
+        writer.write(
+            "LEFT_SLATS_TARGET_ANGLE",
+            self.slats_demanded_angle.get::<degree>(),
+        );
+        writer.write(
+            "RIGHT_SLATS_TARGET_ANGLE",
+            self.slats_demanded_angle.get::<degree>(),
+        );
+
+        writer.write(
+            "FLAPS_CONF_HANDLE_INDEX_HELPER",
+            self.flaps_conf as u8 as f64,
+        );
     }
 }
 
 //A placeholder to animate the flaps and slats
 //until implementing Davy's hydraulics
 struct SlatFlapGear {
-    flaps_angle: Angle,
-    slats_angle: Angle,
+    current_angle: Angle,
+    speed: f64,
+    max_angle: Angle,
+    left_position_percent_id: String,
+    right_position_percent_id: String,
+    left_position_angle_id: String,
+    right_position_angle_id: String,
+
+    hyd_green_pressure: f64,
 }
 
 impl SlatFlapGear {
-    const FLAPS_SPEED: f64 = 1.5;
-    const SLATS_SPEED: f64 = 2.;
-
     const ANGLE_DELTA: f64 = 0.1;
 
-    fn new() -> Self {
+    fn new(speed: f64, max_angle: Angle, surface_type: &str) -> Self {
         Self {
-            flaps_angle: Angle::new::<degree>(0.),
-            slats_angle: Angle::new::<degree>(0.),
+            current_angle: Angle::new::<degree>(0.),
+            speed,
+            max_angle,
+            left_position_percent_id: format!("LEFT_{}_POSITION_PERCENT", surface_type),
+            right_position_percent_id: format!("RIGHT_{}_POSITION_PERCENT", surface_type),
+            left_position_angle_id: format!("LEFT_{}_ANGLE", surface_type),
+            right_position_angle_id: format!("RIGHT_{}_ANGLE", surface_type),
+
+            hyd_green_pressure: 0.
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, sfcc_flaps_signal: Option<Angle>, sfcc_slats_signal: Option<Angle>) {
-        if let Some(flaps_demanded_angle) = sfcc_flaps_signal {
-            let flaps_actual_minus_target: Angle = flaps_demanded_angle - self.flaps_angle;
-            
-            if flaps_actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA {
-                self.flaps_angle += flaps_actual_minus_target.signum()
-                        * Self::FLAPS_SPEED
-                        * context.delta_as_secs_f64();
-                if self.flaps_angle < Angle::new::<degree>(0.) {
-                    self.flaps_angle = Angle::new::<degree>(0.);
+    pub fn current_angle_f64(&self) -> f64 {
+        self.current_angle.get::<degree>()
+    }
+
+    fn update(&mut self, context: &UpdateContext, sfcc_demand: Option<Angle>) {
+        if self.hyd_green_pressure > 2000. {
+            if let Some(demanded_angle) = sfcc_demand {
+                let actual_minus_target: Angle = demanded_angle - self.current_angle;
+                if actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA {
+                    self.current_angle += Angle::new::<degree>(
+                            actual_minus_target.get::<degree>().signum()
+                            * self.speed
+                            * context.delta_as_secs_f64());
+                    if self.current_angle < Angle::new::<degree>(0.) {
+                        self.current_angle = Angle::new::<degree>(0.);
+                    }
+                } else {
+                    self.current_angle = demanded_angle;
                 }
-            } else {
-                self.flaps_angle = flaps_demanded_angle;
             }
         }
     }
 }
 
+impl SimulationElement for SlatFlapGear {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.left_position_percent_id, self.current_angle / self.max_angle);
+        writer.write(&self.right_position_percent_id, self.current_angle / self.max_angle);
+        writer.write(&self.left_position_angle_id, self.current_angle);
+        writer.write(&self.right_position_angle_id, self.current_angle);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.hyd_green_pressure = reader.read("HYD_GREEN_PRESSURE");
+    }
+}
+
+
 pub struct SlatFlapComplex {
-    sfcc: [SlatFlapControlComputer; 2],
+    sfcc: SlatFlapControlComputer,
     flaps_handle: FlapsHandle,
+    flap_gear: SlatFlapGear,
+    slat_gear: SlatFlapGear,
 
     flaps_conf_handle_index_helper: f64,
 }
 
 impl SlatFlapComplex {
-    const FLAPS_DEGREE_TO_PERCENT: f64 = 1. / 40.;
-    const FLAPS_PERCENT_TO_DEGREE: f64 = 40.;
-
-    const SLATS_DEGREE_TO_PERCENT: f64 = 1. / 27.;
-    const SLATS_PERCENT_TO_DEGREE: f64 = 27.;
-
     pub fn new() -> Self {
         Self {
-            sfcc: [SlatFlapControlComputer::new(), SlatFlapControlComputer::new()],
+            sfcc: SlatFlapControlComputer::new(),
             flaps_handle: FlapsHandle::new(),
+            flap_gear: SlatFlapGear::new(2.,Angle::new::<degree>(40.),"FLAPS"),
+            slat_gear: SlatFlapGear::new(1.5,Angle::new::<degree>(27.),"SLATS"),
             flaps_conf_handle_index_helper: 0.,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        for n in 0..2 {
-            self.sfcc[n].update(context, self.flaps_handle.signal_new_position());
-        }
+        self.sfcc.update(context, self.flaps_handle.signal_new_position());
         self.flaps_handle.equilibrate_old_and_current();
-
-        if self.sfcc[0].get_flaps_conf() == self.sfcc[1].get_flaps_conf() {
-            self.flaps_conf_handle_index_helper = self.sfcc[0].get_flaps_conf_f64();
-        }
+        self.flap_gear.update(context, self.sfcc.signal_flap_movement(self.flap_gear.current_angle));
+        self.slat_gear.update(context, self.sfcc.signal_slat_movement(self.slat_gear.current_angle));
     }
 }
 
@@ -332,77 +335,10 @@ impl SimulationElement for SlatFlapComplex {
         Self: Sized,
     {
         self.flaps_handle.accept(visitor);
-        for n in 0..2 {
-            self.sfcc[n].accept(visitor);
-        }
-
+        self.sfcc.accept(visitor);
+        self.flap_gear.accept(visitor);
+        self.slat_gear.accept(visitor);
         visitor.visit(self);
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            "LEFT_FLAPS_POSITION_PERCENT",
-            self.sfcc[0].get_flaps_angle_f64() * Self::FLAPS_DEGREE_TO_PERCENT * 100.,
-        );
-        writer.write(
-            "RIGHT_FLAPS_POSITION_PERCENT",
-            self.sfcc[1].get_flaps_angle_f64() * Self::FLAPS_DEGREE_TO_PERCENT * 100.,
-        );
-        writer.write(
-            "LEFT_FLAPS_TARGET_ANGLE",
-            self.sfcc[0].get_target_flaps_angle_f64(),
-        );
-        writer.write(
-            "RIGHT_FLAPS_TARGET_ANGLE",
-            self.sfcc[0].get_target_flaps_angle_f64(),
-        );
-        writer.write("LEFT_FLAPS_ANGLE", self.sfcc[0].get_flaps_angle_f64());
-        writer.write("RIGHT_FLAPS_ANGLE", self.sfcc[1].get_flaps_angle_f64());
-
-        writer.write(
-            "LEFT_SLATS_POSITION_PERCENT",
-            self.sfcc[0].get_slats_angle_f64() * Self::SLATS_DEGREE_TO_PERCENT * 100.,
-        );
-        writer.write(
-            "RIGHT_SLATS_POSITION_PERCENT",
-            self.sfcc[1].get_slats_angle_f64() * Self::SLATS_DEGREE_TO_PERCENT * 100.,
-        );
-        writer.write(
-            "LEFT_SLATS_TARGET_ANGLE",
-            self.sfcc[0].get_target_slats_angle_f64(),
-        );
-        writer.write(
-            "RIGHT_SLATS_TARGET_ANGLE",
-            self.sfcc[0].get_target_slats_angle_f64(),
-        );
-        writer.write("LEFT_SLATS_ANGLE", self.sfcc[0].get_slats_angle_f64());
-        writer.write("RIGHT_SLATS_ANGLE", self.sfcc[1].get_slats_angle_f64());
-
-        writer.write(
-            "FLAPS_CONF_HANDLE_INDEX_HELPER",
-            self.flaps_conf_handle_index_helper,
-        );
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        let left_flaps_angle_percent: f64 = reader.read("LEFT_FLAPS_POSITION_PERCENT");
-        let right_flaps_angle_percent: f64 = reader.read("RIGHT_FLAPS_POSITION_PERCENT");
-        let left_slats_angle_percent: f64 = reader.read("LEFT_SLATS_POSITION_PERCENT");
-        let right_slats_angle_percent: f64 = reader.read("RIGHT_SLATS_POSITION_PERCENT");
-
-        self.sfcc[0].set_flaps_angle_from_f64(
-            Self::FLAPS_PERCENT_TO_DEGREE * left_flaps_angle_percent / 100.,
-        );
-        self.sfcc[1].set_flaps_angle_from_f64(
-            Self::FLAPS_PERCENT_TO_DEGREE * right_flaps_angle_percent / 100.,
-        );
-
-        self.sfcc[0].set_slats_angle_from_f64(
-            Self::SLATS_PERCENT_TO_DEGREE * left_slats_angle_percent / 100.,
-        );
-        self.sfcc[1].set_slats_angle_from_f64(
-            Self::SLATS_PERCENT_TO_DEGREE * right_slats_angle_percent / 100.,
-        );
     }
 }
 
@@ -481,23 +417,23 @@ mod tests {
         }
 
         fn get_flaps_demanded_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.sfcc[0].get_target_flaps_angle_f64())
+            self.query(|a| a.slat_flap_complex.sfcc.get_target_flaps_angle_f64())
         }
 
         fn get_slats_demanded_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.sfcc[0].get_target_slats_angle_f64())
+            self.query(|a| a.slat_flap_complex.sfcc.get_target_slats_angle_f64())
         }
 
         fn get_flaps_conf(&self) -> FlapsConf {
-            self.query(|a| a.slat_flap_complex.sfcc[0].flaps_conf)
+            self.query(|a| a.slat_flap_complex.sfcc.flaps_conf)
         }
 
         fn get_flaps_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.sfcc[0].get_flaps_angle_f64())
+            self.query(|a| a.slat_flap_complex.flap_gear.current_angle_f64())
         }
 
         fn get_slats_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.sfcc[0].get_slats_angle_f64())
+            self.query(|a| a.slat_flap_complex.slat_gear.current_angle_f64())
         }
     }
     impl TestBed for A320FlapsTestBed {
@@ -1053,6 +989,7 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_flaps_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
+            println!("{}, {}, {}",test_bed.get_flaps_angle() , test_bed.get_flaps_demanded_angle(),previous_angle);
             if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
                 assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
