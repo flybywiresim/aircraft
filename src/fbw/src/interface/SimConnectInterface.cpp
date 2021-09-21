@@ -1833,8 +1833,13 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       // determine if an increase of simulation rate can be allowed
       if ((simData.simulation_rate < maxSimulationRate && theoreticalFrameRate >= 8) || simData.simulation_rate < 1) {
         sendEvent(Events::SIM_RATE_INCR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
-        cout << "WASM: Simulation Rate set to " << simData.simulation_rate * 2;
-        cout << " (frame rate for FBW/AP will be " << theoreticalFrameRate << ")" << endl;
+        cout << "WASM: Simulation rate " << simData.simulation_rate;
+        cout << " -> " << simData.simulation_rate * 2;
+        cout << " (theoretical fps " << theoreticalFrameRate << ")" << endl;
+      } else {
+        cout << "WASM: Simulation rate " << simData.simulation_rate;
+        cout << " -> " << simData.simulation_rate;
+        cout << " (limited by max sim rate or theoretical fps " << theoreticalFrameRate << ")" << endl;
       }
       break;
     }
@@ -1842,7 +1847,13 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::SIM_RATE_DECR: {
       if (simData.simulation_rate > 1) {
         sendEvent(Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
-        cout << "WASM: Simulation Rate set to " << simData.simulation_rate / 2 << endl;
+        cout << "WASM: Simulation rate " << simData.simulation_rate;
+        cout << " -> " << simData.simulation_rate / 2;
+        cout << endl;
+      } else {
+        cout << "WASM: Simulation rate " << simData.simulation_rate;
+        cout << " -> " << simData.simulation_rate;
+        cout << " (limited by min sim rate)" << endl;
       }
       break;
     }
