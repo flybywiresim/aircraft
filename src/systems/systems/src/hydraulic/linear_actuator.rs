@@ -231,19 +231,22 @@ impl LinearActuator {
     }
 
     fn update_force(&mut self, current_pressure: Pressure) {
-        if self.mode == LinearActuatorMode::ClosedValves {
-            let position_error = self.closed_valves_reference_position - self.position_normalized;
-            self.force = Force::new::<newton>(
-                position_error.get::<ratio>() * self.fluid_compression_spring_constant
-                    - self.speed.get::<meter_per_second>()
-                        * self.fluid_compression_damping_constant,
-            );
-        } else if self.mode == LinearActuatorMode::Damping {
-            self.force = Force::new::<newton>(
-                -self.speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
-            );
-        } else {
-            self.compute_control_force(current_pressure);
+        match self.mode {
+            LinearActuatorMode::ClosedValves => {
+                let position_error =
+                    self.closed_valves_reference_position - self.position_normalized;
+                self.force = Force::new::<newton>(
+                    position_error.get::<ratio>() * self.fluid_compression_spring_constant
+                        - self.speed.get::<meter_per_second>()
+                            * self.fluid_compression_damping_constant,
+                );
+            }
+            LinearActuatorMode::Damping => {
+                self.force = Force::new::<newton>(
+                    -self.speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
+                );
+            }
+            LinearActuatorMode::PositionControl => self.compute_control_force(current_pressure),
         }
     }
 
