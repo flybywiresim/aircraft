@@ -1,6 +1,3 @@
-﻿// A32NX_FADEC.h : Include file for standard system include files,
-// or project specific include files.
-
 #pragma once
 
 #ifndef __INTELLISENSE__
@@ -17,9 +14,11 @@
 #include <MSFS\MSFS.h>
 #include <MSFS\MSFS_Render.h>
 #include <SimConnect.h>
-//#include <chrono>    // For PerfProf
+
+#include <cmath>
 #include <iostream>
 #include <string>
+//#include <chrono>    // For PerfProf
 
 #include "EngineControl.h"
 #include "RegPolynomials.h"
@@ -33,8 +32,11 @@ class FadecGauge {
  private:
   bool isConnected = false;
 
-  // Initializes the connection to SimConnect.
-  bool InitializeSimConnect() {
+  /// <summary>
+  /// Initializes the connection to SimConnect
+  /// </summary>
+  /// <returns>True if successful, false otherwise.</returns>
+  bool initializeSimConnect() {
     std::cout << "FADEC: Connecting to SimConnect..." << std::endl;
     if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FadecGauge", nullptr, 0, 0, 0))) {
       std::cout << "FADEC: SimConnect connected." << std::endl;
@@ -48,7 +50,7 @@ class FadecGauge {
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilControls, "GENERAL ENG OIL TEMPERATURE:1", "Celsius");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilControls, "GENERAL ENG OIL TEMPERATURE:2", "Celsius");
 
-      // SimConnect Oil Definitions
+      // SimConnect Oil Pressure Definitions
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilPsiLeft, "GENERAL ENG OIL PRESSURE:1", "Psi");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilPsiRight, "GENERAL ENG OIL PRESSURE:2", "Psi");
 
@@ -66,35 +68,44 @@ class FadecGauge {
   }
 
  public:
-  // Initializes the FADEC.
-  bool InitializeFADEC() {
-    if (!this->InitializeSimConnect()) {
+  /// <summary>
+  /// Initializes the FADEC control
+  /// </summary>
+  /// <returns>True if successful, false otherwise.</returns>
+  bool initializeFADEC() {
+    if (!this->initializeSimConnect()) {
       std::cout << "FADEC: Init SimConnect failed." << std::endl;
       return false;
     }
 
-    EngCntrlInst.initialize();
+    EngineControlInstance.initialize();
     isConnected = true;
-    // SimConnect_CallDispatch(hSimConnect, HandleAxisEvent, this);
 
     return true;
   }
 
-  // A callback used to update the FADEC at each tick (dt).
-  bool OnUpdate(double deltaTime) {
+  /// <summary>
+  /// Callback used to update the FADEC at each tick (dt)
+  /// </summary>
+  /// <returns>True if successful, false otherwise.</returns>
+  bool onUpdate(double deltaTime) {
     if (isConnected == true) {
-      EngCntrlInst.update(deltaTime);
+      EngineControlInstance.update(deltaTime);
     }
 
     return true;
   }
 
-  // Kills the FADEC and unregisters all LVars
-  bool KillFADEC() {
+  /// <summary>
+  /// Kills the FADEC and unregisters all LVars
+  /// </summary>
+  /// <returns>True if successful, false otherwise.</returns>
+  bool killFADEC() {
     std::cout << "FADEC: Disconnecting ..." << std::endl;
-    EngCntrlInst.terminate();
+    EngineControlInstance.terminate();
     isConnected = false;
     unregister_all_named_vars();
+
     std::cout << "FADEC: Disconnected." << std::endl;
     return SUCCEEDED(SimConnect_Close(hSimConnect));
   }
