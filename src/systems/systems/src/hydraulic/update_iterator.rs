@@ -1,6 +1,14 @@
 use crate::simulation::UpdateContext;
 use std::time::Duration;
 
+/// This is a structure that will handle a fixed step like update.
+/// When update() is called, it will build an array of frame updates to do, all having the same fixed duration
+/// If all those fixed steps added do not sum up as the whole update time, a time lag accumulator is incremented so we catch up
+/// with real time at next updates.
+///
+/// Usage:
+/// Call update() at each sim updtate
+/// Then a for loop over this as an iterator will return one frame per loop with corresponding fixed step duration
 pub struct FixedStepLoop {
     lag_time_accumulator: Duration,
     time_step: Duration,
@@ -70,6 +78,16 @@ impl IntoIterator for &mut FixedStepLoop {
     }
 }
 
+
+/// This is a structure that will handle a maximum fixed step like update.
+/// When update() is called, it will build an array of frame updates to do. If frame time is smaller than max fixed step,
+/// it will just consist of one update step of that exact duration.
+/// If frame time is bigger, it will be broken up in the correct number of max fixed step updates, plus a last step of smaller
+/// duration that will complete the update to catch real simulation time.
+///
+/// Usage:
+/// Call update() at each sim updtate
+/// Then a for loop over this as an iterator will return one frame per loop with steps of max fixed duration or smaller
 pub struct MaxFixedStepLoop {
     max_time_step: Duration,
     num_of_max_step_loop: u32,
