@@ -48,8 +48,8 @@ Arinc429Word.u32View = new Uint32Array(Arinc429Word.f64View.buffer);
 Arinc429Word.f32View = new Float32Array(Arinc429Word.f64View.buffer);
 
 Arinc429Word.SignStatusMatrix = Object.freeze({
-    FailureWarning: 0,
-    FunctionalTest: 1,
-    NoComputedData: 2,
-    NormalOperation: 3,
+    FailureWarning: 0b00,
+    NoComputedData: 0b01,
+    FunctionalTest: 0b10,
+    NormalOperation: 0b11,
 });

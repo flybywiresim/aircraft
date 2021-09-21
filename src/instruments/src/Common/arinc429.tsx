@@ -2,10 +2,10 @@ import { useSimVarValue } from './simVars';
 
 export class Arinc429Word {
     static SignStatusMatrix = Object.freeze({
-        FailureWarning: 0,
-        FunctionalTest: 1,
-        NoComputedData: 2,
-        NormalOperation: 3,
+        FailureWarning: 0b00,
+        NoComputedData: 0b01,
+        FunctionalTest: 0b10,
+        NormalOperation: 0b11,
     });
 
     static f64View = new Float64Array(1);

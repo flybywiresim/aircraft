@@ -44,8 +44,8 @@ impl<T: Copy> Arinc429Word<T> {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SignStatus {
     FailureWarning,
-    FunctionalTest,
     NoComputedData,
+    FunctionalTest,
     NormalOperation,
 }
 
@@ -53,8 +53,8 @@ impl From<SignStatus> for u64 {
     fn from(value: SignStatus) -> Self {
         match value {
             SignStatus::FailureWarning => 0b00,
-            SignStatus::FunctionalTest => 0b01,
-            SignStatus::NoComputedData => 0b10,
+            SignStatus::NoComputedData => 0b01,
+            SignStatus::FunctionalTest => 0b10,
             SignStatus::NormalOperation => 0b11,
         }
     }
@@ -64,8 +64,8 @@ impl From<u32> for SignStatus {
     fn from(value: u32) -> Self {
         match value {
             0b00 => SignStatus::FailureWarning,
-            0b01 => SignStatus::FunctionalTest,
-            0b10 => SignStatus::NoComputedData,
+            0b01 => SignStatus::NoComputedData,
+            0b10 => SignStatus::FunctionalTest,
             0b11 => SignStatus::NormalOperation,
             _ => panic!("Unknown SSM value: {}.", value),
         }
