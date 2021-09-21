@@ -22,6 +22,8 @@
 1. [AP] Allow V/S push and pull during ALT CPT - @aguther (Andreas Guther)
 1. [AP] Soft Altitude mode uses now FMGC flight phase to detect cruise situation
 1. [MCDU] Fix GPS ground speed monitor to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
+1. [AP] Improved LOC* law - @aguther (Andreas Guther)
+1. [AP] Improved ROLL OUT law - @aguther (Andreas Guther)
 1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.7.0
