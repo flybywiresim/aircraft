@@ -177,9 +177,7 @@ impl LinearActuator {
 
     fn update_mode(&mut self, requested_mode: LinearActuatorMode) {
         match requested_mode {
-            LinearActuatorMode::ClosedValves => {
-                self.close_control_valves();
-            }
+            LinearActuatorMode::ClosedValves => self.close_control_valves(),
             LinearActuatorMode::PositionControl => self.open_control_valves_for_position_control(),
             LinearActuatorMode::Damping => self.mode = LinearActuatorMode::Damping,
         }
