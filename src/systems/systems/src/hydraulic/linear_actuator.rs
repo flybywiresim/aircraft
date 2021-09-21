@@ -26,7 +26,7 @@ pub enum LinearActuatorMode {
     Damping = 2,
 }
 
-/// LinearActuator represents a classical linear actuator with a rod side area and a bore side area
+/// Represents a classical linear actuator with a rod side area and a bore side area
 /// It is connected between an anchor point on the plane and a control arm of a rigid body
 /// When the actuator moves, it takes fluid on one side and gives back to reservoir the fluid on other side
 /// Difference of volume between both side will cause variation of loop reservoir level.

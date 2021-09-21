@@ -8,7 +8,7 @@ use uom::si::{
 
 use crate::simulation::UpdateContext;
 
-/// BoundedLinearLength is linked to anything moving bounded between a minimum and maximum position.
+/// Trait linked to anything moving bounded between a minimum and maximum position.
 /// Those bounds implies that it will have a max and min distance from a fixed
 /// point in space to the position where we apply forces to it,
 /// for example a control arm where an actuator is attached.
@@ -17,7 +17,7 @@ pub trait BoundedLinearLength {
     fn max_absolute_length_to_anchor(&self) -> Length;
 }
 
-/// LinearActuatedRigidBodyOnHingeAxis represent any physical object able to rotate on a hinge axis.
+/// Represent any physical object able to rotate on a hinge axis.
 /// It can be a gear, elevator, cargo door, etc. Only one rotation degree of freedom is handled.
 /// An linear actuator or multiple linear actuators can apply forces to its control arm.
 ///
