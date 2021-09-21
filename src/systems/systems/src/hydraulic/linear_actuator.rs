@@ -308,9 +308,11 @@ impl Actuator for LinearActuator {
     fn used_volume(&self) -> Volume {
         self.volume_to_actuator_accumulator
     }
+
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
     }
+
     fn reset_accumulators(&mut self) {
         self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
@@ -318,10 +320,10 @@ impl Actuator for LinearActuator {
 }
 
 pub trait HydraulicAssemblyController {
-    fn mode_requested(&self) -> LinearActuatorMode;
-    fn position_request(&self) -> Ratio;
+    fn requested_mode(&self) -> LinearActuatorMode;
+    fn requested_position(&self) -> Ratio;
     fn should_lock(&self) -> bool;
-    fn lock_position_request(&self) -> Ratio;
+    fn requested_lock_position(&self) -> Ratio;
 }
 
 pub struct HydraulicLinearActuatorAssembly {
@@ -350,14 +352,14 @@ impl HydraulicLinearActuatorAssembly {
         current_pressure: Pressure,
     ) {
         self.linear_actuator
-            .set_position_target(assembly_controller.position_request());
+            .set_position_target(assembly_controller.requested_position());
 
         self.update_lock_mechanism(assembly_controller);
 
         if !self.rigid_body.is_locked() {
             self.linear_actuator.update_before_rigid_body(
                 &mut self.rigid_body,
-                assembly_controller.mode_requested(),
+                assembly_controller.requested_mode(),
                 current_pressure,
             );
             self.rigid_body.update(context);
@@ -369,7 +371,7 @@ impl HydraulicLinearActuatorAssembly {
     fn update_lock_mechanism(&mut self, assembly_controller: &impl HydraulicAssemblyController) {
         if assembly_controller.should_lock() {
             self.rigid_body
-                .lock_at_position_normalized(assembly_controller.lock_position_request())
+                .lock_at_position_normalized(assembly_controller.requested_lock_position())
         } else {
             self.rigid_body.unlock();
         }

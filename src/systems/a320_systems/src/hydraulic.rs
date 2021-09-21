@@ -1668,7 +1668,7 @@ impl A320DoorController {
     }
 }
 impl HydraulicAssemblyController for A320DoorController {
-    fn mode_requested(&self) -> LinearActuatorMode {
+    fn requested_mode(&self) -> LinearActuatorMode {
         if self.should_close_valves {
             LinearActuatorMode::ClosedValves
         } else {
@@ -1676,7 +1676,7 @@ impl HydraulicAssemblyController for A320DoorController {
         }
     }
 
-    fn position_request(&self) -> Ratio {
+    fn requested_position(&self) -> Ratio {
         self.control_position_request
     }
 
@@ -1684,7 +1684,7 @@ impl HydraulicAssemblyController for A320DoorController {
         !self.should_unlock
     }
 
-    fn lock_position_request(&self) -> Ratio {
+    fn requested_lock_position(&self) -> Ratio {
         Ratio::new::<ratio>(0.)
     }
 }
