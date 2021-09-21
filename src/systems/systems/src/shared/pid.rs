@@ -1,10 +1,10 @@
 use std::time::Duration;
 
-// Pid controller implementation
-// Implementation in a recursive form
-// u(k+1) = u(k) + (e(k) - e(k-1)) * Kp + e(k) * Ki * dt + (e(k) - 2 * e(k-1) + e(k-2)) * Kd / dt
-// For variable dt add dt duration as argument, if fixed dt or scheduled synchronously with controlled system input None as dt
-pub struct Pid {
+/// Pid controller implementation
+/// Implementation in a recursive form
+/// u(k+1) = u(k) + (e(k) - e(k-1)) * Kp + e(k) * Ki * dt + (e(k) - 2 * e(k-1) + e(k-2)) * Kd / dt
+/// For variable dt add dt duration as argument, if fixed dt or scheduled synchronously with controlled system input None as dt
+pub struct PidController {
     kp: f64,
     ki: f64,
     kd: f64,
@@ -20,7 +20,7 @@ pub struct Pid {
     output: f64,
 }
 
-impl Pid {
+impl PidController {
     pub fn new(kp: f64, ki: f64, kd: f64, min_output: f64, max_output: f64, setpoint: f64) -> Self {
         Self {
             kp,
@@ -47,9 +47,8 @@ impl Pid {
         self.output
     }
 
-    pub fn reset(&mut self, setpoint: f64) {
+    pub fn reset(&mut self) {
         self.output = 0.;
-        self.change_setpoint(setpoint);
         self.reset_error();
     }
 
@@ -102,14 +101,14 @@ mod tests {
 
     #[test]
     fn pid_init() {
-        let pid = Pid::new(1., 1., 1., 0., 1., 1.);
+        let pid = PidController::new(1., 1., 1., 0., 1., 1.);
 
         assert!(pid.output == 0.)
     }
 
     #[test]
     fn proportional() {
-        let mut pid = Pid::new(2.0, 0.0, 0.0, 0.0, 100.0, 10.0);
+        let mut pid = PidController::new(2.0, 0.0, 0.0, 0.0, 100.0, 10.0);
         assert_about_eq!(pid.setpoint, 10.);
 
         // Test simple proportional
@@ -118,7 +117,7 @@ mod tests {
 
     #[test]
     fn derivative() {
-        let mut pid = Pid::new(0.0, 0.0, 2.0, -100.0, 100., 10.0);
+        let mut pid = PidController::new(0.0, 0.0, 2.0, -100.0, 100., 10.0);
 
         // No derivative term for first two updates
         assert_about_eq!(pid.next_control_output(0.0, None), 0.);
@@ -134,7 +133,7 @@ mod tests {
 
     #[test]
     fn integral() {
-        let mut pid = Pid::new(0.0, 2.0, 0.0, 0., 100.0, 10.0);
+        let mut pid = PidController::new(0.0, 2.0, 0.0, 0., 100.0, 10.0);
 
         // Test basic integration
         assert_about_eq!(pid.next_control_output(0.0, None), 20.);
@@ -142,14 +141,14 @@ mod tests {
         assert_about_eq!(pid.next_control_output(5.0, None), 50.);
 
         // Test that error integral accumulates negative values
-        let mut pid2 = Pid::new(0.0, 2.0, 0.0, -100., 100.0, -10.0);
+        let mut pid2 = PidController::new(0.0, 2.0, 0.0, -100., 100.0, -10.0);
         assert_about_eq!(pid2.next_control_output(0.0, None), -20.);
         assert_about_eq!(pid2.next_control_output(0.0, None), -40.);
     }
 
     #[test]
     fn output_limit() {
-        let mut pid = Pid::new(1.0, 0.0, 0.0, -1., 1.0, 10.0);
+        let mut pid = PidController::new(1.0, 0.0, 0.0, -1., 1.0, 10.0);
 
         let out = pid.next_control_output(0.0, None);
         assert!((out - 1.).abs() < f64::EPSILON);
@@ -161,7 +160,7 @@ mod tests {
 
     #[test]
     fn pid() {
-        let mut pid = Pid::new(1.0, 0.1, 1.0, -100.0, 100.0, 10.0);
+        let mut pid = PidController::new(1.0, 0.1, 1.0, -100.0, 100.0, 10.0);
 
         let out = pid.next_control_output(0.0, None);
         assert_about_eq!(out, 11.);

@@ -1,7 +1,7 @@
 use crate::{
     hydraulic::HydraulicLoop,
     overhead::PressSingleSignalButton,
-    shared::pid::Pid,
+    shared::pid::PidController,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
@@ -403,7 +403,7 @@ impl Default for AutobrakePanel {
 /// Deceleration governor is the PI controller computing the expected brake force to reach the target
 /// it's been given by update caller
 pub struct AutobrakeDecelerationGovernor {
-    pid_controller: Pid,
+    pid_controller: PidController,
 
     current_output: f64,
     filtered_acceleration: Acceleration,
@@ -415,11 +415,10 @@ pub struct AutobrakeDecelerationGovernor {
 impl AutobrakeDecelerationGovernor {
     // Low pass filter for controller acceleration input, time constant in second
     const ACCELERATION_INPUT_FILTER: f64 = 0.1;
-    const RESET_ACCEL_VALUE_M_S_SQUARED: f64 = 10.;
 
     pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
-            pid_controller: Pid::new(0.3, 0.25, 0., -1., 0., 0.),
+            pid_controller: PidController::new(0.3, 0.25, 0., -1., 0., 0.),
 
             current_output: 0.,
             filtered_acceleration: Acceleration::new::<meter_per_second_squared>(0.),
@@ -444,8 +443,7 @@ impl AutobrakeDecelerationGovernor {
     fn disengage(&mut self) {
         self.is_engaged = false;
         self.time_engaged = Duration::from_secs(0);
-        self.pid_controller
-            .reset(Self::RESET_ACCEL_VALUE_M_S_SQUARED);
+        self.pid_controller.reset();
     }
 
     pub fn time_engaged(&self) -> Duration {
@@ -477,8 +475,7 @@ impl AutobrakeDecelerationGovernor {
             );
         } else {
             self.current_output = 0.;
-            self.pid_controller
-                .reset(Self::RESET_ACCEL_VALUE_M_S_SQUARED);
+            self.pid_controller.reset();
         }
     }
 
