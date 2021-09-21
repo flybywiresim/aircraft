@@ -90,7 +90,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         let inertia_at_hinge =
             inertia_at_cog + mass.get::<kilogram>() * center_of_gravity_offset.norm_squared();
 
-        let mut new_body = LinearActuatedRigidBodyOnHingeAxis {
+        let mut new_body = Self {
             total_travel,
             min_angle,
             max_angle: min_angle + total_travel,
@@ -151,9 +151,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         Length::new::<meter>((self.anchor_point - self.control_arm_actual).norm())
     }
 
-    // Indicates correct direction of the rigid body when an actuator would be extending or compressing.
-    // If compressing actuator would give a rising rigid body angle, sets TRUE
-    // If extending actuator would give a lowering rigid body angle, sets FALSE
+    /// Indicates correct direction of the rigid body when an actuator would be extending or compressing.
+    /// If compressing actuator would give a rising rigid body angle, sets TRUE
+    /// If extending actuator would give a lowering rigid body angle, sets FALSE
     fn initialize_actuator_force_direction(rigid_body: LinearActuatedRigidBodyOnHingeAxis) -> bool {
         rigid_body.max_absolute_length_to_anchor() < rigid_body.min_absolute_length_to_anchor()
     }
