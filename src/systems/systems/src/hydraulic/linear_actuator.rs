@@ -168,10 +168,10 @@ impl LinearActuator {
         &mut self,
         connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
         requested_mode: LinearActuatorMode,
-        available_pressure: Pressure,
+        current_pressure: Pressure,
     ) {
         self.update_mode(requested_mode);
-        self.update_force(available_pressure);
+        self.update_force(current_pressure);
         connected_body.apply_control_arm_force(self.force);
     }
 
@@ -230,7 +230,7 @@ impl LinearActuator {
         self.volume_to_res_accumulator += volume_to_reservoir;
     }
 
-    fn update_force(&mut self, hydraulic_pressure: Pressure) {
+    fn update_force(&mut self, current_pressure: Pressure) {
         if self.mode == LinearActuatorMode::ClosedValves {
             let position_error = self.closed_valves_reference_position - self.position_normalized;
             self.force = Force::new::<newton>(
@@ -243,7 +243,7 @@ impl LinearActuator {
                 -self.speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
             );
         } else {
-            self.compute_control_force(hydraulic_pressure);
+            self.compute_control_force(current_pressure);
         }
     }
 
@@ -262,7 +262,7 @@ impl LinearActuator {
         self.opened_valves_target_position = target_position;
     }
 
-    fn compute_control_force(&mut self, hydraulic_pressure: Pressure) {
+    fn compute_control_force(&mut self, current_pressure: Pressure) {
         let position_error = self.opened_valves_target_position - self.position_normalized;
 
         let mut open_loop_flow_target = 0.;
@@ -287,13 +287,13 @@ impl LinearActuator {
             if position_error > Ratio::new::<ratio>(0.)
                 && self.speed <= Velocity::new::<meter_per_second>(0.)
             {
-                let max_force = hydraulic_pressure * self.bore_side_area;
+                let max_force = current_pressure * self.bore_side_area;
                 self.force = self.force.min(max_force);
             }
         } else if position_error < Ratio::new::<ratio>(0.)
             && self.speed >= Velocity::new::<meter_per_second>(0.)
         {
-            let max_force = -1. * hydraulic_pressure * self.rod_side_area;
+            let max_force = -1. * current_pressure * self.rod_side_area;
             self.force = self.force.max(max_force);
         }
     }
@@ -342,7 +342,7 @@ impl HydraulicLinearActuatorAssembly {
         &mut self,
         assembly_controller: &impl HydraulicAssemblyController,
         context: &UpdateContext,
-        available_pressure: Pressure,
+        current_pressure: Pressure,
     ) {
         self.linear_actuator
             .set_position_target(assembly_controller.position_request());
@@ -353,7 +353,7 @@ impl HydraulicLinearActuatorAssembly {
             self.linear_actuator.update_before_rigid_body(
                 &mut self.rigid_body,
                 assembly_controller.mode_requested(),
-                available_pressure,
+                current_pressure,
             );
             self.rigid_body.update(context);
             self.linear_actuator

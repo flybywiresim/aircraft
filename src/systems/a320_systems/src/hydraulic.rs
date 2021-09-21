@@ -1479,7 +1479,7 @@ impl A320BrakingForce {
         norm_brakes: &BrakeCircuit,
         altn_brakes: &BrakeCircuit,
     ) {
-        // Base formula for output force is output_force[0:1] = 50 * sqrt(hydraulic_pressure) / Max_brake_pressure
+        // Base formula for output force is output_force[0:1] = 50 * sqrt(current_pressure) / Max_brake_pressure
         // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
         // gives really too low brake force for 1000psi
 
