@@ -1,10 +1,12 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 type SimpleInputProps = {
     label?: string,
     placeholder?: string,
     value?: any,
     onChange?: (value: string) => void,
+    onFocus?: (value: string) => void,
+    onBlur?: (value: string) => void
     min?: number,
     max?: number,
     number?: boolean,
@@ -15,10 +17,10 @@ type SimpleInputProps = {
     className?: string,
     maxLength?: number,
     noLabel?: boolean,
-    disabled?: boolean
+    disabled?: boolean,
 };
 
-const SimpleInput: FC<SimpleInputProps> = (props) => {
+const SimpleInput = (props: SimpleInputProps) => {
     const [displayValue, setDisplayValue] = useState<string>(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
 
@@ -44,8 +46,11 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
         }
     };
 
-    const onFocus = (): void => {
+    const onFocus = (event: React.FocusEvent<HTMLInputElement>): void => {
         setFocused(true);
+        if (!props.disabled) {
+            props.onFocus?.(event.target.value);
+        }
     };
 
     const onFocusOut = (event: React.FocusEvent<HTMLInputElement>): void => {
@@ -54,6 +59,10 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
 
         setDisplayValue(constrainedValue);
         setFocused(false);
+
+        if (!props.disabled) {
+            props.onBlur?.(event.target.value);
+        }
     };
 
     const getConstrainedValue = (value: string): string => {

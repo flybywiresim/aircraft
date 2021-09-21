@@ -1,6 +1,6 @@
 name: Feature Request
 description: Suggest a new feature for the aircraft
-labels: [Enhancement]
+labels: [Request]
 body:
 - type: markdown
   attributes:

@@ -13,11 +13,24 @@ struct ap_raw_time
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_ap_lat_lon_alt_
+#define DEFINED_TYPEDEF_FOR_ap_lat_lon_alt_
+
+struct ap_lat_lon_alt
+{
+  real_T lat;
+  real_T lon;
+  real_T alt;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_data_
 #define DEFINED_TYPEDEF_FOR_ap_raw_data_
 
 struct ap_raw_data
 {
+  ap_lat_lon_alt aircraft_position;
   real_T Theta_deg;
   real_T Phi_deg;
   real_T q_rad_s;
@@ -28,6 +41,7 @@ struct ap_raw_data
   real_T V_mach;
   real_T V_gnd_kn;
   real_T alpha_deg;
+  real_T beta_deg;
   real_T H_ft;
   real_T H_ind_ft;
   real_T H_radio_ft;
@@ -44,9 +58,12 @@ struct ap_raw_data
   real_T nav_dme_valid;
   real_T nav_dme_nmi;
   boolean_T nav_loc_valid;
+  real_T nav_loc_magvar_deg;
   real_T nav_loc_error_deg;
+  ap_lat_lon_alt nav_loc_position;
   boolean_T nav_gs_valid;
   real_T nav_gs_error_deg;
+  ap_lat_lon_alt nav_gs_position;
   real_T flight_guidance_xtk_nmi;
   real_T flight_guidance_tae_deg;
   real_T flight_guidance_phi_deg;
@@ -127,6 +144,7 @@ struct ap_laws_input
 
 struct ap_data
 {
+  ap_lat_lon_alt aircraft_position;
   real_T Theta_deg;
   real_T Phi_deg;
   real_T qk_deg_s;
@@ -137,6 +155,7 @@ struct ap_data
   real_T V_mach;
   real_T V_gnd_kn;
   real_T alpha_deg;
+  real_T beta_deg;
   real_T H_ft;
   real_T H_ind_ft;
   real_T H_radio_ft;
@@ -156,9 +175,16 @@ struct ap_data
   real_T nav_dme_valid;
   real_T nav_dme_nmi;
   boolean_T nav_loc_valid;
+  real_T nav_loc_magvar_deg;
   real_T nav_loc_error_deg;
+  ap_lat_lon_alt nav_loc_position;
+  boolean_T nav_e_loc_valid;
+  real_T nav_e_loc_error_deg;
   boolean_T nav_gs_valid;
   real_T nav_gs_error_deg;
+  ap_lat_lon_alt nav_gs_position;
+  boolean_T nav_e_gs_valid;
+  real_T nav_e_gs_error_deg;
   real_T flight_guidance_xtk_nmi;
   real_T flight_guidance_tae_deg;
   real_T flight_guidance_phi_deg;

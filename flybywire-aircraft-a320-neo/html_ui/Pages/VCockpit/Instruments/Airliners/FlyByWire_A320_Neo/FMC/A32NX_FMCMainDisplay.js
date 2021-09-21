@@ -426,6 +426,10 @@ class FMCMainDisplay extends BaseAirliners {
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = 0;
         this._activeCruiseFlightLevelDefaulToFcu = false;
+        const payloadConstruct = new A32NX_PayloadConstructor();
+        this.paxStations = payloadConstruct.paxStations;
+        this.payloadStations = payloadConstruct.payloadStations;
+        this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDist = undefined;
         this.preSelectedClbSpeed = undefined;
         this.preSelectedCrzSpeed = undefined;
