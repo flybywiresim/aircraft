@@ -289,26 +289,24 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     pub fn is_locked(&self) -> bool {
         self.is_locked
     }
+
+    fn absolute_length_to_anchor_at_angle(&self, position: Angle) -> Length {
+        let rotation = Rotation3::from_axis_angle(
+            &Unit::new_normalize(self.axis_direction),
+            position.get::<radian>(),
+        );
+        let control_arm_position = rotation * self.control_arm;
+
+        Length::new::<meter>((self.anchor_point - control_arm_position).norm())
+    }
 }
 impl BoundedLinearLength for LinearActuatedRigidBodyOnHingeAxis {
     fn min_absolute_length_to_anchor(&self) -> Length {
-        let rotation_min = Rotation3::from_axis_angle(
-            &Unit::new_normalize(self.axis_direction),
-            self.min_angle.get::<radian>(),
-        );
-        let control_arm_min = rotation_min * self.control_arm;
-
-        Length::new::<meter>((self.anchor_point - control_arm_min).norm())
+        self.absolute_length_to_anchor_at_angle(self.min_angle)
     }
 
     fn max_absolute_length_to_anchor(&self) -> Length {
-        let rotation_max = Rotation3::from_axis_angle(
-            &Unit::new_normalize(self.axis_direction),
-            self.max_angle.get::<radian>(),
-        );
-        let control_arm_max = rotation_max * self.control_arm;
-
-        Length::new::<meter>((self.anchor_point - control_arm_max).norm())
+        self.absolute_length_to_anchor_at_angle(self.max_angle)
     }
 }
 
