@@ -26,19 +26,19 @@ pub enum LinearActuatorMode {
     Damping = 2,
 }
 
-// LinearActuator represents a classical linear actuator with a rod side area and a bore side area
-// It is connected between an anchor point on the plane and a control arm of a rigid body
-// When the actuator moves, it takes fluid on one side and gives back to reservoir the fluid on other side
-// Difference of volume between both side will cause variation of loop reservoir level.
-// It moves between a max absolute and minimum absolute position. The position is finally normalized from 0 to 1 (compressed to extended)
-//
-// It can behave it two main ways: its control valves are either closed, and it can't move, or valves are opened and
-// hydraulic power can move it with enough pressure.
-//
-// How those two modes are done: when valves are closed, actuator is constrained by a spring damper system,
-// which simulate the fluid compressibility resisting to rigid body movement.
-// When valves are opened, a controller will try to reach the specified target position. Controller works in flow
-// control so only the correct amount of flow is sent to the actuator.
+/// LinearActuator represents a classical linear actuator with a rod side area and a bore side area
+/// It is connected between an anchor point on the plane and a control arm of a rigid body
+/// When the actuator moves, it takes fluid on one side and gives back to reservoir the fluid on other side
+/// Difference of volume between both side will cause variation of loop reservoir level.
+/// It moves between a max absolute and minimum absolute position. The position is finally normalized from 0 to 1 (compressed to extended)
+///
+/// It can behave it two main ways: its control valves are either closed, and it can't move, or valves are opened and
+/// hydraulic power can move it with enough pressure.
+///
+/// How those two modes are done: when valves are closed, actuator is constrained by a spring damper system,
+/// which simulate the fluid compressibility resisting to rigid body movement.
+/// When valves are opened, a controller will try to reach the specified target position. Controller works in flow
+/// control so only the correct amount of flow is sent to the actuator.
 #[derive(PartialEq, Clone, Copy)]
 pub struct LinearActuator {
     number_of_actuators: u8,
