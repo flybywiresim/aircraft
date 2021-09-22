@@ -1,12 +1,38 @@
 use std::time::Duration;
 use uom::si::{
-    acceleration::meter_per_second_squared, f64::*, pressure::inch_of_mercury, time::second,
-    velocity::foot_per_minute,
+    acceleration::meter_per_second_squared, angle::radian, f64::*, pressure::inch_of_mercury,
+    time::second, velocity::foot_per_minute,
 };
 
 use super::{Read, SimulatorReader};
-use nalgebra::Vector3;
+use nalgebra::{Rotation3, Vector3};
 
+#[derive(Clone, Copy, Debug)]
+pub struct Attitude {
+    pitch: Angle,
+    bank: Angle,
+}
+impl Attitude {
+    fn new(pitch: Angle, bank: Angle) -> Self {
+        Self { pitch, bank }
+    }
+
+    pub fn pitch_rotation_transform(&self) -> Rotation3<f64> {
+        Rotation3::from_axis_angle(&Vector3::x_axis(), self.pitch.get::<radian>())
+    }
+
+    pub fn bank_rotation_transform(&self) -> Rotation3<f64> {
+        Rotation3::from_axis_angle(&Vector3::z_axis(), -self.bank.get::<radian>())
+    }
+
+    fn pitch(&self) -> Angle {
+        self.pitch
+    }
+
+    fn bank(&self) -> Angle {
+        self.bank
+    }
+}
 #[derive(Clone, Copy, Debug)]
 pub struct LocalAcceleration {
     acceleration: [Acceleration; 3],
@@ -62,12 +88,9 @@ pub struct UpdateContext {
     is_on_ground: bool,
     vertical_speed: Velocity,
     local_acceleration: LocalAcceleration,
-    attitude: [Angle; 2],
+    attitude: Attitude,
 }
 impl UpdateContext {
-    const ATTITUDE_PITCH_AXIS: usize = 0;
-    const ATTITUDE_BANK_AXIS: usize = 1;
-
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const INDICATED_ALTITUDE_KEY: &'static str = "INDICATED ALTITUDE";
@@ -106,7 +129,7 @@ impl UpdateContext {
                 vertical_acceleration,
                 longitudinal_acceleration,
             ),
-            attitude: [pitch, bank],
+            attitude: Attitude::new(pitch, bank),
         }
     }
 
@@ -130,10 +153,10 @@ impl UpdateContext {
                 reader.read(UpdateContext::ACCEL_BODY_Z_KEY),
             ),
 
-            attitude: [
+            attitude: Attitude::new(
                 reader.read(UpdateContext::PLANE_PITCH_KEY),
                 reader.read(UpdateContext::PLANE_BANK_KEY),
-            ],
+            ),
         }
     }
 
@@ -194,11 +217,15 @@ impl UpdateContext {
     }
 
     pub fn pitch(&self) -> Angle {
-        self.attitude[Self::ATTITUDE_PITCH_AXIS]
+        self.attitude.pitch()
     }
 
     pub fn bank(&self) -> Angle {
-        self.attitude[Self::ATTITUDE_BANK_AXIS]
+        self.attitude.bank()
+    }
+
+    pub fn attitude(&self) -> Attitude {
+        self.attitude
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {

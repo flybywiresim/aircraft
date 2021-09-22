@@ -193,11 +193,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     fn local_acceleration_and_gravity(&self, context: &UpdateContext) -> Torque {
         let plane_acceleration_plane_reference = context.acceleration().to_ms2_vector();
 
-        let pitch_rotation =
-            Rotation3::from_axis_angle(&Vector3::x_axis(), context.pitch().get::<radian>());
+        let pitch_rotation = context.attitude().pitch_rotation_transform();
 
-        let bank_rotation =
-            Rotation3::from_axis_angle(&Vector3::z_axis(), -context.bank().get::<radian>());
+        let bank_rotation = context.attitude().bank_rotation_transform();
 
         let gravity_acceleration_world_reference = Vector3::new(0., -9.8, 0.);
 
