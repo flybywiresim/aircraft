@@ -92,27 +92,27 @@ export class FlightPlanAsoboSync {
                           // set departure
                           //  rwy index
                           await fpln.setOriginRunwayIndex(data.originRunwayIndex)
-                              .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
+                              // .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Origin ${data.originRunwayIndex} ... FAILED`);
                                   console.error(e);
                               });
                           await fpln.setDepartureRunwayIndex(data.departureRunwayIndex)
-                              .then(() => console.log(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... SUCCESS`))
+                              // .then(() => console.log(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... FAILED`);
                                   console.error(e);
                               });
                           //  proc index
                           await fpln.setDepartureProcIndex(data.departureProcIndex)
-                              .then(() => console.log(`[FP LOAD] Setting Departure Procedure  ${data.departureProcIndex} ... SUCCESS`))
+                              // .then(() => console.log(`[FP LOAD] Setting Departure Procedure  ${data.departureProcIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Departure Procedure ${data.departureProcIndex} ... FAILED`);
                                   console.error(e);
                               });
                           //  enroutetrans index
                           await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex)
-                              .then(() => console.log(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... SUCCESS`))
+                              // .then(() => console.log(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... FAILED`);
                                   console.error(e);
@@ -120,14 +120,14 @@ export class FlightPlanAsoboSync {
                           // set arrival
                           //  arrivalproc index
                           await fpln.setArrivalProcIndex(data.arrivalProcIndex)
-                              .then(() => console.log(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... SUCCESS`))
+                              // .then(() => console.log(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... FAILED`);
                                   console.error(e);
                               });
                           //  arrivaltrans index
                           await fpln.setArrivalEnRouteTransitionIndex(data.arrivalEnRouteTransitionIndex)
-                              .then(() => console.log(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... SUCCESS`))
+                              // .then(() => console.log(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... FAILED`);
                                   console.error(e);
@@ -135,13 +135,13 @@ export class FlightPlanAsoboSync {
                           // set approach
                           //  rwy index
                           await fpln.setDestinationRunwayIndex(data.arrivalRunwayIndex)
-                              .then(() => console.log(`[FP LOAD] Setting Destination Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
+                              // .then(() => console.log(`[FP LOAD] Setting Destination Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Destination Runway ${data.arrivalRunwayIndex} ... FAILED`);
                                   console.error(e);
                               });
                           await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex)
-                              .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
+                              // .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... FAILED`);
                                   console.error(e);
@@ -151,15 +151,15 @@ export class FlightPlanAsoboSync {
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Approach ${data.approachIndex} ... FAILED`);
                                   console.error(e);
-                              })
-                              .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`));
+                              });
+                          // .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`));
                           //  approachtrans index
                           await fpln.setApproachTransitionIndex(data.approachTransitionIndex)
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... FAILED`);
                                   console.error(e);
-                              })
-                              .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`));
+                              });
+                          // .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`));
 
                           fpln.resumeSync();
 
@@ -183,57 +183,57 @@ export class FlightPlanAsoboSync {
                   yield Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.error).then;
                   yield Coherent.call('CLEAR_CURRENT_FLIGHT_PLAN').catch(console.error);
                   if (plan.hasPersistentOrigin && plan.hasDestination) {
-                      yield Coherent.call('SET_ORIGIN', plan.persistentOriginAirfield.icao, false).catch(console.error)
-                          .then(() => console.log('[FP SAVE] Setting Origin Airfield... SUCCESS'));
-                      yield Coherent.call('SET_DESTINATION', plan.destinationAirfield.icao, false).catch(console.error)
-                          .then(() => console.log('[FP SAVE] Setting Destination Airfield... SUCCESS'));
+                      yield Coherent.call('SET_ORIGIN', plan.persistentOriginAirfield.icao, false).catch(console.error);
+                      // .then(() => console.log('[FP SAVE] Setting Origin Airfield... SUCCESS'));
+                      yield Coherent.call('SET_DESTINATION', plan.destinationAirfield.icao, false).catch(console.error);
+                      // .then(() => console.log('[FP SAVE] Setting Destination Airfield... SUCCESS'));
                       let coIndex = 1;
                       for (let i = 0; i < plan.enroute.waypoints.length; i++) {
                           const wpt = plan.enroute.waypoints[i];
                           if (wpt.icao.trim() !== '') {
-                              yield Coherent.call('ADD_WAYPOINT', wpt.icao, coIndex, false).catch(console.error)
-                                  .then(() => console.log(`[FP SAVE] Adding Waypoint [${wpt.icao}]... SUCCESS`));
+                              yield Coherent.call('ADD_WAYPOINT', wpt.icao, coIndex, false).catch(console.error);
+                              // .then(() => console.log(`[FP SAVE] Adding Waypoint [${wpt.icao}]... SUCCESS`));
                               coIndex++;
                           }
                       }
                       yield Coherent.call('SET_ORIGIN_RUNWAY_INDEX', plan.procedureDetails.originRunwayIndex)
-                          .then(() => console.log(`[FP SAVE] Setting Origin Runway ${plan.procedureDetails.originRunwayIndex} ... SUCCESS`))
+                          // .then(() => console.log(`[FP SAVE] Setting Origin Runway ${plan.procedureDetails.originRunwayIndex} ... SUCCESS`))
                           .catch((e) => {
                               console.error(`[FP SAVE] Setting Origin Runway ${plan.procedureDetails.originRunwayIndex} ... FAILED`);
                               console.error(e);
                           });
                       yield Coherent.call('SET_DEPARTURE_RUNWAY_INDEX', plan.procedureDetails.departureRunwayIndex)
-                          .then(() => console.log(`[FP SAVE] Setting Departure Runway ${plan.procedureDetails.departureRunwayIndex} ... SUCCESS`))
+                          // .then(() => console.log(`[FP SAVE] Setting Departure Runway ${plan.procedureDetails.departureRunwayIndex} ... SUCCESS`))
                           .catch((e) => {
                               console.error(`[FP SAVE] Setting Departure Runway ${plan.procedureDetails.departureRunwayIndex} ... FAILED`);
                               console.error(e);
                           });
                       yield Coherent.call('SET_DEPARTURE_PROC_INDEX', plan.procedureDetails.departureIndex)
-                          .then(() => console.log(`[FP SAVE] Setting Departure Procedure ${plan.procedureDetails.departureIndex} ... SUCCESS`))
+                          // .then(() => console.log(`[FP SAVE] Setting Departure Procedure ${plan.procedureDetails.departureIndex} ... SUCCESS`))
                           .catch((e) => {
                               console.error(`[FP SAVE] Setting Departure Procedure ${plan.procedureDetails.departureIndex} ... FAILED`);
                               console.error(e);
                           });
                       yield Coherent.call('SET_DEPARTURE_ENROUTE_TRANSITION_INDEX', plan.procedureDetails.departureTransitionIndex)
-                          .then(() => console.log(`[FP SAVE] Setting Departure Transition ${plan.procedureDetails.departureTransitionIndex} ... SUCCESS`))
+                          // .then(() => console.log(`[FP SAVE] Setting Departure Transition ${plan.procedureDetails.departureTransitionIndex} ... SUCCESS`))
                           .catch((e) => {
                               console.error(`[FP SAVE] Setting Departure Transition ${plan.procedureDetails.departureTransitionIndex} ... FAILED`);
                               console.error(e);
                           });
                       yield Coherent.call('SET_ARRIVAL_RUNWAY_INDEX', plan.procedureDetails.arrivalRunwayIndex)
-                          .then(() => console.log(`[FP SAVE] Setting Arrival Runway ${plan.procedureDetails.arrivalRunwayIndex} ... SUCCESS`))
+                          // .then(() => console.log(`[FP SAVE] Setting Arrival Runway ${plan.procedureDetails.arrivalRunwayIndex} ... SUCCESS`))
                           .catch((e) => {
                               console.error(`[FP SAVE] Setting  Arrival Runway ${plan.procedureDetails.arrivalRunwayIndex} ... FAILED`);
                               console.error(e);
                           });
                       yield Coherent.call('SET_ARRIVAL_PROC_INDEX', plan.procedureDetails.arrivalIndex)
-                          .then(() => console.log(`[FP SAVE] Setting Arrival Procedure ${plan.procedureDetails.arrivalIndex} ... SUCCESS`))
+                          // .then(() => console.log(`[FP SAVE] Setting Arrival Procedure ${plan.procedureDetails.arrivalIndex} ... SUCCESS`))
                           .catch((e) => {
                               console.error(`[FP SAVE] Setting Arrival Procedure ${plan.procedureDetails.arrivalIndex} ... FAILED`);
                               console.error(e);
                           });
                       yield Coherent.call('SET_ARRIVAL_ENROUTE_TRANSITION_INDEX', plan.procedureDetails.arrivalTransitionIndex)
-                          .then(() => console.log(`[FP SAVE] Setting Arrival En Route Transition ${plan.procedureDetails.arrivalTransitionIndex} ... SUCCESS`))
+                          // .then(() => console.log(`[FP SAVE] Setting Arrival En Route Transition ${plan.procedureDetails.arrivalTransitionIndex} ... SUCCESS`))
                           .catch((e) => {
                               console.error(`[FP SAVE] Setting Arrival En Route Transition ${plan.procedureDetails.arrivalTransitionIndex} ... FAILED`);
                               console.error(e);
@@ -242,7 +242,7 @@ export class FlightPlanAsoboSync {
                           .then(() => {
                               console.log(`[FP SAVE] Setting Approach ${plan.procedureDetails.approachIndex} ... SUCCESS`);
                               Coherent.call('SET_APPROACH_TRANSITION_INDEX', plan.procedureDetails.approachTransitionIndex)
-                                  .then(() => console.log(`[FP SAVE] Setting Approach Transition ${plan.procedureDetails.approachTransitionIndex} ... SUCCESS`))
+                                  // .then(() => console.log(`[FP SAVE] Setting Approach Transition ${plan.procedureDetails.approachTransitionIndex} ... SUCCESS`))
                                   .catch((e) => {
                                       console.error(`[FP SAVE] Setting Approach Transition ${plan.procedureDetails.approachTransitionIndex} ... FAILED`);
                                       console.error(e);
