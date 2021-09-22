@@ -1,5 +1,7 @@
 use super::brake_circuit::Actuator;
+use crate::shared::interpolation;
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
+
 use uom::si::{
     angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -78,6 +80,8 @@ impl Actuator for FlapSlatHydraulicMotor {
 
 pub struct FlapSlatAssembly {
     position_id: String,
+    angle_left_id: String,
+    angle_right_id: String,
 
     flap_control_arm_position: Angle,
 
@@ -94,6 +98,9 @@ pub struct FlapSlatAssembly {
 
     left_motor: FlapSlatHydraulicMotor,
     right_motor: FlapSlatHydraulicMotor,
+
+    synchro_gear_breakpoints: [f64; 12],
+    final_flap_angle_carac: [f64; 12],
 }
 impl FlapSlatAssembly {
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 800.;
@@ -109,9 +116,13 @@ impl FlapSlatAssembly {
         synchro_gear_ratio: Ratio,
         gearbox_ratio: Ratio,
         flap_gear_ratio: Ratio,
+        synchro_gear_breakpoints: [f64; 12],
+        final_flap_angle_carac: [f64; 12],
     ) -> Self {
         let mut new_obj = Self {
             position_id: format!("HYD_{}_POSITION", id),
+            angle_left_id: format!("LEFT_{}_ANGLE, id", id),
+            angle_right_id: format!("RIGHT_{}_ANGLE, id", id),
             flap_control_arm_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
             max_flap_control_arm_position: Angle::new::<radian>(0.),
@@ -123,6 +134,8 @@ impl FlapSlatAssembly {
             flap_gear_ratio,
             left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
+            synchro_gear_breakpoints,
+            final_flap_angle_carac,
         };
         new_obj.max_flap_control_arm_position =
             new_obj.synchro_angle_to_flap_angle(max_synchro_gear_position);
@@ -270,6 +283,14 @@ impl FlapSlatAssembly {
         &self.right_motor
     }
 
+    fn flap_surface_angle(&self) -> Angle {
+        Angle::new::<degree>(interpolation(
+            &self.synchro_gear_breakpoints,
+            &self.final_flap_angle_carac,
+            self.position_feedback().get::<degree>(),
+        ))
+    }
+
     // Reset of accumulators will be moved to Actuator trait in other hydraulic overhaul PR
     pub fn reset_left_accumulators(&mut self) {
         self.left_motor.reset_accumulators();
@@ -286,6 +307,10 @@ impl SimulationElement for FlapSlatAssembly {
             self.position_feedback().get::<degree>()
                 / self.max_synchro_gear_position.get::<degree>(),
         );
+
+        let flaps_surface_angle = self.flap_surface_angle();
+        writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
+        writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
     }
 }
 
@@ -478,11 +503,12 @@ mod tests {
 
             last_position = flap_system.position_feedback();
             println!(
-                "Time: {:.1}s  -> Position {:.2}/{}-> speed {:.3}",
+                "Time: {:.1}s  -> Position {:.2}/{}-> speed {:.3} SurfaceAngle {:.1}",
                 time.as_secs_f64(),
                 last_position.get::<degree>(),
                 flap_system.max_synchro_gear_position.get::<degree>(),
-                flap_system.current_speed.get::<radian_per_second>()
+                flap_system.current_speed.get::<radian_per_second>(),
+                flap_system.flap_surface_angle().get::<degree>(),
             );
             time += Duration::from_millis(100);
         }
@@ -559,6 +585,10 @@ mod tests {
             Ratio::new::<ratio>(140.),
             Ratio::new::<ratio>(16.632),
             Ratio::new::<ratio>(314.98),
+            [
+                0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+            ],
+            [0., 2., 9., 10., 13., 15., 18., 19., 20., 24., 35., 40.],
         )
     }
 }

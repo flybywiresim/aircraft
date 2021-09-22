@@ -84,6 +84,12 @@ pub(super) struct A320Hydraulic {
     flaps_position_request: Angle,
 }
 impl A320Hydraulic {
+    const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+    ];
+    const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 2., 9., 10., 13., 15., 18., 19., 20., 24., 35., 40.];
+
     const FORWARD_CARGO_DOOR_ID: usize = 5;
     // Same id for aft door as a place holder until it gets animated
     const AFT_CARGO_DOOR_ID: usize = 5;
@@ -246,6 +252,8 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
+                Self::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
             ),
 
             total_sim_time_elapsed: Duration::new(0, 0),
