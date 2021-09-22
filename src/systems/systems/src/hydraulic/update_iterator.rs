@@ -99,8 +99,7 @@ impl MaxFixedStepLoop {
             (number_of_steps - (self.num_of_max_step_loop as f64)) * max_fixed_seconds,
         );
 
-        // If remaining time is null or less than a tenth of max step time we drop that remaining time
-        if remaining_time_step_update > self.max_time_step / 10 {
+        if remaining_time_step_update > Duration::from_secs(0) {
             self.remaining_frame_duration = Some(remaining_time_step_update);
         } else {
             self.remaining_frame_duration = None;
