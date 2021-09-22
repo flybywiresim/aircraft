@@ -10,7 +10,6 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   bool autopilotLawsEnabled,
                                   bool flyByWireEnabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
-                                  std::shared_ptr<FlapsHandler> flapsHandler,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
                                   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                                   std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
@@ -31,8 +30,6 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     cout << "WASM: Connected" << endl;
     // store throttle axis handler
     this->throttleAxis = throttleAxis;
-    // store flaps handler
-    this->flapsHandler = flapsHandler;
     // store spoilers handler
     this->spoilersHandler = spoilersHandler;
     // store elevator trim handler
@@ -1733,51 +1730,6 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       throttleAxis[1]->onEventReverseHold(static_cast<bool>(event->dwData));
       break;
     }
-
-    // case Events::FLAPS_UP: {
-    //   flapsHandler->onEventFlapsUp();
-    //   break;
-    // }
-
-    // case Events::FLAPS_1: {
-    //   flapsHandler->onEventFlapsSet_1();
-    //   break;
-    // }
-
-    // case Events::FLAPS_2: {
-    //   flapsHandler->onEventFlapsSet_2();
-    //   break;
-    // }
-
-    // case Events::FLAPS_3: {
-    //   flapsHandler->onEventFlapsSet_3();
-    //   break;
-    // }
-
-    // case Events::FLAPS_DOWN: {
-    //   flapsHandler->onEventFlapsDown();
-    //   break;
-    // }
-
-    // case Events::FLAPS_INCR: {
-    //   flapsHandler->onEventFlapsIncrease();
-    //   break;
-    // }
-
-    // case Events::FLAPS_DECR: {
-    //   flapsHandler->onEventFlapsDecrease();
-    //   break;
-    // }
-
-    // case Events::FLAPS_SET: {
-    //   flapsHandler->onEventFlapsSet(static_cast<long>(event->dwData));
-    //   break;
-    // }
-
-    // case Events::AXIS_FLAPS_SET: {
-    //   flapsHandler->onEventFlapsAxisSet(static_cast<long>(event->dwData));
-    //   break;
-    // }
 
     case Events::SPOILERS_ON: {
       spoilersHandler->onEventSpoilersOn();

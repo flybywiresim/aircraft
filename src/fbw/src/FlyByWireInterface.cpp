@@ -18,7 +18,6 @@ bool FlyByWireInterface::connect() {
   setupLocalVariables();
 
   // setup handlers
-  flapsHandler = make_shared<FlapsHandler>();
   spoilersHandler = make_shared<SpoilersHandler>();
   elevatorTrimHandler = make_shared<ElevatorTrimHandler>();
   rudderTrimHandler = make_shared<RudderTrimHandler>();
@@ -34,7 +33,7 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis, flapsHandler,
+  return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis,
                                      spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate);
@@ -120,8 +119,8 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update engine data
   result &= updateEngineData(calculatedSampleTime);
 
-  // update flaps and spoilers
-  result &= updateFlapsSpoilers(calculatedSampleTime);
+  // update spoilers
+  result &= updateSpoilers(calculatedSampleTime);
 
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
@@ -1349,41 +1348,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   return true;
 }
 
-bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
+bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   // get sim data
   auto simData = simConnectInterface.getSimData();
-
-  // falps ------------------------------------------------------------------------------------------------------------
-
-  // initialize position if needed
-  // if (!flapsHandler->getIsInitialized()) {
-  //   if (simData.flaps_handle_index == 0) {
-  //     flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_0);
-  //   } else if (simData.flaps_handle_index == 1 || simData.flaps_handle_index == 2) {
-  //     flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_1);
-  //   } else if (simData.flaps_handle_index == 3) {
-  //     flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_2);
-  //   } else if (simData.flaps_handle_index == 4) {
-  //     flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_3);
-  //   } else if (simData.flaps_handle_index == 5) {
-  //     flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_4);
-  //   }
-  // }
-
-  // update airspeed on flaps logic
-  // flapsHandler->setAirspeed(simData.V_ias_kn);
-
-  // // determine if flaps setting has changed
-  // if (flapsHandler->getSimPosition() != simData.flaps_handle_index) {
-  //   SimOutputFlaps out = {flapsHandler->getSimPosition()};
-  //   simConnectInterface.sendData(out);
-  // }
-
-  // // set 3D handle position
-  // idFlapsHandleIndex->set(flapsHandler->getHandlePosition());
-  // idFlapsHandlePercent->set(flapsHandler->getHandlePositionPercent());
-
-  // spoilers ---------------------------------------------------------------------------------------------------------
 
   // initialize position if needed
   if (!spoilersHandler->getIsInitialized()) {
