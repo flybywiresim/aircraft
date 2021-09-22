@@ -178,6 +178,7 @@ const SimOptionsPage = () => {
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
 
+    const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'SAVE');
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 
@@ -197,6 +198,12 @@ const SimOptionsPage = () => {
         { name: 'Auto', setting: 'AUTO' },
         { name: 'in Hg', setting: 'IN HG' },
         { name: 'hPa', setting: 'HPA' },
+    ];
+
+    const fpSyncButtons: ButtonType[] = [
+        { name: 'None', setting: 'NONE' },
+        { name: 'Load Only', setting: 'LOAD' },
+        { name: 'Save', setting: 'SAVE' },
     ];
 
     useEffect(() => {
@@ -250,6 +257,21 @@ const SimOptionsPage = () => {
                                     enabled
                                     onSelect={() => setDefaultBaro(button.setting)}
                                     selected={defaultBaro === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Sync MSFS Flight Plan</span>
+                        <SelectGroup>
+                            {fpSyncButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setFpSync(button.setting)}
+                                    selected={fpSync === button.setting}
                                 >
                                     {button.name}
                                 </SelectItem>
