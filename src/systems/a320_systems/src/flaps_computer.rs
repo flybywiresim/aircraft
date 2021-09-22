@@ -147,24 +147,42 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn generate_configuration(&self, handle_transition: Option<(u8,u8)>) -> Option<FlapsConf> {
+    fn generate_configuration(&self, handle_transition: Option<(u8, u8)>) -> Option<FlapsConf> {
         if let Some((from, to)) = handle_transition {
             match from {
                 0 => match to {
-                        1 => if self.air_speed <= 100. { Some(FlapsConf::Conf1F) } else { Some(FlapsConf::Conf1) },
-                        0 => Some(FlapsConf::from(0)),
-                        _ => Some(FlapsConf::from(to + 1)),
+                    1 => {
+                        if self.air_speed <= 100. {
+                            Some(FlapsConf::Conf1F)
+                        } else {
+                            Some(FlapsConf::Conf1)
+                        }
+                    }
+                    0 => Some(FlapsConf::from(0)),
+                    _ => Some(FlapsConf::from(to + 1)),
                 },
                 1 => match to {
-                        1 => if self.air_speed > 210. { Some(FlapsConf::Conf1) } else { None },
-                        0 => Some(FlapsConf::from(0)),
-                        _ => Some(FlapsConf::from(to + 1)),
-                    },
-                _ => match to {
-                        1 => if self.air_speed <= 210. { Some(FlapsConf::Conf1F)  } else { Some(FlapsConf::Conf1) },
-                        0 => Some(FlapsConf::from(0)),
-                        _ => Some(FlapsConf::from(to + 1)),
+                    1 => {
+                        if self.air_speed > 210. {
+                            Some(FlapsConf::Conf1)
+                        } else {
+                            None
+                        }
                     }
+                    0 => Some(FlapsConf::from(0)),
+                    _ => Some(FlapsConf::from(to + 1)),
+                },
+                _ => match to {
+                    1 => {
+                        if self.air_speed <= 210. {
+                            Some(FlapsConf::Conf1F)
+                        } else {
+                            Some(FlapsConf::Conf1)
+                        }
+                    }
+                    0 => Some(FlapsConf::from(0)),
+                    _ => Some(FlapsConf::from(to + 1)),
+                },
             }
         } else {
             None
@@ -186,8 +204,11 @@ impl SlatFlapControlComputer {
     }
 
     fn signal_flap_movement(&self, position_feedback: Angle) -> Option<Angle> {
-        if (self.flaps_demanded_angle - position_feedback).get::<degree>().abs() 
-                    > Self::EQUAL_ANGLE_DELTA {
+        if (self.flaps_demanded_angle - position_feedback)
+            .get::<degree>()
+            .abs()
+            > Self::EQUAL_ANGLE_DELTA
+        {
             Some(self.flaps_demanded_angle)
         } else {
             None
@@ -195,8 +216,11 @@ impl SlatFlapControlComputer {
     }
 
     fn signal_slat_movement(&self, position_feedback: Angle) -> Option<Angle> {
-        if (self.slats_demanded_angle - position_feedback).get::<degree>().abs() 
-                    > Self::EQUAL_ANGLE_DELTA {
+        if (self.slats_demanded_angle - position_feedback)
+            .get::<degree>()
+            .abs()
+            > Self::EQUAL_ANGLE_DELTA
+        {
             Some(self.slats_demanded_angle)
         } else {
             None
@@ -205,7 +229,6 @@ impl SlatFlapControlComputer {
 }
 
 impl SimulationElement for SlatFlapControlComputer {
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             "LEFT_FLAPS_TARGET_ANGLE",
@@ -259,7 +282,7 @@ impl SlatFlapGear {
             left_position_angle_id: format!("LEFT_{}_ANGLE", surface_type),
             right_position_angle_id: format!("RIGHT_{}_ANGLE", surface_type),
 
-            hyd_green_pressure: 0.
+            hyd_green_pressure: 0.,
         }
     }
 
@@ -273,9 +296,10 @@ impl SlatFlapGear {
                 let actual_minus_target: Angle = demanded_angle - self.current_angle;
                 if actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA {
                     self.current_angle += Angle::new::<degree>(
-                            actual_minus_target.get::<degree>().signum()
+                        actual_minus_target.get::<degree>().signum()
                             * self.speed
-                            * context.delta_as_secs_f64());
+                            * context.delta_as_secs_f64(),
+                    );
                     if self.current_angle < Angle::new::<degree>(0.) {
                         self.current_angle = Angle::new::<degree>(0.);
                     }
@@ -289,8 +313,14 @@ impl SlatFlapGear {
 
 impl SimulationElement for SlatFlapGear {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.left_position_percent_id, self.current_angle / self.max_angle);
-        writer.write(&self.right_position_percent_id, self.current_angle / self.max_angle);
+        writer.write(
+            &self.left_position_percent_id,
+            self.current_angle / self.max_angle,
+        );
+        writer.write(
+            &self.right_position_percent_id,
+            self.current_angle / self.max_angle,
+        );
         writer.write(&self.left_position_angle_id, self.current_angle);
         writer.write(&self.right_position_angle_id, self.current_angle);
     }
@@ -300,14 +330,11 @@ impl SimulationElement for SlatFlapGear {
     }
 }
 
-
 pub struct SlatFlapComplex {
     sfcc: SlatFlapControlComputer,
     flaps_handle: FlapsHandle,
     flap_gear: SlatFlapGear,
     slat_gear: SlatFlapGear,
-
-    flaps_conf_handle_index_helper: f64,
 }
 
 impl SlatFlapComplex {
@@ -315,17 +342,23 @@ impl SlatFlapComplex {
         Self {
             sfcc: SlatFlapControlComputer::new(),
             flaps_handle: FlapsHandle::new(),
-            flap_gear: SlatFlapGear::new(2.,Angle::new::<degree>(40.),"FLAPS"),
-            slat_gear: SlatFlapGear::new(1.5,Angle::new::<degree>(27.),"SLATS"),
-            flaps_conf_handle_index_helper: 0.,
+            flap_gear: SlatFlapGear::new(2., Angle::new::<degree>(40.), "FLAPS"),
+            slat_gear: SlatFlapGear::new(1.5, Angle::new::<degree>(27.), "SLATS"),
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.sfcc.update(context, self.flaps_handle.signal_new_position());
+        self.sfcc
+            .update(context, self.flaps_handle.signal_new_position());
         self.flaps_handle.equilibrate_old_and_current();
-        self.flap_gear.update(context, self.sfcc.signal_flap_movement(self.flap_gear.current_angle));
-        self.slat_gear.update(context, self.sfcc.signal_slat_movement(self.slat_gear.current_angle));
+        self.flap_gear.update(
+            context,
+            self.sfcc.signal_flap_movement(self.flap_gear.current_angle),
+        );
+        self.slat_gear.update(
+            context,
+            self.sfcc.signal_slat_movement(self.slat_gear.current_angle),
+        );
     }
 }
 
@@ -454,6 +487,27 @@ mod tests {
 
     fn test_bed_with() -> A320FlapsTestBed {
         test_bed()
+    }
+
+    #[test]
+    fn flaps_simvars() {
+        let mut test_bed = test_bed_with().run_one_tick();
+
+        assert!(test_bed.contains_key("LEFT_FLAPS_ANGLE"));
+        assert!(test_bed.contains_key("RIGHT_FLAPS_ANGLE"));
+        assert!(test_bed.contains_key("LEFT_FLAPS_POSITION_PERCENT"));
+        assert!(test_bed.contains_key("RIGHT_FLAPS_POSITION_PERCENT"));
+        assert!(test_bed.contains_key("LEFT_FLAPS_TARGET_ANGLE"));
+        assert!(test_bed.contains_key("RIGHT_FLAPS_TARGET_ANGLE"));
+
+        assert!(test_bed.contains_key("LEFT_SLATS_ANGLE"));
+        assert!(test_bed.contains_key("RIGHT_SLATS_ANGLE"));
+        assert!(test_bed.contains_key("LEFT_SLATS_POSITION_PERCENT"));
+        assert!(test_bed.contains_key("RIGHT_SLATS_POSITION_PERCENT"));
+        assert!(test_bed.contains_key("LEFT_SLATS_TARGET_ANGLE"));
+        assert!(test_bed.contains_key("RIGHT_SLATS_TARGET_ANGLE"));
+
+        assert!(test_bed.contains_key("FLAPS_CONF_HANDLE_INDEX_HELPER"));
     }
 
     // Tests flaps configuration and angles for regular
@@ -981,7 +1035,7 @@ mod tests {
             .set_air_speed(0.)
             .set_flaps_handle_position(0)
             .run_one_tick();
-        
+
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(1);
@@ -989,10 +1043,20 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_flaps_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
-            println!("{}, {}, {}",test_bed.get_flaps_angle() , test_bed.get_flaps_demanded_angle(),previous_angle);
-            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
+            println!(
+                "{}, {}, {}",
+                test_bed.get_flaps_angle(),
+                test_bed.get_flaps_demanded_angle(),
+                previous_angle
+            );
+            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs()
+                <= angle_delta
+            {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-                assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+                assert!(
+                    (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs()
+                        <= angle_delta
+                );
                 break;
             } else {
                 assert!(previous_angle < test_bed.get_flaps_angle());
@@ -1000,7 +1064,9 @@ mod tests {
             previous_angle = test_bed.get_flaps_angle();
             test_bed = test_bed.run_one_tick();
         }
-        assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+        assert!(
+            (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta
+        );
     }
 
     #[test]
@@ -1011,7 +1077,7 @@ mod tests {
             .set_air_speed(0.)
             .set_flaps_handle_position(1)
             .run_one_tick();
-        
+
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(2);
@@ -1019,9 +1085,14 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_flaps_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
-            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
+            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs()
+                <= angle_delta
+            {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-                assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+                assert!(
+                    (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs()
+                        <= angle_delta
+                );
                 break;
             } else {
                 assert!(previous_angle < test_bed.get_flaps_angle());
@@ -1029,7 +1100,9 @@ mod tests {
             previous_angle = test_bed.get_flaps_angle();
             test_bed = test_bed.run_one_tick();
         }
-        assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+        assert!(
+            (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta
+        );
     }
 
     #[test]
@@ -1040,7 +1113,7 @@ mod tests {
             .set_air_speed(0.)
             .set_flaps_handle_position(2)
             .run_one_tick();
-        
+
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(3);
@@ -1048,9 +1121,14 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_flaps_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
-            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
+            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs()
+                <= angle_delta
+            {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-                assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+                assert!(
+                    (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs()
+                        <= angle_delta
+                );
                 break;
             } else {
                 assert!(previous_angle < test_bed.get_flaps_angle());
@@ -1058,7 +1136,9 @@ mod tests {
             previous_angle = test_bed.get_flaps_angle();
             test_bed = test_bed.run_one_tick();
         }
-        assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+        assert!(
+            (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta
+        );
     }
 
     #[test]
@@ -1069,7 +1149,7 @@ mod tests {
             .set_air_speed(0.)
             .set_flaps_handle_position(3)
             .run_one_tick();
-        
+
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(4);
@@ -1077,9 +1157,14 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_flaps_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
-            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta {
+            if (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs()
+                <= angle_delta
+            {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-                assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+                assert!(
+                    (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs()
+                        <= angle_delta
+                );
                 break;
             } else {
                 assert!(previous_angle < test_bed.get_flaps_angle());
@@ -1087,9 +1172,10 @@ mod tests {
             previous_angle = test_bed.get_flaps_angle();
             test_bed = test_bed.run_one_tick();
         }
-        assert!((test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta);
+        assert!(
+            (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta
+        );
     }
-
 
     #[test]
     fn slats_test_movement_0_to_1f() {
@@ -1099,7 +1185,7 @@ mod tests {
             .set_air_speed(0.)
             .set_flaps_handle_position(0)
             .run_one_tick();
-        
+
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(1);
@@ -1107,9 +1193,14 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_slats_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
-            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                <= angle_delta
+            {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-                assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+                assert!(
+                    (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                        <= angle_delta
+                );
                 break;
             } else {
                 assert!(previous_angle < test_bed.get_slats_angle());
@@ -1117,7 +1208,46 @@ mod tests {
             previous_angle = test_bed.get_slats_angle();
             test_bed = test_bed.run_one_tick();
         }
-        assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+        assert!(
+            (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta
+        );
+    }
+
+    #[test]
+    fn slats_and_flaps_test_movement_0_to_1() {
+        let angle_delta = 0.01;
+        let mut test_bed = test_bed_with()
+            .set_hyd_pressure()
+            .set_air_speed(220.)
+            .set_flaps_handle_position(0)
+            .run_one_tick();
+
+        assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
+
+        test_bed = test_bed.set_flaps_handle_position(1);
+
+        let mut previous_angle: f64 = test_bed.get_slats_angle();
+        test_bed = test_bed.run_one_tick();
+        for _ in 0..1200 {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                <= angle_delta
+            {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+                assert!(
+                    (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                        <= angle_delta
+                );
+                break;
+            } else {
+                assert!(previous_angle < test_bed.get_slats_angle());
+            }
+            previous_angle = test_bed.get_slats_angle();
+            test_bed = test_bed.run_one_tick();
+        }
+        assert!(
+            (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta
+        );
+        assert!(test_bed.get_flaps_angle() == 0.);
     }
 
     #[test]
@@ -1128,7 +1258,7 @@ mod tests {
             .set_air_speed(0.)
             .set_flaps_handle_position(1)
             .run_one_tick();
-        
+
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(2);
@@ -1136,9 +1266,14 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_slats_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
-            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                <= angle_delta
+            {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-                assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+                assert!(
+                    (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                        <= angle_delta
+                );
                 break;
             } else {
                 assert!(previous_angle < test_bed.get_slats_angle());
@@ -1146,7 +1281,9 @@ mod tests {
             previous_angle = test_bed.get_slats_angle();
             test_bed = test_bed.run_one_tick();
         }
-        assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+        assert!(
+            (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta
+        );
     }
 
     #[test]
@@ -1157,7 +1294,7 @@ mod tests {
             .set_air_speed(0.)
             .set_flaps_handle_position(2)
             .run_one_tick();
-        
+
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(3);
@@ -1165,9 +1302,14 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_slats_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
-            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                <= angle_delta
+            {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-                assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+                assert!(
+                    (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                        <= angle_delta
+                );
                 break;
             } else {
                 assert!(previous_angle < test_bed.get_slats_angle());
@@ -1175,7 +1317,9 @@ mod tests {
             previous_angle = test_bed.get_slats_angle();
             test_bed = test_bed.run_one_tick();
         }
-        assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+        assert!(
+            (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta
+        );
     }
 
     #[test]
@@ -1186,7 +1330,7 @@ mod tests {
             .set_air_speed(0.)
             .set_flaps_handle_position(3)
             .run_one_tick();
-        
+
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(4);
@@ -1194,9 +1338,14 @@ mod tests {
         let mut previous_angle: f64 = test_bed.get_slats_angle();
         test_bed = test_bed.run_one_tick();
         for _ in 0..1200 {
-            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta {
+            if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                <= angle_delta
+            {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-                assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+                assert!(
+                    (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
+                        <= angle_delta
+                );
                 break;
             } else {
                 assert!(previous_angle < test_bed.get_slats_angle());
@@ -1204,6 +1353,8 @@ mod tests {
             previous_angle = test_bed.get_slats_angle();
             test_bed = test_bed.run_one_tick();
         }
-        assert!((test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta);
+        assert!(
+            (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta
+        );
     }
 }
