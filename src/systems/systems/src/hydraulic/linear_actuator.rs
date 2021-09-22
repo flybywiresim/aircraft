@@ -22,11 +22,237 @@ pub trait Actuator {
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum LinearActuatorMode {
-    ClosedValves = 0,
-    PositionControl = 1,
-    Damping = 2,
+    ClosedValves,
+    PositionControl,
+    ActiveDamping,
 }
 
+/// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
+/// solenoid control valves, spring loaded valves, differential pressure mechanism......
+///
+/// We don't want to simulate all of those little bits, so the functions of the actuator are split in
+/// functional modes
+///
+/// ClosedValves -> Turns actuator in a high constant spring/damper system simulating a closed actuator
+/// only constrained by its own fluid compressibility
+///
+/// ActiveDamping -> Actuator use internal valves to provide a force resisting to its own movements, dampening
+/// the piece movements it's connected to
+///
+/// PositionControl -> Actuator will try to use hydraulic pressure to move to a requested position, while
+/// maintaining flow limitations
+#[derive(PartialEq, Clone, Copy)]
+struct CoreHydraulicForce {
+    current_mode: LinearActuatorMode,
+    closed_valves_reference_position: Ratio,
+
+    active_hydraulic_damping_constant: f64,
+    fluid_compression_spring_constant: f64,
+    fluid_compression_damping_constant: f64,
+
+    max_flow: VolumeRate,
+    min_flow: VolumeRate,
+    flow_error_prev: VolumeRate,
+
+    bore_side_area: Area,
+    rod_side_area: Area,
+
+    last_control_force: Force,
+}
+impl CoreHydraulicForce {
+    const DEFAULT_I_GAIN: f64 = 0.2;
+    const DEFAULT_P_GAIN: f64 = 0.05;
+    const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        init_position: Ratio,
+        active_hydraulic_damping_constant: f64,
+        fluid_compression_spring_constant: f64,
+        fluid_compression_damping_constant: f64,
+        max_flow: VolumeRate,
+        min_flow: VolumeRate,
+        bore_side_area: Area,
+        rod_side_area: Area,
+    ) -> Self {
+        Self {
+            current_mode: LinearActuatorMode::ClosedValves,
+            closed_valves_reference_position: init_position,
+            active_hydraulic_damping_constant,
+            fluid_compression_spring_constant,
+            fluid_compression_damping_constant,
+            max_flow,
+            min_flow,
+            flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
+            bore_side_area,
+            rod_side_area,
+            last_control_force: Force::new::<newton>(0.),
+        }
+    }
+    fn update_force(
+        &mut self,
+        required_position: Ratio,
+        requested_mode: LinearActuatorMode,
+        position_normalized: Ratio,
+        current_pressure: Pressure,
+        signed_flow: VolumeRate,
+        speed: Velocity,
+    ) -> Force {
+        self.update_actions(requested_mode, position_normalized);
+
+        self.force(
+            required_position,
+            position_normalized,
+            current_pressure,
+            signed_flow,
+            speed,
+        )
+    }
+
+    fn update_actions(&mut self, requested_mode: LinearActuatorMode, position_normalized: Ratio) {
+        match requested_mode {
+            LinearActuatorMode::ClosedValves => {
+                self.actions_from_current_to_closed_valves(position_normalized)
+            }
+            LinearActuatorMode::PositionControl => self.actions_from_current_to_position_control(),
+            LinearActuatorMode::ActiveDamping => self.actions_from_current_to_damping(),
+        }
+    }
+
+    fn actions_from_current_to_closed_valves(&mut self, position_normalized: Ratio) {
+        match self.current_mode {
+            LinearActuatorMode::ClosedValves => {}
+            LinearActuatorMode::PositionControl => {
+                self.go_to_close_control_valves(position_normalized);
+            }
+            LinearActuatorMode::ActiveDamping => {
+                self.go_to_close_control_valves(position_normalized);
+            }
+        }
+    }
+
+    fn actions_from_current_to_position_control(&mut self) {
+        match self.current_mode {
+            LinearActuatorMode::ClosedValves => {
+                self.go_to_position_control();
+            }
+            LinearActuatorMode::PositionControl => {}
+            LinearActuatorMode::ActiveDamping => {
+                self.go_to_position_control();
+            }
+        }
+    }
+
+    fn actions_from_current_to_damping(&mut self) {
+        match self.current_mode {
+            LinearActuatorMode::ClosedValves => {
+                self.go_to_damping();
+            }
+            LinearActuatorMode::PositionControl => {
+                self.go_to_damping();
+            }
+            LinearActuatorMode::ActiveDamping => {}
+        }
+    }
+
+    fn go_to_close_control_valves(&mut self, position_normalized: Ratio) {
+        self.closed_valves_reference_position = position_normalized;
+        self.current_mode = LinearActuatorMode::ClosedValves;
+    }
+
+    fn go_to_position_control(&mut self) {
+        self.current_mode = LinearActuatorMode::PositionControl;
+    }
+
+    fn go_to_damping(&mut self) {
+        self.current_mode = LinearActuatorMode::ActiveDamping;
+    }
+
+    fn force(
+        &mut self,
+        required_position: Ratio,
+        position_normalized: Ratio,
+        current_pressure: Pressure,
+        signed_flow: VolumeRate,
+        speed: Velocity,
+    ) -> Force {
+        match self.current_mode {
+            LinearActuatorMode::ClosedValves => {
+                self.force_closed_valves(position_normalized, speed)
+            }
+            LinearActuatorMode::ActiveDamping => self.force_damping(speed),
+            LinearActuatorMode::PositionControl => self.force_position_control(
+                required_position,
+                position_normalized,
+                signed_flow,
+                current_pressure,
+                speed,
+            ),
+        }
+    }
+
+    fn force_damping(&mut self, speed: Velocity) -> Force {
+        Force::new::<newton>(
+            -speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
+        )
+    }
+
+    fn force_closed_valves(&mut self, position_normalized: Ratio, speed: Velocity) -> Force {
+        let position_error = self.closed_valves_reference_position - position_normalized;
+
+        Force::new::<newton>(
+            position_error.get::<ratio>() * self.fluid_compression_spring_constant
+                - speed.get::<meter_per_second>() * self.fluid_compression_damping_constant,
+        )
+    }
+
+    fn force_position_control(
+        &mut self,
+        required_position: Ratio,
+        position_normalized: Ratio,
+        signed_flow: VolumeRate,
+        current_pressure: Pressure,
+        speed: Velocity,
+    ) -> Force {
+        let position_error = required_position - position_normalized;
+
+        let open_loop_flow_target = if position_error >= Ratio::new::<ratio>(0.001) {
+            self.max_flow
+        } else if position_error <= Ratio::new::<ratio>(-0.001) {
+            self.min_flow
+        } else {
+            VolumeRate::new::<gallon_per_second>(0.)
+        };
+
+        let flow_error = open_loop_flow_target.get::<gallon_per_second>()
+            - signed_flow.get::<gallon_per_second>();
+
+        let delta_error = flow_error - self.flow_error_prev.get::<gallon_per_second>();
+        self.flow_error_prev = VolumeRate::new::<gallon_per_second>(flow_error);
+
+        let p_term = Self::DEFAULT_P_GAIN * delta_error;
+        let i_term = Self::DEFAULT_I_GAIN * flow_error;
+
+        let force_gain = Self::DEFAULT_FORCE_GAIN;
+        self.last_control_force += Force::new::<newton>((p_term + i_term) * force_gain);
+
+        if self.last_control_force > Force::new::<newton>(0.) {
+            if position_error > Ratio::new::<ratio>(0.)
+                && speed <= Velocity::new::<meter_per_second>(0.)
+            {
+                let max_force = current_pressure * self.bore_side_area;
+                self.last_control_force = self.last_control_force.min(max_force);
+            }
+        } else if position_error < Ratio::new::<ratio>(0.)
+            && speed >= Velocity::new::<meter_per_second>(0.)
+        {
+            let max_force = -1. * current_pressure * self.rod_side_area;
+            self.last_control_force = self.last_control_force.max(max_force);
+        }
+
+        self.last_control_force
+    }
+}
 /// Represents a classical linear actuator with a rod side area and a bore side area
 /// It is connected between an anchor point on the plane and a control arm of a rigid body
 /// When the actuator moves, it takes fluid on one side and gives back to reservoir the fluid on other side
@@ -35,11 +261,6 @@ pub enum LinearActuatorMode {
 ///
 /// It can behave it two main ways: its control valves are either closed, and it can't move, or valves are opened and
 /// hydraulic power can move it with enough pressure.
-///
-/// How those two modes are done: when valves are closed, actuator is constrained by a spring damper system,
-/// which simulate the fluid compressibility resisting to rigid body movement.
-/// When valves are opened, a controller will try to reach the specified target position. Controller works in flow
-/// control so only the correct amount of flow is sent to the actuator.
 #[derive(PartialEq, Clone, Copy)]
 pub struct LinearActuator {
     number_of_actuators: u8,
@@ -74,19 +295,11 @@ pub struct LinearActuator {
     volume_to_actuator_accumulator: Volume,
     volume_to_res_accumulator: Volume,
 
-    mode: LinearActuatorMode,
-    is_control_valves_closed: bool,
-    closed_valves_reference_position: Ratio,
-    opened_valves_target_position: Ratio,
+    requested_position: Ratio,
 
-    fluid_compression_spring_constant: f64,
-    fluid_compression_damping_constant: f64,
-    active_hydraulic_damping_constant: f64,
+    core_hydraulics: CoreHydraulicForce,
 }
 impl LinearActuator {
-    const DEFAULT_I_GAIN: f64 = 0.2;
-    const DEFAULT_P_GAIN: f64 = 0.05;
-
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         bounded_linear_length: &impl BoundedLinearLength,
@@ -118,6 +331,11 @@ impl LinearActuator {
 
         let actual_max_flow = number_of_actuators as f64 * max_flow;
 
+        let total_bore_side_area = bore_side_area_single_actuator * number_of_actuators as f64;
+        let total_bore_side_volume = bore_side_volume_single_actuator * number_of_actuators as f64;
+
+        let total_rod_side_area = rod_side_area_single_actuator * number_of_actuators as f64;
+        let total_rod_side_volume = rod_side_volume_single_actuator * number_of_actuators as f64;
         Self {
             number_of_actuators,
 
@@ -133,11 +351,11 @@ impl LinearActuator {
 
             total_travel,
 
-            bore_side_area: bore_side_area_single_actuator * number_of_actuators as f64,
-            bore_side_volume: bore_side_volume_single_actuator * number_of_actuators as f64,
+            bore_side_area: total_bore_side_area,
+            bore_side_volume: total_bore_side_volume,
 
-            rod_side_area: rod_side_area_single_actuator * number_of_actuators as f64,
-            rod_side_volume: rod_side_volume_single_actuator * number_of_actuators as f64,
+            rod_side_area: total_rod_side_area,
+            rod_side_volume: total_rod_side_volume,
 
             volume_extension_ratio,
             signed_flow: VolumeRate::new::<gallon_per_second>(0.),
@@ -154,14 +372,18 @@ impl LinearActuator {
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
 
-            mode: LinearActuatorMode::ClosedValves,
-            is_control_valves_closed: false,
-            closed_valves_reference_position: Ratio::new::<ratio>(0.),
-            opened_valves_target_position: Ratio::new::<ratio>(0.),
+            requested_position: Ratio::new::<ratio>(0.),
 
-            fluid_compression_spring_constant,
-            fluid_compression_damping_constant,
-            active_hydraulic_damping_constant,
+            core_hydraulics: CoreHydraulicForce::new(
+                Ratio::new::<ratio>(0.),
+                active_hydraulic_damping_constant,
+                fluid_compression_spring_constant,
+                fluid_compression_damping_constant,
+                actual_max_flow,
+                -actual_max_flow / volume_extension_ratio,
+                total_bore_side_area,
+                total_rod_side_area,
+            ),
         }
     }
 
@@ -171,17 +393,15 @@ impl LinearActuator {
         requested_mode: LinearActuatorMode,
         current_pressure: Pressure,
     ) {
-        self.update_mode(requested_mode);
-        self.update_force(current_pressure);
+        self.force = self.core_hydraulics.update_force(
+            self.requested_position,
+            requested_mode,
+            self.position_normalized,
+            current_pressure,
+            self.signed_flow,
+            self.speed,
+        );
         connected_body.apply_control_arm_force(self.force);
-    }
-
-    fn update_mode(&mut self, requested_mode: LinearActuatorMode) {
-        match requested_mode {
-            LinearActuatorMode::ClosedValves => self.close_control_valves(),
-            LinearActuatorMode::PositionControl => self.open_control_valves_for_position_control(),
-            LinearActuatorMode::Damping => self.mode = LinearActuatorMode::Damping,
-        }
     }
 
     fn update_after_rigid_body(
@@ -231,77 +451,8 @@ impl LinearActuator {
         self.volume_to_res_accumulator += volume_to_reservoir;
     }
 
-    fn update_force(&mut self, current_pressure: Pressure) {
-        match self.mode {
-            LinearActuatorMode::ClosedValves => {
-                let position_error =
-                    self.closed_valves_reference_position - self.position_normalized;
-                self.force = Force::new::<newton>(
-                    position_error.get::<ratio>() * self.fluid_compression_spring_constant
-                        - self.speed.get::<meter_per_second>()
-                            * self.fluid_compression_damping_constant,
-                );
-            }
-            LinearActuatorMode::Damping => {
-                self.force = Force::new::<newton>(
-                    -self.speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
-                );
-            }
-            LinearActuatorMode::PositionControl => self.compute_control_force(current_pressure),
-        }
-    }
-
-    fn close_control_valves(&mut self) {
-        if self.mode != LinearActuatorMode::ClosedValves {
-            self.closed_valves_reference_position = self.position_normalized;
-            self.mode = LinearActuatorMode::ClosedValves;
-        }
-    }
-
-    fn open_control_valves_for_position_control(&mut self) {
-        self.mode = LinearActuatorMode::PositionControl;
-    }
-
     fn set_position_target(&mut self, target_position: Ratio) {
-        self.opened_valves_target_position = target_position;
-    }
-
-    fn compute_control_force(&mut self, current_pressure: Pressure) {
-        let position_error = self.opened_valves_target_position - self.position_normalized;
-
-        let open_loop_flow_target = if position_error >= Ratio::new::<ratio>(0.001) {
-            self.max_flow
-        } else if position_error <= Ratio::new::<ratio>(-0.001) {
-            self.min_flow
-        } else {
-            VolumeRate::new::<gallon_per_second>(0.)
-        };
-
-        let flow_error = open_loop_flow_target.get::<gallon_per_second>()
-            - self.signed_flow.get::<gallon_per_second>();
-
-        let delta_error = flow_error - self.flow_error_prev.get::<gallon_per_second>();
-        self.flow_error_prev = VolumeRate::new::<gallon_per_second>(flow_error);
-
-        let p_term = Self::DEFAULT_P_GAIN * delta_error;
-        let i_term = Self::DEFAULT_I_GAIN * flow_error;
-
-        let force_gain = 200000.;
-        self.force += Force::new::<newton>((p_term + i_term) * force_gain);
-
-        if self.force > Force::new::<newton>(0.) {
-            if position_error > Ratio::new::<ratio>(0.)
-                && self.speed <= Velocity::new::<meter_per_second>(0.)
-            {
-                let max_force = current_pressure * self.bore_side_area;
-                self.force = self.force.min(max_force);
-            }
-        } else if position_error < Ratio::new::<ratio>(0.)
-            && self.speed >= Velocity::new::<meter_per_second>(0.)
-        {
-            let max_force = -1. * current_pressure * self.rod_side_area;
-            self.force = self.force.max(max_force);
-        }
+        self.requested_position = target_position;
     }
 }
 
@@ -651,7 +802,7 @@ mod tests {
             }
 
             if time > 26. {
-                requested_mode = LinearActuatorMode::Damping;
+                requested_mode = LinearActuatorMode::ActiveDamping;
             }
 
             println!(
