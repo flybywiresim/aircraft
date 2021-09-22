@@ -326,10 +326,10 @@ impl A320Hydraulic {
         self.physics_updater.update(context);
 
         for cur_time_step in &mut self.physics_updater {
-            self.update_max_fixed_step(&context.with_delta(cur_time_step));
+            self.update_fast_physics(&context.with_delta(cur_time_step));
         }
 
-        self.update_every_frame(
+        self.update_with_sim_rate(
             &context,
             &overhead_panel,
             &autobrake_panel,
@@ -340,7 +340,7 @@ impl A320Hydraulic {
         );
 
         for cur_time_step in &mut self.core_hydraulic_updater {
-            self.update_fixed_step(
+            self.update_core_hydraulics(
                 &context.with_delta(cur_time_step),
                 engine1,
                 engine2,
@@ -459,7 +459,7 @@ impl A320Hydraulic {
     }
 
     // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
-    fn update_max_fixed_step(&mut self, context: &UpdateContext) {
+    fn update_fast_physics(&mut self, context: &UpdateContext) {
         self.forward_cargo_door.update(
             &self.forward_cargo_door_controller,
             &context,
@@ -477,7 +477,7 @@ impl A320Hydraulic {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn update_every_frame(
+    fn update_with_sim_rate(
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
@@ -556,7 +556,7 @@ impl A320Hydraulic {
 
     #[allow(clippy::too_many_arguments)]
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
-    fn update_fixed_step<T: Engine, U: EngineFirePushButtons>(
+    fn update_core_hydraulics<T: Engine, U: EngineFirePushButtons>(
         &mut self,
         context: &UpdateContext,
         engine1: &T,
