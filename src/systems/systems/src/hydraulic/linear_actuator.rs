@@ -9,6 +9,7 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
+use super::rigid_body::BoundedLinearLength;
 use super::rigid_body::LinearActuatedRigidBodyOnHingeAxis;
 
 use crate::simulation::UpdateContext;
@@ -88,8 +89,7 @@ impl LinearActuator {
 
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        max_absolute_length: Length,
-        min_absolute_length: Length,
+        bounded_linear_length: &impl BoundedLinearLength,
         number_of_actuators: u8,
         bore_side_diameter: Length,
         rod_diameter: Length,
@@ -98,7 +98,8 @@ impl LinearActuator {
         fluid_compression_damping_constant: f64,
         active_hydraulic_damping_constant: f64,
     ) -> Self {
-        let total_travel = max_absolute_length - min_absolute_length;
+        let total_travel = bounded_linear_length.max_absolute_length_to_anchor()
+            - bounded_linear_length.min_absolute_length_to_anchor();
 
         let bore_side_area_single_actuator = Area::new::<square_meter>(
             std::f64::consts::PI * (bore_side_diameter.get::<meter>() / 2.).powi(2),
@@ -121,14 +122,14 @@ impl LinearActuator {
             number_of_actuators,
 
             position_normalized: Ratio::new::<ratio>(0.),
-            position: min_absolute_length,
-            last_position: min_absolute_length,
+            position: bounded_linear_length.min_absolute_length_to_anchor(),
+            last_position: bounded_linear_length.min_absolute_length_to_anchor(),
 
             speed: Velocity::new::<meter_per_second>(0.),
             force: Force::new::<newton>(0.),
 
-            max_absolute_length,
-            min_absolute_length,
+            max_absolute_length: bounded_linear_length.max_absolute_length_to_anchor(),
+            min_absolute_length: bounded_linear_length.min_absolute_length_to_anchor(),
 
             total_travel,
 
@@ -701,10 +702,9 @@ mod tests {
         )
     }
 
-    fn cargo_door_actuator(rigid_body: &impl BoundedLinearLength) -> LinearActuator {
+    fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         LinearActuator::new(
-            rigid_body.max_absolute_length_to_anchor(),
-            rigid_body.min_absolute_length_to_anchor(),
+            bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),

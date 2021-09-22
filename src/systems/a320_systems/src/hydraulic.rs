@@ -49,10 +49,11 @@ use systems::{
 
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
-    fn a320_cargo_door_actuator(rigid_body: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_cargo_door_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         LinearActuator::new(
-            rigid_body.max_absolute_length_to_anchor(),
-            rigid_body.min_absolute_length_to_anchor(),
+            bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),
