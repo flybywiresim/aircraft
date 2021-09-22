@@ -500,7 +500,8 @@ impl A320Hydraulic {
         // TODO Here input the flap computer position request
         // Degrees are in synchrodrive degrees, so from 0 to 231.24°
         self.flap_system.update(
-            self.flaps_position_request,
+            Some(self.flaps_position_request),
+            Some(self.flaps_position_request),
             self.green_loop.pressure(),
             self.yellow_loop.pressure(),
             context,
