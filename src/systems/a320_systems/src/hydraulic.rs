@@ -23,10 +23,10 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
         linear_actuator::{
-            Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuator,
+            Actuator, BoundedLinearLength, HydraulicAssemblyController,
+            HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
             LinearActuatorMode,
         },
-        rigid_body::{BoundedLinearLength, LinearActuatedRigidBodyOnHingeAxis},
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
