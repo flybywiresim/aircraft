@@ -75,8 +75,6 @@ struct SlatFlapControlComputer {
     slats_demanded_angle: Angle,
     flaps_conf: FlapsConf,
     air_speed: f64,
-
-    hyd_green_pressure: f64,
 }
 
 impl SlatFlapControlComputer {
@@ -88,8 +86,6 @@ impl SlatFlapControlComputer {
             slats_demanded_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
             air_speed: 0.,
-
-            hyd_green_pressure: 0.,
         }
     }
 
@@ -99,27 +95,6 @@ impl SlatFlapControlComputer {
 
     fn set_target_slats_angle(&mut self, angle: Angle) {
         self.slats_demanded_angle = angle;
-    }
-
-    fn get_target_flaps_angle_f64(&self) -> f64 {
-        self.flaps_demanded_angle.get::<degree>()
-    }
-    fn get_target_slats_angle_f64(&self) -> f64 {
-        self.slats_demanded_angle.get::<degree>()
-    }
-
-    fn get_flaps_conf(&self) -> u8 {
-        self.flaps_conf as u8
-    }
-
-    fn get_flaps_conf_f64(&self) -> f64 {
-        self.get_flaps_conf() as f64
-    }
-
-    //This is just a placeholder for the system
-    //to not work when cold & dark
-    fn is_system_pressurized(&self) -> bool {
-        self.hyd_green_pressure > 2000.
     }
 
     fn target_flaps_angle_from_state(flap_state: FlapsConf) -> Angle {
@@ -286,10 +261,6 @@ impl SlatFlapGear {
         }
     }
 
-    pub fn current_angle_f64(&self) -> f64 {
-        self.current_angle.get::<degree>()
-    }
-
     fn update(&mut self, context: &UpdateContext, sfcc_demand: Option<Angle>) {
         if self.hyd_green_pressure > 2000. {
             if let Some(demanded_angle) = sfcc_demand {
@@ -450,11 +421,21 @@ mod tests {
         }
 
         fn get_flaps_demanded_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.sfcc.get_target_flaps_angle_f64())
+            self.query(|a| {
+                a.slat_flap_complex
+                    .sfcc
+                    .flaps_demanded_angle
+                    .get::<degree>()
+            })
         }
 
         fn get_slats_demanded_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.sfcc.get_target_slats_angle_f64())
+            self.query(|a| {
+                a.slat_flap_complex
+                    .sfcc
+                    .slats_demanded_angle
+                    .get::<degree>()
+            })
         }
 
         fn get_flaps_conf(&self) -> FlapsConf {
@@ -462,11 +443,11 @@ mod tests {
         }
 
         fn get_flaps_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.flap_gear.current_angle_f64())
+            self.query(|a| a.slat_flap_complex.flap_gear.current_angle.get::<degree>())
         }
 
         fn get_slats_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.slat_gear.current_angle_f64())
+            self.query(|a| a.slat_flap_complex.slat_gear.current_angle.get::<degree>())
         }
     }
     impl TestBed for A320FlapsTestBed {
@@ -491,7 +472,7 @@ mod tests {
 
     #[test]
     fn flaps_simvars() {
-        let mut test_bed = test_bed_with().run_one_tick();
+        let test_bed = test_bed_with().run_one_tick();
 
         assert!(test_bed.contains_key("LEFT_FLAPS_ANGLE"));
         assert!(test_bed.contains_key("RIGHT_FLAPS_ANGLE"));
