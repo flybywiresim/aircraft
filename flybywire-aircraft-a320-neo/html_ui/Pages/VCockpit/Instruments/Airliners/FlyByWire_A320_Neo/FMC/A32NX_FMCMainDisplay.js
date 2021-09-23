@@ -268,9 +268,14 @@ class FMCMainDisplay extends BaseAirliners {
         // Start the check routine for system health and status
         setInterval(() => {
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE && !this._destDataChecked) {
-                const ppos = {
-                    lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
-                    long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+                const adirLat = ADIRS.getLatitude();
+                const adirLong = ADIRS.getLongitude();
+                const ppos = (adirLat.isNormalOperation() && adirLong.isNormalOperation()) ? {
+                    lat: ADIRS.getLatitude().value,
+                    long: ADIRS.getLongitude().value,
+                } : {
+                    lat: NaN,
+                    long: NaN
                 };
                 const stats = this.flightPlanManager.getCurrentFlightPlan().computeWaypointStatistics(ppos);
                 const dest = this.flightPlanManager.getDestination();
