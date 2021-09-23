@@ -56,9 +56,14 @@ class CDUFlightPlanPage {
         let showTMPY = false;
         // TODO FIXME: Correct FMS lateral position calculations and move logic from F-PLN A
         // 22-70-00:11
-        const ppos = {
-            lat: ADIRS.getLatitude(),
-            long: ADIRS.getLongitude(),
+        const adirLat = ADIRS.getLatitude();
+        const adirLong = ADIRS.getLongitude();
+        const ppos = (adirLat.isNormalOperation() && adirLong.isNormalOperation()) ? {
+            lat: ADIRS.getLatitude().value,
+            long: ADIRS.getLongitude().value,
+        } : {
+            lat: NaN,
+            long: NaN
         };
         const stats = fpm.getCurrentFlightPlan().computeWaypointStatistics(ppos);
 

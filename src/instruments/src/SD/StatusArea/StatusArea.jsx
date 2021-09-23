@@ -7,7 +7,6 @@
  */
 
 import './StatusArea.scss';
-import { ADIRS } from '@instruments/common/adirs';
 import { Text } from '../Text/Text.jsx';
 import { useGlobalVar, getSimVar } from '../../util.js';
 
@@ -22,8 +21,10 @@ export const StatusArea = () => {
     if (sat > 99 || sat < -99) {
         sat = sat > 99 ? 99 : -99;
     }
+
     // TODO FIXME improve this
-    const adirsAlign = !ADIRS.mapNotAvailable(1) || !ADIRS.mapNotAvailable(2);
+    // const adirsAlign = !ADIRS.mapNotAvailable(1) || !ADIRS.mapNotAvailable(2);
+    const adirsAlign = true;
 
     const satPrefix = sat > 0 ? '+' : '';
     const tatPrefix = tat > 0 ? '+' : '';
