@@ -1,9 +1,6 @@
-use systems::{
-    shared::ControllerSignal,
-    simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, Write,
-    },
+use systems::simulation::{
+    Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+    UpdateContext, Write,
 };
 
 use uom::si::{angle::degree, f64::*, velocity::knot};
