@@ -203,7 +203,7 @@ impl CoreHydraulicForce {
         )
     }
 
-    fn force_closed_valves(&mut self, position_normalized: Ratio, speed: Velocity) -> Force {
+    fn force_closed_valves(&self, position_normalized: Ratio, speed: Velocity) -> Force {
         let position_error = self.closed_valves_reference_position - position_normalized;
 
         Force::new::<newton>(
