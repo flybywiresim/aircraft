@@ -21,6 +21,10 @@
 1. [AP] improved G/S law - @aguther (Andreas Guther)
 1. [AP] Allow V/S push and pull during ALT CPT - @aguther (Andreas Guther)
 1. [AP] Soft Altitude mode uses now FMGC flight phase to detect cruise situation
+1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
+1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
+1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
+1. [FLIGHT MODEL] Updated OEW/dry operating weight, max payload, station weights - @sidnov (Sid)
 
 
 ## 0.7.0
@@ -202,8 +206,6 @@
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
 1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
-1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
-1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
