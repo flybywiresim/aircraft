@@ -3,14 +3,6 @@ var A320_Neo_LowerECAM_APU;
 (function (A320_Neo_LowerECAM_APU) {
     const absoluteZeroThermodynamicTemperature = -273.15;
 
-    function hasThermodynamicTemperatureValue(value) {
-        return value >= absoluteZeroThermodynamicTemperature;
-    }
-
-    function hasRatioValue(value) {
-        return value >= 0;
-    }
-
     class Page extends Airliners.EICASTemplateElement {
         constructor() {
             super();
@@ -56,6 +48,8 @@ var A320_Neo_LowerECAM_APU;
                 return;
             }
 
+            this.apuInfo.update(_deltaTime);
+
             // *******************************************************************************************************
             // APU Logic that isn't tied to the APU ECAM SCREEN belongs in flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_APU.js
             // *******************************************************************************************************
@@ -65,7 +59,7 @@ var A320_Neo_LowerECAM_APU;
             toggleVisibility(this.APUBleedOn, apuBleedAirValveOpen);
             toggleVisibility(this.APUBleedOff, !apuBleedAirValveOpen);
 
-            const showApuData = shouldShowApuData();
+            const showApuData = this.shouldShowApuData();
             let allParametersWithinAcceptableRange = false;
             if (showApuData) {
                 this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_LOAD", "Percent"));
@@ -113,19 +107,25 @@ var A320_Neo_LowerECAM_APU;
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
             }
 
-            const lowFuelPressure = SimVar.GetSimVarValue("L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT", "Number");
-            toggleVisibility(this.FuelLoPr, lowFuelPressure > 0);
+            const lowFuelPressure = Arinc429Word.fromSimVarValue("L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT");
+            toggleVisibility(this.FuelLoPr, lowFuelPressure.isNormalOperation() && lowFuelPressure.value);
 
-            const apuFlapFullyOpen = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_FULLY_OPEN", "Number");
-            toggleVisibility(this.APUFlapOpen, apuFlapFullyOpen > 0);
+            const apuFlapFullyOpen = Arinc429Word.fromSimVarValue("L:A32NX_APU_FLAP_FULLY_OPEN");
+            toggleVisibility(this.APUFlapOpen, apuFlapFullyOpen.isNormalOperation() && apuFlapFullyOpen.value);
+        }
 
-            this.apuInfo.update(_deltaTime);
+        shouldShowApuData() {
+            return this.apuInfo.shouldShowApuData();
         }
     }
     A320_Neo_LowerECAM_APU.Page = Page;
 
     class APUInfo {
         constructor(_gaugeDiv) {
+            this.n = Arinc429Word.empty();
+            this.warningEgt = Arinc429Word.empty();
+            this.cautionEgt = Arinc429Word.empty();
+
             //APU N Gauge
             const gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef1.arcSize = 180;
@@ -139,7 +139,9 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef1.dangerRange[1] = 110;
             gaugeDef1.currentValuePos.x = 0.8;
             gaugeDef1.currentValuePos.y = 0.74;
-            gaugeDef1.currentValueFunction = getN.bind(this);
+            gaugeDef1.currentValueFunction = () => {
+                return this.n.value;
+            };
             this.apuNGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuNGauge.id = "APU_N_Gauge";
             this.apuNGauge.init(gaugeDef1);
@@ -158,18 +160,21 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef2.currentValuePrecision = 0;
             gaugeDef2.minValue = 300;
             gaugeDef2.maxValue = 1100;
-            const warningEgt = this.getWarningEgt();
-            gaugeDef2.minRedValue = warningEgt;
+            gaugeDef2.minRedValue = this.warningEgt.value;
             gaugeDef2.maxRedValue = 1100;
-            gaugeDef2.warningRange[0] = this.getCautionEgt();
-            gaugeDef2.warningRange[1] = warningEgt;
-            gaugeDef2.dangerRange[0] = warningEgt;
+            gaugeDef2.warningRange[0] = this.cautionEgt.value;
+            gaugeDef2.warningRange[1] = this.warningEgt.value;
+            gaugeDef2.dangerRange[0] = this.warningEgt.value;
             gaugeDef2.dangerRange[1] = 1100;
             gaugeDef2.currentValuePos.x = 0.8;
             gaugeDef2.currentValuePos.y = 0.74;
-            gaugeDef2.currentValueFunction = getEgt.bind(this);
+            gaugeDef2.currentValueFunction = () => {
+                return this.egt.value;
+            };
             gaugeDef2.roundDisplayValueToNearest = 5;
-            gaugeDef2.outerDynamicMarkerFunction = this.getCautionEgtForDynamicMarker.bind(this, "EGTCaution");
+            gaugeDef2.outerDynamicMarkerFunction = () => {
+                return ["EGTCaution", this.cautionEgt.value];
+            };
             this.apuEGTGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuEGTGauge.id = "APU_EGT_Gauge";
             this.apuEGTGauge.init(gaugeDef2);
@@ -189,8 +194,14 @@ var A320_Neo_LowerECAM_APU;
         }
 
         update(_deltaTime) {
-            this.apuEGTGauge.active = shouldShowEgt();
-            this.apuNGauge.active = shouldShowN();
+            this.n = Arinc429Word.fromSimVarValue("L:A32NX_APU_N");
+            this.apuNGauge.active = this.n.isNormalOperation();
+
+            this.egt = Arinc429Word.fromSimVarValue("L:A32NX_APU_EGT");
+            this.apuEGTGauge.active = this.egt.isNormalOperation();
+
+            this.warningEgt = Arinc429Word.fromSimVarValue("L:A32NX_APU_EGT_WARNING");
+            this.cautionEgt = Arinc429Word.fromSimVarValue("L:A32NX_APU_EGT_CAUTION");
 
             this.setCautionAndWarningRanges();
 
@@ -199,45 +210,15 @@ var A320_Neo_LowerECAM_APU;
         }
 
         setCautionAndWarningRanges() {
-            const warningEgt = this.getWarningEgt();
-            this.apuEGTGauge.minRedValue = warningEgt;
-            this.apuEGTGauge.dangerRange[0] = warningEgt;
-            this.apuEGTGauge.warningRange[0] = this.getCautionEgt();
-            this.apuEGTGauge.warningRange[1] = warningEgt;
+            this.apuEGTGauge.minRedValue = this.warningEgt.value;
+            this.apuEGTGauge.dangerRange[0] = this.warningEgt.value;
+            this.apuEGTGauge.warningRange[0] = this.cautionEgt.value;
+            this.apuEGTGauge.warningRange[1] = this.warningEgt.value;
         }
 
-        //function accepts ID of the marker and returns an array with ID and EGT
-        getCautionEgtForDynamicMarker(_id) {
-            return [_id, this.getCautionEgt()];
+        shouldShowApuData() {
+            return this.n.isNormalOperation() && this.egt.isNormalOperation();
         }
-
-        getCautionEgt() {
-            return SimVar.GetSimVarValue("L:A32NX_APU_EGT_CAUTION", "celsius");
-        }
-
-        getWarningEgt() {
-            return SimVar.GetSimVarValue("L:A32NX_APU_EGT_WARNING", "celsius");
-        }
-    }
-
-    function shouldShowApuData() {
-        return shouldShowEgt() || shouldShowN();
-    }
-
-    function getEgt() {
-        return SimVar.GetSimVarValue("L:A32NX_APU_EGT", "celsius");
-    }
-
-    function getN() {
-        return SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
-    }
-
-    function shouldShowEgt() {
-        return hasThermodynamicTemperatureValue(getEgt());
-    }
-
-    function shouldShowN() {
-        return hasRatioValue(getN());
     }
 
     function toggleVisibility(element, condition) {

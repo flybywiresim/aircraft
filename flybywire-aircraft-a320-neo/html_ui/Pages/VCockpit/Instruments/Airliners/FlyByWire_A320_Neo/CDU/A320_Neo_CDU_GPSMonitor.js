@@ -13,7 +13,7 @@ class CDUGPSMonitor {
         const lonStr = currPosSplit[1];
         currPos = latStr + sep + lonStr;
         const TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
-        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
+        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Knots") || "0";
         const ALTITUDE = SimVar.GetSimVarValue("INDICATED ALTITUDE", "Feet") || "0";
 
         const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));

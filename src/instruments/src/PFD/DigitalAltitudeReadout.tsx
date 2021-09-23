@@ -1,3 +1,4 @@
+import { Arinc429Word } from '@instruments/common/arinc429';
 import React from 'react';
 
 const TensDigits = (value: number, offset: number, color: string) => {
@@ -52,12 +53,17 @@ const TenThousandsDigit = (value: number, offset: number, color: string) => {
     );
 };
 
-export const DigitalAltitudeReadout = ({ altitude, MDA }) => {
-    const isNegative = altitude < 0;
+interface DigitalAltitudeReadoutProps {
+    altitude: Arinc429Word;
+    MDA: number;
+}
 
-    const color = (MDA !== 0 && altitude < MDA) ? 'Amber' : 'Green';
+export const DigitalAltitudeReadout = ({ altitude, MDA }: DigitalAltitudeReadoutProps) => {
+    const isNegative = altitude.value < 0;
 
-    const absAlt = Math.abs(Math.max(Math.min(altitude, 50000), -1500));
+    const color = (MDA !== 0 && altitude.value < MDA) ? 'Amber' : 'Green';
+
+    const absAlt = Math.abs(Math.max(Math.min(altitude.value, 50000), -1500));
     const tensDigits = absAlt % 100;
 
     const HundredsValue = Math.floor((absAlt / 100) % 10);

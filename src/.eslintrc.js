@@ -87,6 +87,7 @@ module.exports = {
         'import/extensions': 'off',
         'no-param-reassign': 'off',
         'no-undef-init': 'off',
+        'no-undef': 'off',
         'max-len': ['error', { code: 192 }],
 
         // Irrelevant for our use
