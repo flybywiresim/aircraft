@@ -802,7 +802,7 @@ mod apu_generator_tests {
         loop {
             test_bed = test_bed.run(Duration::from_millis(50));
 
-            let n = test_bed.n().get::<percent>();
+            let n = test_bed.n().normal_value().unwrap().get::<percent>();
             if n > 84. {
                 assert!(test_bed.potential().get::<volt>() > 0.);
             }
@@ -820,7 +820,7 @@ mod apu_generator_tests {
         loop {
             test_bed = test_bed.run(Duration::from_millis(50));
 
-            let n = test_bed.n().get::<percent>();
+            let n = test_bed.n().normal_value().unwrap().get::<percent>();
             if n > 84. {
                 assert!(test_bed.frequency().get::<hertz>() > 0.);
             }

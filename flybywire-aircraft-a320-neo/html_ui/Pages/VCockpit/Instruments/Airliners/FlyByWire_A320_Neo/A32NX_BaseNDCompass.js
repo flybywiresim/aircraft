@@ -193,14 +193,13 @@ class Jet_NDCompass extends HTMLElement {
     updateCompass(_deltaTime, displayIndex) {
         const inertialReferenceSource = ADIRS.getNdInertialReferenceSource(displayIndex);
 
-        const heading = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`, "degree");
+        const heading = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`);
         const isTRKMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
         const simSelectedHeading = isTRKMode ?
             SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degree") :
             SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
-        let track = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`, "degree");
+        let track = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
         const simSelectedTrack = SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree");
-        const groundSpeed = ADIRS.getValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`, "knots");
         this._referenceMode = Jet_NDCompass_Reference.HEADING;
 
         let headingChanged = false;
@@ -213,19 +212,19 @@ class Jet_NDCompass extends HTMLElement {
         let compass = 0;
         if (this.displayMode !== Jet_NDCompass_Display.PLAN) {
             if (this.referenceMode == Jet_NDCompass_Reference.TRACK) {
-                compass = track;
+                compass = track.valueOr(0);
                 if (this.currentRefMode) {
                     this.currentRefMode.textContent = "TRK";
                 }
             } else {
-                compass = heading;
+                compass = heading.valueOr(0);
                 if (this.currentRefMode) {
                     this.currentRefMode.textContent = "HDG";
                 }
             }
 
             // This stuff makes the compass do a smooth spin to the actual heading after alignment finishes
-            const desiredRotationHeading = Number.isNaN(heading)
+            const desiredRotationHeading = !heading.isNormalOperation()
                 ? 0
                 : compass;
             const delta = ((desiredRotationHeading - this._delayedCompass + 540) % 360) - 180;
@@ -408,12 +407,14 @@ class Jet_NDCompass extends HTMLElement {
             }
         }
 
-        const roundedHeading = fastToFixed(heading, 3);
+        const roundedHeading = fastToFixed(heading.valueOr(0), 3);
         this.setAttribute("heading_bug_rotation", roundedHeading);
-        if (groundSpeed <= 10) {
+
+        const groundSpeed = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
+        if (groundSpeed.isNormalOperation() && groundSpeed.value <= 10) {
             track = heading;
         }
-        const roundedTracking = fastToFixed(track, 3);
+        const roundedTracking = fastToFixed(track.valueOr(0), 3);
         this.setAttribute("tracking_bug_rotation", roundedTracking);
         if (this.ilsGroup) {
             if (this._showILS || this.navigationMode == Jet_NDCompass_Navigation.ILS) {
