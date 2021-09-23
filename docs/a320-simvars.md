@@ -817,6 +817,13 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_EPUMP_RPM
+    - Rpm
+    - Current {loop_name} electric pump speed
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_EDPUMP_DISPLACEMENT
     - Cubic inch
     - Current displacement setting of {loop_name} engine driven pump

@@ -12,7 +12,8 @@ use systems::shared::PotentialOrigin;
 use systems::simulation::SimulationElement;
 use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
-    acceleration::foot_per_second_squared, f64::*, length::foot, pressure::psi,
+    acceleration::foot_per_second_squared, angular_velocity::revolution_per_minute,
+    electric_current::ampere, f64::*, length::foot, pressure::psi,
     thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
 };
 
@@ -290,7 +291,7 @@ fn hyd_circuit_basic(path: &str) {
             &context,
             hydraulic_loop.pump_pressure(0),
             hydraulic_loop.reservoir(),
-            edp_rpm,
+            AngularVelocity::new::<revolution_per_minute>(edp_rpm),
             &edp_controller,
         );
 
@@ -401,7 +402,11 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
 }
 
 fn electric_pump() -> ElectricPump {
-    ElectricPump::new("DEFAULT", ElectricalBusType::AlternatingCurrentEssential)
+    ElectricPump::new(
+        "DEFAULT",
+        ElectricalBusType::AlternatingCurrentEssential,
+        ElectricCurrent::new::<ampere>(45.),
+    )
 }
 
 fn _engine_driven_pump() -> EngineDrivenPump {

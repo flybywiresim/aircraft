@@ -8,8 +8,15 @@ use uom::si::{
     volume::cubic_inch,
 };
 
-use crate::simulation::UpdateContext;
-struct ElectricalPumpPhysics {
+use crate::shared::{ElectricalBusType, ElectricalBuses};
+use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
+
+pub struct ElectricalPumpPhysics {
+    active_id: String,
+    rpm_id: String,
+    bus_type: ElectricalBusType,
+    is_powered: bool,
+
     acceleration: AngularAcceleration,
     speed: AngularVelocity,
     inertia: f64,
@@ -33,12 +40,18 @@ impl ElectricalPumpPhysics {
     const DEFAULT_P_GAIN: f64 = 0.05;
     const DEFAULT_I_GAIN: f64 = 0.05;
 
-    fn new(
+    pub fn new(
+        id: &str,
+        bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         regulated_speed: AngularVelocity,
         max_displacement: Volume,
     ) -> Self {
         Self {
+            active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
+            rpm_id: format!("HYD_{}_EPUMP_RPM", id),
+            bus_type,
+            is_powered: false,
             acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
             speed: AngularVelocity::new::<radian_per_second>(0.),
             inertia: Self::DEFAULT_INERTIA,
@@ -54,7 +67,7 @@ impl ElectricalPumpPhysics {
         }
     }
 
-    fn update_pump_physics(
+    pub fn update(
         &mut self,
         current_pressure: Pressure,
         current_displacement: Volume,
@@ -102,7 +115,7 @@ impl ElectricalPumpPhysics {
         current_displacement: Volume,
         context: &UpdateContext,
     ) {
-        if self.is_active {
+        if self.is_active && self.is_powered {
             let feedforward_current = self.max_current.get::<ampere>()
                 * current_displacement.get::<cubic_inch>()
                 / self.max_displacement.get::<cubic_inch>();
@@ -148,8 +161,22 @@ impl ElectricalPumpPhysics {
         }
     }
 
-    fn set_active(&mut self, is_active: bool) {
+    pub fn set_active(&mut self, is_active: bool) {
         self.is_active = is_active;
+    }
+
+    pub fn speed(&self) -> AngularVelocity {
+        self.speed
+    }
+}
+impl SimulationElement for ElectricalPumpPhysics {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.active_id, self.is_active);
+        writer.write(&self.rpm_id, self.speed().get::<revolution_per_minute>());
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.bus_type);
     }
 }
 
@@ -162,6 +189,10 @@ mod tests {
         acceleration::foot_per_second_squared, length::foot, pressure::psi,
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
+    use crate::electrical::test::TestElectricitySource;
+    use crate::electrical::ElectricalBus;
+    use crate::electrical::Electricity;
+    use crate::shared::PotentialOrigin;
 
     #[test]
     fn pump_inactive_at_init() {
@@ -180,7 +211,11 @@ mod tests {
 
         pump.set_active(true);
         for _ in 0..100 {
-            pump.update_pump_physics(
+            pump.receive_power(&test_electricity(
+                ElectricalBusType::AlternatingCurrentGndFltService,
+                true,
+            ));
+            pump.update(
                 Pressure::new::<psi>(3000.),
                 Volume::new::<cubic_inch>(0.263) / 2.,
                 &context(delta_time),
@@ -201,6 +236,8 @@ mod tests {
 
     fn physical_pump() -> ElectricalPumpPhysics {
         ElectricalPumpPhysics::new(
+            "YELLOW",
+            ElectricalBusType::AlternatingCurrentGndFltService,
             ElectricCurrent::new::<ampere>(45.),
             AngularVelocity::new::<revolution_per_minute>(7600.),
             Volume::new::<cubic_inch>(0.263),
@@ -216,5 +253,22 @@ mod tests {
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
         )
+    }
+
+    fn test_electricity(bus_id: ElectricalBusType, is_powered: bool) -> Electricity {
+        let mut electricity = Electricity::new();
+        let mut source =
+            TestElectricitySource::unpowered(PotentialOrigin::EngineGenerator(1), &mut electricity);
+
+        if is_powered {
+            source.power();
+        }
+
+        let bus = ElectricalBus::new(bus_id, &mut electricity);
+
+        electricity.supplied_by(&source);
+        electricity.flow(&source, &bus);
+
+        electricity
     }
 }

@@ -1,8 +1,10 @@
 use self::brake_circuit::Actuator;
+use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
 };
+
 use std::string::String;
 use std::time::Duration;
 use uom::si::angular_velocity::radian_per_second;
@@ -1241,18 +1243,12 @@ impl PressureSource for Pump {
 }
 
 pub struct ElectricPump {
-    active_id: String,
     displacement_id: String,
 
-    is_active: bool,
-    bus_type: ElectricalBusType,
-    is_powered: bool,
-    speed: AngularVelocity,
     pump: Pump,
+    pump_physics: ElectricalPumpPhysics,
 }
 impl ElectricPump {
-    const SPOOLUP_TIME: f64 = 0.2;
-    const SPOOLDOWN_TIME: f64 = 0.4;
     const NOMINAL_SPEED: f64 = 7600.0;
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
@@ -1261,56 +1257,48 @@ impl ElectricPump {
     // 1 == No filtering
     const DISPLACEMENT_DYNAMICS: f64 = 0.8;
 
-    pub fn new(id: &str, bus_type: ElectricalBusType) -> Self {
+    pub fn new(id: &str, bus_type: ElectricalBusType, max_current: ElectricCurrent) -> Self {
+        // Look for the max displacement of the pump in its caracteristics array
+        let max_displacement = Self::DISPLACEMENT_MAP
+            .iter()
+            .copied()
+            .fold(f64::NAN, f64::max);
+
         Self {
-            active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
             displacement_id: format!("HYD_{}_EPUMP_DISPLACEMENT", id),
-            is_active: false,
-            bus_type,
-            is_powered: false,
-            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
                 Self::DISPLACEMENT_DYNAMICS,
             ),
+            pump_physics: ElectricalPumpPhysics::new(
+                id,
+                bus_type,
+                max_current,
+                AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_SPEED),
+                Volume::new::<cubic_inch>(max_displacement),
+            ),
         }
-    }
-
-    pub fn rpm(&self) -> f64 {
-        self.speed.get::<revolution_per_minute>()
     }
 
     pub fn update<T: PumpController>(
         &mut self,
         context: &UpdateContext,
-        loop_pressure: Pressure,
+        current_pressure: Pressure,
         reservoir: &Reservoir,
         controller: &T,
     ) {
-        self.is_active = controller.should_pressurise() && self.is_powered;
+        self.pump_physics.set_active(controller.should_pressurise());
+        self.pump_physics
+            .update(current_pressure, self.pump.displacement(), context);
 
-        // Pump startup/shutdown process
-        if self.is_active && self.speed.get::<revolution_per_minute>() < Self::NOMINAL_SPEED {
-            self.speed += AngularVelocity::new::<revolution_per_minute>(
-                (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64(),
-            );
-        } else if !self.is_active && self.speed.get::<revolution_per_minute>() > 0.0 {
-            self.speed -= AngularVelocity::new::<revolution_per_minute>(
-                (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64(),
-            );
-        }
-
-        // Limiting min and max speed
-        self.speed = self
-            .speed
-            .min(AngularVelocity::new::<revolution_per_minute>(
-                Self::NOMINAL_SPEED,
-            ))
-            .max(AngularVelocity::new::<revolution_per_minute>(0.));
-
-        self.pump
-            .update(context, loop_pressure, &reservoir, self.speed, controller);
+        self.pump.update(
+            context,
+            current_pressure,
+            &reservoir,
+            self.pump_physics.speed(),
+            controller,
+        );
     }
 }
 impl PressureSource for ElectricPump {
@@ -1338,21 +1326,21 @@ impl PressureSource for ElectricPump {
     }
 
     fn displacement(&self) -> Volume {
-        self.pump.current_displacement
+        self.pump.displacement()
     }
 }
 impl SimulationElement for ElectricPump {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.active_id, self.is_active);
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.pump_physics.accept(visitor);
 
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.displacement_id,
             self.displacement().get::<cubic_inch>(),
         );
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.bus_type);
     }
 }
 

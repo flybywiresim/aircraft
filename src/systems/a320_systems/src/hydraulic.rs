@@ -1,7 +1,7 @@
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angular_velocity::revolution_per_minute,
+    electric_current::ampere,
     f64::*,
     pressure::psi,
     ratio::{percent, ratio},
@@ -134,6 +134,7 @@ impl A320Hydraulic {
     // Same id for aft door as a place holder until it gets animated
     const AFT_CARGO_DOOR_ID: usize = 5;
 
+    const ELECTRIC_PUMP_MAX_CURRENT_AMPERE: f64 = 45.;
     const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
     const BLUE_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
@@ -190,7 +191,11 @@ impl A320Hydraulic {
                 ],
             ),
 
-            blue_electric_pump: ElectricPump::new("BLUE", Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS),
+            blue_electric_pump: ElectricPump::new(
+                "BLUE",
+                Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
+                ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+            ),
             blue_electric_pump_controller: A320BlueElectricPumpController::new(
                 Self::BLUE_ELEC_PUMP_CONTROL_POWER_BUS,
             ),
@@ -198,6 +203,7 @@ impl A320Hydraulic {
             yellow_electric_pump: ElectricPump::new(
                 "YELLOW",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
+                ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
             ),
             yellow_electric_pump_controller: A320YellowElectricPumpController::new(
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
