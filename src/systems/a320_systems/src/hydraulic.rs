@@ -486,9 +486,7 @@ impl A320Hydraulic {
             context,
             self.green_loop.pump_pressure(0),
             self.green_loop.reservoir(),
-            engine1
-                .hydraulic_pump_output_speed()
-                .get::<revolution_per_minute>(),
+            engine1.hydraulic_pump_output_speed(),
             &self.engine_driven_pump_1_controller,
         );
 
@@ -504,9 +502,7 @@ impl A320Hydraulic {
             context,
             self.yellow_loop.pump_pressure(0),
             self.yellow_loop.reservoir(),
-            engine2
-                .hydraulic_pump_output_speed()
-                .get::<revolution_per_minute>(),
+            engine2.hydraulic_pump_output_speed(),
             &self.engine_driven_pump_2_controller,
         );
 

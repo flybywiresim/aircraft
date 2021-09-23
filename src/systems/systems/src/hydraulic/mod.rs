@@ -5,7 +5,9 @@ use crate::simulation::{
 };
 use std::string::String;
 use std::time::Duration;
+use uom::si::angular_velocity::radian_per_second;
 use uom::si::{
+    angular_velocity::revolution_per_minute,
     f64::*,
     pressure::{pascal, psi},
     velocity::knot,
@@ -16,10 +18,11 @@ use uom::si::{
 pub mod brake_circuit;
 
 pub trait PressureSource {
-    /// Gives the maximum available volume at that time as if it is a variable displacement
-    /// pump it can be adjusted by pump regulation.
+    /// Gives the maximum available volume at current pump state if it was working at maximum available displacement
     fn delta_vol_max(&self) -> Volume;
 
+    /// Updates the pump after hydraulic system regulation pass. It will adjust its displacement to the real
+    /// physical value used for current pressure regulation
     fn update_actual_state_after_pressure_regulation(
         &mut self,
         volume_required: Volume,
@@ -30,11 +33,10 @@ pub trait PressureSource {
 
     fn flow(&self) -> VolumeRate;
 
+    /// This is the actual physical displacement of the pump
     fn displacement(&self) -> Volume;
 }
 
-// TODO update method that can update physic constants from given temperature
-// This would change pressure response to volume
 pub struct Fluid {
     current_bulk: Pressure,
 }
@@ -48,6 +50,11 @@ impl Fluid {
     }
 }
 
+/// Physical pressure switch that can be added in an hydraulic section.
+/// It's basically a switch reacting with pressure.
+///
+/// Goes true above high hystereris value
+/// Goes false under low hysteresis value
 pub struct PressureSwitch {
     state_is_pressurised: bool,
     high_hysteresis_threshold: Pressure,
@@ -731,7 +738,7 @@ impl Section {
             / Pressure::new::<psi>(3000.)
     }
 
-    // Updates hydraulic flow from consumers like accumulator / ptu / any actuator
+    /// Updates hydraulic flow from consumers like accumulator / ptu / any actuator
     pub fn update_flow(
         &mut self,
         reservoir: &mut Reservoir,
@@ -993,8 +1000,8 @@ impl CheckValve {
         }
     }
 
-    // Based on upstream pumping capacity if any and pressure difference, computes what flow could go through
-    // the valve
+    /// Based on upstream pumping capacity (if any) and pressure difference, computes what flow could go through
+    /// the valve
     pub fn update_flow_forecast(
         &mut self,
         upstream_section: &Section,
@@ -1100,7 +1107,7 @@ pub struct Pump {
     displacement_carac: [f64; 9],
     // Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
     displacement_dynamic: f64,
-    rpm: f64,
+    speed: AngularVelocity,
 }
 impl Pump {
     fn new(
@@ -1116,7 +1123,7 @@ impl Pump {
             press_breakpoints,
             displacement_carac,
             displacement_dynamic,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
         }
     }
 
@@ -1125,10 +1132,10 @@ impl Pump {
         context: &UpdateContext,
         pressure: Pressure,
         reservoir: &Reservoir,
-        rpm: f64,
+        speed: AngularVelocity,
         controller: &T,
     ) {
-        self.rpm = rpm;
+        self.speed = speed;
 
         let theoretical_displacement = self.calculate_displacement(pressure, controller);
 
@@ -1137,7 +1144,7 @@ impl Pump {
         self.current_max_displacement = self.displacement_dynamic * theoretical_displacement
             + (1.0 - self.displacement_dynamic) * self.current_max_displacement;
 
-        let max_flow = Self::calculate_flow(rpm, self.current_max_displacement)
+        let max_flow = Self::calculate_flow(speed, self.current_max_displacement)
             .max(VolumeRate::new::<gallon_per_second>(0.));
 
         let max_flow_available_from_reservoir =
@@ -1162,9 +1169,10 @@ impl Pump {
     }
 
     fn calculate_displacement_from_required_flow(&self, required_flow: VolumeRate) -> Volume {
-        if self.rpm > 0. {
+        if self.speed.get::<revolution_per_minute>() > 0. {
             let displacement = Volume::new::<cubic_inch>(
-                required_flow.get::<gallon_per_second>() * 231.0 * 60.0 / self.rpm,
+                required_flow.get::<gallon_per_second>() * 231.0 * 60.0
+                    / self.speed.get::<revolution_per_minute>(),
             );
             self.current_max_displacement
                 .min(displacement)
@@ -1174,10 +1182,12 @@ impl Pump {
         }
     }
 
-    fn calculate_flow(rpm: f64, displacement: Volume) -> VolumeRate {
-        if rpm > 0. {
+    fn calculate_flow(speed: AngularVelocity, displacement: Volume) -> VolumeRate {
+        if speed.get::<revolution_per_minute>() > 0. {
             VolumeRate::new::<gallon_per_second>(
-                rpm * displacement.get::<cubic_inch>() / 231.00 / 60.0,
+                speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>()
+                    / 231.00
+                    / 60.0,
             )
         } else {
             VolumeRate::new::<gallon_per_second>(0.)
@@ -1185,9 +1195,12 @@ impl Pump {
     }
 
     fn get_max_flow(&self) -> VolumeRate {
-        if self.rpm > 0. {
+        if self.speed.get::<revolution_per_minute>() > 0. {
             VolumeRate::new::<gallon_per_second>(
-                self.rpm * self.current_displacement.get::<cubic_inch>() / 231.0 / 60.0,
+                self.speed.get::<revolution_per_minute>()
+                    * self.current_displacement.get::<cubic_inch>()
+                    / 231.0
+                    / 60.0,
             )
         } else {
             VolumeRate::new::<gallon_per_second>(0.)
@@ -1233,7 +1246,7 @@ pub struct ElectricPump {
     is_active: bool,
     bus_type: ElectricalBusType,
     is_powered: bool,
-    rpm: f64,
+    speed: AngularVelocity,
     pump: Pump,
 }
 impl ElectricPump {
@@ -1254,7 +1267,7 @@ impl ElectricPump {
             is_active: false,
             bus_type,
             is_powered: false,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -1264,7 +1277,7 @@ impl ElectricPump {
     }
 
     pub fn rpm(&self) -> f64 {
-        self.rpm
+        self.speed.get::<revolution_per_minute>()
     }
 
     pub fn update<T: PumpController>(
@@ -1277,17 +1290,26 @@ impl ElectricPump {
         self.is_active = controller.should_pressurise() && self.is_powered;
 
         // Pump startup/shutdown process
-        if self.is_active && self.rpm < Self::NOMINAL_SPEED {
-            self.rpm += (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64();
-        } else if !self.is_active && self.rpm > 0.0 {
-            self.rpm -= (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64();
+        if self.is_active && self.speed.get::<revolution_per_minute>() < Self::NOMINAL_SPEED {
+            self.speed += AngularVelocity::new::<revolution_per_minute>(
+                (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64(),
+            );
+        } else if !self.is_active && self.speed.get::<revolution_per_minute>() > 0.0 {
+            self.speed -= AngularVelocity::new::<revolution_per_minute>(
+                (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64(),
+            );
         }
 
         // Limiting min and max speed
-        self.rpm = self.rpm.min(Self::NOMINAL_SPEED).max(0.0);
+        self.speed = self
+            .speed
+            .min(AngularVelocity::new::<revolution_per_minute>(
+                Self::NOMINAL_SPEED,
+            ))
+            .max(AngularVelocity::new::<revolution_per_minute>(0.));
 
         self.pump
-            .update(context, loop_pressure, &reservoir, self.rpm, controller);
+            .update(context, loop_pressure, &reservoir, self.speed, controller);
     }
 }
 impl PressureSource for ElectricPump {
@@ -1338,7 +1360,7 @@ pub struct EngineDrivenPump {
     displacement_id: String,
 
     is_active: bool,
-    rpm: f64,
+    speed: AngularVelocity,
     pump: Pump,
 }
 impl EngineDrivenPump {
@@ -1355,7 +1377,7 @@ impl EngineDrivenPump {
             active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
             displacement_id: format!("HYD_{}_EDPUMP_DISPLACEMENT", id),
             is_active: false,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -1369,17 +1391,17 @@ impl EngineDrivenPump {
         context: &UpdateContext,
         pressure: Pressure,
         reservoir: &Reservoir,
-        pump_rpm: f64,
+        pump_speed: AngularVelocity,
         controller: &T,
     ) {
-        self.rpm = pump_rpm;
+        self.speed = pump_speed;
         self.pump
-            .update(context, pressure, &reservoir, pump_rpm, controller);
+            .update(context, pressure, &reservoir, pump_speed, controller);
         self.is_active = controller.should_pressurise();
     }
 
     pub fn rpm(&self) -> f64 {
-        self.rpm
+        self.speed.get::<revolution_per_minute>()
     }
 }
 impl PressureSource for EngineDrivenPump {
@@ -1422,7 +1444,7 @@ impl SimulationElement for EngineDrivenPump {
 
 struct WindTurbine {
     position: f64,
-    speed: f64,
+    speed: AngularVelocity,
     acceleration: f64,
     rpm: f64,
     torque_sum: f64,
@@ -1440,7 +1462,7 @@ impl WindTurbine {
     fn new() -> Self {
         Self {
             position: Self::STOWED_ANGLE,
-            speed: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             acceleration: 0.,
             rpm: 0.,
             torque_sum: 0.,
@@ -1449,6 +1471,10 @@ impl WindTurbine {
 
     fn rpm(&self) -> f64 {
         self.rpm
+    }
+
+    fn speed(&self) -> AngularVelocity {
+        self.speed
     }
 
     fn update_generated_torque(&mut self, indicated_speed: &Velocity, stow_pos: f64) {
@@ -1470,22 +1496,24 @@ impl WindTurbine {
         let mut pump_torque = 0.;
         if self.rpm < Self::LOW_SPEED_PHYSICS_ACTIVATION {
             pump_torque += (self.position * 4.).cos() * displacement_ratio.max(0.35) * 35.;
-            pump_torque += -self.speed * 15.;
+            pump_torque += -self.speed.get::<radian_per_second>() * 15.;
         } else {
-            pump_torque += displacement_ratio.max(0.35) * 1. * -self.speed;
+            pump_torque +=
+                displacement_ratio.max(0.35) * 1. * -self.speed.get::<radian_per_second>();
         }
-        pump_torque -= self.speed * 0.05;
+        pump_torque -= self.speed.get::<radian_per_second>() * 0.05;
         // Static air drag of the propeller
         self.torque_sum += pump_torque;
     }
 
     fn update_physics(&mut self, delta_time: &Duration) {
         self.acceleration = self.torque_sum / Self::PROPELLER_INERTIA;
-        self.speed += self.acceleration * delta_time.as_secs_f64();
-        self.position += self.speed * delta_time.as_secs_f64();
+        self.speed +=
+            AngularVelocity::new::<radian_per_second>(self.acceleration * delta_time.as_secs_f64());
+        self.position += self.speed.get::<radian_per_second>() * delta_time.as_secs_f64();
 
         // rad/s to RPM
-        self.rpm = self.speed * 30. / std::f64::consts::PI;
+        self.rpm = self.speed.get::<radian_per_second>() * 30. / std::f64::consts::PI;
 
         // Reset torque accumulator at end of update
         self.torque_sum = 0.;
@@ -1594,7 +1622,7 @@ impl RamAirTurbine {
             context,
             pressure,
             &reservoir,
-            self.wind_turbine.rpm(),
+            self.wind_turbine.speed(),
             &self.pump_controller,
         );
     }
