@@ -17,10 +17,10 @@ class A32NX_APU {
             }
         }
 
-        const apuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
+        const apuN = Arinc429Word.fromSimVarValue("L:A32NX_APU_N");
         const bleedAirValveOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
         let psi = 0;
-        if (apuN > 95 && bleedAirValveOpen) {
+        if (apuN.isNormalOperation() && apuN.value > 95 && bleedAirValveOpen) {
             if (this.APUBleedTimer > 0) {
                 this.APUBleedTimer -= _deltaTime / 1000;
                 psi = Math.round(35 - this.APUBleedTimer);
