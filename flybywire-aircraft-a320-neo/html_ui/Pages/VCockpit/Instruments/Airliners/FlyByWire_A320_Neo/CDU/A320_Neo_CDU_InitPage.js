@@ -279,10 +279,10 @@ class CDUInitPage {
                 zfwCell = (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1);
                 zfwColor = "[color]cyan";
             }
-            if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
-                zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
+            if (isFinite(getZfwcg())) {
+                zfwCgCell = getZfwcg().toFixed(1);
             }
-            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
+            if (isFinite(mcdu.zeroFuelWeight) && isFinite(getZfwcg())) {
                 zfwColor = "[color]cyan";
             }
         }
@@ -292,7 +292,7 @@ class CDUInitPage {
                 mcdu.sendDataToScratchpad(
                     (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
                     "/" +
-                    (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
+                    (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
