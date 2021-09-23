@@ -16,6 +16,7 @@ use uom::si::{
 };
 
 pub mod brake_circuit;
+pub mod electrical_pump_physics;
 
 pub trait PressureSource {
     /// Gives the maximum available volume at current pump state if it was working at maximum available displacement
