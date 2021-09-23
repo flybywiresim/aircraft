@@ -2,7 +2,10 @@
 
 use crate::{
     hydraulic::Fluid,
-    shared::{ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve},
+    shared::{
+        ControllerSignal, ElectricalBusType, ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2,
+        MachNumber, PneumaticValve,
+    },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, Write, Writer,
@@ -114,6 +117,7 @@ pub struct DefaultValve {
     open_amount: Ratio,
     // This is not needed for the physics simulation. It is only used for information and possibly regulation logic at a later stage.
     fluid_flow: VolumeRate,
+    operation_mode: Box<dyn ValveOperationMode>,
 }
 impl PneumaticValve for DefaultValve {
     fn is_open(&self) -> bool {
@@ -123,28 +127,26 @@ impl PneumaticValve for DefaultValve {
 impl DefaultValve {
     const TRANSFER_SPEED: f64 = 3.;
 
-    pub fn new(open_amount: Ratio) -> Self {
+    fn new(open_amount: Ratio, operation_mode: Box<dyn ValveOperationMode>) -> Self {
         Self {
             open_amount,
             fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+            operation_mode,
         }
     }
 
     pub fn new_closed() -> Self {
-        Self::new(Ratio::new::<ratio>(0.))
+        DefaultValve::new(
+            Ratio::new::<ratio>(0.),
+            Box::new(ClassicValveOperationMode::new()),
+        )
     }
 
     pub fn new_open() -> Self {
-        Self::new(Ratio::new::<ratio>(1.))
-    }
-
-    pub fn update_open_amount<T: ControlledPneumaticValveSignal>(
-        &mut self,
-        controller: &impl ControllerSignal<T>,
-    ) {
-        if let Some(signal) = controller.signal() {
-            self.open_amount = signal.target_open_amount();
-        }
+        DefaultValve::new(
+            Ratio::new::<ratio>(1.),
+            Box::new(ClassicValveOperationMode::new()),
+        )
     }
 
     pub fn open_amount(&self) -> Ratio {
@@ -189,9 +191,57 @@ impl ControllablePneumaticValve for DefaultValve {
         &mut self,
         controller: &dyn ControllerSignal<T>,
     ) {
-        if let Some(signal) = controller.signal() {
-            self.open_amount = signal.target_open_amount();
+        if self.operation_mode.should_accept_signal() {
+            if let Some(signal) = controller.signal() {
+                self.open_amount = signal.target_open_amount();
+            }
         }
+    }
+}
+
+trait ValveOperationMode {
+    fn should_accept_signal(&self) -> bool;
+}
+
+pub struct ClassicValveOperationMode {}
+impl ClassicValveOperationMode {
+    fn new() -> Self {
+        Self {}
+    }
+}
+impl ValveOperationMode for ClassicValveOperationMode {
+    fn should_accept_signal(&self) -> bool {
+        true
+    }
+}
+
+pub struct ElectricPneumaticValveOperationMode {
+    is_powered: bool,
+    powered_by: Vec<ElectricalBusType>,
+}
+impl ElectricPneumaticValveOperationMode {
+    pub fn new(powered_by: Vec<ElectricalBusType>) -> Self {
+        Self {
+            is_powered: false,
+            powered_by,
+        }
+    }
+}
+impl ValveOperationMode for ElectricPneumaticValveOperationMode {
+    fn should_accept_signal(&self) -> bool {
+        self.is_powered
+    }
+}
+impl SimulationElement for ElectricPneumaticValveOperationMode {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.any_is_powered(&self.powered_by);
     }
 }
 
@@ -692,6 +742,24 @@ mod tests {
         }
     }
 
+    struct TestValveOperationMode {
+        is_powered: bool,
+    }
+    impl TestValveOperationMode {
+        fn new(is_powered: bool) -> Self {
+            Self { is_powered }
+        }
+
+        fn set_is_powered(&mut self, is_powered: bool) {
+            self.is_powered = is_powered;
+        }
+    }
+    impl ValveOperationMode for TestValveOperationMode {
+        fn should_accept_signal(&self) -> bool {
+            self.is_powered
+        }
+    }
+
     fn context(delta_time: Duration, altitude: Length) -> UpdateContext {
         UpdateContext::new(
             delta_time,
@@ -731,7 +799,7 @@ mod tests {
 
     #[test]
     fn valve_open_command() {
-        let mut valve = DefaultValve::new(Ratio::new::<percent>(0.));
+        let mut valve = DefaultValve::new_closed();
 
         let context = UpdateContext::new(
             Duration::from_millis(100),
@@ -755,7 +823,7 @@ mod tests {
 
     #[test]
     fn valve_equal_pressure() {
-        let mut valve = DefaultValve::new(Ratio::new::<percent>(100.));
+        let mut valve = DefaultValve::new_open();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -793,7 +861,7 @@ mod tests {
 
     #[test]
     fn valve_unequal_pressure() {
-        let mut valve = DefaultValve::new(Ratio::new::<percent>(100.));
+        let mut valve = DefaultValve::new_open();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -822,7 +890,7 @@ mod tests {
 
     #[test]
     fn valve_moves_fluid_based_on_open_amount() {
-        let mut valve = DefaultValve::new(Ratio::new::<percent>(0.));
+        let mut valve = DefaultValve::new_closed();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -854,7 +922,7 @@ mod tests {
 
     #[test]
     fn valve_two_small_updates_equal_one_big_update() {
-        let mut valve = DefaultValve::new(Ratio::new::<percent>(100.));
+        let mut valve = DefaultValve::new_open();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -1391,6 +1459,19 @@ mod tests {
 
         assert_eq!(target_one.pressure(), container_with_valve.pressure());
         assert_eq!(target_one.temperature(), container_with_valve.temperature());
+    }
+
+    #[test]
+    fn valve_does_not_accept_signal_when_unpowered() {
+        let controller = ValveTestController::new(Ratio::new::<percent>(0.));
+
+        let mut valve = DefaultValve::new(
+            Ratio::new::<percent>(100.),
+            Box::new(TestValveOperationMode::new(false)),
+        );
+
+        valve.update_open_amount(&controller);
+        assert_eq!(valve.open_amount(), Ratio::new::<percent>(100.));
     }
 
     mod cross_bleed_selector_knob {

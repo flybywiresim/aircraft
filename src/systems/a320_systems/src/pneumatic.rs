@@ -835,10 +835,10 @@ impl EngineBleedAirSystem {
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
-            ip_valve: DefaultValve::new(Ratio::new::<percent>(100.)),
-            hp_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
-            pr_valve: DefaultValve::new(Ratio::new::<percent>(0.)),
-            fan_air_valve: DefaultValve::new(Ratio::new::<percent>(100.)),
+            ip_valve: DefaultValve::new_open(),
+            hp_valve: DefaultValve::new_closed(),
+            pr_valve: DefaultValve::new_closed(),
+            fan_air_valve: DefaultValve::new_open(),
             transfer_pressure_pipe: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
@@ -867,7 +867,7 @@ impl EngineBleedAirSystem {
             engine_starter_consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
                 cubic_meter_per_second,
             >(0.1)),
-            es_valve: DefaultValve::new(Ratio::new::<ratio>(0.)),
+            es_valve: DefaultValve::new_closed(),
             precooler: HeatExchanger::new(1e1),
         }
     }
@@ -1302,9 +1302,13 @@ impl SimulationElement for PackFlowValveController {
 mod tests {
     use super::*;
     use systems::{
+        electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         pneumatic::{EngineState, PneumaticContainer},
-        shared::{ApuBleedAirValveSignal, MachNumber, ISA},
+        shared::{
+            ApuBleedAirValveSignal, ElectricalBusType, ElectricalBuses, MachNumber,
+            PotentialOrigin, ISA,
+        },
         simulation::{
             test::{SimulationTestBed, TestBed},
             Aircraft, SimulationElement, Write,
@@ -1317,6 +1321,7 @@ mod tests {
         length::foot,
         pressure::{pascal, psi},
         thermodynamic_temperature::degree_celsius,
+        velocity::knot,
     };
 
     struct TestApu {
@@ -1363,6 +1368,29 @@ mod tests {
         }
     }
 
+    struct A320TestElectrical {
+        airspeed: Velocity,
+        all_ac_lost: bool,
+    }
+    impl A320TestElectrical {
+        pub fn new() -> Self {
+            A320TestElectrical {
+                airspeed: Velocity::new::<knot>(100.),
+                all_ac_lost: false,
+            }
+        }
+
+        fn update(&mut self, context: &UpdateContext) {
+            self.airspeed = context.indicated_airspeed();
+        }
+    }
+    impl SimulationElement for A320TestElectrical {
+        fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+            self.all_ac_lost = !buses.is_powered(ElectricalBusType::AlternatingCurrent(1))
+                && !buses.is_powered(ElectricalBusType::AlternatingCurrent(2));
+        }
+    }
+
     struct PneumaticTestAircraft {
         pneumatic: A320Pneumatic,
         apu: TestApu,
@@ -1371,9 +1399,20 @@ mod tests {
         overhead_panel: A320PneumaticOverheadPanel,
         fire_pushbuttons: TestEngineFirePushButtons,
         hydraulic: A320Hydraulic,
+        electrical: A320TestElectrical,
+        powered_source: TestElectricitySource,
+        dc_1_bus: ElectricalBus,
+        dc_2_bus: ElectricalBus,
+        dc_ess_bus: ElectricalBus,
+        dc_ess_shed_bus: ElectricalBus,
+        // Electric buses states to be able to kill them dynamically
+        is_dc_1_powered: bool,
+        is_dc_2_powered: bool,
+        is_dc_ess_powered: bool,
+        is_dc_ess_shed_powered: bool,
     }
     impl PneumaticTestAircraft {
-        fn new() -> Self {
+        fn new(electricity: &mut Electricity) -> Self {
             Self {
                 pneumatic: A320Pneumatic::new(),
                 apu: TestApu::new(),
@@ -1382,6 +1421,25 @@ mod tests {
                 overhead_panel: A320PneumaticOverheadPanel::new(),
                 fire_pushbuttons: TestEngineFirePushButtons::new(),
                 hydraulic: A320Hydraulic::new(),
+                electrical: A320TestElectrical::new(),
+                powered_source: TestElectricitySource::powered(
+                    PotentialOrigin::EngineGenerator(1),
+                    electricity,
+                ),
+                dc_1_bus: ElectricalBus::new(ElectricalBusType::DirectCurrent(1), electricity),
+                dc_2_bus: ElectricalBus::new(ElectricalBusType::DirectCurrent(2), electricity),
+                dc_ess_bus: ElectricalBus::new(
+                    ElectricalBusType::DirectCurrentEssential,
+                    electricity,
+                ),
+                dc_ess_shed_bus: ElectricalBus::new(
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                    electricity,
+                ),
+                is_dc_1_powered: true,
+                is_dc_2_powered: true,
+                is_dc_ess_powered: true,
+                is_dc_ess_shed_powered: true,
             }
         }
     }
@@ -1427,8 +1485,8 @@ mod tests {
     impl PneumaticTestBed {
         fn new() -> Self {
             Self {
-                test_bed: SimulationTestBed::<PneumaticTestAircraft>::new(|_| {
-                    PneumaticTestAircraft::new()
+                test_bed: SimulationTestBed::<PneumaticTestAircraft>::new(|electricity| {
+                    PneumaticTestAircraft::new(electricity)
                 }),
             }
         }
