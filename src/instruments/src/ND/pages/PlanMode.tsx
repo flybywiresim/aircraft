@@ -3,21 +3,22 @@ import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { useSimVar } from '@instruments/common/simVars';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { EfisOption } from '../index';
-import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Degrees } from '../../../../../typings';
 
 export interface PlanModeProps {
+    adirsAlign: boolean,
     rangeSetting: number,
     ppos: LatLongData,
     efisOption: EfisOption,
     mapHidden: boolean,
 }
 
-export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption, mapHidden }) => {
+export const PlanMode: FC<PlanModeProps> = ({ adirsAlign, rangeSetting, ppos, efisOption, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
@@ -59,7 +60,7 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption, ma
 
     return (
         <>
-            <g id="map" clipPath="url(#plan-mode-map-clip)" visibility={mapHidden ? "hidden" : "visible"}>
+            <g id="map" clipPath="url(#plan-mode-map-clip)" visibility={mapHidden ? 'hidden' : 'visible'}>
                 <FlightPlan
                     x={384}
                     y={384}
@@ -74,7 +75,9 @@ export const PlanMode: FC<PlanModeProps> = ({ rangeSetting, ppos, efisOption, ma
 
             <Overlay rangeSetting={rangeSetting} />
 
-            <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
+            {adirsAlign && (
+                <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
+            )}
 
             <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
         </>
@@ -123,7 +126,9 @@ const Plane: FC<PlaneProps> = ({ location, heading, mapParams }) => {
     const [x, y] = mapParams.coordinatesToXYy(location);
     const rotation = mapParams.rotation(heading);
 
-    return <g transform={`translate(${x} ${y}) rotate(${rotation} 384 384)`}>
-        <image x={342} y={357} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
-    </g>;
+    return (
+        <g transform={`translate(${x} ${y}) rotate(${rotation} 384 384)`}>
+            <image x={342} y={357} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
+        </g>
+    );
 };
