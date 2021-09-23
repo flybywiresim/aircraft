@@ -19,8 +19,8 @@ enum FlapsConf {
     ConfFull = 5,
 }
 
-impl From<u8> for FlapsConf {
-    fn from(value: u8) -> Self {
+impl From<usize> for FlapsConf {
+    fn from(value: usize) -> Self {
         match value {
             0 => FlapsConf::Conf0,
             1 => FlapsConf::Conf1,
@@ -36,8 +36,8 @@ impl From<u8> for FlapsConf {
 //Should consider to just make this a part of the
 //SlatFlapComplex
 struct FlapsHandle {
-    handle_position: u8,
-    old_handle_position: u8,
+    handle_position: usize,
+    old_handle_position: usize,
 }
 
 impl FlapsHandle {
@@ -48,7 +48,7 @@ impl FlapsHandle {
         }
     }
 
-    fn signal_new_position(&self) -> Option<(u8, u8)> {
+    fn signal_new_position(&self) -> Option<(usize, usize)> {
         if self.handle_position == self.old_handle_position {
             match self.handle_position {
                 1 => Some((1, 1)),
@@ -147,7 +147,7 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn generate_configuration(&self, handle_transition: Option<(u8, u8)>) -> Option<FlapsConf> {
+    fn generate_configuration(&self, handle_transition: Option<(usize, usize)>) -> Option<FlapsConf> {
         if let Some((from, to)) = handle_transition {
             match from {
                 0 => match to {
@@ -189,7 +189,7 @@ impl SlatFlapControlComputer {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, handle_transition: Option<(u8, u8)>) {
+    pub fn update(&mut self, context: &UpdateContext, handle_transition: Option<(usize, usize)>) {
         self.air_speed = context.indicated_airspeed().get::<knot>();
 
         if let Some(new_config) = self.generate_configuration(handle_transition) {
@@ -430,7 +430,7 @@ mod tests {
             self
         }
 
-        fn set_flaps_handle_position(mut self, pos: u8) -> Self {
+        fn set_flaps_handle_position(mut self, pos: usize) -> Self {
             self.write("FLAPS_HANDLE_INDEX", pos as f64);
             self
         }
