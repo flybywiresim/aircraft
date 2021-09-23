@@ -20,6 +20,7 @@
 1. [AP] Improved LOC* law - @aguther (Andreas Guther)
 1. [AP] Improved ROLL OUT law - @aguther (Andreas Guther)
 1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (TazX [Z+2]#0405)
+1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
