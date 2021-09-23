@@ -227,7 +227,7 @@ class CDUAvailableArrivalsPage {
             ]);
             let up = false;
             let down = false;
-            const maxPage = starSelection ? (airportInfo.arrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
+            const maxPage = starSelection ? (selectedArrival ? selectedArrival.enRouteTransitions.length - 2 : airportInfo.arrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
                     pageCurrent++;
