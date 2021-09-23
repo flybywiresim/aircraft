@@ -77,20 +77,11 @@ export class FlightPlanManager {
                 plan.setParentInstrument(_parentInstrument);
                 this._flightPlans = [];
                 this._flightPlans.push(plan);
-                let loaded: boolean | void = false;
                 if (NXDataStore.get('FP_SYNC', 'SAVE') !== 'NONE') {
                     this.pauseSync();
-                    loaded = await FlightPlanAsoboSync.LoadFromGame(this).catch(console.error);
+                    await FlightPlanAsoboSync.LoadFromGame(this).catch(console.error);
                 }
                 this.resumeSync();
-
-                // ctd magic sauce?
-                if (loaded) {
-                    Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0)
-                        .catch((e) => console.error('[FP INIT] Error when setting Active WP'));
-                    Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
-                        .catch((e) => console.error('[FP INIT] Error when recomputing Active WP'));
-                }
             });
         }
 
