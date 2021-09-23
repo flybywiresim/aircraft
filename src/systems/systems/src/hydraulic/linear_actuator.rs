@@ -100,6 +100,7 @@ impl CoreHydraulicForce {
             last_control_force: Force::new::<newton>(0.),
         }
     }
+    
     fn update_force(
         &mut self,
         required_position: Ratio,
