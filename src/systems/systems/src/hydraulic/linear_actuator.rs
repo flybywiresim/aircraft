@@ -69,6 +69,8 @@ struct CoreHydraulicForce {
     rod_side_area: Area,
 
     last_control_force: Force,
+
+    force: Force,
 }
 impl CoreHydraulicForce {
     const DEFAULT_I_GAIN: f64 = 0.2;
@@ -98,9 +100,10 @@ impl CoreHydraulicForce {
             bore_side_area,
             rod_side_area,
             last_control_force: Force::new::<newton>(0.),
+            force: Force::new::<newton>(0.),
         }
     }
-    
+
     fn update_force(
         &mut self,
         required_position: Ratio,
@@ -109,16 +112,16 @@ impl CoreHydraulicForce {
         current_pressure: Pressure,
         signed_flow: VolumeRate,
         speed: Velocity,
-    ) -> Force {
+    ) {
         self.update_actions(requested_mode, position_normalized);
 
-        self.force(
+        self.update_force_from_current_mode(
             required_position,
             position_normalized,
             current_pressure,
             signed_flow,
             speed,
-        )
+        );
     }
 
     fn update_actions(&mut self, requested_mode: LinearActuatorMode, position_normalized: Ratio) {
@@ -171,27 +174,35 @@ impl CoreHydraulicForce {
         self.current_mode = LinearActuatorMode::ActiveDamping;
     }
 
-    fn force(
+    fn update_force_from_current_mode(
         &mut self,
         required_position: Ratio,
         position_normalized: Ratio,
         current_pressure: Pressure,
         signed_flow: VolumeRate,
         speed: Velocity,
-    ) -> Force {
+    ) {
         match self.current_mode {
             LinearActuatorMode::ClosedValves => {
-                self.force_closed_valves(position_normalized, speed)
+                self.force = self.force_closed_valves(position_normalized, speed);
             }
-            LinearActuatorMode::ActiveDamping => self.force_damping(speed),
-            LinearActuatorMode::PositionControl => self.force_position_control(
-                required_position,
-                position_normalized,
-                signed_flow,
-                current_pressure,
-                speed,
-            ),
+            LinearActuatorMode::ActiveDamping => {
+                self.force = self.force_damping(speed);
+            }
+            LinearActuatorMode::PositionControl => {
+                self.force = self.force_position_control(
+                    required_position,
+                    position_normalized,
+                    signed_flow,
+                    current_pressure,
+                    speed,
+                );
+            }
         }
+    }
+
+    fn force(&self) -> Force {
+        self.force
     }
 
     fn force_damping(&self, speed: Velocity) -> Force {
@@ -273,7 +284,6 @@ pub struct LinearActuator {
     last_position: Length,
 
     speed: Velocity,
-    force: Force,
 
     max_absolute_length: Length,
     min_absolute_length: Length,
@@ -348,7 +358,6 @@ impl LinearActuator {
             last_position: bounded_linear_length.min_absolute_length_to_anchor(),
 
             speed: Velocity::new::<meter_per_second>(0.),
-            force: Force::new::<newton>(0.),
 
             max_absolute_length: bounded_linear_length.max_absolute_length_to_anchor(),
             min_absolute_length: bounded_linear_length.min_absolute_length_to_anchor(),
@@ -391,7 +400,7 @@ impl LinearActuator {
         requested_mode: LinearActuatorMode,
         current_pressure: Pressure,
     ) {
-        self.force = self.core_hydraulics.update_force(
+        self.core_hydraulics.update_force(
             self.requested_position,
             requested_mode,
             self.position_normalized,
@@ -399,7 +408,7 @@ impl LinearActuator {
             self.signed_flow,
             self.speed,
         );
-        connected_body.apply_control_arm_force(self.force);
+        connected_body.apply_control_arm_force(self.core_hydraulics.force());
     }
 
     fn update_after_rigid_body(
@@ -452,8 +461,12 @@ impl LinearActuator {
     fn set_position_target(&mut self, target_position: Ratio) {
         self.requested_position = target_position;
     }
-}
 
+    #[cfg(test)]
+    fn force(&self) -> Force {
+        self.core_hydraulics.force()
+    }
+}
 impl Actuator for LinearActuator {
     fn used_volume(&self) -> Volume {
         self.volume_to_actuator_accumulator
@@ -869,7 +882,7 @@ mod tests {
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}",
                 rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
-                actuator.force.get::<newton>()
+                actuator.force().get::<newton>()
             );
         }
     }
@@ -922,7 +935,7 @@ mod tests {
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
                 rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
-                actuator.force.get::<newton>(),
+                actuator.force().get::<newton>(),
                 time
             );
 
@@ -976,7 +989,7 @@ mod tests {
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
                 rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
-                actuator.force.get::<newton>(),
+                actuator.force().get::<newton>(),
                 time
             );
 
@@ -1037,7 +1050,7 @@ mod tests {
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
                 rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
-                actuator.force.get::<newton>(),
+                actuator.force().get::<newton>(),
                 time
             );
 
@@ -1091,7 +1104,7 @@ mod tests {
                 "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
                 rigid_body.position_normalized().get::<ratio>(),
                 actuator.position_normalized.get::<ratio>(),
-                actuator.force.get::<newton>(),
+                actuator.force().get::<newton>(),
                 time
             );
 
