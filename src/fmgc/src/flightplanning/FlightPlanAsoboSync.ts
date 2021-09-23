@@ -39,7 +39,7 @@ export class FlightPlanAsoboSync {
       }
   }
 
-  public static async LoadFromGame(fpln: FlightPlanManager): Promise<boolean> {
+  public static async LoadFromGame(fpln: FlightPlanManager): Promise<void> {
       return new Promise((resolve) => {
           this.init();
           setTimeout(() => {
@@ -55,7 +55,7 @@ export class FlightPlanAsoboSync {
                           // TODO FIXME: better handling of mid-air spawning and syncing fpln
                           if (data.waypoints.length === 0 || data.waypoints[0].ident === 'CUSTD') {
                               fpln.resumeSync();
-                              resolve(false);
+                              resolve();
                               return;
                           }
 
@@ -164,7 +164,12 @@ export class FlightPlanAsoboSync {
                           fpln.resumeSync();
 
                           this.fpChecksum = fpln.getCurrentFlightPlan().checksum;
-                          resolve(true);
+                          // Potential CTD source?
+                          Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0).catch();
+                          // .catch((e) => console.error('[FP LOAD] Error when setting Active WP'));
+                          Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX').catch();
+                          // .catch((e) => console.error('[FP LOAD] Error when recomputing Active WP'));
+                          resolve();
                       }
                   });
               }, 500);
@@ -240,7 +245,7 @@ export class FlightPlanAsoboSync {
                           });
                       yield Coherent.call('SET_APPROACH_INDEX', plan.procedureDetails.approachIndex)
                           .then(() => {
-                              console.log(`[FP SAVE] Setting Approach ${plan.procedureDetails.approachIndex} ... SUCCESS`);
+                              // console.log(`[FP SAVE] Setting Approach ${plan.procedureDetails.approachIndex} ... SUCCESS`);
                               Coherent.call('SET_APPROACH_TRANSITION_INDEX', plan.procedureDetails.approachTransitionIndex)
                                   // .then(() => console.log(`[FP SAVE] Setting Approach Transition ${plan.procedureDetails.approachTransitionIndex} ... SUCCESS`))
                                   .catch((e) => {
@@ -255,9 +260,9 @@ export class FlightPlanAsoboSync {
                   }
                   this.fpChecksum = plan.checksum;
               }
-              Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
-                  .catch((e) => console.error('[FP SAVE] Setting Active Waypoint... ERROR'))
-                  .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'));
+              Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX').catch();
+              // .catch((e) => console.error('[FP SAVE] Setting Active Waypoint... ERROR'));
+              // .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'));
           }));
       });
   }
