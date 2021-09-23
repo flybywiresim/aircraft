@@ -14,7 +14,7 @@ export const Layer: React.FC<LayerProps> = ({ x = 0, y = 0, children }) => (
  * @param angle2 Second angle in degrees
  * @returns {number} Smallest angle between angle1 and angle2 in degrees
  */
- export const getSmallestAngle = (angle1: number, angle2: number) : number => {
+export const getSmallestAngle = (angle1: number, angle2: number) : number => {
     let smallestAngle = angle1 - angle2;
     if (smallestAngle > 180) {
         smallestAngle -= 360;
@@ -22,4 +22,16 @@ export const Layer: React.FC<LayerProps> = ({ x = 0, y = 0, children }) => (
         smallestAngle += 360;
     }
     return smallestAngle;
+};
+
+export const isCaptainSide = (displayIndex: number | undefined) => displayIndex === 1;
+
+export const getSupplier = (displayIndex: number | undefined, knobValue: number) => {
+    const adirs3ToCaptain = 0;
+    const adirs3ToFO = 2;
+
+    if (isCaptainSide(displayIndex)) {
+        return knobValue === adirs3ToCaptain ? 3 : 1;
+    }
+    return knobValue === adirs3ToFO ? 3 : 2;
 };
