@@ -147,7 +147,10 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn generate_configuration(&self, handle_transition: Option<(usize, usize)>) -> Option<FlapsConf> {
+    fn generate_configuration(
+        &self,
+        handle_transition: Option<(usize, usize)>,
+    ) -> Option<FlapsConf> {
         if let Some((from, to)) = handle_transition {
             match from {
                 0 => match to {
