@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { Arinc429Word } from '@instruments/common/arinc429';
-import React from 'react';
 import { getSmallestAngle } from '@instruments/common/utils';
+import React from 'react';
 
 export const calculateHorizonOffsetFromPitch = (pitch: number) => {
     if (pitch > -5 && pitch <= 20) {

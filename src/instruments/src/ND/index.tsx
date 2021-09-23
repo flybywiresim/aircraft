@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
 import { FlightPlanProvider } from '@instruments/common/flightplan';
 import { useSimVar } from '@instruments/common/simVars';
-import { ADIRS } from '@instruments/common/adirs';
+import { useArinc429Var } from '@instruments/common/arinc429';
+import { getSupplier } from '@instruments/common/utils';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
 import { WindIndicator } from './elements/WindIndicator';
@@ -46,20 +47,29 @@ const NavigationDisplay: React.FC = () => {
 
         return parseInt(url?.substring(url.length - 1) ?? '1', 10);
     });
-
     const side = displayIndex === 1 ? 'L' : 'R';
-
     const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
-    const adirsAlign = !ADIRS.mapNotAvailable(displayIndex);
-    const airDataReferenceSource = ADIRS.getNdAirDataReferenceSource(displayIndex);
-    const inertialReferenceSource = ADIRS.getNdInertialReferenceSource(displayIndex);
-    const lat = ADIRS.getLatitude();
-    const long = ADIRS.getLongitude();
+    const [airDataSwitch] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 200);
+    const [attHdgSwitch] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 200);
+    const [airDataReferenceSource, setAirDataSource] = useState(displayIndex);
+    const [inertialReferenceSource, setInertialSource] = useState(displayIndex);
 
-    const ppos = { lat, long };
+    useEffect(() => {
+        setAirDataSource(getSupplier(displayIndex, airDataSwitch));
+    }, [airDataSwitch]);
 
-    const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
-    const [modeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
+    useEffect(() => {
+        setInertialSource(getSupplier(displayIndex, attHdgSwitch));
+    }, [attHdgSwitch]);
+
+    const arincLat = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LATITUDE`, 200);
+    const arincLong = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LONGITUDE`, 200);
+    const adirsAlign = arincLat.isNormalOperation() && arincLong.isNormalOperation();
+
+    const ppos = (adirsAlign) ? { lat: arincLat.value, long: arincLong.value } : { lat: NaN, long: NaN };
+
+    const [rangeIndex] = useSimVar(displayIndex === 1 ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
+    const [modeIndex] = useSimVar(displayIndex === 1 ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
 
     const [opacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 100);
 
@@ -117,6 +127,7 @@ const NavigationDisplay: React.FC = () => {
 
                     {modeIndex === Mode.PLAN && (
                         <PlanMode
+                            adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
                             ppos={ppos}
                             efisOption={efisOption}
