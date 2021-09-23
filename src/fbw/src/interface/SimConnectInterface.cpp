@@ -360,16 +360,6 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_TOGGLE, "THROTTLE_REVERSE_THRUST_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_HOLD, "THROTTLE_REVERSE_THRUST_HOLD", true);
 
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_UP, "FLAPS_UP", true);
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_1, "FLAPS_1", true);
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_2, "FLAPS_2", true);
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_3, "FLAPS_3", true);
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_DOWN, "FLAPS_DOWN", true);
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_INCR, "FLAPS_INCR", true);
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_DECR, "FLAPS_DECR", true);
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_SET, "FLAPS_SET", true);
-  // result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_FLAPS_SET, "AXIS_FLAPS_SET", true);
-
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_ON, "SPOILERS_ON", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_OFF, "SPOILERS_OFF", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_TOGGLE, "SPOILERS_TOGGLE", true);
@@ -402,7 +392,6 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:2", "NUMBER");
 
-  // result &= addDataDefinition(hSimConnect, 5, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
 
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
 
@@ -771,11 +760,6 @@ bool SimConnectInterface::sendData(SimOutputThrottles output) {
   // write data and return result
   return sendData(4, sizeof(output), &output);
 }
-
-// bool SimConnectInterface::sendData(SimOutputFlaps output) {
-//   // write data and return result
-//   return sendData(5, sizeof(output), &output);
-// }
 
 bool SimConnectInterface::sendData(SimOutputSpoilers output) {
   // write data and return result
