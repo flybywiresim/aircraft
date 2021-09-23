@@ -154,13 +154,10 @@ impl CoreHydraulicForce {
 
     fn actions_from_current_to_damping(&mut self) {
         match self.current_mode {
-            LinearActuatorMode::ClosedValves => {
-                self.go_to_damping();
-            }
-            LinearActuatorMode::PositionControl => {
-                self.go_to_damping();
-            }
             LinearActuatorMode::ActiveDamping => {}
+            LinearActuatorMode::ClosedValves | LinearActuatorMode::PositionControl => {
+                self.go_to_damping();
+            }
         }
     }
 
