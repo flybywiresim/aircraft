@@ -15,11 +15,11 @@ class NXUnits {
     }
 
     static userToKg(value) {
-        return NXUnits.metricWeight ? value : value / 2.20462;
+        return NXUnits.metricWeight ? value : value / 2.204625;
     }
 
     static kgToUser(value) {
-        return NXUnits.metricWeight ? value : value * 2.20462;
+        return NXUnits.metricWeight ? value : value * 2.204625;
     }
 
     static userWeightUnit() {
