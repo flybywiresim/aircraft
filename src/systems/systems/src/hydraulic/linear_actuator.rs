@@ -134,10 +134,7 @@ impl CoreHydraulicForce {
     fn actions_from_current_to_closed_valves(&mut self, position_normalized: Ratio) {
         match self.current_mode {
             LinearActuatorMode::ClosedValves => {}
-            LinearActuatorMode::PositionControl => {
-                self.go_to_close_control_valves(position_normalized);
-            }
-            LinearActuatorMode::ActiveDamping => {
+            LinearActuatorMode::PositionControl | LinearActuatorMode::ActiveDamping => {
                 self.go_to_close_control_valves(position_normalized);
             }
         }
