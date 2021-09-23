@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import React from 'react';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
+import { useArinc429Var } from '@instruments/common/arinc429';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
 import { Triangle } from '../../Common/Shapes';
@@ -151,19 +152,20 @@ export const FuelPage = () => {
 
 const Apu = () => {
     // Use as a surrogate for fire valve being open or closed.
-    const [apuN] = useSimVar('L:A32NX_APU_N', 'percent', 500);
+    const apuN = useArinc429Var('L:A32NX_APU_N', 500);
     const [apuFirePB] = useSimVar('L:A32NX_FIRE_BUTTON_APU', 'boolean', 1000);
     // APU fire P/B out = Amber APU only
     // White APU and triangle only if APU off
     // If APU on and powered green line and triangle
-    const color = apuFirePB ? 'Amber' : apuN <= 20 ? 'White' : 'Green';
+    const apuNAtOrBelow20 = apuN.valueOr(0) <= 20;
+    const color = apuFirePB ? 'Amber' : apuNAtOrBelow20 ? 'White' : 'Green';
     const fill = apuFirePB ? 1 : 0;
 
     return (
         <g id="APU">
             <text className={apuFirePB ? 'Amber' : 'White'} x="122" y="150" textAnchor="end" alignmentBaseline="central">APU</text>
-            {apuFirePB && apuN <= 20 ? null : <Triangle x={129} y={150} colour={color} fill={fill} orientation={-90} />}
-            <path id="apuFuelLine" className={`${color}Line ${apuN >= 20 ? '' : 'Hide'}`} d="M147,150 l13,0" />
+            {apuFirePB && apuNAtOrBelow20 ? null : <Triangle x={129} y={150} colour={color} fill={fill} orientation={-90} />}
+            <path id="apuFuelLine" className={`${color}Line ${apuNAtOrBelow20 ? 'Hide' : ''}`} d="M147,150 l13,0" />
         </g>
     );
 };
@@ -321,7 +323,7 @@ const CrossFeedValve = ({ x, y } : EngineLpValveProps) => {
 type PumpProps = {
     x: number,
     y: number,
-    onBus: string,
+    onBus?: string,
     pumpNumber: number
 }
 
