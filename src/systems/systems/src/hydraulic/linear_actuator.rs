@@ -41,19 +41,17 @@ pub enum LinearActuatorMode {
 }
 
 /// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
-/// solenoid control valves, spring loaded valves, differential pressure mechanism......
+/// solenoid control valves, spring loaded valves, and a differential pressure mechanism.
 ///
-/// We don't want to simulate all of those little bits, so the functions of the actuator are split in
-/// functional modes
+/// We don't want to simulate all of those little bits, so the functions of the actuator are split into
+/// the following functional modes:
 ///
-/// ClosedValves -> Turns actuator in a high constant spring/damper system simulating a closed actuator
-/// only constrained by its own fluid compressibility
-///
-/// ActiveDamping -> Actuator use internal valves to provide a force resisting to its own movements, dampening
-/// the piece movements it's connected to
-///
-/// PositionControl -> Actuator will try to use hydraulic pressure to move to a requested position, while
-/// maintaining flow limitations
+/// - [LinearActuatorMode.ClosedValves]: Turns actuator in a high constant spring/damper system simulating a closed actuator
+/// only constrained by its own fluid compressibility.
+/// - [ActiveDamping.LinearActuatorMode]: Actuator use internal valves to provide a force resisting to its own movements, dampening
+/// the piece movements it's connected to.
+/// - [LinearActuatorMode.PositionControl]: -> Actuator will try to use hydraulic pressure to move to a requested position, while
+/// maintaining flow limitations.
 #[derive(PartialEq, Clone, Copy)]
 struct CoreHydraulicForce {
     current_mode: LinearActuatorMode,
