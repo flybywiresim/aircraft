@@ -194,7 +194,7 @@ impl CoreHydraulicForce {
         }
     }
 
-    fn force_damping(&mut self, speed: Velocity) -> Force {
+    fn force_damping(&self, speed: Velocity) -> Force {
         Force::new::<newton>(
             -speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
         )
