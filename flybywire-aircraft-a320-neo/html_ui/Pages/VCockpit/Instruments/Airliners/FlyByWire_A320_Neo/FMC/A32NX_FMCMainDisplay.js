@@ -618,7 +618,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
 
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO).catch(console.error).catch(console.error);
 
                 /** Activate pre selected speed/mach */
                 if (_lastFlightPhase === FmgcFlightPhases.CLIMB) {
@@ -640,7 +640,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                 this.checkDestData();
 
-                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO).catch(console.error).catch(console.error);
 
                 /** Activate pre selected speed/mach */
                 if (_lastFlightPhase === FmgcFlightPhases.CRUISE) {
@@ -661,9 +661,10 @@ class FMCMainDisplay extends BaseAirliners {
                 }
 
                 this.connectIls();
-                this.flightPlanManager.activateApproach();
 
-                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                this.flightPlanManager.activateApproach().catch(console.error);
+
+                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO).catch(console.error);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
 
                 this.checkDestData();
@@ -694,7 +695,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
 
                 const currentHeading = Simplane.getHeadingMagnetic();
-                Coherent.call("HEADING_BUG_SET", 1, currentHeading);
+                Coherent.call("HEADING_BUG_SET", 1, currentHeading).catch(console.error);
 
                 if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
@@ -855,7 +856,7 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", Vtap);
 
         if (this.isAirspeedManaged()) {
-            Coherent.call("AP_SPD_VAR_SET", 0, Vtap);
+            Coherent.call("AP_SPD_VAR_SET", 0, Vtap).catch(console.error);
         }
     }
 
@@ -988,12 +989,12 @@ class FMCMainDisplay extends BaseAirliners {
                         this.updateConstraints();
                     }
                     if (this.constraintAlt) {
-                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate);
+                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate).catch(console.error);
                         this._forceNextAltitudeUpdate = false;
                     } else {
                         const altitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
                         if (isFinite(altitude)) {
-                            Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate);
+                            Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate).catch(console.error);
                             this._forceNextAltitudeUpdate = false;
                         }
                     }
@@ -1001,7 +1002,7 @@ class FMCMainDisplay extends BaseAirliners {
                     const altitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
                     if (isFinite(altitude)) {
                         SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", 0);
-                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate);
+                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate).catch(console.error);
                         this._forceNextAltitudeUpdate = false;
                     }
                 }
@@ -1155,7 +1156,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (Simplane.getAutoPilotHeadingManaged()) {
                 if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
                     const currentHeading = Simplane.getHeadingMagnetic();
-                    Coherent.call("HEADING_BUG_SET", 1, currentHeading);
+                    Coherent.call("HEADING_BUG_SET", 1, currentHeading).catch(console.error);
                 }
             }
             this._onModeSelectedHeading();
@@ -1185,7 +1186,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (_event === "AP_DEC_HEADING" || _event === "AP_INC_HEADING") {
             if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
                 const currentHeading = Simplane.getHeadingMagnetic();
-                Coherent.call("HEADING_BUG_SET", 1, currentHeading);
+                Coherent.call("HEADING_BUG_SET", 1, currentHeading).catch(console.error);
             }
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
         }
@@ -1221,13 +1222,13 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
         }
         SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
+        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate).catch(console.error);
     }
 
     _onModeManagedAltitude() {
         SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 2);
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
+        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate).catch(console.error);
+        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate).catch(console.error);
         if (!Simplane.getAutoPilotGlideslopeHold()) {
             this.requestCall(() => {
                 SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
@@ -1765,7 +1766,7 @@ class FMCMainDisplay extends BaseAirliners {
         const ilsIcao = finalLeg.originIcao.trim();
         if (ilsIcao.length > 0) {
             try {
-                const ils = await this.facilityLoader.getFacility(ilsIcao);
+                const ils = await this.facilityLoader.getFacility(ilsIcao).catch(console.error);
                 if (ils.infos.frequencyMHz > 1) {
                     console.log('Auto-tuning ILS', ils);
                     this.connectIlsFrequency(ils.infos.frequencyMHz);
