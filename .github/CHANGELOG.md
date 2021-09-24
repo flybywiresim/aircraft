@@ -5,6 +5,8 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.8.0
+1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
+1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
 1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
