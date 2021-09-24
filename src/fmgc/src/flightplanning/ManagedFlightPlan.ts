@@ -309,9 +309,9 @@ export class ManagedFlightPlan {
             const waypoint = this.waypoints[i];
 
             if (waypoint.icao && waypoint.icao.trim() !== '') {
-                GPS.addIcaoWaypoint(waypoint.icao, i);
+                GPS.addIcaoWaypoint(waypoint.icao, i).catch(console.error);
             } else {
-                GPS.addUserWaypoint(waypoint.infos.coordinates.lat, waypoint.infos.coordinates.long, i, waypoint.ident);
+                GPS.addUserWaypoint(waypoint.infos.coordinates.lat, waypoint.infos.coordinates.long, i, waypoint.ident).catch(console.error);
             }
 
             if (waypoint.endsInDiscontinuity) {

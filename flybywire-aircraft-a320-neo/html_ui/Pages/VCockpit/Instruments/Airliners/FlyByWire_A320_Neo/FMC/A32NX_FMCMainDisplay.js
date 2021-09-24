@@ -1414,7 +1414,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 1);
                     callback(result);
                 });
-            });
+            }).catch(console.error);
         } else {
             callback(true);
         }
@@ -1442,20 +1442,20 @@ class FMCMainDisplay extends BaseAirliners {
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
                                         callback(true);
-                                    });
-                                });
-                            });
+                                    }).catch(console.error);
+                                }).catch(console.error);
+                            }).catch(console.error);
                         });
                     } else {
                         this.addNewMessage(NXSystemMessages.notInDatabase);
                         callback(false);
                     }
-                });
+                }).catch(console.error);
             } else {
                 this.addNewMessage(NXSystemMessages.notInDatabase);
                 callback(false);
             }
-        });
+        }).catch(console.error);
     }
 
     /**
@@ -1532,7 +1532,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._DistanceToAlt = 0;
             return true;
         }
-        const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent);
+        const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
             this.altDestination = airportAltDest;
             this.aocAirportList.alternate = altDestIdent;
@@ -1919,14 +1919,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getOrSelectVORsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
+        this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager).catch(console.error), ident, callback);
     }
     getOrSelectNDBsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetNDBsByIdent.bind(this.dataManager), ident, callback);
+        this._getOrSelectWaypoints(this.dataManager.GetNDBsByIdent.bind(this.dataManager).catch(console.error), ident, callback);
     }
 
     getOrSelectWaypointByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetWaypointsByIdent.bind(this.dataManager), ident, callback);
+        this._getOrSelectWaypoints(this.dataManager.GetWaypointsByIdent.bind(this.dataManager).catch(console.error), ident, callback);
     }
 
     insertWaypoint(newWaypointTo, index, callback = EmptyCallback.Boolean, immediately) {
@@ -1945,12 +1945,12 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
                     return callback(true);
-                });
+                }).catch(console.error);
             } else {
                 this.ensureCurrentFlightPlanIsTemporary(async () => {
                     this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
                         return callback(true);
-                    });
+                    }).catch(console.error);
                 });
             }
         });
@@ -1970,7 +1970,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
-                await referenceWaypoint.infos.UpdateAirway(airwayName); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
+                await referenceWaypoint.infos.UpdateAirway(airwayName).catch(console.error); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
                 const airway = infos.airways.find(a => {
                     return a.name === airwayName;
                 });
@@ -1998,7 +1998,7 @@ class FMCMainDisplay extends BaseAirliners {
                                             }
                                             console.log("icao:" + icao + " added");
                                             resolve();
-                                        });
+                                        }).catch(console.error);
                                     });
                                 };
 
@@ -2114,7 +2114,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.addNewMessage(NXSystemMessages.notInDatabase);
                 callback(false);
             }
-        });
+        }).catch(console.error);
     }
 
     eraseTemporaryFlightPlan(callback = EmptyCallback.Void) {
@@ -2133,7 +2133,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
                     callback();
                 });
-            });
+            }).catch(console.error);
         }
     }
 
@@ -3684,7 +3684,7 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                     return onError(NXSystemMessages.notInDatabase);
                 }
-            });
+            }).catch(console.error);
         } else {
             return onError(NXSystemMessages.notInDatabase);
         }
