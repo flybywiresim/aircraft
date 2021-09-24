@@ -280,12 +280,12 @@ export class FlightPlanManager {
      */
     public async setOrigin(icao: string, callback = () => { }): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        const airport = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
-
-        await currentFlightPlan.clearPlan().catch(console.error);
-        await currentFlightPlan.addWaypoint(airport, 0);
-        this._updateFlightPlanVersion().catch(console.error);
-
+        const airport = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
+        if (airport) {
+            await currentFlightPlan.clearPlan().catch(console.error);
+            await currentFlightPlan.addWaypoint(airport, 0);
+            this._updateFlightPlanVersion().catch(console.error);
+        }
         callback();
     }
 
@@ -1360,7 +1360,8 @@ export class FlightPlanManager {
      */
     public async activateApproach(callback = EmptyCallback.Void): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        if (!this.isActiveApproach()) {
+        console.log(currentFlightPlan.approach);
+        if (!this.isActiveApproach() && currentFlightPlan.approach.offset >= 0) {
             await GPS.setActiveWaypoint(currentFlightPlan.approach.offset).catch(console.error);
         }
 
