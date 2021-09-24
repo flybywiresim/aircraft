@@ -20,7 +20,7 @@ export const SpeedIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ adrs, irs }) 
         <Layer x={2} y={28}>
             <text x={0} y={0} fontSize={20} className="White">GS</text>
             <text x={82} y={0} fontSize={25} textAnchor="end" className="Green">
-                {!gs.isNormalOperation() ? Math.round(gs.value).toString().padStart(3) : '' }
+                {gs.isNormalOperation() ? Math.round(gs.value).toString().padStart(3) : '' }
             </text>
             <text x={90} y={0} fontSize={20} className="White">TAS</text>
             <text x={189} y={0} fontSize={25} textAnchor="end" className="Green">
