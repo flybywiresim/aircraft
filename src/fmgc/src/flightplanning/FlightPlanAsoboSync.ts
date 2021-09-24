@@ -53,7 +53,7 @@ export class FlightPlanAsoboSync {
                       // TODO: talk to matt about dirto
                       if (!isDirectTo) {
                           // TODO FIXME: better handling of mid-air spawning and syncing fpln
-                          if (data.waypoints.length === 0 || data.waypoints[0].ident === 'CUSTD') {
+                          if (data.waypoints.length === 0 || data.waypoints[0].icao[0] !== 'A') {
                               fpln.resumeSync();
                               resolve();
                               return;
