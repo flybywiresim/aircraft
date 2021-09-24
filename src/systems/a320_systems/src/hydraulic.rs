@@ -1639,6 +1639,7 @@ impl A320DoorController {
             DoorControlState::NoControl
                 if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
             {
+                self.should_unlock = false;
                 DoorControlState::HydControl
             }
             DoorControlState::HydControl if door.is_locked() => {
