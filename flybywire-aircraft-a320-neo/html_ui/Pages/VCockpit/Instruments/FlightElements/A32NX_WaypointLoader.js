@@ -39,8 +39,8 @@ class NearestAirspacesLoader {
                     if (this.nearestAirspaces.length > 50) {
                         this.nearestAirspaces.splice(0, this.nearestAirspaces.length - 50);
                     }
-                });
-            });
+                }).catch(console.error);
+            }).catch(console.error);
         }
     }
 }
@@ -135,7 +135,7 @@ class FacilityLoader {
                 };
 
                 this._pendingRawRequests.set(`${type}${request.icao}`, request);
-                Coherent.call(loadCall, icao);
+                Coherent.call(loadCall, icao).catch(console.error);
             });
         };
 
@@ -251,7 +251,7 @@ class FacilityLoader {
                 console.warn("Icao mismatch trying to load AIRPORT of invalid icao '" + icao + "'");
             }
             if (this.loadingFacilities.indexOf(icao) === -1) {
-                Coherent.call("LOAD_AIRPORT", icao);
+                Coherent.call("LOAD_AIRPORT", icao).catch(console.error);
                 this.loadingFacilities.push(icao);
             }
             let attempts = 0;
@@ -296,7 +296,7 @@ class FacilityLoader {
             console.warn("Icao mismatch trying to load AIRPORT of invalid icao '" + icao + "'");
         }
         if (this.loadingFacilities.indexOf(icao) === -1) {
-            Coherent.call("LOAD_AIRPORT", icao);
+            Coherent.call("LOAD_AIRPORT", icao).catch(console.error);
             this.loadingFacilities.push(icao);
         }
         return new Promise((resolve) => {
@@ -369,7 +369,7 @@ class FacilityLoader {
                 console.warn("Icao mismatch trying to load AIRPORT of invalid icao '" + icao + "'");
             }
         }
-        Coherent.call("LOAD_AIRPORTS", icaos, icaos.length);
+        Coherent.call("LOAD_AIRPORTS", icaos, icaos.length).catch(console.error);
         return new Promise((resolve) => {
             let attempts = 0;
             const loadedAirportsCallback = () => {
@@ -391,7 +391,7 @@ class FacilityLoader {
                 } else {
                     attempts++;
                     if (attempts === 5) {
-                        Coherent.call("LOAD_AIRPORTS", icaos, icaos.length);
+                        Coherent.call("LOAD_AIRPORTS", icaos, icaos.length).catch(console.error);
                     }
                     if (attempts > 10) {
                         console.warn("getAirportsDatas not found for " + icaos.length + " icaos, expect the unexpected.");
@@ -417,7 +417,7 @@ class FacilityLoader {
                 return callback(intersection);
             }
             if (this.loadingFacilities.indexOf(icao) === -1) {
-                Coherent.call("LOAD_INTERSECTION", icao);
+                Coherent.call("LOAD_INTERSECTION", icao).catch(console.error);
                 this.loadingFacilities.push(icao);
             }
             let attempts = 0;
@@ -470,7 +470,7 @@ class FacilityLoader {
         }
         const t0 = performance.now();
         if (this.loadingFacilities.indexOf(icao) === -1) {
-            Coherent.call("LOAD_INTERSECTION", icao);
+            Coherent.call("LOAD_INTERSECTION", icao).catch(console.error);
             this.loadingFacilities.push(icao);
         }
         return new Promise((resolve) => {
@@ -546,7 +546,7 @@ class FacilityLoader {
             return datas;
         }
         if (icaos.length > 0) {
-            Coherent.call("LOAD_INTERSECTIONS", icaos, icaos.length);
+            Coherent.call("LOAD_INTERSECTIONS", icaos, icaos.length).catch(console.error);
         }
         icaos.push(...loadingIcaos);
         return new Promise((resolve) => {
@@ -575,7 +575,7 @@ class FacilityLoader {
                     attempts++;
                     if (attempts === 5) {
                         console.warn("Retry to load INTERSECTIONS ICAOS.");
-                        Coherent.call("LOAD_INTERSECTIONS", icaos, icaos.length);
+                        Coherent.call("LOAD_INTERSECTIONS", icaos, icaos.length).catch(console.error);
                     }
                     if (attempts > 10) {
                         resolve(datas);
@@ -600,7 +600,7 @@ class FacilityLoader {
                 console.warn("Icao mismatch trying to load NDB of invalid icao '" + icao + "'");
             }
             if (this.loadingFacilities.indexOf(icao) === -1) {
-                Coherent.call("LOAD_NDB", icao);
+                Coherent.call("LOAD_NDB", icao).catch(console.error);
                 this.loadingFacilities.push(icao);
             }
             let attempts = 0;
@@ -649,7 +649,7 @@ class FacilityLoader {
             console.warn("Icao mismatch trying to load NDB of invalid icao '" + icao + "'");
         }
         if (this.loadingFacilities.indexOf(icao) === -1) {
-            Coherent.call("LOAD_NDB", icao);
+            Coherent.call("LOAD_NDB", icao).catch(console.error);
             this.loadingFacilities.push(icao);
         }
         return new Promise((resolve) => {
@@ -722,7 +722,7 @@ class FacilityLoader {
                 console.warn("Icao mismatch trying to load NDB of invalid icao '" + icao + "'");
             }
         }
-        Coherent.call("LOAD_NDBS", icaos, icaos.length);
+        Coherent.call("LOAD_NDBS", icaos, icaos.length).catch(console.error);
         return new Promise((resolve) => {
             let attempts = 0;
             const loadedNdbsCallback = () => {
@@ -744,7 +744,7 @@ class FacilityLoader {
                 } else {
                     attempts++;
                     if (attempts === 5) {
-                        Coherent.call("LOAD_NDBS", icaos, icaos.length);
+                        Coherent.call("LOAD_NDBS", icaos, icaos.length).catch(console.error);
                     }
                     if (attempts > 10) {
                         resolve(datas);
@@ -769,7 +769,7 @@ class FacilityLoader {
                 console.warn("Icao mismatch trying to load VOR of invalid icao '" + icao + "'");
             }
             if (this.loadingFacilities.indexOf(icao) === -1) {
-                Coherent.call("LOAD_VOR", icao);
+                Coherent.call("LOAD_VOR", icao).catch(console.error);
                 this.loadingFacilities.push(icao);
             }
             let attempts = 0;
@@ -818,7 +818,7 @@ class FacilityLoader {
             console.warn("Icao mismatch trying to load VOR of invalid icao '" + icao + "'");
         }
         if (this.loadingFacilities.indexOf(icao) === -1) {
-            Coherent.call("LOAD_VOR", icao);
+            Coherent.call("LOAD_VOR", icao).catch(console.error);
             this.loadingFacilities.push(icao);
         }
         return new Promise((resolve) => {
@@ -891,7 +891,7 @@ class FacilityLoader {
                 console.warn("Icao mismatch trying to load VOR of invalid icao '" + icao + "'");
             }
         }
-        Coherent.call("LOAD_VORS", icaos, icaos.length);
+        Coherent.call("LOAD_VORS", icaos, icaos.length).catch(console.error);
         return new Promise((resolve) => {
             let attempts = 0;
             const loadedVorsCallback = () => {
@@ -913,7 +913,7 @@ class FacilityLoader {
                 } else {
                     attempts++;
                     if (attempts === 5) {
-                        Coherent.call("LOAD_VORS", icaos, icaos.length);
+                        Coherent.call("LOAD_VORS", icaos, icaos.length).catch(console.error);
                     }
                     if (attempts > 10) {
                         resolve(datas);

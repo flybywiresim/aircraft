@@ -43,8 +43,8 @@ export class GPS {
    * @param index The index of the waypoint to add in the flight plan.
    */
     public static async addIcaoWaypoint(icao: string, index: number): Promise<void> {
-        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointICAO', 'string', icao);
-        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanAddWaypoint', 'number', index);
+        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointICAO', 'string', icao).catch(console.error);
+        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanAddWaypoint', 'number', index).catch(console.error);
     }
 
     /**
@@ -55,14 +55,14 @@ export class GPS {
    * @param ident The ident of the waypoint.
    */
     public static async addUserWaypoint(lat: number, lon: number, index: number, ident: string): Promise<void> {
-        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointLatitude', 'degrees', lat);
-        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointLongitude', 'degrees', lon);
+        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointLatitude', 'degrees', lat).catch(console.error);
+        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointLongitude', 'degrees', lon).catch(console.error);
 
         if (ident) {
-            await SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointIdent', 'string', ident);
+            await SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointIdent', 'string', ident).catch(console.error);
         }
 
-        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanAddWaypoint', 'number', index);
+        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanAddWaypoint', 'number', index).catch(console.error);
     }
 
     /**
@@ -70,7 +70,7 @@ export class GPS {
    * @param index The index of the waypoint in the flight plan to delete.
    */
     public static async deleteWaypoint(index: number): Promise<void> {
-        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanDeleteWaypoint', 'number', index);
+        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanDeleteWaypoint', 'number', index).catch(console.error);
     }
 
     /**
@@ -78,7 +78,7 @@ export class GPS {
    * @param {Number} index The index of the waypoint to set active.
    */
     public static async setActiveWaypoint(index: number): Promise<void> {
-        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanActiveWaypoint', 'number', index);
+        await SimVar.SetSimVarValue('C:fs9gps:FlightPlanActiveWaypoint', 'number', index).catch(console.error);
     }
 
     /**
