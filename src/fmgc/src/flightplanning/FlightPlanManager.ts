@@ -1360,7 +1360,6 @@ export class FlightPlanManager {
      */
     public async activateApproach(callback = EmptyCallback.Void): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        console.log(currentFlightPlan.approach);
         if (!this.isActiveApproach() && currentFlightPlan.approach.offset >= 0) {
             await GPS.setActiveWaypoint(currentFlightPlan.approach.offset).catch(console.error);
         }
