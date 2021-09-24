@@ -233,9 +233,13 @@ class CDUInitPage {
         };
 
         mcdu.onUp = () => {};
-        Coherent.trigger("AP_ALT_VAL_SET", 4200);
-        Coherent.trigger("AP_VS_VAL_SET", 300);
-        Coherent.trigger("AP_HDG_VAL_SET", 180);
+        try {
+            Coherent.trigger("AP_ALT_VAL_SET", 4200);
+            Coherent.trigger("AP_VS_VAL_SET", 300);
+            Coherent.trigger("AP_HDG_VAL_SET", 180);
+        } catch (e) {
+            console.error(e);
+        }
     }
     // Does not refresh page so that other things can be performed first as necessary
     static updateTowIfNeeded(mcdu) {
