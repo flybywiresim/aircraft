@@ -1920,14 +1920,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getOrSelectVORsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager).catch(console.error), ident, callback);
+        this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
     }
     getOrSelectNDBsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetNDBsByIdent.bind(this.dataManager).catch(console.error), ident, callback);
+        this._getOrSelectWaypoints(this.dataManager.GetNDBsByIdent.bind(this.dataManager), ident, callback);
     }
 
     getOrSelectWaypointByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetWaypointsByIdent.bind(this.dataManager).catch(console.error), ident, callback);
+        this._getOrSelectWaypoints(this.dataManager.GetWaypointsByIdent.bind(this.dataManager), ident, callback);
     }
 
     insertWaypoint(newWaypointTo, index, callback = EmptyCallback.Boolean, immediately) {
