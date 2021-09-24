@@ -186,7 +186,7 @@ export class LnavDriver implements GuidanceComponent {
         }
 
         // Triple click
-        Coherent.call('PLAY_INSTRUMENT_SOUND', '3click');
+        Coherent.call('PLAY_INSTRUMENT_SOUND', '3click').catch(console.error);
 
         this.sequenceLeg(_leg);
     }

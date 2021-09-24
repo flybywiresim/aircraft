@@ -1,7 +1,6 @@
 class CDUAvailableDeparturesPage {
     static ShowPage(mcdu, airport, pageCurrent = 0, sidSelection = false) {
         const airportInfo = airport.infos;
-        console.log(airportInfo);
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
