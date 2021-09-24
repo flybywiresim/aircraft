@@ -251,14 +251,12 @@ impl CoreHydraulicForce {
         self.last_control_force += Force::new::<newton>((p_term + i_term) * force_gain);
 
         if self.last_control_force > Force::new::<newton>(0.) {
-            if position_error > Ratio::new::<ratio>(0.)
-                && speed <= Velocity::new::<meter_per_second>(0.)
-            {
+            if speed > Velocity::new::<meter_per_second>(0.) {
                 let max_force = current_pressure * self.bore_side_area;
                 self.last_control_force = self.last_control_force.min(max_force);
             }
-        } else if position_error < Ratio::new::<ratio>(0.)
-            && speed >= Velocity::new::<meter_per_second>(0.)
+        } else if self.last_control_force < Force::new::<newton>(0.)
+            && speed < Velocity::new::<meter_per_second>(0.)
         {
             let max_force = -1. * current_pressure * self.rod_side_area;
             self.last_control_force = self.last_control_force.max(max_force);
@@ -1098,6 +1096,97 @@ mod tests {
 
             if time > 26. {
                 requested_mode = LinearActuatorMode::ActiveDamping;
+            }
+
+            println!(
+                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
+                rigid_body.position_normalized().get::<ratio>(),
+                actuator.position_normalized.get::<ratio>(),
+                actuator.force().get::<newton>(),
+                time
+            );
+
+            time += dt;
+        }
+    }
+
+    #[test]
+    fn linear_actuator_without_hyd_pressure_cant_move_body_up() {
+        let mut rigid_body = cargo_door_body(true);
+
+        let mut actuator = cargo_door_actuator(&rigid_body);
+
+        let dt = 0.05;
+
+        let context = &context(
+            Duration::from_secs_f64(dt),
+            Angle::new::<degree>(0.),
+            Angle::new::<degree>(0.),
+        );
+
+        let mut time = 0.;
+
+        let current_pressure = Pressure::new::<psi>(15.);
+
+        rigid_body.unlock();
+        actuator.set_position_target(Ratio::new::<ratio>(1.0));
+        let requested_mode = LinearActuatorMode::PositionControl;
+        for _ in 0..500 {
+            actuator.update_before_rigid_body(&mut rigid_body, requested_mode, current_pressure);
+            rigid_body.update(context);
+            actuator.update_after_rigid_body(&rigid_body, context);
+
+            assert!(actuator.position_normalized < Ratio::new::<ratio>(0.3));
+
+            println!(
+                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}, Time{:.2}",
+                rigid_body.position_normalized().get::<ratio>(),
+                actuator.position_normalized.get::<ratio>(),
+                actuator.force().get::<newton>(),
+                time
+            );
+
+            time += dt;
+        }
+    }
+
+    #[test]
+    fn linear_actuator_losing_hyd_pressure_half_way_cant_move_body_up() {
+        let mut rigid_body = cargo_door_body(true);
+
+        let mut actuator = cargo_door_actuator(&rigid_body);
+
+        let dt = 0.05;
+
+        let context = &context(
+            Duration::from_secs_f64(dt),
+            Angle::new::<degree>(0.),
+            Angle::new::<degree>(0.),
+        );
+
+        let mut time = 0.;
+
+        let mut time_when_pressure_off = 0.;
+
+        let mut current_pressure = Pressure::new::<psi>(3000.);
+
+        rigid_body.unlock();
+        actuator.set_position_target(Ratio::new::<ratio>(1.0));
+        let requested_mode = LinearActuatorMode::PositionControl;
+        for _ in 0..500 {
+            actuator.update_before_rigid_body(&mut rigid_body, requested_mode, current_pressure);
+            rigid_body.update(context);
+            actuator.update_after_rigid_body(&rigid_body, context);
+
+            if actuator.position_normalized > Ratio::new::<ratio>(0.95)
+                && time_when_pressure_off == 0.
+            {
+                current_pressure = Pressure::new::<psi>(15.);
+                time_when_pressure_off = time;
+            }
+
+            if time_when_pressure_off > 0. && time > time_when_pressure_off {
+                assert!(actuator.position_normalized <= Ratio::new::<ratio>(0.95));
             }
 
             println!(
