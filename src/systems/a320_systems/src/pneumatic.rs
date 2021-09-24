@@ -26,8 +26,8 @@ use systems::{
         PneumaticContainerWithValve, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
-        ControllerSignal, DelayedTrueLogicGate, EngineCorrectedN1, EngineCorrectedN2,
-        EngineFirePushButtons, PneumaticValve,
+        ControllerSignal, DelayedTrueLogicGate, ElectricalBusType, EngineCorrectedN1,
+        EngineCorrectedN2, EngineFirePushButtons, PneumaticValve,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
@@ -229,9 +229,15 @@ impl A320Pneumatic {
                 BleedMonitoringComputer::new(1, 2),
                 BleedMonitoringComputer::new(2, 1),
             ],
-            engine_systems: [EngineBleedAirSystem::new(1), EngineBleedAirSystem::new(2)],
+            engine_systems: [
+                EngineBleedAirSystem::new(1, ElectricalBusType::DirectCurrentEssentialShed),
+                EngineBleedAirSystem::new(2, ElectricalBusType::DirectCurrent(2)),
+            ],
             cross_bleed_valve_controller: CrossBleedValveController::new(),
-            cross_bleed_valve: DefaultValve::new_closed(),
+            cross_bleed_valve: DefaultValve::new_closed_with_motor(vec![
+                ElectricalBusType::DirectCurrent(2),
+                ElectricalBusType::DirectCurrentEssentialShed,
+            ]),
             fadec: FullAuthorityDigitalEngineControl::new(),
             engine_starter_valve_controllers: [
                 EngineStarterValveController::new(1),
@@ -399,6 +405,8 @@ impl SimulationElement for A320Pneumatic {
         Self: Sized,
     {
         self.apu_bleed_air_controller.accept(visitor);
+
+        self.cross_bleed_valve.accept(visitor);
 
         for engine_system in self.engine_systems.iter_mut() {
             engine_system.accept(visitor);
@@ -824,7 +832,7 @@ struct EngineBleedAirSystem {
     precooler: HeatExchanger,
 }
 impl EngineBleedAirSystem {
-    fn new(number: usize) -> Self {
+    fn new(number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             number,
             fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
@@ -836,9 +844,9 @@ impl EngineBleedAirSystem {
             ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             ip_valve: DefaultValve::new_open(),
-            hp_valve: DefaultValve::new_closed(),
-            pr_valve: DefaultValve::new_closed(),
-            fan_air_valve: DefaultValve::new_open(),
+            hp_valve: DefaultValve::new_closed_with_motor(vec![powered_by]),
+            pr_valve: DefaultValve::new_closed_with_motor(vec![powered_by]),
+            fan_air_valve: DefaultValve::new_open_with_motor(vec![powered_by]),
             transfer_pressure_pipe: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
@@ -868,7 +876,7 @@ impl EngineBleedAirSystem {
                 cubic_meter_per_second,
             >(0.1)),
             es_valve: DefaultValve::new_closed(),
-            precooler: HeatExchanger::new(1e1),
+            precooler: HeatExchanger::new(5.),
         }
     }
 
@@ -1017,6 +1025,10 @@ impl SimulationElement for EngineBleedAirSystem {
     {
         self.ip_compression_chamber_controller.accept(visitor);
         self.hp_compression_chamber_controller.accept(visitor);
+
+        self.hp_valve.accept(visitor);
+        self.pr_valve.accept(visitor);
+        self.fan_air_valve.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1444,7 +1456,33 @@ mod tests {
         }
     }
     impl Aircraft for PneumaticTestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _context: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            electricity.supplied_by(&self.powered_source);
+
+            if self.is_dc_1_powered {
+                electricity.flow(&self.powered_source, &self.dc_1_bus);
+            }
+
+            if self.is_dc_2_powered {
+                electricity.flow(&self.powered_source, &self.dc_2_bus);
+            }
+
+            if self.is_dc_ess_powered {
+                electricity.flow(&self.powered_source, &self.dc_ess_bus);
+            }
+
+            if self.is_dc_ess_shed_powered {
+                electricity.flow(&self.powered_source, &self.dc_ess_shed_bus);
+            }
+        }
+
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.electrical.update(context);
+
             self.apu.update(self.pneumatic.apu_bleed_air_valve());
             self.pneumatic.update(
                 context,
@@ -1464,6 +1502,7 @@ mod tests {
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
             self.overhead_panel.accept(visitor);
+            self.electrical.accept(visitor);
 
             visitor.visit(self);
         }
@@ -1749,10 +1788,10 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .idle_eng1()
+            .stop_eng1()
             .stop_eng2()
-            .both_packs_auto()
-            // .set_bleed_air_running()
+            // .both_packs_auto()
+            .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
 
         let mut ts = Vec::new();
@@ -1774,8 +1813,8 @@ mod tests {
         let mut esv_open = Vec::new();
         let mut abv_open = Vec::new();
 
-        for i in 1..1000 {
-            ts.push(i as f64 * 16.);
+        for i in 1..100 {
+            ts.push(i as f64 * 200.);
 
             // if i == 100 {
             //     test_bed = test_bed.start_eng1();
@@ -1845,7 +1884,7 @@ mod tests {
                 0.
             });
 
-            test_bed.run_with_delta(Duration::from_millis(16));
+            test_bed.run_with_delta(Duration::from_millis(200));
         }
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
@@ -1935,6 +1974,7 @@ mod tests {
             .stop_eng2()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
+            .both_packs_auto()
             .and_stabilize();
 
         let ambient_pressure = ISA::pressure_at_altitude(altitude);
@@ -2221,8 +2261,10 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
 
-        let diff = test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(35.);
+        let diff = test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(35.);
         println!("diff: {} psi", diff.get::<psi>());
+
+        assert!(!test_bed.precooler_outlet_pressure(1).is_nan());
 
         assert!(
             (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(35.)).abs()

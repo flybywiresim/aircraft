@@ -142,10 +142,24 @@ impl DefaultValve {
         )
     }
 
+    pub fn new_closed_with_motor(powered_by: Vec<ElectricalBusType>) -> Self {
+        DefaultValve::new(
+            Ratio::new::<ratio>(0.),
+            Box::new(ElectricPneumaticValveOperationMode::new(powered_by)),
+        )
+    }
+
     pub fn new_open() -> Self {
         DefaultValve::new(
             Ratio::new::<ratio>(1.),
             Box::new(ClassicValveOperationMode::new()),
+        )
+    }
+
+    pub fn new_open_with_motor(powered_by: Vec<ElectricalBusType>) -> Self {
+        DefaultValve::new(
+            Ratio::new::<ratio>(1.),
+            Box::new(ElectricPneumaticValveOperationMode::new(powered_by)),
         )
     }
 
@@ -185,22 +199,40 @@ impl DefaultValve {
     pub fn fluid_flow(&self) -> VolumeRate {
         self.fluid_flow
     }
+
+    pub fn is_powered(&self) -> bool {
+        self.operation_mode.is_powered()
+    }
 }
 impl ControllablePneumaticValve for DefaultValve {
     fn update_open_amount<T: ControlledPneumaticValveSignal>(
         &mut self,
         controller: &dyn ControllerSignal<T>,
     ) {
-        if self.operation_mode.should_accept_signal() {
+        if self.operation_mode.is_powered() {
             if let Some(signal) = controller.signal() {
                 self.open_amount = signal.target_open_amount();
             }
         }
     }
 }
+impl SimulationElement for DefaultValve {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.operation_mode.receive_power(buses);
+    }
+}
 
 trait ValveOperationMode {
-    fn should_accept_signal(&self) -> bool;
+    fn is_powered(&self) -> bool;
+    // TODO: This is a bit of a hack, since I don't know how I can pass along the visitor to a generic ValveOperationMode
+    fn receive_power(&mut self, _buses: &dyn ElectricalBuses) {}
 }
 
 pub struct ClassicValveOperationMode {}
@@ -210,7 +242,7 @@ impl ClassicValveOperationMode {
     }
 }
 impl ValveOperationMode for ClassicValveOperationMode {
-    fn should_accept_signal(&self) -> bool {
+    fn is_powered(&self) -> bool {
         true
     }
 }
@@ -228,19 +260,11 @@ impl ElectricPneumaticValveOperationMode {
     }
 }
 impl ValveOperationMode for ElectricPneumaticValveOperationMode {
-    fn should_accept_signal(&self) -> bool {
+    fn is_powered(&self) -> bool {
         self.is_powered
     }
-}
-impl SimulationElement for ElectricPneumaticValveOperationMode {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
-        visitor.visit(self);
-    }
 
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+    fn receive_power(&mut self, buses: &dyn ElectricalBuses) {
         self.is_powered = buses.any_is_powered(&self.powered_by);
     }
 }
@@ -755,7 +779,7 @@ mod tests {
         }
     }
     impl ValveOperationMode for TestValveOperationMode {
-        fn should_accept_signal(&self) -> bool {
+        fn is_powered(&self) -> bool {
             self.is_powered
         }
     }
