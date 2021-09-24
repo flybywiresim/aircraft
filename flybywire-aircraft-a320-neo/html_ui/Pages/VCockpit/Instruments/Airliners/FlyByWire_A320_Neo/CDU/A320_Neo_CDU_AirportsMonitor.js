@@ -233,7 +233,7 @@ class CDUAirportsMonitor {
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
-                    });
+                    }).catch(console.error);
                 }
             };
         }
