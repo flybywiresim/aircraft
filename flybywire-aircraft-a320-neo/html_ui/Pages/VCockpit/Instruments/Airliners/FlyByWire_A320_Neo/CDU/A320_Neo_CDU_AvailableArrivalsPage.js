@@ -62,6 +62,7 @@ class CDUAvailableArrivalsPage {
             const approachTypeOrder = {"MLS":0, "ILS":1, "GLS":2, "IGS":3, "LOC":4, "BLOC":5, "LDA":6, "SDF": 7, "GPS": 8, "RNAV":9, "VORDME":10, "NDB":11};
             const sortedApproaches = approaches.slice().sort((a, b) => approachTypeOrder[a.name.split(" ")[0]] - approachTypeOrder[b.name.split(" ")[0]]);
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
+            const matchingArrivals = [];
             if (!starSelection) {
                 for (let i = 0; i < 3; i++) {
                     const index = i + pageCurrent;
@@ -88,7 +89,6 @@ class CDUAvailableArrivalsPage {
                     }
                 }
             } else {
-                const matchingArrivals = [];
                 if (selectedApproach) {
                     const selectedRunway = selectedApproach.runway;
                     for (let i = 0; i < airportInfo.arrivals.length; i++) {
@@ -227,7 +227,7 @@ class CDUAvailableArrivalsPage {
             ]);
             let up = false;
             let down = false;
-            const maxPage = starSelection ? (selectedArrival ? selectedArrival.enRouteTransitions.length - 2 : airportInfo.arrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
+            const maxPage = starSelection ? (selectedArrival ? Math.max(selectedArrival.enRouteTransitions.length - 2, matchingArrivals.length - 2) : matchingArrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
                     pageCurrent++;
@@ -306,7 +306,7 @@ class CDUAvailableArrivalsPage {
                 bottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onLeftInput[5] = async () => {
                     mcdu.eraseTemporaryFlightPlan(() => {
-                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
+                        CDUFlightPlanPage.ShowPage(mcdu);
                     });
                 };
                 mcdu.onRightInput[5] = async () => {
