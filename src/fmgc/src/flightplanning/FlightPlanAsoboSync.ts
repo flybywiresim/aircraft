@@ -43,8 +43,8 @@ export class FlightPlanAsoboSync {
       return new Promise((resolve) => {
           this.init();
           setTimeout(() => {
-              Coherent.call('LOAD_CURRENT_GAME_FLIGHT');
-              Coherent.call('LOAD_CURRENT_ATC_FLIGHTPLAN');
+              Coherent.call('LOAD_CURRENT_GAME_FLIGHT').catch(console.error);
+              Coherent.call('LOAD_CURRENT_ATC_FLIGHTPLAN').catch(console.error);
               setTimeout(() => {
                   Coherent.call('GET_FLIGHTPLAN').then(async (data: Record<string, any>) => {
                       console.log('COHERENT GET_FLIGHTPLAN received');
@@ -85,7 +85,7 @@ export class FlightPlanAsoboSync {
                           for (let i = 0; i < enroute.length - 1; i++) {
                               const wpt = enroute[i];
                               if (wpt.icao.trim() !== '') {
-                                  fpln.addWaypoint(wpt.icao, Infinity, () => console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`));
+                                  fpln.addWaypoint(wpt.icao, Infinity, () => console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`)).catch(console.error);
                               }
                           }
 
@@ -165,13 +165,13 @@ export class FlightPlanAsoboSync {
 
                           this.fpChecksum = fpln.getCurrentFlightPlan().checksum;
                           // Potential CTD source?
-                          Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0).catch();
-                          // .catch((e) => console.error('[FP LOAD] Error when setting Active WP'));
-                          Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX').catch();
-                          // .catch((e) => console.error('[FP LOAD] Error when recomputing Active WP'));
+                          Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0)
+                              .catch((e) => console.error('[FP LOAD] Error when setting Active WP'));
+                          Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
+                              .catch((e) => console.error('[FP LOAD] Error when recomputing Active WP'));
                           resolve();
                       }
-                  });
+                  }).catch(console.error);
               }, 500);
           }, 200);
       });
@@ -184,8 +184,8 @@ export class FlightPlanAsoboSync {
               FlightPlanAsoboSync.init();
               const plan = fpln.getCurrentFlightPlan();
               if ((plan.checksum !== this.fpChecksum)) {
-                  // await Coherent.call("CREATE_NEW_FLIGHTPLAN");
-                  yield Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.error).then;
+                  // await Coherent.call("CREATE_NEW_FLIGHTPLAN").catch(console.error);
+                  yield Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.error);
                   yield Coherent.call('CLEAR_CURRENT_FLIGHT_PLAN').catch(console.error);
                   if (plan.hasPersistentOrigin && plan.hasDestination) {
                       yield Coherent.call('SET_ORIGIN', plan.persistentOriginAirfield.icao, false).catch(console.error);
@@ -260,9 +260,9 @@ export class FlightPlanAsoboSync {
                   }
                   this.fpChecksum = plan.checksum;
               }
-              Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX').catch();
-              // .catch((e) => console.error('[FP SAVE] Setting Active Waypoint... ERROR'));
-              // .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'));
+              Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
+                  .catch((e) => console.log('[FP SAVE] Setting Active Waypoint... FAILED'))
+                  .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'));
           }));
       });
   }

@@ -126,7 +126,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     Init() {
         super.Init();
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+        try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+        } catch (e) {
+            console.error(e);
+        }
 
         // LCD OVERLAY
         this.lcdOverlay = document.querySelector("#LcdOverlay");
@@ -227,31 +231,39 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         };
         this.onLeftFunction = (f) => {
-            if (isFinite(f)) {
-                if (this.onLeftInput[f]) {
-                    const value = this.clearUserInput();
-                    const cur = this.page.Current;
-                    setTimeout(() => {
-                        if (this.page.Current === cur) {
-                            this.onLeftInput[f](value);
-                            this.tryClearOldUserInput();
-                        }
-                    }, this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic());
+            try {
+                if (isFinite(f)) {
+                    if (this.onLeftInput[f]) {
+                        const value = this.clearUserInput();
+                        const cur = this.page.Current;
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                this.onLeftInput[f](value);
+                                this.tryClearOldUserInput();
+                            }
+                        }, this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic());
+                    }
                 }
+            } catch (e) {
+                console.error(e);
             }
         };
         this.onRightFunction = (f) => {
-            if (isFinite(f)) {
-                if (this.onRightInput[f]) {
-                    const value = this.clearUserInput();
-                    const cur = this.page.Current;
-                    setTimeout(() => {
-                        if (this.page.Current === cur) {
-                            this.onRightInput[f](value);
-                            this.tryClearOldUserInput();
-                        }
-                    }, this.rightInputDelay[f] ? this.rightInputDelay[f]() : this.getDelayBasic());
+            try {
+                if (isFinite(f)) {
+                    if (this.onRightInput[f]) {
+                        const value = this.clearUserInput();
+                        const cur = this.page.Current;
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                this.onRightInput[f](value);
+                                this.tryClearOldUserInput();
+                            }
+                        }, this.rightInputDelay[f] ? this.rightInputDelay[f]() : this.getDelayBasic());
+                    }
                 }
+            } catch (e) {
+                console.error(e);
             }
         };
 
@@ -936,7 +948,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     clearFocus() {
         this.inFocus = false;
         this.allSelected = false;
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        } catch (e) {
+            console.error(e);
+        }
         this._inOutElement.style = null;
         this.getChildById("header").style = null;
         if (this.check_focus) {
@@ -958,7 +974,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
                     this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
-                    Coherent.trigger('FOCUS_INPUT_FIELD');
+                    try {
+                        Coherent.trigger('FOCUS_INPUT_FIELD');
+                    } catch (e) {
+                        console.error(e);
+                    }
                     this.lastInput = new Date();
                     if (mcduTimeout) {
                         this.check_focus = setInterval(() => {
