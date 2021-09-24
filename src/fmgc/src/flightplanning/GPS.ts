@@ -33,7 +33,7 @@ export class GPS {
         const totalGpsWaypoints = SimVar.GetSimVarValue('C:fs9gps:FlightPlanWaypointsNumber', 'number');
         for (let i = 0; i < totalGpsWaypoints; i++) {
             // Always remove waypoint 0 here, which shifts the rest of the waypoints down one
-            GPS.deleteWaypoint(0);
+            GPS.deleteWaypoint(0).catch(console.error);
         }
     }
 

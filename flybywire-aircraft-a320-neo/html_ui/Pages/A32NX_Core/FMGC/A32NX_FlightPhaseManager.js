@@ -365,7 +365,7 @@ class A32NX_FlightPhase_Done {
 
     init(_fmc) {
         CDUIdentPage.ShowPage(_fmc);
-        _fmc.flightPlanManager.clearFlightPlan();
+        _fmc.flightPlanManager.clearFlightPlan().catch(console.error);
         _fmc.initVariables();
         _fmc.initMcduVariables();
         _fmc.forceClearScratchpad();

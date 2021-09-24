@@ -155,7 +155,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
 
     static async _getAirway(mcdu, value) {
         const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
-        await lastWaypoint.infos.UpdateAirway(value);
+        await lastWaypoint.infos.UpdateAirway(value).catch(console.error);
         if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo || lastWaypoint.infos instanceof NDBInfo) {
             return lastWaypoint.infos.airways.find(a => {
                 return a.name === value;

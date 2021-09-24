@@ -199,7 +199,7 @@ export class FlightPlanManager {
         const newFlightPlan = new ManagedFlightPlan();
         newFlightPlan.setParentInstrument(this._parentInstrument);
         this._flightPlans.push(newFlightPlan);
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
 
         callback();
     }
@@ -216,10 +216,10 @@ export class FlightPlanManager {
         this._flightPlans[index] = copiedFlightPlan;
 
         if (index === 0) {
-            await GPS.setActiveWaypoint(activeWaypointIndex);
+            await GPS.setActiveWaypoint(activeWaypointIndex).catch(console.error);
         }
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -235,10 +235,10 @@ export class FlightPlanManager {
         this._flightPlans[this._currentFlightPlanIndex] = copiedFlightPlan;
 
         if (this._currentFlightPlanIndex === 0) {
-            await GPS.setActiveWaypoint(activeWaypointIndex);
+            await GPS.setActiveWaypoint(activeWaypointIndex).catch(console.error);
         }
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -247,8 +247,8 @@ export class FlightPlanManager {
      * @param callback A callback to call when the operation has completed.
      */
     public async clearFlightPlan(callback = EmptyCallback.Void): Promise<void> {
-        await this._flightPlans[this._currentFlightPlanIndex].clearPlan();
-        this._updateFlightPlanVersion();
+        await this._flightPlans[this._currentFlightPlanIndex].clearPlan().catch(console.error);
+        this._updateFlightPlanVersion().catch(console.error);
 
         callback();
     }
@@ -282,9 +282,9 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const airport = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
 
-        await currentFlightPlan.clearPlan();
+        await currentFlightPlan.clearPlan().catch(console.error);
         await currentFlightPlan.addWaypoint(airport, 0);
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
 
         callback();
     }
@@ -319,7 +319,7 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[fplnIndex];
         if (index >= 0 && index < currentFlightPlan.length) {
             currentFlightPlan.activeWaypointIndex = index;
-            Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', index + 1);
+            Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', index + 1).catch(console.error);
 
             if (currentFlightPlan.directTo.isActive && currentFlightPlan.directTo.waypointIsInFlightPlan
                 && currentFlightPlan.activeWaypointIndex > currentFlightPlan.directTo.planWaypointIndex) {
@@ -327,7 +327,7 @@ export class FlightPlanManager {
             }
         }
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -693,7 +693,7 @@ export class FlightPlanManager {
         }
         */
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -716,7 +716,7 @@ export class FlightPlanManager {
             if (setActive) {
                 // currentFlightPlan.activeWaypointIndex = index;
             }
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
             callback();
         }
     }
@@ -731,14 +731,14 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         currentFlightPlan.addWaypoint(waypoint, index);
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
     public setLegAltitudeDescription(waypoint: WayPoint, code: number, callback = () => { }): void {
         if (waypoint) {
             waypoint.legAltitudeDescription = code;
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
         callback();
     }
@@ -761,7 +761,7 @@ export class FlightPlanManager {
             if (isDescentConstraint !== undefined && !waypoint.constraintType) {
                 waypoint.constraintType = isDescentConstraint ? WaypointConstraintType.DES : WaypointConstraintType.CLB;
             }
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -799,7 +799,7 @@ export class FlightPlanManager {
 
         if (waypoint) {
             waypoint.additionalData[key] = value;
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -829,7 +829,7 @@ export class FlightPlanManager {
     public invertActiveFlightPlan(callback = () => { }): void {
         this._flightPlans[this._currentFlightPlanIndex].reverse();
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -855,7 +855,7 @@ export class FlightPlanManager {
      * @param callback A callback to call when the operation finishes.
      */
     public addWaypointByIdent(ident: string, index: number, callback = EmptyCallback.Void): void {
-        this.addWaypoint(ident, index, callback);
+        this.addWaypoint(ident, index, callback).catch(console.error);
     }
 
     /**
@@ -867,21 +867,21 @@ export class FlightPlanManager {
     public removeWaypoint(index: number, thenSetActive = false, callback = () => { }): void {
         this._flightPlans[this._currentFlightPlanIndex].removeWaypoint(index);
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
     addWaypointOverfly(index: number, thenSetActive = false, callback = () => { }): void {
         this._flightPlans[this._currentFlightPlanIndex].setWaypointOverfly(index, true);
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
     removeWaypointOverfly(index: number, thenSetActive = false, callback = () => { }): void {
         this._flightPlans[this._currentFlightPlanIndex].setWaypointOverfly(index, false);
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -896,7 +896,7 @@ export class FlightPlanManager {
             fp.removeWaypoint(index);
         }
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -1068,7 +1068,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.departureIndex = index;
             await currentFlightPlan.buildDeparture();
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1086,7 +1086,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.departureRunwayIndex = index;
             await currentFlightPlan.buildDeparture();
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1103,7 +1103,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.originRunwayIndex = index;
             await currentFlightPlan.buildDeparture().catch(console.error);
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1129,7 +1129,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.departureTransitionIndex = index;
             await currentFlightPlan.buildDeparture().catch(console.error);
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1159,7 +1159,7 @@ export class FlightPlanManager {
         currentFlightPlan.procedureDetails.departureIndex = -1;
         await currentFlightPlan.buildDeparture().catch(console.error);
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -1199,7 +1199,7 @@ export class FlightPlanManager {
 
             await currentFlightPlan.buildArrival().catch(console.error);
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1229,11 +1229,11 @@ export class FlightPlanManager {
 
         if (waypoint !== undefined && waypoint.discontinuityCanBeCleared) {
             waypoint.endsInDiscontinuity = false;
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
             return true;
         }
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         return false;
     }
 
@@ -1251,7 +1251,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = index;
             await currentFlightPlan.buildArrival().catch(console.error);
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1275,7 +1275,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.arrivalRunwayIndex = index;
             await currentFlightPlan.buildArrival().catch(console.error);
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1297,7 +1297,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.destinationRunwayExtension = runwayExtension;
 
             await currentFlightPlan.buildApproach().catch(console.error);
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1329,7 +1329,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = -1;
             await currentFlightPlan.buildApproach().catch(console.error);
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1483,7 +1483,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.approachTransitionIndex = index;
             await currentFlightPlan.buildApproach().catch(console.error);
 
-            this._updateFlightPlanVersion();
+            this._updateFlightPlanVersion().catch(console.error);
         }
 
         callback();
@@ -1503,7 +1503,7 @@ export class FlightPlanManager {
 
         await currentFlightPlan.buildArrival().catch(console.error);
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -1530,7 +1530,7 @@ export class FlightPlanManager {
 
         currentFlightPlan.addDirectTo(waypointIndex);
 
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -1650,7 +1650,7 @@ export class FlightPlanManager {
         window.localStorage.setItem(FlightPlanManager.FlightPlanKey, fpJson);
         SimVar.SetSimVarValue(FlightPlanManager.FlightPlanVersionKey, 'number', ++this._currentFlightPlanVersion);
         if (NXDataStore.get('FP_SYNC', 'SAVE') === 'SAVE') {
-            FlightPlanAsoboSync.SaveToGame(this);
+            FlightPlanAsoboSync.SaveToGame(this).catch(console.error);
         }
     }
 
@@ -1661,7 +1661,7 @@ export class FlightPlanManager {
 
     public resumeSync(): void {
         this._isSyncPaused = false;
-        this._updateFlightPlanVersion();
+        this._updateFlightPlanVersion().catch(console.error);
         console.log('FlightPlan Sync Resume');
     }
 }

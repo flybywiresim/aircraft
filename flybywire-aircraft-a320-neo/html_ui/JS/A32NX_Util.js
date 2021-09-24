@@ -217,7 +217,11 @@ class NXPopUp {
     }
 
     _showPopUp(params) {
-        Coherent.trigger("SHOW_POP_UP", params);
+        try {
+            Coherent.trigger("SHOW_POP_UP", params);
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     /**
