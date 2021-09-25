@@ -8,7 +8,6 @@ class CDUMenuPage {
         let textAIDS;
         let textCFDS;
         let textMaint;
-        let textReturn;
         let selectedFMGC = false;
         let selectedATSU = false;
         let selectedAIDS = false;
@@ -21,7 +20,6 @@ class CDUMenuPage {
             textAIDS = "<AIDS";
             textCFDS = "<CFDS";
             textMaint = "MCDU MAINT>";
-            textReturn = "RETURN>";
             if (activeSystem === "FMGC") {
                 textFMGC = "<FMGC (REQ)[color]green";
             }
@@ -66,7 +64,7 @@ class CDUMenuPage {
                 [""],
                 [""],
                 [""],
-                ["", textReturn]
+                [""]
             ]);
         };
 
