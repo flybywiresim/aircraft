@@ -59,7 +59,10 @@ impl Pressurization {
 
         Self {
             cabin_pressure_simulation: CabinPressure::new(),
-            cpc: [CabinPressureController::new(); 2],
+            cpc: [
+                CabinPressureController::new(),
+                CabinPressureController::new(),
+            ],
             outflow_valve: PressureValve::new_outflow_valve(),
             safety_valve: PressureValve::new_safety_valve(),
             residual_pressure_controller: ResidualPressureController::new(),

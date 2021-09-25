@@ -18,7 +18,6 @@ use uom::si::{
     volume_rate::cubic_meter_per_second,
 };
 
-#[derive(Copy, Clone)]
 pub(super) struct CabinPressureController {
     pressure_schedule_manager: PressureScheduleManager,
     exterior_pressure: Pressure,
