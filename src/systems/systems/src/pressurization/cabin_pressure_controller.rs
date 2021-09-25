@@ -78,7 +78,7 @@ impl CabinPressureController {
         departure_elevation: Length,
         sea_level_pressure: Pressure,
         destination_qnh: Pressure,
-        lgciu_gear_compressed: bool,
+        lgciu_gears_compressed: bool,
         cabin_pressure: Pressure,
     ) {
         self.exterior_pressure = exterior_pressure;
@@ -89,13 +89,13 @@ impl CabinPressureController {
 
         self.pressure_schedule_manager =
             self.pressure_schedule_manager
-                .update(context, engines, lgciu_gear_compressed);
+                .update(context, engines, lgciu_gears_compressed);
 
-        self.cabin_target_vs = self.calculate_cabin_vs(context);
+        self.cabin_target_vs = self.calculate_cabin_target_vs(context);
         self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
     }
 
-    fn calculate_cabin_vs(&mut self, context: &UpdateContext) -> Velocity {
+    fn calculate_cabin_target_vs(&mut self, context: &UpdateContext) -> Velocity {
         let error_margin = Pressure::new::<hectopascal>(1.);
 
         match self.pressure_schedule_manager {
@@ -371,21 +371,21 @@ impl PressureScheduleManager {
         mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-        lgciu_gear_compressed: bool,
+        lgciu_gears_compressed: bool,
     ) -> Self {
         self = match self {
             PressureScheduleManager::Ground(val) => {
-                val.step(context, engines, lgciu_gear_compressed)
+                val.step(context, engines, lgciu_gears_compressed)
             }
             PressureScheduleManager::TakeOff(val) => {
-                val.step(context, engines, lgciu_gear_compressed)
+                val.step(context, engines, lgciu_gears_compressed)
             }
             PressureScheduleManager::ClimbInternal(val) => val.step(context),
             PressureScheduleManager::Cruise(val) => val.step(context),
             PressureScheduleManager::DescentInternal(val) => {
-                val.step(context, lgciu_gear_compressed)
+                val.step(context, lgciu_gears_compressed)
             }
-            PressureScheduleManager::Abort(val) => val.step(context, lgciu_gear_compressed),
+            PressureScheduleManager::Abort(val) => val.step(context, lgciu_gears_compressed),
         };
         self
     }
@@ -450,7 +450,7 @@ impl<S> PressureSchedule<S> {
         self
     }
 
-    fn new<T, U: Fn() -> S>(_from: PressureSchedule<T>, ctor_fn: U) -> Self {
+    fn new<T, U: Fn() -> S>(_: PressureSchedule<T>, ctor_fn: U) -> Self {
         Self {
             timer: Duration::from_secs(0),
             pressure_schedule: (ctor_fn)(),
@@ -487,15 +487,15 @@ impl PressureSchedule<Ground> {
         self: PressureSchedule<Ground>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-        lgciu_gear_compressed: bool,
+        lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
             .iter()
             .all(|&x| x.corrected_n1() > Ratio::new::<percent>(70.))
-            && lgciu_gear_compressed
+            && lgciu_gears_compressed
         {
             PressureScheduleManager::TakeOff(self.into())
-        } else if !lgciu_gear_compressed
+        } else if !lgciu_gears_compressed
             && context.indicated_airspeed().get::<knot>() > 100.
             && context.ambient_pressure().get::<hectopascal>() > 0.
         {
@@ -530,15 +530,15 @@ impl PressureSchedule<TakeOff> {
         self: PressureSchedule<TakeOff>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-        lgciu_gear_compressed: bool,
+        lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
             .iter()
             .all(|&x| x.corrected_n1() < Ratio::new::<percent>(70.))
-            && lgciu_gear_compressed
+            && lgciu_gears_compressed
         {
             PressureScheduleManager::Ground(self.into())
-        } else if !lgciu_gear_compressed
+        } else if !lgciu_gears_compressed
             && context.indicated_airspeed().get::<knot>() > 100.
             && context.ambient_pressure().get::<hectopascal>() > 0.
         {
@@ -632,7 +632,7 @@ impl PressureSchedule<DescentInternal> {
     fn step(
         self: PressureSchedule<DescentInternal>,
         context: &UpdateContext,
-        lgciu_gear_compressed: bool,
+        lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         const DURATION_UNTIL_CLIMB: u64 = 60;
 
@@ -642,7 +642,7 @@ impl PressureSchedule<DescentInternal> {
             } else {
                 PressureScheduleManager::DescentInternal(self.increase_timer(context))
             }
-        } else if lgciu_gear_compressed && context.indicated_airspeed().get::<knot>() < 100. {
+        } else if lgciu_gears_compressed && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else {
             PressureScheduleManager::DescentInternal(self.reset_timer())
@@ -660,11 +660,11 @@ impl PressureSchedule<Abort> {
     fn step(
         self: PressureSchedule<Abort>,
         context: &UpdateContext,
-        lgciu_gear_compressed: bool,
+        lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         const DURATION_UNTIL_CLIMB: u64 = 60;
 
-        if lgciu_gear_compressed && context.indicated_airspeed().get::<knot>() < 100. {
+        if lgciu_gears_compressed && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else if context.vertical_speed() > Velocity::new::<foot_per_minute>(30.) {
             if self.timer > Duration::from_secs(DURATION_UNTIL_CLIMB) {
@@ -723,7 +723,7 @@ mod pressure_schedule_manager_tests {
         press_overhead: PressurizationOverheadPanel,
         engine_1: TestEngine,
         engine_2: TestEngine,
-        lgciu_gear_compressed: bool,
+        lgciu_gears_compressed: bool,
     }
     impl TestAircraft {
         fn new() -> Self {
@@ -733,7 +733,7 @@ mod pressure_schedule_manager_tests {
                 press_overhead: PressurizationOverheadPanel::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
-                lgciu_gear_compressed: false,
+                lgciu_gears_compressed: false,
             };
             test_aircraft.cpc.outflow_valve_open_amount = Ratio::new::<percent>(50.);
             test_aircraft
@@ -787,7 +787,7 @@ mod pressure_schedule_manager_tests {
         }
 
         fn set_on_ground(&mut self, on_ground: bool) {
-            self.lgciu_gear_compressed = on_ground;
+            self.lgciu_gears_compressed = on_ground;
         }
     }
     impl Aircraft for TestAircraft {
@@ -800,7 +800,7 @@ mod pressure_schedule_manager_tests {
                 Length::new::<meter>(0.),
                 Pressure::new::<hectopascal>(1013.),
                 Pressure::new::<hectopascal>(1013.),
-                self.lgciu_gear_compressed,
+                self.lgciu_gears_compressed,
                 Pressure::new::<hectopascal>(1013.),
             );
             self.outflow_valve.update(context, &self.press_overhead);

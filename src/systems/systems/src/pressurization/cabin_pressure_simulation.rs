@@ -69,7 +69,7 @@ impl CabinPressure {
         self.safety_valve_open_amount = safety_valve_open_amount;
         self.cabin_flow_in = self.calculate_cabin_flow_in(packs_are_on, context);
         self.cabin_flow_out = self.calculate_cabin_flow_out();
-        self.cabin_vs = self.set_cabin_vs();
+        self.cabin_vs = self.calculate_cabin_vs();
         self.cabin_pressure =
             self.calculate_cabin_pressure(context, lgciu_gear_compressed, simulation_is_ground);
     }
@@ -182,7 +182,7 @@ impl CabinPressure {
         )
     }
 
-    fn set_cabin_vs(&self) -> Velocity {
+    fn calculate_cabin_vs(&self) -> Velocity {
         let vertical_speed = (self.outflow_valve_open_amount.get::<ratio>()
             * Self::OFV_SIZE
             * self.flow_coefficient

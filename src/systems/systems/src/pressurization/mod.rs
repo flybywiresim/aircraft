@@ -46,7 +46,7 @@ pub struct Pressurization {
     is_in_man_mode: bool,
     man_mode_duration: Duration,
     packs_are_on: bool,
-    lgciu_gear_compressed: bool,
+    lgciu_gears_compressed: bool,
 }
 
 impl Pressurization {
@@ -71,7 +71,7 @@ impl Pressurization {
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             packs_are_on: true,
-            lgciu_gear_compressed: true,
+            lgciu_gears_compressed: true,
         }
     }
 
@@ -87,7 +87,7 @@ impl Pressurization {
             self.outflow_valve.open_amount(),
             self.safety_valve.open_amount(),
             self.packs_are_on,
-            self.lgciu_gear_compressed,
+            self.lgciu_gears_compressed,
             self.cpc[self.active_system - 1].is_ground(),
             self.cpc[self.active_system - 1].should_open_outflow_valve()
                 && !press_overhead.is_in_man_mode(),
@@ -96,7 +96,7 @@ impl Pressurization {
         if !press_overhead.ldg_elev_is_auto() {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob.value())
         }
-        self.lgciu_gear_compressed = lgciu
+        self.lgciu_gears_compressed = lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
 
@@ -109,7 +109,7 @@ impl Pressurization {
                 self.departure_elevation,
                 self.sea_level_pressure,
                 self.destination_qnh,
-                self.lgciu_gear_compressed,
+                self.lgciu_gears_compressed,
                 self.cabin_pressure_simulation.cabin_pressure(),
             );
             controller.update_outflow_valve_state(&self.outflow_valve);
@@ -121,7 +121,7 @@ impl Pressurization {
             engines,
             self.outflow_valve.open_amount(),
             self.is_in_man_mode,
-            self.lgciu_gear_compressed,
+            self.lgciu_gears_compressed,
         );
 
         self.outflow_valve.calculate_outflow_valve_position(
@@ -251,7 +251,7 @@ impl PressurizationOverheadPanel {
     }
 
     fn man_vs_switch_position(&self) -> usize {
-        self.man_vs_ctl_switch.toggle_position()
+        self.man_vs_ctl_switch.position()
     }
 }
 
@@ -304,11 +304,11 @@ impl ResidualPressureController {
         engines: [&impl EngineCorrectedN1; 2],
         outflow_valve_open_amount: Ratio,
         is_in_man_mode: bool,
-        lgciu_gear_compressed: bool,
+        lgciu_gears_compressed: bool,
     ) {
         if outflow_valve_open_amount < Ratio::new::<percent>(100.)
             && is_in_man_mode
-            && lgciu_gear_compressed
+            && lgciu_gears_compressed
             && (!(engines
                 .iter()
                 .any(|&x| x.corrected_n1() > Ratio::new::<percent>(15.)))
