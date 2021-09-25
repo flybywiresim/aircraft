@@ -3,7 +3,7 @@
 
 import { FlightPlanManager } from "@fmgc/flightplanning/FlightPlanManager";
 import { RunwaySurface, VorType, WaypointConstraintType } from "@fmgc/types/fstypes/FSEnums";
-import { OneWayRunway, RawAirport, RawVor, WayPoint } from "@fmgc/types/fstypes/FSTypes";
+import { OneWayRunway, RawAirport, VORInfo, WayPoint } from "@fmgc/types/fstypes/FSTypes";
 import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from "@shared/NavigationDisplay";
 import { LatLongData } from "@typings/fs-base-ui";
 import { NearbyFacilities } from "./NearbyFacilities";
@@ -192,7 +192,7 @@ export class EfisSymbols {
                         databaseId: refFix.icao,
                         ident: refFix.ident,
                         location: refFix.infos.coordinates,
-                        type: NdSymbolTypeFlags.FixInfo,
+                        type: NdSymbolTypeFlags.FixInfo | this.symbolTypeFlags(refFix),
                         radials: fixInfo.getRadialTrueBearings(),
                         radius: fixInfo.getRadiusValue(),
                     });
@@ -340,6 +340,19 @@ export class EfisSymbols {
             return NdSymbolTypeFlags.Dme;
         default:
             return 0;
+        }
+    }
+
+    private symbolTypeFlags(fix: WayPoint): NdSymbolTypeFlags {
+        switch (fix.icao.charAt(0)) {
+        case 'V':
+            return this.vorDmeTypeFlag((fix.infos as VORInfo).type);
+        case 'N':
+            return NdSymbolTypeFlags.Ndb;
+        case 'A':
+            return NdSymbolTypeFlags.Airport;
+        default:
+            return NdSymbolTypeFlags.Waypoint;
         }
     }
 

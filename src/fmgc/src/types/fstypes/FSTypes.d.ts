@@ -122,6 +122,7 @@ declare class IntersectionInfo extends WayPointInfo {
 
 declare class VORInfo extends WayPointInfo {
     constructor(_instrument: BaseInstrument);
+    type: VorType;
 }
 
 declare class NDBInfo extends WayPointInfo {
