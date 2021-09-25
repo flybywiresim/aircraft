@@ -90,19 +90,18 @@ class A32NX_Boarding {
         this.time += _deltaTime;
 
         const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");
+        const boardingRate = NXDataStore.get("CONFIG_BOARDING_RATE", "");
 
         if (!boardingStartedByUser) {
             return;
         }
 
-        if (!airplaneCanBoard()) {
+        if (!airplaneCanBoard() && boardingRate == '1') {
             return;
         }
 
         const currentPax = Object.values(this.paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur);
         const paxTarget = Object.values(this.paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
-
-        const boardingRate = SimVar.GetSimVarValue("L:A32NX_BOARDING_RATE_SETTING", "Number");
 
         let isAllStationFilled = true;
         for (const _station of Object.values(this.paxStations)) {
