@@ -452,6 +452,61 @@ mod tests {
     }
 
     #[test]
+    fn flap_slat_assembly_full_pressure_reverse_direction_has_negative_motor_speeds() {
+        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
+        let mut flap_system = flap_system(max_speed);
+
+        // Two updates to reach demanded position
+        flap_system.update(
+            Some(Angle::new::<degree>(20.)),
+            Some(Angle::new::<degree>(20.)),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            &context(Duration::from_millis(15000)),
+        );
+
+        flap_system.update(
+            Some(Angle::new::<degree>(20.)),
+            Some(Angle::new::<degree>(20.)),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            &context(Duration::from_millis(5000)),
+        );
+
+        assert!(flap_system.current_speed == AngularVelocity::new::<radian_per_second>(0.));
+
+        // Now testing reverse movement parameters
+
+        flap_system.update(
+            Some(Angle::new::<degree>(-20.)),
+            Some(Angle::new::<degree>(-20.)),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+            &context(Duration::from_millis(1500)),
+        );
+
+        assert!(
+            flap_system.left_motor.speed <= AngularVelocity::new::<revolution_per_minute>(-2000.)
+                && flap_system.left_motor.speed
+                    >= AngularVelocity::new::<revolution_per_minute>(-6000.)
+        );
+        assert!(
+            flap_system.right_motor.speed <= AngularVelocity::new::<revolution_per_minute>(-2000.)
+                && flap_system.right_motor.speed
+                    >= AngularVelocity::new::<revolution_per_minute>(-6000.)
+        );
+
+        assert!(
+            flap_system.left_motor.flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.left_motor.flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+        );
+        assert!(
+            flap_system.right_motor.flow() >= VolumeRate::new::<gallon_per_minute>(3.)
+                && flap_system.right_motor.flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+        );
+    }
+
+    #[test]
     fn flap_slat_assembly_half_pressure_right() {
         let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
         let mut flap_system = flap_system(max_speed);
@@ -633,10 +688,11 @@ mod tests {
             assert!(flap_system.position_feedback() <= flap_system.max_synchro_gear_position);
 
             println!(
-                "Time: {:.1}s  -> Position {:.2}/{}",
+                "Time: {:.1}s  -> Position {:.2}/{} -> Motor speed {:.0}",
                 time.as_secs_f64(),
                 flap_system.position_feedback().get::<degree>(),
-                flap_system.max_synchro_gear_position.get::<degree>()
+                flap_system.max_synchro_gear_position.get::<degree>(),
+                flap_system.left_motor.speed.get::<revolution_per_minute>()
             );
             time += Duration::from_millis(100);
         }
@@ -653,12 +709,14 @@ mod tests {
             );
 
             assert!(flap_system.position_feedback() <= flap_system.max_synchro_gear_position);
+            assert!(flap_system.position_feedback() >= Angle::new::<degree>(0.));
 
             println!(
-                "Time: {:.1}s  -> Position {:.1}/{}",
+                "Time: {:.1}s  -> Position {:.1}/{} -> Motor speed {:.0}",
                 time.as_secs_f64(),
                 flap_system.position_feedback().get::<degree>(),
-                flap_system.max_synchro_gear_position.get::<degree>()
+                flap_system.max_synchro_gear_position.get::<degree>(),
+                flap_system.left_motor.speed.get::<revolution_per_minute>()
             );
             time += Duration::from_millis(100);
         }
