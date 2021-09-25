@@ -118,7 +118,7 @@ class CDUAvailableDeparturesPage {
                             mcdu.onRightInput[i + 1] = () => {
                                 mcdu.flightPlanManager.setDepartureEnRouteTransitionIndex(enRouteTransitionIndex, () => {
                                     CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true);
-                                });
+                                }).catch(console.error);
                             };
                         }
                     }
