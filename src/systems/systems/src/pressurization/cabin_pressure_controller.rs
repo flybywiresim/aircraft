@@ -52,7 +52,7 @@ impl CabinPressureController {
     const TAKEOFF_RATE: f64 = -400.;
     const DEPRESS_RATE: f64 = 500.;
 
-    pub fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             pressure_schedule_manager: PressureScheduleManager::new(),
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
@@ -68,7 +68,7 @@ impl CabinPressureController {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn update(
+    pub(super) fn update(
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
@@ -123,9 +123,7 @@ impl CabinPressureController {
                     self.exterior_vertical_speed.get::<foot_per_minute>()
                         * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
                 );
-                if self.cabin_delta_p()
-                    >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT)
-                {
+                if self.cabin_delta_p() >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT) {
                     Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE)
                 } else if self.cabin_altitude() >= Length::new::<foot>(CABIN_ALTITUDE_LIMIT) {
                     Velocity::new::<foot_per_minute>(0.)
@@ -235,31 +233,31 @@ impl CabinPressureController {
         self.cabin_pressure - self.exterior_pressure
     }
 
-    pub fn update_outflow_valve_state(&mut self, outflow_valve: &PressureValve) {
+    pub(super) fn update_outflow_valve_state(&mut self, outflow_valve: &PressureValve) {
         self.outflow_valve_open_amount = outflow_valve.open_amount();
     }
 
-    pub fn update_safety_valve_state(&mut self, safety_valve: &PressureValve) {
+    pub(super) fn update_safety_valve_state(&mut self, safety_valve: &PressureValve) {
         self.safety_valve_open_amount = safety_valve.open_amount();
     }
 
-    pub fn cabin_altitude(&self) -> Length {
+    pub(super) fn cabin_altitude(&self) -> Length {
         self.cabin_alt
     }
 
-    pub fn should_switch_cpc(&self) -> bool {
+    pub(super) fn should_switch_cpc(&self) -> bool {
         self.pressure_schedule_manager.should_switch_cpc()
     }
 
-    pub fn should_open_outflow_valve(&self) -> bool {
+    pub(super) fn should_open_outflow_valve(&self) -> bool {
         self.pressure_schedule_manager.should_open_outflow_valve()
     }
 
-    pub fn reset_cpc_switch(&mut self) {
+    pub(super) fn reset_cpc_switch(&mut self) {
         self.pressure_schedule_manager.reset_cpc_switch();
     }
 
-    pub fn is_ground(&self) -> bool {
+    pub(super) fn is_ground(&self) -> bool {
         matches!(
             self.pressure_schedule_manager,
             PressureScheduleManager::Ground(_)
@@ -267,17 +265,17 @@ impl CabinPressureController {
     }
 
     // FWC warning signals
-    pub fn is_excessive_alt(&self) -> bool {
+    pub(super) fn is_excessive_alt(&self) -> bool {
         self.cabin_alt > Length::new::<foot>(9550.)
             && self.cabin_alt > (self.departure_elev + Length::new::<foot>(1000.))
             && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1000.))
     }
 
-    pub fn is_excessive_residual_pressure(&self) -> bool {
+    pub(super) fn is_excessive_residual_pressure(&self) -> bool {
         self.cabin_delta_p() > Pressure::new::<psi>(0.01)
     }
 
-    pub fn is_low_diff_pressure(&self) -> bool {
+    pub(super) fn is_low_diff_pressure(&self) -> bool {
         self.cabin_delta_p() < Pressure::new::<psi>(1.45)
             && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1500.))
             && self.exterior_vertical_speed < Velocity::new::<foot_per_minute>(-500.)

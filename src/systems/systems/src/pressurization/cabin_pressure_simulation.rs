@@ -36,7 +36,7 @@ impl CabinPressure {
     const OFV_SIZE: f64 = 0.03; // m2
     const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
 
-    pub fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             previous_exterior_pressure: [Pressure::new::<hectopascal>(1013.25); 20],
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
@@ -52,7 +52,7 @@ impl CabinPressure {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn update(
+    pub(super) fn update(
         &mut self,
         context: &UpdateContext,
         outflow_valve_open_amount: Ratio,
@@ -222,31 +222,31 @@ impl CabinPressure {
         }
     }
 
-    pub fn cabin_vs(&self) -> Velocity {
+    pub(super) fn cabin_vs(&self) -> Velocity {
         self.cabin_vs
     }
 
-    pub fn cabin_delta_p(&self) -> Pressure {
+    pub(super) fn cabin_delta_p(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure
     }
 
-    pub fn cabin_pressure(&self) -> Pressure {
+    pub(super) fn cabin_pressure(&self) -> Pressure {
         self.cabin_pressure
     }
 
-    pub fn exterior_pressure(&self) -> Pressure {
+    pub(super) fn exterior_pressure(&self) -> Pressure {
         self.exterior_pressure
     }
 
-    pub fn z_coefficient(&self) -> f64 {
+    pub(super) fn z_coefficient(&self) -> f64 {
         self.z_coefficient
     }
 
-    pub fn flow_coefficient(&self) -> f64 {
+    pub(super) fn flow_coefficient(&self) -> f64 {
         self.flow_coefficient
     }
 
-    pub fn cabin_flow_properties(&self) -> [VolumeRate; 2] {
+    pub(super) fn cabin_flow_properties(&self) -> [VolumeRate; 2] {
         [self.cabin_flow_in, self.cabin_flow_out]
     }
 }
