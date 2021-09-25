@@ -240,7 +240,7 @@ class FMCMainDisplay extends BaseAirliners {
                 };
                 const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
                 if (arrivalIndex >= 0) {
-                    this.flightPlanManager.setArrivalProcIndex(arrivalIndex, callback);
+                    this.flightPlanManager.setArrivalProcIndex(arrivalIndex, callback).catch(console.error);
                 } else {
                     callback();
                 }
@@ -1661,8 +1661,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.flightPlanManager.setDepartureProcIndex(-1, () => {
                 this.flightPlanManager.setOriginRunwayIndex(runwayIndex, () => {
                     return callback(true);
-                });
-            });
+                }).catch(console.error);
+            }).catch(console.error);
         });
     }
 
@@ -1677,13 +1677,13 @@ class FMCMainDisplay extends BaseAirliners {
                 this.flightPlanManager.setDepartureRunwayIndex(-1, () => {
                     this.flightPlanManager.setOriginRunwayIndex(-1, () => {
                         return callback(true);
-                    });
-                });
+                    }).catch(console.error);
+                }).catch(console.error);
             } else if (routeOriginInfo instanceof AirportInfo) {
                 if (routeOriginInfo.oneWayRunways[runwayIndex]) {
                     this.flightPlanManager.setDepartureRunwayIndex(runwayIndex, () => {
                         return callback(true);
-                    });
+                    }).catch(console.error);
                 }
             } else {
                 this.addNewMessage(NXSystemMessages.notInDatabase);
@@ -1704,48 +1704,48 @@ class FMCMainDisplay extends BaseAirliners {
                     if (departureRunwayIndex >= -1) {
                         return this.flightPlanManager.setDepartureRunwayIndex(departureRunwayIndex, () => {
                             return callback(true);
-                        });
+                        }).catch(console.error);
                     }
                 }
                 return callback(true);
-            });
+            }).catch(console.error);
         });
     }
 
     setApproachTransitionIndex(transitionIndex, callback = EmptyCallback.Boolean) {
-        console.log("FMCMainDisplay: setApproachTransitionIndex = ", transitionIndex);
+        //console.log("FMCMainDisplay: setApproachTransitionIndex = ", transitionIndex);
         const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachTransitionIndex(transitionIndex, () => {
                 this.flightPlanManager.setArrivalProcIndex(arrivalIndex, () => {
                     callback(true);
-                });
-            });
+                }).catch(console.error);
+            }).catch(console.error);
         });
     }
 
     setArrivalProcIndex(arrivalIndex, callback = EmptyCallback.Boolean) {
-        console.log("FMCMainDisplay: setArrivalProcIndex = ", arrivalIndex);
+        //console.log("FMCMainDisplay: setArrivalProcIndex = ", arrivalIndex);
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setArrivalProcIndex(arrivalIndex, () => {
                 callback(true);
-            });
+            }).catch(console.error);
         });
     }
 
     setArrivalIndex(arrivalIndex, transitionIndex, callback = EmptyCallback.Boolean) {
-        console.log("FMCMainDisplay: setArrivalIndex: arrivalIndex=", arrivalIndex, " transitionIndex=", transitionIndex);
+        //console.log("FMCMainDisplay: setArrivalIndex: arrivalIndex=", arrivalIndex, " transitionIndex=", transitionIndex);
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setArrivalEnRouteTransitionIndex(transitionIndex, () => {
                 this.flightPlanManager.setArrivalProcIndex(arrivalIndex, () => {
                     callback(true);
-                });
-            });
+                }).catch(console.error);
+            }).catch(console.error);
         });
     }
 
     setApproachIndex(approachIndex, callback = EmptyCallback.Boolean) {
-        console.log("FMCMainDisplay: setApproachIndex = ", approachIndex);
+        //console.log("FMCMainDisplay: setApproachIndex = ", approachIndex);
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
                 const approach = this.flightPlanManager.getApproach();
@@ -1757,7 +1757,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 this.clearAutotunedIls();
                 callback(true);
-            });
+            }).catch(console.error);
         });
     }
 
@@ -2003,7 +2003,7 @@ class FMCMainDisplay extends BaseAirliners {
                                     });
                                 };
 
-                                await syncInsertWaypointByIcao(airway.icaos[firstIndex + i * inc], index + i);
+                                await syncInsertWaypointByIcao(airway.icaos[firstIndex + i * inc], index + i).catch(console.error);
                             }
                             callback(true);
                             return;
@@ -2109,7 +2109,7 @@ class FMCMainDisplay extends BaseAirliners {
                     this.flightPlanManager.setDestination(airportTo.icao, () => {
                         this.tmpOrigin = airportTo.ident;
                         callback(true);
-                    });
+                    }).catch(console.error);
                 });
             } else {
                 this.addNewMessage(NXSystemMessages.notInDatabase);
