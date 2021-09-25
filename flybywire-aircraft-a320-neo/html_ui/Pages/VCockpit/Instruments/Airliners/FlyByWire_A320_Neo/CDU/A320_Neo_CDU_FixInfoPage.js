@@ -17,14 +17,31 @@ class CDUFixInfoPage {
                 fixInfo.setRefFix();
                 return CDUFixInfoPage.ShowPage(mcdu, page);
             }
-            mcdu.getOrSelectWaypointByIdent(value, (wp) => {
-                if (wp) {
-                    fixInfo.setRefFix(wp);
+            if (mcdu.isRunwayFormat(value)) {
+                // this is a horrible ugly hack until fbw nav database
+                mcdu.parseRunway(value, (coordinates, magVar) => {
+                    const fix = new WayPoint(mcdu.instrument);
+                    fix.icao = `R  ${value}`;
+                    fix.ident = value;
+                    fix.infos = new WayPointInfo(mcdu.instrument);
+                    fix.infos.icap = fix.icao;
+                    fix.infos.coordinates = coordinates;
+
+                    fixInfo.setRefFix(fix);
                     CDUFixInfoPage.ShowPage(mcdu, page);
-                } else {
-                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
-                }
-            });
+                }, (message) => {
+                    mcdu.addNewMessage(message);
+                });
+            } else {
+                mcdu.getOrSelectWaypointByIdent(value, (wp) => {
+                    if (wp) {
+                        fixInfo.setRefFix(wp);
+                        CDUFixInfoPage.ShowPage(mcdu, page);
+                    } else {
+                        mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                    }
+                });
+            }
         };
 
         const template = [

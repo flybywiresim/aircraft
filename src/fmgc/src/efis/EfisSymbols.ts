@@ -351,9 +351,10 @@ export class EfisSymbols {
             return NdSymbolTypeFlags.Ndb;
         case 'A':
             return NdSymbolTypeFlags.Airport;
-        default:
+        case 'W':
             return NdSymbolTypeFlags.Waypoint;
         }
+        return 0;
     }
 
     private calculateEditArea(range: RangeSetting, mode: Mode): [number, number, number] {
