@@ -3,6 +3,7 @@ import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { HttpError } from '@flybywiresim/api-client';
+import { PopUp } from '@shared/popup';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
@@ -295,6 +296,8 @@ const ATSUAOCPage = () => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
+    const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
+
     const [simbriefError, setSimbriefError] = useState(false);
     const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
@@ -374,6 +377,20 @@ const ATSUAOCPage = () => {
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
+    function handleTelexToggle(toggleValue: boolean) {
+        if (toggleValue) {
+            new PopUp().showPopUp(
+                'TELEX WARNING',
+                'Enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK.',
+                'small',
+                () => setTelexEnabled('ENABLED'),
+                () => {},
+            );
+        } else {
+            setTelexEnabled('DISABLED');
+        }
+    }
+
     return (
         <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
@@ -417,6 +434,10 @@ const ATSUAOCPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">TELEX</span>
+                <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">
