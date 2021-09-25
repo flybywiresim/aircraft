@@ -1066,7 +1066,7 @@ export class FlightPlanManager {
 
         if (currentFlightPlan.procedureDetails.departureIndex !== index) {
             currentFlightPlan.procedureDetails.departureIndex = index;
-            await currentFlightPlan.buildDeparture();
+            await currentFlightPlan.buildDeparture().catch(console.error);
 
             this._updateFlightPlanVersion().catch(console.error);
         }
@@ -1084,7 +1084,7 @@ export class FlightPlanManager {
 
         if (currentFlightPlan.procedureDetails.departureRunwayIndex !== index) {
             currentFlightPlan.procedureDetails.departureRunwayIndex = index;
-            await currentFlightPlan.buildDeparture();
+            await currentFlightPlan.buildDeparture().catch(console.error);
 
             this._updateFlightPlanVersion().catch(console.error);
         }
