@@ -30,7 +30,7 @@ pub struct FlapSlatHydraulicMotor {
 }
 impl FlapSlatHydraulicMotor {
     // Simulates rpm transients.
-    const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT_S: f64 = 0.5;
+    const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT_S: f64 = 0.1;
 
     fn new(id: &str, displacement: Volume) -> Self {
         Self {
@@ -121,10 +121,11 @@ pub struct FlapSlatAssembly {
     final_flap_angle_carac: [f64; 12],
 }
 impl FlapSlatAssembly {
+    const LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT_S: f64 = 0.3;
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 800.;
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
-    const ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S: f64 = 0.05;
+    const ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S: f64 = 0.08;
 
     pub fn new(
         id: &str,
@@ -183,6 +184,7 @@ impl FlapSlatAssembly {
             sfcc2_flap_position_request.is_some(),
             left_pressure,
             right_pressure,
+            context,
         );
 
         self.update_speed_and_position(synchro_gear_angle_request, context);
@@ -245,6 +247,7 @@ impl FlapSlatAssembly {
         sfcc2_is_active: bool,
         left_pressure: Pressure,
         right_pressure: Pressure,
+        context: &UpdateContext,
     ) {
         // Final pressures are the current pressure or 0 if corresponding sfcc is offline
         // This simulates a motor not responding to a failed or offline sfcc
@@ -258,25 +261,35 @@ impl FlapSlatAssembly {
             final_right_pressure = Pressure::new::<psi>(0.);
         }
 
+        let mut new_theoretical_max_speed;
         if final_left_pressure + final_right_pressure
             > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI)
         {
-            self.current_max_speed = AngularVelocity::new::<radian_per_second>(
+            new_theoretical_max_speed = AngularVelocity::new::<radian_per_second>(
                 self.full_pressure_max_speed.get::<radian_per_second>()
                     * (final_left_pressure.get::<psi>() + final_right_pressure.get::<psi>())
                     / (Self::MAX_CIRCUIT_PRESSURE_PSI * 2.),
             );
 
             if self.is_approaching_requested_position(synchro_gear_angle_request) {
-                self.current_max_speed = self.current_max_speed.min(AngularVelocity::new::<
+                new_theoretical_max_speed = self.current_max_speed.min(AngularVelocity::new::<
                     radian_per_second,
                 >(
                     Self::ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S,
                 ))
             }
         } else {
-            self.current_max_speed = AngularVelocity::new::<radian_per_second>(0.);
+            new_theoretical_max_speed = AngularVelocity::new::<radian_per_second>(0.);
         }
+
+        // Final max speed filtered to simulate smooth movements
+        self.current_max_speed = self.current_max_speed
+            + (new_theoretical_max_speed - self.current_max_speed)
+                * (1.
+                    - std::f64::consts::E.powf(
+                        -context.delta_as_secs_f64()
+                            / Self::LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT_S,
+                    ));
     }
 
     fn update_motor_speed_and_flows(
