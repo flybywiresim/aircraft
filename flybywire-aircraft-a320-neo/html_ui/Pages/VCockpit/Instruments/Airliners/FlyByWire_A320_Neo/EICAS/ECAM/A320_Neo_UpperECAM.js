@@ -1759,7 +1759,7 @@ var A320_Neo_UpperECAM;
             const slatsLeft = SimVar.GetSimVarValue("L:A32NX_LEFT_SLATS_ANGLE", "degrees");
             const slatsRight = SimVar.GetSimVarValue("L:A32NX_RIGHT_SLATS_ANGLE", "degrees");
             const flapsLeft = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_ANGLE", "degrees");
-            const flapsRight = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_ANGLE", "degrees");
+            const flapsRight = SimVar.GetSimVarValue("L:A32NX_RIGHT_FLAPS_ANGLE", "degrees");
             const flapsHandle = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Enum");
             const flapsMcdu = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
             const flapsMcduEntered = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool");
