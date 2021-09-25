@@ -293,7 +293,7 @@ impl OutflowValveActuator for CabinPressureController {
         // 18th International Congress of Mechanical Engineering
         // November 6-11, 2005, Ouro Preto, MG
 
-        // Ouflow valve target open area
+        // Outflow valve target open area
         let ofv_area = (cabin_pressure_simulation.cabin_flow_properties()[0]
             .get::<cubic_meter_per_second>()
             - cabin_pressure_simulation.cabin_flow_properties()[1].get::<cubic_meter_per_second>()
