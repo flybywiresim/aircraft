@@ -91,12 +91,13 @@ class A32NX_Boarding {
 
         const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");
         const boardingRate = NXDataStore.get("CONFIG_BOARDING_RATE", "");
+        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
 
         if (!boardingStartedByUser) {
             return;
         }
 
-        if ((!airplaneCanBoard() && boardingRate == '1') || (!airplaneCanBoard() && boardingRate == '2')) {
+        if ((!airplaneCanBoard() && boardingRate == '1') || (!airplaneCanBoard() && boardingRate == '2') || (boardingRate == '3' && !isOnGround)) {
             return;
         }
 
@@ -125,7 +126,7 @@ class A32NX_Boarding {
             this.boardingState = "finished";
         }
 
-        if (boardingRate == 3) {
+        if (boardingRate == '3') {
             // Instant
             for (const paxStation of Object.values(this.paxStations)) {
                 const stationCurrentPaxTarget = SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number");
@@ -143,11 +144,11 @@ class A32NX_Boarding {
 
         let msDelay = 5000;
 
-        if (boardingRate == 2) {
+        if (boardingRate == '2') {
             msDelay = 1000;
         }
 
-        if (boardingRate == 1) {
+        if (boardingRate == '1') {
             msDelay = 5000;
         }
 
