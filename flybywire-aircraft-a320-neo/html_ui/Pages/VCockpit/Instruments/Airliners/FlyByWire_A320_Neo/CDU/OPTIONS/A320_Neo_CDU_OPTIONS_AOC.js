@@ -15,21 +15,15 @@ class CDU_OPTIONS_AOC {
             [""],
             [""],
             [""],
-            ["<SIMBRIEF"],
+            [""],
             [""],
             ["<RETURN"]
         ]);
 
-        mcdu.onLeftInput[4] = () => {
-            CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
-        };
         mcdu.onRightInput[0] = () => {
             CDU_OPTIONS_TELEX.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
         mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };

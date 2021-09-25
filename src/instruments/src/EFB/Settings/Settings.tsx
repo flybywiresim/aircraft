@@ -2,12 +2,14 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
+import { HttpError } from '@flybywiresim/api-client';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 import { Navbar } from '../Components/Navbar';
+import { SimbriefUserIdContext } from '../Efb';
 
 type ButtonType = {
     name: string,
@@ -138,6 +140,7 @@ const AircraftConfigurationPage = () => {
                 <SelectGroup>
                     {weightUnitButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setWeightUnit(button.setting)}
                             selected={weightUnit === button.setting}
                         >
@@ -152,6 +155,7 @@ const AircraftConfigurationPage = () => {
                 <SelectGroup>
                     {paxSignsButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setPaxSigns(button.setting)}
                             selected={paxSigns === button.setting}
                         >
@@ -210,6 +214,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {adirsAlignTimeButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => {
                                         setAdirsAlignTime(button.setting);
                                         setAdirsAlignTimeSimVar(button.simVarValue);
@@ -227,6 +232,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {dmcSelfTestTimeButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => setDmcSelfTestTime(button.setting)}
                                     selected={dmcSelfTestTime === button.setting}
                                 >
@@ -241,6 +247,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => setDefaultBaro(button.setting)}
                                     selected={defaultBaro === button.setting}
                                 >
@@ -284,10 +291,69 @@ const SimOptionsPage = () => {
     );
 };
 
-const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
+const ATSUAOCPage = () => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
+    const [simbriefError, setSimbriefError] = useState(false);
+    const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
+    const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
+
+    function getSimbriefUserData(value: string): Promise<any> {
+        const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
+
+        if (!value) {
+            throw new Error('No SimBrief username/pilot ID provided');
+        }
+
+        // The SimBrief API will try both username and pilot ID if either one
+        // isn't valid, so request both if the input is plausibly a pilot ID.
+        let apiUrl = `${SIMBRIEF_URL}&username=${value}`;
+        if (/^\d{1,8}$/.test(value)) {
+            apiUrl += `&userid=${value}`;
+        }
+
+        return fetch(apiUrl)
+            .then((response) => {
+                // 400 status means request was invalid, probably invalid username so preserve to display error properly
+                if (!response.ok && response.status !== 400) {
+                    throw new HttpError(response.status);
+                }
+
+                return response.json();
+            });
+    }
+
+    function getSimbriefUserId(value: string):Promise<any> {
+        return new Promise((resolve, reject) => {
+            if (!value) {
+                reject(new Error('No SimBrief username/pilot ID provided'));
+            }
+            getSimbriefUserData(value)
+                .then((data) => {
+                    if (data.fetch.status === 'Error: Unknown UserID') {
+                        reject(new Error('Error: Unknown UserID'));
+                    }
+                    resolve(data.fetch.userid);
+                })
+                .catch((_error) => {
+                    reject(_error);
+                });
+        });
+    }
+
+    function handleUsernameInput(value: string) {
+        getSimbriefUserId(value).then((response) => {
+            setSimbriefUserId(response);
+            setSimbriefDisplay(response);
+        }).catch(() => {
+            setSimbriefError(true);
+            setSimbriefDisplay(simbriefUserId);
+            setTimeout(() => {
+                setSimbriefError(false);
+            }, 4000);
+        });
+    }
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -315,6 +381,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setAtisSource(button.setting)}
                             selected={atisSource === button.setting}
                         >
@@ -328,6 +395,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setMetarSource(button.setting)}
                             selected={metarSource === button.setting}
                         >
@@ -341,6 +409,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setTafSource(button.setting)}
                             selected={tafSource === button.setting}
                         >
@@ -350,13 +419,20 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 </SelectGroup>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Simbrief Username</span>
+                <span className="text-lg text-gray-300">
+                    SimBrief Username/Pilot ID
+                    <span className={`${!simbriefError && 'hidden'} text-red-600`}>
+                        <span className="text-white"> | </span>
+                        SimBrief Error
+                    </span>
+                </span>
                 <div className="flex flex-row items-center">
                     <SimpleInput
                         className="w-30"
-                        value={props.simbriefUsername}
+                        value={simbriefDisplay}
                         noLabel
-                        onChange={(event) => props.setSimbriefUsername(event)}
+                        onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
+                        onChange={(value) => setSimbriefDisplay(value)}
                     />
                 </div>
             </div>
@@ -434,7 +510,7 @@ interface SettingsNavbarContextInterface {
 
 const SettingsNavbarContext = React.createContext<SettingsNavbarContextInterface>(undefined as any);
 
-const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
+const Settings = () => {
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
     const [subPageIndex, setSubPageIndex] = useState(0);
     const [showNavbar, setShowNavbar] = useState(true);
@@ -444,7 +520,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
         case 0: return [<DefaultsPage />];
         case 1: return [<AircraftConfigurationPage />];
         case 2: return [<SimOptionsPage />];
-        case 3: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
+        case 3: return [<ATSUAOCPage />];
         case 4: return [<AudioPage />];
         case 5: return [<FlyPadPage />];
         default: return [<AircraftConfigurationPage />];
