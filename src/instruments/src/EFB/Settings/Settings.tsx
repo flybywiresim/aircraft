@@ -195,7 +195,8 @@ const SimOptionsPage = () => {
     ];
 
     const boardingRateButtons: ButtonType[] = [
-        { name: 'Instant', setting: '2' },
+        { name: 'Instant', setting: '3' },
+        { name: 'Fast', setting: '2' },
         { name: 'Real', setting: '1' },
     ];
 

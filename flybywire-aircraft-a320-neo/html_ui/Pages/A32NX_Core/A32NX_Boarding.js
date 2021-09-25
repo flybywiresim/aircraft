@@ -96,7 +96,7 @@ class A32NX_Boarding {
             return;
         }
 
-        if (!airplaneCanBoard() && boardingRate == '1') {
+        if ((!airplaneCanBoard() && boardingRate == '1') || (!airplaneCanBoard() && boardingRate == '2')) {
             return;
         }
 
@@ -125,7 +125,7 @@ class A32NX_Boarding {
             this.boardingState = "finished";
         }
 
-        if (boardingRate == 2) {
+        if (boardingRate == 3) {
             // Instant
             for (const paxStation of Object.values(this.paxStations)) {
                 const stationCurrentPaxTarget = SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number");
@@ -141,9 +141,14 @@ class A32NX_Boarding {
             return;
         }
 
-        let msDelay = 1000;
-        if (boardingRate === 1) {
-            msDelay = 500;
+        let msDelay = 5000;
+
+        if (boardingRate == 2) {
+            msDelay = 1000;
+        }
+
+        if (boardingRate == 1) {
+            msDelay = 5000;
         }
 
         if (this.time > msDelay) {
