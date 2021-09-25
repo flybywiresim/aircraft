@@ -99,16 +99,16 @@ impl CabinPressureController {
 
         match self.pressure_schedule_manager {
             PressureScheduleManager::Ground(_) => {
-                if (self.cabin_pressure - self.exterior_pressure) > error_margin {
+                if self.cabin_delta_p() > error_margin {
                     Velocity::new::<foot_per_minute>(Self::DEPRESS_RATE)
-                } else if (self.cabin_pressure - self.exterior_pressure) < -error_margin {
+                } else if self.cabin_delta_p() < -error_margin {
                     Velocity::new::<foot_per_minute>(-Self::DEPRESS_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
             PressureScheduleManager::TakeOff(_) => {
-                if (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(0.1) {
+                if self.cabin_delta_p() < Pressure::new::<psi>(0.1) {
                     Velocity::new::<foot_per_minute>(Self::TAKEOFF_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
@@ -123,7 +123,7 @@ impl CabinPressureController {
                     self.exterior_vertical_speed.get::<foot_per_minute>()
                         * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
                 );
-                if (self.cabin_pressure - self.exterior_pressure)
+                if self.cabin_delta_p()
                     >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT)
                 {
                     Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE)
@@ -231,6 +231,10 @@ impl CabinPressureController {
         Length::new::<meter>(altitude)
     }
 
+    fn cabin_delta_p(&self) -> Pressure {
+        self.cabin_pressure - self.exterior_pressure
+    }
+
     pub fn update_outflow_valve_state(&mut self, outflow_valve: &PressureValve) {
         self.outflow_valve_open_amount = outflow_valve.open_amount();
     }
@@ -270,11 +274,11 @@ impl CabinPressureController {
     }
 
     pub fn is_excessive_residual_pressure(&self) -> bool {
-        (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(0.01)
+        self.cabin_delta_p() > Pressure::new::<psi>(0.01)
     }
 
     pub fn is_low_diff_pressure(&self) -> bool {
-        (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(1.45)
+        self.cabin_delta_p() < Pressure::new::<psi>(1.45)
             && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1500.))
             && self.exterior_vertical_speed < Velocity::new::<foot_per_minute>(-500.)
     }
@@ -331,14 +335,14 @@ impl OutflowValveActuator for CabinPressureController {
 // Safety valve signal
 impl ControllerSignal<PressureValveSignal> for CabinPressureController {
     fn signal(&self) -> Option<PressureValveSignal> {
-        if (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(8.1) {
-            if (self.cabin_pressure - self.exterior_pressure) > Pressure::new::<psi>(8.6) {
+        if self.cabin_delta_p() > Pressure::new::<psi>(8.1) {
+            if self.cabin_delta_p() > Pressure::new::<psi>(8.6) {
                 Some(PressureValveSignal::Open)
             } else {
                 Some(PressureValveSignal::Neutral)
             }
-        } else if (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(-0.5) {
-            if (self.cabin_pressure - self.exterior_pressure) < Pressure::new::<psi>(-1.) {
+        } else if self.cabin_delta_p() < Pressure::new::<psi>(-0.5) {
+            if self.cabin_delta_p() < Pressure::new::<psi>(-1.) {
                 Some(PressureValveSignal::Open)
             } else {
                 Some(PressureValveSignal::Neutral)
