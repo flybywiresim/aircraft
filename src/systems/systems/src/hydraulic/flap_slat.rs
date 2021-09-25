@@ -53,12 +53,12 @@ impl FlapSlatHydraulicMotor {
                     ));
 
         // Forcing 0 speed at low speed to avoid endless spool down due to low pass filter
-        if self.speed.get::<revolution_per_minute>() < 20. {
+        if self.speed.get::<revolution_per_minute>() < 20. && self.speed.get::<revolution_per_minute>() > -20.   {
             self.speed = AngularVelocity::new::<revolution_per_minute>(0.);
         }
 
         self.current_flow = VolumeRate::new::<gallon_per_minute>(
-            self.speed.get::<revolution_per_minute>() * self.displacement.get::<cubic_inch>()
+            self.speed.get::<revolution_per_minute>().abs() * self.displacement.get::<cubic_inch>()
                 / 231.,
         );
 
