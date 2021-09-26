@@ -287,7 +287,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const onlineFeaturesStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
 
         if (onlineFeaturesStatus === "UNKNOWN") {
-            new NXNotif().showNotification({ message: "You have not yet configured the TELEX option. To do so, go the electronic flight bag's settings page and set the TELEX setting on the ATSU/AOC tab. More information can be found at https://docs.flybywiresim.com/" });
+            new PopUp().showPopUp(
+                'TELEX CONFIGURATION',
+                'You have not yet configured the telex option. Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex',
+                'small',
+                () => setTelexEnabled('ENABLED'),
+                () => setTelexEnabled('DISABLED'),
+            );
         }
 
         // Start the TELEX Ping. API functions check the connection status themself
