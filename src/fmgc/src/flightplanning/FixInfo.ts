@@ -1,8 +1,8 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { WayPoint } from "@fmgc/types/fstypes/FSTypes";
-import { FlightPlanManager } from "@fmgc/wtsdk";
+import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { FlightPlanManager } from '@fmgc/wtsdk';
 
 export interface FixInfoRadial {
     // true degrees
@@ -23,9 +23,13 @@ export interface FixInfoRadius {
 
 export class FixInfo {
     private flightPlanManager: FlightPlanManager;
+
     private refFix: WayPoint;
+
     private radials: FixInfoRadial[] = [];
+
     private radius: FixInfoRadius;
+
     private abeam: boolean = false;
 
     constructor(flightPlanManager: FlightPlanManager) {

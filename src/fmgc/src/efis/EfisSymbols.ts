@@ -1,27 +1,38 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanManager } from "@fmgc/flightplanning/FlightPlanManager";
-import { RunwaySurface, VorType, WaypointConstraintType } from "@fmgc/types/fstypes/FSEnums";
-import { OneWayRunway, RawAirport, VORInfo, WayPoint } from "@fmgc/types/fstypes/FSTypes";
-import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from "@shared/NavigationDisplay";
-import { LatLongData } from "@typings/fs-base-ui";
-import { NearbyFacilities } from "./NearbyFacilities";
+import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
+import { RunwaySurface, VorType, WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
+import { OneWayRunway, RawAirport, VORInfo, WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
+import { LatLongData } from '@typings/fs-base-ui';
+import { NearbyFacilities } from './NearbyFacilities';
 
 export class EfisSymbols {
     private blockUpdate = false;
+
     private flightPlanManager: FlightPlanManager;
+
     private nearby: NearbyFacilities;
+
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     private static sides = ['L', 'R'];
+
     private lastMode = { L: -1, R: -1 };
+
     private lastRange = { L: 0, R: 0 };
+
     private lastEfisOption = { L: 0, R: 0 };
+
     private lastPlanCentre = undefined;
+
     private lastPpos: LatLongData = { lat: 0, long: 0 };
+
     private lastTrueHeading: number = -1;
+
     private lastNearbyFacilitiesVersion;
+
     private lastFpVersion;
 
     constructor(flightPlanManager) {
@@ -68,13 +79,19 @@ export class EfisSymbols {
         const activeFp = this.flightPlanManager.getCurrentFlightPlan();
         // TODO temp f-pln
 
-        const hasHardRunway = (airport: RawAirport): boolean => {
-            for (let runway of airport.runways) {
+        const hasSuitableRunway = (airport: RawAirport): boolean => {
+            for (const runway of airport.runways) {
                 switch (runway.surface) {
                 case RunwaySurface.Asphalt:
+                case RunwaySurface.Bituminous:
                 case RunwaySurface.Concrete:
                 case RunwaySurface.Tarmac:
-                    return true;
+                    if (runway.length >= 1300) {
+                        return true;
+                    }
+                    break;
+                default:
+                    break;
                 }
             }
             return false;
@@ -97,8 +114,6 @@ export class EfisSymbols {
                 return;
             }
 
-            //console.log(`updating symbols ${side} range mode efis ppos`, rangeChange, modeChange, efisOptionChange, pposChanged, nearbyOverlayChanged, fpChanged);
-
             const [editAhead, editBehind, editBeside] = this.calculateEditArea(range, mode);
 
             const withinEditArea = (ll): boolean => {
@@ -113,12 +128,12 @@ export class EfisSymbols {
                 return Math.abs(dx) < editBeside && dy > -editBehind && dy < editAhead;
             };
 
-            const symbols: NdSymbol[] = new Array();
+            const symbols: NdSymbol[] = [];
 
             // symbols most recently inserted always end up at the end of the array
             // we reverse the array at the end to make sure symbols are drawn in the correct order
             const upsertSymbol = (symbol: NdSymbol): void => {
-                let symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
+                const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
                 if (symbolIdx !== -1) {
                     const oldSymbol = symbols.splice(symbolIdx, 1)[0];
                     symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
@@ -131,8 +146,8 @@ export class EfisSymbols {
             };
 
             // TODO ADIRs aligned (except in plan mode...?)
-            if (efisOption === EfisOption.VorDmes) {;
-                for (let vor of this.nearby.nearbyVhfNavaids.values()) {
+            if (efisOption === EfisOption.VorDmes) {
+                for (const vor of this.nearby.nearbyVhfNavaids.values()) {
                     if (vor.type !== VorType.VORDME && vor.type !== VorType.VOR && vor.type !== VorType.DME && vor.type !== VorType.VORTAC && vor.type !== VorType.TACAN) {
                         continue;
                     }
@@ -147,7 +162,7 @@ export class EfisSymbols {
                     }
                 }
             } else if (efisOption === EfisOption.Ndbs) {
-                for (let ndb of this.nearby.nearbyNdbNavaids.values()) {
+                for (const ndb of this.nearby.nearbyNdbNavaids.values()) {
                     const ll = { lat: ndb.lat, long: ndb.lon };
                     if (withinEditArea(ll)) {
                         upsertSymbol({
@@ -159,9 +174,9 @@ export class EfisSymbols {
                     }
                 }
             } else if (efisOption === EfisOption.Airports) {
-                for (let ap of this.nearby.nearbyAirports.values()) {
+                for (const ap of this.nearby.nearbyAirports.values()) {
                     const ll = { lat: ap.lat, long: ap.lon };
-                    if (withinEditArea(ll) && hasHardRunway(ap)) {
+                    if (withinEditArea(ll) && hasSuitableRunway(ap)) {
                         upsertSymbol({
                             databaseId: ap.icao,
                             ident: ap.icao.substring(7, 12),
@@ -171,7 +186,7 @@ export class EfisSymbols {
                     }
                 }
             } else if (efisOption === EfisOption.Waypoints) {
-                for (let wp of this.nearby.nearbyWaypoints.values()) {
+                for (const wp of this.nearby.nearbyWaypoints.values()) {
                     const ll = { lat: wp.lat, long: wp.lon };
                     if (withinEditArea(ll)) {
                         upsertSymbol({
@@ -211,11 +226,9 @@ export class EfisSymbols {
                     return `${prefix}FL${Math.round(alt / 100)}`;
                 }
                 return `${prefix}${Math.round(alt)}`;
-            }
+            };
 
-            const formatConstraintSpeed = (speed: number, prefix: string = '') => {
-                return `${prefix}${Math.floor(speed)} KT`;
-            }
+            const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)} KT`;
 
             // TODO don't send the waypoint before active once FP sequencing is properly implemented
             // (currently sequences with guidance which is too early)
@@ -235,7 +248,7 @@ export class EfisSymbols {
                 }
 
                 let type = NdSymbolTypeFlags.FlightPlan;
-                let constraints = [];
+                const constraints = [];
 
                 if (i === activeFp.activeWaypointIndex) {
                     type |= NdSymbolTypeFlags.ActiveLegTermination;
@@ -249,19 +262,21 @@ export class EfisSymbols {
                 if (efisOption === EfisOption.Constraints) {
                     const descent = wp.constraintType === WaypointConstraintType.DES;
                     switch (wp.legAltitudeDescription) {
-                        case 1:
-                            constraints.push(formatConstraintAlt(wp.legAltitude1, descent));
-                            break;
-                        case 2:
-                            constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '+'));
-                            break;
-                        case 3:
-                            constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '-'));
-                            break;
-                        case 4:
-                            constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '-'));
-                            constraints.push(formatConstraintAlt(wp.legAltitude2, descent, '+'));
-                            break;
+                    case 1:
+                        constraints.push(formatConstraintAlt(wp.legAltitude1, descent));
+                        break;
+                    case 2:
+                        constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '+'));
+                        break;
+                    case 3:
+                        constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '-'));
+                        break;
+                    case 4:
+                        constraints.push(formatConstraintAlt(wp.legAltitude1, descent, '-'));
+                        constraints.push(formatConstraintAlt(wp.legAltitude2, descent, '+'));
+                        break;
+                    default:
+                        break;
                     }
 
                     if (wp.speedConstraint > 0) {
@@ -273,7 +288,7 @@ export class EfisSymbols {
                     databaseId: wp.icao,
                     ident: wp.ident,
                     location: wp.infos.coordinates,
-                    type: type,
+                    type,
                     constraints: constraints.length > 0 ? constraints : undefined,
                 });
             }
@@ -282,7 +297,7 @@ export class EfisSymbols {
                 [activeFp.originAirfield, activeFp.getOriginRunway()],
                 [activeFp.destinationAirfield, activeFp.getDestinationRunway()],
             ];
-            for (let [airport, runway] of airports) {
+            for (const [airport, runway] of airports) {
                 if (!airport) {
                     continue;
                 }
@@ -297,15 +312,13 @@ export class EfisSymbols {
                             type: NdSymbolTypeFlags.Runway,
                         });
                     }
-                } else {
-                    if (withinEditArea(airport.infos.coordinates)) {
-                        upsertSymbol({
-                            databaseId: airport.icao,
-                            ident: airport.ident,
-                            location: airport.infos.coordinates,
-                            type: NdSymbolTypeFlags.Airport,
-                        });
-                    }
+                } else if (withinEditArea(airport.infos.coordinates)) {
+                    upsertSymbol({
+                        databaseId: airport.icao,
+                        ident: airport.ident,
+                        location: airport.infos.coordinates,
+                        type: NdSymbolTypeFlags.Airport,
+                    });
                 }
             }
 
@@ -353,6 +366,8 @@ export class EfisSymbols {
             return NdSymbolTypeFlags.Airport;
         case 'W':
             return NdSymbolTypeFlags.Waypoint;
+        default:
+            break;
         }
         return 0;
     }
@@ -362,45 +377,54 @@ export class EfisSymbols {
         case Mode.ARC:
             if (range <= 10) {
                 return [10.5, 3.5, 8.3];
-            } else if (range <= 20) {
-                return [20.5, 7, 16.6];
-            } else if (range <= 40) {
-                return [40.5, 14, 33.2];
-            } else if (range <= 80) {
-                return [80.5, 28, 66.4];
-            } else if (range <= 160) {
-                return [160.5, 56, 132.8];
-            } else {
-                return [320.5, 112, 265.6];
             }
+            if (range <= 20) {
+                return [20.5, 7, 16.6];
+            }
+            if (range <= 40) {
+                return [40.5, 14, 33.2];
+            }
+            if (range <= 80) {
+                return [80.5, 28, 66.4];
+            }
+            if (range <= 160) {
+                return [160.5, 56, 132.8];
+            }
+            return [320.5, 112, 265.6];
         case Mode.ROSE_NAV:
             if (range <= 10) {
                 return [7.6, 7.1, 7.1];
-            } else if (range <= 20) {
-                return [14.7, 14.2, 14.2];
-            } else if (range <= 40) {
-                return [28.9, 28.4, 28.4];
-            } else if (range <= 80) {
-                return [57.3, 56.8, 56.8];
-            } else if (range <= 160) {
-                return [114.1, 113.6, 113.6];
-            } else {
-                return [227.7, 227.2, 227.2];
             }
+            if (range <= 20) {
+                return [14.7, 14.2, 14.2];
+            }
+            if (range <= 40) {
+                return [28.9, 28.4, 28.4];
+            }
+            if (range <= 80) {
+                return [57.3, 56.8, 56.8];
+            }
+            if (range <= 160) {
+                return [114.1, 113.6, 113.6];
+            }
+            return [227.7, 227.2, 227.2];
         case Mode.PLAN:
             if (range <= 10) {
                 return [7, 7, 7];
-            } else if (range <= 20) {
-                return [14, 14, 14];
-            } else if (range <= 40) {
-                return [28, 28, 28];
-            } else if (range <= 80) {
-                return [56, 56, 56];
-            } else if (range <= 160) {
-                return [112, 112, 112];
-            } else {
-                return [224, 224, 224];
             }
+            if (range <= 20) {
+                return [14, 14, 14];
+            }
+            if (range <= 40) {
+                return [28, 28, 28];
+            }
+            if (range <= 80) {
+                return [56, 56, 56];
+            }
+            if (range <= 160) {
+                return [112, 112, 112];
+            }
+            return [224, 224, 224];
         default:
             return [0, 0, 0];
         }

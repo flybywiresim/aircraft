@@ -24,11 +24,11 @@
  */
 
 import { NXDataStore } from '@shared/persistence';
+import { WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
 import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
-import { WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
 import { FixInfo } from './FixInfo';
 
 /**
@@ -250,7 +250,7 @@ export class FlightPlanManager {
      */
     public async clearFlightPlan(callback = EmptyCallback.Void): Promise<void> {
         await this._flightPlans[this._currentFlightPlanIndex].clearPlan().catch(console.error);
-        for (let fixInfo of this._fixInfos) {
+        for (const fixInfo of this._fixInfos) {
             fixInfo.setRefFix();
         }
         this._updateFlightPlanVersion().catch(console.error);

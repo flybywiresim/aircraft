@@ -46,24 +46,26 @@ export const FMMessageTriggers = {
     POP_FROM_STACK: 'A32NX_FMGC_POP_MESSAGE',
 };
 
+/* eslint-disable no-multi-spaces */
 export enum NdFmMessageFlag {
-    None                      = 0,
-    SelectTrueRef             = 1 << 0,
-    CheckNorthRef             = 1 << 1,
-    NavAccuracyDowngrade      = 1 << 2,
-    NavAccuracyUpgradeNoGps   = 1 << 3,
+    None =                      0,
+    SelectTrueRef =             1 << 0,
+    CheckNorthRef =             1 << 1,
+    NavAccuracyDowngrade =      1 << 2,
+    NavAccuracyUpgradeNoGps =   1 << 3,
     SpecifiedVorDmeUnavailble = 1 << 4,
-    NavAccuracyUpgradeGps     = 1 << 5,
-    GpsPrimary                = 1 << 6,
-    MapPartlyDisplayed        = 1 << 7,
-    SetOffsideRangeMode       = 1 << 8,
-    OffsideFmControl          = 1 << 9,
-    OffsideFmWxrControl       = 1 << 10,
-    OffsideWxrControl         = 1 << 11,
-    GpsPrimaryLost            = 1 << 12,
-    RtaMissed                 = 1 << 13,
-    BackupNav                 = 1 << 14,
+    NavAccuracyUpgradeGps =     1 << 5,
+    GpsPrimary =                1 << 6,
+    MapPartlyDisplayed =        1 << 7,
+    SetOffsideRangeMode =       1 << 8,
+    OffsideFmControl =          1 << 9,
+    OffsideFmWxrControl =       1 << 10,
+    OffsideWxrControl =         1 << 11,
+    GpsPrimaryLost =            1 << 12,
+    RtaMissed =                 1 << 13,
+    BackupNav =                 1 << 14,
 }
+/* eslint-enable no-multi-spaces */
 
 export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     SelectTrueRef: {

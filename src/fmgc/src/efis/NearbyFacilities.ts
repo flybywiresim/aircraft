@@ -1,29 +1,40 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NearestSearchType } from "@fmgc/types/fstypes/FSEnums";
-import { NearestSearch, RawAirport, RawIntersection, RawNdb, RawVor } from "@fmgc/types/fstypes/FSTypes";
+import { NearestSearchType } from '@fmgc/types/fstypes/FSEnums';
+import { NearestSearch, RawAirport, RawIntersection, RawNdb, RawVor } from '@fmgc/types/fstypes/FSTypes';
 
 // WARNING: this is a temporary implementation until the new nav database is complete
 // Do not write any code which depends on it
 export class NearbyFacilities {
     private listener;
+
     private initDone = false;
 
     public nearbyAirports: Map<string, RawAirport> = new Map();
+
     public nearbyNdbNavaids: Map<string, RawNdb> = new Map();
+
     public nearbyVhfNavaids: Map<string, RawVor> = new Map();
+
     public nearbyWaypoints: Map<string, RawIntersection> = new Map();
+
     public version: number = 0;
 
     private airportSessionId: number;
+
     private ndbSessionId: number;
+
     private vorSessionId: number;
+
     private waypointSessionId: number;
 
     private lastPpos = { lat: 0, long: 0 };
+
     private throttler = new UpdateThrottler(10000);
+
     private radius = 381 * 1852; // metres
+
     private limit = 160;
 
     constructor() {
@@ -42,8 +53,7 @@ export class NearbyFacilities {
         });
     }
 
-    async init(): Promise<void> {
-
+    init(): void {
     }
 
     async update(deltaTime: number): Promise<void> {

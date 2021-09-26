@@ -18,7 +18,7 @@ import {
     VorClass,
     VorType,
     WaypointConstraintType,
-} from "./FSEnums";
+} from './FSEnums';
 
 export declare class WayPoint {
     constructor(_baseInstrument: BaseInstrument);

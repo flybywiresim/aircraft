@@ -20,8 +20,8 @@ export class FmsMessages implements FmgcComponent {
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     private ndMessageFlags: Record<'L' | 'R', number> = {
-        'L': 0,
-        'R': 0,
+        L: 0,
+        R: 0,
     };
 
     private messageSelectors: FMMessageSelector[] = [
@@ -169,6 +169,7 @@ enum FMMessageUpdate {
  */
 abstract class FMMessageSelector {
     abstract message: FMMessage;
+
     abstract ndSide?: 'L' | 'R';
 
     /**
@@ -240,6 +241,7 @@ class GpsPrimaryLost implements FMMessageSelector {
 // TODO right side
 abstract class MapPartlyDisplayed implements FMMessageSelector {
     message: FMMessage = FMMessageTypes.MapPartlyDisplayed;
+
     abstract ndSide: 'L' | 'R';
 
     trigRising = new Trigger(true);
@@ -253,17 +255,18 @@ abstract class MapPartlyDisplayed implements FMMessageSelector {
         this.trigFalling.update(deltaTime);
         if (this.trigRising.output) {
             return FMMessageUpdate.SEND;
-        } else if (this.trigFalling.output) {
+        }
+        if (this.trigFalling.output) {
             return FMMessageUpdate.RECALL;
         }
         return FMMessageUpdate.NO_ACTION;
     }
-};
+}
 
 class MapPartlyDisplayedLeft extends MapPartlyDisplayed {
     ndSide: 'L' | 'R' = 'L';
-};
+}
 
 class MapPartlyDisplayedRight extends MapPartlyDisplayed {
     ndSide: 'L' | 'R' = 'R';
-};
+}
