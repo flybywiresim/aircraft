@@ -87,8 +87,9 @@ impl A320Hydraulic {
     const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
     ];
-    const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 2., 9., 10., 13., 15., 18., 19., 20., 24., 35., 40.];
+    const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
+        0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
+    ];
 
     const FORWARD_CARGO_DOOR_ID: usize = 5;
     // Same id for aft door as a place holder until it gets animated
