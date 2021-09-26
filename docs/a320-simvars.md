@@ -998,7 +998,6 @@
       4 | Conf3
       5 | ConfFull
 
-
 - A32NX_SPOILERS_ARMED
     - Bool
     - Indicates if the ground spoilers are armed
