@@ -53,11 +53,11 @@ impl Fluid {
     }
 }
 
-/// Physical pressure switch that can be added in an hydraulic section.
+/// Physical pressure switch.
 /// It's basically a switch reacting with pressure.
 ///
-/// Goes true above high hystereris value
-/// Goes false under low hysteresis value
+/// Goes true above high pressure hystereris value
+/// Goes false under low pressure hysteresis value
 pub struct PressureSwitch {
     state_is_pressurised: bool,
     high_hysteresis_threshold: Pressure,

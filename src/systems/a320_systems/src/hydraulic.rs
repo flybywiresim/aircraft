@@ -567,20 +567,6 @@ impl A320Hydraulic {
             context,
             &self.yellow_loop_controller,
         );
-        // println!(
-        //     "Yloop P={:.0} Gloop={:.0} Yedp={:.0} Gedp={:.0}",
-        //     self.yellow_loop.system_pressure().get::<psi>(),
-        //     self.green_loop.system_pressure().get::<psi>(),
-        //     self.yellow_loop.pump_pressure(0).get::<psi>(),
-        //     self.green_loop.pump_pressure(0).get::<psi>(),
-        // );
-        // use systems::hydraulic::PressureSource;
-        // println!(
-        //     "Bloop P={:.0} Bepump={:.0} bdisp={:.2}",
-        //     self.blue_loop.system_pressure().get::<psi>(),
-        //     self.blue_loop.pump_pressure(0).get::<psi>(),
-        //     self.blue_electric_pump.displacement().get::<cubic_inch>(),
-        // );
 
         self.blue_loop_controller.update(engine_fire_push_buttons);
         self.blue_loop.update(
