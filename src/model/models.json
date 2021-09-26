@@ -31715,6 +31715,21 @@
           [0.40380859375, 0.2099609375]
         ]
       }
+    ],
+    "splitAnimations": [
+      {
+        "animation": "opening_landing_light",
+        "newAnimations": [
+          {
+            "name": "r_opening_landing_light",
+            "indices": [0, 1]
+          },
+          {
+            "name": "l_opening_landing_light",
+            "indices": [2, 3]
+          }
+        ]
+      }
     ]
   }
 ]
