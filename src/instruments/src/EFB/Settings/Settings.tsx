@@ -382,7 +382,7 @@ const ATSUAOCPage = () => {
             new PopUp().showPopUp(
                 'TELEX WARNING',
                 // eslint-disable-next-line max-len
-                'Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex',
+                'Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex. Would you like to enable telex?',
                 'small',
                 () => setTelexEnabled('ENABLED'),
                 () => {},
