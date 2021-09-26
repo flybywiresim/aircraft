@@ -30,6 +30,7 @@
 1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
 1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
 1. [AP/FBW] Improved behaviour in cruise when using high sim rate with low performance - @aguther (Andreas Guther)
+1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
