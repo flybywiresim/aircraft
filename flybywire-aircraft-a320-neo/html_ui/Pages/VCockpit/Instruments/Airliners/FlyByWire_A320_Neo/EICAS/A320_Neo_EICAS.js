@@ -286,12 +286,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
     checkApuPage(deltaTime) {
         const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
-        const apuRpm = SimVar.GetSimVarValue("L:A32NX_APU_N", "Percent Over 100");
-        if (currentAPUMasterState && (apuRpm <= 95 || this.ApuAboveThresholdTimer >= 0)) {
+        const apuRpm = Arinc429Word.fromSimVarValue("L:A32NX_APU_N");
+        if (currentAPUMasterState && apuRpm.isNormalOperation() && (apuRpm.value <= 95 || this.ApuAboveThresholdTimer >= 0)) {
             // Show APU on Lower ECAM until 15s after RPM > 95%
-            if (this.ApuAboveThresholdTimer <= 0 && apuRpm <= 95) {
+            if (this.ApuAboveThresholdTimer <= 0 && apuRpm.value <= 95) {
                 this.ApuAboveThresholdTimer = 15;
-            } else if (apuRpm > 95) {
+            } else if (apuRpm.value > 95) {
                 this.ApuAboveThresholdTimer -= deltaTime / 1000;
             }
             this.pageNameWhenUnselected = "APU";

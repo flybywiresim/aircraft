@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 /* eslint-disable no-underscore-dangle */
 /// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
 

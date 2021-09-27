@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.8.0
+1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
@@ -22,7 +23,12 @@
 1. [AP] Allow V/S push and pull during ALT CPT - @aguther (Andreas Guther)
 1. [AP] Soft Altitude mode uses now FMGC flight phase to detect cruise situation
 1. [MCDU] Fix GPS ground speed monitor to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
-
+1. [AP] Improved LOC* law - @aguther (Andreas Guther)
+1. [AP] Improved ROLL OUT law - @aguther (Andreas Guther)
+1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (TazX [Z+2]#0405)
+1. [ARCH] Support ARINC 429 communication between aircraft components - @davidwalschots (David Walschots)
+1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
+1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
