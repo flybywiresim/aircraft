@@ -33,11 +33,11 @@ const EmptyFPlan: React.FC = () => (
             </LineHolder>
             <LineHolder columnPosition={2}>
                 <LabelField lineSide={lineSides.center} value="TIME" color={lineColors.white} />
-                <Field lineSide={lineSides.left} value="----" color={lineColors.white} size={lineSizes.regular} />
+                <Field lineSide={lineSides.center} value="----" color={lineColors.white} size={lineSizes.regular} />
             </LineHolder>
             <LineHolder columnPosition={3}>
-                <LabelField lineSide={lineSides.right} value="SPD/ALT" color={lineColors.white} />
-                <Field lineSide={lineSides.center} value="---/ -----" color={lineColors.white} size={lineSizes.regular} />
+                <LabelField lineSide={lineSides.left} value="  SPD/ALT" color={lineColors.white} />
+                <Field lineSide={lineSides.right} value="---/ -----" color={lineColors.white} size={lineSizes.regular} />
             </LineHolder>
         </RowHolder>
         <RowHolder columns={1}>
@@ -99,7 +99,7 @@ const DestinationInfo: React.FC<DestinationInfoProps> = ({ fpm, stats, insertTem
                 const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
                 if (destStats) destTimeCell = Helper.secondsTohhmm(destStats?.timeFromPpos);
             }
-            setDestination(['\xa0DEST', destCell]);
+            setDestination([' DEST', destCell]);
             setDestinationColor([lineColors.white, lineColors.white]);
             setDestionatiomTime([destinationTime[0], destTimeCell]);
         }
@@ -122,7 +122,7 @@ const DestinationInfo: React.FC<DestinationInfoProps> = ({ fpm, stats, insertTem
     return (
         <RowHolder columns={3}>
             <LineHolder columnPosition={1}>
-                <LabelField lineSide={lineSides.right} value={destination[0]} color={destinationColor[0]} />
+                <LabelField lineSide={lineSides.left} value={destination[0]} color={destinationColor[0]} />
                 <LineSelectField
                     lineSide={lineSides.left}
                     value={destination[1]}
@@ -133,15 +133,15 @@ const DestinationInfo: React.FC<DestinationInfoProps> = ({ fpm, stats, insertTem
                 />
             </LineHolder>
             <LineHolder columnPosition={2}>
-                <LabelField lineSide={lineSides.right} value={destinationTime[0]} color={destinationTimeColor[0]} />
-                <Field lineSide={lineSides.left} value={destinationTime[1]} color={destinationTimeColor[1]} size={lineSizes.regular} />
+                <LabelField lineSide={lineSides.center} value={destinationTime[0]} color={destinationTimeColor[0]} />
+                <Field lineSide={lineSides.center} value={destinationTime[1]} color={destinationTimeColor[1]} size={lineSizes.regular} />
             </LineHolder>
             <LineHolder columnPosition={3}>
-                <LabelField lineSide={lineSides.right} value="DIST EFOB" color={lineColors.white} />
+                <LabelField lineSide={lineSides.right} value="DIST  EFOB" color={lineColors.white} />
                 <LineSelectField
                 // TODO: add hooks for this
-                    lineSide={lineSides.left}
-                    value="---- ----"
+                    lineSide={lineSides.right}
+                    value="----  ----"
                     color={lineColors.white}
                     size={lineSizes.regular}
                     lsk={LINESELECT_KEYS.R6}

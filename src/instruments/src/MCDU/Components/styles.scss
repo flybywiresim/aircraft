@@ -21,11 +21,16 @@
   font-weight: 900;
 }
 
+.row-holder-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
 //ROWS discuss using styled components so we can access props instead
 .row-holder-2 {
-  display: grid;
+  @extend .row-holder-1;
   grid-template-columns: repeat(2, auto);
-  grid-template-rows: 1fr;
 }
 
 .row-holder-3 {
@@ -38,6 +43,7 @@
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(2, 54px);
+  grid-row-gap: 10px; // I know it's deprecated but it's picked up in-sim instead of row-gap
 }
 
 .line-holder-1 {

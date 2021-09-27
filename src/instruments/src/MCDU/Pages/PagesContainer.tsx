@@ -65,6 +65,7 @@ const PagesContainer = () => {
     useInteractionEvent(PAGE_KEYS.MENU, () => setCurrentPage('MENU'));
     useInteractionEvent(PAGE_KEYS.ATC, () => setCurrentPage('MENU'));
     useInteractionEvent(PAGE_KEYS.FUEL, () => setCurrentPage('FUEL'));
+    useInteractionEvent(PAGE_KEYS.FPLN, () => setCurrentPage('FPLAN'));
 
     return pages[currentPage];
 };

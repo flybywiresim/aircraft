@@ -5,10 +5,10 @@ import FPlanPage from './FplanA';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 
 export const Markers = {
-    FPLN_DISCONTINUITY: '---F-PLN DISCONTINUITY--',
-    END_OF_FPLN: '------END OF F-PLN------',
-    NO_ALTN_FPLN: '-----NO ALTN F-PLN------',
-    END_OF_ALTN_FPLN: '---END OF ALT F-PLN----',
+    FPLN_DISCONTINUITY: '--F-PLN DISCONTINUITY--',
+    END_OF_FPLN: '------END OF F-PLN-----',
+    NO_ALTN_FPLN: '-----NO ALTN F-PLN-----',
+    END_OF_ALTN_FPLN: '---END OF ALT F-PLN---',
     TOO_STEEP_PATH: '-----TOO STEEP PATH-----',
 };
 

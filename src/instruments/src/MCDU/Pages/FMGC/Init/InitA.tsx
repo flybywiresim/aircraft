@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
 import { NXFictionalMessages, NXSystemMessages } from '@fmgc/lib/NXSystemMessages';
+import { FMCDataManager } from '@fmgc/lib/FMCDataManager';
+import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { mcduState } from '../../../redux/reducers/mcduReducer';
 import { RowHolder } from '../../../Components/Holders/RowHolder';
 import { useSimVar } from '../../../../Common/simVars';
@@ -32,35 +34,36 @@ const CoRouteLine: React.FC = () => (
 
 type fromToLineProps = {
     addMessage: (msg: ScratchpadMessage) => void,
-    fmgc: mcduState,
+    fpm: FlightPlanManager,
+    fmcDM: FMCDataManager
     eraseTempFpl: (callback?: () => void) => void
 }
-const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl }) => {
-    const [from, setFrom] = useState(fmgc.flightPlanManager?.getPersistentOrigin().ident);
-    const [to, setTo] = useState(fmgc.flightPlanManager?.getDestination().ident);
+const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fpm, fmcDM, eraseTempFpl }) => {
+    const [from, setFrom] = useState(fpm.getPersistentOrigin() ? fpm.getPersistentOrigin().ident : undefined);
+    const [to, setTo] = useState(fpm.getDestination() ? fpm.getDestination().ident : undefined);
     const [, setUseFplDecelPoint] = useSimVar('L:FLIGHTPLAN_USE_DECEL_WAYPOINT', 'number');
 
     useEffect(() => {
-        setFrom(fmgc.flightPlanManager?.getPersistentOrigin().ident);
-        setTo(fmgc.flightPlanManager?.getDestination().ident);
-    }, [fmgc.flightPlanManager]);
+        setFrom(fpm.getPersistentOrigin() ? fpm.getPersistentOrigin().ident : undefined);
+        setTo(fpm.getDestination() ? fpm.getDestination().ident : undefined);
+    }, [fpm]);
 
     const setNewValue = (value: string | undefined) => {
         if (value === undefined) {
             addMessage(NXSystemMessages.notAllowed);
         } else {
             const [from, to] = value.split('/');
-            fmgc.fmcDataManager?.GetAirportByIdent(from).then((airportFrom) => {
+            fmcDM.GetAirportByIdent(from).then((airportFrom) => {
                 if (airportFrom) {
-                    fmgc.fmcDataManager?.GetAirportByIdent(to).then((airportTo) => {
+                    fmcDM.GetAirportByIdent(to).then((airportTo) => {
                         if (airportTo) {
                             eraseTempFpl();
-                            fmgc.flightPlanManager?.setOrigin(airportFrom.icao, () => {
+                            fpm.setOrigin(airportFrom.icao, () => {
                                 // Set temp origin
-                                fmgc.flightPlanManager?.setDestination(airportTo.icao, () => {
-                                    if (fmgc.flightPlanManager !== undefined) {
-                                        fmgc.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
-                                        fmgc.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
+                                fpm.setDestination(airportTo.icao, () => {
+                                    if (fpm !== undefined) {
+                                        fpm.getWaypoint(0).endsInDiscontinuity = true;
+                                        fpm.getWaypoint(0).discontinuityCanBeCleared = true;
                                         // init aocAirportList
                                         setUseFplDecelPoint(1);
                                     }
@@ -78,9 +81,9 @@ const FromToLine: React.FC<fromToLineProps> = ({ addMessage, fmgc, eraseTempFpl 
             return false;
         }
         const [from, to] = value.split('/');
-        fmgc.fmcDataManager?.GetAirportByIdent(from).then((airportFrom) => {
+        fmcDM.GetAirportByIdent(from).then((airportFrom) => {
             if (airportFrom) {
-                fmgc.fmcDataManager?.GetAirportByIdent(to).then((airportTo) => {
+                fmcDM.GetAirportByIdent(to).then((airportTo) => {
                     if (airportTo) {
                         return true;
                     }
@@ -416,7 +419,7 @@ const InitAPage: React.FC<InitAPageProps> = ({ scratchpad, setTitlebarText, addM
         <>
             <RowHolder columns={2}>
                 <CoRouteLine />
-                <FromToLine addMessage={addMessage} fmgc={fmgc} eraseTempFpl={eraseTempFpl} />
+                <FromToLine addMessage={addMessage} fpm={fmgc.flightPlanManager} fmcDM={fmgc.fmcDataManager} eraseTempFpl={eraseTempFpl} />
             </RowHolder>
             <RowHolder columns={2}>
                 <AltDestLine addMessage={addMessage} />
