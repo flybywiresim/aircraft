@@ -16,13 +16,22 @@ export const PressPage: FC = () => {
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
+    // const [outflowValueOpenPercentage] = useSimVar('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent', 500);
+    const outflowValueOpenPercentage = 35;
     const deltaPress = splitDecimals(deltaPsi, '');
     const vsx = 275;
     const cax = 455;
     const dpx = 110;
     const y = 165;
+    const ofx = 448;
+    const ofy = 425;
+    const ofradius = 72;
     const radius = 50;
     const [systemNumber, setSystemNumber] = useState(0);
+
+    const safetyValve = 1;
+    const inletValve = 1;
+    const outletValve = 1;
 
     useEffect(() => {
         setSystemNumber(Math.random() < 0.5 ? 1 : 2);
@@ -49,7 +58,7 @@ export const PressPage: FC = () => {
                 <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={50} manMode className="Gauge">
                     <GaugeComponent x={dpx} y={y} radius={radius} startAngle={40} endAngle={50} manMode className="Gauge Amber" />
                     <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={218} manMode className="Gauge Amber" />
-                    <GaugeMarkerComponent value={8} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={8} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue />
                     <GaugeMarkerComponent
                         value={4}
                         x={dpx}
@@ -60,10 +69,8 @@ export const PressPage: FC = () => {
                         startAngle={210}
                         endAngle={50}
                         className="GaugeText"
-                        showValue={false}
-                        indicator={false}
                     />
-                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue />
                     <GaugeMarkerComponent
                         value={deltaPsi}
                         x={dpx}
@@ -74,7 +81,6 @@ export const PressPage: FC = () => {
                         startAngle={210}
                         endAngle={50}
                         className={`GaugeIndicator ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : ''}`}
-                        showValue={false}
                         indicator
                     />
                 </GaugeComponent>
@@ -86,11 +92,11 @@ export const PressPage: FC = () => {
                 <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
                 <text className="Huge Green End" x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
                 <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} manMode className="Gauge">
-                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue indicator={false} />
-                    <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue={false} indicator={false} />
-                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue indicator={false} />
-                    <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue={false} indicator={false} />
-                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
+                    <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
+                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
+                    <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
+                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
                     <GaugeMarkerComponent
                         value={cabinVs / 1000}
                         x={vsx}
@@ -101,7 +107,6 @@ export const PressPage: FC = () => {
                         startAngle={180}
                         endAngle={0}
                         className="GaugeIndicator"
-                        showValue={false}
                         indicator
                     />
                 </GaugeComponent>
@@ -133,8 +138,6 @@ export const PressPage: FC = () => {
                         startAngle={210}
                         endAngle={50}
                         className="GaugeText"
-                        showValue={false}
-                        indicator={false}
                     />
                     <GaugeMarkerComponent value={0} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
                     <GaugeMarkerComponent
@@ -147,7 +150,6 @@ export const PressPage: FC = () => {
                         startAngle={210}
                         endAngle={50}
                         className={`GaugeIndicator ${Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : ''}`}
-                        showValue={false}
                         indicator
                     />
                 </GaugeComponent>
@@ -163,15 +165,125 @@ export const PressPage: FC = () => {
 
             {/* Safety and vent valves */}
 
-            <text className="Large White" x={490} y={305}>SAFETY</text>
+            <text className={safetyValve > 1 ? 'Large White' : 'Large Amber'} x={490} y={305}>SAFETY</text>
+            <GaugeMarkerComponent
+                value={safetyValve}
+                x={545}
+                y={315}
+                min={0}
+                max={2}
+                radius={34}
+                startAngle={90}
+                endAngle={180}
+                className={safetyValve > 1 ? 'GreenLine' : 'AmberLine'}
+                indicator
+            />
+            <circle className="WhiteCircle" cx={545} cy={315} r={3} />
+
             <text className="Large White" x={185} y={380}>VENT</text>
+
             <text className="Large White" x={120} y={417}>INLET</text>
+            <GaugeMarkerComponent
+                value={inletValve}
+                x={175}
+                y={434}
+                min={0}
+                max={2}
+                radius={34}
+                startAngle={180}
+                endAngle={270}
+                className={inletValve > 1 ? 'GreenLine' : 'AmberLine'}
+                indicator
+            />
+            <circle className="WhiteCircle" cx={175} cy={434} r={3} />
+
             <text className="Large White" x={240} y={417}>OUTLET</text>
+            <GaugeMarkerComponent
+                value={outletValve}
+                x={260}
+                y={434}
+                min={0}
+                max={2}
+                radius={34}
+                startAngle={90}
+                endAngle={180}
+                className={outletValve < 1 ? 'GreenLine' : 'AmberLine'}
+                indicator
+            />
+            <circle className="WhiteCircle" cx={260} cy={434} r={3} />
+
+            {/* Outflow valve */}
+            <g id="OutflowValve">
+                <GaugeComponent
+                    x={ofx}
+                    y={ofy}
+                    radius={ofradius}
+                    startAngle={270 + (outflowValueOpenPercentage / 100 * 90)}
+                    endAngle={360}
+                    manMode
+                    className="Gauge"
+                >
+                    <GaugeComponent x={ofx} y={ofy} radius={ofradius} startAngle={355.5} endAngle={360} manMode className="Gauge Amber" />
+                    <GaugeMarkerComponent
+                        value={outflowValueOpenPercentage}
+                        x={ofx}
+                        y={ofy}
+                        min={0}
+                        max={100}
+                        radius={ofradius}
+                        startAngle={270}
+                        endAngle={360}
+                        className="GreenLine"
+                        indicator
+                        multiplier={1}
+                    />
+                    <GaugeMarkerComponent
+                        value={25}
+                        x={ofx}
+                        y={ofy}
+                        min={0}
+                        max={100}
+                        radius={ofradius}
+                        startAngle={270}
+                        endAngle={360}
+                        className="Gauge"
+                        outer
+                        multiplier={1.1}
+                    />
+                    <GaugeMarkerComponent
+                        value={50}
+                        x={ofx}
+                        y={ofy}
+                        min={0}
+                        max={100}
+                        radius={ofradius}
+                        startAngle={270}
+                        endAngle={360}
+                        className="Gauge"
+                        outer
+                        multiplier={1.1}
+                    />
+                    <GaugeMarkerComponent
+                        value={75}
+                        x={ofx}
+                        y={ofy}
+                        min={0}
+                        max={100}
+                        radius={ofradius}
+                        startAngle={270}
+                        endAngle={360}
+                        className="Gauge"
+                        outer
+                        multiplier={1.1}
+                    />
+                </GaugeComponent>
+                <circle className="WhiteCircle" cx={448} cy={425} r={3} />
+            </g>
 
             {/* Packs */}
 
             <PackComponent id={1} x={47} y={495} />
-            <PackComponent id={2} x={448} y={495} />
+            <PackComponent id={2} x={478} y={495} />
 
         </EcamPage>
     );

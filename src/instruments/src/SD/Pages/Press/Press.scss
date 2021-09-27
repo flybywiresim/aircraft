@@ -70,6 +70,12 @@
         stroke-width: 2;
     }
 
+    .BackgroundLine {
+        stroke: $display-background !important;
+        stroke-width: 2;
+        fill: $display-background;
+    }
+
     .Show {
         display:block;
     }
@@ -89,4 +95,11 @@
         stroke-width: 2;
         fill: none;
     }
+
+    .WhiteCircle {
+        fill: $display-background;
+        stroke: $display-white;
+        stroke-width: 2;
+    }
+
 }

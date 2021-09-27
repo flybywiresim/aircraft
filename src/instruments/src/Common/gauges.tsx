@@ -210,12 +210,16 @@ type GaugeMarkerComponentType = {
     startAngle: number,
     endAngle: number,
     className: string,
-    showValue: boolean,
-    indicator: boolean,
+    showValue?: boolean,
+    indicator?: boolean,
+    outer?: boolean,
+    multiplier?: number,
 };
 
-const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator } : GaugeMarkerComponentType) => {
+const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator, outer, multiplier } : GaugeMarkerComponentType) => {
     const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
+
+    if (typeof multiplier === 'undefined') multiplier = 1.15;
 
     let start = {
         x: x + (dir.x * radius * 0.9),
@@ -226,12 +230,23 @@ const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle,
         y: y + (dir.y * radius),
     };
 
+    if (outer) {
+        start = {
+            x: x + (dir.x * radius),
+            y: y + (dir.y * radius),
+        };
+        end = {
+            x: x + (dir.x * radius * multiplier),
+            y: y + (dir.y * radius * multiplier),
+        };
+    }
+
     if (indicator) {
         start = { x, y };
 
         end = {
-            x: x + (dir.x * radius * 1.15),
-            y: y + (dir.y * radius * 1.15),
+            x: x + (dir.x * radius * multiplier),
+            y: y + (dir.y * radius * multiplier),
         };
     }
 
