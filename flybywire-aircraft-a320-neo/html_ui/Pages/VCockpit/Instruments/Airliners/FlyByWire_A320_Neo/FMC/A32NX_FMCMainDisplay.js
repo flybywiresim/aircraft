@@ -3206,7 +3206,7 @@ class FMCMainDisplay extends BaseAirliners {
         const totalWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         const blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
         this.zeroFuelWeight = totalWeight - blockFuel;
-        this.zeroFuelWeightMassCenter = SimVar.GetSimVarValue("CG PERCENT", "percent");
+        this.zeroFuelWeightMassCenter = getZfwcg().toFixed(1);
     }
 
     updateFuelVars() {

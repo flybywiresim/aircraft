@@ -31,7 +31,7 @@ class CDUFuelPredPage {
                 mcdu.sendDataToScratchpad(
                     (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
                     "/" +
-                    (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
+                    (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUFuelPredPage.ShowPage(mcdu);
             }
@@ -68,9 +68,9 @@ class CDUFuelPredPage {
                 zfwColor = "[color]cyan";
             }
             if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
-                zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
+                zfwCgCell = getZfwcg().toFixed(1);
             }
-            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
+            if (isFinite(mcdu.zeroFuelWeight) && isFinite(getZfwcg())) {
                 zfwColor = "[color]cyan";
             }
 

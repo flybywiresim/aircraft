@@ -250,7 +250,7 @@ const SimOptionsPage = () => {
                     </div>
 
                     <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">Boarding Rate</span>
+                        <span className="text-lg text-gray-300">Boarding Time</span>
                         <SelectGroup>
                             {boardingRateButtons.map((button) => (
                                 <SelectItem
