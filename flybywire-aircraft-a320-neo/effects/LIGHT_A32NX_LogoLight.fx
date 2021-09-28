@@ -20,7 +20,7 @@ Drag=0.0, 0.0
 X Particle Velocity=0.0, 0.0
 Y Particle Velocity=0.0, 0.0
 Z Particle Velocity=0.0, 0.0
-X Rotation=20.0, 20.0
+X Rotation=0.0, 0.0
 Y Rotation=0.0, 0.0
 Z Rotation=0.0, 0.0
 X Offset=0.0, 0.0
@@ -49,28 +49,25 @@ Face=1, 1, 1
 
 [ParticleAttributes.0]
 Blend Mode=2
-Texture=fx_0.png
 Bounce=0.0
-Color Start=179, 183, 255, 1
-Color End=179, 183, 255, 1
+Color Start=255, 255, 255, 1
+Color End=255, 255, 255, 1
 Jitter Distance=0.0
 Jitter Time=0.0
-uv1=0.0, 0.0
-uv2=1.0, 1.0
 X Scale Goal=0.0
 Y Scale Goal=0.0
 Z Scale Goal=0.0
-NearEndFade= 1.0
-NearFade= 3.0
-MinProjSize=0.2
+NearEndFade=1.0
+NearFade=3.0
+MinProjSize=0.0
 
 [LightAttributes.0]
 Type=spot
 Size=0.05
-Range=8
-Intensity=21
+Range=10
+Intensity=10
 Softness=0.0
-SpotInner=34
-SpotOuter=69
+SpotInner=40
+SpotOuter=55
 Volumetric=0
 ScatDir=0.0
