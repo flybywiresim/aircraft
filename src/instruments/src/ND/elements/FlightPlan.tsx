@@ -97,24 +97,24 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightP
 
 const VorMarker: FC<{ colour: string }> = ({ colour }) => {
     return (<>
-        <line x1={0} x2={0} y1={-16} y2={16} className={colour} strokeWidth={2} />
-        <line x1={-16} x2={16} y1={0} y2={0} className={colour} strokeWidth={2} />
+        <line x1={0} x2={0} y1={-15} y2={15} className={colour} strokeWidth={2} />
+        <line x1={-15} x2={15} y1={0} y2={0} className={colour} strokeWidth={2} />
     </>);
 };
 
 const VorDmeMarker: FC<{ colour: string }> = ({ colour }) => {
     return (<>
-        <circle r={8} className={colour} strokeWidth={2} />
-        <line x1={0} x2={0} y1={-16} y2={-8} className={colour} strokeWidth={2} />
-        <line x1={0} x2={0} y1={16} y2={8} className={colour} strokeWidth={2} />
-        <line x1={-16} x2={-8} y1={0} y2={0} className={colour} strokeWidth={2} />
-        <line x1={16} x2={8} y1={0} y2={0} className={colour} strokeWidth={2} />
+        <circle r={7} className={colour} strokeWidth={2} />
+        <line x1={0} x2={0} y1={-15} y2={-7} className={colour} strokeWidth={2} />
+        <line x1={0} x2={0} y1={15} y2={7} className={colour} strokeWidth={2} />
+        <line x1={-15} x2={-7} y1={0} y2={0} className={colour} strokeWidth={2} />
+        <line x1={15} x2={7} y1={0} y2={0} className={colour} strokeWidth={2} />
     </>);
 };
 
 const DmeMarker: FC<{ colour: string }> = ({ colour }) => {
     return (<>
-        <circle r={8} className={colour} strokeWidth={2} />
+        <circle r={7} className={colour} strokeWidth={2} />
     </>);
 };
 
@@ -126,16 +126,16 @@ const NdbMarker: FC<{ colour: string }> = ({ colour }) => {
 
 const WaypointMarker: FC<{ colour: string }> = ({ colour }) => {
     return (<>
-        <rect x={-4} y={-4} width={8} height={8} className={colour} strokeWidth={2} transform="rotate(45 0 0)" />
+        <rect x={-4.5} y={-4.5} width={9} height={9} className={colour} strokeWidth={2} transform="rotate(45 0 0)" />
     </>);
 };
 
 const AirportMarker: FC<{ colour: string }> = ({ colour }) => {
     return (<>
-        <line x1={0} x2={0} y1={-16} y2={16} className={colour} strokeWidth={2} />
-        <line x1={0} x2={0} y1={-16} y2={16} className={colour} strokeWidth={2} transform="rotate(45)" />
-        <line x1={-16} x2={16} y1={0} y2={0} className={colour} strokeWidth={2} />
-        <line x1={-16} x2={16} y1={0} y2={0} className={colour} strokeWidth={2} transform="rotate(45)" />
+        <line x1={0} x2={0} y1={-15} y2={15} className={colour} strokeWidth={2} />
+        <line x1={0} x2={0} y1={-15} y2={15} className={colour} strokeWidth={2} transform="rotate(45)" />
+        <line x1={-15} x2={15} y1={0} y2={0} className={colour} strokeWidth={2} />
+        <line x1={-15} x2={15} y1={0} y2={0} className={colour} strokeWidth={2} transform="rotate(45)" />
     </>);
 };
 
