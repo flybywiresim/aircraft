@@ -25,7 +25,7 @@ impl From<usize> for FlapsConf {
             3 => FlapsConf::Conf2,
             4 => FlapsConf::Conf3,
             5 => FlapsConf::ConfFull,
-            _ => panic!("Invalid configuation"),
+            i => panic!("Cannot convert from {} to FlapsConf.", i),
         }
     }
 }
@@ -121,50 +121,31 @@ impl SlatFlapControlComputer {
         &self,
         handle_transition: Option<(usize, usize)>,
     ) -> Option<FlapsConf> {
-        if let Some((from, to)) = handle_transition {
-            match from {
-                0 => match to {
-                    1 => {
-                        if self.indicated_airspeed.get::<knot>()
-                            <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS
-                        {
-                            Some(FlapsConf::Conf1F)
-                        } else {
-                            Some(FlapsConf::Conf1)
-                        }
-                    }
-                    0 => Some(FlapsConf::from(0)),
-                    _ => Some(FlapsConf::from(to + 1)),
-                },
-                1 => match to {
-                    1 => {
-                        if self.indicated_airspeed.get::<knot>()
-                            > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS
-                        {
-                            Some(FlapsConf::Conf1)
-                        } else {
-                            None
-                        }
-                    }
-                    0 => Some(FlapsConf::from(0)),
-                    _ => Some(FlapsConf::from(to + 1)),
-                },
-                _ => match to {
-                    1 => {
-                        if self.indicated_airspeed.get::<knot>()
-                            <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS
-                        {
-                            Some(FlapsConf::Conf1F)
-                        } else {
-                            Some(FlapsConf::Conf1)
-                        }
-                    }
-                    0 => Some(FlapsConf::from(0)),
-                    _ => Some(FlapsConf::from(to + 1)),
-                },
+        match handle_transition {
+            Some((0, 1))
+                if self.indicated_airspeed.get::<knot>()
+                    <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                Some(FlapsConf::Conf1F)
             }
-        } else {
-            None
+            Some((0, 1)) => Some(FlapsConf::Conf1),
+            Some((1, 1))
+                if self.indicated_airspeed.get::<knot>()
+                    > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                Some(FlapsConf::Conf1)
+            }
+            Some((1, 1)) => None,
+            Some((_, 1))
+                if self.indicated_airspeed.get::<knot>()
+                    <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                Some(FlapsConf::Conf1F)
+            }
+            Some((_, 1)) => Some(FlapsConf::Conf1),
+            Some((_, 0)) => Some(FlapsConf::from(0)),
+            Some((_, to)) => Some(FlapsConf::from(to + 1)),
+            None => None,
         }
     }
 
