@@ -54,5 +54,5 @@ export interface NdSymbol {
     type: NdSymbolTypeFlags,
     constraints?: string[],
     radials?: number[],
-    radius?: number,
+    radii?: number[],
 }

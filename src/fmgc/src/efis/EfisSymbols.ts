@@ -141,6 +141,20 @@ export class EfisSymbols {
                     symbol.length = symbol.length ?? oldSymbol.length;
                     symbol.location = symbol.location ?? oldSymbol.location;
                     symbol.type |= oldSymbol.type;
+                    if (oldSymbol.radials) {
+                        if (symbol.radials) {
+                            symbol.radials.push(...oldSymbol.radials);
+                        } else {
+                            symbol.radials = oldSymbol.radials;
+                        }
+                    }
+                    if (oldSymbol.radii) {
+                        if (symbol.radii) {
+                            symbol.radii.push(...oldSymbol.radii);
+                        } else {
+                            symbol.radii = oldSymbol.radii;
+                        }
+                    }
                 }
                 symbols.push(symbol);
             };
@@ -207,9 +221,9 @@ export class EfisSymbols {
                         databaseId: refFix.icao,
                         ident: refFix.ident,
                         location: refFix.infos.coordinates,
-                        type: NdSymbolTypeFlags.FixInfo | this.symbolTypeFlags(refFix),
+                        type: NdSymbolTypeFlags.FixInfo,
                         radials: fixInfo.getRadialTrueBearings(),
-                        radius: fixInfo.getRadiusValue(),
+                        radii: [fixInfo.getRadiusValue()],
                     });
                 }
             }
@@ -354,22 +368,6 @@ export class EfisSymbols {
         default:
             return 0;
         }
-    }
-
-    private symbolTypeFlags(fix: WayPoint): NdSymbolTypeFlags {
-        switch (fix.icao.charAt(0)) {
-        case 'V':
-            return this.vorDmeTypeFlag((fix.infos as VORInfo).type);
-        case 'N':
-            return NdSymbolTypeFlags.Ndb;
-        case 'A':
-            return NdSymbolTypeFlags.Airport;
-        case 'W':
-            return NdSymbolTypeFlags.Waypoint;
-        default:
-            break;
-        }
-        return 0;
     }
 
     private calculateEditArea(range: RangeSetting, mode: Mode): [number, number, number] {

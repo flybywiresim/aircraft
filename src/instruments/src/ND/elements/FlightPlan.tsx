@@ -70,7 +70,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightP
                     direction={symbol.direction}
                     constraints={symbol.constraints}
                     radials={symbol.radials}
-                    radius={symbol.radius}
+                    radii={symbol.radii}
                     mapParams={mapParams}
                 />
             ))}
@@ -184,20 +184,20 @@ interface SymbolMarkerProps {
     length?: number,
     direction?: number,
     radials?: number[],
-    radius?: number,
+    radii?: number[],
     mapParams: MapParameters,
 }
 
-const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraints, length, direction, radials, radius, mapParams }) => {
+const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraints, length, direction, radials, radii, mapParams }) => {
     let colour = "White";
     // todo airport as well if in flightplan
     if (type & NdSymbolTypeFlags.Runway) {
         colour = "White";
     } else if (type & NdSymbolTypeFlags.ActiveLegTermination) {
         colour = "White";
-    } else if ((type & NdSymbolTypeFlags.Tuned) || (type & NdSymbolTypeFlags.FixInfo)) {
+    } else if (type & NdSymbolTypeFlags.Tuned) {
         colour = "Cyan";
-    } else if (type & NdSymbolTypeFlags.FlightPlan) {
+    } else if (type & (NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
         colour = "Green";
     } else if (type & NdSymbolTypeFlags.EfisOption) {
         colour = "Magenta";
@@ -206,12 +206,14 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
     const elements: JSX.Element[] = [];
 
     if (type & NdSymbolTypeFlags.FixInfo) {
-        if (radius !== undefined) {
-            const radiusPx = radius * mapParams.nmToPx;
-            elements.push(<path d={`m-${radiusPx},0 a${radiusPx},${radiusPx} 0 1,0 ${radiusPx * 2},0 a${radiusPx},${radiusPx} 0 1,0 -${radiusPx * 2},0`} strokeWidth={2} className='Cyan' strokeDasharray="15 10" />);
+        if (radii !== undefined) {
+            for (const radius of radii) {
+                const radiusPx = radius * mapParams.nmToPx;
+                elements.push(<path d={`m-${radiusPx},0 a${radiusPx},${radiusPx} 0 1,0 ${radiusPx * 2},0 a${radiusPx},${radiusPx} 0 1,0 -${radiusPx * 2},0`} strokeWidth={2} className='Cyan' strokeDasharray="15 10" />);
+            }
         }
         if (radials !== undefined) {
-            for (let bearing of radials) {
+            for (const bearing of radials) {
                 const rotation = mapParams.rotation(bearing) * Math.PI / 180;
                 // TODO how long should a piece of string be?
                 const x2 = Math.sin(rotation) * 9000;
@@ -258,7 +260,7 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
     } else if (type & NdSymbolTypeFlags.Airport) {
         showIdent = true;
         elements.push(<AirportMarker colour={colour} />);
-    } else if (type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan)) {
+    } else if (type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
         showIdent = true;
         elements.push(<WaypointMarker colour={colour} />);
     }
