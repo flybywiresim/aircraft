@@ -252,20 +252,33 @@ class CDUAocOfpData {
             return;
         }
 
-        async function setTargetBaggage(numberOfPax) {
+        async function setTargetCargo(numberOfPax, simbriefCargo) {
+            const bagWeight = numberOfPax * 20;
+            const maxLoadInCargoHold = 7030; // from flight_model.cfg
+            let loadableCargoWeight = undefined;
 
-            async function fillBaggage(station, percent, bagsToFill) {
+            if (simbriefCargo == 0) {
+                loadableCargoWeight = bagWeight;
+            } else if ((simbriefCargo + bagWeight) > maxLoadInCargoHold) {
+                loadableCargoWeight = maxLoadInCargoHold;
+            } else {
+                loadableCargoWeight = simbriefCargo + bagWeight;
+            }
+            let remainingWeight = loadableCargoWeight;
 
-                const bags = Math.round(percent * bagsToFill);
-                station.bags = bags;
+            async function fillCargo(station, percent, loadableCargoWeight) {
 
-                await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(bags));
+                const weight = Math.round(percent * loadableCargoWeight);
+                station.load = weight;
+                remainingWeight -= weight;
+                await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(weight));
 
             }
 
-            await fillBaggage(cargoStations['fwdBag'], .430 , numberOfPax);
-            await fillBaggage(cargoStations['aftBag'], .370, numberOfPax);
-            await fillBaggage(cargoStations['aftBulk'], .200, numberOfPax);
+            await fillCargo(cargoStations['fwdBag'], .361 , loadableCargoWeight);
+            await fillCargo(cargoStations['aftBag'], .220, loadableCargoWeight);
+            await fillCargo(cargoStations['aftCont'], .251, loadableCargoWeight);
+            await fillCargo(cargoStations['aftBulk'], 1, remainingWeight);
             return;
         }
 
@@ -293,7 +306,33 @@ class CDUAocOfpData {
                 },
                 async (value) => {
                     await setTargetPax(value);
-                    await setTargetBaggage(value);
+                    await setTargetCargo(value, '');
+                    updateView();
+                }
+            );
+
+        }
+
+        function buildTotalCargoValue() {
+            const currentLoad = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur);
+            const loadTarget = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
+            const paxTarget = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
+            const suffix = loadTarget === currentLoad ? "[color]green" : "[color]cyan";
+
+            return new CDU_SingleValueField(mcdu,
+                "number",
+                `${(currentLoad / 1000).toFixed(1)} (${(loadTarget / 1000).toFixed(1)})`,
+                {
+                    emptyValue: "__[color]amber",
+                    clearable: true,
+                    suffix: suffix,
+                    maxLength: 4,
+                    minValue: 0.0,
+                    maxValue: 7.0,
+                },
+                async (value) => {
+                    await setTargetPax(paxTarget);
+                    await setTargetCargo(paxTarget, (value * 1000));
                     updateView();
                 }
             );
@@ -308,8 +347,8 @@ class CDUAocOfpData {
             [buildStationValue(paxStations.rows1_6), `${Math.round(NXUnits.kgToUser(getZfw()))}[color]green`],
             [paxStations.rows7_13.name, "ZFW CG"],
             [buildStationValue(paxStations.rows7_13), zfwcg],
-            [paxStations.rows14_21.name, "BAGGAGE"],
-            [buildStationValue(paxStations.rows14_21), `${Math.round(NXUnits.kgToUser(getTotalCargo()))}[color]green`],
+            [paxStations.rows14_21.name, "CARGO HOLD"],
+            [buildStationValue(paxStations.rows14_21), buildTotalCargoValue()],
             [paxStations.rows22_29.name, "OFP REQUEST"],
             [buildStationValue(paxStations.rows22_29), requestButton],
             ["", "BOARDING"],
@@ -325,7 +364,7 @@ class CDUAocOfpData {
                 setTargetPax(mcdu.simbrief.paxCount).then(() => {
                     updateView();
                 });
-                setTargetBaggage(mcdu.simbrief.paxCount).then(() => {
+                setTargetCargo(mcdu.simbrief.paxCount, parseInt(mcdu.simbrief.cargo)).then(() => {
                     updateView();
                 });
             });

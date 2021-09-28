@@ -372,6 +372,8 @@ class FMCMainDisplay extends BaseAirliners {
             originIcao: "",
             destinationIcao: "",
             blockFuel: "",
+            paxCount: "",
+            cargo: undefined,
             payload: undefined,
             estZfw: "",
             sendStatus: "READY",
