@@ -3,8 +3,8 @@ use systems::simulation::{
     UpdateContext, Write,
 };
 
+use std::panic;
 use uom::si::{angle::degree, f64::*, velocity::knot};
-
 //The different flaps configurations
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum FlapsConf {
@@ -24,7 +24,8 @@ impl From<usize> for FlapsConf {
             2 => FlapsConf::Conf1F,
             3 => FlapsConf::Conf2,
             4 => FlapsConf::Conf3,
-            _ => FlapsConf::ConfFull,
+            5 => FlapsConf::ConfFull,
+            _ => panic!("Invalid configuation"),
         }
     }
 }
@@ -32,35 +33,32 @@ impl From<usize> for FlapsConf {
 //A struct to read the handle position
 struct FlapsHandle {
     handle_position: usize,
-    old_handle_position: usize,
+    previous_handle_position: usize,
 }
 
 impl FlapsHandle {
     fn new() -> Self {
         Self {
             handle_position: 0,
-            old_handle_position: 0,
+            previous_handle_position: 0,
         }
     }
 
     fn signal_new_position(&self) -> Option<(usize, usize)> {
-        if self.handle_position == self.old_handle_position {
+        if self.handle_position == self.previous_handle_position {
             match self.handle_position {
                 1 => Some((1, 1)),
                 _ => None,
             }
         } else {
-            Some((self.old_handle_position, self.handle_position))
+            Some((self.previous_handle_position, self.handle_position))
         }
-    }
-
-    fn equilibrate_old_and_current(&mut self) {
-        self.old_handle_position = self.handle_position;
     }
 }
 
 impl SimulationElement for FlapsHandle {
     fn read(&mut self, reader: &mut SimulatorReader) {
+        self.previous_handle_position = self.handle_position;
         self.handle_position = reader.read("FLAPS_HANDLE_INDEX");
     }
 }
@@ -327,7 +325,6 @@ impl SlatFlapComplex {
     pub fn update(&mut self, context: &UpdateContext) {
         self.sfcc
             .update(context, self.flaps_handle.signal_new_position());
-        self.flaps_handle.equilibrate_old_and_current();
         self.flap_gear.update(
             context,
             self.sfcc.signal_flap_movement(self.flap_gear.current_angle),
