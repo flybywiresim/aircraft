@@ -56,11 +56,8 @@ export class FixInfo {
         if (magneticBearing !== undefined) {
             const trueBearing = Avionics.Utils.clampAngle(magneticBearing + Facilities.getMagVar(this.refFix.infos.coordinates));
             this.radials[index] = { magneticBearing, trueBearing };
-        } else if (index === 0 && this.radials[1] !== undefined) {
-            this.radials[0] = this.radials[1];
-            this.radials[1] = undefined;
         } else {
-            this.radials[index] = undefined;
+            this.radials.splice(index, 1);
         }
         // TODO calculate flight plan intercepts
         this.flightPlanManager._updateFlightPlanVersion();
