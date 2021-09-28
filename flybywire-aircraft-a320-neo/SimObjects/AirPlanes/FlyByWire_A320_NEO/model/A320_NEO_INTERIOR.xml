@@ -1254,6 +1254,21 @@
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
+                <!-- Sync strobe+beacon when used simultaneously -->
+                <!-- BEACON1 CIR:15 BUS:2,BEACON2 CIR:16 BUS:3,STROBE1 CIR:23 BUS:3,STROBE2 CIR:24 BUS:3,STROBE3 CIR:25 BUS:3 -->
+                <UseTemplate Name="FBW_Light_Sync">
+                    <SYNC_FREQUENCY>10</SYNC_FREQUENCY>
+                    <SYNC_CONDITION>(A:LIGHT BEACON, bool) (A:LIGHT POTENTIOMETER:24, percent) 0 &gt; and (L:LIGHTING_STROBE_0, number) 2 &lt; and</SYNC_CONDITION>
+                    <SYNC_REQUISITE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) and</SYNC_REQUISITE>
+                    <SYNC_TOGGLE_BUSES>
+                        15 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                        16 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                        23 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                        24 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                        25 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                    </SYNC_TOGGLE_BUSES>
+                </UseTemplate>
+
                 <Update Once="True">
                     (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 1 == (A:CABIN SEATBELTS ALERT SWITCH, bool) 0 == and if{
                       (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
@@ -1382,7 +1397,7 @@
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
-                <!-- LANDING LEFT -->
+                <!-- LDG LT LEFT -->
                 <UseTemplate Name="FBW_Airbus_LIGHTING_Switch_Light_Landing_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_LANDL</NODE_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_LANDL</ANIM_NAME>
@@ -1393,10 +1408,17 @@
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_ON</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_RETRACT</ANIMTIP_2>
                     <TYPE>Retractable</TYPE>
-
                 </UseTemplate>
 
-                <!-- LANDING RIGHT -->
+                <!-- LDG LT LEFT DELAY -->
+                <UseTemplate Name="FBW_LDGLT_Delay">
+                    <DELAY_TIME>7.7</DELAY_TIME>
+                    <DELAY_LT_INDEX>2</DELAY_LT_INDEX>
+                    <DELAY_CIRCUIT>18</DELAY_CIRCUIT>
+                    <DELAY_BUS>2</DELAY_BUS>
+                </UseTemplate>
+
+                <!-- LDG LT RIGHT -->
                 <UseTemplate Name="FBW_Airbus_LIGHTING_Switch_Light_Landing_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_LANDR</NODE_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_LANDR</ANIM_NAME>
@@ -1407,7 +1429,14 @@
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_R_ON</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_R_RETRACT</ANIMTIP_2>
                     <TYPE>Retractable</TYPE>
+                </UseTemplate>
 
+                <!-- LDG LT RIGHT DELAY -->
+                <UseTemplate Name="FBW_LDGLT_Delay">
+                    <DELAY_TIME>7.3</DELAY_TIME>
+                    <DELAY_LT_INDEX>3</DELAY_LT_INDEX>
+                    <DELAY_CIRCUIT>19</DELAY_CIRCUIT>
+                    <DELAY_BUS>3</DELAY_BUS>
                 </UseTemplate>
 
                 <!-- WING -->

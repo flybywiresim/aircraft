@@ -644,4 +644,95 @@
         </Component>
     </Template>
 
+
+    <!--
+    Template for syncing lights. Works by simultaneously toggling the light circuit buses temporary, given a condition.
+    Requires the lights in *.fx to be synced and timed properly to work, as this template only ensures a common timeline.
+
+    Main Parameters:
+            - SYNC_FREQUENCY        Default: 1          Speed of update loop, N per second.
+            - SYNC_TOGGLE_BUSES     <no default>        The buses for the lights that should be synced.
+            - SYNC_CONDITION        <no default>        The condition to trigger a sync. This is often two or more switches.
+            - SYNC_REQUISITE        <no default>        The required main buses for the circuits.
+    -->
+    <Template Name="FBW_Light_Sync">
+        <DefaultTemplateParameters>
+            <SYNC_FREQUENCY>1</SYNC_FREQUENCY>
+            <SYNC_TOGGLE_BUSES></SYNC_TOGGLE_BUSES>
+            <SYNC_CONDITION></SYNC_CONDITION>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Update">
+            <FREQUENCY>#SYNC_FREQUENCY#</FREQUENCY>
+            <UPDATE_CODE>
+                #SYNC_REQUISITE# if{
+                    #SYNC_CONDITION# if{
+                        (O:SYNC_BUS_TMPOFF, bool) 1 == if{
+                            #SYNC_TOGGLE_BUSES#
+                            0 (&gt;O:SYNC_BUS_TMPOFF, bool)
+                            1 (&gt;O:SYNC_BUS_SYNCED, bool)
+                        }
+                        (O:SYNC_BUS_SYNCED, bool) 0 == if{
+                            #SYNC_TOGGLE_BUSES#
+                            1 (&gt;O:SYNC_BUS_TMPOFF, bool)
+                        }
+                    } els{
+                        0 (&gt;O:SYNC_BUS_SYNCED, bool)
+                    }
+                }
+            </UPDATE_CODE>
+        </UseTemplate>
+    </Template>
+
+
+    <!--
+    Template for delaying LDG LT and sync them with their animation. Extension/extraction of LDG LT is about ~7.5 seconds.
+    Works by disabling the LDG LT bus until landing light is fully extended.
+
+    Main Parameters:
+            - DELAY_FREQUENCY       Default: 10         Speed of update loop, N per second.
+            - DELAY_TIME            <no default>        Delay of the bus, ~7.5 sec for LDG LT.
+            - DELAY_LT_INDEX        <no default>        The LDG LT index.
+            - DELAY_CIRCUIT         <no default>        The LDG LT circuit.
+            - DELAY_BUS             <no default>        The LDG LT bus.
+    -->
+    <Template Name="FBW_LDGLT_Delay">
+        <DefaultTemplateParameters>
+            <DELAY_FREQUENCY>10</DELAY_FREQUENCY>
+            <DELAY_TIME></DELAY_TIME>
+            <DELAY_LT_INDEX></DELAY_LT_INDEX>
+            <DELAY_CIRCUIT></DELAY_CIRCUIT>
+            <DELAY_BUS></DELAY_BUS>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Update">
+            <FREQUENCY>#DELAY_FREQUENCY#</FREQUENCY>
+            <UPDATE_CODE>
+                (L:LIGHTING_LANDING_#DELAY_LT_INDEX#, bool) 1 == if{
+                    (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) #DELAY_TIME# #DELAY_FREQUENCY# * &lt; if{
+                        (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) 1 + (&gt;O:DELAY_TIMER_#DELAY_LT_INDEX#, number)
+                    }
+                    #DELAY_BUS# (>A:BUS LOOKUP INDEX, Number) (A:CIRCUIT CONNECTION ON:#DELAY_CIRCUIT#, Bool) if{
+                        #DELAY_CIRCUIT# #DELAY_BUS# (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                    }
+                }
+                (L:LIGHTING_LANDING_#DELAY_LT_INDEX#, bool) 2 == if{
+                    (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) 0 &gt; if{
+                        (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) 1 - (&gt;O:DELAY_TIMER_#DELAY_LT_INDEX#, number)
+                    }
+                }
+                (L:LIGHTING_LANDING_#DELAY_LT_INDEX#, bool) 0 == if{
+                    (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) #DELAY_TIME# #DELAY_FREQUENCY# * &lt; if{
+                        (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) 1 + (&gt;O:DELAY_TIMER_#DELAY_LT_INDEX#, number)
+                    }
+                    (O:DELAY_TIMER_#DELAY_LT_INDEX#, number) #DELAY_TIME# #DELAY_FREQUENCY# * == if{
+                        #DELAY_BUS# (>A:BUS LOOKUP INDEX, Number) (A:CIRCUIT CONNECTION ON:#DELAY_CIRCUIT#, Bool) ! if{
+                            #DELAY_CIRCUIT# #DELAY_BUS# (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+                        }
+                    }
+                }
+            </UPDATE_CODE>
+        </UseTemplate>
+    </Template>
+
 </ModelBehaviors>
