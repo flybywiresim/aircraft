@@ -790,7 +790,6 @@ mod tests {
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
     }
 
-
     #[test]
     fn flaps_test_irregular_handle_transition_init_pos_1() {
         let mut test_bed = test_bed_with()
@@ -993,9 +992,8 @@ mod tests {
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
     }
 
-
     //The tests below test the movement of the
-    //flaps/slats. 
+    //flaps/slats.
     #[test]
     fn flaps_test_movement_0_to_1f() {
         let angle_delta = 0.01;
