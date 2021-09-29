@@ -106,7 +106,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.screenIndex}_FILTER_ACTIVE`, "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
-        this.tcasState = SimVar.GetSimVarValue("L:A32NX_TCAS_STATE", "Enum");
 
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector("#MfdEngTest");
@@ -188,7 +187,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         //TCAS
         this.map.instrument.TCASManager.update(deltaTime);
 
-        const tcasTaOnly = Simvar.GetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool");
+        const tcasTaOnly = SimVar.GetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool");
 
         if (tcasTaOnly) {
             document.querySelector("#rect_TAOnly").setAttribute("visibility", "visible");
@@ -327,26 +326,31 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + this.screenIndex, "number");
         const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_" + this.screenIndex, "number");
         const shouldShowWeather = (this.map && !this.map.planMode) && wxRadarOn && wxRadarMode != 3;
+        const tcasState = SimVar.GetSimVarValue("L:A32NX_TCAS_STATE", "Enum");
 
-        if (this.tcasState < 1 || (this.tcasState >= 1 && mapMode !== 4)) {
+        if (tcasState < 1 || (tcasState >= 1 && mapMode !== 4)) {
             this.tcasChangeModeMask.style.display = "none";
-        } else if (this.tcasState === 2 && mapMode === 4) {
+        } else if (tcasState === 2 && mapMode === 4) {
+            console.log("ND: TCAS CHANGE MODE");
             this.tcasChangeModeMask.style.display = "block";
             this.tcasChangeModeMask.classList.add("dangerText");
             this.tcasChangeModeMask.classList.remove("warningText");
-        } else if (this.tcasState === 1 && mapMode === 4) {
+        } else if (tcasState === 1 && mapMode === 4) {
+            console.log("ND: TCAS CHANGE MODE");
             this.tcasChangeModeMask.style.display = "block";
             this.tcasChangeModeMask.classList.add("warningText");
             this.tcasChangeModeMask.classList.remove("dangerText");
         }
 
-        if (this.tcasState < 1 || (this.tcasState >= 1 && (mapRange <= 2 || mapMode === 4))) {
+        if (tcasState < 1 || (tcasState >= 1 && (mapRange <= 2 || mapMode === 4))) {
             this.tcasReduceRangeMask.style.display = "none";
-        } else if (this.tcasState === 2 && mapRange > 2) {
+        } else if (tcasState === 2 && mapRange > 2) {
+            console.log("ND: TCAS CHANGE RANGE");
             this.tcasReduceRangeMask.style.display = "block";
             this.tcasReduceRangeMask.classList.add("dangerText");
             this.tcasReduceRangeMask.classList.remove("warningText");
-        } else if (this.tcasState === 1 && mapRange > 2) {
+        } else if (tcasState === 1 && mapRange > 2) {
+            console.log("ND: TCAS CHANGE RANGE");
             this.tcasReduceRangeMask.style.display = "block";
             this.tcasReduceRangeMask.classList.add("warningText");
             this.tcasReduceRangeMask.classList.remove("dangerText");
@@ -383,7 +387,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.hideCompassMask();
             }
             // This animation should play only when MODE CHANGE nob is used
-            if (this.modeChangeMask && this._hasMapModeChanged() && !(this.tcasState >= 1 && (mapRange > 2 || mapMode === 4))) {
+            if (this.modeChangeMask && this._hasMapModeChanged() && !(tcasState >= 1 && (mapRange > 2 || mapMode === 4))) {
                 this.modeChangeMask.style.display = "block";
                 this.modeChangeTimer = 0.5;
             }
@@ -424,7 +428,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.setZoom(this.mapRange);
             this.compass.svg.mapRange = this.map.zoomRanges[this.mapRange];
 
-            if (this.rangeChangeMask && !(this.tcasState >= 1 && (mapRange > 2 || mapMode === 4))) {
+            if (this.rangeChangeMask && !(tcasState >= 1 && (mapRange > 2 || mapMode === 4))) {
                 this.rangeChangeMask.style.display = "block";
                 this.rangeChangeTimer = 0.5;
             }

@@ -171,11 +171,7 @@ a320-neo-mfd-element #Mainframe #TcasChangeModeMask {
   height: 100%;
   display: none;
   position: absolute;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(4, 4, 5, 1) 0%,
-    rgba(4, 4, 5, 1) 100%
-  );
+  z-index: 999;
 }
 a320-neo-mfd-element #Mainframe #TcasReduceRangeMask {
   top: 0%;
@@ -184,11 +180,7 @@ a320-neo-mfd-element #Mainframe #TcasReduceRangeMask {
   height: 100%;
   display: none;
   position: absolute;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(4, 4, 5, 1) 0%,
-    rgba(4, 4, 5, 1) 100%
-  );
+  z-index:999;
 }
 a320-neo-mfd-element #Mainframe #TopBox {
   top: 3%;

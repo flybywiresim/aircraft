@@ -87,6 +87,15 @@ const tcasState = {
     RA: 2
 };
 
+const inhibit = {
+    none: 0,
+    all_ra_aural_ta: 1,
+    all_ra: 2,
+    all_climb_ra: 3,
+    all_descend_ra: 4,
+    all_increase_descend_ra: 5
+};
+
 /**
  *  callout: warning annunciation to be made
  *  sense: up (climb) or down (descend)
@@ -267,7 +276,7 @@ const raVariants = {
         sense: raSense.down,
         type: raType.corrective,
         vs: {
-            green: [-300, 0],
+            green: [-400, 0],
             red: [0, CONSTANTS.MAX_VS]
         }
     },
@@ -276,7 +285,7 @@ const raVariants = {
         sense: raSense.up,
         type: raType.corrective,
         vs: {
-            green: [0, 300],
+            green: [0, 400],
             red: [CONSTANTS.MIN_VS, 0]
         }
     },
@@ -344,6 +353,9 @@ class A32NX_TCAS_Manager {
         // Timekeeping
         this.secondsSinceLastTA = 100;
         this.secondsSinceLastRA = 100;
+
+        // Inhibitions
+        this.inhibitions = inhibit.none;
 
         SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 0);
         console.log("TCAS: in constructor ending");
@@ -499,10 +511,32 @@ class A32NX_TCAS_Manager {
             this.followupRaTimer = 0;
         }
 
+        this.updateInhibitions(altitude, radioAltitude);
         this.updateAdvisoryState(_deltaTime, ra);
     }
 
-    // This is mis-labeling TA's and proximity's as RA's
+    updateInhibitions(selfAlt, selfRadioAlt) {
+        if (selfRadioAlt < 500) {
+            this.inhibitions = inhibit.all_ra_aural_ta;
+        } else if (selfRadioAlt < 1000) {
+            this.inhibitions = inhibit.all_ra;
+        } else if (selfRadioAlt < 1100) {
+            this.inhibitions = inhibit.all_descend_ra;
+        } else if (selfRadioAlt < 1550) {
+            this.inhibitions = inhibit.all_increase_descend_ra;
+        } else if (selfAlt > 39000) {
+            this.inhibitions = inhibit.all_climb_ra;
+        } else {
+            this.inhibitions = inhibit.none;
+        }
+
+        if (selfRadioAlt < 1000 && !SimVar.GetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool")) {
+            SimVar.SetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool", true);
+        } else if (selfRadioAlt >= 1000 && SimVar.GetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool")) {
+            SimVar.SetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool", false);
+        }
+    }
+
     updateIntrusionLevel(traffic, verticalIntrusionLevel, rangeIntrusionLevel) {
         const _desiredIntrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
         // Minimum RA duration is 5 seconds - don't remove it before then
@@ -529,7 +563,7 @@ class A32NX_TCAS_Manager {
 
         switch (this.advisoryState) {
             case tcasState.TA:
-                if (raThreatCount > 0) {
+                if (raThreatCount > 0 && (this.inhibitions !== inhibit.all_ra && this.inhibitions !== inhibit.all_ra_aural_ta)) {
                     this.advisoryState = tcasState.RA;
                     SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 2);
                     console.log("TCAS: TA UPGRADED TO RA");
@@ -553,13 +587,12 @@ class A32NX_TCAS_Manager {
                         SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 0);
                     }
                     console.log("TCAS: CLEAR OF CONFLICT");
-                    // Coherent.call("PLAY_INSTRUMENT_SOUND", "clear_of_conflict");
                     this.soundManager.tryPlaySound(soundList.clear_of_conflict, true);
                     this.activeRA = null;
                 }
                 break;
             default:
-                if (raThreatCount > 0) {
+                if (raThreatCount > 0 && (this.inhibitions !== inhibit.all_ra && this.inhibitions !== inhibit.all_ra_aural_ta)) {
                     this.advisoryState = tcasState.RA;
                     SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 2);
                 } else {
@@ -567,9 +600,8 @@ class A32NX_TCAS_Manager {
                         this.advisoryState = tcasState.TA;
                         SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 1);
                         console.log("TCAS: TA GENERATED");
-                        if (this.secondsSinceLastTA >= 5) {
+                        if (this.secondsSinceLastTA >= 5 && this.inhibitions !== inhibit.all_ra_aural_ta) {
                             console.log("TCAS: TA GENERATED 2");
-                            // Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
                             this.soundManager.tryPlaySound(soundList.traffic_traffic, true);
                         }
                     } else {
@@ -591,17 +623,16 @@ class A32NX_TCAS_Manager {
             if (!this.activeRA.hasBeenAnnounced) {
                 console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
                 this.soundManager.tryPlaySound(this.activeRA.info.callout.sound, true);
-                let VSpeedsUnpacked;
-                if (this.activeRA.info.type === raType.preventative) {
-                    VSpeedsUnpacked = this.activeRA.info.vs.red;
-                } else {
-                    VSpeedsUnpacked = this.activeRA.info.vs.red.concat(this.activeRA.info.vs.green);
+
+                const isCorrective = this.activeRA.info.type === raType.corrective;
+                SimVar.SetSimVarValue("L:A32NX_TCAS_RA_CORRECTIVE", "Boolean", isCorrective);
+                SimVar.SetSimVarValue("L:A32NX_TCAS_VSPEED_RED:1", "Number", this.activeRA.info.vs.red[0]);
+                SimVar.SetSimVarValue("L:A32NX_TCAS_VSPEED_RED:2", "Number", this.activeRA.info.vs.red[1]);
+                if (isCorrective) {
+                    SimVar.SetSimVarValue("L:A32NX_TCAS_VSPEED_GREEN:1", "Number", this.activeRA.info.vs.green[0]);
+                    SimVar.SetSimVarValue("L:A32NX_TCAS_VSPEED_GREEN:2", "Number", this.activeRA.info.vs.green[1]);
                 }
-                VSpeedsUnpacked.forEach((v, i, a) => {
-                    a[i] = (v / 50);
-                });
-                const VSpeedsPacked = BitPacking.pack8(VSpeedsUnpacked);
-                SimVar.SetSimVarValue("L:A32NX_TCAS_VSPEEDS_PACKED", "Number", VSpeedsPacked);
+
                 this.activeRA.hasBeenAnnounced = true;
             }
         }
@@ -862,14 +893,12 @@ class A32NX_TCAS_Manager {
                         console.log("StrengthenRAInfo: level 0 to 1: ", strengthenRaInfo);
                     } else if ((previousRA.info.callout.id === callouts.climb.id
                         || previousRA.info.callout.id === callouts.climb_cross.id
-                        || previousRA.info.callout.id === callouts.climb_maintain_vs.id
-                        || previousRA.info.callout.id === callouts.climb_maintain_vs_crossing.id
                         || previousRA.info.callout.id === callouts.climb_now.id
                         || previousRA.info.callout.id === callouts.descend.id
                         || previousRA.info.callout.id === callouts.descend_cross.id
-                        || previousRA.info.callout.id === callouts.descend_maintain_vs.id
-                        || previousRA.info.callout.id === callouts.descend_maintain_vs_crossing.id
-                        || previousRA.info.callout.id === callouts.descend_now.id)
+                        || previousRA.info.callout.id === callouts.descend_now.id
+                        || previousRA.info.callout.id === callouts.maintain_vs.id
+                        || previousRA.info.callout.id === callouts.maintain_vs_cross.id)
                         && ((previousRA.info.sense === raSense.up && selfVS >= 1500) || (previousRA.info.sense = raSense.down && selfVS <= -1500))) {
                         strength = 2;
                         [increaseSep, increaseCross] = this.getVerticalSep(
