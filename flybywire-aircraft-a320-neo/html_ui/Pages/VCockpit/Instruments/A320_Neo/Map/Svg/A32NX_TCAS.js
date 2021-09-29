@@ -12,38 +12,63 @@ const CONSTANTS = {
     FOLLOWUP_ACCEL: 10.62 // 0.33G in f/s^2
 };
 
-// const taraCallouts = {
-//     climb: "climb_climb",
-//     climb_cross: "climb_crossing_climb",
-//     climb_increase: "increase_climb",
-//     climb_now: "climb_climb_now",
-//     clear_of_conflict: "clear_of_conflict",
-//     descend: "descend_descend",
-//     descend_cross: "descend_crossing_descend",
-//     descend_increase: "increase_descent",
-//     descend_now: "descend_descend_now",
-//     monitor_vs: "monitor_vs",
-//     maintain_vs: "maint_vs_maint",
-//     maintain_vs_cross: "maint_vs_crossing_maint",
-//     level_off: "level_off_level_off",
-//     traffic: "traffic_traffic"
-// };
-
-const taraCallouts = {
-    climb: soundList.climb_climb,
-    climb_cross: soundList.climb_crossing_climb,
-    climb_increase: soundList.increase_climb,
-    climb_now: soundList.climb_climb_now,
-    clear_of_conflict: soundList.clear_of_conflict,
-    descend: soundList.descend_descend,
-    descend_cross: soundList.descend_crossing_descend,
-    descend_increase: soundList.increase_descent,
-    descend_now: soundList.descend_descend_now,
-    monitor_vs: soundList.monitor_vs,
-    maintain_vs: soundList.maint_vs_maint,
-    maintain_vs_cross: soundList.maint_vs_crossing_maint,
-    level_off: soundList.level_off_level_off,
-    traffic: soundList.traffic_traffic
+const callouts = {
+    climb: {
+        id: 0,
+        sound: soundList.climb_climb
+    },
+    climb_cross: {
+        id: 1,
+        sound: soundList.climb_crossing_climb
+    },
+    climb_increase: {
+        id: 2,
+        sound: soundList.increase_climb
+    },
+    climb_now: {
+        id: 3,
+        sound: soundList.climb_climb_now
+    },
+    clear_of_conflict: {
+        id: 4,
+        sound: soundList.clear_of_conflict
+    },
+    descend: {
+        id: 5,
+        sound: soundList.descend_descend
+    },
+    descend_cross: {
+        id: 6,
+        sound: soundList.descend_crossing_descend
+    },
+    descend_increase: {
+        id: 7,
+        sound: soundList.increase_descent
+    },
+    descend_now: {
+        id: 8,
+        sound: soundList.descend_descend_now
+    },
+    monitor_vs: {
+        id: 9,
+        sound: soundList.monitor_vs
+    },
+    maintain_vs: {
+        id: 10,
+        sound: soundList.maint_vs_maint
+    },
+    maintain_vs_cross: {
+        id: 11,
+        sound: soundList.maint_vs_crossing_maint
+    },
+    level_off: {
+        id: 12,
+        sound: soundList.level_off_level_off
+    },
+    traffic: {
+        id: 13,
+        sound: soundList.traffic_traffic
+    }
 };
 
 const raSense = {
@@ -71,20 +96,8 @@ const tcasState = {
 const raVariants = {
     // PREVENTIVE RA's
     // TODO: don't display green band as green on PFD for preventative
-    monitor_vs_level: {
-        callout: taraCallouts.monitor_vs,
-        sense: raSense.level,
-        type: raType.preventative,
-        vs: {
-            green: [-100, 100],
-            red: [
-                [CONSTANTS.MIN_VS, -100],
-                [100, CONSTANTS.MAX_VS]
-            ]
-        }
-    },
     monitor_vs_climb_0: {
-        callout: taraCallouts.monitor_vs,
+        callout: callouts.monitor_vs,
         sense: raSense.up,
         type: raType.preventative,
         vs: {
@@ -95,7 +108,7 @@ const raVariants = {
         }
     },
     monitor_vs_climb_500: {
-        callout: taraCallouts.monitor_vs,
+        callout: callouts.monitor_vs,
         sense: raSense.up,
         type: raType.preventative,
         vs: {
@@ -106,7 +119,7 @@ const raVariants = {
         }
     },
     monitor_vs_climb_1000: {
-        callout: taraCallouts.monitor_vs,
+        callout: callouts.monitor_vs,
         sense: raSense.up,
         type: raType.preventative,
         vs: {
@@ -117,7 +130,7 @@ const raVariants = {
         }
     },
     monitor_vs_climb_2000: {
-        callout: taraCallouts.monitor_vs,
+        callout: callouts.monitor_vs,
         sense: raSense.up,
         type: raType.preventative,
         vs: {
@@ -129,7 +142,7 @@ const raVariants = {
     },
 
     monitor_vs_descend_0: {
-        callout: taraCallouts.monitor_vs,
+        callout: callouts.monitor_vs,
         sense: raSense.down,
         type: raType.preventative,
         vs: {
@@ -140,7 +153,7 @@ const raVariants = {
         }
     },
     monitor_vs_descend_500: {
-        callout: taraCallouts.monitor_vs,
+        callout: callouts.monitor_vs,
         sense: raSense.down,
         type: raType.preventative,
         vs: {
@@ -151,7 +164,7 @@ const raVariants = {
         }
     },
     monitor_vs_descend_1000: {
-        callout: taraCallouts.monitor_vs,
+        callout: callouts.monitor_vs,
         sense: raSense.down,
         type: raType.preventative,
         vs: {
@@ -162,7 +175,7 @@ const raVariants = {
         }
     },
     monitor_vs_descend_2000: {
-        callout: taraCallouts.monitor_vs,
+        callout: callouts.monitor_vs,
         sense: raSense.down,
         type: raType.preventative,
         vs: {
@@ -175,7 +188,7 @@ const raVariants = {
     // CORRECTIVE RA's
     // CLIMB
     climb: {
-        callout: taraCallouts.climb,
+        callout: callouts.climb,
         sense: raSense.up,
         type: raType.corrective,
         vs: {
@@ -186,7 +199,7 @@ const raVariants = {
         }
     },
     climb_cross: {
-        callout: taraCallouts.climb_cross,
+        callout: callouts.climb_cross,
         sense: raSense.up,
         type: raType.corrective,
         vs: {
@@ -197,7 +210,7 @@ const raVariants = {
         }
     },
     climb_increase: {
-        callout: taraCallouts.climb_increase,
+        callout: callouts.climb_increase,
         sense: raSense.up,
         type: raType.corrective,
         vs: {
@@ -208,7 +221,7 @@ const raVariants = {
         }
     },
     climb_now: {
-        callout: taraCallouts.climb_now,
+        callout: callouts.climb_now,
         sense: raSense.up,
         type: raType.corrective,
         vs: {
@@ -221,7 +234,7 @@ const raVariants = {
     // CORRECTIVE RA's
     // DESCEND
     descend: {
-        callout: taraCallouts.descend,
+        callout: callouts.descend,
         sense: raSense.down,
         type: raType.corrective,
         vs: {
@@ -232,7 +245,7 @@ const raVariants = {
         }
     },
     descend_cross: {
-        callout: taraCallouts.descend_cross,
+        callout: callouts.descend_cross,
         sense: raSense.down,
         type: raType.corrective,
         vs: {
@@ -243,7 +256,7 @@ const raVariants = {
         }
     },
     descend_increase: {
-        callout: taraCallouts.descend_increase,
+        callout: callouts.descend_increase,
         sense: raSense.down,
         type: raType.corrective,
         vs: {
@@ -254,7 +267,7 @@ const raVariants = {
         }
     },
     descend_now: {
-        callout: taraCallouts.descend_now,
+        callout: callouts.descend_now,
         sense: raSense.down,
         type: raType.corrective,
         vs: {
@@ -267,7 +280,7 @@ const raVariants = {
     // CORRECTIVE RA's
     // LEVEL OFF
     level_off_250_both: {
-        callout: taraCallouts.level_off,
+        callout: callouts.level_off,
         sense: raSense.up,
         type: raType.corrective,
         vs: {
@@ -279,7 +292,7 @@ const raVariants = {
         }
     },
     level_off_300_below: {
-        callout: taraCallouts.level_off,
+        callout: callouts.level_off,
         sense: raSense.down,
         type: raType.corrective,
         vs: {
@@ -291,7 +304,7 @@ const raVariants = {
         }
     },
     level_off_300_above: {
-        callout: taraCallouts.level_off,
+        callout: callouts.level_off,
         sense: raSense.up,
         type: raType.corrective,
         vs: {
@@ -305,7 +318,7 @@ const raVariants = {
     // CORRECTIVE RA's
     // MAINTAIN VS, CLIMB
     climb_maintain_vs: {
-        callout: taraCallouts.maintain_vs,
+        callout: callouts.maintain_vs,
         sense: raSense.up,
         type: raType.corrective,
         vs: {
@@ -317,7 +330,7 @@ const raVariants = {
         }
     },
     climb_maintain_vs_crossing: {
-        callout: taraCallouts.maintain_vs,
+        callout: callouts.maintain_vs,
         sense: raSense.up,
         type: raType.corrective,
         vs: {
@@ -331,7 +344,7 @@ const raVariants = {
     // CORRECTIVE RA's
     // MAINTAIN VS, DESCEND
     descend_maintain_vs: {
-        callout: taraCallouts.maintain_vs,
+        callout: callouts.maintain_vs,
         sense: raSense.down,
         type: raType.corrective,
         vs: {
@@ -343,7 +356,7 @@ const raVariants = {
         }
     },
     descend_maintain_vs_crossing: {
-        callout: taraCallouts.maintain_vs,
+        callout: callouts.maintain_vs,
         sense: raSense.down,
         type: raType.corrective,
         vs: {
@@ -616,8 +629,7 @@ class A32NX_TCAS_Manager {
             this.activeRA.secondsSinceStart += _deltaTime / 1000;
             if (!this.activeRA.hasBeenAnnounced) {
                 console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
-                // Coherent.call("PLAY_INSTRUMENT_SOUND", this.activeRA.info.callout);
-                this.soundManager.tryPlaySound(this.activeRA.info.callout, true);
+                this.soundManager.tryPlaySound(this.activeRA.info.callout.sound, true);
                 this.activeRA.hasBeenAnnounced = true;
             }
         }
@@ -841,8 +853,8 @@ class A32NX_TCAS_Manager {
                 //   & our previous RA wasn't a monitor VS or level off,
                 // THEN issue a level-off weakening RA
                 if (previousRA.secondsSinceStart >= 10
-                    && previousRA.info.callout !== taraCallouts.level_off
-                    && previousRA.info.callout !== taraCallouts.monitor_vs) {
+                    && previousRA.info.callout.id !== callouts.level_off.id
+                    && previousRA.info.callout.id !== callouts.monitor_vs.id) {
                     ra.info = (previousRA.info.sense === raSense.up) ? raVariants.level_off_300_above : raVariants.level_off_300_below;
                 } else {
                     // Continue with same RA
@@ -859,8 +871,8 @@ class A32NX_TCAS_Manager {
                     let increaseCross = null;
                     let strength = 0;
 
-                    if (previousRA.info.callout === taraCallouts.level_off
-                        || previousRA.info.callout === taraCallouts.monitor_vs) {
+                    if (previousRA.info.callout.id === callouts.level_off.id
+                        || previousRA.info.callout.id === callouts.monitor_vs.id) {
                         strength = 1;
                         [increaseSep, increaseCross] = this.getVerticalSep(
                             sense,
@@ -877,16 +889,16 @@ class A32NX_TCAS_Manager {
                             strengthenRaInfo = (sense === raSense.up) ? raVariants.climb : raVariants.descend;
                         }
                         console.log("StrengthenRAInfo: level 0 to 1: ", strengthenRaInfo);
-                    } else if ((previousRA.info.callout === taraCallouts.climb
-                        || previousRA.info.callout === taraCallouts.climb_cross
-                        || previousRA.info.callout === taraCallouts.climb_maintain_vs
-                        || previousRA.info.callout === taraCallouts.climb_maintain_vs_crossing
-                        || previousRA.info.callout === taraCallouts.climb_now
-                        || previousRA.info.callout === taraCallouts.descend
-                        || previousRA.info.callout === taraCallouts.descend_cross
-                        || previousRA.info.callout === taraCallouts.descend_maintain_vs
-                        || previousRA.info.callout === taraCallouts.descend_maintain_vs_crossing
-                        || previousRA.info.callout === taraCallouts.descend_now)
+                    } else if ((previousRA.info.callout.id === callouts.climb.id
+                        || previousRA.info.callout.id === callouts.climb_cross.id
+                        || previousRA.info.callout.id === callouts.climb_maintain_vs.id
+                        || previousRA.info.callout.id === callouts.climb_maintain_vs_crossing.id
+                        || previousRA.info.callout.id === callouts.climb_now.id
+                        || previousRA.info.callout.id === callouts.descend.id
+                        || previousRA.info.callout.id === callouts.descend_cross.id
+                        || previousRA.info.callout.id === callouts.descend_maintain_vs.id
+                        || previousRA.info.callout.id === callouts.descend_maintain_vs_crossing.id
+                        || previousRA.info.callout.id === callouts.descend_now.id)
                         && ((previousRA.info.sense === raSense.up && selfVS >= 1500) || (previousRA.info.sense = raSense.down && selfVS <= -1500))) {
                         strength = 2;
                         [increaseSep, increaseCross] = this.getVerticalSep(
