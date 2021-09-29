@@ -153,6 +153,7 @@ class CDUAocOfpData {
                 SimVar.GetSimVarValue('GENERAL ENG COMBUSTION:2', 'bool');
 
             if (gs < 1 && onGround && currentBlockFuel && !oneEngineRunning) {
+                await SimVar.SetSimVarValue(`L:A32NX_REFUEL_STARTED_BY_USR`, "Bool", true);
                 loadFuel(mcdu, updateView);
 
                 updateView();
@@ -362,6 +363,7 @@ async function loadFuel(mcdu, updateView) {
     mcdu.updateFuelVars();
 
     mcdu.aocWeight.loading = false;
+    await SimVar.SetSimVarValue(`L:A32NX_REFUEL_STARTED_BY_USR`, "Bool", false);
     updateView();
 }
 
