@@ -75,7 +75,7 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
             <Overlay rangeSetting={rangeSetting} />
 
-            {adirsAlign && (
+            {adirsAlign && !mapHidden && (
                 <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
             )}
 
