@@ -665,7 +665,7 @@ class A32NX_TCAS_Manager {
                         aircraft = new A32NX_TCAS_Airplane(traffic.uId.toFixed(0), traffic.lat, traffic.lon, traffic.alt * 3.281, traffic.heading, lat, lon, altitude);
                         this.TrafficAircraft.push(aircraft);
                     } else {
-                        aircraft.update(localDeltaTime, traffic.lat, traffic.lon, traffic.alt * 3.281, traffic.heading, lat, lon, altitude, vertSpeed, TaRaDMOD[1]);
+                        aircraft.update(localDeltaTime, traffic.lat, traffic.lon, traffic.alt * 3.281, traffic.heading, lat, lon, altitude, vertSpeed, TaRaDMOD);
                     }
                     aircraft.alive = true;
                 }
@@ -717,11 +717,11 @@ class A32NX_TCAS_Manager {
             if (traffic.RaTAU < TaRaTau[1] || traffic.slantDistance < TaRaDMOD[1]) {
                 rangeIntrusionLevel = 3;
             } else if (traffic.TaTAU < TaRaTau[0] || traffic.slantDistance < TaRaDMOD[0]) {
-                console.log("TCAS: RANGE INTRUSION TA!");
+                // console.log("TCAS: RANGE INTRUSION TA!");
                 rangeIntrusionLevel = 2;
             } else if (horizontalDistance < 6) {
-                console.log("TAU: ", traffic.TaTAU, "; Slant distance: ", traffic.slantDistance);
-                console.log("Desired TAU: ", TaRaTau[0], "; Desired DMOD: ", TaRaDMOD[0]);
+                // console.log("TAU: ", traffic.TaTAU, "; Slant distance: ", traffic.slantDistance);
+                // console.log("Desired TAU: ", TaRaTau[0], "; Desired DMOD: ", TaRaDMOD[0]);
                 rangeIntrusionLevel = 1;
             } else {
                 rangeIntrusionLevel = 0;
@@ -730,7 +730,7 @@ class A32NX_TCAS_Manager {
             if (traffic.verticalTAU < TaRaTau[1] || Math.abs(traffic.relativeAlt) < TaRaZTHR[1]) {
                 verticalIntrusionLevel = 3;
             } else if (traffic.verticalTAU < TaRaTau[0] || Math.abs(traffic.relativeAlt) < TaRaZTHR[0]) {
-                console.log("TCAS: VERTICAL INTRUSION TA!");
+                // console.log("TCAS: VERTICAL INTRUSION TA!");
                 verticalIntrusionLevel = 2;
             } else if (Math.abs(traffic.relativeAlt) < 1200) {
                 verticalIntrusionLevel = 1;
@@ -761,11 +761,14 @@ class A32NX_TCAS_Manager {
         switch (this.advisoryState) {
             case tcasState.TA:
                 if (raThreatCount > 0) {
-                    this.advisoryState === tcasState.RA;
+                    this.advisoryState = tcasState.RA;
                     this.secondsSinceStartOfRA = 0;
+                    console.log("TCAS: TA UPGRADED TO RA");
+                    console.log("_ra:", _ra);
                 } else if (taThreatCount === 0) {
                     this.advisoryState = tcasState.none;
                     this.secondsSinceLastTA = 0;
+                    console.log("TCAS: TA RESOLVED");
                 }
                 break;
             case tcasState.RA:
@@ -786,13 +789,14 @@ class A32NX_TCAS_Manager {
                 break;
             default:
                 if (raThreatCount > 0) {
-                    this.advisoryState === tcasState.RA;
+                    this.advisoryState = tcasState.RA;
                     this.secondsSinceStartOfRA = 0;
                 } else {
                     if (taThreatCount > 0) {
-                        this.advisoryState === tcasState.TA;
-                        if (this.timeSinceLastTA >= 5) {
-                            console.log("TCAS: TA GENERATED");
+                        this.advisoryState = tcasState.TA;
+                        console.log("TCAS: TA GENERATED");
+                        if (this.secondsSinceLastTA >= 5) {
+                            console.log("TCAS: TA GENERATED 2");
                             Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
                         }
                     } else {
@@ -841,7 +845,7 @@ class A32NX_TCAS_Manager {
             const isInitial = previousRA === null ? true : false;
             const lastCallout = isInitial ? null : previousRA.info.callout;
             const lastSense = isInitial ? raSense.level_off : previousRA.info.sense;
-            const lastType = isinitial ? null : previousRA.info.type;
+            const lastType = isInitial ? null : previousRA.info.type;
             const isReversal = (previousRA === null) && lastSense !== ra.sense;
 
             // If we're below 1000 ft AGL, inhibit all RA's
@@ -953,7 +957,8 @@ class A32NX_TCAS_Manager {
 
         if (raAttempts.length !== 0) {
             const ra = raAttempts[0];
-            if (ra.info.callout === previousRA.info.callout
+            if (previousRA !== null
+                && ra.info.callout === previousRA.info.callout
                 && ra.info.vs.green === previousRA.info.vs.green) {
                 return null;
             }
@@ -975,8 +980,8 @@ class A32NX_TCAS_Manager {
         } else {
             const minTargetVS = Math.min(...raVariant.vs.green);
             const maxTargetVS = Math.max(...raVariant.vs.green);
-            const minDelayTime = selfVS < mintargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
-            const maxDelayTime = selfVS > maxtargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+            const minDelayTime = selfVS < minTargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
+            const maxDelayTime = selfVS > maxTargetVS ? Math.min(trafficAC.RaTAU, delayTime) : 0;
             const minVerticalSep = this.calculateAvoidanceManeuver(minTargetVS, selfVS, selfAlt, trafficAC, minDelayTime, accel) - trafficAltAtCPA;
             const maxVerticalSep = trafficAltAtCPA - this.calculateAvoidanceManeuver(maxTargetVS, selfVS, selfAlt, trafficAC, maxDelayTime, accel);
             return Math.max(minVerticalSep, maxVerticalSep);
@@ -1182,9 +1187,6 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         // previous dipslay type (i.e. RA, TA, vertical speed arrow etc.) to prevent frequent svg changes
         this._lastIntrusionLevel = NaN;
         this._lastVertArrowCase = NaN;
-
-        // Keep a timer after a TA has ended to prevent unneeded annunciations
-        this.timeSinceLastTA = 6;
     }
 
     id(map) {
