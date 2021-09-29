@@ -1,7 +1,9 @@
 import React from 'react';
 import { getRootElement } from './defaults';
 
-export const useUpdate = (handler: (deltaTime: number) => void) => {
+export const useUpdate = (handler: (deltaTime: number) => void, wait: number = 0) => {
+    const [dTime, setDeltaTime] = React.useState(0);
+
     // Logic based on https://usehooks.com/useEventListener/
     const savedHandler = React.useRef(handler);
     React.useEffect(() => {
@@ -10,7 +12,11 @@ export const useUpdate = (handler: (deltaTime: number) => void) => {
 
     React.useEffect(() => {
         const wrappedHandler = (event: CustomEvent) => {
-            savedHandler.current(event.detail);
+            if (wait) setDeltaTime(event.detail + dTime);
+            if (dTime > wait) {
+                savedHandler.current(dTime);
+                if (wait) setDeltaTime(0);
+            }
         };
 
         getRootElement().addEventListener('update', wrappedHandler);

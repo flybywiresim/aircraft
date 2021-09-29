@@ -143,7 +143,7 @@ const NavigationDisplay: React.FC = () => {
                     )}
 
                     <Chrono side={side} />
-                    <TcasInfo adrs={airDataReferenceSource} irs={inertialReferenceSource} ppos={ppos} />
+                    <TcasInfo />
 
                     <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
                     {(adirsAlign && modeIndex !== Mode.PLAN) && (

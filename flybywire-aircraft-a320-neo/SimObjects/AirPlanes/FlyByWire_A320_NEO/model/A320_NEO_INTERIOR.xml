@@ -3676,6 +3676,10 @@
                 <Node_ID>Knob_ATC_ALT</Node_ID>
                 <PART_ID>Knob_ATC_ALT</PART_ID>
             </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_ATC_Panel_ATC">
+                <Node_ID>Knob_ATC_1</Node_ID>
+                <PART_ID>Knob_ATC_1</PART_ID>
+            </UseTemplate>
             <UseTemplate Name="FBW_Airbus_ATC_Panel_TARA">
                 <Node_ID>KNOB_ATC_TARA</Node_ID>
                 <ANIMTIP_0>Set TCAS to STBY</ANIMTIP_0>
@@ -4186,9 +4190,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_RADAR_TILT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_ATC_1</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
