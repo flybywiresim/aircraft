@@ -343,6 +343,7 @@ class A32NX_TCAS_Manager {
     constructor() {
         console.log("TCAS: in constructor beginning");
         this.TrafficUpdateTimer = 0.2;
+        this.followupRaTimer = 0;
         this.TrafficAircraft = [];
         this.sensitivityLevel = 1;
 
@@ -497,7 +498,18 @@ class A32NX_TCAS_Manager {
             traffic.intrusionLevel = this.updateIntrusionLevel(verticalIntrusionLevel, rangeIntrusionLevel);
         }
 
-        const ra = this.newRaLogic(_deltaTime, vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
+        // Only update followup RA's once per second
+        if (this.activeRA !== null) {
+            this.followupRaTimer += _deltaTime / 1000;
+        }
+
+        if (this.activeRA === null || this.followupRaTimer >= 1) {
+            const ra = this.newRaLogic(_deltaTime, vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
+            this.followupRaTimer = 0;
+        } else {
+            const ra = this.activeRA;
+        }
+
         this.updateAdvisoryState(_deltaTime, ra);
     }
 
