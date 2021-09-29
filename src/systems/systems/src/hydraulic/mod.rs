@@ -19,6 +19,8 @@ use uom::si::{
 
 pub mod brake_circuit;
 pub mod electrical_pump_physics;
+pub mod linear_actuator;
+pub mod update_iterator;
 
 pub trait PressureSource {
     /// Gives the maximum available volume at current pump state if it was working at maximum available displacement
@@ -1474,7 +1476,7 @@ impl WindTurbine {
         );
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
-        let air_speed_torque = cur_aplha.to_radians().sin()
+        let air_speed_torque = cur_alpha.to_radians().sin()
             * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() / 100.)
             * 0.5
             * (std::f64::consts::PI / 2. * stow_pos).sin();
@@ -1511,7 +1513,7 @@ impl WindTurbine {
     fn update(
         &mut self,
         delta_time: &Duration,
-        indicated_speed: &Velocity,
+        indicated_speed: Velocity,
         stow_pos: f64,
         displacement_ratio: f64,
     ) {
@@ -1616,12 +1618,12 @@ impl RamAirTurbine {
         );
     }
 
-    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: &Velocity) {
+    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: Velocity) {
         // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
         let displacement_ratio = self.delta_vol_max().get::<gallon>() / self.max_displacement;
         self.wind_turbine.update(
             &delta_time,
-            &indicated_airspeed,
+            indicated_airspeed,
             self.position,
             displacement_ratio,
         );
@@ -1900,6 +1902,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 
