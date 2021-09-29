@@ -9,7 +9,11 @@ const CONSTANTS = {
     INITIAL_DELAY: 5, // in seconds
     FOLLOWUP_DELAY: 2.5, // in deconds
     INITIAL_ACCEL: 8.04, // 0.25G in f/s^2
-    FOLLOWUP_ACCEL: 10.62 // 0.33G in f/s^2
+    FOLLOWUP_ACCEL: 10.62, // 0.33G in f/s^2
+    TA_EXPIRATION_DELAY: 4, // in seconds
+    MIN_RA_DURATION: 5, // in seconds
+    VOL_BOOST: 1.25, // multiplier
+    CLOSURE_RATE_THRESH: -40 // in knots
 };
 
 const callouts = {
@@ -104,7 +108,6 @@ const inhibit = {
  */
 const raVariants = {
     // PREVENTIVE RA's
-    // TODO: don't display green band as green on PFD for preventative
     monitor_vs_climb_0: {
         callout: callouts.monitor_vs,
         sense: raSense.up,
@@ -350,10 +353,6 @@ class A32NX_TCAS_Manager {
 
         this.soundManager = new A32NX_SoundManager();
 
-        // Timekeeping
-        this.secondsSinceLastTA = 100;
-        this.secondsSinceLastRA = 100;
-
         // Inhibitions
         this.inhibitions = inhibit.none;
 
@@ -362,7 +361,7 @@ class A32NX_TCAS_Manager {
     }
 
     // This is called from the MFD JS file, because the MapInstrument doesn't have a deltaTime
-    update(_deltaTime) {
+    update(_deltaTime, screenIndex) {
         console.log("TCAS: in update beginning");
         // Update own instance of sound manager
         this.soundManager.update(_deltaTime);
@@ -371,6 +370,7 @@ class A32NX_TCAS_Manager {
         const TransponderStatus = SimVar.GetSimVarValue("TRANSPONDER STATE:1", "number");
         const TCASThreatSetting = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Traffic_Position", "number");
         const ALT_RPTG = 0; // haven't found the simvar for that
+        const isCaptainND = screenIndex === 1;
 
         // if tcas is off, do not update and wipe the traffic list
         if (TCASSwitchPos === 0 || TransponderStatus === 1) {
@@ -404,7 +404,7 @@ class A32NX_TCAS_Manager {
         // update traffic aircraft
         this.TrafficUpdateTimer += _deltaTime / 1000;
 
-        //Update every 0.1 seconds. Also need to use this timer as deltatime inside this if block
+        // Update every 0.1 seconds. Also need to use this timer as deltatime inside this if block
         if (this.TrafficUpdateTimer >= 0.1) {
             // using this to get around the fact that the coherent call is a promise, and likely executed later(not sure). this results in this.TrafficUpdateTimer
             // to be 0, which is kinda bad
@@ -473,23 +473,21 @@ class A32NX_TCAS_Manager {
             let verticalIntrusionLevel = 0;
             let rangeIntrusionLevel = 0;
 
+            // Perform range test
             if (traffic.RaTAU < TaRaTau[1] || traffic.slantDistance < TaRaDMOD[1]) {
                 rangeIntrusionLevel = 3;
             } else if (traffic.TaTAU < TaRaTau[0] || traffic.slantDistance < TaRaDMOD[0]) {
-                // console.log("TCAS: RANGE INTRUSION TA!");
                 rangeIntrusionLevel = 2;
             } else if (horizontalDistance < 6) {
-                // console.log("TAU: ", traffic.TaTAU, "; Slant distance: ", traffic.slantDistance);
-                // console.log("Desired TAU: ", TaRaTau[0], "; Desired DMOD: ", TaRaDMOD[0]);
                 rangeIntrusionLevel = 1;
             } else {
                 rangeIntrusionLevel = 0;
             }
 
+            // Perform altitude test
             if (traffic.verticalTAU < TaRaTau[1] || Math.abs(traffic.relativeAlt) < TaRaZTHR[1]) {
                 verticalIntrusionLevel = 3;
             } else if (traffic.verticalTAU < TaRaTau[0] || Math.abs(traffic.relativeAlt) < TaRaZTHR[0]) {
-                // console.log("TCAS: VERTICAL INTRUSION TA!");
                 verticalIntrusionLevel = 2;
             } else if (Math.abs(traffic.relativeAlt) < 1200) {
                 verticalIntrusionLevel = 1;
@@ -497,24 +495,44 @@ class A32NX_TCAS_Manager {
                 verticalIntrusionLevel = 0;
             }
 
-            traffic.intrusionLevel = this.updateIntrusionLevel(traffic, verticalIntrusionLevel, rangeIntrusionLevel);
+            traffic.intrusionLevel = this.updateIntrusionLevel(
+                traffic,
+                verticalIntrusionLevel,
+                rangeIntrusionLevel,
+                TaRaTau,
+                TaRaZTHR,
+                TaRaDMOD
+            );
         }
 
-        // Only update followup RA's once per second
-        if (this.activeRA !== null) {
-            this.followupRaTimer += _deltaTime / 1000;
-        }
+        // Only perform RA calculations if we're the captain ND, to prevent running the same code twice
+        if (isCaptainND) {
+            // Only update followup RA's once per second
+            if (this.activeRA !== null) {
+                this.followupRaTimer += _deltaTime / 1000;
+            }
+            let ra = this.activeRA;
+            if (this.activeRA === null || this.followupRaTimer >= 1) {
+                ra = this.newRaLogic(
+                    _deltaTime,
+                    vertSpeed,
+                    altitude,
+                    this.getALIM(this.sensitivityLevel),
+                    this.getTaRaZTHR(this.sensitivityLevel)
+                );
+                this.followupRaTimer = 0;
+            }
 
-        let ra = this.activeRA;
-        if (this.activeRA === null || this.followupRaTimer >= 1) {
-            ra = this.newRaLogic(_deltaTime, vertSpeed, altitude, radioAltitude, this.getALIM(this.sensitivityLevel));
-            this.followupRaTimer = 0;
+            this.updateInhibitions(altitude, radioAltitude);
+            this.updateAdvisoryState(_deltaTime, ra);
         }
-
-        this.updateInhibitions(altitude, radioAltitude);
-        this.updateAdvisoryState(_deltaTime, ra);
     }
 
+    /**
+     * TODO: Documentation & complete missing inhibitions
+     * @param {*} selfAlt
+     * @param {*} selfRadioAlt
+     */
     updateInhibitions(selfAlt, selfRadioAlt) {
         if (selfRadioAlt < 500) {
             this.inhibitions = inhibit.all_ra_aural_ta;
@@ -530,6 +548,7 @@ class A32NX_TCAS_Manager {
             this.inhibitions = inhibit.none;
         }
 
+        // Update "TA ONLY" message at the bottom of the ND
         if (selfRadioAlt < 1000 && !SimVar.GetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool")) {
             SimVar.SetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool", true);
         } else if (selfRadioAlt >= 1000 && SimVar.GetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool")) {
@@ -537,21 +556,47 @@ class A32NX_TCAS_Manager {
         }
     }
 
-    updateIntrusionLevel(traffic, verticalIntrusionLevel, rangeIntrusionLevel) {
+    /**
+     * Only lower threat level from RA/TA if they fulfill minimum time requirements
+     * TODO: Maintain RA status if target violates TA-protected volume boosted by 25% & is moving closer / moving away slowly (relative speed slower than 40 kts)
+     * @param {*} traffic
+     * @param {*} verticalIntrusionLevel
+     * @param {*} rangeIntrusionLevel
+     * @returns
+     */
+    updateIntrusionLevel(traffic, verticalIntrusionLevel, rangeIntrusionLevel, tau, ZTHR, DMOD) {
         const _desiredIntrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
-        // Minimum RA duration is 5 seconds - don't remove it before then
-        if (this.activeRA !== null
+        if (traffic.intrusionLevel === 2
+            && _desiredIntrusionLevel < 2
+            && traffic.secondsSinceLastTA >= CONSTANTS.TA_EXPIRATION_DELAY) {
+            traffic.taExpiring = false;
+            traffic.secondsSinceLastTA = 0;
+            console.log("🚀 -> A32NX_TCAS_Manager -> updateIntrusionLevel -> TA EXPIRATION PERIOD ENDED");
+        } else if (traffic.intrusionLevel === 2
+            && _desiredIntrusionLevel < 2
+            && traffic.secondsSinceLastTA < CONSTANTS.TA_EXPIRATION_DELAY) {
+            traffic.taExpiring = true;
+            return 2;
+        } else if (this.activeRA !== null
             && traffic.intrusionLevel === 3
             && _desiredIntrusionLevel < 3
             && this.activeRA.secondsSinceStart < 5) {
             return 3;
-        } else {
-            return _desiredIntrusionLevel;
+        } else if (this.activeRA !== null
+            && traffic.intrusionLevel === 3
+            && _desiredIntrusionLevel < 3
+            && (traffic.TaTAU < tau[0] * CONSTANTS.VOL_BOOST || traffic.slantDistance < DMOD[0] * CONSTANTS.VOL_BOOST)
+            && (traffic.verticalTAU < tau[0] * CONSTANTS.VOL_BOOST || Math.abs(traffic.relativeAlt) < ZTHR[0] * CONSTANTS.VOL_BOOST)
+            && traffic.closureRate >= CONSTANTS.CLOSURE_RATE_THRESH) {
+            return 3;
         }
+        return _desiredIntrusionLevel;
     }
 
     /**
-     * Handles updating this.advisoryState, elapsed timers, and playing sounds
+     * TODO: Documentation
+     * @param {*} _deltaTime
+     * @param {*} _ra
      */
     updateAdvisoryState(_deltaTime, _ra) {
         const taThreatCount = this.TrafficAircraft.reduce((acc, aircraft) => {
@@ -571,15 +616,12 @@ class A32NX_TCAS_Manager {
                 } else if (taThreatCount === 0) {
                     this.advisoryState = tcasState.none;
                     SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 0);
-                    this.secondsSinceLastTA = 0;
                     console.log("TCAS: TA RESOLVED");
                 }
                 break;
             case tcasState.RA:
                 if (raThreatCount === 0) {
-                    this.secondsSinceLastRA = 0;
                     if (taThreatCount > 0) {
-                        this.secondsSinceLastTA = 0;
                         this.advisoryState = tcasState.TA;
                         SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 1);
                     } else {
@@ -600,18 +642,10 @@ class A32NX_TCAS_Manager {
                         this.advisoryState = tcasState.TA;
                         SimVar.SetSimVarValue("L:A32NX_TCAS_STATE", "Enum", 1);
                         console.log("TCAS: TA GENERATED");
-                        if (this.secondsSinceLastTA >= 5 && this.inhibitions !== inhibit.all_ra_aural_ta) {
+                        if (this.inhibitions !== inhibit.all_ra_aural_ta) {
                             console.log("TCAS: TA GENERATED 2");
                             this.soundManager.tryPlaySound(soundList.traffic_traffic, true);
                         }
-                    } else {
-                        if (this.secondsSinceLastTA < 10) {
-                            this.secondsSinceLastTA += _deltaTime / 1000;
-                        }
-                    }
-
-                    if (this.secondsSinceLastRA < 10) {
-                        this.secondsSinceLastRA += _deltaTime / 1000;
                     }
                 }
                 break;
@@ -639,22 +673,16 @@ class A32NX_TCAS_Manager {
     }
 
     /**
-     * NEW RA LOGIC FUNCTION
+     * TODO: Documentation
      * @param {*} _deltaTime
      * @param {*} selfVertSpeed
      * @param {*} selfAlt
      * @param {*} selfRadioAlt
      * @param {number} ALIM for current sensitivity level
+     * @param {number[]} ZTHR (both TA and RA) for current sensitivity level
      * @returns
      */
-
-    // TODO: INHIBITIONS
-    // Inhibit all RA's below 1000ft AGL
-    // Inhibit descend RA's below CONSTANTS.INHIBIT_ALL_DES_RA_AGL
-    // Inhibit increase descent RA's below CONSTANTS.INHIBIT_INC_DES_RA_AGL
-    // Inhibit climb RA's above service ceiling (39,000 feet)
-
-    newRaLogic(_deltaTime, selfVS, selfAlt, selfRadioAlt, ALIM) {
+    newRaLogic(_deltaTime, selfVS, selfAlt, ALIM, ZTHR) {
         // Get all active, valid RA threats, sorted by lowest TAU first
         const raTraffic = this.TrafficAircraft
             .filter((aircraft) => {
@@ -681,7 +709,7 @@ class A32NX_TCAS_Manager {
                 return null;
             }
 
-            // Select sense (TODO: INHIBITIONS)
+            // Select sense
             let sense = raSense.up;
             const [upVerticalSep, upIsCrossing] = this.getVerticalSep(
                 raSense.up,
@@ -690,8 +718,7 @@ class A32NX_TCAS_Manager {
                 1500,
                 raTraffic,
                 CONSTANTS.INITIAL_DELAY,
-                CONSTANTS.INITIAL_ACCEL,
-                true
+                CONSTANTS.INITIAL_ACCEL
             );
             const [downVerticalSep, downIsCrossing] = this.getVerticalSep(
                 raSense.down,
@@ -700,14 +727,13 @@ class A32NX_TCAS_Manager {
                 -1500,
                 raTraffic,
                 CONSTANTS.INITIAL_DELAY,
-                CONSTANTS.INITIAL_ACCEL,
-                true
+                CONSTANTS.INITIAL_ACCEL
             );
 
             console.log("TCAS: INITIAL RA: SELECTING SENSE");
             console.log("---------------------------------");
             console.log("UP VERTICAL SEPARATION at 1500: ", upVerticalSep, "; upIsCrossing: " + upIsCrossing);
-            console.log("DOWN VERTICAL SEPARATION at 1500: ", downVerticalSep, "; downIsCrossing: " + downIsCrossing);
+            console.log("DOWN VERTICAL SEPARATION at -1500: ", downVerticalSep, "; downIsCrossing: " + downIsCrossing);
             console.log("ALIM IS ", ALIM);
 
             // If both achieve ALIM, prefer non-crossing
@@ -745,13 +771,12 @@ class A32NX_TCAS_Manager {
                 0,
                 raTraffic,
                 CONSTANTS.INITIAL_DELAY,
-                CONSTANTS.INITIAL_ACCEL,
-                true
+                CONSTANTS.INITIAL_ACCEL
             );
 
             console.log("levelSep is: " + levelSep);
 
-            if (Math.abs(selfVS) < 1500) {
+            if (Math.abs(selfVS) < 1500 || (selfVS <= -1500 && sense === raSense.up) || (selfVS >= 1500 && sense === raSense.down)) {
                 // Choose preventive or corrective
                 const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
                 if (predictedSep >= ALIM) {
@@ -837,9 +862,13 @@ class A32NX_TCAS_Manager {
             }
 
             let alreadyAchievedALIM = true;
+            let alreadyAchievedTaZTHR = true;
             raTraffic.forEach((ac) => {
                 if (Math.abs(selfAlt - ac.alt) < ALIM) {
                     alreadyAchievedALIM = false;
+                }
+                if (Math.abs(selfAlt - ac.alt) < ZTHR[0]) {
+                    alreadyAchievedTaZTHR = false;
                 }
             });
 
@@ -848,12 +877,16 @@ class A32NX_TCAS_Manager {
             ra.isReversal = previousRA.isReversal;
             ra.secondsSinceStart = previousRA.secondsSinceStart;
 
-            if (alreadyAchievedALIM) {
-                // We've already achieved ALIM
+            if (alreadyAchievedTaZTHR) {
+                // We've already achieved TA ZTHR (formerly ALIM)
                 // If 10 seconds or more elapsed since start of RA
                 //   & (DEFERRED) we haven't yet reached CPA
                 //   & our previous RA wasn't a monitor VS or level off,
                 // THEN issue a level-off weakening RA
+                // ! NOTE: This was originally ALIM, but revised the condition to require greater altitude difference,
+                // !       so as not to cause a second RA
+                // TODO: Revise conditions for level-off weakening, since nominal RA's are often issued right afterwards
+
                 if (previousRA.secondsSinceStart >= 10
                     && previousRA.info.callout.id !== callouts.level_off.id
                     && previousRA.info.callout.id !== callouts.monitor_vs.id) {
@@ -899,7 +932,7 @@ class A32NX_TCAS_Manager {
                         || previousRA.info.callout.id === callouts.descend_now.id
                         || previousRA.info.callout.id === callouts.maintain_vs.id
                         || previousRA.info.callout.id === callouts.maintain_vs_cross.id)
-                        && ((previousRA.info.sense === raSense.up && selfVS >= 1500) || (previousRA.info.sense = raSense.down && selfVS <= -1500))) {
+                        && ((previousRA.info.sense === raSense.up && selfVS >= 1500) || (previousRA.info.sense === raSense.down && selfVS <= -1500))) {
                         strength = 2;
                         [increaseSep, increaseCross] = this.getVerticalSep(
                             sense,
@@ -987,7 +1020,7 @@ class A32NX_TCAS_Manager {
     }
 
     /**
-     *
+     * TODO: Documentation
      * @param {*} selfVS
      * @param {*} selfAlt
      * @param {*} otherAircraft
@@ -1007,7 +1040,7 @@ class A32NX_TCAS_Manager {
     }
 
     /**
-     * NEW VERTICAL SEP FUNCTION
+     * TODO: Documentation
      * @param {*} sense
      * @param {*} selfVS
      * @param {*} selfAlt
@@ -1017,30 +1050,28 @@ class A32NX_TCAS_Manager {
      * @param {*} accel
      * @returns
      */
-    getVerticalSep(sense, selfVS, selfAlt, targetVS, otherAircraft, delay, accel, debug = false) {
+    getVerticalSep(sense, selfVS, selfAlt, targetVS, otherAircraft, delay, accel) {
         let isCrossing = false;
         let minSeparation = CONSTANTS.REALLY_BIG_NUMBER;
 
-        console.log("Debugging vertical sep: sense ", sense, " at FPM: ", targetVS);
-        console.log("All raTraffic:", otherAircraft);
+        // console.log("Debugging vertical sep: sense ", sense, " at FPM: ", targetVS);
+        // console.log("All raTraffic:", otherAircraft);
 
         for (const ac of otherAircraft) {
             const trafficAltAtCPA = ac.alt + ((ac.vertSpeed / 60) * ac.RaTAU);
 
-            console.log("----> Traffic: Alt=" + ac.alt + ", VS=" + ac.vertSpeed + ", AltAtCPA=" + trafficAltAtCPA);
+            // console.log("----> Traffic: Alt=" + ac.alt + ", VS=" + ac.vertSpeed + ", AltAtCPA=" + trafficAltAtCPA);
 
             let _sep = CONSTANTS.REALLY_BIG_NUMBER;
             if (sense === raSense.up) {
                 const _delay = selfVS < targetVS ? Math.min(ac.RaTAU, delay) : 0;
-                _sep = Math.max(this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug) - trafficAltAtCPA, 0); // max might not be needed
-                console.log("--------> Up traffic _sep=" + _sep);
+                _sep = Math.max(this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel) - trafficAltAtCPA, 0); // max might not be needed
                 if (!isCrossing && (selfAlt + 100) < ac.alt) {
                     isCrossing = true;
                 }
             } else if (sense === raSense.down) {
                 const _delay = selfVS > targetVS ? Math.min(ac.RaTAU, delay) : 0;
-                _sep = Math.max(trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug), 0); // max might not be needed
-                console.log("--------> Down traffic _sep=" + _sep);
+                _sep = Math.max(trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel), 0); // max might not be needed
                 if (!isCrossing && (selfAlt - 100) > ac.alt) {
                     isCrossing = true;
                 }
@@ -1053,34 +1084,21 @@ class A32NX_TCAS_Manager {
         return [minSeparation, isCrossing];
     }
 
-    calculateTrajectory(targetVS, selfVS, selfAlt, otherAC, delay, accel, debug) {
+    calculateTrajectory(targetVS, selfVS, selfAlt, otherAC, delay, accel) {
         // accel must be in f/s^2
         accel = targetVS < selfVS ? -1 * accel : accel;
-        console.log("--------> trajectory: accel=", accel);
-        console.log("--------> RaTau=", otherAC.RaTAU);
-        console.log("--------> delay=", delay);
         const timeToAccelerate = Math.min(otherAC.RaTAU - delay, ((targetVS - selfVS) / 60) / accel); // raTau can be infinity
-        console.log("--------> trajectory: timeToAccelerate=", timeToAccelerate);
         const remainingTime = otherAC.RaTAU - (delay + timeToAccelerate);
-        console.log("--------> remainingTime=", remainingTime);
         const predicted_elevation = selfAlt
-                                        + Math.round(selfVS / 60) * (delay + timeToAccelerate)
-                                        + 0.5 * accel * Math.pow(timeToAccelerate, 2)
-                                        + (targetVS / 60) * remainingTime;
+                                    + Math.round(selfVS / 60) * (delay + timeToAccelerate)
+                                    + 0.5 * accel * Math.pow(timeToAccelerate, 2)
+                                    + (targetVS / 60) * remainingTime;
 
-        // DEBUG:
-        console.log("------------>selfAlt: ", selfAlt);
-        console.log("------------>selfVS: ", selfVS);
-        console.log("------------>Math.round(selfVS / 60): ", Math.round(selfVS / 60));
-        console.log("------------>(delay + timeToAccelerate): ", (delay + timeToAccelerate));
-        console.log("------------>0.5 * accel * Math.pow(timeToAccelerate, 2): ", 0.5 * accel * Math.pow(timeToAccelerate, 2));
-        console.log("------------>(targetVS / 60) * remainingTime: ", (targetVS / 60) * remainingTime);
-        console.log("-------->predicted_elevation before normalization ", predicted_elevation);
         return predicted_elevation;
     }
 
     /**
-     * recalculates the TCAS sensitivity level
+     * Recalculates the TCAS sensitivity level
      * @param altitude {number} in feet
      * @param radioAltitude {number} in feet
      * @param TCASMode {number}
@@ -1240,23 +1258,27 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         this.onGround = false;
         this.heading = _heading;
 
-        //relative altitude between player and this traffic, in feet
+        // Relative altitude between player and this traffic, in feet
         this.relativeAlt = _alt - _selfAlt;
 
         // Distance to traffic aircraft in 3D space, in nautical miles
         this.slantDistance = this.computeDistance3D([_lat, _lon, _alt], [_selfLat, _selfLon, _selfAlt]);
-        // rate of change of slant distance, in knots
+        // Rate of change of slant distance, in knots
         this.closureRate = 0;
 
-        //0: no intrusion, 1: proximate, 2: TA, 3: RA
+        // 0: no intrusion, 1: proximate, 2: TA, 3: RA
         this.intrusionLevel = 0;
         this.isDisplayed = false;
 
-        // time until predicted collision
+        // Time until predicted collision
         this.TaTAU = Infinity;
         this.RaTAU = Infinity;
-        // time until aircraft is on the same altitude level
+
+        // Time until aircraft is on the same altitude level
         this.verticalTAU = Infinity;
+
+        this.taExpiring = false;
+        this.secondsSinceLastTA = 0;
 
         this.screenPos = new Vec2();
 
@@ -1308,6 +1330,13 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         }
         if (this.verticalTAU < 0) {
             this.verticalTAU = Infinity;
+        }
+
+        // Update TA elapsed timer
+        if (this.intrusionLevel === 2 && this.secondsSinceLastTA < 10 && this.taExpiring) {
+            console.log("🚀 -> A32NX_TCAS_Airplane -> update -> this.taExpiring", this.taExpiring);
+            console.log("🚀 -> A32NX_TCAS_Airplane -> update -> this.secondsSinceLastTA", this.secondsSinceLastTA);
+            this.secondsSinceLastTA += _deltaTime / 1000;
         }
     }
 

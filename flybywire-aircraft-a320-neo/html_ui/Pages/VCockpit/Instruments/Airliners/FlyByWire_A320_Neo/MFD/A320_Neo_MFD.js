@@ -185,7 +185,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.updateNDInfo(deltaTime);
 
         //TCAS
-        this.map.instrument.TCASManager.update(deltaTime);
+        this.map.instrument.TCASManager.update(deltaTime, this.screenIndex);
 
         const tcasTaOnly = SimVar.GetSimVarValue("L:A32NX_TCAS_TA_ONLY", "Bool");
 
