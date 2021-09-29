@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Arinc429Word } from '@instruments/common/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
+import { getSmallestAngle } from '@instruments/common/utils';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -8,7 +9,6 @@ import {
     LagFilter,
 } from './PFDUtils';
 import { getSimVar } from '../util.js';
-import { getSmallestAngle } from '@instruments/common/utils';
 
 /* eslint-disable max-len */
 

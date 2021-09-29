@@ -9,7 +9,6 @@ export interface NavigationDisplayMessagesProps {
 }
 
 export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ adirsAlign, mode, modeChangeShown, rangeChangeShown }) => {
-
     // Do not show general messages in ROSE VOR/ILS or ANF (latter is not in neo)
     const modeValidForGeneralMessages = (mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS) && (adirsAlign || mode === Mode.PLAN);
 

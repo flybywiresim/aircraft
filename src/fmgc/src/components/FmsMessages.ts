@@ -32,9 +32,10 @@ export class FmsMessages implements FmgcComponent {
     ]
 
     // singleton
+    /* eslint-disable no-useless-constructor,no-empty-function */
     private constructor() {
-
     }
+    /* eslint-enable no-useless-constructor,no-empty-function */
 
     public static get instance(): FmsMessages {
         if (!this._instance) {
@@ -245,6 +246,7 @@ abstract class MapPartlyDisplayed implements FMMessageSelector {
     abstract ndSide: 'L' | 'R';
 
     trigRising = new Trigger(true);
+
     trigFalling = new Trigger(true);
 
     process(deltaTime: number): FMMessageUpdate {

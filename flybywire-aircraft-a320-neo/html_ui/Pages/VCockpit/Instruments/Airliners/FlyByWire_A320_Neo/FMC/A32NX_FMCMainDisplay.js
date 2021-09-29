@@ -800,6 +800,7 @@ class FMCMainDisplay extends BaseAirliners {
                         speed = Math.min(speed, this.managedSpeedLimit);
                     }
 
+                    // TODO we really need VNAV to predict where along the leg we should slow to the constraint
                     speed = Math.min(speed, this.getSpeedConstraint());
 
                     [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedDescendMach);
@@ -810,7 +811,7 @@ class FMCMainDisplay extends BaseAirliners {
                     // the displayed target is Vapp (with GSmini)
                     // the guidance target is lower limited by FAC manouvering speeds (O, S, F) unless in landing config
                     // constraints are not considered
-                    let speed = this.getAppManagedSpeed();
+                    const speed = this.getAppManagedSpeed();
                     let vAppTarget = this.getVApp();
                     if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
                         vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));

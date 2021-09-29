@@ -88,7 +88,7 @@ class CDUFixInfoPage {
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                         }
-                    } else if(value === '' && radial !== undefined) {
+                    } else if (value === '' && radial !== undefined) {
                         mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
                     } else {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
@@ -118,7 +118,7 @@ class CDUFixInfoPage {
                     } else {
                         mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                     }
-                } else if(value === '' && fixInfo.radius !== undefined) {
+                } else if (value === '' && fixInfo.radius !== undefined) {
                     mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.formatError);

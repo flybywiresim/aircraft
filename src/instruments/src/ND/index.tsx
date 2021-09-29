@@ -4,6 +4,8 @@ import { FlightPlanProvider } from '@instruments/common/flightplan';
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { getSupplier } from '@instruments/common/utils';
+import { useCoherentEvent } from '@instruments/common/hooks';
+import { Mode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
 import { WindIndicator } from './elements/WindIndicator';
@@ -15,10 +17,8 @@ import { FMMessages } from './elements/messages/FMMessages';
 import { TcasWxrMessages } from './elements/messages/TcasWxrMessages';
 import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
-import { Mode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
 
 import './styles.scss';
-import { useCoherentEvent } from '@instruments/common/hooks';
 
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
@@ -27,7 +27,6 @@ const NavigationDisplay: React.FC = () => {
         return parseInt(url?.substring(url.length - 1) ?? '1', 10);
     });
     const side = displayIndex === 1 ? 'L' : 'R';
-    const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
     const [airDataSwitch] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 200);
     const [attHdgSwitch] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 200);
     const [airDataReferenceSource, setAirDataSource] = useState(displayIndex);
@@ -115,9 +114,7 @@ const NavigationDisplay: React.FC = () => {
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
                             symbols={symbols}
-                            side={side}
                             ppos={ppos}
-                            efisOption={efisOption}
                             mapHidden={modeChangeShown || rangeChangeShown}
                         />
                     )}
@@ -128,7 +125,6 @@ const NavigationDisplay: React.FC = () => {
                             symbols={symbols}
                             side={side}
                             ppos={ppos}
-                            efisOption={efisOption}
                             mapHidden={modeChangeShown || rangeChangeShown}
                         />
                     )}
@@ -141,7 +137,6 @@ const NavigationDisplay: React.FC = () => {
                             side={side}
                             ppos={ppos}
                             mode={modeIndex}
-                            efisOption={efisOption}
                             mapHidden={modeChangeShown || rangeChangeShown}
                         />
                     )}

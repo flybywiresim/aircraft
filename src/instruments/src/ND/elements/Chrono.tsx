@@ -40,6 +40,7 @@ export const Chrono: React.FC<{ side: EfisSide }> = ({ side }) => {
         case 'STOPPED':
             setState('HIDDEN');
             break;
+        default:
         }
     });
 

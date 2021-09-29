@@ -4,7 +4,6 @@ import { Mode } from '@shared/NavigationDisplay';
 import { useSimVar } from '@instruments/common/simVars';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
 
-
 export const FMMessages: FC<{ modeIndex: Mode, side: 'L' | 'R' }> = ({ modeIndex, side }) => {
     const [activeMessages, setActiveMessages] = useState<FMMessage[]>([]);
 

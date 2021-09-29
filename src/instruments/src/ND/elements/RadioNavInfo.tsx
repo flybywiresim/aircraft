@@ -58,7 +58,7 @@ const VorInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
 
     return (
         <g className="GtLayer">
-            {(vorAvailable &&
+            {(vorAvailable && (
                 <path
                     d={path}
                     strokeWidth={2.6}
@@ -66,7 +66,7 @@ const VorInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
                     strokeLinejoin="round"
                     strokeLinecap="round"
                 />
-            )}
+            ))}
             <text x={x} y={692} fontSize={24} className="White">
                 VOR
                 {index}

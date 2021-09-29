@@ -13,10 +13,9 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { Xy } from '@fmgc/flightplanning/data/geo';
-import { MapParameters } from '../utils/MapParameters';
-import { EfisSide } from '@shared/NavigationDisplay';
-import { NdSymbol, NdSymbolTypeFlags } from "@shared/NavigationDisplay";
+import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { useCurrentFlightPlan } from '@instruments/common/flightplan';
+import { MapParameters } from '../utils/MapParameters';
 
 export type FlightPathProps = {
     x?: number,
@@ -24,13 +23,11 @@ export type FlightPathProps = {
     symbols: NdSymbol[],
     flightPlanManager: FlightPlanManager,
     mapParams: MapParameters,
-    constraints: boolean,
-    side: EfisSide,
     debug: boolean,
     temp: boolean,
 }
 
-export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightPlanManager, mapParams, constraints, side, debug = false, temp = false }) => {
+export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightPlanManager, mapParams, debug = false, temp = false }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const [tempGeometry, setTempGeometry] = useState(() => guidanceManager.getMultipleLegGeometry(true));
     const [activeGeometry, setActiveGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
@@ -56,7 +53,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightP
         }
     }
 
-    const flightPlan = useCurrentFlightPlan();
+    useCurrentFlightPlan();
 
     return (
         <Layer x={x} y={y}>
@@ -91,53 +88,51 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightP
             )}
         </Layer>
     );
-
-    return null;
 };
 
-const VorMarker: FC<{ colour: string }> = ({ colour }) => {
-    return (<>
+const VorMarker: FC<{ colour: string }> = ({ colour }) => (
+    <>
         <line x1={0} x2={0} y1={-15} y2={15} className={colour} strokeWidth={2} />
         <line x1={-15} x2={15} y1={0} y2={0} className={colour} strokeWidth={2} />
-    </>);
-};
+    </>
+);
 
-const VorDmeMarker: FC<{ colour: string }> = ({ colour }) => {
-    return (<>
+const VorDmeMarker: FC<{ colour: string }> = ({ colour }) => (
+    <>
         <circle r={7} className={colour} strokeWidth={2} />
         <line x1={0} x2={0} y1={-15} y2={-7} className={colour} strokeWidth={2} />
         <line x1={0} x2={0} y1={15} y2={7} className={colour} strokeWidth={2} />
         <line x1={-15} x2={-7} y1={0} y2={0} className={colour} strokeWidth={2} />
         <line x1={15} x2={7} y1={0} y2={0} className={colour} strokeWidth={2} />
-    </>);
-};
+    </>
+);
 
-const DmeMarker: FC<{ colour: string }> = ({ colour }) => {
-    return (<>
+const DmeMarker: FC<{ colour: string }> = ({ colour }) => (
+    <>
         <circle r={7} className={colour} strokeWidth={2} />
-    </>);
-};
+    </>
+);
 
-const NdbMarker: FC<{ colour: string }> = ({ colour }) => {
-    return (<>
+const NdbMarker: FC<{ colour: string }> = ({ colour }) => (
+    <>
         <path d="M-10,10 L0,-10 L10,10 L-10,10" className={colour} strokeWidth={2} />
-    </>);
-};
+    </>
+);
 
-const WaypointMarker: FC<{ colour: string }> = ({ colour }) => {
-    return (<>
+const WaypointMarker: FC<{ colour: string }> = ({ colour }) => (
+    <>
         <rect x={-4.5} y={-4.5} width={9} height={9} className={colour} strokeWidth={2} transform="rotate(45 0 0)" />
-    </>);
-};
+    </>
+);
 
-const AirportMarker: FC<{ colour: string }> = ({ colour }) => {
-    return (<>
+const AirportMarker: FC<{ colour: string }> = ({ colour }) => (
+    <>
         <line x1={0} x2={0} y1={-15} y2={15} className={colour} strokeWidth={2} />
         <line x1={0} x2={0} y1={-15} y2={15} className={colour} strokeWidth={2} transform="rotate(45)" />
         <line x1={-15} x2={15} y1={0} y2={0} className={colour} strokeWidth={2} />
         <line x1={-15} x2={15} y1={0} y2={0} className={colour} strokeWidth={2} transform="rotate(45)" />
-    </>);
-};
+    </>
+);
 
 const RunwayIdent: FC<{ ident: string, rotation: number }> = ({ ident, rotation }) => {
     const airportIdent = ident.substring(0, 4);
@@ -155,26 +150,20 @@ const RunwayIdent: FC<{ ident: string, rotation: number }> = ({ ident, rotation 
     );
 };
 
-const RunwayMarkerClose: FC<{ ident: string, rotation: number, lengthPx: number }> = ({ ident, rotation, lengthPx }) => {
-    // TODO proper size
-    return (
-        <g transform={`rotate(${rotation})`} className='White'>
-            <line x1={-5} x2={-5} y1={0} y2={-lengthPx} strokeWidth={2} />
-            <line x1={5} x2={5} y1={0} y2={-lengthPx} strokeWidth={2} />
-            <RunwayIdent ident={ident} rotation={rotation} />
-        </g>
-    );
-}
+const RunwayMarkerClose: FC<{ ident: string, rotation: number, lengthPx: number }> = ({ ident, rotation, lengthPx }) => (
+    <g transform={`rotate(${rotation})`} className="White">
+        <line x1={-5} x2={-5} y1={0} y2={-lengthPx} strokeWidth={2} />
+        <line x1={5} x2={5} y1={0} y2={-lengthPx} strokeWidth={2} />
+        <RunwayIdent ident={ident} rotation={rotation} />
+    </g>
+);
 
-const RunwayMarkerFar: FC<{ ident: string, rotation: number }> = ({ ident, rotation }) => {
-    // TODO proper size
-    return (
-        <g transform={`rotate(${rotation})`} className='White'>
-            <rect x={-5} y={-25} width={10} height={25} strokeWidth={2} />
-            <RunwayIdent ident={ident} rotation={rotation} />
-        </g>
-    );
-}
+const RunwayMarkerFar: FC<{ ident: string, rotation: number }> = ({ ident, rotation }) => (
+    <g transform={`rotate(${rotation})`} className="White">
+        <rect x={-5} y={-25} width={10} height={25} strokeWidth={2} />
+        <RunwayIdent ident={ident} rotation={rotation} />
+    </g>
+);
 
 interface SymbolMarkerProps {
     ident: string,
@@ -189,18 +178,18 @@ interface SymbolMarkerProps {
 }
 
 const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraints, length, direction, radials, radii, mapParams }) => {
-    let colour = "White";
+    let colour = 'White';
     // todo airport as well if in flightplan
     if (type & NdSymbolTypeFlags.Runway) {
-        colour = "White";
+        colour = 'White';
     } else if (type & NdSymbolTypeFlags.ActiveLegTermination) {
-        colour = "White";
+        colour = 'White';
     } else if (type & NdSymbolTypeFlags.Tuned) {
-        colour = "Cyan";
+        colour = 'Cyan';
     } else if (type & (NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
-        colour = "Green";
+        colour = 'Green';
     } else if (type & NdSymbolTypeFlags.EfisOption) {
-        colour = "Magenta";
+        colour = 'Magenta';
     }
 
     const elements: JSX.Element[] = [];
@@ -209,7 +198,14 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
         if (radii !== undefined) {
             for (const radius of radii) {
                 const radiusPx = radius * mapParams.nmToPx;
-                elements.push(<path d={`m-${radiusPx},0 a${radiusPx},${radiusPx} 0 1,0 ${radiusPx * 2},0 a${radiusPx},${radiusPx} 0 1,0 -${radiusPx * 2},0`} strokeWidth={2} className='Cyan' strokeDasharray="15 10" />);
+                elements.push(
+                    <path
+                        d={`m-${radiusPx},0 a${radiusPx},${radiusPx} 0 1,0 ${radiusPx * 2},0 a${radiusPx},${radiusPx} 0 1,0 -${radiusPx * 2},0`}
+                        strokeWidth={2}
+                        className="Cyan"
+                        strokeDasharray="15 10"
+                    />,
+                );
             }
         }
         if (radials !== undefined) {
@@ -218,17 +214,17 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
                 // TODO how long should a piece of string be?
                 const x2 = Math.sin(rotation) * 9000;
                 const y2 = -Math.cos(rotation) * 9000;
-                elements.push(<line x2={x2} y2={y2} strokeWidth={2} className='Cyan' strokeDasharray="15 10" />);
+                elements.push(<line x2={x2} y2={y2} strokeWidth={2} className="Cyan" strokeDasharray="15 10" />);
             }
         }
     }
 
     if (type & NdSymbolTypeFlags.ConstraintMet) {
-        elements.push(<circle r={12} className='Magenta' strokeWidth={2} />);
+        elements.push(<circle r={12} className="Magenta" strokeWidth={2} />);
     } else if (type & NdSymbolTypeFlags.ConstraintMissed) {
-        elements.push(<circle r={12} className='Amber' strokeWidth={2} />);
+        elements.push(<circle r={12} className="Amber" strokeWidth={2} />);
     } else if (type & NdSymbolTypeFlags.ConstraintUnknown) {
-        elements.push(<circle r={12} className='White' strokeWidth={2} />);
+        elements.push(<circle r={12} className="White" strokeWidth={2} />);
     }
 
     if (constraints) {
@@ -269,7 +265,7 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
         elements.push(
             <text x={15} y={-6} fontSize={20} className={colour}>
                 {ident}
-            </text>
+            </text>,
         );
     }
 
@@ -283,7 +279,7 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
 export type DebugLegProps<TLeg extends Leg> = {
     leg: TLeg,
     mapParams: MapParameters,
-}
+};
 
 const DebugLeg: FC<DebugLegProps<Leg>> = ({ leg, mapParams }) => {
     if (leg instanceof TFLeg) {

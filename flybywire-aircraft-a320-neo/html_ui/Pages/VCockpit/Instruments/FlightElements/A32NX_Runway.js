@@ -12,22 +12,22 @@ class Runway {
 
     designatorChar(designator) {
         switch (designator) {
-        case RunwayDesignator.RUNWAY_DESIGNATOR_LEFT:
-            return "L";
-        case RunwayDesignator.RUNWAY_DESIGNATOR_RIGHT:
-            return "R";
-        case RunwayDesignator.RUNWAY_DESIGNATOR_CENTER:
-            return "C";
-        default:
-            return "";
+            case RunwayDesignator.RUNWAY_DESIGNATOR_LEFT:
+                return "L";
+            case RunwayDesignator.RUNWAY_DESIGNATOR_RIGHT:
+                return "R";
+            case RunwayDesignator.RUNWAY_DESIGNATOR_CENTER:
+                return "C";
+            default:
+                return "";
         }
     }
 
     splitIfTwoWays() {
-        let splitRunways = [];
-        let designations = this.designation.split("-");
+        const splitRunways = [];
+        const designations = this.designation.split("-");
         for (let i = 0; i < designations.length; i++) {
-            let newRunway = new Runway();
+            const newRunway = new Runway();
             newRunway.designation = designations[i];
             if (i === 0) {
                 newRunway.designation += this.designatorChar(this.designatorCharPrimary);

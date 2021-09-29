@@ -4,10 +4,10 @@ import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { NdSymbol } from '@shared/NavigationDisplay';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { EfisOption, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { Degrees } from '../../../../../typings';
 
 export interface PlanModeProps {
@@ -15,12 +15,10 @@ export interface PlanModeProps {
     adirsAlign: boolean,
     rangeSetting: number,
     ppos: LatLongData,
-    efisOption: EfisOption,
-    side: EfisSide,
     mapHidden: boolean,
 }
 
-export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting, ppos, efisOption, side, mapHidden }) => {
+export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting, ppos, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
@@ -54,8 +52,6 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
                 symbols={symbols}
-                side={side}
-                constraints={efisOption === EfisOption.Constraints}
                 debug={false}
                 temp
             />
@@ -71,8 +67,6 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     flightPlanManager={flightPlanManager}
                     mapParams={mapParams}
                     symbols={symbols}
-                    side={side}
-                    constraints={efisOption === EfisOption.Constraints}
                     debug={false}
                     temp={false}
                 />

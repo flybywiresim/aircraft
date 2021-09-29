@@ -3,7 +3,7 @@
 
 import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { RunwaySurface, VorType, WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
-import { OneWayRunway, RawAirport, VORInfo, WayPoint } from '@fmgc/types/fstypes/FSTypes';
+import { OneWayRunway, RawAirport, WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
 import { LatLongData } from '@typings/fs-base-ui';
 import { NearbyFacilities } from './NearbyFacilities';
