@@ -19,58 +19,72 @@ const CONSTANTS = {
 const callouts = {
     climb: {
         id: 0,
+        repeat: false,
         sound: soundList.climb_climb
     },
     climb_cross: {
         id: 1,
+        repeat: true,
         sound: soundList.climb_crossing_climb
     },
     climb_increase: {
         id: 2,
+        repeat: true,
         sound: soundList.increase_climb
     },
     climb_now: {
         id: 3,
+        repeat: true,
         sound: soundList.climb_climb_now
     },
     clear_of_conflict: {
         id: 4,
+        repeat: false,
         sound: soundList.clear_of_conflict
     },
     descend: {
         id: 5,
+        repeat: false,
         sound: soundList.descend_descend
     },
     descend_cross: {
         id: 6,
+        repeat: true,
         sound: soundList.descend_crossing_descend
     },
     descend_increase: {
         id: 7,
+        repeat: true,
         sound: soundList.increase_descent
     },
     descend_now: {
         id: 8,
+        repeat: true,
         sound: soundList.descend_descend_now
     },
     monitor_vs: {
         id: 9,
+        repeat: false,
         sound: soundList.monitor_vs
     },
     maintain_vs: {
         id: 10,
+        repeat: false,
         sound: soundList.maint_vs_maint
     },
     maintain_vs_cross: {
         id: 11,
+        repeat: false,
         sound: soundList.maint_vs_crossing_maint
     },
     level_off: {
         id: 12,
+        repeat: false,
         sound: soundList.level_off_level_off
     },
     traffic: {
         id: 13,
+        repeat: false,
         sound: soundList.traffic_traffic
     }
 };
@@ -657,7 +671,12 @@ class A32NX_TCAS_Manager {
             this.activeRA.secondsSinceStart += _deltaTime / 1000;
             if (!this.activeRA.hasBeenAnnounced) {
                 console.log("TCAS: RA GENERATED: ", this.activeRA.info.callout);
-                this.soundManager.tryPlaySound(this.activeRA.info.callout.sound, true);
+
+                if (this.activeRA.info.callout.repeat) {
+                    this.soundManager.tryPlaySound(this.activeRA.info.callout.sound, true, true);
+                } else {
+                    this.soundManager.tryPlaySound(this.activeRA.info.callout.sound, true, false);
+                }
 
                 const isCorrective = this.activeRA.info.type === raType.corrective;
                 SimVar.SetSimVarValue("L:A32NX_TCAS_RA_CORRECTIVE", "Boolean", isCorrective);
