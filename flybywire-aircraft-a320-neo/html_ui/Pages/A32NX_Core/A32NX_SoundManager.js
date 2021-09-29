@@ -53,7 +53,7 @@ class A32NX_SoundManager {
         if (this.playingSound === null) {
             this.playingSound = sound;
             this.playingSoundRemaining = sound.length;
-
+            console.log("SOUND: playing ", sound);
             Coherent.call("PLAY_INSTRUMENT_SOUND", sound.name).catch(console.error);
             return true;
         }
@@ -169,5 +169,9 @@ const soundList = {
     alt_5: {
         name: "new_5",
         length: 0.3
+    },
+    traffic_traffic: {
+        name: "traffic_traffic",
+        length: 1.1
     }
 };
