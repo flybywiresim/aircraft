@@ -26,15 +26,14 @@ use systems::{
         PneumaticContainerWithValve, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
-        ControllerSignal, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, PneumaticValve,
+        pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
+        PneumaticValve,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
     },
 };
-
-use pid::Pid;
 
 struct IntermediatePressureValveSignal {
     target_open_amount: Ratio,
@@ -676,10 +675,8 @@ struct BleedMonitoringComputerChannel {
     is_engine_fire_pushbutton_released: bool,
     is_apu_bleed_valve_open: bool,
     is_apu_bleed_on: bool,
-    hpv_pid: Pid<f64>,
-    hpv_output: f64,
-    prv_pid: Pid<f64>,
-    prv_output: f64,
+    hpv_pid: PidController,
+    prv_pid: PidController,
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
     cross_bleed_valve_is_open: bool,
     engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor,
@@ -703,10 +700,8 @@ impl BleedMonitoringComputerChannel {
             is_engine_fire_pushbutton_released: false,
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
-            hpv_pid: Pid::new(0.05, 0., 0., 1., 1., 1., 1., 65.),
-            hpv_output: 0.,
-            prv_pid: Pid::new(0., 0.01, 0., 1., 1., 1., 1., 46.),
-            prv_output: 0.,
+            hpv_pid: PidController::new(0.05, 0., 0., 0., 1., 65.),
+            prv_pid: PidController::new(0., 0.01, 0., 0., 1., 46.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
             engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor::new(engine_number),
@@ -727,14 +722,12 @@ impl BleedMonitoringComputerChannel {
         self.transfer_pressure = sensors.transfer_pressure();
         self.precooler_inlet_pressure = sensors.precooler_inlet_pressure();
 
-        self.hpv_output = self
-            .hpv_pid
-            .next_control_output(self.transfer_pressure.get::<psi>())
-            .output;
-        self.prv_output = self
-            .prv_pid
-            .next_control_output(self.precooler_inlet_pressure.get::<psi>())
-            .output;
+        self.hpv_pid
+            .next_control_output(self.transfer_pressure.get::<psi>(), Some(context.delta()));
+        self.prv_pid.next_control_output(
+            self.precooler_inlet_pressure.get::<psi>(),
+            Some(context.delta()),
+        );
 
         self.prv_open_amount = sensors.prv_open_amount();
         self.hpv_open_position = sensors.hpv_open_amount();
@@ -802,7 +795,7 @@ impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChanne
         }
 
         Some(HighPressureValveSignal::new(Ratio::new::<ratio>(
-            self.hpv_output.max(0.).min(1.),
+            self.hpv_pid.output().max(0.).min(1.),
         )))
     }
 }
@@ -828,7 +821,7 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
         }
 
         Some(PressureRegulatingValveSignal::new(Ratio::new::<ratio>(
-            self.prv_output.max(0.).min(1.),
+            self.prv_pid.output().max(0.).min(1.),
         )))
     }
 }
@@ -1947,11 +1940,11 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .stop_eng1()
-            .stop_eng2()
-            // .both_packs_auto()
-            .set_bleed_air_running()
+            .idle_eng1()
+            .idle_eng1()
+            .both_packs_auto()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
+        // .set_bleed_air_running()
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();

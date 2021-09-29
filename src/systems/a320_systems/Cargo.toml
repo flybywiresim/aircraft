@@ -9,7 +9,6 @@ uom = "0.30.0"
 rand = "0.8.0"
 nalgebra = "0.25.0"
 systems = { path = "../systems" }
-pid = "3.0.0"
 
 [dev-dependencies]
 rstest = "0.10.0"

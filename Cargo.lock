@@ -20,7 +20,6 @@ name = "a320_systems"
 version = "0.1.0"
 dependencies = [
  "nalgebra",
- "pid",
  "rand",
  "rstest",
  "systems",
@@ -611,15 +610,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "10f4872ae94d7b90ae48754df22fd42ad52ce740b8f370b03da4835417403e53"
 dependencies = [
  "ucd-trie",
-]
-
-[[package]]
-name = "pid"
-version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d81764342f0ec3d969b9898925e5b0dc31c95466cb70a79a3064b33eb3b5480a"
-dependencies = [
- "num-traits",
 ]
 
 [[package]]
