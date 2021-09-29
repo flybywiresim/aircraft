@@ -176,7 +176,7 @@ const SimOptionsPage = () => {
     const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
-    const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', '1');
+    const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
 
@@ -196,9 +196,9 @@ const SimOptionsPage = () => {
     ];
 
     const boardingRateButtons: ButtonType[] = [
-        { name: 'Instant', setting: '3' },
-        { name: 'Fast', setting: '2' },
-        { name: 'Real', setting: '1' },
+        { name: 'Instant', setting: 'INSTANT' },
+        { name: 'Fast', setting: 'FAST' },
+        { name: 'Real', setting: 'REAL' },
     ];
 
     const defaultBaroButtons: ButtonType[] = [
