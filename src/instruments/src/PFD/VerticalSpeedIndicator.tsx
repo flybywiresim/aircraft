@@ -140,7 +140,7 @@ const VSpeedTcasZone = ({ zoneBounds, zoneClass, extended, isCorrective }) => {
     } else if (zoneBounds[0] <= -6000) {
         y1 = 131.72;
     } else {
-        y1 = 80.82 + getYoffset(zoneBounds[0]);
+        y1 = 80.822 + getYoffset(zoneBounds[0]);
     }
 
     if (zoneBounds[1] >= 6000) {
@@ -148,25 +148,27 @@ const VSpeedTcasZone = ({ zoneBounds, zoneClass, extended, isCorrective }) => {
     } else if (zoneBounds[1] <= -6000) {
         y2 = 131.72;
     } else {
-        y2 = 80.82 + getYoffset(zoneBounds[1]);
+        y2 = 80.822 + getYoffset(zoneBounds[1]);
     }
 
     if ((Math.abs(zoneBounds[1]) > 1750 && Math.abs(zoneBounds[1]) > Math.abs(zoneBounds[0]))
         || (isCorrective && zoneClass === 'Fill Red')) {
         y3 = y2;
     } else {
-        y3 = 80.82 + getYoffset(zoneBounds[1] / 2);
+        // y3 = 80.822 + getYoffset(zoneBounds[1] / 2);
+        y3 = 80.822;
     }
 
     if (Math.abs(zoneBounds[0]) > 1750 && Math.abs(zoneBounds[0]) > Math.abs(zoneBounds[1])
         || (isCorrective && zoneClass === 'Fill Red')) {
         y4 = y1;
     } else {
-        y4 = 80.82 + getYoffset(zoneBounds[0] / 2);
+        // y4 = 80.822 + getYoffset(zoneBounds[0] / 2);
+        y4 = 80.822;
     }
 
     const x1 = 151.84;
-    const x2 = extended ? 160 : 157.3804;
+    const x2 = extended ? 162.74 : 157.3804;
 
     console.log(`TCAS PATH DEBUG: ${zoneClass}: m${x1},${y1} L${x1},${y2} L${x2},${y3} L${x2},${y4} L${x1},${y1}z, BOUNDS: `, zoneBounds);
 
