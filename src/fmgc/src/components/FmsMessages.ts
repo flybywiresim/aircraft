@@ -61,8 +61,8 @@ export class FmsMessages implements FmgcComponent {
                 }
 
                 if (message.ndFlag > 0) {
-                    if (selector.ndSide) {
-                        this.ndMessageFlags[selector.ndSide] |= message.ndFlag;
+                    if (selector.efisSide) {
+                        this.ndMessageFlags[selector.efisSide] |= message.ndFlag;
                     } else {
                         for (const side in this.ndMessageFlags) {
                             this.ndMessageFlags[side] |= message.ndFlag;
@@ -77,8 +77,8 @@ export class FmsMessages implements FmgcComponent {
                 }
 
                 if (message.ndFlag > 0) {
-                    if (selector.ndSide) {
-                        this.ndMessageFlags[selector.ndSide] &= ~message.ndFlag;
+                    if (selector.efisSide) {
+                        this.ndMessageFlags[selector.efisSide] &= ~message.ndFlag;
                     } else {
                         for (const side in this.ndMessageFlags) {
                             this.ndMessageFlags[side] &= ~message.ndFlag;
@@ -171,7 +171,7 @@ enum FMMessageUpdate {
 abstract class FMMessageSelector {
     abstract message: FMMessage;
 
-    abstract ndSide?: 'L' | 'R';
+    abstract efisSide?: 'L' | 'R';
 
     /**
      * This function allows per-tick processing of a message if implemented
@@ -243,14 +243,14 @@ class GpsPrimaryLost implements FMMessageSelector {
 abstract class MapPartlyDisplayed implements FMMessageSelector {
     message: FMMessage = FMMessageTypes.MapPartlyDisplayed;
 
-    abstract ndSide: 'L' | 'R';
+    abstract efisSide: 'L' | 'R';
 
     trigRising = new Trigger(true);
 
     trigFalling = new Trigger(true);
 
     process(deltaTime: number): FMMessageUpdate {
-        const partlyDisplayed = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.ndSide}_MAP_PARTLY_DISPLAYED`, 'boolean');
+        const partlyDisplayed = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.efisSide}_MAP_PARTLY_DISPLAYED`, 'boolean');
         this.trigRising.input = partlyDisplayed === 1;
         this.trigRising.update(deltaTime);
         this.trigFalling.input = partlyDisplayed === 0;
@@ -266,9 +266,9 @@ abstract class MapPartlyDisplayed implements FMMessageSelector {
 }
 
 class MapPartlyDisplayedLeft extends MapPartlyDisplayed {
-    ndSide: 'L' | 'R' = 'L';
+    efisSide: 'L' | 'R' = 'L';
 }
 
 class MapPartlyDisplayedRight extends MapPartlyDisplayed {
-    ndSide: 'L' | 'R' = 'R';
+    efisSide: 'L' | 'R' = 'R';
 }
