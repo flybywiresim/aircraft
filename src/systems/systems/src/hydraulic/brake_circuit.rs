@@ -13,13 +13,8 @@ use uom::si::{
     acceleration::meter_per_second_squared, f64::*, pressure::psi, ratio::ratio, volume::gallon,
 };
 
+use super::linear_actuator::Actuator;
 use super::Accumulator;
-
-pub trait Actuator {
-    fn used_volume(&self) -> Volume;
-    fn reservoir_return(&self) -> Volume;
-    fn reset_volumes(&mut self);
-}
 
 struct BrakeActuator {
     total_displacement: Volume,
@@ -501,7 +496,7 @@ mod tests {
     use crate::simulation::UpdateContext;
     use std::time::Duration;
     use uom::si::{
-        acceleration::foot_per_second_squared, length::foot, pressure::psi,
+        acceleration::foot_per_second_squared, angle::radian, length::foot, pressure::psi,
         thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
     };
 

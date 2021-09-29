@@ -3,10 +3,10 @@ use nalgebra::Vector3;
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    electric_current::ampere,
-    f64::*,
     angle::degree,
     angular_velocity::revolution_per_minute,
+    electric_current::ampere,
+    f64::*,
     f64::*,
     length::meter,
     mass::kilogram,
@@ -15,6 +15,7 @@ use uom::si::{
     ratio::{percent, ratio},
     velocity::knot,
     volume::gallon,
+    volume_rate::gallon_per_second,
 };
 
 use systems::{
@@ -23,16 +24,13 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
-        ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicLoopController,
-        PowerTransferUnit, PowerTransferUnitController, PumpController, RamAirTurbine,
-        RamAirTurbineController,
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
             LinearActuatorMode,
         },
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
-        ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
+        ElectricPump, EngineDrivenPump, Fluid, HydraulicCircuit, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
     },
@@ -104,6 +102,8 @@ impl A320HydraulicCircuitFactory {
             false,
             true,
         )
+    }
+}
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
     fn a320_cargo_door_actuator(
@@ -417,13 +417,13 @@ impl A320Hydraulic {
         self.forward_cargo_door.update(
             &self.forward_cargo_door_controller,
             &context,
-            self.yellow_loop.pressure(),
+            self.yellow_loop.system_pressure(),
         );
 
         self.aft_cargo_door.update(
             &self.aft_cargo_door_controller,
             &context,
-            self.yellow_loop.pressure(),
+            self.yellow_loop.system_pressure(),
         );
 
         self.ram_air_turbine
@@ -473,13 +473,13 @@ impl A320Hydraulic {
         self.forward_cargo_door_controller.update(
             context,
             &self.forward_cargo_door,
-            self.yellow_loop.pressure(),
+            self.yellow_loop.system_pressure(),
         );
 
         self.aft_cargo_door_controller.update(
             context,
             &self.aft_cargo_door,
-            self.yellow_loop.pressure(),
+            self.yellow_loop.system_pressure(),
         );
     }
 
@@ -597,7 +597,7 @@ impl A320Hydraulic {
             overhead_panel,
             &self.forward_cargo_door_controller,
             &self.aft_cargo_door_controller,
-            self.yellow_loop..system_section_switch_pressurised(),
+            self.yellow_loop.system_section_switch_pressurised(),
         );
         self.yellow_electric_pump.update(
             context,

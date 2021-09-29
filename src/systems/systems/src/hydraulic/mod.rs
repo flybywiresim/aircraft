@@ -1,4 +1,4 @@
-use self::brake_circuit::Actuator;
+use self::linear_actuator::Actuator;
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
@@ -1468,8 +1468,8 @@ impl WindTurbine {
         self.speed
     }
 
-    fn update_generated_torque(&mut self, indicated_speed: &Velocity, stow_pos: f64) {
-        let cur_aplha = interpolation(
+    fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
+        let cur_alpha = interpolation(
             &Self::RPM_GOVERNOR_BREAKPTS,
             &Self::PROP_ALPHA_MAP,
             self.rpm,
@@ -1696,7 +1696,7 @@ mod tests {
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::UpdateContext;
     use uom::si::{
-        acceleration::foot_per_second_squared, f64::*, length::foot, pressure::psi,
+        acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot, pressure::psi,
         thermodynamic_temperature::degree_celsius, volume::gallon,
     };
 

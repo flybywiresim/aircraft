@@ -12,7 +12,7 @@ use systems::shared::PotentialOrigin;
 use systems::simulation::SimulationElement;
 use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
-    acceleration::foot_per_second_squared, angular_velocity::revolution_per_minute,
+    acceleration::foot_per_second_squared, angle::radian, angular_velocity::revolution_per_minute,
     electric_current::ampere, f64::*, length::foot, pressure::psi,
     thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
 };

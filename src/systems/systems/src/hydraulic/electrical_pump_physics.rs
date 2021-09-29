@@ -183,16 +183,16 @@ impl SimulationElement for ElectricalPumpPhysics {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::UpdateContext;
-    use std::time::Duration;
-    use uom::si::{
-        acceleration::foot_per_second_squared, length::foot, pressure::psi,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
-    };
     use crate::electrical::test::TestElectricitySource;
     use crate::electrical::ElectricalBus;
     use crate::electrical::Electricity;
     use crate::shared::PotentialOrigin;
+    use crate::simulation::UpdateContext;
+    use std::time::Duration;
+    use uom::si::{
+        acceleration::foot_per_second_squared, angle::radian, length::foot, pressure::psi,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
+    };
 
     #[test]
     fn pump_inactive_at_init() {
@@ -252,6 +252,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 
