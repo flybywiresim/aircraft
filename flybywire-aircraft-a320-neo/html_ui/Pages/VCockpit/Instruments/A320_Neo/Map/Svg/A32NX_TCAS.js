@@ -425,6 +425,10 @@ class A32NX_TCAS_Manager {
                         this.TrafficAircraft.push(aircraft);
                     } else {
                         aircraft.update(localDeltaTime, traffic.lat, traffic.lon, traffic.alt * 3.281, traffic.heading, lat, lon, altitude, vertSpeed, TaRaDMOD);
+                        // Update TA elapsed timer
+                        if (aircraft.intrusionLevel === 2 && aircraft.secondsSinceLastTA < 10 && aircraft.taExpiring) {
+                            aircraft.secondsSinceLastTA += _deltaTime / 1000;
+                        }
                     }
                     aircraft.alive = true;
                 }
@@ -1330,13 +1334,6 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         }
         if (this.verticalTAU < 0) {
             this.verticalTAU = Infinity;
-        }
-
-        // Update TA elapsed timer
-        if (this.intrusionLevel === 2 && this.secondsSinceLastTA < 10 && this.taExpiring) {
-            console.log("🚀 -> A32NX_TCAS_Airplane -> update -> this.taExpiring", this.taExpiring);
-            console.log("🚀 -> A32NX_TCAS_Airplane -> update -> this.secondsSinceLastTA", this.secondsSinceLastTA);
-            this.secondsSinceLastTA += _deltaTime / 1000;
         }
     }
 
