@@ -15,10 +15,10 @@
 #include <MSFS\MSFS_Render.h>
 #include <SimConnect.h>
 
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <string>
-//#include <chrono>    // For PerfProf
 
 #include "EngineControl.h"
 #include "RegPolynomials.h"
@@ -42,13 +42,15 @@ class FadecGauge {
       std::cout << "FADEC: SimConnect connected." << std::endl;
 
       // SimConnect Tanker Definitions
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK LEFT MAIN QUANTITY", "Gallons");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK CENTER QUANTITY", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelLeftMain, "FUEL TANK LEFT MAIN QUANTITY", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelRightMain, "FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelCenterMain, "FUEL TANK CENTER QUANTITY", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelLeftAux, "FUEL TANK LEFT AUX QUANTITY", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelRightAux, "FUEL TANK RIGHT AUX QUANTITY", "Gallons");
 
       // SimConnect Oil Temperature Definitions
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilControls, "GENERAL ENG OIL TEMPERATURE:1", "Celsius");
-      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilControls, "GENERAL ENG OIL TEMPERATURE:2", "Celsius");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilTempLeft, "GENERAL ENG OIL TEMPERATURE:1", "Celsius");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilTempRight, "GENERAL ENG OIL TEMPERATURE:2", "Celsius");
 
       // SimConnect Oil Pressure Definitions
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::OilPsiLeft, "GENERAL ENG OIL PRESSURE:1", "Psi");
