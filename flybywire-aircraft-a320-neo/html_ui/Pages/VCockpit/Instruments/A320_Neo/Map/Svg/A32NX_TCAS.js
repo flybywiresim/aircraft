@@ -6,16 +6,17 @@ const resolutionSense = {
 };
 
 const resolutionStrength = {
-    level_off: 0,
-    change: 1,
-    change_crossing: 2,
-    maintain_change: 3,
-    maintain_change_crossing: 4,
-    level_off: 5,
-    reverse_change: 6,
-    increase_change: 7,
-    preventative: 8,
-    removed: 9
+    initial: 0,
+    level_off: 1,
+    change: 2,
+    change_crossing: 3,
+    maintain_change: 4,
+    maintain_change_crossing: 5,
+    level_off: 6,
+    reverse_change: 7,
+    increase_change: 8,
+    preventative: 9,
+    removed: 10
 };
 
 class A32NX_TCAS_Manager {
@@ -25,12 +26,10 @@ class A32NX_TCAS_Manager {
         this.sensitivityLevel = 1;
         this.activeRA = new Set();
         this.activeTA = new Set();
-        this.soundManager = new A32NX_SoundManager();
     }
 
     // This is called from the MFD JS file, because the MapInstrument doesn't have a deltaTime
     update(_deltaTime) {
-        // console.log("UPDATE LOOP CALLED!");
         const TCASSwitchPos = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "number");
         const TransponderStatus = SimVar.GetSimVarValue("TRANSPONDER STATE:1", "number");
         const TCASThreatSetting = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Traffic_Position", "number");
@@ -56,6 +55,12 @@ class A32NX_TCAS_Manager {
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         const lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
 
+        this.updateSensitivityLevel(altitude, radioAltitude, TCASMode);
+
+        const TaRaTau = this.getTaRaTau(this.sensitivityLevel);
+        const TaRaDMOD = this.getTaRaDMOD(this.sensitivityLevel);
+        const TaRaZTHR = this.getTaRaZTHR(this.sensitivityLevel);
+
         // update traffic aircraft
         this.TrafficUpdateTimer += _deltaTime / 1000;
 
@@ -79,7 +84,7 @@ class A32NX_TCAS_Manager {
                         aircraft = new A32NX_TCAS_Airplane(traffic.uId.toFixed(0), traffic.lat, traffic.lon, traffic.alt * 3.281, traffic.heading, lat, lon, altitude);
                         this.TrafficAircraft.push(aircraft);
                     } else {
-                        aircraft.update(localDeltaTime, traffic.lat, traffic.lon, traffic.alt * 3.281, traffic.heading, lat, lon, altitude, vertSpeed);
+                        aircraft.update(localDeltaTime, traffic.lat, traffic.lon, traffic.alt * 3.281, traffic.heading, lat, lon, altitude, vertSpeed, TaRaDMOD[1]);
                     }
                     aircraft.alive = true;
                 }
@@ -96,12 +101,6 @@ class A32NX_TCAS_Manager {
             this.TrafficUpdateTimer = 0;
         }
 
-        this.updateSensitivityLevel(altitude, radioAltitude, TCASMode);
-
-        const TaRaTau = this.getTaRaTau(this.sensitivityLevel);
-        const TaRaDMOD = this.getTaRaDMOD(this.sensitivityLevel);
-        const TaRaZTHR = this.getTaRaZTHR(this.sensitivityLevel);
-
         let maxIntrusionLevel = 0;
         // Check for collisions
         for (const traffic of this.TrafficAircraft) {
@@ -114,7 +113,8 @@ class A32NX_TCAS_Manager {
             // skip if not
             if (horizontalDistance > 35 && Math.abs(traffic.relativeAlt) > 9900) {
                 traffic.isDisplayed = false;
-                traffic.TAU = Infinity;
+                traffic.TaTAU = Infinity;
+                traffic.RaTAU = Infinity;
                 continue;
             }
 
@@ -122,7 +122,8 @@ class A32NX_TCAS_Manager {
             // information, we need to rely on the fallback method
             // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
             if (altitude < 1750 && traffic.alt < groundAlt + 360) {
-                traffic.TAU = Infinity;
+                traffic.TaTAU = Infinity;
+                traffic.RaTAU = Infinity;
                 traffic.verticalTAU = Infinity;
                 traffic.onGround = true;
                 continue;
@@ -133,9 +134,9 @@ class A32NX_TCAS_Manager {
             let verticalIntrusionLevel = 0;
             let rangeIntrusionLevel = 0;
 
-            if (traffic.TAU < TaRaTau[1] || traffic.slantDistance < TaRaDMOD[1]) {
+            if (traffic.RaTAU < TaRaTau[1] || traffic.slantDistance < TaRaDMOD[1]) {
                 rangeIntrusionLevel = 3;
-            } else if (traffic.TAU < TaRaTau[0] || traffic.slantDistance < TaRaDMOD[0]) {
+            } else if (traffic.TaTAU < TaRaTau[0] || traffic.slantDistance < TaRaDMOD[0]) {
                 rangeIntrusionLevel = 2;
             } else if (horizontalDistance < 6) {
                 rangeIntrusionLevel = 1;
@@ -162,6 +163,7 @@ class A32NX_TCAS_Manager {
         }
 
         this.updateAdvisories(_deltaTime);
+        this.updateRaParameters(_deltaTime);
     }
 
     updateAdvisories(_deltaTime) {
@@ -170,16 +172,14 @@ class A32NX_TCAS_Manager {
                 if (traffic.intrusionLevel === 3) {
                     console.log("TCAS: TA UPGRADED TO RA!");
                     this.activeTA.delete(traffic.ID);
-                    this.activeRA.add(traffic.ID);
+                    this.activeRA.add([traffic.ID, resolutionSense.initial, resolutionStrength.initial]);
                 } else if (traffic.intrusionLevel < 2) {
                     console.log("TCAS: CLEAR OF TA!");
                     this.activeTA.delete(traffic.ID);
                     traffic.timeSinceLastTA = 0;
                 }
             } else {
-                // if (traffic.intrusionLevel === 2 && traffic.timeSinceLastTA >= 5) {
                 if (traffic.intrusionLevel === 2) {
-                    // this.soundManager.tryPlaySound(soundList.traffic_traffic);
                     console.log("TCAS: GENERATING NEW TA!");
                     Coherent.call("PLAY_INSTRUMENT_SOUND", "traffic_traffic");
                     this.activeTA.add(traffic.ID);
@@ -193,20 +193,31 @@ class A32NX_TCAS_Manager {
                     // Handle continuing RA
                 } else {
                     if (traffic.intrusionLevel === 2) {
+                        this.activeTA.add(traffic.ID);
                         traffic.timeSinceLastTA = 0;
+                        console.log("TCAS: RA DOWNGRADED TO TA");
                     }
                     this.activeRA.delete(traffic.ID);
                     console.log("TCAS: CLEAR OF CONFLICT!");
                 }
             } else {
                 if (traffic.intrusionLevel === 3) {
-                    // New RA!
                     console.log("TCAS: RA GENERATED!");
+                    this.activeRA.add([traffic.ID, resolutionSense.initial, resolutionStrength.initial]);
                 }
             }
         }
+    }
 
-        return 0;
+    updateRaParameters(_deltaTime) {
+        for (const RA of this.activeRA) {
+            const traffic = this.TrafficAircraft.find(t => t.ID === RA[0]);
+            if (RA[1] === resolutionSense.initial) {
+                // Choose initial sense and strength
+            } else {
+
+            }
+        }
     }
 
     /**
@@ -387,7 +398,8 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
         this.isDisplayed = false;
 
         // time until predicted collision
-        this.TAU = Infinity;
+        this.TaTAU = Infinity;
+        this.RaTau = Infinity;
         // time until aircraft is on the same altitude level
         this.verticalTAU = Infinity;
 
@@ -419,7 +431,7 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
      * @param selfAlt {number} in feet
      * @param selfVertSpeed {number} in feet per minute
      */
-    update(_deltaTime, newLat, newLon, newAlt, newHeading, selfLat, selfLon, selfAlt, selfVertSpeed) {
+    update(_deltaTime, newLat, newLon, newAlt, newHeading, selfLat, selfLon, selfAlt, selfVertSpeed, TaRaDMOD) {
         this.vertSpeed = (newAlt - this.alt) / _deltaTime * 60; //times 60 because deltatime is in seconds, and we need feet per minute
 
         const newSlantDist = this.computeDistance3D([newLat, newLon, newAlt], [selfLat, selfLon, selfAlt]);
@@ -433,12 +445,14 @@ class A32NX_TCAS_Airplane extends SvgMapElement {
 
         const combinedVertSpeed = selfVertSpeed - this.vertSpeed;
 
-        this.TAU = this.slantDistance / this.closureRate * 3600;
+        this.TaTAU = (this.slantDistance - TaRaDMOD[0]) / this.closureRate * 3600;
+        this.RaTAU = (this.slantDistance = TaRaDMOD[1]) / this.closureRate * 3600;
         this.verticalTAU = this.relativeAlt / combinedVertSpeed * 60;
 
         // check if we are moving away from target. If yes, set TAUs to infinity
-        if (this.TAU < 0) {
-            this.TAU = Infinity;
+        if (this.RaTAU < 0) {
+            this.TaTAU = Infinity;
+            this.RaTAU = Infinity;
         }
         if (this.verticalTAU < 0) {
             this.verticalTAU = Infinity;
