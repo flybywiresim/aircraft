@@ -1,5 +1,5 @@
 use crate::{
-    hydraulic::HydraulicLoop,
+    hydraulic::{linear_actuator::Actuator, HydraulicLoop},
     overhead::PressSingleSignalButton,
     shared::pid::PidController,
     simulation::{
@@ -16,11 +16,6 @@ use uom::si::{
 };
 
 use super::Accumulator;
-
-pub trait Actuator {
-    fn used_volume(&self) -> Volume;
-    fn reservoir_return(&self) -> Volume;
-}
 
 struct BrakeActuator {
     total_displacement: Volume,
@@ -77,11 +72,6 @@ impl BrakeActuator {
         }
     }
 
-    fn reset_accumulators(&mut self) {
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-    }
-
     fn update_position(&mut self, context: &UpdateContext, loop_pressure: Pressure) -> f64 {
         // Final required position for actuator is the required one unless we can't reach it due to pressure
         let final_required_position = self
@@ -108,8 +98,14 @@ impl Actuator for BrakeActuator {
     fn used_volume(&self) -> Volume {
         self.volume_to_actuator_accumulator
     }
+
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
+    }
+
+    fn reset_accumulators(&mut self) {
+        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -298,18 +294,19 @@ impl BrakeCircuit {
     pub fn accumulator_fluid_volume(&self) -> Volume {
         self.accumulator.fluid_volume()
     }
-
-    pub fn reset_accumulators(&mut self) {
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
-    }
 }
 impl Actuator for BrakeCircuit {
     fn used_volume(&self) -> Volume {
         self.volume_to_actuator_accumulator
     }
+
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
+    }
+
+    fn reset_accumulators(&mut self) {
+        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 impl SimulationElement for BrakeCircuit {
@@ -503,6 +500,7 @@ mod tests {
     use std::time::Duration;
     use uom::si::{
         acceleration::foot_per_second_squared,
+        angle::radian,
         length::foot,
         pressure::{pascal, psi},
         thermodynamic_temperature::degree_celsius,
@@ -824,6 +822,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 }

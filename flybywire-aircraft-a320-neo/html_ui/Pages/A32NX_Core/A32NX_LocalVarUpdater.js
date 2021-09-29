@@ -231,7 +231,7 @@ class A32NX_LocalVarUpdater {
         (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') &&
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 5 && // Pilot side front door for ramp/stairs
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
-            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
+            SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool') // Cargo door FO side
         );
     }
 
