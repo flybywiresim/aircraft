@@ -1,4 +1,5 @@
 import { Arinc429Word } from '@instruments/common/arinc429';
+import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 import { BitPacking } from '@shared/bitpacking';
 import { getSimVar } from '../util.js';
@@ -31,16 +32,18 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
 
     const yOffset = getYoffset(verticalSpeed);
 
-    const tcasState = getSimVar('L:A32NX_TCAS_STATE', 'Enum');
-    const tcasCorrective = getSimVar('L:A32NX_TCAS_RA_CORRECTIVE', 'Boolean');
-    const tcasRedZone = [getSimVar('L:A32NX_TCAS_VSPEED_RED:1', 'Number'), getSimVar('L:A32NX_TCAS_VSPEED_RED:2', 'Number')];
-    const tcasGreenZone = [getSimVar('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number'), getSimVar('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number')];
+    const [tcasState] = useSimVar('L:A32NX_TCAS_STATE', 'Enum', 200);
+    const [tcasCorrective] = useSimVar('L:A32NX_TCAS_RA_CORRECTIVE', 'Boolean', 200);
+    const [tcasRedZoneL] = useSimVar('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 200);
+    const [tcasRedZoneH] = useSimVar('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 200);
+    const [tcasGreenZoneL] = useSimVar('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 200);
+    const [tcasGreenZoneH] = useSimVar('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 200);
 
     return (
         <g>
             <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
 
-            <VSpeedTcas tcasState={tcasState} tcasCorrective={tcasCorrective} redZone={tcasRedZone} greenZone={tcasGreenZone} />
+            <VSpeedTcas tcasState={tcasState} tcasCorrective={tcasCorrective} redZone={[tcasRedZoneL, tcasRedZoneH]} greenZone={[tcasGreenZoneL, tcasGreenZoneH]} />
 
             <g id="VerticalSpeedGroup">
                 <g className="Fill White">
@@ -72,9 +75,9 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
                 <VSpeedText
                     yOffset={yOffset}
                     isAmber={isAmber}
-                    VSpeed={verticalSpeed}
-                    tcasRedZone={tcasRedZone}
-                    tcasGreenZone={tcasGreenZone}
+                    VSpeed={verticalSpeed.value}
+                    tcasRedZone={[tcasRedZoneL, tcasRedZoneH]}
+                    tcasGreenZone={[tcasGreenZoneL, tcasGreenZoneH]}
                     activeRA={tcasState === 2}
                     isCorrective={tcasCorrective}
                 />
