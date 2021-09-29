@@ -14,7 +14,7 @@ use uom::si::{
     pressure::{pascal, psi},
     velocity::knot,
     volume::{cubic_inch, gallon},
-    volume_rate::gallon_per_second,
+    volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
 pub mod brake_circuit;
@@ -56,7 +56,7 @@ impl Fluid {
 }
 
 /// Physical pressure switch.
-/// It's basically a switch reacting with pressure.
+/// It's a physical switch reacting with pressure.
 ///
 /// Goes true above high pressure hystereris value
 /// Goes false under low pressure hysteresis value
@@ -326,6 +326,10 @@ impl Accumulator {
     }
 }
 
+/// Complete hydraulic circuit that can be composed of multiple engine pump sections and one system section.
+/// Pump sections are all connected to system section through a checkvalve (one per pump section)
+/// Each pump section has its own pressure, and so does system section.
+/// Flow is distributed from pump sections to system section according to regulation state and pressure difference.
 pub struct HydraulicCircuit {
     pump_sections: Vec<Section>,
     system_section: Section,
@@ -623,8 +627,8 @@ impl SimulationElement for HydraulicCircuit {
     }
 }
 
-// This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
-// through a checkvalve
+/// This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
+/// through a checkvalve
 pub struct Section {
     pressure_id: String,
     pressure_switch_id: String,
@@ -667,12 +671,12 @@ impl Section {
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
     ) -> Self {
-        let section_name: String;
-        if pump_id.is_some() {
-            section_name = format!("HYD_{}_{}{}_SECTION", loop_id, section_id, pump_id.unwrap());
+        let section_name: String = if pump_id.is_some() {
+            format!("HYD_{}_{}{}_SECTION", loop_id, section_id, pump_id.unwrap())
         } else {
-            section_name = format!("HYD_{}_{}_SECTION", loop_id, section_id);
-        }
+            format!("HYD_{}_{}_SECTION", loop_id, section_id)
+        };
+
         Self {
             pressure_id: format!("{}_PRESSURE", section_name),
             pressure_switch_id: format!("{}_PRESSURE_SWITCH", section_name),
@@ -727,12 +731,13 @@ impl Section {
         target_pressure: Pressure,
         fluid: &Fluid,
     ) {
-        if self.is_primed() {
-            self.volume_target = self.volume_to_reach_target(target_pressure, fluid);
+        self.volume_target = if self.is_primed() {
+            self.volume_to_reach_target(target_pressure, fluid)
         } else {
-            self.volume_target = self.max_high_press_volume - self.current_volume
-                + self.volume_to_reach_target(target_pressure, fluid);
-        }
+            self.max_high_press_volume - self.current_volume
+                + self.volume_to_reach_target(target_pressure, fluid)
+        };
+
         self.volume_target -= self.delta_vol_consumer_pass;
     }
 
@@ -1026,11 +1031,11 @@ impl CheckValve {
                 .max(physical_volume_transferred);
         }
 
-        if available_volume_from_upstream.get::<gallon>() > 0. {
-            self.max_virtual_volume = available_volume_from_upstream;
+        self.max_virtual_volume = if available_volume_from_upstream.get::<gallon>() > 0. {
+            available_volume_from_upstream
         } else {
-            self.max_virtual_volume = Volume::new::<gallon>(0.);
-        }
+            Volume::new::<gallon>(0.)
+        };
     }
 }
 impl Default for CheckValve {
@@ -1059,13 +1064,12 @@ impl Reservoir {
 
     // Try to take volume from reservoir. Will return only what's currently available
     fn try_take_volume(&mut self, volume: Volume) -> Volume {
-        let volume_taken;
-        if self.current_level > self.min_usable {
+        let volume_taken = if self.current_level > self.min_usable {
             let volume_available = self.current_level - self.min_usable;
-            volume_taken = volume_available.min(volume).max(Volume::new::<gallon>(0.));
+            volume_available.min(volume).max(Volume::new::<gallon>(0.))
         } else {
-            volume_taken = Volume::new::<gallon>(0.);
-        }
+            Volume::new::<gallon>(0.)
+        };
         self.current_level -= volume_taken;
 
         volume_taken
@@ -1078,7 +1082,7 @@ impl Reservoir {
         volume_taken / context.delta_as_time()
     }
 
-    // Asks reservoir what's current flow available
+    // What's current flow available
     fn request_flow_availability(&self, flow: VolumeRate, context: &UpdateContext) -> VolumeRate {
         let desired_volume = flow * context.delta_as_time();
         let max_volume_available = self.current_level - self.min_usable;
@@ -1164,13 +1168,14 @@ impl Pump {
         controller: &T,
     ) -> Volume {
         if controller.should_pressurise() {
-            return Volume::new::<cubic_inch>(interpolation(
+            Volume::new::<cubic_inch>(interpolation(
                 &self.press_breakpoints,
                 &self.displacement_carac,
                 pressure.get::<psi>(),
-            ));
+            ))
+        } else {
+            Volume::new::<cubic_inch>(0.)
         }
-        Volume::new::<cubic_inch>(0.)
     }
 
     fn calculate_displacement_from_required_flow(&self, required_flow: VolumeRate) -> Volume {
@@ -1201,11 +1206,10 @@ impl Pump {
 
     fn get_max_flow(&self) -> VolumeRate {
         if self.speed.get::<revolution_per_minute>() > 0. {
-            VolumeRate::new::<gallon_per_second>(
+            VolumeRate::new::<gallon_per_minute>(
                 self.speed.get::<revolution_per_minute>()
                     * self.current_displacement.get::<cubic_inch>()
-                    / 231.0
-                    / 60.0,
+                    / 231.0,
             )
         } else {
             VolumeRate::new::<gallon_per_second>(0.)
@@ -1228,10 +1232,10 @@ impl PressureSource for Pump {
         self.current_displacement = self.calculate_displacement_from_required_flow(required_flow);
         let max_current_flow = self.get_max_flow();
 
-        if is_pump_connected_to_reservoir {
-            self.current_flow = reservoir.try_take_flow(max_current_flow, &context);
+        self.current_flow = if is_pump_connected_to_reservoir {
+            reservoir.try_take_flow(max_current_flow, &context)
         } else {
-            self.current_flow = VolumeRate::new::<gallon_per_second>(0.);
+            VolumeRate::new::<gallon_per_second>(0.)
         }
     }
 
@@ -1437,7 +1441,6 @@ struct WindTurbine {
     position: f64,
     speed: AngularVelocity,
     acceleration: f64,
-    rpm: f64,
     torque_sum: f64,
 }
 impl WindTurbine {
@@ -1455,13 +1458,12 @@ impl WindTurbine {
             position: Self::STOWED_ANGLE,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
             acceleration: 0.,
-            rpm: 0.,
             torque_sum: 0.,
         }
     }
 
     fn rpm(&self) -> f64 {
-        self.rpm
+        self.speed.get::<revolution_per_minute>()
     }
 
     fn speed(&self) -> AngularVelocity {
@@ -1472,7 +1474,7 @@ impl WindTurbine {
         let cur_alpha = interpolation(
             &Self::RPM_GOVERNOR_BREAKPTS,
             &Self::PROP_ALPHA_MAP,
-            self.rpm,
+            self.rpm(),
         );
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
@@ -1485,7 +1487,7 @@ impl WindTurbine {
 
     fn update_friction_torque(&mut self, displacement_ratio: f64) {
         let mut pump_torque = 0.;
-        if self.rpm < Self::LOW_SPEED_PHYSICS_ACTIVATION {
+        if self.rpm() < Self::LOW_SPEED_PHYSICS_ACTIVATION {
             pump_torque += (self.position * 4.).cos() * displacement_ratio.max(0.35) * 35.;
             pump_torque += -self.speed.get::<radian_per_second>() * 15.;
         } else {
@@ -1502,9 +1504,6 @@ impl WindTurbine {
         self.speed +=
             AngularVelocity::new::<radian_per_second>(self.acceleration * delta_time.as_secs_f64());
         self.position += self.speed.get::<radian_per_second>() * delta_time.as_secs_f64();
-
-        // rad/s to RPM
-        self.rpm = self.speed.get::<radian_per_second>() * 30. / std::f64::consts::PI;
 
         // Reset torque accumulator at end of update
         self.torque_sum = 0.;
@@ -1640,10 +1639,6 @@ impl RamAirTurbine {
                 self.position = 1.;
             }
         }
-    }
-
-    pub fn turbine_rpm(&self) -> f64 {
-        self.wind_turbine.rpm
     }
 }
 impl PressureSource for RamAirTurbine {
