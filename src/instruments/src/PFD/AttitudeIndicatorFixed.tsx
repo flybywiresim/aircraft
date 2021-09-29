@@ -1,8 +1,14 @@
+import { Arinc429Word } from '@instruments/common/arinc429.js';
 import React from 'react';
 import { getSimVar } from '../util.js';
 
-export const AttitudeIndicatorFixedUpper = ({ pitch, roll }) => {
-    if (Number.isNaN(pitch) || Number.isNaN(roll)) {
+interface AttitudeIndicatorFixedUpperProps {
+    pitch: Arinc429Word;
+    roll: Arinc429Word;
+}
+
+export const AttitudeIndicatorFixedUpper = ({ pitch, roll }: AttitudeIndicatorFixedUpperProps) => {
+    if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return null;
     }
 
@@ -32,8 +38,16 @@ export const AttitudeIndicatorFixedUpper = ({ pitch, roll }) => {
     );
 };
 
-export const AttitudeIndicatorFixedCenter = ({ pitch, roll, isOnGround, FDActive, isAttExcessive }) => {
-    if (Number.isNaN(pitch) || Number.isNaN(roll)) {
+interface AttitudeIndicatorFixedCenterProps {
+    pitch: Arinc429Word;
+    roll: Arinc429Word;
+    isOnGround: boolean;
+    FDActive: boolean;
+    isAttExcessive: boolean;
+}
+
+export const AttitudeIndicatorFixedCenter = ({ pitch, roll, isOnGround, FDActive, isAttExcessive }: AttitudeIndicatorFixedCenterProps) => {
+    if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return (
             <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
         );
@@ -95,14 +109,12 @@ const FlightDirector = ({ FDActive }) => {
 
     if (showLateralFD) {
         const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
-        const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
-        FDRollOffset = Math.min(Math.max(currentRoll - FDRollOrder, -45), 45) * 0.44;
+        FDRollOffset = Math.min(Math.max(FDRollOrder, -45), 45) * 0.44;
     }
 
     if (showVerticalFD) {
         const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
-        const currentPitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
-        FDPitchOffset = Math.min(Math.max(FDPitchOrder + currentPitch, -22.5), 22.5) * 0.89;
+        FDPitchOffset = Math.min(Math.max(FDPitchOrder, -22.5), 22.5) * 0.89;
     }
 
     return (

@@ -26,23 +26,23 @@ export type ProgressBarProps = {
 }
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
-    bgcolor,
+    bgcolor = '#6a1b9a',
     completed,
-    displayBar,
+    displayBar = false,
     completedBarEnd,
-    completedBarBegin,
+    completedBarBegin = 0,
     completedBarBeginValue,
     completionValue,
-    baseBgColor,
-    height,
-    width,
+    baseBgColor = '#e0e0de',
+    height = '20px',
+    width = '100%',
     margin,
     padding,
-    borderRadius,
-    labelAlignment,
-    labelColor,
-    labelSize,
-    isLabelVisible,
+    borderRadius = '50px',
+    labelAlignment = 'right',
+    labelColor = '#fff',
+    labelSize = '15px',
+    isLabelVisible = true,
     vertical,
     greenBarsWhenInRange,
 }) => {
@@ -181,18 +181,4 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             )}
         </div>
     );
-};
-
-ProgressBar.defaultProps = {
-    bgcolor: '#6a1b9a',
-    height: '20px',
-    width: '100%',
-    borderRadius: '50px',
-    labelAlignment: 'right',
-    baseBgColor: '#e0e0de',
-    labelColor: '#fff',
-    labelSize: '15px',
-    isLabelVisible: true,
-    displayBar: false,
-    completedBarBegin: 0,
 };

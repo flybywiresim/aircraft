@@ -1,9 +1,14 @@
+use nalgebra::Vector3;
+
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
     angular_velocity::{radian_per_second, revolution_per_minute},
+    angular_velocity::revolution_per_minute,
     f64::*,
+    length::meter,
+    mass::kilogram,
     pressure::pascal,
     pressure::psi,
     ratio::{percent, ratio},
@@ -19,6 +24,12 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
         flap_slat::FlapSlatAssembly,
+        linear_actuator::{
+            Actuator, BoundedLinearLength, HydraulicAssemblyController,
+            HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
+            LinearActuatorMode,
+        },
+        update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController,
         RamAirTurbine, RamAirTurbineController,
@@ -38,7 +49,62 @@ use systems::{
     },
 };
 
+struct A320CargoDoorFactory {}
+impl A320CargoDoorFactory {
+    fn a320_cargo_door_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
+        LinearActuator::new(
+            bounded_linear_length,
+            2,
+            Length::new::<meter>(0.04422),
+            Length::new::<meter>(0.03366),
+            VolumeRate::new::<gallon_per_second>(0.01),
+            600000.,
+            15000.,
+            500.,
+        )
+    }
+
+    /// Builds a cargo door body for A320 Neo
+    fn a320_cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
+        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
+
+        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
+        let anchor = Vector3::new(-0.7596, -0.086, 0.);
+        let axis_direction = Vector3::new(0., 0., 1.);
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(130.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-23.),
+            Angle::new::<degree>(136.),
+            100.,
+            is_locked,
+            axis_direction,
+        )
+    }
+
+    /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
+    /// to it
+    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly {
+        let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
+        let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
+        HydraulicLinearActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
+    }
+
+    fn new_a320_cargo_door(id: &str) -> CargoDoor {
+        CargoDoor::new(id, A320CargoDoorFactory::a320_cargo_door_assembly())
+    }
+}
+
 pub(super) struct A320Hydraulic {
+    core_hydraulic_updater: FixedStepLoop,
+    physics_updater: MaxFixedStepLoop,
+
     brake_computer: A320HydraulicBrakeComputerUnit,
 
     blue_loop: HydraulicLoop,
@@ -62,8 +128,6 @@ pub(super) struct A320Hydraulic {
     yellow_electric_pump: ElectricPump,
     yellow_electric_pump_controller: A320YellowElectricPumpController,
 
-    forward_cargo_door: Door,
-    aft_cargo_door: Door,
     pushback_tug: PushbackTug,
 
     ram_air_turbine: RamAirTurbine,
@@ -77,11 +141,12 @@ pub(super) struct A320Hydraulic {
     braking_force: A320BrakingForce,
 
     flap_system: FlapSlatAssembly,
-
-    total_sim_time_elapsed: Duration,
-    lag_time_accumulator: Duration,
-
     flaps_position_request: Angle,
+
+    forward_cargo_door: CargoDoor,
+    forward_cargo_door_controller: A320DoorController,
+    aft_cargo_door: CargoDoor,
+    aft_cargo_door_controller: A320DoorController,
 }
 impl A320Hydraulic {
     const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
@@ -90,10 +155,9 @@ impl A320Hydraulic {
     const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
         0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
     ];
-
-    const FORWARD_CARGO_DOOR_ID: usize = 5;
-    // Same id for aft door as a place holder until it gets animated
-    const AFT_CARGO_DOOR_ID: usize = 5;
+    
+    const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
+    const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
     const BLUE_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
@@ -125,13 +189,16 @@ impl A320Hydraulic {
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
-    // Refresh rate of hydraulic simulation
-    const HYDRAULIC_SIM_TIME_STEP_MILLISECONDS: u64 = 100;
-    // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update.
-    const ACTUATORS_SIM_TIME_STEP_MULTIPLIER: u32 = 2;
+    // Refresh rate of core hydraulic simulation
+    const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(100);
+    // Refresh rate of max fixed step loop for fast physics
+    const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(50);
 
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
+            core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
+            physics_updater: MaxFixedStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
+
             brake_computer: A320HydraulicBrakeComputerUnit::new(),
 
             blue_loop: HydraulicLoop::new(
@@ -214,8 +281,6 @@ impl A320Hydraulic {
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
 
-            forward_cargo_door: Door::new(Self::FORWARD_CARGO_DOOR_ID),
-            aft_cargo_door: Door::new(Self::AFT_CARGO_DOOR_ID),
             pushback_tug: PushbackTug::new(),
 
             ram_air_turbine: RamAirTurbine::new(),
@@ -256,11 +321,15 @@ impl A320Hydraulic {
                 Self::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
             ),
-
-            total_sim_time_elapsed: Duration::new(0, 0),
-            lag_time_accumulator: Duration::new(0, 0),
-
             flaps_position_request: Angle::new::<degree>(0.),
+            
+            forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
+                Self::FORWARD_CARGO_DOOR_ID,
+            ),
+            forward_cargo_door_controller: A320DoorController::new(Self::FORWARD_CARGO_DOOR_ID),
+
+            aft_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(Self::AFT_CARGO_DOOR_ID),
+            aft_cargo_door_controller: A320DoorController::new(Self::AFT_CARGO_DOOR_ID),
         }
     }
 
@@ -278,20 +347,14 @@ impl A320Hydraulic {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
-        let min_hyd_loop_timestep =
-            Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
+        self.core_hydraulic_updater.update(context);
+        self.physics_updater.update(context);
 
-        self.total_sim_time_elapsed += context.delta();
+        for cur_time_step in &mut self.physics_updater {
+            self.update_fast_physics(&context.with_delta(cur_time_step));
+        }
 
-        // Time to catch up in our simulation = new delta + time not updated last iteration
-        let time_to_catch = context.delta() + self.lag_time_accumulator;
-
-        // Number of time steps (with floating part) to do according to required time step
-        let number_of_steps_floating_point =
-            time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
-
-        // Here we update everything requiring same refresh as the sim calls us, more likely visual stuff
-        self.update_every_frame(
+        self.update_with_sim_rate(
             &context,
             &overhead_panel,
             &autobrake_panel,
@@ -301,54 +364,16 @@ impl A320Hydraulic {
             lgciu2,
         );
 
-        if number_of_steps_floating_point < 1.0 {
-            // Can't do a full time step
-            // we can decide either do an update with smaller step or wait next iteration
-            // for now we only update lag accumulator and chose a hard fixed step: if smaller
-            // than chosen time step we do nothing and wait next iteration
-
-            // Time lag is float part only of num of steps (because is < 1.0 here) * fixed time step to get a result in time
-            self.lag_time_accumulator = Duration::from_secs_f64(
-                number_of_steps_floating_point * min_hyd_loop_timestep.as_secs_f64(),
+        for cur_time_step in &mut self.core_hydraulic_updater {
+            self.update_core_hydraulics(
+                &context.with_delta(cur_time_step),
+                engine1,
+                engine2,
+                overhead_panel,
+                engine_fire_push_buttons,
+                lgciu1,
+                lgciu2,
             );
-        } else {
-            // Int part is the actual number of loops to do
-            // rest of floating part goes into accumulator
-            let num_of_update_loops = number_of_steps_floating_point.floor() as u32;
-
-            self.lag_time_accumulator = Duration::from_secs_f64(
-                (number_of_steps_floating_point - (num_of_update_loops as f64))
-                    * min_hyd_loop_timestep.as_secs_f64(),
-            ); // Keep track of time left after all fixed loop are done
-
-            // Then run fixed update loop for main hydraulics
-            for _ in 0..num_of_update_loops {
-                // First update what is currently consumed and given back by each actuator
-                // Todo: might have to split the actuator volumes by expected number of loops
-                self.update_actuators_volume();
-
-                self.update_fixed_step(
-                    &context.with_delta(min_hyd_loop_timestep),
-                    engine1,
-                    engine2,
-                    overhead_panel,
-                    engine_fire_push_buttons,
-                    lgciu1,
-                    lgciu2,
-                );
-            }
-
-            // This is the "fast" update loop refreshing ACTUATORS_SIM_TIME_STEP_MULT times faster
-            // here put everything that needs higher simulation rates like physics solving
-            let num_of_actuators_update_loops =
-                num_of_update_loops * Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
-
-            // If X times faster we divide step by X
-            let delta_time_physics =
-                min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
-            for _ in 0..num_of_actuators_update_loops {
-                self.update_fast_rate(&context, &delta_time_physics);
-            }
         }
     }
 
@@ -376,7 +401,8 @@ impl A320Hydraulic {
     // Todo remove when hydraulics gives directly correct values of flow and displacement
     fn yellow_electric_pump_estimated_flow(&self) -> VolumeRate {
         // If EDP started pumping and has some RPM then we consider epump provides a fraction of the loop total flow
-        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.rpm() > 1500.
+        let yellow_edp_outputs_some_flow = self.engine_driven_pump_2.speed()
+            > AngularVelocity::new::<revolution_per_minute>(1500.)
             && self.engine_driven_pump_2_controller.should_pressurise();
 
         let mut estimated_yellow_epump_flow: VolumeRate;
@@ -457,9 +483,26 @@ impl A320Hydraulic {
         self.yellow_loop.is_pressurised()
     }
 
+    // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
+    fn update_fast_physics(&mut self, context: &UpdateContext) {
+        self.forward_cargo_door.update(
+            &self.forward_cargo_door_controller,
+            &context,
+            self.yellow_loop.pressure(),
+        );
+
+        self.aft_cargo_door.update(
+            &self.aft_cargo_door_controller,
+            &context,
+            self.yellow_loop.pressure(),
+        );
+
+        self.ram_air_turbine
+            .update_physics(&context.delta(), context.indicated_airspeed());
+    }
+
     #[allow(clippy::too_many_arguments)]
-    // Update with same refresh rate as the sim
-    fn update_every_frame(
+    fn update_with_sim_rate(
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
@@ -499,12 +542,12 @@ impl A320Hydraulic {
         );
 
         // TODO Here input the flap computer position request
-        // Degrees are in synchrodrive degrees, so from 0 to 231.24°
+        // Degrees are in flap surface angle
         self.flap_system.update(
             Some(self.flaps_position_request),
             Some(self.flaps_position_request),
-            self.green_loop.pressure(),
-            self.yellow_loop.pressure(),
+            self.green_loop.system_pressure(),
+            self.yellow_loop.system_pressure(),
             context,
         );
         println!(
@@ -514,18 +557,24 @@ impl A320Hydraulic {
             self.green_loop.pressure().get::<psi>(),
             self.yellow_loop.pressure().get::<psi>(),
         );
+
+        self.forward_cargo_door_controller.update(
+            context,
+            &self.forward_cargo_door,
+            self.yellow_loop.pressure(),
+        );
+
+        self.aft_cargo_door_controller.update(
+            context,
+            &self.aft_cargo_door,
+            self.yellow_loop.pressure(),
+        );
     }
 
     #[cfg(test)]
     fn set_flap_req(&mut self, angle_req: Angle) {
         self.flaps_position_request = angle_req;
-    }
-
-    // All the higher frequency updates like physics
-    fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
-        self.ram_air_turbine
-            .update_physics(&delta_time_physics, &context.indicated_airspeed());
-    }
+    }   
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
     fn update_actuators_volume(&mut self) {
@@ -537,28 +586,30 @@ impl A320Hydraulic {
     fn update_green_actuators_volume(&mut self) {
         self.green_loop
             .update_actuator_volumes(&self.braking_circuit_norm);
-        self.braking_circuit_norm.reset_accumulators();
 
         self.green_loop
             .update_actuator_volumes(self.flap_system.left_motor());
-        self.flap_system.reset_left_accumulators();
     }
 
     fn update_yellow_actuators_volume(&mut self) {
         self.yellow_loop
             .update_actuator_volumes(&self.braking_circuit_altn);
-        self.braking_circuit_altn.reset_accumulators();
 
         self.yellow_loop
             .update_actuator_volumes(self.flap_system.right_motor());
-        self.flap_system.reset_right_accumulators();
+
+        self.yellow_loop
+            .update_actuator_volumes(self.forward_cargo_door.actuator());
+
+        self.yellow_loop
+            .update_actuator_volumes(self.aft_cargo_door.actuator());
     }
 
     fn update_blue_actuators_volume(&mut self) {}
 
     #[allow(clippy::too_many_arguments)]
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
-    fn update_fixed_step<T: Engine, U: EngineFirePushButtons>(
+    fn update_core_hydraulics<T: Engine, U: EngineFirePushButtons>(
         &mut self,
         context: &UpdateContext,
         engine1: &T,
@@ -568,6 +619,10 @@ impl A320Hydraulic {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
+        // First update what is currently consumed and given back by each actuator
+        // Todo: might have to split the actuator volumes by expected number of loops
+        self.update_actuators_volume();
+
         self.brake_computer.send_brake_demands(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
@@ -576,8 +631,8 @@ impl A320Hydraulic {
         self.power_transfer_unit_controller.update(
             context,
             overhead_panel,
-            &self.forward_cargo_door,
-            &self.aft_cargo_door,
+            &self.forward_cargo_door_controller,
+            &self.aft_cargo_door_controller,
             &self.pushback_tug,
             lgciu2,
         );
@@ -601,9 +656,7 @@ impl A320Hydraulic {
         self.engine_driven_pump_1.update(
             context,
             &self.green_loop,
-            engine1
-                .hydraulic_pump_output_speed()
-                .get::<revolution_per_minute>(),
+            engine1.hydraulic_pump_output_speed(),
             &self.engine_driven_pump_1_controller,
         );
 
@@ -621,9 +674,7 @@ impl A320Hydraulic {
         self.engine_driven_pump_2.update(
             context,
             &self.yellow_loop,
-            engine2
-                .hydraulic_pump_output_speed()
-                .get::<revolution_per_minute>(),
+            engine2.hydraulic_pump_output_speed(),
             &self.engine_driven_pump_2_controller,
         );
 
@@ -646,8 +697,8 @@ impl A320Hydraulic {
         self.yellow_electric_pump_controller.update(
             context,
             overhead_panel,
-            &self.forward_cargo_door,
-            &self.aft_cargo_door,
+            &self.forward_cargo_door_controller,
+            &self.aft_cargo_door_controller,
             self.yellow_loop.is_pressurised(),
         );
         self.yellow_electric_pump.update(
@@ -712,8 +763,12 @@ impl SimulationElement for A320Hydraulic {
         self.yellow_electric_pump.accept(visitor);
         self.yellow_electric_pump_controller.accept(visitor);
 
+        self.forward_cargo_door_controller.accept(visitor);
         self.forward_cargo_door.accept(visitor);
+
+        self.aft_cargo_door_controller.accept(visitor);
         self.aft_cargo_door.accept(visitor);
+
         self.pushback_tug.accept(visitor);
 
         self.ram_air_turbine.accept(visitor);
@@ -1022,14 +1077,15 @@ impl A320YellowElectricPumpController {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        forward_cargo_door: &Door,
-        aft_cargo_door: &Door,
+        forward_cargo_door_controller: &A320DoorController,
+        aft_cargo_door_controller: &A320DoorController,
         pressure_switch_state: bool,
     ) {
         self.should_activate_yellow_pump_for_cargo_door_operation
             .update(
                 context,
-                forward_cargo_door.has_moved() || aft_cargo_door.has_moved(),
+                forward_cargo_door_controller.should_pressurise_hydraulics()
+                    || aft_cargo_door_controller.should_pressurise_hydraulics(),
             );
 
         self.should_pressurise = (overhead_panel.yellow_epump_push_button.is_on()
@@ -1115,14 +1171,15 @@ impl A320PowerTransferUnitController {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        forward_cargo_door: &Door,
-        aft_cargo_door: &Door,
+        forward_cargo_door_controller: &A320DoorController,
+        aft_cargo_door_controller: &A320DoorController,
         pushback_tug: &PushbackTug,
         lgciu2: &impl LgciuInterface,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
-            forward_cargo_door.has_moved() || aft_cargo_door.has_moved(),
+            forward_cargo_door_controller.should_pressurise_hydraulics()
+                || aft_cargo_door_controller.should_pressurise_hydraulics(),
         );
         self.nose_wheel_steering_pin_inserted
             .update(context, pushback_tug.is_connected());
@@ -1480,7 +1537,7 @@ impl A320BrakingForce {
         norm_brakes: &BrakeCircuit,
         altn_brakes: &BrakeCircuit,
     ) {
-        // Base formula for output force is output_force[0:1] = 50 * sqrt(hydraulic_pressure) / Max_brake_pressure
+        // Base formula for output force is output_force[0:1] = 50 * sqrt(current_pressure) / Max_brake_pressure
         // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
         // gives really too low brake force for 1000psi
 
@@ -1531,35 +1588,219 @@ impl SimulationElement for A320BrakingForce {
         writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
     }
 
-    fn read(&mut self, state: &mut SimulatorReader) {
-        let left_flap: f64 = state.read("TRAILING EDGE FLAPS LEFT PERCENT");
-        let right_flap: f64 = state.read("TRAILING EDGE FLAPS RIGHT PERCENT");
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let left_flap: f64 = reader.read("TRAILING EDGE FLAPS LEFT PERCENT");
+        let right_flap: f64 = reader.read("TRAILING EDGE FLAPS RIGHT PERCENT");
         self.flap_position = (left_flap + right_flap) / 2.;
     }
 }
 
-struct Door {
-    exit_id: String,
-    position: f64,
-    previous_position: f64,
+#[derive(PartialEq, Clone, Copy)]
+enum DoorControlState {
+    DownLocked = 0,
+    NoControl = 1,
+    HydControl = 2,
+    UpLocked = 3,
 }
-impl Door {
-    fn new(id: usize) -> Self {
+
+struct A320DoorController {
+    requested_position_id: String,
+
+    control_state: DoorControlState,
+
+    position_requested: Ratio,
+
+    duration_in_no_control: Duration,
+    duration_in_hyd_control: Duration,
+
+    should_close_valves: bool,
+    control_position_request: Ratio,
+    should_unlock: bool,
+}
+impl A320DoorController {
+    // Duration which the hydraulic valves sends a open request when request is closing (this is done on real aircraft so uplock can be easily unlocked without friction)
+    const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(200);
+
+    // Delay from the ground crew unlocking the door to the time they start requiring up movement in control panel
+    const DELAY_UNLOCK_TO_HYDRAULIC_CONTROL: Duration = Duration::from_secs(5);
+
+    fn new(id: &str) -> Self {
         Self {
-            exit_id: format!("EXIT OPEN:{}", id),
-            position: 0.,
-            previous_position: 0.,
+            requested_position_id: format!("{}_DOOR_CARGO_OPEN_REQ", id),
+            control_state: DoorControlState::DownLocked,
+            position_requested: Ratio::new::<ratio>(0.),
+
+            duration_in_no_control: Duration::from_secs(0),
+            duration_in_hyd_control: Duration::from_secs(0),
+
+            should_close_valves: true,
+            control_position_request: Ratio::new::<ratio>(0.),
+            should_unlock: false,
         }
     }
 
-    fn has_moved(&self) -> bool {
-        (self.position - self.previous_position).abs() > f64::EPSILON
+    fn update(&mut self, context: &UpdateContext, door: &CargoDoor, current_pressure: Pressure) {
+        self.control_state = self.determine_control_state_and_lock_action(door, current_pressure);
+        self.update_timers(context);
+        self.update_actions_from_state();
+    }
+
+    fn update_timers(&mut self, context: &UpdateContext) {
+        if self.control_state == DoorControlState::NoControl {
+            self.duration_in_no_control += context.delta();
+        } else {
+            self.duration_in_no_control = Duration::from_secs(0);
+        }
+
+        if self.control_state == DoorControlState::HydControl {
+            self.duration_in_hyd_control += context.delta();
+        } else {
+            self.duration_in_hyd_control = Duration::from_secs(0);
+        }
+    }
+
+    fn update_actions_from_state(&mut self) {
+        match self.control_state {
+            DoorControlState::DownLocked => {}
+            DoorControlState::NoControl => {
+                self.should_close_valves = true;
+            }
+            DoorControlState::HydControl => {
+                self.should_close_valves = false;
+                self.control_position_request = if self.position_requested > Ratio::new::<ratio>(0.)
+                    || self.duration_in_hyd_control < Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
+                {
+                    Ratio::new::<ratio>(1.)
+                } else {
+                    Ratio::new::<ratio>(0.)
+                }
+            }
+            DoorControlState::UpLocked => {
+                self.should_close_valves = true;
+            }
+        }
+    }
+
+    fn determine_control_state_and_lock_action(
+        &mut self,
+        door: &CargoDoor,
+        current_pressure: Pressure,
+    ) -> DoorControlState {
+        match self.control_state {
+            DoorControlState::DownLocked if self.position_requested > Ratio::new::<ratio>(0.) => {
+                self.should_unlock = true;
+                DoorControlState::NoControl
+            }
+            DoorControlState::NoControl
+                if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
+            {
+                self.should_unlock = false;
+                DoorControlState::HydControl
+            }
+            DoorControlState::HydControl if door.is_locked() => {
+                self.should_unlock = false;
+                DoorControlState::DownLocked
+            }
+            DoorControlState::HydControl
+                if door.position() > Ratio::new::<ratio>(0.9)
+                    && self.position_requested > Ratio::new::<ratio>(0.5) =>
+            {
+                self.should_unlock = false;
+                DoorControlState::UpLocked
+            }
+            DoorControlState::UpLocked
+                if self.position_requested < Ratio::new::<ratio>(1.)
+                    && current_pressure > Pressure::new::<psi>(1000.) =>
+            {
+                DoorControlState::HydControl
+            }
+            _ => self.control_state,
+        }
+    }
+
+    fn should_pressurise_hydraulics(&self) -> bool {
+        (self.control_state == DoorControlState::UpLocked
+            && self.position_requested < Ratio::new::<ratio>(1.))
+            || self.control_state == DoorControlState::HydControl
     }
 }
-impl SimulationElement for Door {
-    fn read(&mut self, state: &mut SimulatorReader) {
-        self.previous_position = self.position;
-        self.position = state.read(&self.exit_id);
+impl HydraulicAssemblyController for A320DoorController {
+    fn requested_mode(&self) -> LinearActuatorMode {
+        if self.should_close_valves {
+            LinearActuatorMode::ClosedValves
+        } else {
+            LinearActuatorMode::PositionControl
+        }
+    }
+
+    fn requested_position(&self) -> Ratio {
+        self.control_position_request
+    }
+
+    fn should_lock(&self) -> bool {
+        !self.should_unlock
+    }
+
+    fn requested_lock_position(&self) -> Ratio {
+        Ratio::new::<ratio>(0.)
+    }
+}
+impl SimulationElement for A320DoorController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
+    }
+}
+
+struct CargoDoor {
+    hydraulic_assembly: HydraulicLinearActuatorAssembly,
+
+    position_id: String,
+    locked_id: String,
+    position: Ratio,
+
+    is_locked: bool,
+}
+impl CargoDoor {
+    fn new(id: &str, hydraulic_assembly: HydraulicLinearActuatorAssembly) -> Self {
+        Self {
+            hydraulic_assembly,
+            position_id: format!("{}_DOOR_CARGO_POSITION", id),
+            locked_id: format!("{}_DOOR_CARGO_LOCKED", id),
+
+            position: Ratio::new::<ratio>(0.),
+
+            is_locked: true,
+        }
+    }
+
+    fn position(&self) -> Ratio {
+        self.position
+    }
+
+    fn is_locked(&self) -> bool {
+        self.is_locked
+    }
+
+    fn actuator(&mut self) -> &mut impl Actuator {
+        self.hydraulic_assembly.actuator()
+    }
+
+    fn update(
+        &mut self,
+        cargo_door_controller: &impl HydraulicAssemblyController,
+        context: &UpdateContext,
+        current_pressure: Pressure,
+    ) {
+        self.hydraulic_assembly
+            .update(cargo_door_controller, context, current_pressure);
+        self.is_locked = self.hydraulic_assembly.is_locked();
+        self.position = self.hydraulic_assembly.position_normalized();
+    }
+}
+impl SimulationElement for CargoDoor {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.position_id, self.position());
+        writer.write(&self.locked_id, self.is_locked());
     }
 }
 
@@ -1606,10 +1847,10 @@ impl PushbackTug {
     }
 }
 impl SimulationElement for PushbackTug {
-    fn read(&mut self, state: &mut SimulatorReader) {
+    fn read(&mut self, reader: &mut SimulatorReader) {
         self.previous_angle = self.angle;
-        self.angle = state.read("PUSHBACK ANGLE");
-        self.state = state.read("PUSHBACK STATE");
+        self.angle = reader.read("PUSHBACK ANGLE");
+        self.state = reader.read("PUSHBACK STATE");
     }
 }
 
@@ -1832,13 +2073,13 @@ impl SimulationElement for A320AutobrakeController {
         writer.write("AUTOBRAKES_DECEL_LIGHT", self.is_decelerating());
     }
 
-    fn read(&mut self, state: &mut SimulatorReader) {
+    fn read(&mut self, reader: &mut SimulatorReader) {
         self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
-        self.ground_spoilers_are_deployed = state.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
-        self.external_disarm_event = state.read("AUTOBRAKE_DISARM");
+        self.ground_spoilers_are_deployed = reader.read("SPOILERS_GROUND_SPOILERS_ACTIVE");
+        self.external_disarm_event = reader.read("AUTOBRAKE_DISARM");
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        self.mode = state.read_f64("AUTOBRAKES_ARMED_MODE").into();
+        self.mode = reader.read_f64("AUTOBRAKES_ARMED_MODE").into();
     }
 }
 
@@ -1962,7 +2203,7 @@ mod tests {
         use uom::si::{
             length::foot,
             ratio::{percent, ratio},
-            velocity::knot,
+            volume::liter,
         };
 
         struct A320TestEmergencyElectricalOverheadPanel {
@@ -2194,6 +2435,11 @@ mod tests {
                 self.hydraulics.is_yellow_pressurised()
             }
 
+            fn is_cargo_fwd_door_locked_up(&self) -> bool {
+                self.hydraulics.forward_cargo_door_controller.control_state
+                    == DoorControlState::UpLocked
+            }
+
             fn set_ac_bus_1_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_1_powered = bus_is_alive;
             }
@@ -2327,9 +2573,7 @@ mod tests {
             }
 
             fn run_one_tick(mut self) -> Self {
-                self.run_with_delta(Duration::from_millis(
-                    A320Hydraulic::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS,
-                ));
+                self.run_with_delta(A320Hydraulic::HYDRAULIC_SIM_TIME_STEP);
                 self
             }
 
@@ -2360,6 +2604,22 @@ mod tests {
 
             fn is_yellow_pressurised(&self) -> bool {
                 self.query(|a| a.is_yellow_pressurised())
+            }
+
+            fn is_cargo_fwd_door_locked_down(&mut self) -> bool {
+                self.read("FWD_DOOR_CARGO_LOCKED")
+            }
+
+            fn is_cargo_fwd_door_locked_up(&self) -> bool {
+                self.query(|a| a.is_cargo_fwd_door_locked_up())
+            }
+
+            fn cargo_fwd_door_position(&mut self) -> f64 {
+                self.read("FWD_DOOR_CARGO_POSITION")
+            }
+
+            fn cargo_aft_door_position(&mut self) -> f64 {
+                self.read("AFT_DOOR_CARGO_POSITION")
             }
 
             fn green_pressure(&mut self) -> Pressure {
@@ -2525,8 +2785,13 @@ mod tests {
                 self
             }
 
-            fn set_cargo_door_state(mut self, position: f64) -> Self {
-                self.write("EXIT OPEN:5", position);
+            fn open_fwd_cargo_door(mut self) -> Self {
+                self.write("FWD_DOOR_CARGO_OPEN_REQ", 1.);
+                self
+            }
+
+            fn close_fwd_cargo_door(mut self) -> Self {
+                self.write("FWD_DOOR_CARGO_OPEN_REQ", 0.);
                 self
             }
 
@@ -2696,7 +2961,6 @@ mod tests {
                     .set_ptu_state(true)
                     .set_park_brake(true)
                     .set_anti_skid(true)
-                    .set_cargo_door_state(0.)
                     .set_left_brake(Ratio::new::<percent>(0.))
                     .set_right_brake(Ratio::new::<percent>(0.))
                     .set_gear_down()
@@ -2953,13 +3217,14 @@ mod tests {
             // Enabled on cold start
             assert!(test_bed.is_ptu_enabled());
 
-            // Ptu push button disables PTU accordingly
-            test_bed = test_bed.set_cargo_door_state(1.).run_one_tick();
-            assert!(!test_bed.is_ptu_enabled());
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+            // Ptu disabled from cargo operation
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+            );
+
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.run_waiting_for(
-                A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
+                Duration::from_secs(25) + A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
             ); // Should re enabled after 40s
             assert!(test_bed.is_ptu_enabled());
         }
@@ -2999,11 +3264,15 @@ mod tests {
 
             assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
-            test_bed = test_bed.set_cargo_door_state(1.0).run_one_tick();
+            // Need to wait for operator to first unlock, then activate hydraulic control
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+            );
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
+            // Wait for the door to fully open
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(25));
+            assert!(test_bed.is_cargo_fwd_door_locked_up());
 
             test_bed = test_bed.run_waiting_for(
                 A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
@@ -5038,8 +5307,11 @@ mod tests {
 
             test_bed = test_bed
                 .dc_ground_service_lost()
-                .set_cargo_door_state(1.0)
-                .run_one_tick();
+                .open_fwd_cargo_door()
+                .run_waiting_for(
+                    Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                );
+
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
         }
 
@@ -5148,12 +5420,14 @@ mod tests {
 
             assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            test_bed = test_bed.set_cargo_door_state(1.0).run_one_tick();
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+            );
 
             assert!(!test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
-            // Ptu should reactivate after 40s
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(41));
+            // Ptu should reactivate after door fully opened + 40s
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(25) + Duration::from_secs(41));
 
             assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
         }
@@ -5316,6 +5590,182 @@ mod tests {
             test_bed = test_bed
                 .set_flaps(Angle::new::<degree>(800.))
                 .run_waiting_for(Duration::from_secs(37));
+
+        }
+        
+        #[test]
+        fn cargo_door_stays_closed_at_init() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+        }
+
+        #[test]
+        fn cargo_door_unlocks_when_commanded() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() >= 0.);
+        }
+
+        #[test]
+        fn cargo_door_controller_opens_the_door() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+
+            let current_position_unlocked = test_bed.cargo_fwd_door_position();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL);
+
+            assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+        }
+
+        #[test]
+        fn fwd_cargo_door_controller_opens_fwd_door_only() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() == 0.);
+            assert!(test_bed.cargo_aft_door_position() == 0.);
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+            assert!(test_bed.cargo_aft_door_position() == 0.);
+        }
+
+        #[test]
+        fn cargo_door_opened_uses_correct_reservoir_amount() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_yellow_e_pump(false)
+                .set_ptu_state(false)
+                .run_waiting_for(Duration::from_secs_f64(20.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.is_yellow_pressurised());
+
+            let pressurised_yellow_level_door_closed = test_bed.get_yellow_reservoir_volume();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(40.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+
+            let pressurised_yellow_level_door_opened = test_bed.get_yellow_reservoir_volume();
+
+            let volume_used_liter = (pressurised_yellow_level_door_closed
+                - pressurised_yellow_level_door_opened)
+                .get::<liter>();
+
+            // For one cargo door we expect losing between 0.6 to 0.8 liter of fluid into the two actuators
+            assert!((0.6..=0.8).contains(&volume_used_liter));
+        }
+
+        #[test]
+        fn cargo_door_controller_closes_the_door() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+
+            test_bed = test_bed
+                .close_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(60.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() <= 0.);
+        }
+
+        #[test]
+        fn cargo_door_controller_closes_the_door_after_yellow_pump_auto_shutdown() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(!test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() > 0.85);
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(!test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .close_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_down());
+            assert!(test_bed.cargo_fwd_door_position() <= 0.);
         }
     }
 }

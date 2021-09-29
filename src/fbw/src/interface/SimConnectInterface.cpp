@@ -17,7 +17,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   double keyChangeAileron,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
-                                  bool disableXboxCompatibilityRudderPlusMinus) {
+                                  bool disableXboxCompatibilityRudderPlusMinus,
+                                  double maxSimulationRate) {
   // info message
   cout << "WASM: Connecting..." << endl;
 
@@ -38,6 +39,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     this->elevatorTrimHandler = elevatorTrimHandler;
     // store rudder trim handler
     this->rudderTrimHandler = rudderTrimHandler;
+    // store maximum allowed simulation rate
+    this->maxSimulationRate = maxSimulationRate;
     // store key change value for each axis
     flightControlsKeyChangeAileron = keyChangeAileron;
     flightControlsKeyChangeElevator = keyChangeElevator;
@@ -206,6 +209,10 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL WEIGHT PER GALLON", "POUNDS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "CAMERA STATE", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE ALTITUDE", "METERS");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "NAV MAGVAR:3", "DEGREES");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_LATLONALT, "NAV VOR LATLONALT:3", "STRUCT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_LATLONALT, "NAV GS LATLONALT:3", "STRUCT");
 
   return result;
 }
@@ -378,6 +385,10 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_ARM_TOGGLE, "SPOILERS_ARM_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_ARM_SET, "SPOILERS_ARM_SET", true);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SIM_RATE_INCR, "SIM_RATE_INCR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SIM_RATE_DECR, "SIM_RATE_DECR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SIM_RATE_SET, "SIM_RATE_SET", true);
+
   return result;
 }
 
@@ -422,6 +433,14 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_INT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -775,18 +794,21 @@ bool SimConnectInterface::sendData(SimOutputAltimeter output) {
 }
 
 bool SimConnectInterface::sendEvent(Events eventId) {
-  return sendEvent(eventId, 0);
+  return sendEvent(eventId, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 }
 
 bool SimConnectInterface::sendEvent(Events eventId, DWORD data) {
+  return sendEvent(eventId, eventId, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+}
+
+bool SimConnectInterface::sendEvent(Events eventId, DWORD data, DWORD priority) {
   // check if we are connected
   if (!isConnected) {
     return false;
   }
 
   // send event
-  HRESULT result = SimConnect_TransmitClientEvent(hSimConnect, 0, eventId, data, SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                                                  SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+  HRESULT result = SimConnect_TransmitClientEvent(hSimConnect, 0, eventId, data, priority, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
 
   // check result of data request
   if (result != S_OK) {
@@ -1802,6 +1824,44 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
 
     case Events::SPOILERS_ARM_SET: {
       spoilersHandler->onEventSpoilersArmSet(static_cast<long>(event->dwData) == 1);
+      break;
+    }
+
+    case Events::SIM_RATE_INCR: {
+      // calculate frame rate that will be seen by FBW / AP
+      double theoreticalFrameRate = (1 / sampleTime) / (simData.simulation_rate * 2);
+      // determine if an increase of simulation rate can be allowed
+      if ((simData.simulation_rate < maxSimulationRate && theoreticalFrameRate >= 8) || simData.simulation_rate < 1) {
+        sendEvent(Events::SIM_RATE_INCR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+        cout << "WASM: Simulation rate " << simData.simulation_rate;
+        cout << " -> " << simData.simulation_rate * 2;
+        cout << " (theoretical fps " << theoreticalFrameRate << ")" << endl;
+      } else {
+        cout << "WASM: Simulation rate " << simData.simulation_rate;
+        cout << " -> " << simData.simulation_rate;
+        cout << " (limited by max sim rate or theoretical fps " << theoreticalFrameRate << ")" << endl;
+      }
+      break;
+    }
+
+    case Events::SIM_RATE_DECR: {
+      if (simData.simulation_rate > 1) {
+        sendEvent(Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+        cout << "WASM: Simulation rate " << simData.simulation_rate;
+        cout << " -> " << simData.simulation_rate / 2;
+        cout << endl;
+      } else {
+        cout << "WASM: Simulation rate " << simData.simulation_rate;
+        cout << " -> " << simData.simulation_rate;
+        cout << " (limited by min sim rate)" << endl;
+      }
+      break;
+    }
+
+    case Events::SIM_RATE_SET: {
+      long targetSimulationRate = min(maxSimulationRate, max(1, static_cast<long>(event->dwData)));
+      sendEvent(Events::SIM_RATE_SET, targetSimulationRate, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+      cout << "WASM: Simulation Rate set to " << targetSimulationRate << endl;
       break;
     }
 
