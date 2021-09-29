@@ -446,7 +446,7 @@ impl HydraulicCircuit {
         self.pump_sections[pump_id].fire_valve_is_opened()
     }
 
-    pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &mut T) {
+    pub fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         self.system_section.update_actuator_volumes(actuator);
     }
 
@@ -646,7 +646,7 @@ pub struct Section {
     connected_to_ptu_left_side: bool,
     connected_to_ptu_right_side: bool,
 
-    delta_vol_consumer_pass: Volume,
+    delta_volume_flow_pass: Volume,
     max_pumpable_volume: Volume,
     volume_target: Volume,
 
@@ -689,7 +689,7 @@ impl Section {
             accumulator,
             connected_to_ptu_left_side,
             connected_to_ptu_right_side,
-            delta_vol_consumer_pass: Volume::new::<gallon>(0.),
+            delta_volume_flow_pass: Volume::new::<gallon>(0.),
             max_pumpable_volume: Volume::new::<gallon>(0.),
             volume_target: Volume::new::<gallon>(0.),
 
@@ -738,7 +738,7 @@ impl Section {
                 + self.volume_to_reach_target(target_pressure, fluid)
         };
 
-        self.volume_target -= self.delta_vol_consumer_pass;
+        self.volume_target -= self.delta_volume_flow_pass;
     }
 
     fn static_leak(&self, context: &UpdateContext) -> Volume {
@@ -756,29 +756,34 @@ impl Section {
         context: &UpdateContext,
     ) {
         let static_leak = self.static_leak(&context);
-        let mut delta_vol = -static_leak;
+        let mut delta_volume_flow_pass = -static_leak;
 
         reservoir.add_return_volume(static_leak);
 
         if self.accumulator.is_some() {
             self.accumulator.as_mut().unwrap().update(
                 context,
-                &mut delta_vol,
+                &mut delta_volume_flow_pass,
                 self.current_pressure,
                 self.volume_target,
             );
         }
 
         if ptu.is_some() {
-            self.update_ptu_flows(context, ptu.as_ref().unwrap(), &mut delta_vol, reservoir);
+            self.update_ptu_flows(
+                context,
+                ptu.as_ref().unwrap(),
+                &mut delta_volume_flow_pass,
+                reservoir,
+            );
         }
 
-        delta_vol -= self.total_actuator_consumed_volume;
+        delta_volume_flow_pass -= self.total_actuator_consumed_volume;
         reservoir.add_return_volume(self.total_actuator_returned_volume);
 
-        self.delta_vol_consumer_pass = delta_vol;
+        self.delta_volume_flow_pass = delta_volume_flow_pass;
 
-        self.reset_actuator_accumulators();
+        self.reset_actuator_volumes();
     }
 
     fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
@@ -787,7 +792,7 @@ impl Section {
         actuator.reset_volumes();
     }
 
-    fn reset_actuator_accumulators(&mut self) {
+    fn reset_actuator_volumes(&mut self) {
         self.total_actuator_returned_volume = Volume::new::<gallon>(0.);
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
@@ -809,21 +814,24 @@ impl Section {
         context: &UpdateContext,
         fluid: &Fluid,
     ) {
-        let mut delta_vol_from_valves = Volume::new::<gallon>(0.);
+        let mut delta_volume_from_valves = Volume::new::<gallon>(0.);
 
         for up in upstream_valves {
-            delta_vol_from_valves += up.current_volume;
+            delta_volume_from_valves += up.current_volume;
         }
 
         for down in downstream_valves {
-            delta_vol_from_valves -= down.current_volume;
+            delta_volume_from_valves -= down.current_volume;
         }
 
+        // Final volume target to reach target pressure is:
+        // raw volume_target - (upstream volume - downstream volume)
         let final_volume_needed_to_reach_target_pressure =
-            self.volume_target - delta_vol_from_valves;
+            self.volume_target - delta_volume_from_valves;
 
-        let mut delta_vol = self.delta_vol_consumer_pass + delta_vol_from_valves;
+        let mut final_delta_volume = self.delta_volume_flow_pass + delta_volume_from_valves;
 
+        // If there is a pump we update its state, and get the volume it pumped this iteration
         let mut total_volume_pumped = Volume::new::<gallon>(0.);
         if pump.is_some() {
             pump.as_deref_mut()
@@ -837,13 +845,13 @@ impl Section {
             total_volume_pumped = pump.as_ref().unwrap().flow() * context.delta_as_time();
         }
 
-        delta_vol += total_volume_pumped;
+        final_delta_volume += total_volume_pumped;
 
-        self.current_volume += delta_vol;
+        self.current_volume += final_delta_volume;
 
         self.update_pressure(fluid);
 
-        self.current_flow = delta_vol / context.delta_as_time();
+        self.current_flow = final_delta_volume / context.delta_as_time();
     }
 
     fn update_pressure(&mut self, fluid: &Fluid) {
@@ -958,6 +966,8 @@ impl FireValve {
         }
     }
 
+    /// Updates opening state:
+    /// A firevalve will move if powered, stay at current position if unpowered
     fn set_open_state(&mut self, valve_open_command: bool) {
         if self.is_powered {
             self.is_opened = valve_open_command;
@@ -979,6 +989,12 @@ impl SimulationElement for FireValve {
     }
 }
 
+/// Handles the flow that goes between two sections
+/// Flow is handled in two ways:
+/// -An optional flow that can only pass through if downstream needs flow
+/// and if upstream has enough capacity to provide flow while maintaining its target pressure
+/// -A physical flow, that is mandatory to pass through the valve, caused by pressure difference between
+/// upstream and downstream.
 pub struct CheckValve {
     current_volume: Volume,
     max_virtual_volume: Volume,
