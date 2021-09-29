@@ -1,4 +1,4 @@
-use super::brake_circuit::Actuator;
+use super::linear_actuator::Actuator;
 use crate::shared::interpolation;
 use crate::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -91,6 +91,10 @@ impl Actuator for FlapSlatHydraulicMotor {
     }
     fn reservoir_return(&self) -> Volume {
         self.total_volume_returned_to_reservoir
+    }
+    fn reset_volumes(&mut self) {
+        self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
 impl SimulationElement for FlapSlatHydraulicMotor {
@@ -341,12 +345,12 @@ impl FlapSlatAssembly {
         self.flap_control_arm_position * self.flap_to_synchro_gear_ratio.get::<ratio>()
     }
 
-    pub fn left_motor(&mut self) -> &impl Actuator {
-        &self.left_motor
+    pub fn left_motor(&mut self) -> &mut impl Actuator {
+        &mut self.left_motor
     }
 
-    pub fn right_motor(&mut self) -> &impl Actuator {
-        &self.right_motor
+    pub fn right_motor(&mut self) -> &mut impl Actuator {
+        &mut self.right_motor
     }
 
     /// Gets flap surface angle from current Feedback Position Pickup Unit (FPPU) position
@@ -941,6 +945,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 

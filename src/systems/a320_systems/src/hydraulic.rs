@@ -5,7 +5,6 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
     angular_velocity::{radian_per_second, revolution_per_minute},
-    angular_velocity::revolution_per_minute,
     f64::*,
     length::meter,
     mass::kilogram,
@@ -155,7 +154,7 @@ impl A320Hydraulic {
     const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
         0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
     ];
-    
+
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
@@ -322,7 +321,7 @@ impl A320Hydraulic {
                 Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
             ),
             flaps_position_request: Angle::new::<degree>(0.),
-            
+
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 Self::FORWARD_CARGO_DOOR_ID,
             ),
@@ -546,8 +545,8 @@ impl A320Hydraulic {
         self.flap_system.update(
             Some(self.flaps_position_request),
             Some(self.flaps_position_request),
-            self.green_loop.system_pressure(),
-            self.yellow_loop.system_pressure(),
+            self.green_loop.pressure(),
+            self.yellow_loop.pressure(),
             context,
         );
         println!(
@@ -574,7 +573,7 @@ impl A320Hydraulic {
     #[cfg(test)]
     fn set_flap_req(&mut self, angle_req: Angle) {
         self.flaps_position_request = angle_req;
-    }   
+    }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
     fn update_actuators_volume(&mut self) {
@@ -585,7 +584,7 @@ impl A320Hydraulic {
 
     fn update_green_actuators_volume(&mut self) {
         self.green_loop
-            .update_actuator_volumes(&self.braking_circuit_norm);
+            .update_actuator_volumes(&mut self.braking_circuit_norm);
 
         self.green_loop
             .update_actuator_volumes(self.flap_system.left_motor());
@@ -593,7 +592,7 @@ impl A320Hydraulic {
 
     fn update_yellow_actuators_volume(&mut self) {
         self.yellow_loop
-            .update_actuator_volumes(&self.braking_circuit_altn);
+            .update_actuator_volumes(&mut self.braking_circuit_altn);
 
         self.yellow_loop
             .update_actuator_volumes(self.flap_system.right_motor());
@@ -5590,9 +5589,8 @@ mod tests {
             test_bed = test_bed
                 .set_flaps(Angle::new::<degree>(800.))
                 .run_waiting_for(Duration::from_secs(37));
-
         }
-        
+
         #[test]
         fn cargo_door_stays_closed_at_init() {
             let mut test_bed = test_bed_with()

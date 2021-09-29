@@ -102,7 +102,7 @@ impl Actuator for BrakeActuator {
         self.volume_to_res_accumulator
     }
 
-    fn reset_accumulators(&mut self) {
+    fn reset_volumes(&mut self) {
         self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
@@ -250,8 +250,8 @@ impl BrakeCircuit {
         self.volume_to_res_accumulator += self.left_brake_actuator.reservoir_return();
         self.volume_to_res_accumulator += self.right_brake_actuator.reservoir_return();
 
-        self.left_brake_actuator.reset_accumulators();
-        self.right_brake_actuator.reset_accumulators();
+        self.left_brake_actuator.reset_volumes();
+        self.right_brake_actuator.reset_volumes();
 
         self.pressure_applied_left = self.left_brake_actuator.get_applied_brake_pressure();
         self.pressure_applied_right = self.right_brake_actuator.get_applied_brake_pressure();
@@ -303,7 +303,7 @@ impl Actuator for BrakeCircuit {
         self.volume_to_res_accumulator
     }
 
-    fn reset_accumulators(&mut self) {
+    fn reset_volumes(&mut self) {
         self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
@@ -541,7 +541,7 @@ mod tests {
         );
         assert!(brake_actuator.volume_to_res_accumulator <= Volume::new::<gallon>(0.0001));
 
-        brake_actuator.reset_accumulators();
+        brake_actuator.reset_volumes();
 
         brake_actuator.set_position_demand(-2.);
         for _ in 0..15 {
@@ -559,7 +559,7 @@ mod tests {
         assert!(brake_actuator.volume_to_actuator_accumulator <= Volume::new::<gallon>(0.0001));
 
         // Now same brake increase but with ultra low pressure
-        brake_actuator.reset_accumulators();
+        brake_actuator.reset_volumes();
         brake_actuator.set_position_demand(1.2);
 
         for _ in 0..15 {
@@ -598,7 +598,7 @@ mod tests {
         );
 
         // Now same max demand but pressure so low so actuator should get back to 0
-        brake_actuator.reset_accumulators();
+        brake_actuator.reset_volumes();
         brake_actuator.set_position_demand(1.2);
 
         for _loop_idx in 0..15 {
