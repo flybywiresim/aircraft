@@ -11,6 +11,7 @@ import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
+import { TcasInfo } from '../elements/TcasInfo';
 
 export interface RoseModeProps {
     symbols: NdSymbol[],
@@ -78,6 +79,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                             {tmpFplan}
                         </g>
                     )}
+                    <TcasInfo mapParams={mapParams} />
                     <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
                     <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
                 </g>
@@ -116,10 +118,12 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 };
 
 interface OverlayProps {
+    adirsAlign: boolean,
     heading: number,
     track: number,
     rangeSetting: number,
     tcasMode: number,
+    side: EfisSide,
     displayMode: Mode,
     selectedHeading: number,
     ilsCourse: number,

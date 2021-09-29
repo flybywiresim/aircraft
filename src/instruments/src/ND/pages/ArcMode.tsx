@@ -10,6 +10,7 @@ import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { ApproachMessage } from '../elements/ApproachMessage';
+import { TcasInfo } from '../elements/TcasInfo';
 
 export interface ArcModeProps {
     symbols: NdSymbol[],
@@ -76,6 +77,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                     </g>
                     <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
                     <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
+                    <TcasInfo mapParams={mapParams} />
                 </g>
                 <Overlay
                     heading={Number(MathUtils.fastToFixed(magHeading, 1))}
