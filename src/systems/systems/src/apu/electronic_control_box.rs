@@ -5,10 +5,10 @@ use super::{
 };
 use crate::{
     shared::{
-        ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower, ContactorSignal,
-        ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
+        arinc429::SignStatus, ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower,
+        ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
     },
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write, WriteWhen},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
 use uom::si::{
@@ -319,23 +319,28 @@ impl ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox {
 }
 impl SimulationElement for ElectronicControlBox {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let is_on = self.is_on();
+        let ssm = if self.is_on() {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::FailureWarning
+        };
 
-        writer.write_when(is_on, "APU_N", self.n());
+        // For sound and effects.
+        writer.write("APU_N_RAW", self.n());
 
-        writer.write_when(is_on, "APU_EGT", self.egt);
-        writer.write_when(is_on, "APU_EGT_CAUTION", self.egt_caution_temperature());
-        writer.write_when(is_on, "APU_EGT_WARNING", self.egt_warning_temperature);
-
-        writer.write_when(
-            is_on,
+        writer.write_arinc429("APU_N", self.n(), ssm);
+        writer.write_arinc429("APU_EGT", self.egt, ssm);
+        writer.write_arinc429("APU_EGT_CAUTION", self.egt_caution_temperature(), ssm);
+        writer.write_arinc429("APU_EGT_WARNING", self.egt_warning_temperature, ssm);
+        writer.write_arinc429(
             "APU_LOW_FUEL_PRESSURE_FAULT",
             self.has_fuel_low_pressure_fault(),
+            ssm,
         );
-        writer.write_when(
-            is_on,
+        writer.write_arinc429(
             "APU_FLAP_FULLY_OPEN",
             self.air_intake_flap_is_fully_open(),
+            ssm,
         );
 
         writer.write_when(is_on, "APU_BLEED_AIR_PRESSURE", self.bleed_air_pressure);

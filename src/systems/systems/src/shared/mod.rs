@@ -13,8 +13,11 @@ use uom::si::{
     thermodynamic_temperature::{degree_celsius, kelvin},
 };
 
+pub mod pid;
+
 mod random;
 pub use random::*;
+pub mod arinc429;
 
 pub trait AuxiliaryPowerUnitElectrical:
     ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
@@ -428,6 +431,18 @@ pub struct MachNumber(pub f64);
 impl Default for MachNumber {
     fn default() -> Self {
         Self(0.)
+    }
+}
+
+impl From<f64> for MachNumber {
+    fn from(value: f64) -> Self {
+        MachNumber(value)
+    }
+}
+
+impl From<MachNumber> for f64 {
+    fn from(value: MachNumber) -> Self {
+        value.0
     }
 }
 

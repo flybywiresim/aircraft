@@ -4,6 +4,7 @@ mod update_context;
 use crate::{
     electrical::Electricity,
     failures::FailureType,
+    shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 use uom::si::{
@@ -424,7 +425,7 @@ fn from_bool(value: bool) -> f64 {
     }
 }
 
-pub trait Read<T> {
+pub trait Read<T: Copy> {
     /// Reads a value from the simulator.
     /// # Examples
     /// ```rust
@@ -439,7 +440,38 @@ pub trait Read<T> {
     ///     }
     /// }
     /// ```
-    fn read(&mut self, name: &str) -> T;
+    fn read(&mut self, name: &str) -> T
+    where
+        Self: Sized + Reader,
+    {
+        let value = self.read_f64(name);
+        self.convert(value)
+    }
+
+    /// Reads an ARINC 429 value from the simulator.
+    /// # Examples
+    /// ```rust
+    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
+    /// #    SimulatorReader, SimulatorWriter, Read};
+    /// # use systems::shared::arinc429::Arinc429Word;
+    /// struct MySimulationElement {
+    ///     is_on: Arinc429Word<bool>,
+    /// }
+    /// impl SimulationElement for MySimulationElement {
+    ///     fn read(&mut self, reader: &mut SimulatorReader) {
+    ///         self.is_on = reader.read_arinc429("MY_SIMULATOR_ELEMENT_IS_ON");
+    ///     }
+    /// }
+    /// ```
+    fn read_arinc429(&mut self, name: &str) -> Arinc429Word<T>
+    where
+        Self: Sized + Reader,
+    {
+        let value = from_arinc429(self.read_f64(name));
+        Arinc429Word::new(self.convert(value.0), value.1)
+    }
+
+    fn convert(&mut self, value: f64) -> T;
 }
 
 pub trait Write<T> {
@@ -457,7 +489,40 @@ pub trait Write<T> {
     ///     }
     /// }
     /// ```
-    fn write(&mut self, name: &str, value: T);
+    fn write(&mut self, name: &str, value: T)
+    where
+        Self: Sized + Writer,
+    {
+        let value = self.convert(value);
+        self.write_f64(name, value)
+    }
+
+    /// Write an ARINC 429 value to the simulator.
+    ///
+    /// Note that the `f64` will be converted to a `f32` internally, thus reducing precision.
+    /// # Examples
+    /// ```rust
+    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
+    /// #    SimulatorReader, SimulatorWriter, Write};
+    /// # use systems::shared::arinc429::SignStatus;
+    /// struct MySimulationElement {
+    ///     n: f64,
+    /// }
+    /// impl SimulationElement for MySimulationElement {
+    ///     fn write(&self, writer: &mut SimulatorWriter) {
+    ///        writer.write_arinc429("MY_SIMULATOR_ELEMENT_N", self.n, SignStatus::NormalOperation);
+    ///     }
+    /// }
+    /// ```
+    fn write_arinc429(&mut self, name: &str, value: T, ssm: SignStatus)
+    where
+        Self: Sized + Writer,
+    {
+        let value = self.convert(value);
+        self.write_f64(name, to_arinc429(value, ssm));
+    }
+
+    fn convert(&mut self, value: T) -> f64;
 }
 
 pub trait WriteWhen<T> {
@@ -481,51 +546,79 @@ pub trait WriteWhen<T> {
     fn write_when(&mut self, condition: bool, name: &str, value: T);
 }
 
-impl<T: Reader> Read<Velocity> for T {
-    fn read(&mut self, name: &str) -> Velocity {
-        Velocity::new::<knot>(self.read_f64(name))
+macro_rules! read_write_uom {
+    ($t: ty, $t2: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                <$t>::new::<$t2>(value)
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value.get::<$t2>()
+            }
+        }
+    };
+}
+
+macro_rules! read_write_as {
+    ($t: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                value as $t
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value as f64
+            }
+        }
+    };
+}
+
+macro_rules! read_write_into {
+    ($t: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                value.into()
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value.into()
+            }
+        }
+    };
+}
+
+read_write_uom!(Velocity, knot);
+read_write_uom!(Length, foot);
+read_write_uom!(Acceleration, foot_per_second_squared);
+read_write_uom!(ThermodynamicTemperature, degree_celsius);
+read_write_uom!(Ratio, percent);
+read_write_as!(usize);
+read_write_uom!(ElectricPotential, volt);
+read_write_uom!(ElectricCurrent, ampere);
+read_write_uom!(Frequency, hertz);
+read_write_uom!(Pressure, psi);
+read_write_uom!(Volume, gallon);
+read_write_uom!(VolumeRate, gallon_per_second);
+read_write_uom!(Mass, pound);
+read_write_uom!(Angle, degree);
+read_write_into!(MachNumber);
+
+impl<T: Reader> Read<f64> for T {
+    fn convert(&mut self, value: f64) -> f64 {
+        value
     }
 }
 
-impl<T: Writer> Write<Velocity> for T {
-    fn write(&mut self, name: &str, value: Velocity) {
-        self.write_f64(name, value.get::<knot>())
-    }
-}
-
-impl<T: Reader> Read<Length> for T {
-    fn read(&mut self, name: &str) -> Length {
-        // Length is tricky, as we might have usage of nautical mile
-        // or other units later. We'll have to work around that problem
-        // when we get there.
-        Length::new::<foot>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<Length> for T {
-    fn write(&mut self, name: &str, value: Length) {
-        // Length is tricky, as we might have usage of nautical mile
-        // or other units later. We'll have to work around that problem
-        // when we get there.
-        self.write_f64(name, value.get::<foot>())
-    }
-}
-
-impl<T: Reader> Read<Acceleration> for T {
-    fn read(&mut self, name: &str) -> Acceleration {
-        Acceleration::new::<foot_per_second_squared>(self.read_f64(name))
-    }
-}
-
-impl<T: Reader> Read<ThermodynamicTemperature> for T {
-    fn read(&mut self, name: &str) -> ThermodynamicTemperature {
-        ThermodynamicTemperature::new::<degree_celsius>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<ThermodynamicTemperature> for T {
-    fn write(&mut self, name: &str, value: ThermodynamicTemperature) {
-        self.write_f64(name, value.get::<degree_celsius>())
+impl<T: Writer> Write<f64> for T {
+    fn convert(&mut self, value: f64) -> f64 {
+        value
     }
 }
 
@@ -539,18 +632,6 @@ impl<T: Writer> WriteWhen<ThermodynamicTemperature> for T {
                 ThermodynamicTemperature::new::<kelvin>(0.).get::<degree_celsius>() - 1.
             },
         );
-    }
-}
-
-impl<T: Reader> Read<Ratio> for T {
-    fn read(&mut self, name: &str) -> Ratio {
-        Ratio::new::<percent>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<Ratio> for T {
-    fn write(&mut self, name: &str, value: Ratio) {
-        self.write_f64(name, value.get::<percent>())
     }
 }
 
@@ -568,14 +649,14 @@ impl<T: Writer> WriteWhen<Ratio> for T {
 }
 
 impl<T: Reader> Read<bool> for T {
-    fn read(&mut self, name: &str) -> bool {
-        to_bool(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> bool {
+        to_bool(value)
     }
 }
 
 impl<T: Writer> Write<bool> for T {
-    fn write(&mut self, name: &str, value: bool) {
-        self.write_f64(name, from_bool(value));
+    fn convert(&mut self, value: bool) -> f64 {
+        from_bool(value)
     }
 }
 
@@ -694,25 +775,13 @@ impl<T: Writer> Write<Angle> for T {
 }
 
 impl<T: Reader> Read<Duration> for T {
-    fn read(&mut self, name: &str) -> Duration {
-        Duration::from_secs_f64(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Duration {
+        Duration::from_secs_f64(value)
     }
 }
 
 impl<T: Writer> Write<Duration> for T {
-    fn write(&mut self, name: &str, value: Duration) {
-        self.write_f64(name, value.as_secs_f64());
-    }
-}
-
-impl<T: Reader> Read<MachNumber> for T {
-    fn read(&mut self, name: &str) -> MachNumber {
-        MachNumber(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<MachNumber> for T {
-    fn write(&mut self, name: &str, value: MachNumber) {
-        self.write_f64(name, value.0);
+    fn convert(&mut self, value: Duration) -> f64 {
+        value.as_secs_f64()
     }
 }
