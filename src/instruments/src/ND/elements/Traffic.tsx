@@ -1,82 +1,41 @@
 /* eslint-disable camelcase */
-import { Arinc429Word, useArinc429Var } from '@instruments/common/arinc429';
 import { useCoherentEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, FC, useState } from 'react';
 import { Layer } from '@instruments/common/utils';
-import { TaRaIntrusion } from '@tcas/components/TCasConstants';
+import { TaRaIntrusion } from '@tcas/lib/TCasConstants';
 import { MapParameters } from '../utils/MapParameters';
 // import { Layer } from '@instruments/common/utils';
-export interface TcasTraffic {
-    alive: boolean,
-    created: boolean,
-    lastSeen: number,
-    ID: string,
-    name: string,
-    lat: number,
-    lon: number,
-    alt: number,
-    vertSpeed: number,
-    onGround: boolean,
-    heading: number,
-    relativeAlt: number,
-    slantDistance: number, // Distance to traffic aircraft in 3D space, in nautical miles
-    closureRate: number,
-    intrusionLevel: number,
-    isDisplayed: boolean,
-    taTau: number,
-    raTau: number,
-    vTau: number,
-    taExpiring: boolean,
-    secondsSinceLastTa: number,
-}
-
-export interface JS_NPCPlane {
-    name: string,
-    uId: number,
-    lat: number,
-    lon: number,
-    alt: number,
-    heading: number
-}
-
-export type TcasProps = {
-    mapParams: MapParameters
-}
 
 interface NDTraffic {
     ID: string;
-
     name: string;
-
     lat: number;
-
     lon: number;
-
     alt: number;
-
     relativeAlt: number;
-
     vertSpeed: number;
-
     heading: number;
-
     intrusionLevel: number;
-
     posX: number;
-
     posY: number;
 }
 
-export const TcasInfo: FC<TcasProps> = ({ mapParams }) => {
+export type TcasProps = {
+    x: number,
+    y: number,
+    mapParams: MapParameters
+}
+
+export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
     // TODO: REDUCE RANGE and CHANGE MODE warnings - AMM 34-43-00:A21
     // TODO: red TCAS warning on fault (and on PFD) - AMM 34-43-00:A24
-    // TODO: Limit number of contacts displayed to 40 - AMM 34-43-00:6a
 
     const [airTraffic, setAirTraffic] = useState<NDTraffic[]>([]);
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number', 200);
 
     useCoherentEvent('A32NX_TCAS_TRAFFIC', (aT: NDTraffic[]) => {
+        // TODO FIXME: Try to optimise for GC
         aT.forEach((tf: NDTraffic) => {
             const [x, y] = mapParams.coordinatesToXYy({ lat: tf.lat, long: tf.lon });
             tf.posX = x;
@@ -89,30 +48,24 @@ export const TcasInfo: FC<TcasProps> = ({ mapParams }) => {
         setAirTraffic([]);
     }, [tcasMode]);
 
-    //
     return (
-        <>
-            {/* <TrafficIndicator x={0} y={0} id="A32NX" relativeAlt={0} vertSpeed={0} intrusionLevel={2} /> */}
+        <Layer x={x} y={y}>
             {airTraffic.map((tf) => (
                 <TrafficIndicator
                     x={tf.posX}
                     y={tf.posY}
-                    id={tf.ID}
-                    altitude={tf.alt}
                     relativeAlt={tf.relativeAlt}
                     vertSpeed={tf.vertSpeed}
                     intrusionLevel={tf.intrusionLevel}
                 />
             ))}
-        </>
+        </Layer>
     );
 };
 
 type TrafficProp = {
     x: number,
     y: number,
-    id: string,
-    altitude: number,
     relativeAlt: number,
     vertSpeed: number,
     intrusionLevel: TaRaIntrusion,
@@ -146,7 +99,7 @@ const raStyles = {
     paintOrder: 'markers stroke fill',
 } as React.CSSProperties;
 
-const TrafficIndicator: FC<TrafficProp> = ({ x, y, id, altitude, relativeAlt, vertSpeed, intrusionLevel }) => {
+const TrafficIndicator: FC<TrafficProp> = ({ x, y, relativeAlt, vertSpeed, intrusionLevel }) => {
     let color = '#ffffff';
     switch (intrusionLevel) {
     case TaRaIntrusion.TA:
@@ -193,44 +146,35 @@ const TrafficIndicator: FC<TrafficProp> = ({ x, y, id, altitude, relativeAlt, ve
 
     return (
         <>
-            {/* <Layer x={361.5} y={606.5}> */}
-            <Layer x={361.5} y={368}>
-                <Layer x={x} y={y}>
-                    {(intrusionLevel === TaRaIntrusion.TRAFFIC)
-                        && (
-                            <>
-                                <path d="m22.4 5.71 7.9 10.6-7.9 10.6-7.9-10.6z" style={trafficStyles} />
-                            </>
-                        )}
-                    {(intrusionLevel === TaRaIntrusion.PROXIMITY
-                            && <path d="m22.4 5.71 7.9 10.6-7.9 10.6-7.9-10.6z" style={proxStyles} />
+            <Layer x={x} y={y}>
+                {(intrusionLevel === TaRaIntrusion.TRAFFIC)
+                    && (
+                        <>
+                            <path d="m22.4 5.71 7.9 10.6-7.9 10.6-7.9-10.6z" style={trafficStyles} />
+                        </>
                     )}
-                    {(intrusionLevel === TaRaIntrusion.TA
-                        && <circle cx="22.4" cy="16.1" r="9.39" style={taStyles} />
-                    )}
-                    {(intrusionLevel === TaRaIntrusion.RA
-                        && <rect x="13.3" y="6.88" width="18.3" height="18.3" style={raStyles} />
-                    )}
-                    <text x="36.165964" y={relAltY} style={altTextStyles} xmlSpace="preserve">
-                        <tspan x="19.165966" y={relAltY} style={tSpanStyles}>{relAltText}</tspan>
-                    </text>
-                    {(vertSpeed >= 500 || vertSpeed <= -500) && (
-                        <path d="m38.3 23.2v-13.5" style={arrowStyles} />
-                    )}
-                    {(vertSpeed <= -500) && (
-                        <path d="m38.3 23.2-2.05-1.42 2.05 5.66 2.05-5.66z" style={arrowHeadStyles} />
-                    )}
-                    {(vertSpeed >= 500) && (
-                        <path d="m38.3 9.7 2.05 1.42-2.05-5.66-2.05 5.66z" style={arrowHeadStyles} />
-                    )}
-                </Layer>
+                {(intrusionLevel === TaRaIntrusion.PROXIMITY
+                        && <path d="m22.4 5.71 7.9 10.6-7.9 10.6-7.9-10.6z" style={proxStyles} />
+                )}
+                {(intrusionLevel === TaRaIntrusion.TA
+                    && <circle cx="22.4" cy="16.1" r="9.39" style={taStyles} />
+                )}
+                {(intrusionLevel === TaRaIntrusion.RA
+                    && <rect x="13.3" y="6.88" width="18.3" height="18.3" style={raStyles} />
+                )}
+                <text x="36.165964" y={relAltY} style={altTextStyles} xmlSpace="preserve">
+                    <tspan x="19.165966" y={relAltY} style={tSpanStyles}>{relAltText}</tspan>
+                </text>
+                {(vertSpeed >= 500 || vertSpeed <= -500) && (
+                    <path d="m38.3 23.2v-13.5" style={arrowStyles} />
+                )}
+                {(vertSpeed <= -500) && (
+                    <path d="m38.3 23.2-2.05-1.42 2.05 5.66 2.05-5.66z" style={arrowHeadStyles} />
+                )}
+                {(vertSpeed >= 500) && (
+                    <path d="m38.3 9.7 2.05 1.42-2.05-5.66-2.05 5.66z" style={arrowHeadStyles} />
+                )}
             </Layer>
         </>
     );
 };
-
-/*
-    <text x={Xy[0]} y={Xy[1]} className="Magenta" fontSize="35">
-        BRUH
-    </text>
-    */

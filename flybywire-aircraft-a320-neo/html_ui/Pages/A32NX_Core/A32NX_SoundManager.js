@@ -28,7 +28,7 @@ class A32NX_SoundManager {
 
         let found = false;
         this.periodicList.forEach((element) => {
-            if (element.name === sound.name) {
+            if (element.sound.name === sound.name) {
                 found = true;
             }
         });

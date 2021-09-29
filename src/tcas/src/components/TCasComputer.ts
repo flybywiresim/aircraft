@@ -6,7 +6,9 @@ import { UpdateThrottler } from '@shared/updateThrottler';
 import { MathUtils } from '@shared/MathUtils';
 import { Arinc429Word } from '@shared/arinc429';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { TcasConst, JS_NPCPlane, TaRaIndex, RaSense, TcasThreat, Intrude, RaParams, Inhibit, TcasState, RaType, TaRaIntrusion } from './TCasConstants';
+import { TCasComponent } from '@tcas/lib/TCasComponent';
+import { TcasConst, JS_NPCPlane, TaRaIndex, RaSense, TcasThreat, Intrude, RaParams, Inhibit, TcasState, RaType, TaRaIntrusion } from '../lib/TCasConstants';
+import { TCasSoundManager } from './TCasSoundManager';
 
 export class NDTcasTraffic {
     ID: string;
@@ -105,10 +107,6 @@ export class TcasTraffic {
         this.taExpiring = false;
         this.secondsSinceLastTa = 0;
     }
-
-    update() {
-
-    }
 }
 
 export class ResAdvisory {
@@ -128,7 +126,7 @@ export class ResAdvisory {
     }
 }
 
-export class TCasComputer {
+export class TCasComputer implements TCasComponent {
     private static _instance?: TCasComputer;
 
     private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
@@ -185,6 +183,8 @@ export class TCasComputer {
 
     private advisoryState: TcasState; // Overall TCAS state for callout latching (None, TA, or RA)
 
+    private soundManager: TCasSoundManager;
+
     private constructor() {}
 
     public static get instance(): TCasComputer {
@@ -209,6 +209,7 @@ export class TCasComputer {
         this.advisoryState = TcasState.NONE;
         this.sendAirTraffic = [];
         this.activeRa = new ResAdvisory(null, false, 0, false);
+        this.soundManager = new TCasSoundManager();
     }
 
     private updateVars(): void {
@@ -260,7 +261,6 @@ export class TCasComputer {
             obj.forEach((tf) => {
                 // Junk bad air traffic
                 if (!tf.lat && !tf.lon && !tf.alt && !tf.heading) {
-                    console.log(`ignored ${tf.uId.toFixed(0)}`);
                     return;
                 }
                 let traffic: TcasTraffic | undefined = this.airTraffic.find((p) => p && p.ID === tf.uId.toFixed(0));
@@ -510,7 +510,6 @@ export class TCasComputer {
             return;
         }
 
-        // const newRa = this.activeRa;
         this.raTraffic = this.airTraffic
             .filter((traffic) => traffic.intrusionLevel === TaRaIntrusion.RA && traffic.raTau !== Infinity)
             .sort((a, b) => a.raTau - b.raTau);
@@ -849,7 +848,6 @@ export class TCasComputer {
                 this.advisoryState = TcasState.RA;
                 SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 2);
                 console.log('TCAS: TA UPGRADED TO RA');
-                console.log('_ra:', this._newRa);
             } else if (taThreatCount === 0) {
                 this.advisoryState = TcasState.NONE;
                 SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
@@ -866,7 +864,7 @@ export class TCasComputer {
                     SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
                 }
                 console.log('TCAS: CLEAR OF CONFLICT');
-                // this.soundManager.tryPlaySound(TcasConst.SOUNDS.clear_of_conflict, true);
+                this.soundManager.tryPlaySound(TcasConst.SOUNDS.clear_of_conflict, true);
                 this.activeRa.info = null;
             }
             break;
@@ -880,7 +878,7 @@ export class TCasComputer {
                 console.log('TCAS: TA GENERATED');
                 if (this.inhibitions !== Inhibit.ALL_RA_AURAL_TA) {
                     console.log('TCAS: TA GENERATED SOUND');
-                    // this.soundManager.tryPlaySound(TcasConst.SOUNDS.traffic_traffic, true);
+                    this.soundManager.tryPlaySound(TcasConst.SOUNDS.traffic_traffic, true);
                 }
             }
             break;
@@ -896,9 +894,9 @@ export class TCasComputer {
                 console.log('TCAS: RA GENERATED: ', this.activeRa.info.callout);
 
                 if (this.activeRa.info.callout.repeat) {
-                    // this.soundManager.tryPlaySound(this.activeRa.info.callout.sound, true, true);
+                    this.soundManager.tryPlaySound(this.activeRa.info.callout.sound, true, true);
                 } else {
-                    // this.soundManager.tryPlaySound(this.activeRa.info.callout.sound, true, false);
+                    this.soundManager.tryPlaySound(this.activeRa.info.callout.sound, true, false);
                 }
 
                 const isCorrective = this.activeRa.info.type === RaType.CORRECT;
@@ -917,6 +915,8 @@ export class TCasComputer {
 
     private emitDisplay(): void {
         this.sendAirTraffic.length = 0;
+        // TODO: Refactor
+        // TODO: Limit number of contacts displayed to 40 - AMM 34-43-00:6a
         this.airTraffic
             .filter((traffic) => traffic.alive === true && traffic.isDisplayed === true)
             .forEach((traffic: TcasTraffic) => {
@@ -925,11 +925,8 @@ export class TCasComputer {
         this.sendListener.triggerToAllSubscribers('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
     }
 
-    private resetDisplay(): void {
-        this.sendListener.triggerToAllSubscribers('A32NX_TCAS_TRAFFIC', []);
-    }
-
     update(_deltaTime: number): void {
+        this.soundManager.update(_deltaTime);
         const deltaTime = this.updateThrottler.canUpdate(_deltaTime);
 
         if (deltaTime === -1) {
