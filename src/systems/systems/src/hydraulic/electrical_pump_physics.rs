@@ -84,10 +84,9 @@ impl ElectricalPumpPhysics {
         self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
             final_torque.get::<newton_meter>() / self.inertia,
         );
-        self.speed = self.speed
-            + AngularVelocity::new::<radian_per_second>(
-                self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
-            );
+        self.speed += AngularVelocity::new::<radian_per_second>(
+            self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
+        );
         self.speed = self
             .speed
             .max(AngularVelocity::new::<radian_per_second>(0.));
@@ -116,6 +115,8 @@ impl ElectricalPumpPhysics {
         context: &UpdateContext,
     ) {
         if self.is_active && self.is_powered {
+            // Computing simple control feedforward with current being function of displacement ratio.
+            // Max displacement requires max current
             let feedforward_current = self.max_current.get::<ampere>()
                 * current_displacement.get::<cubic_inch>()
                 / self.max_displacement.get::<cubic_inch>();
@@ -124,8 +125,7 @@ impl ElectricalPumpPhysics {
                 (self.regulated_speed - self.speed).get::<revolution_per_minute>();
 
             let p_term = Self::DEFAULT_P_GAIN * speed_error_rpm;
-            self.i_term =
-                self.i_term + Self::DEFAULT_I_GAIN * speed_error_rpm * context.delta_as_secs_f64();
+            self.i_term += Self::DEFAULT_I_GAIN * speed_error_rpm * context.delta_as_secs_f64();
 
             self.output_current =
                 ElectricCurrent::new::<ampere>(feedforward_current + p_term + self.i_term);
@@ -141,8 +141,7 @@ impl ElectricalPumpPhysics {
 
             self.last_speed_error_rpm = speed_error_rpm;
 
-            let three: f64 = 3.;
-            let output_power = 115. * self.output_current.get::<ampere>() * three.sqrt();
+            let output_power = 115. * self.output_current.get::<ampere>() * (3_f64).sqrt();
 
             if self.speed.get::<revolution_per_minute>() < 5.
                 && self.output_current.get::<ampere>() > 0.
@@ -224,6 +223,44 @@ mod tests {
 
             if time > Duration::from_secs_f64(0.5) {
                 assert!(pump.speed.get::<revolution_per_minute>() > 7000.);
+            }
+
+            println!(
+                "t= {:.1} RPM {:.0}",
+                time.as_secs_f64(),
+                pump.speed.get::<revolution_per_minute>()
+            );
+        }
+    }
+
+    #[test]
+    fn pump_spools_down_less_than_two_second_when_unpowered() {
+        let mut pump = physical_pump();
+
+        let delta_time = Duration::from_secs_f64(0.05);
+        let mut time = Duration::from_secs(0);
+
+        pump.set_active(true);
+        let mut pump_powered = true;
+        for _ in 0..100 {
+            pump.receive_power(&test_electricity(
+                ElectricalBusType::AlternatingCurrentGndFltService,
+                pump_powered,
+            ));
+
+            pump.update(
+                Pressure::new::<psi>(3000.),
+                Volume::new::<cubic_inch>(0.263) / 2.,
+                &context(delta_time),
+            );
+            time += delta_time;
+
+            if time > Duration::from_secs_f64(2.) {
+                pump_powered = false;
+            }
+
+            if time > Duration::from_secs_f64(4.) {
+                assert!(pump.speed.get::<revolution_per_minute>() < 1.);
             }
 
             println!(

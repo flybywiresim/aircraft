@@ -278,7 +278,7 @@ fn hyd_circuit_basic(path: &str) {
         }
 
         if x >= 1100 {
-            // After 35s pressurising epump
+            // After 55s pressurising epump
             epump_controller.command_pressurise();
         }
 
@@ -296,7 +296,7 @@ fn hyd_circuit_basic(path: &str) {
         );
 
         epump.receive_power(&test_electricity(
-            ElectricalBusType::AlternatingCurrentEssential,
+            ElectricalBusType::AlternatingCurrentGndFltService,
             true,
         ));
         epump.update(
@@ -404,7 +404,7 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
 fn electric_pump() -> ElectricPump {
     ElectricPump::new(
         "DEFAULT",
-        ElectricalBusType::AlternatingCurrentEssential,
+        ElectricalBusType::AlternatingCurrentGndFltService,
         ElectricCurrent::new::<ampere>(45.),
     )
 }
