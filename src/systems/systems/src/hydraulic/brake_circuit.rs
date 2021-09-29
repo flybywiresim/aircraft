@@ -132,8 +132,8 @@ pub struct BrakeCircuit {
 
     /// Common vars to all actuators: will be used by the calling loop to know what is used
     /// and what comes back to  reservoir at each iteration
-    volume_to_actuator_accumulator: Volume,
-    volume_to_res_accumulator: Volume,
+    total_volume_to_actuator: Volume,
+    total_volume_to_reservoir: Volume,
 
     /// Fluid pressure in brake circuit filtered for cockpit gauges
     accumulator_fluid_pressure_sensor_filtered: Pressure,
@@ -178,8 +178,8 @@ impl BrakeCircuit {
                 accumulator_fluid_volume_at_init,
                 true,
             ),
-            volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
-            volume_to_res_accumulator: Volume::new::<gallon>(0.),
+            total_volume_to_actuator: Volume::new::<gallon>(0.),
+            total_volume_to_reservoir: Volume::new::<gallon>(0.),
 
             // Pressure measured after accumulator in brake circuit
             accumulator_fluid_pressure_sensor_filtered: Pressure::new::<psi>(0.0),
@@ -228,20 +228,20 @@ impl BrakeCircuit {
             );
 
             // Volume that just came into accumulator is taken from hydraulic loop through volume_to_actuator interface
-            self.volume_to_actuator_accumulator += volume_into_accumulator.abs();
+            self.total_volume_to_actuator += volume_into_accumulator.abs();
 
             if delta_vol > Volume::new::<gallon>(0.) {
                 let volume_from_acc = self.accumulator.get_delta_vol(delta_vol);
                 let remaining_vol_after_accumulator_empty = delta_vol - volume_from_acc;
-                self.volume_to_actuator_accumulator += remaining_vol_after_accumulator_empty;
+                self.total_volume_to_actuator += remaining_vol_after_accumulator_empty;
             }
         } else {
             // Else case if no accumulator: we just take deltavol needed or return it back to res
-            self.volume_to_actuator_accumulator += delta_vol;
+            self.total_volume_to_actuator += delta_vol;
         }
 
-        self.volume_to_res_accumulator += self.left_brake_actuator.reservoir_return();
-        self.volume_to_res_accumulator += self.right_brake_actuator.reservoir_return();
+        self.total_volume_to_reservoir += self.left_brake_actuator.reservoir_return();
+        self.total_volume_to_reservoir += self.right_brake_actuator.reservoir_return();
 
         self.left_brake_actuator.reset_volumes();
         self.right_brake_actuator.reset_volumes();
@@ -289,15 +289,15 @@ impl BrakeCircuit {
 }
 impl Actuator for BrakeCircuit {
     fn used_volume(&self) -> Volume {
-        self.volume_to_actuator_accumulator
+        self.total_volume_to_actuator
     }
 
     fn reservoir_return(&self) -> Volume {
-        self.volume_to_res_accumulator
+        self.total_volume_to_reservoir
     }
     fn reset_volumes(&mut self) {
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
+        self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
     }
 }
 impl SimulationElement for BrakeCircuit {
