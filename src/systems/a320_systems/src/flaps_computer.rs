@@ -618,7 +618,7 @@ mod tests {
 
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1F);
 
-        test_bed = test_bed.set_indicated_airspeed(150.);
+        test_bed = test_bed.set_indicated_airspeed(150.).run_one_tick();
 
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf1F);
 
@@ -628,7 +628,7 @@ mod tests {
     }
 
     // Tests flaps configuration and angles for regular
-    // decreasing handle transitions, i.e 0->1->2->3->4 in sequence
+    // decreasing handle transitions, i.e 4->3->2->1->0 in sequence
     // below 210 knots
     #[test]
     fn flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_below_210() {
@@ -675,7 +675,7 @@ mod tests {
     }
 
     // Tests flaps configuration and angles for regular
-    // decreasing handle transitions, i.e 0->1->2->3->4 in sequence
+    // decreasing handle transitions, i.e 4->3->2->1->0 in sequence
     // above 210 knots
     #[test]
     fn flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_above_210() {
@@ -721,8 +721,8 @@ mod tests {
         assert!(test_bed.get_flaps_conf() == FlapsConf::Conf0);
     }
 
-    //All the tests that follow test irregular transitions
-    //i.e. direct from 0 to 3 or direct from 4 to 0.
+    //The few tests that follow test irregular transitions
+    //e.g. direct from 0 to 3 or direct from 4 to 0.
     //This is possible in the simulator, but obviously
     //not possible in real life. An irregular transition from x = 2,3,4
     // to y = 0,1 should behave like a sequential transition.
@@ -789,6 +789,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
     }
+
 
     #[test]
     fn flaps_test_irregular_handle_transition_init_pos_1() {
@@ -992,6 +993,9 @@ mod tests {
         assert!(test_bed.get_flaps_conf() == FlapsConf::ConfFull);
     }
 
+
+    //The tests below test the movement of the
+    //flaps/slats. 
     #[test]
     fn flaps_test_movement_0_to_1f() {
         let angle_delta = 0.01;
