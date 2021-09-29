@@ -795,6 +795,7 @@ class A32NX_TCAS_Manager {
                 }
             } else {
                 const predictedSep = this.getPredictedSep(selfVS, selfAlt, raTraffic);
+                let strengthenRaInfo = null;
                 if (predictedSep < ALIM) {
                     // Won't achieve ALIM anymore :(
                     const mul = (sense === raSense.up) ? 1 : -1;
@@ -815,18 +816,21 @@ class A32NX_TCAS_Manager {
                             CONSTANTS.FOLLOWUP_ACCEL
                         );
                         if (increaseCross) {
-                            const strengthenRaInfo = (raSense === raSense.up) ? raVariants.climb_cross : raVariants.descend_cross;
+                            strengthenRaInfo = (sense === raSense.up) ? raVariants.climb_cross : raVariants.descend_cross;
                         } else {
-                            const strengthenRaInfo = (raSense === raSense.up) ? raVariants.climb : raVariants.descend;
+                            strengthenRaInfo = (sense === raSense.up) ? raVariants.climb : raVariants.descend;
                         }
+                        console.log("StrengthenRAInfo: level 0 to 1: ", strengthenRaInfo);
                     } else if (previousRA.info.callout === taraCallouts.climb
                         || previousRA.info.callout === taraCallouts.climb_cross
                         || previousRA.info.callout === taraCallouts.climb_maintain_vs
                         || previousRA.info.callout === taraCallouts.climb_maintain_vs_crossing
+                        || previousRA.info.callout === taraCallouts.climb_now
                         || previousRA.info.callout === taraCallouts.descend
                         || previousRA.info.callout === taraCallouts.descend_cross
                         || previousRA.info.callout === taraCallouts.descend_maintain_vs
-                        || previousRA.info.callout === taraCallouts.descend_maintain_vs_crossing) {
+                        || previousRA.info.callout === taraCallouts.descend_maintain_vs_crossing
+                        || previousRA.info.callout === taraCallouts.descend_now) {
                         strength = 2;
                         [increaseSep, increaseCross] = this.getVerticalSep(
                             sense,
@@ -837,7 +841,10 @@ class A32NX_TCAS_Manager {
                             CONSTANTS.FOLLOWUP_DELAY,
                             CONSTANTS.FOLLOWUP_ACCEL
                         );
-                        const strengthenRaInfo = (raSense === raSense.up) ? raVariants.climb_increase : raVariants.descend_increase;
+                        strengthenRaInfo = (sense === raSense.up) ? raVariants.climb_increase : raVariants.descend_increase;
+                        console.log("StrengthenRAInfo: level 1 to 2 ", strengthenRaInfo);
+                    } else {
+                        console.log("StrengthenRAInfo: condition not met. Callout: ", previousRA.info.callout);
                     }
 
                     if (previousRA.isReversal) {
@@ -936,14 +943,14 @@ class A32NX_TCAS_Manager {
             let _sep = CONSTANTS.REALLY_BIG_NUMBER;
             if (sense === raSense.up) {
                 const _delay = selfVS < targetVS ? Math.min(ac.RaTAU, delay) : 0;
-                _sep = this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug) - trafficAltAtCPA;
+                _sep = Math.max(this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug) - trafficAltAtCPA, 0);
                 console.log("--------> Up traffic _sep=" + _sep);
                 if (!isCrossing && (selfAlt + 100) < ac.alt) {
                     isCrossing = true;
                 }
             } else if (sense === raSense.down) {
                 const _delay = selfVS > targetVS ? Math.min(ac.RaTAU, delay) : 0;
-                _sep = trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug);
+                _sep = Math.max(trafficAltAtCPA - this.calculateTrajectory(targetVS, selfVS, selfAlt, ac, _delay, accel, debug), 0);
                 console.log("--------> Down traffic _sep=" + _sep);
                 if (!isCrossing && (selfAlt - 100) > ac.alt) {
                     isCrossing = true;
@@ -960,22 +967,26 @@ class A32NX_TCAS_Manager {
     calculateTrajectory(targetVS, selfVS, selfAlt, otherAC, delay, accel, debug) {
         // accel must be in f/s^2
         accel = targetVS < selfVS ? -1 * accel : accel;
-        // console.log("--------> trajectory: accel=", accel);
-        // console.log("--------> RaTau=", otherAC.RaTAU);
+        console.log("--------> trajectory: accel=", accel);
+        console.log("--------> RaTau=", otherAC.RaTAU);
+        console.log("--------> delay=", delay);
         const timeToAccelerate = Math.min(otherAC.RaTAU - delay, ((targetVS - selfVS) / 60) / accel); // raTau can be infinity
-        // console.log("--------> trajectory: timeToAccelerate=", timeToAccelerate);
+        console.log("--------> trajectory: timeToAccelerate=", timeToAccelerate);
         const remainingTime = otherAC.RaTAU - (delay + timeToAccelerate);
+        console.log("--------> remainingTime=", remainingTime);
         const predicted_elevation = selfAlt
                                         + Math.round(selfVS / 60) * (delay + timeToAccelerate)
                                         + 0.5 * accel * Math.pow(timeToAccelerate, 2)
                                         + (targetVS / 60) * remainingTime;
 
         // DEBUG:
-        // console.log("------------>selfAlt: ", selfAlt);
-        // console.log("------------>Math.round(selfVS / 60): ", Math.round(selfVS / 60));
-        // console.log("------------>(delay + timeToAccelerate): ", (delay + timeToAccelerate));
-        // console.log("------------>0.5 * accel * Math.pow(timeToAccelerate, 2): ", 0.5 * accel * Math.pow(timeToAccelerate, 2));
-        // console.log("------------>(targetVS / 60) * remainingTime: ", (targetVS / 60) * remainingTime);
+        console.log("------------>selfAlt: ", selfAlt);
+        console.log("------------>selfVS: ", selfVS);
+        console.log("------------>Math.round(selfVS / 60): ", Math.round(selfVS / 60));
+        console.log("------------>(delay + timeToAccelerate): ", (delay + timeToAccelerate));
+        console.log("------------>0.5 * accel * Math.pow(timeToAccelerate, 2): ", 0.5 * accel * Math.pow(timeToAccelerate, 2));
+        console.log("------------>(targetVS / 60) * remainingTime: ", (targetVS / 60) * remainingTime);
+        console.log("-------->predicted_elevation before normalization ", predicted_elevation);
         return predicted_elevation;
     }
 
