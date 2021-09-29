@@ -64,6 +64,14 @@ export class Arinc429Word {
     valueOr(defaultValue: number) {
         return this.isNormalOperation() ? this.value : defaultValue;
     }
+
+    static fromSimVarValue(name): Arinc429Word | null {
+        const value: number | null = SimVar.GetSimVarValue(name, 'number');
+        if (value) {
+            return new Arinc429Word(value);
+        }
+        return null;
+    }
 }
 
 export const useArinc429Var = (

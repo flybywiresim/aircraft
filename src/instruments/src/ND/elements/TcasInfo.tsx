@@ -25,6 +25,11 @@ enum TaRaInfo {
     TVTHR = 3
 }
 
+enum Intrude {
+    RANGE = 0,
+    ALT = 1
+}
+
 enum TcasConstants {
     MIN_VS = -6000,
     MAX_VS = 6000,
@@ -125,14 +130,11 @@ export type TcasProps = {
 }
 
 export const TcasInfo: FC = () => {
-    // TODO: Below 1750 feet, use "radio altimeter" and not pressure altitude information.
-    // TODO: Upper Limit on number of tracked aircrat to 40 - AMM 34-43-00:6
-    // TODO: Store 10 most recent RA and 60 most recent TA - AMM 34-43-00:6
-
     // TODO: REDUCE RANGE and CHANGE MODE warnings - AMM 34-43-00:A21
     // TODO: red TCAS warning on fault (and on PFD) - AMM 34-43-00:A24
 
     const [airTraffic, setAirTraffic] = useState<TcasTraffic[]>([]);
+    // const [raTraffic, setRaTraffic] = useState<TcasTraffic[]>([]);
     const [sensitivity, setSensitivity] = useState(8);
     const [taRaInfo, setTaRaInfo] = useState<number[][]>([[]]);
 
@@ -156,17 +158,19 @@ export const TcasInfo: FC = () => {
     // const tcasMode = tcasSetting;
 
     // Init Listener
+    /*
     useEffect(() => {
         const listener = RegisterViewListener('JS_LISTENER_MAPS', () => {
             listener.trigger('JS_BIND_BINGMAP', 'testMap', false);
-            // setNxMapListener(listener);
         });
         return () => {
             listener.unregister();
         };
     }, []);
+    */
 
     // Set sensitivity
+    /*
     useEffect(() => {
         if (activeRA === null) {
             if (radioAlt < 1000 || tcasMode === TcasMode.ALL) {
@@ -228,9 +232,11 @@ export const TcasInfo: FC = () => {
             }
         }
     }, [tcasMode, radioAlt, altitude.value]);
+    */
 
     // Call Coherent for Air Traffic and refresh traffic data
     useUpdate((deltaTime) => {
+        return;
         Coherent.call('GET_AIR_TRAFFIC').then((obj: JS_NPCPlane[]) => {
             airTraffic.forEach((traffic) => {
                 traffic.alive = false;
@@ -299,7 +305,7 @@ export const TcasInfo: FC = () => {
                 if (!onGround) {
                     switch (tcasMode) {
                     case TcasMode.THREAT:
-                        if (Math.abs(traffic.relativeAlt) <= 2700) { // intrusionLevel >= 2
+                        if (Math.abs(traffic.relativeAlt) <= 2700 && traffic.intrusionLevel >= 2) {
                             isDisplayed = true;
                         }
                         break;
@@ -331,32 +337,27 @@ export const TcasInfo: FC = () => {
                     traffic.raTau = Infinity;
                 }
 
-                let verticalIntrusionLevel = 0;
-                let rangeIntrusionLevel = 0;
+                const intrusionLevel: number[] = [0, 0];
 
                 // Perform range test
                 if (traffic.raTau < taRaInfo[TaRaInfo.TAU][TaRa.RA] || traffic.slantDistance < taRaInfo[TaRaInfo.DMOD][TaRa.RA]) {
-                    rangeIntrusionLevel = 3;
+                    intrusionLevel[Intrude.RANGE] = 3;
                 } else if (traffic.taTau < taRaInfo[TaRaInfo.TAU][TaRa.TA] || traffic.slantDistance < taRaInfo[TaRaInfo.DMOD][TaRa.TA]) {
-                    rangeIntrusionLevel = 2;
+                    intrusionLevel[Intrude.RANGE] = 2;
                 } else if (horizontalDistance < 6) {
-                    rangeIntrusionLevel = 1;
-                } else {
-                    rangeIntrusionLevel = 0;
+                    intrusionLevel[Intrude.RANGE] = 1;
                 }
 
                 // Perform altitude test
                 if (traffic.vTau < taRaInfo[TaRaInfo.TAU][TaRa.RA] || Math.abs(traffic.relativeAlt) < taRaInfo[TaRaInfo.ZTHR][TaRa.RA]) {
-                    verticalIntrusionLevel = 3;
+                    intrusionLevel[Intrude.ALT] = 3;
                 } else if (traffic.vTau < taRaInfo[TaRaInfo.TAU][TaRa.TA] || Math.abs(traffic.relativeAlt) < taRaInfo[TaRaInfo.ZTHR][TaRa.TA]) {
-                    verticalIntrusionLevel = 2;
+                    intrusionLevel[Intrude.ALT] = 2;
                 } else if (Math.abs(traffic.relativeAlt) < 1200) {
-                    verticalIntrusionLevel = 1;
-                } else {
-                    verticalIntrusionLevel = 0;
+                    intrusionLevel[Intrude.ALT] = 1;
                 }
 
-                const desiredIntrusionLevel = Math.min(verticalIntrusionLevel, rangeIntrusionLevel);
+                const desiredIntrusionLevel = Math.min(...intrusionLevel);
                 if (traffic.intrusionLevel === 2
                     && desiredIntrusionLevel < 2
                     && traffic.secondsSinceLastTa >= TcasConstants.TA_EXPIRATION_DELAY) {
@@ -387,7 +388,11 @@ export const TcasInfo: FC = () => {
                     setFollowupRaTimer(followupRaTimer + deltaTime / 1000);
                 }
                 if (activeRA === null || followupRaTimer >= 1) {
-                    // setActiveRA({});
+                    const previousRA = activeRA;
+                    const raTraffic = airTraffic
+                        .filter((aircraft) => aircraft.intrusionLevel === 3 && aircraft.raTau !== Infinity)
+                        .sort((a, b) => a.raTau - b.raTau);
+
                     /*
                     ra = this.newRaLogic(
                         _deltaTime,
@@ -419,11 +424,11 @@ export const TcasInfo: FC = () => {
     }, 200);
 
     // Remove stale traffic
+    /*
     useEffect(() => {
         if (airTraffic.length > 100) {
             airTraffic.forEach((traffic, index) => {
                 if (traffic.alive === false && new Date().getTime() > traffic.lastSeen + 18000) {
-                    console.log(`Removing ${traffic.ID}`);
                     airTraffic.splice(index, 1);
                     setAirTraffic(airTraffic);
                 }
@@ -434,6 +439,7 @@ export const TcasInfo: FC = () => {
     useEffect(() => {
         console.log(airTraffic);
     }, [airTraffic]);
+    */
 
     return null;
 };

@@ -17,8 +17,6 @@ import { FMMessages } from './elements/messages/FMMessages';
 import { TcasWxrMessages } from './elements/messages/TcasWxrMessages';
 import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
-import { TcasInfo } from './elements/TcasInfo';
-
 import './styles.scss';
 
 const NavigationDisplay: React.FC = () => {
@@ -143,7 +141,6 @@ const NavigationDisplay: React.FC = () => {
                     )}
 
                     <Chrono side={side} />
-                    <TcasInfo />
 
                     <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
                     {(adirsAlign && modeIndex !== Mode.PLAN) && (

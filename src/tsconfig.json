@@ -7,7 +7,9 @@
       "@shared/*": ["./shared/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],
       "@fmgc/*": ["./fmgc/src/*"],
-      "@flybywiresim/failures": ["failures"]
+      "@flybywiresim/failures": ["failures"],
+      "@tcas/*": ["./tcas/src/*"],
+      "@typings/*": ["../typings"]
     }
   }
 }

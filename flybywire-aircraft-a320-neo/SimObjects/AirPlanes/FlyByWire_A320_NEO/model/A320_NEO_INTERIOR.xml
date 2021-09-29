@@ -3679,6 +3679,8 @@
             <UseTemplate Name="FBW_Airbus_ATC_Panel_ATC">
                 <Node_ID>Knob_ATC_1</Node_ID>
                 <PART_ID>Knob_ATC_1</PART_ID>
+                <ANIMTIP_0>Set XPDR to 1</ANIMTIP_0>
+                <ANIMTIP_1>Set XPDR to 2</ANIMTIP_1>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_ATC_Panel_TARA">
                 <Node_ID>KNOB_ATC_TARA</Node_ID>

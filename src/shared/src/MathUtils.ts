@@ -102,4 +102,28 @@ export class MathUtils {
 
        return ns.reduce((acc, v) => acc + v);
    }
+
+   /**
+     * Gets the distance between 2 points, given in lat/lon/alt above sea level
+     * @param pos1 {number[]} Position 1 [lat, lon, alt(feet)]
+     * @param pos2 {number[]} Position 2 [lat, lon, alt(feet)]
+     * @return {number} distance in nautical miles
+     */
+   public static computeDistance3D(pos1, pos2) {
+       const earthRadius = 3440.065; // earth radius in nautcal miles
+       const deg2rad = Math.PI / 180;
+
+       const radius1 = pos1[2] / 6076 + earthRadius;
+       const radius2 = pos2[2] / 6076 + earthRadius;
+
+       const x1 = radius1 * Math.sin(deg2rad * (pos1[0] + 90)) * Math.cos(deg2rad * (pos1[1] + 180));
+       const y1 = radius1 * Math.sin(deg2rad * (pos1[0] + 90)) * Math.sin(deg2rad * (pos1[1] + 180));
+       const z1 = radius1 * Math.cos(deg2rad * (pos1[0] + 90));
+
+       const x2 = radius2 * Math.sin(deg2rad * (pos2[0] + 90)) * Math.cos(deg2rad * (pos2[1] + 180));
+       const y2 = radius2 * Math.sin(deg2rad * (pos2[0] + 90)) * Math.sin(deg2rad * (pos2[1] + 180));
+       const z2 = radius2 * Math.cos(deg2rad * (pos2[0] + 90));
+
+       return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2);
+   }
 }
