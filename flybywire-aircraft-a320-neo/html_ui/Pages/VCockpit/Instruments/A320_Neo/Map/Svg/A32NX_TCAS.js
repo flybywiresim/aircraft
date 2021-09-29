@@ -458,7 +458,7 @@ class A32NX_TCAS_Manager {
             // check if traffic is on ground. Mode-s transponders would transmit that information themselves, but since Asobo doesn't provide that
             // information, we need to rely on the fallback method
             // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
-            if (altitude < 1750 && traffic.alt < groundAlt + 360) {
+            if (altitude < 1750 && traffic.alt < groundAlt + 380) {
                 traffic.TaTAU = Infinity;
                 traffic.RaTAU = Infinity;
                 traffic.verticalTAU = Infinity;
