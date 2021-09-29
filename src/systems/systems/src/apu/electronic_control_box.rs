@@ -8,7 +8,7 @@ use crate::{
         arinc429::SignStatus, ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower,
         ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
     },
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write, WriteWhen},
 };
 use std::time::Duration;
 use uom::si::{
@@ -343,7 +343,11 @@ impl SimulationElement for ElectronicControlBox {
             ssm,
         );
 
-        writer.write_when(is_on, "APU_BLEED_AIR_PRESSURE", self.bleed_air_pressure);
+        writer.write_when(
+            self.is_on(),
+            "APU_BLEED_AIR_PRESSURE",
+            self.bleed_air_pressure,
+        );
 
         // Flight Warning Computer related information.
         writer.write("ECAM_INOP_SYS_APU", self.is_inoperable());

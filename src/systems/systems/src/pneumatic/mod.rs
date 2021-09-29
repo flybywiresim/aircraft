@@ -694,7 +694,7 @@ mod tests {
 
     use std::time::Duration;
     use uom::si::{
-        acceleration::foot_per_second_squared, length::foot, pressure::pascal,
+        acceleration::foot_per_second_squared, angle::radian, length::foot, pressure::pascal,
         thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
         volume_rate::cubic_meter_per_second,
     };
@@ -792,6 +792,10 @@ mod tests {
             ISA::temperature_at_altitude(altitude),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 
@@ -832,6 +836,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         );
 
         assert_eq!(valve.open_amount, Ratio::new::<percent>(0.));

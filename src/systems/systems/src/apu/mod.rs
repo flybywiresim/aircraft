@@ -2133,6 +2133,9 @@ pub mod tests {
                 .run(Duration::from_millis(1));
 
             assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(0.));
+        }
+
+        #[test]
         fn always_writes_a_raw_n_value_for_sound_and_effects() {
             let mut test_bed = test_bed();
             test_bed.run_without_delta();
